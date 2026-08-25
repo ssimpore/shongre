@@ -20,11 +20,15 @@ import {
 import type {
   EmploymentCatalog,
   EmployerSummary,
-  JobDraft,
   ProhibitedLanguageFlag,
 } from "@shongre/contracts/employment";
+import { EMPLOYMENT_PUBLICATION_CONSTRAINTS } from "@shongre/contracts/employment";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
+import {
+  EMPTY_EMPLOYMENT_PUBLICATION_DRAFT,
+  type EmploymentPublicationDraftData,
+} from "../../api/contracts/employment.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -39,8 +43,8 @@ import {
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { formatEmploymentMoney } from "./employment-format";
+import { motionDurationMs } from "@shongre/design-tokens";
 
 const STEPS = [
   ["Employeur", Building2],
@@ -58,93 +62,24 @@ const STEPS = [
   ["Envoi", Send],
 ] as const;
 
-type DraftData = {
-  employerId: string;
-  employerName: string;
-  employerDescription: string;
-  positionsCount: string;
-  internalReference: string;
-  title: string;
-  professionId: string;
-  specializationId: string;
-  industryId: string;
-  responsibilities: string;
-  requiredSkills: string;
-  preferredSkills: string;
-  contractTypeId: string;
-  contractDuration: string;
-  workingArrangementId: string;
-  workingTimeId: string;
-  weeklyHours: string;
-  requiredExperienceId: string;
-  educationLevelId: string;
-  qualificationSummary: string;
-  certifications: string;
-  city: string;
-  postalCode: string;
-  additionalLocations: string;
-  travelRequirement: string;
-  accessibilityInformation: string;
-  salaryMinimum: string;
-  salaryMaximum: string;
-  salaryFrequencyId: string;
-  benefits: string;
-  bonusDescription: string;
-  trialPeriodInformation: string;
-  desiredStartDate: string;
-  applicationDeadline: string;
-  recruitmentProcess: string;
-  publishSalary: boolean;
-  applicationMethod: "shongre" | "external" | "contact_recruiter";
-  externalApplicationUrl: string;
-  screeningQuestion: string;
-  privacyNoticeAccepted: boolean;
-  checkoutId: string;
-};
+const PUBLISH_STEP = {
+  employer: 1,
+  profession: 2,
+  contract: 3,
+  responsibilities: 4,
+  skills: 5,
+  location: 6,
+  salary: 7,
+  application: 8,
+  screening: 9,
+  preview: 10,
+  visibility: 11,
+  checkout: 12,
+  submit: 13,
+} as const;
 
-const defaults: DraftData = {
-  employerId: "",
-  employerName: "",
-  employerDescription: "",
-  positionsCount: "1",
-  internalReference: "",
-  title: "",
-  professionId: "",
-  specializationId: "",
-  industryId: "",
-  responsibilities: "",
-  requiredSkills: "",
-  preferredSkills: "",
-  contractTypeId: "",
-  contractDuration: "",
-  workingArrangementId: "",
-  workingTimeId: "",
-  weeklyHours: "",
-  requiredExperienceId: "",
-  educationLevelId: "",
-  qualificationSummary: "",
-  certifications: "",
-  city: "",
-  postalCode: "",
-  additionalLocations: "",
-  travelRequirement: "",
-  accessibilityInformation: "",
-  salaryMinimum: "",
-  salaryMaximum: "",
-  salaryFrequencyId: "",
-  benefits: "",
-  bonusDescription: "",
-  trialPeriodInformation: "",
-  desiredStartDate: "",
-  applicationDeadline: "",
-  recruitmentProcess: "",
-  publishSalary: true,
-  applicationMethod: "shongre",
-  externalApplicationUrl: "",
-  screeningQuestion: "",
-  privacyNoticeAccepted: false,
-  checkoutId: "",
-};
+type DraftData = EmploymentPublicationDraftData;
+const defaults = EMPTY_EMPLOYMENT_PUBLICATION_DRAFT;
 
 const optionsFor = (
   catalog: EmploymentCatalog,
@@ -226,34 +161,20 @@ const hydrateDraftData = (value: Record<string, unknown>): DraftData => {
 
 export const EmploymentPublishWizardPage: React.FC = () => {
   const { currentUser, can } = useAuth();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();
   const accountId = currentUser?.id || "guest";
-  const localKey = `shongre_employment_draft_v1:${accountId}`;
-  const [draftId] = useState(
-    () =>
-      searchParams.get("draft") ||
-      storageService.get(
-        `${localKey}:id`,
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : "employment-draft-demo",
-      ),
-  );
+  const [draftId, setDraftId] = useState("");
   const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
   const [employers, setEmployers] = useState<EmployerSummary[]>([]);
-  const [step, setStep] = useState(() =>
-    storageService.get(`${localKey}:step`, 1),
+  const [step, setStep] = useState<number>(
+    EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
   );
-  const [data, setData] = useState<DraftData>(() =>
-    storageService.get(localKey, defaults),
-  );
+  const [data, setData] = useState<DraftData>(defaults);
   const [privateEmployer, setPrivateEmployer] = useState(false);
-  const [selectedOfferId, setSelectedOfferId] = useState(
-    "employment.employer.free",
-  );
+  const [selectedOfferId, setSelectedOfferId] = useState("");
   const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
   const [flags, setFlags] = useState<ProhibitedLanguageFlag[]>([]);
   const [duplicateIds, setDuplicateIds] = useState<string[]>([]);
@@ -271,10 +192,13 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
-    storageService.set(`${localKey}:id`, draftId);
     Promise.all([
       services.employment.getCatalog(activeMarket.code),
-      services.employment.getDraft(draftId),
+      services.employment.getOrCreateDraft(
+        accountId,
+        activeMarket.code,
+        searchParams.get("draft") || undefined,
+      ),
       can("employment.recruiter.manage.own")
         ? services.employment.listRecruiterEmployers()
         : Promise.resolve([]),
@@ -282,21 +206,21 @@ export const EmploymentPublishWizardPage: React.FC = () => {
       .then(([nextCatalog, remote, availableEmployers]) => {
         setCatalog(nextCatalog);
         setEmployers(availableEmployers);
-        if (remote) {
-          setStep(remote.currentStep);
-          setData((current) => ({
-            ...current,
-            ...hydrateDraftData(remote.data),
-          }));
-          setPrivateEmployer(remote.privateEmployer);
-          setSelectedOfferId(
-            remote.selectedOfferId || "employment.employer.free",
-          );
-          setSelectedAddOnIds(remote.selectedAddOnIds);
-          setDuplicateIds(remote.duplicateCandidateIds);
-        } else if (!availableEmployers.length) {
+        setDraftId(remote.id);
+        setStep(remote.currentStep);
+        setData(hydrateDraftData(remote.data));
+        setPrivateEmployer(
+          remote.privateEmployer || !availableEmployers.length,
+        );
+        setSelectedOfferId(
+          remote.selectedOfferId ||
+            nextCatalog.offers.find((offer) => offer.isActive)?.id ||
+            "",
+        );
+        setSelectedAddOnIds(remote.selectedAddOnIds);
+        setDuplicateIds(remote.duplicateCandidateIds);
+        if (!availableEmployers.length) {
           setPrivateEmployer(true);
-          setSelectedOfferId("employment.employer.free");
         } else {
           setData((current) => ({
             ...current,
@@ -313,185 +237,48 @@ export const EmploymentPublishWizardPage: React.FC = () => {
       .catch(() =>
         toast.error("Le parcours Emploi est momentanément indisponible."),
       );
-  }, [activeMarket.code, can, draftId, localKey, toast]);
+  }, [accountId, activeMarket.code, can, searchParams, toast]);
 
   const labelFor = (id: string) =>
     catalog?.dictionaries.find((entry) => entry.id === id)?.label || id;
-  const serializedData = useMemo(() => {
-    const selectedEmployer = employers.find(
-      (employer) => employer.id === data.employerId,
-    );
-    const employerId = privateEmployer
-      ? `private-employer-${accountId}`
-      : selectedEmployer?.id || "";
-    const requiredSkills = splitValues(data.requiredSkills);
-    const minor = (value: string) =>
-      Math.round(Number(value.replace(",", ".") || 0) * 100);
-    return {
-      ...data,
-      employerId,
-      employer: privateEmployer
-        ? {
-            id: employerId,
-            name: "Employeur particulier",
-            slug: "employeur-particulier",
-            employerTypeId: "employment.fr.employer_type.private",
-            description: data.employerDescription || undefined,
-            verificationLevel: "self_declared" as const,
-            isPubliclyVerified: false,
-          }
-        : selectedEmployer,
-      professionLabel: labelFor(data.professionId),
-      industryLabel: labelFor(data.industryId),
-      specializationId: data.specializationId || undefined,
-      specializationLabel: data.specializationId
-        ? labelFor(data.specializationId)
-        : undefined,
-      contractTypeLabel: labelFor(data.contractTypeId),
-      workingArrangementLabel: labelFor(data.workingArrangementId),
-      responsibilities: splitValues(data.responsibilities),
-      requiredSkills,
-      requiredSkillIds: requiredSkills
-        .map(
-          (skill) =>
-            catalog?.dictionaries.find(
-              (entry) =>
-                entry.kind === "skill" &&
-                entry.label.toLocaleLowerCase("fr") ===
-                  skill.toLocaleLowerCase("fr"),
-            )?.id,
-        )
-        .filter((id): id is string => Boolean(id)),
-      preferredSkills: splitValues(data.preferredSkills),
-      preferredSkillIds: splitValues(data.preferredSkills)
-        .map(
-          (skill) =>
-            catalog?.dictionaries.find(
-              (entry) =>
-                entry.kind === "skill" &&
-                entry.label.toLocaleLowerCase("fr") ===
-                  skill.toLocaleLowerCase("fr"),
-            )?.id,
-        )
-        .filter((id): id is string => Boolean(id)),
-      city: data.city,
-      locationLabel: `${data.city}${data.postalCode ? ` (${data.postalCode})` : ""}`,
-      countryCode: activeMarket.countryCode,
-      positionsCount: Math.max(1, Number(data.positionsCount || 1)),
-      reference: data.internalReference || undefined,
-      contractDuration: data.contractDuration || undefined,
-      weeklyHours: data.weeklyHours
-        ? Number(data.weeklyHours.replace(",", "."))
-        : undefined,
-      requiredExperienceId: data.requiredExperienceId || undefined,
-      educationLevelId: data.educationLevelId || undefined,
-      qualificationSummary: data.qualificationSummary || undefined,
-      certifications: splitValues(data.certifications),
-      additionalLocations: splitValues(data.additionalLocations).map(
-        (location, index) => ({
-          id: `additional-location-${index + 1}-${draftId}`,
-          label: location,
-          city: location,
-          countryCode: activeMarket.countryCode,
-          isPrimary: false,
-          isPublic: true,
-        }),
-      ),
-      travelRequirementId: data.travelRequirement || undefined,
-      accessibilityInformation: data.accessibilityInformation || undefined,
-      benefits: splitValues(data.benefits),
-      trialPeriodInformation: data.trialPeriodInformation || undefined,
-      desiredStartDate: data.desiredStartDate || undefined,
-      applicationDeadline: data.applicationDeadline
-        ? new Date(`${data.applicationDeadline}T23:59:59`).toISOString()
-        : undefined,
-      recruitmentProcess: splitValues(data.recruitmentProcess),
-      workScheduleIds: [data.workingTimeId].filter(Boolean),
-      contactPreferences: ["messaging"],
-      salary:
-        data.publishSalary && data.salaryFrequencyId
-          ? {
-              minimum: {
-                amountMinor: minor(data.salaryMinimum),
-                currency: catalog?.config.currency || activeMarket.currency,
-              },
-              maximum: data.salaryMaximum
-                ? {
-                    amountMinor: minor(data.salaryMaximum),
-                    currency: catalog?.config.currency || activeMarket.currency,
-                  }
-                : undefined,
-              frequencyId: data.salaryFrequencyId,
-              presentationId: "gross",
-              isPublic: true,
-              bonusDescription: data.bonusDescription || undefined,
-            }
-          : undefined,
-    };
-  }, [
-    accountId,
-    activeMarket.countryCode,
-    activeMarket.currency,
-    catalog,
-    data,
-    draftId,
-    employers,
-    privateEmployer,
-  ]);
-
-  const screeningQuestions = useMemo<JobDraft["screeningQuestions"]>(
+  const defaultOfferId = useMemo(
     () =>
-      data.screeningQuestion.trim()
-        ? [
-            {
-              id: `question-${draftId}`,
-              questionTypeId:
-                "employment.fr.screening_question_type.short_text",
-              label: data.screeningQuestion.trim(),
-              isRequired: false,
-              options: [],
-              disqualifyingAnswerIds: [],
-            },
-          ]
-        : [],
-    [data.screeningQuestion, draftId],
+      catalog?.offers.find((offer) => offer.isActive && offer.kind === "free")
+        ?.id ||
+      catalog?.offers.find((offer) => offer.isActive)?.id ||
+      "",
+    [catalog],
   );
-
-  const buildDraft = (): JobDraft => ({
-    id: draftId,
-    ownerUserId: accountId,
-    employerId: privateEmployer ? undefined : data.employerId,
-    privateEmployer,
-    marketCode: activeMarket.code,
-    schemaVersion: catalog?.config.schemaVersion || 1,
-    currentStep: step,
-    completedSteps: Array.from(
-      { length: Math.max(0, step - 1) },
-      (_, index) => index + 1,
-    ),
-    data: serializedData,
-    screeningQuestions,
-    selectedOfferId,
-    selectedAddOnIds,
-    validationIssues: [],
-    duplicateCandidateIds: duplicateIds,
-    updatedAt: new Date().toISOString(),
-  });
+  const persistPublicationDraft = (
+    currentStep = step,
+    markAllPreviousStepsComplete = false,
+  ) =>
+    services.employment.savePublicationDraft({
+      draftId,
+      ownerUserId: accountId,
+      marketCode: activeMarket.code,
+      countryCode: activeMarket.countryCode,
+      currentStep,
+      privateEmployer,
+      data,
+      selectedOfferId,
+      selectedAddOnIds,
+      duplicateCandidateIds: duplicateIds,
+      markAllPreviousStepsComplete,
+    });
 
   useEffect(() => {
-    if (!hydrated.current || !catalog) return;
-    storageService.set(localKey, data);
-    storageService.set(`${localKey}:step`, step);
+    if (!hydrated.current || !catalog || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
-        await services.employment.saveDraft(buildDraft());
+        await persistPublicationDraft();
       } finally {
         setSaving(false);
       }
-    }, 350);
+    }, motionDurationMs.slow);
     return () => window.clearTimeout(timer);
-    // buildDraft is derived from the listed state.
+    // persistPublicationDraft is derived from the listed state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     accountId,
@@ -499,12 +286,9 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     data,
     draftId,
     duplicateIds,
-    localKey,
     privateEmployer,
-    screeningQuestions,
     selectedAddOnIds,
     selectedOfferId,
-    serializedData,
     step,
   ]);
 
@@ -524,45 +308,54 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         (catalog?.addOns || [])
           .filter((item) => selectedAddOnIds.includes(item.id))
           .reduce((sum, item) => sum + item.price.amountMinor, 0),
-      currency: price?.currency || catalog?.config.currency || "EUR",
+      currency:
+        price?.currency || catalog?.config.currency || activeMarket.currency,
     };
   }, [catalog, selectedAddOnIds, selectedOfferId]);
 
   const canContinue = useMemo(() => {
-    if (step === 1) return privateEmployer || Boolean(data.employerId);
-    if (step === 2) return Boolean(data.professionId && data.industryId);
-    if (step === 3)
+    if (step === PUBLISH_STEP.employer)
+      return privateEmployer || Boolean(data.employerId);
+    if (step === PUBLISH_STEP.profession)
+      return Boolean(data.professionId && data.industryId);
+    if (step === PUBLISH_STEP.contract)
       return Boolean(
         data.contractTypeId && data.workingArrangementId && data.workingTimeId,
       );
-    if (step === 4)
+    if (step === PUBLISH_STEP.responsibilities)
       return (
-        data.title.trim().length >= 5 &&
-        data.responsibilities.trim().length >= 20
+        data.title.trim().length >=
+          EMPLOYMENT_PUBLICATION_CONSTRAINTS.titleMinLength &&
+        data.responsibilities.trim().length >=
+          EMPLOYMENT_PUBLICATION_CONSTRAINTS.responsibilitiesMinLength
       );
-    if (step === 6) return data.city.trim().length >= 2;
-    if (step === 7)
+    if (step === PUBLISH_STEP.location)
+      return (
+        data.city.trim().length >=
+        EMPLOYMENT_PUBLICATION_CONSTRAINTS.cityMinLength
+      );
+    if (step === PUBLISH_STEP.salary)
       return (
         !data.publishSalary ||
         Boolean(data.salaryMinimum && data.salaryFrequencyId)
       );
-    if (step === 8)
+    if (step === PUBLISH_STEP.application)
       return (
         data.applicationMethod !== "external" ||
         data.externalApplicationUrl.startsWith("https://")
       );
-    if (step === 9) return data.privacyNoticeAccepted;
-    if (step === 12)
+    if (step === PUBLISH_STEP.screening) return data.privacyNoticeAccepted;
+    if (step === PUBLISH_STEP.checkout)
       return selectedTotal.amountMinor === 0 || Boolean(data.checkoutId);
     return true;
   }, [data, privateEmployer, selectedTotal.amountMinor, step]);
 
   const goNext = async () => {
     if (!canContinue) return;
-    if (step === 4) {
+    if (step === PUBLISH_STEP.responsibilities) {
       setSaving(true);
       try {
-        await services.employment.saveDraft(buildDraft());
+        await persistPublicationDraft();
         setFlags(
           await services.employment.flagProhibitedLanguage(
             `${data.title} ${data.responsibilities}`,
@@ -576,7 +369,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         setSaving(false);
       }
     }
-    if (step === 12 && selectedTotal.amountMinor > 0 && !data.checkoutId) {
+    if (
+      step === PUBLISH_STEP.checkout &&
+      selectedTotal.amountMinor > 0 &&
+      !data.checkoutId
+    ) {
       setSubmitting(true);
       try {
         const checkout = await services.employment.createCheckout({
@@ -604,22 +401,21 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         setSubmitting(false);
       }
     }
-    setStep((current) => Math.min(STEPS.length, current + 1));
+    setStep((current) =>
+      Math.min(EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount, current + 1),
+    );
   };
 
   const submit = async () => {
     setSubmitting(true);
     try {
-      await services.employment.saveDraft({
-        ...buildDraft(),
-        currentStep: 13,
-        completedSteps: Array.from({ length: 12 }, (_, index) => index + 1),
-      });
+      await persistPublicationDraft(
+        EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount,
+        true,
+      );
       const result = await services.employment.submitDraft(draftId);
       setFlags(result.complianceFlags);
       setCompleteId(result.jobId);
-      storageService.remove(localKey);
-      storageService.remove(`${localKey}:step`);
       toast.success(
         result.lifecycle === "published"
           ? "Offre publiée."
@@ -634,11 +430,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     }
   };
 
-  if (!catalog)
+  if (!catalog || !draftId)
     return (
       <div className="mx-auto max-w-5xl space-y-4 p-6">
         <Skeleton className="h-control-md w-72" />
-        <Skeleton className="h-[30rem] w-full" />
+        <Skeleton className="h-120 w-full" />
       </div>
     );
   if (completeId)
@@ -734,7 +530,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         </ol>
 
         <section className="mt-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-card sm:p-7">
-          {step === 1 && (
+          {step === PUBLISH_STEP.employer && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Qui recrute ?</h2>
               {(
@@ -754,7 +550,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                     onChange={() => {
                       setPrivateEmployer(value);
                       if (value) {
-                        setSelectedOfferId("employment.employer.free");
+                        setSelectedOfferId(defaultOfferId);
                         setSelectedAddOnIds([]);
                       }
                     }}
@@ -822,11 +618,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               )}
               {field("Nombre de postes", "positionsCount", {
                 type: "number",
-                min: 1,
+                min: EMPLOYMENT_PUBLICATION_CONSTRAINTS.positionsCountMin,
               })}
             </div>
           )}
-          {step === 2 && (
+          {step === PUBLISH_STEP.profession && (
             <div className="grid gap-5 sm:grid-cols-2">
               <h2 className="sm:col-span-2 text-xl font-black">
                 Métier et secteur
@@ -840,7 +636,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               {selectField("Secteur", "industryId", "sector")}
             </div>
           )}
-          {step === 3 && (
+          {step === PUBLISH_STEP.contract && (
             <div className="grid gap-5 sm:grid-cols-2">
               <h2 className="sm:col-span-2 text-xl font-black">
                 Contrat et organisation
@@ -869,7 +665,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               })}
             </div>
           )}
-          {step === 4 && (
+          {step === PUBLISH_STEP.responsibilities && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Intitulé et missions</h2>
               {field("Intitulé du poste", "title", {
@@ -911,7 +707,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               )}
             </div>
           )}
-          {step === 5 && (
+          {step === PUBLISH_STEP.skills && (
             <div className="grid gap-5 sm:grid-cols-2">
               <h2 className="sm:col-span-2 text-xl font-black">
                 Compétences et qualifications
@@ -951,7 +747,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </p>
             </div>
           )}
-          {step === 6 && (
+          {step === PUBLISH_STEP.location && (
             <div className="grid gap-5 sm:grid-cols-2">
               <h2 className="sm:col-span-2 text-xl font-black">
                 Lieu principal
@@ -965,7 +761,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                 placeholder: "Villeurbanne, Grenoble",
               })}
               {field("Déplacements", "travelRequirement", {
-                placeholder: "Ex. ponctuels en France",
+                placeholder: `Ex. ponctuels en ${activeMarket.name}`,
               })}
               <FormField
                 className="sm:col-span-2"
@@ -985,7 +781,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </p>
             </div>
           )}
-          {step === 7 && (
+          {step === PUBLISH_STEP.salary && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Rémunération et conditions</h2>
               <Checkbox
@@ -1043,7 +839,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </p>
             </div>
           )}
-          {step === 8 && (
+          {step === PUBLISH_STEP.application && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Réception des candidatures</h2>
               {(["shongre", "external", "contact_recruiter"] as const).map(
@@ -1078,7 +874,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                 )}
             </div>
           )}
-          {step === 9 && (
+          {step === PUBLISH_STEP.screening && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Question de présélection</h2>
               {field("Question facultative", "screeningQuestion", {
@@ -1098,7 +894,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               />
             </div>
           )}
-          {step === 10 && (
+          {step === PUBLISH_STEP.preview && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Aperçu avant publication</h2>
               <div className="rounded-card border border-border-base p-5">
@@ -1127,9 +923,10 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                         Number(data.salaryMinimum.replace(",", ".")) * 100,
                       ),
                       catalog.config.currency,
+                      currentLocale,
                     )}
                     {data.salaryMaximum
-                      ? ` – ${formatEmploymentMoney(Math.round(Number(data.salaryMaximum.replace(",", ".")) * 100), catalog.config.currency)}`
+                      ? ` – ${formatEmploymentMoney(Math.round(Number(data.salaryMaximum.replace(",", ".")) * 100), catalog.config.currency, currentLocale)}`
                       : ""}{" "}
                     · {labelFor(data.salaryFrequencyId)}
                   </p>
@@ -1142,19 +939,15 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </p>
             </div>
           )}
-          {step === 11 && (
+          {step === PUBLISH_STEP.visibility && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Choisir la visibilité</h2>
               <div className="grid gap-4 md:grid-cols-3">
                 {catalog.offers
                   .filter((offer) =>
                     privateEmployer
-                      ? offer.id === "employment.employer.free"
-                      : [
-                          "employment.employer.free",
-                          "employment.visibility.pack",
-                          "employment.employer.starter",
-                        ].includes(offer.id),
+                      ? offer.id === defaultOfferId
+                      : offer.isActive,
                   )
                   .map((offer) => {
                     const price = offer.prices.find(
@@ -1183,6 +976,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                             ? formatEmploymentMoney(
                                 price.amountMinor,
                                 price.currency,
+                                currentLocale,
                               )
                             : "Gratuit"}
                         </p>
@@ -1208,7 +1002,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                           );
                           update("checkoutId", "");
                         }}
-                        label={`${addOn.name} · ${formatEmploymentMoney(addOn.price.amountMinor, addOn.price.currency)}`}
+                        label={`${addOn.name} · ${formatEmploymentMoney(addOn.price.amountMinor, addOn.price.currency, currentLocale)}`}
                       />
                     ))}
                   </div>
@@ -1221,7 +1015,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </div>
             </div>
           )}
-          {step === 12 && (
+          {step === PUBLISH_STEP.checkout && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Confirmation commerciale</h2>
               <div className="flex items-center justify-between gap-4 rounded-card border border-border-base p-5">
@@ -1241,6 +1035,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                     ? formatEmploymentMoney(
                         selectedTotal.amountMinor,
                         selectedTotal.currency,
+                        currentLocale,
                       )
                     : "Gratuit"}
                 </p>
@@ -1262,7 +1057,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               )}
             </div>
           )}
-          {step === 13 && (
+          {step === PUBLISH_STEP.submit && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">
                 Envoyer l’offre en vérification
@@ -1287,15 +1082,17 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         <footer className="sticky bottom-3 mt-4 flex items-center justify-between gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-card backdrop-blur sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
           <Button
             variant="secondary"
-            disabled={step === 1 || submitting}
+            disabled={step === PUBLISH_STEP.employer || submitting}
             onClick={() => setStep((current) => current - 1)}
           >
             <ArrowLeft className="h-icon-sm w-icon-sm" />
             Précédent
           </Button>
-          {step < STEPS.length ? (
+          {step < EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount ? (
             <Button disabled={!canContinue || submitting} onClick={goNext}>
-              {step === 12 && selectedTotal.amountMinor > 0 && !data.checkoutId
+              {step === PUBLISH_STEP.checkout &&
+              selectedTotal.amountMinor > 0 &&
+              !data.checkoutId
                 ? "Confirmer et payer"
                 : "Continuer"}
               <ArrowRight className="h-icon-sm w-icon-sm" />

@@ -1,5 +1,10 @@
 import { Transaction, DeliveryType } from "../../types";
 
+export const ORDER_HANDOVER_POLICY = {
+  codeLength: 6,
+  lifetimeMinutes: 30,
+} as const;
+
 export interface CreateDirectPurchaseInput {
   listingId: string;
   deliveryMethod: DeliveryType;

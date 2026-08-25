@@ -144,27 +144,24 @@ export function deleteNestedValue(
 export class MarketResolver {
   /**
    * Resolves the complete effective MarketConfiguration for a given market.
-   * Logic: FR_CANONICAL_CONFIG + FR.overrides (if any) + Market.overrides
+   * Logic: canonical config + baseline-market overrides + local overrides.
    */
   public resolveEffectiveConfig(
     market: Market,
-    franceMarket?: Market | null,
+    baselineMarket?: Market | null,
   ): MarketConfiguration {
-    // 1. Resolve France baseline configuration
-    const frOverrides =
-      franceMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveFrance = deepMergeOverrides(
+    const baselineOverrides =
+      baselineMarket?.overrides || (market.isDefault ? market.overrides : {});
+    const effectiveBaseline = deepMergeOverrides(
       FR_CANONICAL_CONFIG,
-      frOverrides,
+      baselineOverrides,
     );
 
-    // 2. If the requested market is France itself, return effective France
-    if (market.code === "FR" || market.isDefault) {
-      return effectiveFrance;
+    if (market.isDefault) {
+      return effectiveBaseline;
     }
 
-    // 3. For any other market: merge its overrides on top of effective France
-    return deepMergeOverrides(effectiveFrance, market.overrides);
+    return deepMergeOverrides(effectiveBaseline, market.overrides);
   }
 
   /**
@@ -172,28 +169,28 @@ export class MarketResolver {
    */
   public resolveSetting<T = any>(
     market: Market,
-    franceMarket: Market | null,
+    baselineMarket: Market | null,
     path: string,
   ): SettingResolution<T> {
-    const frOverrides =
-      franceMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveFrance = deepMergeOverrides(
+    const baselineOverrides =
+      baselineMarket?.overrides || (market.isDefault ? market.overrides : {});
+    const effectiveBaseline = deepMergeOverrides(
       FR_CANONICAL_CONFIG,
-      frOverrides,
+      baselineOverrides,
     );
-    const frenchValue = getNestedValue(effectiveFrance, path);
+    const baselineValue = getNestedValue(effectiveBaseline, path);
+    const baselineMarketCode = baselineMarket?.code || market.code;
 
-    // If market is France itself
-    if (market.code === "FR" || market.isDefault) {
-      const frSpecificOverride = getNestedValue(market.overrides, path);
-      const isOverridden = frSpecificOverride !== undefined;
+    if (market.isDefault) {
+      const baselineSpecificOverride = getNestedValue(market.overrides, path);
+      const isOverridden = baselineSpecificOverride !== undefined;
       return {
-        value: (isOverridden ? frSpecificOverride : frenchValue) as T,
-        source: "FR",
-        sourceMarketCode: "FR",
+        value: (isOverridden ? baselineSpecificOverride : baselineValue) as T,
+        source: "BASELINE",
+        sourceMarketCode: baselineMarketCode,
         isInherited: false,
         overrideDefined: isOverridden,
-        frenchReferenceValue: frenchValue,
+        baselineReferenceValue: baselineValue,
       };
     }
 
@@ -208,18 +205,17 @@ export class MarketResolver {
         sourceMarketCode: market.code,
         isInherited: false,
         overrideDefined: true,
-        frenchReferenceValue: frenchValue,
+        baselineReferenceValue: baselineValue,
       };
     }
 
-    // Dynamic inheritance from France
     return {
-      value: frenchValue as T,
-      source: "FR",
-      sourceMarketCode: "FR",
+      value: baselineValue as T,
+      source: "BASELINE",
+      sourceMarketCode: baselineMarketCode,
       isInherited: true,
       overrideDefined: false,
-      frenchReferenceValue: frenchValue,
+      baselineReferenceValue: baselineValue,
     };
   }
 
@@ -245,12 +241,12 @@ export class MarketResolver {
    */
   public getInheritanceMetrics(
     market: Market,
-    franceMarket?: Market | null,
+    baselineMarket?: Market | null,
   ): MarketInheritanceMetrics {
     const allPaths = this.countLeafFields(FR_CANONICAL_CONFIG);
     const totalFieldsCount = allPaths.length;
 
-    if (market.isDefault || market.code === "FR") {
+    if (market.isDefault) {
       return {
         marketCode: market.code,
         totalFieldsCount,
@@ -285,8 +281,7 @@ export class MarketResolver {
   }
 
   /**
-   * Identifies which other markets currently inherit a specific French setting
-   * (useful for impact analysis when an administrator modifies France).
+   * Identifies which markets inherit a setting from the default market.
    */
   public getImpactedMarkets(
     settingPath: string,
@@ -294,7 +289,7 @@ export class MarketResolver {
   ): string[] {
     const impactedCodes: string[] = [];
     for (const m of allMarkets) {
-      if (m.code !== "FR" && !m.isDefault) {
+      if (!m.isDefault) {
         const localVal = getNestedValue(m.overrides, settingPath);
         if (localVal === undefined) {
           impactedCodes.push(m.code);

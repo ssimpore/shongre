@@ -18,9 +18,22 @@ import {
   MARKETS_STORAGE_KEY,
   storageService,
 } from "../../services/storage.service";
-import { formatPrice as formatPriceUtil } from "../../utilities/formatters";
+import {
+  formatCurrencySymbol,
+  formatPrice as formatPriceUtil,
+} from "../../utilities/formatters";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
 import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data";
+import { resolveShippedLocale } from "../../i18n/locale";
+import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
+import { marketResolver } from "../../domains/market/market.resolver";
+
+const INITIAL_DEFAULT_MARKET =
+  INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
+const INITIAL_DEFAULT_CONFIG = marketResolver.resolveEffectiveConfig(
+  INITIAL_DEFAULT_MARKET,
+  INITIAL_DEFAULT_MARKET,
+);
 
 interface MarketContextType {
   activeMarket: Market;
@@ -55,10 +68,13 @@ const MarketLocationContext = createContext<MarketContextType | undefined>(
 export const MarketLocationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  // Browser preferences cannot participate in the initial render: doing so
+  // makes hydrated markup depend on localStorage. Restore them after mount.
   const [activeMarketCode, setActiveMarketCode] = useState<string>(
-    () => storageService.getActiveMarketCode() || "FR",
+    INITIAL_DEFAULT_MARKET.code,
   );
   const [marketDataVersion, setMarketDataVersion] = useState(0);
+  const [hasRestoredPreferences, setHasRestoredPreferences] = useState(false);
 
   useEffect(() => {
     const refreshMarketConfiguration = () => {
@@ -83,48 +99,77 @@ export const MarketLocationProvider: React.FC<{
   }, []);
 
   const activeMarket = useMemo<Market>(() => {
+    if (!hasRestoredPreferences) return INITIAL_DEFAULT_MARKET;
     return marketService.getMarket(activeMarketCode);
-  }, [activeMarketCode, marketDataVersion]);
+  }, [activeMarketCode, hasRestoredPreferences, marketDataVersion]);
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
+    if (!hasRestoredPreferences) return INITIAL_DEFAULT_CONFIG;
     return marketService.getEffectiveConfig(activeMarket.code);
-  }, [activeMarket, marketDataVersion]);
+  }, [activeMarket, hasRestoredPreferences, marketDataVersion]);
 
   const availableMarkets = useMemo<Market[]>(() => {
+    if (!hasRestoredPreferences) {
+      return INITIAL_MARKETS.filter(
+        (market) =>
+          market.status === "active" || market.status === "coming_soon",
+      );
+    }
     return marketService
       .getMarkets()
       .filter((m) => m.status === "active" || m.status === "coming_soon");
-  }, [marketDataVersion]);
+  }, [hasRestoredPreferences, marketDataVersion]);
 
-  const [location, setLocationState] = useState<LocationSelection>(() => {
-    const saved = storageService.getLocationPreference();
-    if (saved && saved.city) {
-      return saved;
-    }
-    return {
-      city: `Toute la ${activeMarket.name}`,
-      postalCode: "",
-      radiusKm: 0,
-      label: `Toute la ${activeMarket.name}`,
-    };
+  const [location, setLocationState] = useState<LocationSelection>({
+    city: `Toute la ${INITIAL_DEFAULT_MARKET.name}`,
+    postalCode: "",
+    radiusKm: 0,
+    label: `Toute la ${INITIAL_DEFAULT_MARKET.name}`,
   });
 
-  const [currentLocale, setCurrentLocaleState] = useState<string>(() => {
-    return (
-      storageService.getUserLocale() ||
-      effectiveConfig.localization.defaultLocale
-    );
-  });
+  const [currentLocale, setCurrentLocaleState] = useState<string>(
+    resolveShippedLocale(INITIAL_DEFAULT_CONFIG.localization.defaultLocale),
+  );
 
-  const [currentCurrency, setCurrentCurrencyState] = useState<string>(() => {
-    return (
-      storageService.getUserCurrency() ||
-      effectiveConfig.localization.defaultCurrency
-    );
-  });
+  const [currentCurrency, setCurrentCurrencyState] = useState<string>(
+    INITIAL_DEFAULT_CONFIG.localization.defaultCurrency,
+  );
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
+
+  useEffect(() => {
+    const restoredMarket = marketService.getMarket(
+      storageService.getActiveMarketCode() || INITIAL_DEFAULT_MARKET.code,
+    );
+    const restoredConfig = marketService.getEffectiveConfig(
+      restoredMarket.code,
+    );
+    const restoredLocation = storageService.getLocationPreference();
+
+    setActiveMarketCode(restoredMarket.code);
+    setLocationState(
+      restoredLocation?.city
+        ? restoredLocation
+        : {
+            city: `Toute la ${restoredMarket.name}`,
+            postalCode: "",
+            radiusKm: 0,
+            label: `Toute la ${restoredMarket.name}`,
+          },
+    );
+    setCurrentLocaleState(
+      resolveShippedLocale(
+        storageService.getUserLocale() ||
+          restoredConfig.localization.defaultLocale,
+      ),
+    );
+    setCurrentCurrencyState(
+      storageService.getUserCurrency() ||
+        restoredConfig.localization.defaultCurrency,
+    );
+    setHasRestoredPreferences(true);
+  }, []);
 
   const openLocationModal = useCallback(() => {
     setIsLocationModalOpen(true);
@@ -144,25 +189,31 @@ export const MarketLocationProvider: React.FC<{
 
   // Sync when market changes if no explicit user override
   useEffect(() => {
+    if (!hasRestoredPreferences) return;
     const userLocale = storageService.getUserLocale();
-    if (!userLocale) {
-      setCurrentLocaleState(effectiveConfig.localization.defaultLocale);
+    const nextLocale = resolveShippedLocale(
+      userLocale || effectiveConfig.localization.defaultLocale,
+    );
+    setCurrentLocaleState(nextLocale);
+    if (userLocale && userLocale !== nextLocale) {
+      storageService.saveUserLocale(nextLocale);
     }
     const userCurr = storageService.getUserCurrency();
     if (!userCurr) {
       setCurrentCurrencyState(effectiveConfig.localization.defaultCurrency);
     }
-  }, [effectiveConfig]);
+  }, [effectiveConfig, hasRestoredPreferences]);
 
   const setLocale = useCallback((locale: string) => {
-    setCurrentLocaleState(locale);
-    storageService.saveUserLocale(locale);
+    const shippedLocale = resolveShippedLocale(locale);
+    setCurrentLocaleState(shippedLocale);
+    storageService.saveUserLocale(shippedLocale);
     /* Taxonomy labels are resolved into the index when it is built, so the tree
        has to be rebuilt for a language change to reach category names. Without
        this, switching language re-rendered the chrome in English and left every
        category in the language the app happened to boot in. */
     taxonomyService.reload();
-    refreshTaxonomyProjection(locale);
+    refreshTaxonomyProjection(shippedLocale);
   }, []);
 
   // Keep the document language in sync with the active locale. Screen readers
@@ -170,7 +221,7 @@ export const MarketLocationProvider: React.FC<{
   // index.html no matter what the user selected.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.documentElement.lang = currentLocale.slice(0, 2);
+    document.documentElement.lang = currentLocale;
   }, [currentLocale]);
 
   const setCurrency = useCallback((currency: string) => {
@@ -214,12 +265,8 @@ export const MarketLocationProvider: React.FC<{
   }, [activeMarket]);
 
   const currencySymbol = useMemo<string>(() => {
-    if (currentCurrency === "EUR") return "€";
-    if (currentCurrency === "USD") return "$";
-    if (currentCurrency === "GBP") return "£";
-    if (currentCurrency === "CHF") return "CHF";
-    return currentCurrency;
-  }, [currentCurrency]);
+    return formatCurrencySymbol(currentCurrency, currentLocale);
+  }, [currentCurrency, currentLocale]);
 
   const formatPrice = useCallback(
     (

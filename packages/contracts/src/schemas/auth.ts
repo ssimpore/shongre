@@ -7,6 +7,17 @@ import {
   STAFF_ROLES,
 } from "../access-control";
 
+export const AUTH_CONSTRAINTS = {
+  passwordMinLength: 6,
+  phoneMinLength: 8,
+  verificationCodeLength: 6,
+  verificationCodeLifetimeMinutes: 10,
+  verificationCodeMaxAttempts: 5,
+  verificationCodeResendCooldownSeconds: 60,
+  backupCodeCount: 8,
+  reauthenticationLifetimeMinutes: 10,
+} as const;
+
 export const authUserSchema = z.object({
   id: z.string().min(1),
   email: z.string().email(),
@@ -21,9 +32,12 @@ export const authUserSchema = z.object({
 export type AuthUser = z.infer<typeof authUserSchema>;
 export const loginRequestSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  password: z.string().min(AUTH_CONSTRAINTS.passwordMinLength),
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
+export const verificationCodeSchema = z
+  .string()
+  .regex(new RegExp(`^\\d{${AUTH_CONSTRAINTS.verificationCodeLength}}$`));
 export const authSessionSchema = z.object({
   user: authUserSchema,
   token: z.string().min(1),

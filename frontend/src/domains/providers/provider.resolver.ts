@@ -12,6 +12,7 @@ import {
   CapabilityHealthResult,
   ProviderImpactAnalysis,
   ProviderRoutingRule,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "./provider.types";
 import {
   CANONICAL_PROVIDER_REGISTRY,
@@ -19,6 +20,7 @@ import {
 } from "./provider.registry";
 import { getCapabilityMetadata } from "./provider-capabilities";
 import { isDemoMode } from "../../api/client/data-mode.service";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 export class ProviderResolver {
   /**
@@ -32,10 +34,10 @@ export class ProviderResolver {
     const config = configurations[providerId];
     if (!config) return false;
 
-    const normMarket = (marketCode || "FR").toUpperCase();
+    const normMarket = (marketCode || DEFAULT_MARKET_CODE).toUpperCase();
 
     // 1. France is canonical baseline
-    if (normMarket === "FR") {
+    if (normMarket === DEFAULT_MARKET_CODE) {
       return config.enabled;
     }
 
@@ -58,17 +60,18 @@ export class ProviderResolver {
     configurations: Record<string, ProviderConfiguration>,
   ): number {
     const config = configurations[providerId];
-    if (!config) return 999;
+    if (!config)
+      return PROVIDER_CONFIGURATION_CONSTRAINTS.unconfiguredSortPriority;
 
-    const normMarket = (marketCode || "FR").toUpperCase();
-    if (normMarket !== "FR") {
+    const normMarket = (marketCode || DEFAULT_MARKET_CODE).toUpperCase();
+    if (normMarket !== DEFAULT_MARKET_CODE) {
       const override = config.marketOverrides?.[normMarket];
       if (override && override.priority !== undefined) {
         return override.priority;
       }
     }
 
-    return config.priority ?? 1;
+    return config.priority ?? PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min;
   }
 
   /**
@@ -82,10 +85,10 @@ export class ProviderResolver {
     const config = configurations[providerId];
     if (!config) return {};
 
-    const normMarket = (marketCode || "FR").toUpperCase();
+    const normMarket = (marketCode || DEFAULT_MARKET_CODE).toUpperCase();
     const baseSettings = config.settings || {};
 
-    if (normMarket === "FR") {
+    if (normMarket === DEFAULT_MARKET_CODE) {
       return { ...baseSettings };
     }
 
@@ -109,7 +112,11 @@ export class ProviderResolver {
     configurations: Record<string, ProviderConfiguration>;
     routingRules?: Record<string, ProviderRoutingRule>;
   }): EffectiveProviderResolution {
-    const { capability, marketCode = "FR", configurations } = params;
+    const {
+      capability,
+      marketCode = DEFAULT_MARKET_CODE,
+      configurations,
+    } = params;
     const normMarket = marketCode.toUpperCase();
 
     // Find all providers registered for this capability
@@ -144,7 +151,7 @@ export class ProviderResolver {
         primaryConfig: null,
         fallbackProvider: null,
         fallbackConfig: null,
-        isInheritedFromFrance: normMarket !== "FR",
+        isInheritedFromBaseline: normMarket !== DEFAULT_MARKET_CODE,
         effectiveHealth: "unavailable",
         reason: `Aucun prestataire actif configuré pour ${capability} sur le marché ${normMarket}.`,
       };
@@ -164,9 +171,9 @@ export class ProviderResolver {
       ? configurations[fallback.id] || null
       : null;
 
-    // Check if configuration is inherited from France
+    // Check if configuration is inherited from the baseline market.
     let isInherited = false;
-    if (normMarket !== "FR") {
+    if (normMarket !== DEFAULT_MARKET_CODE) {
       const override = primaryConfig?.marketOverrides?.[normMarket];
       isInherited =
         !override ||
@@ -194,7 +201,7 @@ export class ProviderResolver {
       primaryConfig,
       fallbackProvider: fallback,
       fallbackConfig,
-      isInheritedFromFrance: isInherited,
+      isInheritedFromBaseline: isInherited,
       effectiveHealth,
     };
   }
@@ -207,7 +214,11 @@ export class ProviderResolver {
     marketCode?: string;
     configurations: Record<string, ProviderConfiguration>;
   }): CapabilityHealthResult {
-    const { capability, marketCode = "FR", configurations } = params;
+    const {
+      capability,
+      marketCode = DEFAULT_MARKET_CODE,
+      configurations,
+    } = params;
     const capMeta = getCapabilityMetadata(capability);
     const resolution = this.resolveEffectiveProviders({
       capability,
@@ -224,7 +235,7 @@ export class ProviderResolver {
         activeProviderName: resolution.primaryProvider?.name || "Non configuré",
         activeProviderId: resolution.primaryProvider?.id || "",
         isFallbackActive: false,
-        isInherited: resolution.isInheritedFromFrance,
+        isInherited: resolution.isInheritedFromBaseline,
         message: resolution.reason || "Service non disponible dans ce marché.",
       };
     }
@@ -270,7 +281,7 @@ export class ProviderResolver {
       activeProviderName: activeProvider.name,
       activeProviderId: activeProvider.id,
       isFallbackActive: isFallbackRunning,
-      isInherited: resolution.isInheritedFromFrance,
+      isInherited: resolution.isInheritedFromBaseline,
       message: isFallbackRunning
         ? `Secours actif (${activeProvider.name}) car le prestataire principal est indisponible.`
         : undefined,
@@ -289,8 +300,14 @@ export class ProviderResolver {
     const {
       providerId,
       configurations,
-      targetMarketCode = "FR",
-      allMarkets = ["FR", "BE", "CH", "ES", "LU", "DE"],
+      targetMarketCode = DEFAULT_MARKET_CODE,
+      allMarkets = [
+        ...new Set(
+          CANONICAL_PROVIDER_REGISTRY.flatMap((provider) =>
+            provider.supportedMarkets.filter((code) => code !== "*"),
+          ),
+        ),
+      ],
     } = params;
     const provider = getProviderById(providerId);
 
@@ -330,9 +347,9 @@ export class ProviderResolver {
         });
 
         if (resolution.primaryProvider?.id === providerId) {
-          if (mCode === "FR") {
-            directlyAffectedMarkets.push("FR");
-          } else if (resolution.isInheritedFromFrance) {
+          if (mCode === DEFAULT_MARKET_CODE) {
+            directlyAffectedMarkets.push(DEFAULT_MARKET_CODE);
+          } else if (resolution.isInheritedFromBaseline) {
             if (!inheritedMarketsAffected.includes(mCode)) {
               inheritedMarketsAffected.push(mCode);
             }
@@ -366,11 +383,11 @@ export class ProviderResolver {
     }
 
     if (
-      directlyAffectedMarkets.includes("FR") &&
+      directlyAffectedMarkets.includes(DEFAULT_MARKET_CODE) &&
       inheritedMarketsAffected.length > 0
     ) {
       warnings.push(
-        `La modification en France impactera automatiquement ${inheritedMarketsAffected.length} marché(s) dépendant(s) : ${inheritedMarketsAffected.join(", ")}.`,
+        `La modification du marché de référence ${DEFAULT_MARKET_CODE} impactera automatiquement ${inheritedMarketsAffected.length} marché(s) dépendant(s) : ${inheritedMarketsAffected.join(", ")}.`,
       );
     }
 

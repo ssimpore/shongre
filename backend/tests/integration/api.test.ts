@@ -5,6 +5,7 @@ import {
   DEMO_ACCOUNT_PASSWORD,
 } from "../../src/app/bootstrap/seed-demo-credentials.js";
 import { Server } from "http";
+import { generateTotpCode } from "../../src/modules/auth/mfa.service.js";
 
 describe("API v1 Endpoints Integration", () => {
   let server: Server;
@@ -34,6 +35,31 @@ describe("API v1 Endpoints Integration", () => {
     return (await res.json()).token;
   }
 
+  async function loginStaff(email: string): Promise<string> {
+    const token = await login(email);
+    const setupResponse = await fetch(`${baseUrl}/api/v1/auth/mfa/setup`, {
+      method: "POST",
+      headers: auth(token),
+    });
+    if (setupResponse.status !== 200) {
+      throw new Error(
+        `MFA setup failed for ${email}: ${setupResponse.status} ${await setupResponse.text()}`,
+      );
+    }
+    const setup = await setupResponse.json();
+    const confirmResponse = await fetch(`${baseUrl}/api/v1/auth/mfa/confirm`, {
+      method: "POST",
+      headers: auth(token),
+      body: JSON.stringify({ code: generateTotpCode(setup.secret) }),
+    });
+    if (confirmResponse.status !== 200) {
+      throw new Error(
+        `MFA confirmation failed for ${email}: ${confirmResponse.status} ${await confirmResponse.text()}`,
+      );
+    }
+    return token;
+  }
+
   const auth = (token: string) => ({
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -54,11 +80,11 @@ describe("API v1 Endpoints Integration", () => {
 
     buyerToken = await login("thomas.laurent@example.fr");
     proToken = await login("recrutement@technova.fr");
-    adminToken = await login("admin@shongre.com");
-    moderatorToken = await login("moderation@shongre.com");
-    trustToken = await login("trust@shongre.com");
-    complianceToken = await login("compliance@shongre.com");
-    financeToken = await login("finance@shongre.com");
+    adminToken = await loginStaff("admin@shongre.com");
+    moderatorToken = await loginStaff("moderation@shongre.com");
+    trustToken = await loginStaff("trust@shongre.com");
+    complianceToken = await loginStaff("compliance@shongre.com");
+    financeToken = await loginStaff("finance@shongre.com");
   });
 
   afterAll(async () => {

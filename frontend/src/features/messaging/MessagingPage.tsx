@@ -34,9 +34,17 @@ import { Button } from "../../design-system/primitives/Button";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import type { MessageComposerOptions } from "../../api/contracts/messaging.contract";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+
+const EMPTY_COMPOSER_OPTIONS: MessageComposerOptions = {
+  attachmentOptions: [],
+  quickReplies: [],
+};
 
 export const MessagingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   usePageMeta({
     title: t("meta.messaging.title"),
     description: t("meta.messaging.description"),
@@ -60,6 +68,8 @@ export const MessagingPage: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<InboxFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [composerOptions, setComposerOptions] =
+    useState<MessageComposerOptions>(EMPTY_COMPOSER_OPTIONS);
 
   // Modals & Popovers
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
@@ -164,6 +174,29 @@ export const MessagingPage: React.FC = () => {
       }
     });
   }, [activeConvId, currentUserId]);
+
+  useEffect(() => {
+    if (!activeConvId) {
+      setComposerOptions(EMPTY_COMPOSER_OPTIONS);
+      return;
+    }
+
+    let cancelled = false;
+    services.messaging
+      .getComposerOptions({
+        conversationId: activeConvId,
+        userId: currentUserId,
+        isProfessional: isPro,
+        locale,
+      })
+      .then((options) => {
+        if (!cancelled) setComposerOptions(options);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeConvId, currentUserId, isPro, locale]);
 
   // 3. Real-time Subscription to Active Conversation
   useEffect(() => {
@@ -273,7 +306,7 @@ export const MessagingPage: React.FC = () => {
           m.id === clientMsgId ? { ...m, status: "failed" } : m,
         ),
       );
-      toast.error("Échec de l'envoi du message.");
+      toast.error(t("messaging.messagingPage.sendFailed"));
     }
   };
 
@@ -345,27 +378,81 @@ export const MessagingPage: React.FC = () => {
 
   const handleSendOffer = async (amount: number) => {
     if (!activeConvId) return;
-    await services.messaging.makeOffer(
+    const offer = await services.messaging.makeOffer(
       activeConvId,
       currentUserId,
       currentUser?.name || "Moi",
       amount,
     );
-    toast.success(`Offre de ${amount} € transmise au vendeur !`);
+    const timelineOffer = messagingService.mapMessageToTimelineItem(offer);
+    setTimelineItems((previous) =>
+      previous.some((item) => item.id === offer.id)
+        ? previous
+        : [...previous, timelineOffer],
+    );
+    toast.success(
+      t("messaging.messagingPage.offerSent", { price: formatPrice(amount) }),
+    );
     loadConversations();
   };
 
-  const handleRespondOffer = async (accept: boolean, amount?: number) => {
+  const handleRespondOffer = async (
+    offerId: string,
+    accept: boolean,
+    amount?: number,
+  ) => {
     if (!activeConvId) return;
-    await services.messaging.respondToOffer(
-      activeConvId,
+    const updated = await services.messaging.respondToOffer(
+      offerId,
       currentUserId,
       currentUser?.name || "Moi",
       accept,
     );
-    toast.success(
-      accept ? `Offre acceptée à ${amount} € !` : "Offre déclinée.",
+    setTimelineItems((previous) =>
+      previous.map((item) =>
+        item.id === offerId
+          ? messagingService.mapMessageToTimelineItem(updated)
+          : item,
+      ),
     );
+    const messages = await services.messaging.getMessages(activeConvId);
+    setTimelineItems(
+      messages.map((message) =>
+        messagingService.mapMessageToTimelineItem(message),
+      ),
+    );
+    toast.success(
+      accept
+        ? amount !== undefined
+          ? t("messaging.messagingPage.offerAccepted", {
+              price: formatPrice(amount),
+            })
+          : t("messaging.messagingPage.offerAcceptedGeneric")
+        : t("messaging.messagingPage.offerDeclined"),
+    );
+    loadConversations();
+  };
+
+  const handleWithdrawOffer = async (offerId: string) => {
+    if (!activeConvId) return;
+    const updated = await services.messaging.withdrawOffer(
+      offerId,
+      currentUserId,
+    );
+    setTimelineItems((previous) =>
+      previous.map((item) =>
+        item.id === offerId
+          ? messagingService.mapMessageToTimelineItem(updated)
+          : item,
+      ),
+    );
+    const messages = await services.messaging.getMessages(activeConvId);
+    setTimelineItems(
+      messages.map((message) =>
+        messagingService.mapMessageToTimelineItem(message),
+      ),
+    );
+    toast.info("Offre retirée.");
     loadConversations();
   };
 
@@ -409,7 +496,10 @@ export const MessagingPage: React.FC = () => {
     // the thread stayed full height and pushed the input behind the keyboard, so
     // the user could not see what they were typing. The minimum height only
     // applies from `md` up, where there is no virtual keyboard.
-    <div className="bg-white rounded-3xl border border-border-base overflow-hidden shadow-xs h-[calc(100dvh-140px)] md:min-h-[600px] max-h-[850px] flex flex-col md:flex-row relative">
+    <div
+      data-messaging-shell
+      className="relative flex h-messaging-shell-height-mobile max-h-messaging-shell-max min-h-0 flex-col overflow-hidden rounded-overlay border border-border-base bg-bg-surface shadow-xs md:h-messaging-shell-height-desktop md:min-h-messaging-shell-min md:flex-row"
+    >
       {/* Inbox with nothing in it at all — not merely filtered to nothing.
           Splitting this across two panes produced a list saying "Aucune
           conversation trouvée" beside a pane saying "choisissez une conversation
@@ -512,6 +602,7 @@ export const MessagingPage: React.FC = () => {
                   onOpenImage={(url) => setLightboxImageUrl(url)}
                   onRetryMessage={handleRetryMessage}
                   onRespondOffer={handleRespondOffer}
+                  onWithdrawOffer={handleWithdrawOffer}
                 />
 
                 {/* Message Composer */}
@@ -519,7 +610,8 @@ export const MessagingPage: React.FC = () => {
                   onSendMessage={handleSendMessage}
                   onTyping={handleTyping}
                   capabilities={capabilities}
-                  isPro={isPro}
+                  attachmentOptions={composerOptions.attachmentOptions}
+                  quickReplies={composerOptions.quickReplies}
                 />
               </>
             ) : (
@@ -672,7 +764,7 @@ export const MessagingPage: React.FC = () => {
             src={lightboxImageUrl}
             alt={t("messaging.messagingPage.vuePleinEcran")}
             sizes="90vw"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl border border-white/10"
+            className="max-h-dialog-viewport-max-height max-w-dialog-viewport-max-width object-contain rounded-2xl shadow-2xl border border-white/10"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

@@ -19,6 +19,21 @@ interface DecodedMessageCursor {
   id: string;
 }
 
+export interface CreateMarketplaceOfferInput {
+  conversationId: string;
+  actorId: string;
+  amountMinor: number;
+  currency: string;
+  messageText: string;
+  expiresAt: string;
+  parentOfferId?: string;
+}
+
+export interface MarketplaceOfferTransitionResult {
+  offerMessage: Message;
+  eventMessage?: Message;
+}
+
 const encodeMessageCursor = (message: Pick<Message, "createdAt" | "id">) =>
   Buffer.from(
     JSON.stringify({ createdAt: message.createdAt, id: message.id }),
@@ -62,6 +77,18 @@ export interface IMessagingRepository {
     sellerId: string,
   ): Promise<Conversation>;
   saveMessage(message: Message): Promise<Message>;
+  createMarketplaceOffer(input: CreateMarketplaceOfferInput): Promise<Message>;
+  respondToMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    decision: "accepted" | "declined";
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult>;
+  withdrawMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult>;
   getMessages(
     conversationId: string,
     options?: MessagePageOptions,
@@ -167,6 +194,153 @@ export class DemoMessagingRepository implements IMessagingRepository {
     return { ...message };
   }
 
+  async createMarketplaceOffer(
+    input: CreateMarketplaceOfferInput,
+  ): Promise<Message> {
+    const conversation = this.conversations.get(input.conversationId);
+    if (!conversation) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Conversation introuvable.",
+      });
+    }
+    if (
+      conversation.buyerId !== input.actorId &&
+      conversation.sellerId !== input.actorId
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Accès interdit à cette conversation.",
+      });
+    }
+    const now = new Date().toISOString();
+    const messages = this.messages.get(input.conversationId) || [];
+    for (const message of messages) {
+      if (
+        message.isOffer &&
+        message.offerStatus === "pending" &&
+        message.offerExpiresAt &&
+        message.offerExpiresAt <= now
+      ) {
+        message.offerStatus = "expired";
+      }
+    }
+    const pending = messages.find(
+      (message) => message.isOffer && message.offerStatus === "pending",
+    );
+    if (pending && pending.id !== input.parentOfferId) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Une offre est déjà en attente dans cette conversation.",
+      });
+    }
+    if (input.parentOfferId) {
+      if (!pending || pending.senderId === input.actorId) {
+        throw new AppError({
+          code: "FORBIDDEN",
+          message: "Seul le destinataire peut faire une contre-offre.",
+        });
+      }
+      pending.offerStatus = "countered";
+    }
+    const offer: Message = {
+      id: randomUUID(),
+      conversationId: input.conversationId,
+      senderId: input.actorId,
+      text: input.messageText,
+      isOffer: true,
+      offerPrice: input.amountMinor / 100,
+      offerAmountMinor: input.amountMinor,
+      offerCurrency: input.currency,
+      offerStatus: "pending",
+      offerExpiresAt: input.expiresAt,
+      createdAt: now,
+    };
+    offer.offerId = offer.id;
+    return this.saveMessage(offer);
+  }
+
+  async respondToMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    decision: "accepted" | "declined";
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult> {
+    const offer = this.findDemoOffer(input.offerId);
+    const conversation = this.conversations.get(offer.conversationId)!;
+    const recipientId =
+      offer.senderId === conversation.buyerId
+        ? conversation.sellerId
+        : conversation.buyerId;
+    if (recipientId !== input.actorId) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Seul le destinataire peut répondre à cette offre.",
+      });
+    }
+    if (offer.offerStatus !== "pending") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette offre n’est plus en attente.",
+      });
+    }
+    if (
+      offer.offerExpiresAt &&
+      offer.offerExpiresAt <= new Date().toISOString()
+    ) {
+      offer.offerStatus = "expired";
+      return { offerMessage: { ...offer } };
+    }
+    offer.offerStatus = input.decision;
+    const eventMessage = await this.saveMessage({
+      id: randomUUID(),
+      conversationId: offer.conversationId,
+      senderId: input.actorId,
+      text: input.messageText,
+      createdAt: new Date().toISOString(),
+    });
+    return { offerMessage: { ...offer }, eventMessage };
+  }
+
+  async withdrawMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult> {
+    const offer = this.findDemoOffer(input.offerId);
+    if (offer.senderId !== input.actorId) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Seul l’auteur peut retirer cette offre.",
+      });
+    }
+    if (offer.offerStatus !== "pending") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette offre n’est plus en attente.",
+      });
+    }
+    offer.offerStatus = "withdrawn";
+    const eventMessage = await this.saveMessage({
+      id: randomUUID(),
+      conversationId: offer.conversationId,
+      senderId: input.actorId,
+      text: input.messageText,
+      createdAt: new Date().toISOString(),
+    });
+    return { offerMessage: { ...offer }, eventMessage };
+  }
+
+  private findDemoOffer(offerId: string): Message {
+    for (const messages of this.messages.values()) {
+      const offer = messages.find(
+        (message) => message.id === offerId && message.isOffer,
+      );
+      if (offer) return offer;
+    }
+    throw new AppError({ code: "NOT_FOUND", message: "Offre introuvable." });
+  }
+
   async getMessages(
     conversationId: string,
     options: MessagePageOptions = {},
@@ -234,7 +408,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
 
 export class PostgresMessagingRepository implements IMessagingRepository {
   private static readonly CONVERSATION_PROJECTION =
-    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,status,images), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
+    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,currency,status,images), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
 
   private mapRowToConversation(row: any): Conversation {
     const mapParticipant = (profile: any): Partial<UserProfile> | undefined =>
@@ -262,6 +436,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
             id: row.listings.id,
             title: row.listings.title,
             price: Number(row.listings.price || 0),
+            currency: row.listings.currency || undefined,
             status: row.listings.status,
             images: Array.isArray(row.listings.images)
               ? row.listings.images
@@ -285,6 +460,13 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       attachments: Array.isArray(row.attachments) ? row.attachments : [],
       isOffer: Boolean(row.is_offer),
       offerPrice: row.offer_price ? Number(row.offer_price) : undefined,
+      offerId: row.offer_id || undefined,
+      offerAmountMinor:
+        row.offer_amount_minor !== null && row.offer_amount_minor !== undefined
+          ? Number(row.offer_amount_minor)
+          : undefined,
+      offerCurrency: row.offer_currency || undefined,
+      offerExpiresAt: row.offer_expires_at || undefined,
       offerStatus: row.offer_status || undefined,
       isPickupProposal: Boolean(row.is_pickup_proposal),
       pickupDetails: row.pickup_details || undefined,
@@ -366,6 +548,10 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       is_offer: Boolean(message.isOffer),
       offer_price: message.offerPrice || null,
       offer_status: message.offerStatus || null,
+      offer_id: message.offerId || null,
+      offer_amount_minor: message.offerAmountMinor || null,
+      offer_currency: message.offerCurrency || null,
+      offer_expires_at: message.offerExpiresAt || null,
       is_pickup_proposal: Boolean(message.isPickupProposal),
       pickup_details: message.pickupDetails || null,
       created_at: message.createdAt,
@@ -399,6 +585,102 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     return this.mapRowToMessage(data);
   }
 
+  async createMarketplaceOffer(
+    input: CreateMarketplaceOfferInput,
+  ): Promise<Message> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "create_marketplace_offer",
+      {
+        p_conversation_id: input.conversationId,
+        p_actor_id: input.actorId,
+        p_amount_minor: input.amountMinor,
+        p_currency: input.currency,
+        p_message_text: input.messageText,
+        p_expires_at: input.expiresAt,
+        p_parent_offer_id: input.parentOfferId || null,
+      },
+    );
+    if (error || !data?.offer_message) {
+      this.marketplaceOfferFailure("create", error);
+    }
+    return this.mapRowToMessage(data.offer_message);
+  }
+
+  async respondToMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    decision: "accepted" | "declined";
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "respond_marketplace_offer",
+      {
+        p_offer_id: input.offerId,
+        p_actor_id: input.actorId,
+        p_decision: input.decision,
+        p_message_text: input.messageText,
+      },
+    );
+    if (error || !data?.offer_message) {
+      this.marketplaceOfferFailure("respond", error);
+    }
+    return {
+      offerMessage: this.mapRowToMessage(data.offer_message),
+      eventMessage: data.event_message
+        ? this.mapRowToMessage(data.event_message)
+        : undefined,
+    };
+  }
+
+  async withdrawMarketplaceOffer(input: {
+    offerId: string;
+    actorId: string;
+    messageText: string;
+  }): Promise<MarketplaceOfferTransitionResult> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "withdraw_marketplace_offer",
+      {
+        p_offer_id: input.offerId,
+        p_actor_id: input.actorId,
+        p_message_text: input.messageText,
+      },
+    );
+    if (error || !data?.offer_message) {
+      this.marketplaceOfferFailure("withdraw", error);
+    }
+    return {
+      offerMessage: this.mapRowToMessage(data.offer_message),
+      eventMessage: data.event_message
+        ? this.mapRowToMessage(data.event_message)
+        : undefined,
+    };
+  }
+
+  private marketplaceOfferFailure(
+    operation: string,
+    error: { code?: string; message?: string } | null,
+  ): never {
+    if (error?.code === "42501") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Action interdite sur cette offre.",
+      });
+    }
+    if (error?.code === "P0002") {
+      throw new AppError({ code: "NOT_FOUND", message: "Offre introuvable." });
+    }
+    if (error?.code === "23505" || error?.code === "23514") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette offre n’est plus modifiable.",
+      });
+    }
+    databaseFailure(`messaging.offer.${operation}`, error);
+  }
+
   async getMessages(
     conversationId: string,
     options: MessagePageOptions = {},
@@ -410,7 +692,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       let query = supabase
         .from("messages")
         .select(
-          "id, conversation_id, sender_id, text, attachments, is_offer, offer_price, offer_status, is_pickup_proposal, pickup_details, created_at",
+          "id, conversation_id, sender_id, text, attachments, is_offer, offer_price, offer_status, offer_id, offer_amount_minor, offer_currency, offer_expires_at, is_pickup_proposal, pickup_details, created_at",
         )
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: false })

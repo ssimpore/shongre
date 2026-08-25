@@ -1,5 +1,8 @@
 import type { MonetizationOrder } from "@shongre/contracts/monetization";
-import { PaymentsServiceContract } from "../../contracts/payments.contract";
+import {
+  PAYOUT_REQUEST_CONSTRAINTS,
+  PaymentsServiceContract,
+} from "../../contracts/payments.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { deterministicDemoId } from "./demo-identifiers";
 
@@ -32,6 +35,8 @@ export class DemoPaymentsService implements PaymentsServiceContract {
     idempotencyKey: string;
   }) {
     await simulateNetworkDelay();
+    if (input.amountMinor < PAYOUT_REQUEST_CONSTRAINTS.minimumAmountMinor)
+      throw new Error("Le montant du virement est inférieur au minimum.");
     return {
       payoutId: deterministicDemoId("po_demo", [input]),
       status: "completed" as const,

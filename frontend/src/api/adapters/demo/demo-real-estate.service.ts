@@ -9,14 +9,20 @@ import type {
   PropertyPrivate,
   PropertySearchQuery,
 } from "@shongre/contracts/real-estate";
+import {
+  REAL_ESTATE_CONSTRAINTS,
+  REAL_ESTATE_SCHEMA_VERSION,
+} from "@shongre/contracts/real-estate";
 import { applyMonetizationToRealEstateCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
   PropertyLeadDraft,
+  PropertyPublicationDraftData,
   RealEstateServiceContract,
 } from "../../contracts/real-estate.contract";
+import { minutesToMilliseconds } from "../../../utilities/time";
 import {
   IMMO_DEMO_ADMIN,
   IMMO_DEMO_APPOINTMENTS,
@@ -30,8 +36,60 @@ import {
   IMMO_DEMO_WORKSPACE,
   toPublicProperty,
 } from "../../../mocks/realEstateDemoData";
+import { storageService } from "../../../services/storage.service";
 
 const clone = <T>(value: T): T => structuredClone(value);
+const propertyDraftKey = (draftId: string) =>
+  `shongre_property_draft_v2:${draftId}`;
+const activePropertyDraftKey = (ownerUserId: string) =>
+  `shongre_property_active_draft_v2:${ownerUserId}`;
+
+const createDemoPublicationData = (
+  marketCode: string,
+  sellerDisplayName?: string,
+): PropertyPublicationDraftData => {
+  const source = IMMO_DEMO_DRAFT_DATA;
+  return {
+    transactionType: source.transactionType,
+    propertyType: source.propertyType,
+    marketCodes: [marketCode],
+    city: source.address.city,
+    postalCode: source.address.postalCode,
+    publicLabel: source.address.publicLabel,
+    exactAddress: source.address.exactAddress || "",
+    latitude: source.address.latitude,
+    longitude: source.address.longitude,
+    locationPrecision:
+      source.address.precision === "exact"
+        ? "street"
+        : source.address.precision,
+    livingAreaSquareMeters: source.characteristics.livingAreaSquareMeters,
+    landAreaSquareMeters: source.characteristics.landAreaSquareMeters || 0,
+    rooms: source.characteristics.rooms,
+    bedrooms: source.characteristics.bedrooms,
+    bathrooms: source.characteristics.bathrooms,
+    amenities: [...source.characteristics.amenities],
+    condition: source.characteristics.condition,
+    isFurnished: Boolean(source.characteristics.isFurnished),
+    priceMinor: source.financials.price.amountMinor,
+    chargesMinor: source.regulatory?.annualCoOwnershipCharges?.amountMinor || 0,
+    period: source.financials.period,
+    feesPaidBy: source.financials.feesPaidBy || "seller",
+    dpeClass: source.energy?.dpeClass || "",
+    gesClass: source.energy?.gesClass || "",
+    coOwnershipApplicable: source.regulatory?.coOwnershipApplicable || false,
+    coOwnershipLots: source.regulatory?.coOwnershipLots || 0,
+    ownershipDeclared: source.regulatory?.ownershipDeclared || false,
+    title: source.title,
+    description: source.description,
+    mediaUrls: [...source.media.photos],
+    privateDocumentKeys: [],
+    sellerType: source.seller.type,
+    sellerDisplayName: sellerDisplayName || source.seller.displayName,
+    offerId: source.offerId,
+    addOnIds: [],
+  };
+};
 
 function matches(query: PropertySearchQuery, property: PropertyPrivate) {
   if (
@@ -306,22 +364,55 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     this.recentlyViewed.set(accountId, next);
   }
 
+  async getOrCreateDraft(
+    ownerUserId: string,
+    marketCode: string,
+    sellerDisplayName?: string,
+  ) {
+    await simulateNetworkDelay();
+    const activeId = storageService.get(
+      activePropertyDraftKey(ownerUserId),
+      `demo-property-draft-${ownerUserId}`,
+    );
+    const existing =
+      this.drafts.get(activeId) ||
+      storageService.get<PropertyDraft | null>(
+        propertyDraftKey(activeId),
+        null,
+      );
+    const draft: PropertyDraft = existing || {
+      id: activeId,
+      ownerUserId,
+      schemaVersion: REAL_ESTATE_SCHEMA_VERSION,
+      marketCode,
+      currentStep: REAL_ESTATE_CONSTRAINTS.publication.firstStep,
+      completedSteps: [],
+      data: createDemoPublicationData(marketCode, sellerDisplayName),
+      validationIssues: [],
+      updatedAt: IMMO_DEMO_NOW,
+    };
+    return this.saveDraft({ ...draft, ownerUserId, marketCode });
+  }
+
   async getDraft(draftId: string) {
     await simulateNetworkDelay();
-    const draft = this.drafts.get(draftId);
+    const draft =
+      this.drafts.get(draftId) ||
+      storageService.get<PropertyDraft | null>(propertyDraftKey(draftId), null);
     if (draft) return clone(draft);
     const seeded: PropertyDraft = {
       id: draftId,
       ownerUserId: "owner_marie",
-      schemaVersion: 1,
+      schemaVersion: REAL_ESTATE_SCHEMA_VERSION,
       marketCode: "FR",
-      currentStep: 1,
+      currentStep: REAL_ESTATE_CONSTRAINTS.publication.firstStep,
       completedSteps: [],
       data: clone(IMMO_DEMO_DRAFT_DATA),
       validationIssues: [],
       updatedAt: IMMO_DEMO_NOW,
     };
     this.drafts.set(draftId, seeded);
+    storageService.set(propertyDraftKey(draftId), seeded);
     return clone(seeded);
   }
 
@@ -329,13 +420,19 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     await simulateNetworkDelay();
     const next = clone({ ...draft, updatedAt: IMMO_DEMO_NOW });
     this.drafts.set(next.id, next);
+    storageService.set(propertyDraftKey(next.id), next);
+    storageService.set(activePropertyDraftKey(next.ownerUserId), next.id);
     return clone(next);
   }
 
   async submitDraft(draftId: string) {
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
-    if (!draft || draft.completedSteps.length < 9)
+    if (
+      !draft ||
+      draft.completedSteps.length <
+        REAL_ESTATE_CONSTRAINTS.publication.requiredCompletedSteps
+    )
       throw new Error("Complétez les étapes obligatoires avant l’envoi.");
     const offerId = String(draft.data.offerId || "immo_owner_free");
     const offer = this.catalog.offers.find((row) => row.id === offerId);
@@ -351,10 +448,14 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     ).length;
     if (currentActive >= maxActive)
       throw new Error("Le quota de biens actifs de cette offre est atteint.");
-    return {
+    const result = {
       propertyId: `property_draft_${this.sequence++}`,
       lifecycle: "pending_review" as const,
     };
+    this.drafts.delete(draftId);
+    storageService.remove(propertyDraftKey(draftId));
+    storageService.remove(activePropertyDraftKey(draft.ownerUserId));
+    return result;
   }
 
   async uploadDraftMedia(
@@ -365,8 +466,10 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     await simulateNetworkDelay();
     if (!file.type.startsWith("image/") && file.type !== "application/pdf")
       throw new Error("Format de fichier non pris en charge.");
-    if (file.size > 10 * 1024 * 1024)
-      throw new Error("Le fichier dépasse la limite configurée de 10 Mo.");
+    if (file.size > REAL_ESTATE_CONSTRAINTS.media.maxFileSizeBytes)
+      throw new Error(
+        `Le fichier dépasse la limite configurée de ${REAL_ESTATE_CONSTRAINTS.media.maxFileSizeMegabytes} Mo.`,
+      );
     const safeName = file.name.replaceAll(/[^a-zA-Z0-9._-]/g, "-");
     if (visibility === "private")
       return {
@@ -422,7 +525,12 @@ export class DemoRealEstateService implements RealEstateServiceContract {
       organizationId: lead.organizationId,
       assignedUserId: lead.assignedUserId,
       startsAt: start.toISOString(),
-      endsAt: new Date(start.getTime() + 30 * 60 * 1000).toISOString(),
+      endsAt: new Date(
+        start.getTime() +
+          minutesToMilliseconds(
+            REAL_ESTATE_CONSTRAINTS.appointment.durationMinutes,
+          ),
+      ).toISOString(),
       status: "requested",
     };
     this.appointments.set(visit.id, visit);

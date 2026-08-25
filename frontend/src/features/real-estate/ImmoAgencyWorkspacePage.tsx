@@ -20,6 +20,7 @@ import type {
   AgencyWorkspace,
   PropertyLead,
 } from "@shongre/contracts/real-estate";
+import { REAL_ESTATE_CONSTRAINTS } from "@shongre/contracts/real-estate";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -30,6 +31,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { formatImmoMoney } from "./immo-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
 
@@ -54,6 +56,13 @@ const statusLabels: Record<PropertyLead["status"], string> = {
 };
 
 export const ImmoAgencyWorkspacePage: React.FC = () => {
+  const {
+    currentLocale,
+    formatDate,
+    formatDateTime,
+    formatMoney,
+    formatNumber,
+  } = useRegionalFormatters();
   const toast = useToast();
   const [workspace, setWorkspace] = useState<AgencyWorkspace | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
@@ -185,7 +194,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
   if (loading)
     return (
       <div className="p-5">
-        <Skeleton className="h-[42rem] rounded-card" />
+        <Skeleton className="h-168 rounded-card" />
       </div>
     );
   if (error || !workspace)
@@ -278,7 +287,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               </article>
             ))}
           </section>
-          <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
+          <section className="grid gap-4 xl:grid-cols-agency-content-aside">
             <div className="rounded-card border border-border-base bg-bg-surface p-5">
               <div className="flex items-center justify-between">
                 <div>
@@ -327,7 +336,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 <div className="flex justify-between">
                   <dt className="text-text-muted">Vues</dt>
                   <dd className="font-black">
-                    {workspace.metrics.views.toLocaleString("fr-FR")}
+                    {formatNumber(workspace.metrics.views)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
@@ -367,7 +376,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               </Button>
             </div>
             <ScrollableRegion aria-label="Tableau du portefeuille immobilier">
-              <table className="w-full min-w-[42rem] text-left text-xs">
+              <table className="w-full min-w-168 text-left text-xs">
                 <thead className="bg-bg-subtle text-text-muted">
                   <tr>
                     <th className="p-3">Bien</th>
@@ -387,7 +396,10 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         </p>
                       </td>
                       <td className="p-3 font-bold">
-                        {formatImmoMoney(property.financials.price)}
+                        {formatImmoMoney(
+                          property.financials.price,
+                          currentLocale,
+                        )}
                       </td>
                       <td className="p-3">
                         <Badge
@@ -438,10 +450,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                       </p>
                       <p className="text-micro text-text-muted">
                         Étape {draft.currentStep}/10 · enregistré le{" "}
-                        {new Intl.DateTimeFormat("fr-FR", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        }).format(new Date(draft.updatedAt))}
+                        {formatDateTime(draft.updatedAt)}
                       </p>
                     </div>
                     <Button size="sm" variant="outline" to="/deposer/immo">
@@ -483,7 +492,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             {workspace.leads.map((lead) => (
               <article
                 key={lead.id}
-                className="grid gap-3 rounded-control border border-border-base p-4 md:grid-cols-[minmax(0,1fr)_10rem_10rem]"
+                className="grid gap-3 rounded-control border border-border-base p-4 md:grid-cols-agency-fields"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -549,7 +558,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     ))}
                   </select>
                 </label>
-                <div className="grid gap-3 border-t border-border-subtle pt-3 md:col-span-3 md:grid-cols-[12rem_minmax(0,1fr)]">
+                <div className="grid gap-3 border-t border-border-subtle pt-3 md:col-span-3 md:grid-cols-media-content-md">
                   <label className="text-micro font-bold">
                     Prochain rappel
                     <input
@@ -588,7 +597,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         id={`note-${lead.id}`}
                         className="h-control-md min-w-0 flex-1 rounded-control border border-border-base bg-white px-3 text-xs"
                         value={noteDrafts[lead.id] || ""}
-                        maxLength={4000}
+                        maxLength={REAL_ESTATE_CONSTRAINTS.leadNote.maxLength}
                         placeholder="Ex. rappeler après 18 h"
                         onChange={(event) =>
                           setNoteDrafts((current) => ({
@@ -637,10 +646,10 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               >
                 <div>
                   <p className="text-sm font-black">
-                    {new Intl.DateTimeFormat("fr-FR", {
+                    {formatDate(visit.startsAt, {
                       dateStyle: "full",
                       timeStyle: "short",
-                    }).format(new Date(visit.startsAt))}
+                    })}
                   </p>
                   <p className="mt-1 text-xs text-text-muted">
                     Bien {visit.propertyId} · durée 30 min
@@ -658,7 +667,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       ) : null}
 
       {tab === "imports" ? (
-        <section className="grid gap-4 lg:grid-cols-[19rem_minmax(0,1fr)]">
+        <section className="grid gap-4 lg:grid-cols-sidebar-wide">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <h2 className="text-sm font-black">Importer un portefeuille</h2>
             <p className="mt-2 text-xs text-text-muted">
@@ -780,7 +789,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       ) : null}
 
       {tab === "profile" ? (
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.7fr)]">
+        <section className="grid gap-4 lg:grid-cols-agency-content-aside-secondary">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <Globe2 className="h-6 w-6 text-primary" />
             <h2 className="mt-3 text-sm font-black">
@@ -823,13 +832,8 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             <p className="mt-4 text-micro text-text-muted">
               Dernière synchronisation réussie :{" "}
               {workspace.integrationSettings.lastSuccessfulSyncAt
-                ? new Intl.DateTimeFormat("fr-FR", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(
-                    new Date(
-                      workspace.integrationSettings.lastSuccessfulSyncAt,
-                    ),
+                ? formatDateTime(
+                    workspace.integrationSettings.lastSuccessfulSyncAt,
                   )
                 : "aucune"}
             </p>
@@ -852,9 +856,9 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             {workspace.subscription.renewsAt ? (
               <p className="mt-3 text-micro text-text-muted">
                 Prochaine échéance :{" "}
-                {new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(
-                  new Date(workspace.subscription.renewsAt),
-                )}
+                {formatDate(workspace.subscription.renewsAt, {
+                  dateStyle: "long",
+                })}
               </p>
             ) : null}
           </div>
@@ -862,11 +866,11 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             <CircleDollarSign className="h-6 w-6 text-primary" />
             <h2 className="mt-3 text-sm font-black">Crédits visibilité</h2>
             <p className="mt-2 text-3xl font-black">
-              {workspace.visibilityCredits.available.toLocaleString("fr-FR")}
+              {formatNumber(workspace.visibilityCredits.available)}
             </p>
             <p className="text-xs text-text-muted">
-              sur {workspace.visibilityCredits.included.toLocaleString("fr-FR")}{" "}
-              inclus ce mois
+              sur {formatNumber(workspace.visibilityCredits.included)} inclus ce
+              mois
             </p>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5 lg:col-span-2">
@@ -884,15 +888,11 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     <div>
                       <p className="font-black">{invoice.invoiceId}</p>
                       <p className="text-micro text-text-muted">
-                        {new Intl.DateTimeFormat("fr-FR", {
-                          dateStyle: "medium",
-                        }).format(new Date(invoice.issuedAt))}
+                        {formatDate(invoice.issuedAt)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black">
-                        {formatImmoMoney(invoice.total)}
-                      </p>
+                      <p className="font-black">{formatMoney(invoice.total)}</p>
                       <Badge
                         variant={
                           invoice.status === "paid" ? "success" : "neutral"

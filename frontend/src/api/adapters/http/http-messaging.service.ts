@@ -1,5 +1,7 @@
 import {
   CreateOrGetConversationInput,
+  MessageComposerOptions,
+  MessageComposerOptionsInput,
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
@@ -47,6 +49,11 @@ interface BackendMessage {
   attachments?: string[];
   isOffer?: boolean;
   offerPrice?: number;
+  offerId?: string;
+  offerAmountMinor?: number;
+  offerCurrency?: string;
+  offerStatus?: Message["offerStatus"];
+  offerExpiresAt?: string;
   isPickupProposal?: boolean;
   createdAt: string;
 }
@@ -79,6 +86,15 @@ const mapMessage = (message: BackendMessage): Message => ({
   content: message.text,
   type: mapMessageType(message),
   offerAmount: message.offerPrice,
+  offerId: message.offerId || (message.isOffer ? message.id : undefined),
+  offerAmountMinor:
+    message.offerAmountMinor ??
+    (message.offerPrice !== undefined
+      ? Math.round(message.offerPrice * 100)
+      : undefined),
+  offerCurrency: message.offerCurrency,
+  offerStatus: message.offerStatus,
+  offerExpiresAt: message.offerExpiresAt,
   attachmentUrl: message.attachments?.[0],
   attachmentType: message.attachments?.length ? "image" : undefined,
   createdAt: message.createdAt,
@@ -135,6 +151,21 @@ export class HttpMessagingService implements MessagingServiceContract {
     return page.items.map(mapMessage);
   }
 
+  async getComposerOptions(
+    input: MessageComposerOptionsInput,
+  ): Promise<MessageComposerOptions> {
+    return httpClient.get<MessageComposerOptions>(
+      `/messaging/conversations/${input.conversationId}/composer-options`,
+      {
+        params: {
+          userId: input.userId,
+          isProfessional: input.isProfessional,
+          locale: input.locale,
+        },
+      },
+    );
+  }
+
   async createOrGetConversation(
     input: CreateOrGetConversationInput,
   ): Promise<Conversation> {
@@ -168,21 +199,28 @@ export class HttpMessagingService implements MessagingServiceContract {
   ): Promise<Message> {
     const message = await httpClient.post<BackendMessage>("/messaging/offer", {
       conversationId,
-      senderName,
-      amount,
+      amountMinor: Math.round(amount * 100),
     });
     return mapMessage(message);
   }
 
   async respondToOffer(
-    conversationId: string,
+    offerId: string,
     _userId: string,
     userName: string,
     accept: boolean,
   ): Promise<Message> {
     const message = await httpClient.post<BackendMessage>(
       "/messaging/offer-response",
-      { conversationId, userName, accept },
+      { offerId, accept },
+    );
+    return mapMessage(message);
+  }
+
+  async withdrawOffer(offerId: string, _userId: string): Promise<Message> {
+    const message = await httpClient.post<BackendMessage>(
+      `/messaging/offers/${offerId}/withdraw`,
+      {},
     );
     return mapMessage(message);
   }

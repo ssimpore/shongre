@@ -1,17 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Check, Building2, Coins, Languages } from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { SUPPORTED_LANGUAGES } from "../../design-system/primitives/LanguageSelector";
 import { useTranslation } from "../../i18n/I18nProvider";
-
-const CURRENCIES = [
-  { code: "EUR", label: "Euro", symbol: "€" },
-  { code: "CHF", label: "Franc suisse", symbol: "CHF" },
-  { code: "USD", label: "US Dollar", symbol: "$" },
-  { code: "GBP", label: "Livre sterling", symbol: "£" },
-];
+import {
+  formatCurrencySymbol,
+  getCurrencyDisplayName,
+} from "../../utilities/formatters";
 
 export const PreferencesModal: React.FC = () => {
   const { t } = useTranslation();
@@ -30,6 +27,21 @@ export const PreferencesModal: React.FC = () => {
   const handleMarketChange = (marketCode: string) => {
     setMarket(marketCode);
   };
+
+  const currencies = useMemo(() => {
+    const codes = new Set(availableMarkets.map((market) => market.currency));
+    // Preserve a previously saved choice long enough for the user to replace
+    // it, even if its market has since been paused by an administrator.
+    codes.add(currentCurrency);
+    return Array.from(codes)
+      .filter(Boolean)
+      .sort()
+      .map((code) => ({
+        code,
+        label: getCurrencyDisplayName(code, currentLocale),
+        symbol: formatCurrencySymbol(code, currentLocale),
+      }));
+  }, [availableMarkets, currentCurrency, currentLocale]);
 
   return (
     <Modal
@@ -84,10 +96,10 @@ export const PreferencesModal: React.FC = () => {
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
             <Coins className="w-3.5 h-3.5 text-primary" />
-            <span>Devise d'affichage</span>
+            <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {CURRENCIES.map((c) => {
+            {currencies.map((c) => {
               const isSelected = currentCurrency === c.code;
               return (
                 <button
@@ -147,7 +159,9 @@ export const PreferencesModal: React.FC = () => {
                     <div className="truncate">
                       <div className="text-xs truncate">{lang.nativeName}</div>
                       <div className="text-micro text-stone-500 font-normal uppercase">
-                        {lang.isAvailable ? lang.code.slice(0, 2) : "Bientôt"}
+                        {lang.isAvailable
+                          ? lang.code.slice(0, 2)
+                          : t("shell.preferencesModal.bientot")}
                       </div>
                     </div>
                   </div>

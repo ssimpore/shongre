@@ -45,11 +45,7 @@ const BOX: Record<FavoriteButtonSize, string> = {
  * directions instead of two. Where an ancestor clips it the target degrades to
  * the painted size, which is still at or above the 24px WCAG 2.2 AA floor.
  */
-const TOUCH_EXPANSION =
-  "pointer-coarse:after:content-[''] pointer-coarse:after:absolute " +
-  "pointer-coarse:after:left-1/2 pointer-coarse:after:top-1/2 " +
-  "pointer-coarse:after:-translate-x-1/2 pointer-coarse:after:-translate-y-1/2 " +
-  "pointer-coarse:after:w-control-touch pointer-coarse:after:h-control-touch";
+const TOUCH_EXPANSION = "favorite-touch-target";
 
 /**
  * `relative` establishes the containing block for the touch expansion above —

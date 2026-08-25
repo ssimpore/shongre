@@ -9,6 +9,7 @@ import {
   NotificationFilterTab,
   NotificationPreferences,
 } from "./notification.types";
+import { DEFAULT_LOCALE } from "../../i18n/locale";
 
 export interface NotificationDateGroup {
   dateLabel: string;
@@ -19,7 +20,7 @@ export class NotificationService {
   /**
    * Localized relative date grouping label.
    */
-  getDateSeparatorLabel(isoDate: string): string {
+  getDateSeparatorLabel(isoDate: string, locale = DEFAULT_LOCALE): string {
     try {
       const date = new Date(isoDate);
       const now = new Date();
@@ -29,7 +30,13 @@ export class NotificationService {
         date.getMonth() === now.getMonth() &&
         date.getFullYear() === now.getFullYear();
 
-      if (isToday) return "Aujourd'hui";
+      if (isToday)
+        return this.capitalize(
+          new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+            0,
+            "day",
+          ),
+        );
 
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
@@ -38,21 +45,34 @@ export class NotificationService {
         date.getMonth() === yesterday.getMonth() &&
         date.getFullYear() === yesterday.getFullYear();
 
-      if (isYesterday) return "Hier";
+      if (isYesterday)
+        return this.capitalize(
+          new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+            -1,
+            "day",
+          ),
+        );
 
       const diffDays = Math.floor(
         (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
       );
-      if (diffDays <= 7) return "Cette semaine";
+      if (diffDays <= 7)
+        return this.capitalize(
+          new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
+        );
 
-      return new Intl.DateTimeFormat("fr-FR", {
+      return new Intl.DateTimeFormat(locale, {
         day: "numeric",
         month: "long",
         year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
       }).format(date);
     } catch {
-      return "Plus tôt";
+      return "—";
     }
+  }
+
+  private capitalize(value: string): string {
+    return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value;
   }
 
   /**
@@ -60,12 +80,13 @@ export class NotificationService {
    */
   groupNotificationsByDate(
     notifications: Notification[],
+    locale = DEFAULT_LOCALE,
   ): NotificationDateGroup[] {
     const groups: NotificationDateGroup[] = [];
     const map = new Map<string, Notification[]>();
 
     notifications.forEach((item) => {
-      const label = this.getDateSeparatorLabel(item.createdAt);
+      const label = this.getDateSeparatorLabel(item.createdAt, locale);
       if (!map.has(label)) {
         map.set(label, []);
       }
@@ -126,7 +147,7 @@ export class NotificationService {
   getDefaultPreferences(userId: string): NotificationPreferences {
     return {
       userId,
-      messages: { inApp: true, email: true, push: true },
+      messages: { inApp: true, email: false, push: true },
       transactions: { inApp: true, email: true, push: true, isMandatory: true },
       listings: { inApp: true, email: true, push: false },
       delivery: { inApp: true, email: true, push: true, isMandatory: true },

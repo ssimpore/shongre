@@ -14,6 +14,10 @@ export const messagesEn: MessageCatalogue = {
   "common.retry": "Try again",
   "common.cancel": "Cancel",
   "common.save": "Save",
+  "common.confirm": "Confirm",
+  "common.validate": "Validate",
+  "common.requiredField": "This field is required.",
+  "common.minimumCharacters": "At least {count} characters.",
   "common.notifications": "Notifications",
   "a11y.skipToContent": "Skip to main content",
   "common.close": "Close",
@@ -114,7 +118,13 @@ export const messagesEn: MessageCatalogue = {
     "Get our weekly selection of listings and product updates.",
   "footer.marketContext": "France market",
   "footer.privacyControls": "Adjustable consent",
+  "footer.mobileAppsHeading": "Shongre mobile apps",
   "footer.appPitch": "Take Shongre with you everywhere.",
+  "footer.downloadFrom": "Download from",
+  "footer.comingToStore": "Coming soon to",
+  "footer.downloadApp": "Download Shongre from {store}",
+  "footer.followHeading": "Follow Shongre",
+  "footer.followOn": "Follow Shongre on {network}",
   "footer.trust.escrowTitle": "Payments via Stripe",
   "footer.trust.escrowBody":
     "Online payments are processed by our provider and their status is tracked in your order.",
@@ -203,6 +213,8 @@ export const messagesEn: MessageCatalogue = {
   "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
     "Set your browsing country, display currency and language",
   "shell.preferencesModal.marchePays": "Market / Country",
+  "shell.preferencesModal.deviseAffichage": "Display currency",
+  "shell.preferencesModal.bientot": "Coming soon",
   "shell.preferencesModal.langueDeLInterface": "Interface language",
   "shell.errorBoundary.uneErreurInattendueEstSurvenue":
     "Something unexpected went wrong",
@@ -242,6 +254,21 @@ export const messagesEn: MessageCatalogue = {
   "ui.listingCard.ajouterAuxFavoris": "Add to favorites",
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
     "Tips for finding what you want:",
+  "ui.noResultsFound.title": "No listings found",
+  "ui.noResultsFound.titleForQuery": "No results for “{query}”",
+  "ui.noResultsFound.description":
+    "No listings match the filters currently selected.",
+  "ui.noResultsFound.descriptionForQuery":
+    "We could not find a listing that exactly matches your search.",
+  "ui.noResultsFound.clearFilters": "Clear filters",
+  "ui.noResultsFound.createAlert": "Create an alert",
+  "ui.noResultsFound.suggestionSpelling": "Check the spelling of your keywords",
+  "ui.noResultsFound.suggestionLocation":
+    "Expand the search radius or choose the entire {market} market",
+  "ui.noResultsFound.suggestionFilters":
+    "Remove or broaden your price and category filters",
+  "ui.noResultsFound.suggestionRestrictions":
+    "Turn off restrictive criteria such as delivery only or deals",
   "ui.searchAutocomplete.suggestionsDeRecherche": "Search suggestions",
   "ui.searchAutocomplete.categoriesRayons": "Categories & departments",
   "ui.searchAutocomplete.recherchesRecentes": "Recent searches",
@@ -508,6 +535,11 @@ export const messagesEn: MessageCatalogue = {
   "messaging.conversationList.rechercherParNomOuAnnonce":
     "Search by name or listing…",
   "messaging.conversationList.effacerLaRecherche": "Clear search",
+  "messaging.conversationList.all": "All",
+  "messaging.conversationList.unread": "Unread",
+  "messaging.conversationList.purchases": "Purchases",
+  "messaging.conversationList.sales": "Sales",
+  "messaging.conversationList.orders": "Orders",
   "messaging.conversationList.aucuneConversationTrouvee":
     "No conversation found",
   "messaging.makeOfferModal.faireUneOffreDePrix": "Make an offer",
@@ -516,12 +548,26 @@ export const messagesEn: MessageCatalogue = {
   "messaging.messageComposer.supprimerLaPhoto": "Remove photo",
   "messaging.messageComposer.joindreUnePhoto": "Attach a photo",
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":
-    "Write your message… (Enter to send)",
+    "Write your message…",
+  "messaging.messageComposer.keyboardHint":
+    "Press Enter to send. Press Shift plus Enter for a new line.",
   "messaging.messageComposer.photoPreteAEtreEnvoyee": "Photo ready to send",
   "messaging.messageComposer.seraTransmiseAvecVotreMessage":
     "Will be sent with your message",
   "messaging.messageComposer.ajouterUnePhotoALa":
     "Add a photo to the conversation",
+  "messaging.messageComposer.envoyer": "Send",
+  "messaging.messageComposer.demoAttachmentCondition": "Condition photo",
+  "messaging.messageComposer.demoAttachmentInvoice": "Invoice / warranty",
+  "messaging.messageComposer.demoAttachmentAccessories": "Included accessories",
+  "messaging.messageComposer.quickReplyAvailable":
+    "Hello, yes, the item is in stock.",
+  "messaging.messageComposer.quickReplyShipping":
+    "Hello, tracked shipping is available within 24 hours.",
+  "messaging.messageComposer.quickReplyPickup":
+    "Hello, we can arrange collection from the store.",
+  "messaging.messageComposer.quickReplyInvoice":
+    "Hello, a VAT invoice is available on request.",
   "messaging.messageTimeline.historiqueDeLaConversation":
     "Conversation history",
   "messaging.messageTimeline.photoPartagee": "Shared photo",
@@ -2030,16 +2076,32 @@ export const messagesEn: MessageCatalogue = {
     "Keep these codes somewhere safe. They let you sign in again if you lose access to your phone.",
   "auth.mFAModal.3EntrezLeCodeA": "3. Enter the 6-digit code from your app",
   "auth.mFAModal.verifierEtActiverLe2fa": "Verify and enable 2FA",
+  "auth.mFAModal.codeLength": "Enter the {count}-digit code.",
+  "auth.mFAModal.activationError":
+    "Two-factor authentication could not be enabled.",
+  "auth.mFAModal.qrCodeAlt": "Two-factor authentication setup QR code",
+  "auth.mFAModal.copied": "Copied",
+  "auth.mFAModal.copyBackupCodes": "Copy all {count} codes",
   "auth.phoneVerificationModal.verificationDuNumeroDeTelephone":
     "Phone number verification",
   "auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes":
     "Phone verification protects buyers and sellers during in-person handovers and builds trust.",
   "auth.phoneVerificationModal.paysEtIndicatif": "Country and dialling code",
+  "auth.phoneVerificationModal.phoneNumber": "Phone number",
   "auth.phoneVerificationModal.recevoirMonCodeParSms": "Send my code by SMS",
   "auth.phoneVerificationModal.saisissezLeCodeRecuPar":
     "Enter the code you received by SMS (6 digits)",
   "auth.phoneVerificationModal.confirmerLeNumero": "Confirm the number",
   "auth.phoneVerificationModal.changerDeNumero": "Change number",
+  "auth.phoneVerificationModal.phoneRequired": "Enter your phone number.",
+  "auth.phoneVerificationModal.sendError": "The SMS code could not be sent.",
+  "auth.phoneVerificationModal.codeLength": "Enter the {count}-digit code.",
+  "auth.phoneVerificationModal.validateError":
+    "The code could not be verified.",
+  "auth.phoneVerificationModal.resendSuccess": "A new code was sent by SMS.",
+  "auth.phoneVerificationModal.demoCode": "Test SMS code: {code}",
+  "auth.phoneVerificationModal.resendCountdown": "Resend ({count}s)",
+  "auth.phoneVerificationModal.resend": "Resend code",
   "auth.upgradeToProModal.passerEnCompteProfessionnel":
     "Switch to a professional account",
   "auth.upgradeToProModal.conservezToutesVosAnnoncesAvis":
@@ -2461,6 +2523,27 @@ export const messagesEn: MessageCatalogue = {
     "Browse for a CSV file…",
   "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur":
     "Use our template with a semicolon (;) separator, containing Title, Category, Price, Condition and Stock columns.",
+  "sellerworkspace.bulkImportModal.csvDownloaded":
+    "The CSV template has been downloaded.",
+  "sellerworkspace.bulkImportModal.csvParseError":
+    "This CSV file could not be parsed.",
+  "sellerworkspace.bulkImportModal.importSuccess":
+    "{count} listing(s) imported and published successfully.",
+  "sellerworkspace.bulkImportModal.importError":
+    "The listings could not be imported.",
+  "sellerworkspace.bulkImportModal.validationTitleRequired":
+    "Title is required",
+  "sellerworkspace.bulkImportModal.validationTitleTooShort":
+    "Title must contain at least 5 characters",
+  "sellerworkspace.bulkImportModal.validationPriceInvalid": "Invalid price",
+  "sellerworkspace.bulkImportModal.rowsDetected":
+    "{total} rows detected ({valid} valid)",
+  "sellerworkspace.bulkImportModal.invalidRows": "{count} invalid row(s)",
+  "sellerworkspace.bulkImportModal.quantity": "Qty: {count}",
+  "sellerworkspace.bulkImportModal.valid": "Valid",
+  "sellerworkspace.bulkImportModal.cancel": "Cancel",
+  "sellerworkspace.bulkImportModal.importAndPublish":
+    "Import and publish {count} listing(s)",
   "support.contactPage.votreDemandeABienEte":
     "Your request has been logged by the Shongre customer support team.",
   "support.contactPage.numeroDeDossier": "Case number",
@@ -2807,6 +2890,28 @@ export const messagesEn: MessageCatalogue = {
 
   /* Accessible names for controls that previously had only a placeholder. */
   "messaging.messageComposer.votreMessage": "Your message",
+  "messaging.makeOfferModal.displayedPriceDescription":
+    "Displayed price: {price}. The seller can accept or decline your proposal.",
+  "messaging.makeOfferModal.cancel": "Cancel",
+  "messaging.makeOfferModal.submitOffer": "Send offer",
+  "messaging.messagingPage.sendFailed": "The message could not be sent.",
+  "messaging.messagingPage.offerSent": "Offer of {price} sent to the seller.",
+  "messaging.messagingPage.offerAccepted": "Offer accepted at {price}.",
+  "messaging.messagingPage.offerAcceptedGeneric": "Offer accepted.",
+  "messaging.messagingPage.offerDeclined": "Offer declined.",
+  "ui.priceRangeSlider.allPrices": "All prices",
+  "ui.priceRangeSlider.upTo": "Up to {price}",
+  "ui.priceRangeSlider.from": "From {price}",
+  "ui.priceRangeSlider.minimumPrice": "Minimum price",
+  "ui.priceRangeSlider.maximumPrice": "Maximum price",
+  "ui.priceRangeSlider.noMinimum": "No minimum",
+  "ui.priceRangeSlider.noMaximum": "No maximum",
+  "search.searchPage.minimumShort": "min",
+  "search.searchPage.maximumShort": "max",
+  "search.searchPage.priceInCurrency": "Price ({currency})",
+  "search.searchPage.budgetInCurrency": "Budget ({currency})",
+  "transactions.sellerPayoutModal.amountMustBePositive":
+    "Enter an amount greater than 0 {currency}.",
   "profile.sellerCatalog.prixMinimum": "Minimum price in euros",
   "profile.sellerCatalog.prixMaximum": "Maximum price in euros",
   "publishing.publishWizard.rechercherUneCategorie":
@@ -2935,4 +3040,12 @@ export const messagesEn: MessageCatalogue = {
   "admin.discovery.metric.duplicates": "Duplicates suppressed",
   "admin.discovery.metric.diversity": "Diversity reranks",
   "admin.discovery.metric.latency": "Average latency (ms)",
+  "admin.adminMarketsPage.resetAllTitle": "Reset market configuration",
+  "admin.adminMarketsPage.resetAllMessage":
+    "All overrides for {market} will be removed. Its configuration will inherit from the {baseline} reference market again.",
+  "admin.adminMarketsPage.resetAllConfirm": "Reset overrides",
+  "admin.monetization.transitionTitle": "Confirm catalogue transition",
+  "admin.monetization.transitionReason": "Reason for the transition",
+  "admin.monetization.transitionReasonDefault":
+    "Commercial catalogue validation",
 };

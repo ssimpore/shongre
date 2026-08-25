@@ -3,11 +3,13 @@ import {
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
   resolveCanonical,
+  resolveOpenGraphLocale,
   resolveTitle,
 } from "../../services/seo.service";
 import { INITIAL_LISTINGS, DEMO_USERS } from "../../mocks/initialDemoData";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import type { Listing } from "../../types";
+import { MARKET_CONFIG } from "../../configuration/market.config";
 
 interface RouteMetadataInput {
   pathname: string;
@@ -71,9 +73,11 @@ function absoluteUrl(url: string, origin: string): string {
 
 function formatPriceLabel(listing: Listing): string {
   if (listing.isFreeDonation) return "Don gratuit";
-  const currency =
-    listing.currency === "EUR" || !listing.currency ? "€" : listing.currency;
-  return `${listing.price} ${currency}`;
+  return new Intl.NumberFormat(MARKET_CONFIG.defaultLocale, {
+    style: "currency",
+    currency: listing.currency || MARKET_CONFIG.defaultCurrency,
+    maximumFractionDigits: Number.isInteger(listing.price) ? 0 : 2,
+  }).format(listing.price);
 }
 
 function findSellerBySlug(slug: string) {
@@ -195,7 +199,7 @@ export function metadataForRoute({
          `website` is correct and understood everywhere; product semantics are
          carried by the Product JSON-LD this route also renders. */
       type: entity?.ogType === "profile" ? "profile" : "website",
-      locale: "fr_FR",
+      locale: resolveOpenGraphLocale(MARKET_CONFIG.defaultLocale),
       siteName: "Shongre",
       url: canonical,
       ...(image ? { images: [{ url: image }] } : {}),
@@ -241,7 +245,7 @@ export function structuredDataForRoute(
       offers: {
         "@type": "Offer",
         price: listing.isFreeDonation ? 0 : listing.price,
-        priceCurrency: listing.currency || "EUR",
+        priceCurrency: listing.currency || MARKET_CONFIG.defaultCurrency,
         availability:
           listing.status === "active"
             ? "https://schema.org/InStock"

@@ -474,7 +474,7 @@ export const Header: React.FC = () => {
                     isVerified={currentUser.isVerified}
                     isPro={isProSeller(currentUser)}
                   />
-                  <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-[100px] truncate">
+                  <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-25 truncate">
                     {currentUser.name.split(" ")[0]}
                   </span>
                   <ChevronDown
@@ -663,7 +663,7 @@ export const Header: React.FC = () => {
 
           `z-drawer` puts the drawer between page chrome and dialogs: above the
           sticky header and the mobile tab bar (both `z-header`), below modals and
-          toasts (`z-modal`). It was `z-[9999]`, the only arbitrary z-index in the
+          toasts (`z-modal`). It once used a numeric z-index, the only non-token
           app, which stacked it over every dialog — including the ones it opens
           itself. Tapping "Changer" beside the location did open the picker; it
           just rendered underneath the drawer, so nothing appeared to happen. */}
@@ -673,7 +673,7 @@ export const Header: React.FC = () => {
           <div className="fixed inset-0 z-drawer lg:hidden flex justify-end">
             {/* Backdrop overlay */}
             <div
-              className="fixed inset-0 bg-stone-900/40 backdrop-blur-[2px] transition-opacity duration-normal"
+              className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity duration-normal"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-hidden="true"
             />
@@ -685,7 +685,7 @@ export const Header: React.FC = () => {
               aria-modal="true"
               aria-labelledby={drawerTitleId}
               tabIndex={-1}
-              className="relative w-full sm:w-[85vw] sm:max-w-[380px] h-[100dvh] bg-bg-surface shadow-overlay flex flex-col z-raised sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
+              className="relative w-full sm:w-side-sheet-width sm:max-w-95 h-side-sheet-height bg-bg-surface shadow-overlay flex flex-col z-raised sm:border-l border-border-base animate-in slide-in-from-right duration-normal"
             >
               {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
               <div className="p-4 border-b border-border-base flex items-center justify-between bg-bg-subtle shrink-0 sticky top-0 z-sticky">

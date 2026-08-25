@@ -17,9 +17,11 @@ import { crmService } from "../../../domains/crm/crm.service";
 import { CrmUniversalSearch } from "./components/CrmUniversalSearch";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmOverviewPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   usePageMeta({
     title: t("meta.crmOverview.title"),
     description: t("meta.crmOverview.description"),
@@ -138,10 +140,13 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
           <div className="text-2xl font-black text-primary">
             {stats
-              ? crmService.formatCrmMoney({
-                  amountMinor: stats.pipelineValueMinor,
-                  currency: "EUR",
-                })
+              ? crmService.formatCrmMoney(
+                  {
+                    amountMinor: stats.pipelineValueMinor,
+                    currency: activeMarket.currency,
+                  },
+                  currentLocale,
+                )
               : "..."}
           </div>
           <span className="text-micro text-stone-500">
@@ -205,7 +210,10 @@ export const CrmOverviewPage: React.FC = () => {
 
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="font-black text-xs text-stone-900 font-mono">
-                      {crmService.formatCrmMoney(opp.estimatedValue)}
+                      {crmService.formatCrmMoney(
+                        opp.estimatedValue,
+                        currentLocale,
+                      )}
                     </span>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-micro font-bold ${stage.color}`}

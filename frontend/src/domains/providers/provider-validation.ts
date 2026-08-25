@@ -9,6 +9,7 @@ import {
   ProviderConfiguration,
   ProviderRoutingRule,
   ProviderMarketOverride,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "./provider.types";
 import { getProviderById } from "./provider.registry";
 
@@ -37,10 +38,12 @@ export class ProviderValidator {
 
     if (
       config.priority !== undefined &&
-      (config.priority < 1 || !Number.isInteger(config.priority))
+      (config.priority < PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min ||
+        config.priority > PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max ||
+        !Number.isInteger(config.priority))
     ) {
       errors.push(
-        "La priorité doit être un entier positif supérieur ou égal à 1.",
+        `La priorité doit être un entier compris entre ${PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min} et ${PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max}.`,
       );
     }
 
@@ -132,10 +135,12 @@ export class ProviderValidator {
 
     if (
       override.priority !== undefined &&
-      (override.priority < 1 || !Number.isInteger(override.priority))
+      (override.priority < PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min ||
+        override.priority > PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max ||
+        !Number.isInteger(override.priority))
     ) {
       errors.push(
-        "La priorité de surcharge doit être un entier supérieur ou égal à 1.",
+        `La priorité de surcharge doit être un entier compris entre ${PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min} et ${PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max}.`,
       );
     }
 

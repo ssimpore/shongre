@@ -9,6 +9,7 @@ import {
 } from "./DropdownMenu";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { catalogueCoverage } from "../../i18n/i18n.service";
+import { SHIPPED_LOCALES } from "../../i18n/locale";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
@@ -57,7 +58,7 @@ export const LOCALE_READY_THRESHOLD = 1;
  * catalogue backs that claim. `npm run check:i18n` counts the hardcoded strings
  * still standing between English and this list.
  */
-export const SHIPPED_LOCALES = ["fr-FR", "en-US"] as const;
+export { SHIPPED_LOCALES } from "../../i18n/locale";
 
 const LANGUAGES: Omit<LanguageOption, "isAvailable">[] = [
   { code: "fr-FR", name: "Français", nativeName: "Français", flag: "🇫🇷" },
@@ -238,7 +239,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           role="menu"
           aria-orientation="vertical"
           aria-labelledby={`${idPrefix}-button`}
-          className={`absolute ${dropdownPlacement} w-max min-w-44 max-w-[calc(100vw-1.5rem)] ${DROPDOWN_PANEL_CLASSES}`}
+          className={`absolute ${dropdownPlacement} w-max min-w-44 max-w-viewport-popover-max ${DROPDOWN_PANEL_CLASSES}`}
         >
           <div className={DROPDOWN_HEADER_CLASSES}>
             <div className={DROPDOWN_HEADER_TITLE_CLASSES}>

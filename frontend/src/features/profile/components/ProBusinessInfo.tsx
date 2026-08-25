@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 import { UserProfile } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export interface ProBusinessInfoProps {
   seller: UserProfile;
 }
 
 export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
+  const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   if (seller.sellerType !== "pro") return null;
 
@@ -139,7 +141,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
             <div className="flex flex-wrap gap-1.5">
               {(seller.deliveryZones && seller.deliveryZones.length > 0
                 ? seller.deliveryZones
-                : ["France métropolitaine"]
+                : [activeMarket.name]
               ).map((zone) => (
                 <span
                   key={zone}

@@ -75,6 +75,51 @@ export interface SellerListingUpdate {
   attributes?: Record<string, unknown>;
 }
 
+type BulkImportValidationCode =
+  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "PRICE_INVALID";
+type BulkListingImportRow = {
+  id: string;
+  title: string;
+  description: string;
+  categorySlug: string;
+  subCategorySlug: string;
+  price: { amountMinor: number; currency: string };
+  condition: string;
+  stock: number;
+  city: string;
+  postalCode: string;
+  isValid: boolean;
+  validationErrorCode?: BulkImportValidationCode;
+};
+
+const BULK_IMPORT_TEMPLATE = `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description
+Table basse chêne massif;home_garden;furniture;180;very_good;2;Lyon;69002;Description détaillée du produit`;
+
+function splitCsvRow(line: string): string[] {
+  const values: string[] = [];
+  let value = "";
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"' && line[index + 1] === '"' && quoted) {
+      value += '"';
+      index += 1;
+    } else if (character === '"') quoted = !quoted;
+    else if (character === ";" && !quoted) {
+      values.push(value.trim());
+      value = "";
+    } else value += character;
+  }
+  if (quoted)
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message:
+        "Le fichier CSV contient une valeur entre guillemets incomplète.",
+    });
+  values.push(value.trim());
+  return values;
+}
+
 const SELLER_UPDATE_KEYS = new Set<keyof SellerListingUpdate>([
   "title",
   "description",
@@ -139,6 +184,144 @@ export class ListingsService {
 
   async saveListingDraft(draft: any, userId?: string): Promise<void> {
     await this.listingRepo.saveDraft(draft, userId);
+  }
+
+  getBulkImportTemplate(locale = "fr-FR") {
+    const language = locale.toLowerCase().startsWith("fr") ? "fr" : "fr";
+    return {
+      fileName: `modele_import_annonces_shongre_${language}.csv`,
+      content: BULK_IMPORT_TEMPLATE,
+    };
+  }
+
+  async parseBulkImportCsv(input: unknown): Promise<BulkListingImportRow[]> {
+    const body = (input || {}) as {
+      content?: string;
+      marketCode?: string;
+      defaultCity?: string;
+      defaultPostalCode?: string;
+    };
+    const content = String(body.content || "").replace(/^\uFEFF/, "");
+    if (!content.trim() || Buffer.byteLength(content, "utf8") > 1_000_000)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le fichier CSV doit être non vide et ne pas dépasser 1 Mo.",
+      });
+    const lines = content.trim().split(/\r?\n/);
+    if (lines.length > 501)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un import est limité à 500 annonces.",
+      });
+    const header = splitCsvRow(lines[0]).map((entry) => entry.toLowerCase());
+    if (
+      header.length < 9 ||
+      !header[0].includes("titre") ||
+      !header[3].includes("prix")
+    )
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Utilisez le modèle CSV Shongre sans modifier ses colonnes.",
+      });
+    const market = await this.markets.getEffective(
+      (body.marketCode || "FR").toUpperCase(),
+    );
+    return lines.slice(1).flatMap((line, index) => {
+      if (!line.trim()) return [];
+      const columns = splitCsvRow(line);
+      const title = columns[0] || "";
+      const amount = Number.parseFloat((columns[3] || "0").replace(",", "."));
+      const validationErrorCode = !title
+        ? ("TITLE_REQUIRED" as const)
+        : title.length < 5
+          ? ("TITLE_TOO_SHORT" as const)
+          : !Number.isFinite(amount) || amount <= 0
+            ? ("PRICE_INVALID" as const)
+            : undefined;
+      return [
+        {
+          id: `bulk-row-${index + 1}`,
+          title,
+          description: columns[8] || "",
+          categorySlug: columns[1] || "home_garden",
+          subCategorySlug: columns[2] || columns[1] || "furniture",
+          price: {
+            amountMinor: Math.round(
+              (Number.isFinite(amount) ? amount : 0) * 100,
+            ),
+            currency: market.currency,
+          },
+          condition: columns[4] || "very_good",
+          stock: Math.max(1, Number.parseInt(columns[5] || "1", 10) || 1),
+          city: columns[6] || body.defaultCity || "",
+          postalCode: columns[7] || body.defaultPostalCode || "",
+          isValid: validationErrorCode === undefined,
+          validationErrorCode,
+        },
+      ];
+    });
+  }
+
+  async publishBulkListings(
+    userId: string,
+    input: unknown,
+  ): Promise<PublicListing[]> {
+    const body = (input || {}) as {
+      marketCode?: string;
+      rows?: BulkListingImportRow[];
+    };
+    const marketCode = (body.marketCode || "FR").toUpperCase();
+    const rows = Array.isArray(body.rows) ? body.rows : [];
+    if (!rows.length || rows.length > 500 || rows.some((row) => !row.isValid))
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "L’import doit contenir entre 1 et 500 lignes valides.",
+      });
+    const inventoryDecision =
+      await this.publisherEntitlements.canImportInventory(userId);
+    if (!inventoryDecision.allowed)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Votre formule ne permet pas l’import de catalogue.",
+        details: { reasonCode: inventoryDecision.reasonCode },
+      });
+    const prepared = await Promise.all(
+      rows.map(async (row) => {
+        const taxonomyNode =
+          (await taxonomyService.getNodeBySlug(row.subCategorySlug)) ||
+          (await taxonomyService.getNodeBySlug(row.categorySlug));
+        if (!taxonomyNode)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: `La catégorie de la ligne ${row.id} est inconnue.`,
+            details: { rowId: row.id },
+          });
+        return {
+          title: row.title,
+          description: row.description,
+          price: row.price.amountMinor / 100,
+          categoryId: taxonomyNode.id,
+          marketCode,
+          city: row.city,
+          postalCode: row.postalCode,
+          images: [],
+          attributes: { stock_quantity: row.stock },
+          allowedDelivery: ["hand_delivery"],
+          condition: row.condition,
+        } satisfies PublicationDraftInput;
+      }),
+    );
+    const published: PublicListing[] = [];
+    try {
+      for (const draft of prepared)
+        published.push(await this.publishListing(draft, userId));
+      return published;
+    } catch (error) {
+      await Promise.allSettled(
+        published.map((listing) => this.listingRepo.delete(listing.id)),
+      );
+      throw error;
+    }
   }
 
   async publishListing(

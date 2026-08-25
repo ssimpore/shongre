@@ -25,7 +25,9 @@ import type {
   CourseOrganizationLocationInput,
   CoursesServiceContract,
   LearnerRequestDraft,
+  LearnerRequestProgressDraft,
   TutorProfileDraft,
+  TutorOnboardingDraft,
 } from "../../contracts/courses.contract";
 import {
   DEMO_COURSE_CATALOG,
@@ -36,6 +38,42 @@ import {
   DEMO_TUTORS,
 } from "../../../mocks/coursesDemoData";
 import { demoVerticalDiscoveryStore } from "../../../domains/discovery/demo-vertical-discovery.store";
+import { storageService } from "../../../services/storage.service";
+import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
+
+const tutorDraftKey = (accountId: string) =>
+  `shongre_courses_onboarding_v2:${accountId}`;
+const learnerDraftKey = (accountId: string) =>
+  `shongre_courses_learner_request_draft_v2:${accountId}`;
+
+const TUTOR_ONBOARDING_POLICY = {
+  avatarUrl:
+    "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=85",
+  profileCompletionPercent: 82,
+  availability: {
+    id: "availability-onboarding",
+    dayOfWeek: 3,
+    startsAtLocal: "17:00",
+    endsAtLocal: "20:00",
+    durationMinutes: 60,
+    summary: "Créneaux en semaine et le samedi",
+  },
+  qualification: {
+    id: "qualification-onboarding",
+    type: "degree" as const,
+    label: "Formation et expérience déclarées",
+    publicLabel: "Déclaré par le professeur — non vérifié",
+  },
+  goals: ["confidence", "exam_preparation"],
+} as const;
+
+const slugify = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 
 const clone = <T>(value: T): T => structuredClone(value);
 
@@ -97,6 +135,226 @@ export class DemoCoursesService implements CoursesServiceContract {
   ]);
   private organizationWorkspace = clone(DEMO_COURSE_ORGANIZATION_WORKSPACE);
   private sequence = 1;
+
+  async getTutorOnboardingDraft(
+    accountId: string,
+    marketCode: string,
+    displayName?: string,
+  ): Promise<TutorOnboardingDraft> {
+    await simulateNetworkDelay();
+    const catalog = await this.getCatalog(marketCode);
+    const individualPlan =
+      catalog.plans.find(
+        (plan) => plan.audience === "individual" && plan.isActive,
+      ) || catalog.plans[0];
+    return storageService.get<TutorOnboardingDraft>(tutorDraftKey(accountId), {
+      accountKind: "individual",
+      displayName: displayName || "Sophie Martin",
+      organizationName: "",
+      headline: "Professeure de mathématiques — collège et lycée",
+      subjectIds: ["subject_mathematics"],
+      levelIds: ["middle_school", "high_school"],
+      deliveryModes: ["online", "in_person"],
+      city: "Lyon",
+      radiusKm: COURSE_CONSTRAINTS.learnerRequestDefaultRadiusKm,
+      languages: ["fr"],
+      experienceYears: 8,
+      biography:
+        "Professeure certifiée, j’accompagne les élèves pour retrouver confiance, consolider leurs bases et préparer leurs examens.",
+      teachingApproach:
+        "Je pars des acquis de l’élève, rends les objectifs visibles et alterne explications, exercices guidés et autonomie.",
+      priceMinor: 3_200,
+      availability: [
+        "weekday_evening",
+        "wednesday_afternoon",
+        "saturday_morning",
+      ],
+      planId: individualPlan.id,
+    });
+  }
+
+  async saveTutorOnboardingDraft(
+    accountId: string,
+    draft: TutorOnboardingDraft,
+  ): Promise<void> {
+    await simulateNetworkDelay();
+    storageService.set(tutorDraftKey(accountId), draft);
+  }
+
+  async submitTutorOnboarding(
+    accountId: string,
+    marketCode: string,
+    draft: TutorOnboardingDraft,
+  ): Promise<{ profile: TutorProfile; offer: CourseOffer }> {
+    await simulateNetworkDelay();
+    const catalog = await this.getCatalog(marketCode);
+    const primarySubjectId = draft.subjectIds[0];
+    if (!primarySubjectId)
+      throw new Error("Sélectionnez au moins une matière.");
+
+    const now = new Date().toISOString();
+    const organizationId =
+      draft.accountKind === "organization"
+        ? draft.organizationId || this.organizationWorkspace.organization.id
+        : undefined;
+    const createdProfile = await this.saveTutorProfile({
+      organizationId,
+      profileType:
+        draft.accountKind === "organization"
+          ? "organization_member"
+          : "individual",
+      slug: slugify(draft.displayName),
+      displayName: draft.displayName,
+      avatarUrl: TUTOR_ONBOARDING_POLICY.avatarUrl,
+      headline: draft.headline,
+      biography: draft.biography,
+      teachingApproach: draft.teachingApproach,
+      experienceYears: draft.experienceYears,
+      subjectIds: draft.subjectIds,
+      levelIds: draft.levelIds,
+      languages: draft.languages,
+      deliveryModes: draft.deliveryModes,
+      serviceArea: draft.deliveryModes.includes("in_person")
+        ? {
+            marketCode,
+            cityLabel: draft.city,
+            radiusKm: draft.radiusKm,
+            publicLocationLabel: `${draft.city} et alentours`,
+          }
+        : undefined,
+      availabilityRules: [
+        {
+          id: TUTOR_ONBOARDING_POLICY.availability.id,
+          dayOfWeek: TUTOR_ONBOARDING_POLICY.availability.dayOfWeek,
+          startsAtLocal: TUTOR_ONBOARDING_POLICY.availability.startsAtLocal,
+          endsAtLocal: TUTOR_ONBOARDING_POLICY.availability.endsAtLocal,
+          timezone: catalog.config.timezone,
+          deliveryModes: draft.deliveryModes,
+          effectiveFrom: now.slice(0, 10),
+        },
+      ],
+      availabilityExceptions: [],
+      responseTimeMinutes: 0,
+      responseRatePercent: 0,
+      reviewCount: 0,
+      ratingIsStatisticallyMeaningful: false,
+      mediaUrls: [],
+      qualifications: [
+        {
+          id: TUTOR_ONBOARDING_POLICY.qualification.id,
+          type: TUTOR_ONBOARDING_POLICY.qualification.type,
+          label: TUTOR_ONBOARDING_POLICY.qualification.label,
+          evidenceStatus: "self_declared",
+          verificationStatus: "not_submitted",
+          publicLabel: TUTOR_ONBOARDING_POLICY.qualification.publicLabel,
+          publicDetailsAllowed: true,
+        },
+      ],
+      verifications: {
+        email: "verified",
+        phone: "verified",
+        identity: "not_submitted",
+        qualifications: "not_submitted",
+        business:
+          draft.accountKind === "organization" ? "pending" : "not_submitted",
+        representative:
+          draft.accountKind === "organization" ? "pending" : "not_submitted",
+        payment: "not_submitted",
+        payout: "not_submitted",
+        personalServicesEligibility: "not_submitted",
+      },
+      taxEligibility: {
+        status: "not_submitted",
+        publicWording: catalog.config.taxEligibilityWording,
+      },
+      planId: draft.planId,
+      moderationStatus: "pending_review",
+      profileCompletionPercent:
+        TUTOR_ONBOARDING_POLICY.profileCompletionPercent,
+      isFeatured: false,
+    });
+    const profile = { ...createdProfile, userId: accountId };
+    this.tutors.set(profile.id, clone(profile));
+
+    const offer = await this.createCourseOffer({
+      tutorProfileId: profile.id,
+      organizationId: profile.organizationId,
+      slug: `${slugify(primarySubjectId)}-${profile.slug}`,
+      title: draft.headline,
+      description: `${draft.biography}\n\n${draft.teachingApproach}`,
+      subjectId: primarySubjectId,
+      levelIds: draft.levelIds,
+      goalIds: [...TUTOR_ONBOARDING_POLICY.goals],
+      languages: draft.languages,
+      deliveryModes: draft.deliveryModes,
+      serviceArea: profile.serviceArea,
+      pricingOptions: [
+        {
+          id: "hourly-onboarding",
+          type: "hourly",
+          label: "Cours à l’heure",
+          price: {
+            amountMinor: draft.priceMinor,
+            currency: catalog.config.currency,
+          },
+          durationMinutes: TUTOR_ONBOARDING_POLICY.availability.durationMinutes,
+          isActive: true,
+        },
+      ],
+      availabilitySummary: TUTOR_ONBOARDING_POLICY.availability.summary,
+      trialLessonAvailable: false,
+      status: "pending_review",
+      marketCodes: [marketCode],
+      capacityStatus: "available",
+    });
+    await this.clearTutorOnboardingDraft(accountId);
+    return { profile: clone(profile), offer };
+  }
+
+  async clearTutorOnboardingDraft(accountId: string): Promise<void> {
+    await simulateNetworkDelay();
+    storageService.remove(tutorDraftKey(accountId));
+  }
+
+  async getLearnerRequestDraft(
+    accountId: string,
+    _marketCode: string,
+    subjectId = "",
+  ): Promise<LearnerRequestProgressDraft> {
+    await simulateNetworkDelay();
+    const stored = storageService.get<LearnerRequestProgressDraft | null>(
+      learnerDraftKey(accountId),
+      null,
+    );
+    return {
+      levelId: "",
+      objective: "",
+      preferredSchedule: [],
+      deliveryModes: ["online"],
+      city: "",
+      radiusKm: COURSE_CONSTRAINTS.learnerRequestDefaultRadiusKm,
+      budgetMinEuros: "",
+      budgetMaxEuros: "",
+      desiredStartDate: "",
+      context: "",
+      learnerAgeBand: "adult",
+      ...(stored || {}),
+      subjectId: stored?.subjectId || subjectId,
+    };
+  }
+
+  async saveLearnerRequestDraft(
+    accountId: string,
+    draft: LearnerRequestProgressDraft,
+  ): Promise<void> {
+    await simulateNetworkDelay();
+    storageService.set(learnerDraftKey(accountId), draft);
+  }
+
+  async clearLearnerRequestDraft(accountId: string): Promise<void> {
+    await simulateNetworkDelay();
+    storageService.remove(learnerDraftKey(accountId));
+  }
 
   private resolvedOrganizationPlan() {
     const catalog = applyMonetizationToCourseCatalog(

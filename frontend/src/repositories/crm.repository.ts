@@ -14,6 +14,7 @@ import {
   ProspectResearchCandidate,
 } from "../domains/crm/crm.types";
 import { storageService } from "../services/storage.service";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 export interface CrmOverviewStats {
   totalContacts: number;
@@ -484,7 +485,7 @@ export class MockCrmRepository implements ICrmRepository {
       lifecycle: contact.lifecycle || "prospect",
       qualification: contact.qualification || "medium",
       ownerName: contact.ownerName || "Antoine Fabre",
-      marketCode: contact.marketCode || "FR",
+      marketCode: contact.marketCode || DEFAULT_MARKET_CODE,
       tags: contact.tags || [],
       source: contact.source || "manual",
       doNotContact: !!contact.doNotContact,
@@ -544,7 +545,7 @@ export class MockCrmRepository implements ICrmRepository {
       contactIds: [],
       ownerName: company.ownerName || "Antoine Fabre",
       tags: company.tags || [],
-      marketCode: company.marketCode || "FR",
+      marketCode: company.marketCode || DEFAULT_MARKET_CODE,
       source: company.source || "manual",
       doNotContact: !!company.doNotContact,
       createdAt: now,
@@ -603,7 +604,7 @@ export class MockCrmRepository implements ICrmRepository {
       },
       probability: opp.probability ?? 50,
       ownerName: opp.ownerName || "Antoine Fabre",
-      marketCode: opp.marketCode || "FR",
+      marketCode: opp.marketCode || DEFAULT_MARKET_CODE,
       createdAt: now,
       updatedAt: now,
       ...opp,

@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -109,7 +110,10 @@ export const CollectionsPage: React.FC = () => {
     setIsLoading(true);
 
     listingRepository
-      .getListings({ limit: 60, sortBy: "date_desc" })
+      .getListings({
+        limit: PAGE_SIZES.collectionListings,
+        sortBy: "date_desc",
+      })
       .then((res) => {
         if (!isMounted) return;
         const fetched = res.listings || [];
@@ -204,7 +208,7 @@ export const CollectionsPage: React.FC = () => {
       {/* 2. Header / Hero Section */}
       {selectedCollection ? (
         <section className="relative bg-gradient-to-b from-stone-900 to-stone-950 text-white pt-8 pb-12 sm:py-14 overflow-hidden">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(var(--color-primary)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+          <div className="collections-dot-pattern absolute inset-0 opacity-20 pointer-events-none" />
 
           <Container className="relative z-raised">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -376,7 +380,7 @@ export const CollectionsPage: React.FC = () => {
                   <Link
                     key={col.id}
                     to={`/collections/${col.slug}`}
-                    className="group relative flex flex-col justify-between bg-white rounded-3xl border border-stone-200/90 hover:border-stone-300 shadow-sm hover:shadow-xl transition-all duration-normal overflow-hidden active:scale-[0.99]"
+                    className="group relative flex flex-col justify-between bg-white rounded-3xl border border-stone-200/90 hover:border-stone-300 shadow-sm hover:shadow-xl transition-all duration-normal overflow-hidden active:scale-95"
                   >
                     {/* Media Well */}
                     <div className="relative w-full h-52 overflow-hidden bg-stone-100 shrink-0">

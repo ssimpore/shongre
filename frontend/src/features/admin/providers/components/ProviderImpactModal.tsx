@@ -5,6 +5,7 @@ import { providerService } from "../../../../domains/providers/provider.service"
 import { Modal } from "../../../../design-system/primitives/Modal";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { marketService } from "../../../../domains/market/market.service";
 
 interface ProviderImpactModalProps {
   isOpen: boolean;
@@ -23,10 +24,11 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const defaultMarket = marketService.getDefaultMarket();
 
   const impact = useMemo(() => {
-    return providerService.analyzeImpact(provider.id, "FR");
-  }, [provider]);
+    return providerService.analyzeImpact(provider.id, defaultMarket.code);
+  }, [defaultMarket.code, provider]);
 
   const handleConfirm = async () => {
     setIsProcessing(true);
@@ -84,7 +86,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
                   key={m}
                   className="px-2 py-0.5 rounded bg-stone-200 text-stone-800 font-medium"
                 >
-                  {m} (Hérité de FR)
+                  {m} (Hérité de {defaultMarket.code})
                 </span>
               ))}
             </div>

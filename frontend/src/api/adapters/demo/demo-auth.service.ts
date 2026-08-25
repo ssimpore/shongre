@@ -6,6 +6,7 @@ import {
   type RegisterProfessionalInput,
   type SocialAuthStartInput,
   type SocialAuthProvider,
+  type MfaSetupView,
 } from "../../contracts/auth.contract";
 import { userRepository } from "../../../repositories/user.repository";
 import { storageService } from "../../../services/storage.service";
@@ -21,6 +22,8 @@ import {
   verifyPasswordHash,
 } from "../../../domains/auth/auth.service";
 import { resolveSafeReturn } from "../../../security/safe-return";
+import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
+import { minutesToMilliseconds } from "../../../utilities/time";
 
 const IDENTITIES_KEY = "shongre_demo_auth_identities_v2";
 const RECENT_AUTH_KEY = "shongre_demo_recent_auth_v1";
@@ -31,18 +34,16 @@ type DemoIdentityState = Record<
 >;
 
 function readIdentities(): DemoIdentityState {
-  try {
-    return JSON.parse(
-      localStorage.getItem(IDENTITIES_KEY) || "{}",
-    ) as DemoIdentityState;
-  } catch {
-    return {};
-  }
+  return storageService.get<DemoIdentityState>(IDENTITIES_KEY, {});
 }
 
 function writeIdentities(value: DemoIdentityState): void {
-  localStorage.setItem(IDENTITIES_KEY, JSON.stringify(value));
+  storageService.set(IDENTITIES_KEY, value);
 }
+
+const requiresRecentAuthentication = () =>
+  Date.now() - storageService.get<number>(RECENT_AUTH_KEY, 0) >
+  minutesToMilliseconds(AUTH_CONSTRAINTS.reauthenticationLifetimeMinutes);
 
 function currentUserOrThrow(): UserProfile {
   const user = storageService.getCurrentUser();
@@ -51,6 +52,7 @@ function currentUserOrThrow(): UserProfile {
 }
 
 export class DemoAuthService implements AuthServiceContract {
+  private pendingMfaSetup: MfaSetupView | null = null;
   async getCurrentUser(): Promise<UserProfile | null> {
     await simulateNetworkDelay();
     return storageService.getCurrentUser();
@@ -66,6 +68,62 @@ export class DemoAuthService implements AuthServiceContract {
   async loginWithMFA(tempToken: string, code: string): Promise<AuthResult> {
     await simulateNetworkDelay();
     return demoEngine.verifyMFALogin(tempToken, code);
+  }
+
+  async getMfaStatus() {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    const required = user.accountType === "staff" || Boolean(user.staffRole);
+    return {
+      // Seeded staff personas represent provisioned internal accounts. Keeping
+      // their session verified preserves one-click role switching while the
+      // API adapter exercises the real enrollment and step-up flow.
+      enabled: required || Boolean(user.mfa?.isEnabled || user.mfaEnabled),
+      required,
+      backupCodesRemaining:
+        user.mfa?.backupCodes?.filter((value) => !value.isUsed).length ?? 0,
+      sessionVerified:
+        required || Boolean(user.mfa?.isEnabled || user.mfaEnabled),
+    };
+  }
+
+  async beginMfaEnrollment(): Promise<MfaSetupView> {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    const setup = demoEngine.generateMFASetup(user.id);
+    this.pendingMfaSetup = {
+      secret: setup.secret,
+      otpauthUri: `otpauth://totp/Shongre:${encodeURIComponent(user.email)}?secret=${setup.secret}&issuer=Shongre`,
+      backupCodes: setup.backupCodes,
+    };
+    return this.pendingMfaSetup;
+  }
+
+  async confirmMfaEnrollment(code: string): Promise<void> {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    if (!this.pendingMfaSetup) throw new Error("Aucune activation en attente.");
+    const result = demoEngine.enableMFA(
+      user.id,
+      code,
+      this.pendingMfaSetup.backupCodes,
+    );
+    if (!result.success) throw new Error(result.message);
+    this.pendingMfaSetup = null;
+  }
+
+  async verifySessionMfa(code: string): Promise<void> {
+    await simulateNetworkDelay();
+    if (code.trim() !== "123456") throw new Error("Code de sécurité invalide.");
+  }
+
+  async disableMfa(code: string): Promise<void> {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    if (user.accountType === "staff" || user.staffRole)
+      throw new Error("La double authentification est obligatoire.");
+    const result = demoEngine.disableMFA(user.id, code);
+    if (!result.success) throw new Error(result.message);
   }
 
   async registerIndividual(
@@ -185,10 +243,7 @@ export class DemoAuthService implements AuthServiceContract {
     const signedIn = storageService.getCurrentUser();
     if (input.intent === "link") {
       const user = currentUserOrThrow();
-      if (
-        Date.now() - Number(localStorage.getItem(RECENT_AUTH_KEY) || 0) >
-        10 * 60 * 1000
-      ) {
+      if (requiresRecentAuthentication()) {
         throw new Error(
           "Confirmez votre identité avant de connecter un compte.",
         );
@@ -272,9 +327,7 @@ export class DemoAuthService implements AuthServiceContract {
         },
       ),
       sessions,
-      recentAuthenticationRequired:
-        Date.now() - Number(localStorage.getItem(RECENT_AUTH_KEY) || 0) >
-        10 * 60 * 1000,
+      recentAuthenticationRequired: requiresRecentAuthentication(),
     };
   }
 
@@ -284,16 +337,13 @@ export class DemoAuthService implements AuthServiceContract {
     if (!verifyPasswordHash(password, user.passwordHash)) {
       throw new Error("Identifiants invalides.");
     }
-    localStorage.setItem(RECENT_AUTH_KEY, String(Date.now()));
+    storageService.set(RECENT_AUTH_KEY, Date.now());
   }
 
   async unlinkProvider(provider: SocialAuthProvider): Promise<void> {
     await simulateNetworkDelay();
     const user = currentUserOrThrow();
-    if (
-      Date.now() - Number(localStorage.getItem(RECENT_AUTH_KEY) || 0) >
-      10 * 60 * 1000
-    ) {
+    if (requiresRecentAuthentication()) {
       throw new Error(
         "Confirmez votre identité avant de modifier vos méthodes de connexion.",
       );

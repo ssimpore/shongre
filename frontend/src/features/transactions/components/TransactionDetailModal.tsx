@@ -13,6 +13,8 @@ import { FormField, Input } from "../../../design-system/primitives/FormField";
 import { Image } from "../../../design-system/primitives/Image";
 import { formatPrice, formatRelativeDate } from "../../../utilities/formatters";
 import { DisputeModal } from "./DisputeModal";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { ORDER_HANDOVER_POLICY } from "../../../api/contracts/orders.contract";
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
@@ -43,6 +45,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   currentUser,
   onUpdate,
 }) => {
+  const { currentLocale } = useMarketLocation();
   const [tx, setTx] = useState(transaction);
   const [handoverCode, setHandoverCode] = useState<{
     code: string;
@@ -208,7 +211,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     <p className="mt-2 text-xs text-stone-600">
                       Expire à{" "}
                       {new Date(handoverCode.expiresAt).toLocaleTimeString(
-                        "fr-FR",
+                        currentLocale,
                         { hour: "2-digit", minute: "2-digit" },
                       )}
                       .
@@ -221,7 +224,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     onClick={issueHandoverCode}
                     disabled={isLoading}
                   >
-                    Générer un code valable 30 minutes
+                    Générer un code valable{" "}
+                    {ORDER_HANDOVER_POLICY.lifetimeMinutes} minutes
                   </Button>
                 )}
               </section>
@@ -234,7 +238,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 <FormField label="Code communiqué par l’acheteur">
                   <Input
                     inputMode="numeric"
-                    maxLength={4}
+                    maxLength={ORDER_HANDOVER_POLICY.codeLength}
                     value={sellerPin}
                     onChange={(event) =>
                       setSellerPin(event.target.value.replace(/\D/g, ""))
@@ -244,7 +248,10 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 <Button
                   variant="primary"
                   onClick={confirmHandover}
-                  disabled={isLoading || sellerPin.length !== 4}
+                  disabled={
+                    isLoading ||
+                    sellerPin.length !== ORDER_HANDOVER_POLICY.codeLength
+                  }
                 >
                   Confirmer la remise
                 </Button>

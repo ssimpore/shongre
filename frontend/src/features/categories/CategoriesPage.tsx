@@ -318,7 +318,7 @@ export const CategoriesPage: React.FC = () => {
                           <Link
                             key={sub.id}
                             to={`/categorie/${cat.slug}?subCategory=${sub.slug}`}
-                            className="inline-flex items-center min-h-6 text-micro font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-[170px]"
+                            className="inline-flex items-center min-h-6 text-micro font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-42.5"
                             title={getTaxonomyLabel(sub, "compact")}
                           >
                             {getTaxonomyLabel(sub, "compact")}

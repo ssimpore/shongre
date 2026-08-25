@@ -39,6 +39,12 @@ export class HttpAutoService implements AutoServiceContract {
       `/auto/vehicles/${encodeURIComponent(idOrSlug)}`,
     );
   }
+  getOrCreateDraft(
+    _ownerUserId: string,
+    marketCode: string,
+  ): Promise<VehicleDraft> {
+    return httpClient.post<VehicleDraft>("/auto/drafts", { marketCode });
+  }
   async getDraft(draftId: string) {
     try {
       return await httpClient.get<VehicleDraft>(
@@ -107,15 +113,19 @@ export class HttpAutoService implements AutoServiceContract {
     );
   }
   async getFavoriteVehicleIds(_accountId: string): Promise<string[]> {
-    return [];
+    const result = await httpClient.get<{ vehicleIds: string[] }>(
+      "/auto/favorites",
+    );
+    return result.vehicleIds;
   }
   async toggleFavoriteVehicle(
     _accountId: string,
-    _vehicleId: string,
+    vehicleId: string,
   ): Promise<boolean> {
-    throw new Error(
-      "Les favoris Auto seront persistés après migration des favoris verticaux.",
+    const result = await httpClient.post<{ isFavorite: boolean }>(
+      `/auto/vehicles/${encodeURIComponent(vehicleId)}/favorite`,
     );
+    return result.isFavorite;
   }
   updateMarketConfig(marketCode: string, patch: Partial<AutoMarketConfig>) {
     return httpClient.put<AutoMarketConfig>(

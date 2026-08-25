@@ -12,6 +12,7 @@ import type {
   DiscoveryConfiguration,
   DiscoveryMetrics,
 } from "@shongre/contracts/discovery";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -95,7 +96,9 @@ export class HttpAdminService implements AdminServiceContract {
     >("/admin/audit-logs");
   }
 
-  async getTrendingConfig(marketCode = "FR"): Promise<TrendingAdminConfig> {
+  async getTrendingConfig(
+    marketCode = DEFAULT_MARKET_CODE,
+  ): Promise<TrendingAdminConfig> {
     return httpClient.get<TrendingAdminConfig>("/admin/trending/config", {
       params: { market: marketCode },
     });
@@ -103,7 +106,7 @@ export class HttpAdminService implements AdminServiceContract {
 
   async updateTrendingConfig(
     updates: Partial<TrendingAdminConfig>,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
     return httpClient.put<TrendingAdminConfig>(
       "/admin/trending/config",
@@ -121,14 +124,14 @@ export class HttpAdminService implements AdminServiceContract {
     );
   }
 
-  async getDiscoveryConfiguration(marketCode = "FR") {
+  async getDiscoveryConfiguration(marketCode = DEFAULT_MARKET_CODE) {
     return httpClient.get<DiscoveryConfiguration>(
       "/admin/discovery/configuration",
       { params: { marketCode } },
     );
   }
 
-  async getDiscoveryMetrics(marketCode = "FR") {
+  async getDiscoveryMetrics(marketCode = DEFAULT_MARKET_CODE) {
     return httpClient.get<DiscoveryMetrics>("/admin/discovery/metrics", {
       params: { marketCode },
     });

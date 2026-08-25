@@ -29,9 +29,9 @@ import { IdentityVerificationModal } from "./components/IdentityVerificationModa
 import { BusinessVerificationModal } from "./components/BusinessVerificationModal";
 import { BankPayoutModal } from "./components/BankPayoutModal";
 import { PhoneVerificationModal } from "../auth/components/PhoneVerificationModal";
-import { MFAModal } from "../auth/components/MFAModal";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useToast } from "../../app/providers/ToastProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 const ACTION_LABELS: Record<ComplianceAction, string> = {
   browse: "Parcourir Shongre",
@@ -125,6 +125,7 @@ export const VerificationCenterPage: React.FC = () => {
   });
   const navigate = useNavigate();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
   const [searchParams] = useSearchParams();
   const { currentUser, dimensions, refreshUser } = useVerification();
   const [activeModal, setActiveModal] =
@@ -157,8 +158,8 @@ export const VerificationCenterPage: React.FC = () => {
           currentUser.id,
           {
             requestedAction,
-            jurisdiction: currentUser.country || "FR",
-            marketCode: currentUser.country || "FR",
+            jurisdiction: currentUser.country || activeMarket.countryCode,
+            marketCode: activeMarket.code,
             transactionContext:
               requestedAction === "receive_payout" ||
               requestedAction === "accept_online_payment"
@@ -166,7 +167,7 @@ export const VerificationCenterPage: React.FC = () => {
                     transactionType: "direct_purchase",
                     contractConclusionMode: "platform",
                     paymentFlow: "psp_marketplace",
-                    currency: "EUR",
+                    currency: activeMarket.currency,
                   }
                 : undefined,
           },
@@ -181,7 +182,7 @@ export const VerificationCenterPage: React.FC = () => {
     } finally {
       setIsEvaluating(false);
     }
-  }, [currentUser, requestedAction]);
+  }, [activeMarket, currentUser, requestedAction]);
 
   useEffect(() => {
     void evaluate();
@@ -243,7 +244,7 @@ export const VerificationCenterPage: React.FC = () => {
     )
       setActiveModal("bank_payout");
     else if (dimension === "phone") setActiveModal("phone");
-    else if (dimension === "mfa") setActiveModal("mfa");
+    else if (dimension === "mfa") navigate("/compte/securite-compte#mfa");
     else if (dimension === "email") navigate("/verification-email");
     else if (dimension === "risk" || dimension === "enhanced_review") {
       if (!currentUser) return;
@@ -477,14 +478,6 @@ export const VerificationCenterPage: React.FC = () => {
           userId={currentUser.id}
           initialPhone={currentUser.phone}
           isOpen={activeModal === "phone"}
-          onClose={() => setActiveModal(null)}
-          onSuccess={completeAndRefresh}
-        />
-      ) : null}
-      {currentUser ? (
-        <MFAModal
-          userId={currentUser.id}
-          isOpen={activeModal === "mfa"}
           onClose={() => setActiveModal(null)}
           onSuccess={completeAndRefresh}
         />

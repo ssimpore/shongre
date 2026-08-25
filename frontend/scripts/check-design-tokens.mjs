@@ -111,6 +111,24 @@ const BANNED = [
     re: /\b(?:[a-z0-9-]+:)*(?:min-)?h-\[(?:32|36|40|42|44|48|52|56)px\]/,
     hint: "h-control-{sm|md|touch|lg|fab}",
   },
+  /* Arbitrary utilities put visual values back into feature modules and make
+     equivalent layouts drift. If a role is missing, add a semantic token to
+     @shongre/design-tokens and consume its named utility instead. */
+  {
+    re: /\b(?:[a-z0-9-]+:)*[a-z][a-z0-9-]*-\[[^\]]+\]/,
+    hint: "a named utility backed by the canonical design-token package",
+  },
+  {
+    re: /\bstyle\s*=\s*\{\{/,
+    hint: "a shared component, variant, or named token-backed CSS rule",
+  },
+  /* Form bounds are product policy. A literal in a page can drift from the
+     schema or adapter while still looking valid in the browser. Keep bounds in
+     a named domain/contract constraint and consume the same value everywhere. */
+  {
+    re: /\b(?:min|max|minLength|maxLength|step)\s*=\s*(?:\{\s*)?["']?-?\d[\d_.]*/,
+    hint: "a named constraint shared with the relevant schema or service",
+  },
 ];
 
 /* ---------------------------------------------------------------------------

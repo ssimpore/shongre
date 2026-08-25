@@ -19,13 +19,8 @@ import { Button } from "../../design-system/primitives/Button";
 import { Input } from "../../design-system/primitives/FormField";
 import { useAuthorization } from "../../security/useAuthorization";
 import { AdminCommissionPolicyEditor } from "./AdminCommissionPolicyEditor";
-
-function money(amountMinor: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
-}
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 function modelLabel(policy: CommissionPolicy) {
   const effect = policy.rules[0]?.effect;
@@ -73,10 +68,12 @@ interface AdminCommissionPanelProps {
 }
 
 export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
+  const { activeMarket } = useMarketLocation();
+  const { formatMoneyMinor } = useRegionalFormatters();
   const { can } = useAuthorization();
   const [input, setInput] = useState({
-    countryCode: "FR",
-    marketCode: "FR",
+    countryCode: activeMarket.countryCode,
+    marketCode: activeMarket.code,
     verticalId: "general",
     categoryId: "",
     sellerType: "professional" as
@@ -250,7 +247,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
         </div>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)]">
+      <div className="grid gap-4 xl:grid-cols-commission-content-aside">
         <form
           onSubmit={(event) => void simulate(event)}
           className="rounded-lg border border-border-base p-4"
@@ -402,7 +399,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   <div key={String(label)}>
                     <dt className="text-stone-500">{label}</dt>
                     <dd className="font-black text-stone-900">
-                      {money(Number(value), result.currency)}
+                      {formatMoneyMinor(Number(value), result.currency)}
                     </dd>
                   </div>
                 ))}

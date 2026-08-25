@@ -1,10 +1,10 @@
 import { AppProviders } from "./app/providers/AppProviders";
 import { AppRouter } from "./app/router";
 
-export function App() {
+export function App({ initialPath = "/" }: { initialPath?: string }) {
   return (
     <AppProviders>
-      <AppRouter />
+      <AppRouter initialPath={initialPath} />
     </AppProviders>
   );
 }

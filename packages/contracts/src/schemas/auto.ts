@@ -3,6 +3,26 @@ import { marketCodeSchema, moneySchema } from "./primitives";
 
 /** Public, versioned contracts for the specialized automotive vertical. */
 export const AUTO_SCHEMA_VERSION = 1 as const;
+export const AUTO_CONSTRAINTS = {
+  modelYear: { min: 1880, absoluteMax: 2200, futureAllowanceYears: 1 },
+  publication: { firstStep: 1, stepCount: 11, requiredCompletedSteps: 10 },
+  identity: { vinCheckMinLength: 8, registrationCheckMinLength: 5 },
+  listing: {
+    locationLabelMinLength: 2,
+    titleMinLength: 10,
+    descriptionMinLength: 60,
+  },
+  nonNegativeInteger: { min: 0, step: 1 },
+  nonNegativeDecimal: { min: 0, step: 0.1 },
+  moneyMajor: { min: 0, step: 1 },
+  minorUnitsPerMajor: 100,
+} as const;
+
+export const getMaximumVehicleModelYear = (currentYear: number) =>
+  Math.min(
+    AUTO_CONSTRAINTS.modelYear.absoluteMax,
+    currentYear + AUTO_CONSTRAINTS.modelYear.futureAllowanceYears,
+  );
 export const autoVerticalSchema = z.literal("automotive");
 export const autoSchemaVersionSchema = z.literal(AUTO_SCHEMA_VERSION);
 
@@ -213,15 +233,29 @@ export const vehicleCatalogEntrySchema = z.object({
   vehicleTypes: z.array(vehicleTypeSchema).min(1),
   slug: z.string().min(1),
   label: z.string().min(1),
-  startsYear: z.number().int().min(1880).max(2200).optional(),
-  endsYear: z.number().int().min(1880).max(2200).optional(),
+  startsYear: z
+    .number()
+    .int()
+    .min(AUTO_CONSTRAINTS.modelYear.min)
+    .max(AUTO_CONSTRAINTS.modelYear.absoluteMax)
+    .optional(),
+  endsYear: z
+    .number()
+    .int()
+    .min(AUTO_CONSTRAINTS.modelYear.min)
+    .max(AUTO_CONSTRAINTS.modelYear.absoluteMax)
+    .optional(),
   isActive: z.boolean(),
 });
 export type VehicleCatalogEntry = z.infer<typeof vehicleCatalogEntrySchema>;
 
 export const vehicleTechnicalSchema = z.object({
   bodyType: z.string().optional(),
-  modelYear: z.number().int().min(1880).max(2200),
+  modelYear: z
+    .number()
+    .int()
+    .min(AUTO_CONSTRAINTS.modelYear.min)
+    .max(AUTO_CONSTRAINTS.modelYear.absoluteMax),
   firstRegistrationDate: z.string().optional(),
   mileage: z.number().int().nonnegative(),
   mileageUnit: mileageUnitSchema,
@@ -490,8 +524,18 @@ export const vehicleDraftSchema = z.object({
   ownerUserId: z.string().min(1),
   schemaVersion: autoSchemaVersionSchema,
   marketCode: marketCodeSchema,
-  currentStep: z.number().int().min(1).max(11),
-  completedSteps: z.array(z.number().int().min(1).max(11)),
+  currentStep: z
+    .number()
+    .int()
+    .min(AUTO_CONSTRAINTS.publication.firstStep)
+    .max(AUTO_CONSTRAINTS.publication.stepCount),
+  completedSteps: z.array(
+    z
+      .number()
+      .int()
+      .min(AUTO_CONSTRAINTS.publication.firstStep)
+      .max(AUTO_CONSTRAINTS.publication.stepCount),
+  ),
   data: z.record(z.string(), z.unknown()),
   duplicateCheck: z.enum(["not_checked", "clear", "possible_match", "blocked"]),
   updatedAt: z.string(),

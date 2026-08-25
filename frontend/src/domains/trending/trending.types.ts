@@ -1,5 +1,28 @@
 import type { Listing } from "../../types";
 
+export const TRENDING_ADMIN_CONSTRAINTS = {
+  topicCount: { min: 1, max: 12, step: 1 },
+  minimumActivity: { min: 0, max: 1, step: 0.01 },
+  displayPeriodDays: { min: 1, max: 30, step: 1 },
+  cacheTtlMinutes: { min: 5, max: 120, step: 1 },
+  publicTitle: { maxLength: 120 },
+  publicSubtitle: { maxLength: 240 },
+} as const;
+
+/** Central scoring policy used by the deterministic discovery engine. */
+export const TRENDING_SCORE_POLICY = {
+  normalized: { min: 0, max: 1, stable: 0.5 },
+  growth: { min: -1, max: 1 },
+  timeDecay: { defaultHalfLifeDays: 7, minimumHalfLifeDays: 0.5 },
+  viewGrowthWeights: { supply: 0.35, demand: 0.65 },
+  activityWeights: {
+    activeListings: 0.35,
+    views: 0.25,
+    favorites: 0.2,
+    contacts: 0.2,
+  },
+} as const;
+
 export type TrendingTopicType =
   | "category"
   | "subcategory"

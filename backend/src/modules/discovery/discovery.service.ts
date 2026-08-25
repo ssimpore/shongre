@@ -7,6 +7,7 @@ import {
 } from "@shongre/shared";
 import {
   discoveryConfigurationSchema,
+  discoveryChangeReasonSchema,
   type DiscoveryConfiguration,
   type PublisherVerificationStatus,
 } from "@shongre/contracts";
@@ -256,15 +257,16 @@ export class UnifiedDiscoveryService {
     input: { actorUserId: string; changeReason: string; activate: boolean },
   ): Promise<DiscoveryConfiguration> {
     const configuration = discoveryConfigurationSchema.parse(rawConfiguration);
-    if (!input.changeReason?.trim()) {
+    const reason = discoveryChangeReasonSchema.safeParse(input.changeReason);
+    if (!reason.success) {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Un motif de modification est requis.",
+        message: "Un motif de modification détaillé est requis.",
       });
     }
     return this.configurationRepository.saveVersion(configuration, {
       ...input,
-      changeReason: input.changeReason.trim(),
+      changeReason: reason.data,
     });
   }
 

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { ALL_ROUTES } from './routes';
-import { usePersona } from './personas';
+import { useEstablishedConsent, usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
 /**
@@ -13,6 +13,10 @@ import { waitForStableLayout } from './overflow';
  */
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 const BLOCKING_IMPACTS = new Set(['critical', 'serious']);
+
+test.beforeEach(async ({ page }) => {
+  await useEstablishedConsent(page);
+});
 
 test.describe('accessibility', () => {
   for (const route of ALL_ROUTES) {
@@ -211,6 +215,7 @@ test.describe('keyboard and focus', () => {
     await usePersona(page, 'guest');
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForStableLayout(page);
 
     const burger = page.getByRole('button', { name: /ouvrir le menu/i });
     await burger.click();

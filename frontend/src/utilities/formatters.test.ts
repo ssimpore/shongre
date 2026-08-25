@@ -4,6 +4,9 @@ import {
   formatRelativeDate,
   formatPrice,
   formatDate,
+  formatMoney,
+  formatCurrencySymbol,
+  getCurrencyDisplayName,
   formatPhoneNumber,
   formatLogTimestamp,
   plural,
@@ -197,6 +200,23 @@ describe("other formatters", () => {
     expect(formatPrice(120)).toContain("120");
     expect(formatPrice(0)).toBe("Don / Gratuit");
     expect(formatPrice(50)).toContain("50");
+  });
+
+  it("formats minor-unit money without treating zero as a donation", () => {
+    expect(
+      formatMoney({ amountMinor: 0, currency: "EUR" }, { locale: "fr-FR" }),
+    ).toContain("0");
+    expect(
+      formatMoney(
+        { amountMinor: 1_425_050, currency: "EUR" },
+        { locale: "fr-FR" },
+      ),
+    ).toContain("14 250,50");
+  });
+
+  it("derives currency labels and symbols from Intl", () => {
+    expect(formatCurrencySymbol("EUR", "fr-FR")).toBe("€");
+    expect(getCurrencyDisplayName("EUR", "en-US")).toBe("Euro");
   });
 
   it("formats dates properly", () => {

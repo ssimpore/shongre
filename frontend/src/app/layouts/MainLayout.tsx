@@ -17,7 +17,7 @@ export const MainLayout: React.FC = () => {
        today). Reserving it here rather than on `<main>` is deliberate: the
        footer is a sibling of `<main>`, so page-level padding cannot clear it —
        four footer legal links sat underneath the action bar at full scroll. */
-    <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-[var(--page-bottom-inset,0px)]">
+    <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-page-bottom-inset">
       <SkipLink />
       <AppScrollRestoration />
       <DemoRoleSwitcher />
@@ -28,7 +28,7 @@ export const MainLayout: React.FC = () => {
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex-1 pb-[var(--mobile-nav-total-h)] md:pb-0"
+        className="flex-1 pb-mobile-nav-clearance md:pb-0"
       >
         <Outlet />
       </main>

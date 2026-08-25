@@ -45,6 +45,13 @@ const staff = (path: string, capability: Capability): RoutePolicy => ({
  * policy. Protected navigation and router guards both read this registry.
  */
 export const ROUTE_POLICIES = {
+  staffMfa: {
+    path: "/securite-interne",
+    access: "authenticated",
+    accountTypes: ["staff"],
+    capability: undefined,
+    alternativeCapabilities: undefined,
+  },
   publishListing: customer("/deposer", "listing.create"),
   publishCourse: customer("/deposer/education", "course.profile.manage.own"),
   publishAuto: customer("/deposer/auto", "auto.vehicle.manage.own"),
@@ -73,6 +80,7 @@ export const ROUTE_POLICIES = {
   accountSecurity: customer("/compte/securite-compte"),
   accountType: customer("/compte/type-de-compte"),
   accountSupport: customer("/compte/support"),
+  accountModerationAppeals: customer("/compte/recours", "report.create"),
   accountSupportDetail: customer("/compte/support/:id"),
   accountNewsletter: customer("/compte/newsletter"),
   accountProfile: customer("/compte/profil", "profile.update.own"),
@@ -109,6 +117,7 @@ export const ROUTE_POLICIES = {
   ),
 
   adminOverview: staff("/admin", "admin.access"),
+  adminSupport: staff("/admin/support", "support.case.read"),
   adminModeration: {
     ...staff("/admin/moderation", "moderation.review"),
     alternativeCapabilities: ["report.review", "listing.moderate"],
@@ -128,6 +137,10 @@ export const ROUTE_POLICIES = {
   adminMonetization: staff("/admin/monetisation", "monetization.manage"),
   adminFinance: staff("/admin/finance", "finance.platform.read"),
   adminTrending: staff("/admin/tendances", "admin.configuration.manage"),
+  adminFeatureFlags: staff(
+    "/admin/fonctionnalites",
+    "admin.configuration.manage",
+  ),
   adminRoles: {
     ...staff("/admin/roles", "role.manage"),
     alternativeCapabilities: ["permission.manage"],

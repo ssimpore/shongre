@@ -5,6 +5,7 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { services } from "../../../api/client/service-registry";
 import { useVerification } from "../../../domains/verification/useVerification";
 import { useToast } from "../../../app/providers/ToastProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export interface IdentityVerificationModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const IdentityVerificationModal: React.FC<
 > = ({ isOpen, onClose, onSuccess, returnTo = "/compte/verification" }) => {
   const { currentUser, refreshUser } = useVerification();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export const IdentityVerificationModal: React.FC<
       const session = await services.verification.startIdentitySession({
         userId: currentUser.id,
         dimension: "identity",
-        jurisdiction: currentUser.country || "FR",
+        jurisdiction: currentUser.country || activeMarket.countryCode,
         returnTo,
       });
       refreshUser?.();

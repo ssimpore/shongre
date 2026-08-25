@@ -18,9 +18,11 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmPipelinePage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, currentLocale, currencySymbol } = useMarketLocation();
   usePageMeta({
     title: t("meta.crmPipeline.title"),
     description: t("meta.crmPipeline.description"),
@@ -40,7 +42,7 @@ export const CrmPipelinePage: React.FC = () => {
   const [oppType, setOppType] = useState<OpportunityType>(
     "pro_seller_acquisition",
   );
-  const [amountEuros, setAmountEuros] = useState("588");
+  const [amountMajor, setAmountMajor] = useState("588");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchOpportunities = async () => {
@@ -77,7 +79,7 @@ export const CrmPipelinePage: React.FC = () => {
       return;
     }
 
-    const valueMinor = Math.round(parseFloat(amountEuros || "0") * 100);
+    const valueMinor = Math.round(parseFloat(amountMajor || "0") * 100);
 
     setIsSubmitting(true);
     try {
@@ -87,17 +89,20 @@ export const CrmPipelinePage: React.FC = () => {
         primaryContactName: contactName.trim() || undefined,
         type: oppType,
         stage: "new",
-        estimatedValue: { amountMinor: valueMinor, currency: "EUR" },
+        estimatedValue: {
+          amountMinor: valueMinor,
+          currency: activeMarket.currency,
+        },
         probability: 30,
         ownerName: "Antoine Fabre",
-        marketCode: "FR",
+        marketCode: activeMarket.code,
       });
 
       setIsCreateModalOpen(false);
       setTitle("");
       setCompanyName("");
       setContactName("");
-      setAmountEuros("588");
+      setAmountMajor("588");
       fetchOpportunities();
       toast.success(
         "Opportunité créée dans le pipeline.",
@@ -125,10 +130,13 @@ export const CrmPipelinePage: React.FC = () => {
               {t("admin.crmPipelinePage.pipelineDesVentesForfaitsPro")}
             </h1>
             <span className="text-xs bg-primary-light text-primary font-black px-2.5 py-0.5 rounded-full">
-              {crmService.formatCrmMoney({
-                amountMinor: totalPipelineValue,
-                currency: "EUR",
-              })}
+              {crmService.formatCrmMoney(
+                {
+                  amountMinor: totalPipelineValue,
+                  currency: activeMarket.currency,
+                },
+                currentLocale,
+              )}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-stone-500">
@@ -155,7 +163,7 @@ export const CrmPipelinePage: React.FC = () => {
           whichever side has more content and makes the track keyboard-scrollable. */}
       <ScrollRail
         label={t("admin.crmPipelinePage.colonnesDuPipeline")}
-        className="flex gap-4 pb-4 items-start min-h-[600px]"
+        className="flex gap-4 pb-4 items-start min-h-150"
       >
         {PIPELINE_STAGES.map((stage, stageIndex) => {
           const stageOpps = opportunities.filter((o) => o.stage === stage.id);
@@ -180,15 +188,18 @@ export const CrmPipelinePage: React.FC = () => {
                   </span>
                 </div>
                 <span className="text-micro font-black text-stone-700 font-mono">
-                  {crmService.formatCrmMoney({
-                    amountMinor: stageTotal,
-                    currency: "EUR",
-                  })}
+                  {crmService.formatCrmMoney(
+                    {
+                      amountMinor: stageTotal,
+                      currency: activeMarket.currency,
+                    },
+                    currentLocale,
+                  )}
                 </span>
               </div>
 
               {/* Cards Stream */}
-              <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[70vh]">
+              <div className="space-y-2.5 flex-1 overflow-y-auto max-h-pipeline-column-max">
                 {stageOpps.length === 0 ? (
                   <div className="text-center py-8 text-stone-500 text-micro border border-dashed border-stone-200 rounded-2xl">
                     {t("admin.crmPipelinePage.aucuneOpportunite")}
@@ -211,7 +222,10 @@ export const CrmPipelinePage: React.FC = () => {
 
                       <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-100">
                         <strong className="text-primary font-black font-mono">
-                          {crmService.formatCrmMoney(opp.estimatedValue)}
+                          {crmService.formatCrmMoney(
+                            opp.estimatedValue,
+                            currentLocale,
+                          )}
                         </strong>
                         <span className="text-micro text-stone-500 font-medium">
                           {opp.probability}% prob.
@@ -242,7 +256,7 @@ export const CrmPipelinePage: React.FC = () => {
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
 
-                        <span className="truncate max-w-[120px]">
+                        <span className="truncate max-w-30">
                           {opp.primaryContactName || "Contact"}
                         </span>
 
@@ -337,11 +351,13 @@ export const CrmPipelinePage: React.FC = () => {
               />
             </FormField>
 
-            <FormField label={t("admin.crmPipelinePage.valeurEstimee")}>
+            <FormField
+              label={`${t("admin.crmPipelinePage.valeurEstimee")} (${currencySymbol})`}
+            >
               <Input
                 type="number"
-                value={amountEuros}
-                onChange={(e) => setAmountEuros(e.target.value)}
+                value={amountMajor}
+                onChange={(e) => setAmountMajor(e.target.value)}
                 placeholder="588"
               />
             </FormField>

@@ -9,13 +9,14 @@ import { Button } from "../../design-system/primitives/Button";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const ProDirectoryPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   usePageMeta({
     title: "Annuaire des vendeurs professionnels",
-    description:
-      "Trouvez un vendeur professionnel vérifié sur Shongre : boutiques, spécialités et avis clients, partout en France.",
+    description: `Trouvez un vendeur professionnel vérifié sur Shongre : boutiques, spécialités et avis clients, partout en ${activeMarket.name}.`,
     canonicalPath: "/professionnels",
   });
 

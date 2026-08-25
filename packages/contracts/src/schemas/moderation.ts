@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const MODERATION_CONSTRAINTS = {
+  appealReasonMinLength: 20,
+  appealReviewReasonMinLength: 10,
+  appealReasonMaxLength: 5_000,
+} as const;
+
 export const reportInputSchema = z
   .object({
     listingId: z.string().optional(),

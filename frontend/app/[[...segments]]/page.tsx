@@ -31,13 +31,11 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { segments = [] } = await params;
+  const pathname = normalizePathname(segments);
   /* Rendered on the server so a crawler sees the Product/ProfilePage schema in
      the initial HTML. The SPA emits the same shape after hydration, which is
      too late for anything that never runs the bundle. */
-  const structuredData = structuredDataForRoute(
-    normalizePathname(segments),
-    ORIGIN,
-  );
+  const structuredData = structuredDataForRoute(pathname, ORIGIN);
 
   return (
     <>
@@ -49,7 +47,7 @@ export default async function Page({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: structuredData }}
         />
       )}
-      <WebApplication />
+      <WebApplication pathname={pathname} />
     </>
   );
 }

@@ -32,10 +32,6 @@ export interface IAdminRepository {
       createdAt: string;
     }>
   >;
-  resolveReport(
-    reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
-  ): Promise<void>;
   createReport(report: {
     reporterId: string;
     listingId?: string;
@@ -100,13 +96,6 @@ export class DemoAdminRepository implements IAdminRepository {
     }>
   > {
     return [...this.reports];
-  }
-
-  async resolveReport(
-    reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
-  ): Promise<void> {
-    this.reports = this.reports.filter((r) => r.id !== reportId);
   }
 
   async createReport(report: {
@@ -241,25 +230,6 @@ export class PostgresAdminRepository implements IAdminRepository {
       }));
     } catch (error) {
       databaseFailure("admin.getReports", error);
-    }
-  }
-
-  async resolveReport(
-    reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
-  ): Promise<void> {
-    try {
-      const supabase = getSupabaseAdminClient();
-      const { error } = await (supabase.from("reports" as any) as any)
-        .update({
-          status: "resolved",
-          resolution_action: action,
-          resolved_at: new Date().toISOString(),
-        })
-        .eq("id", reportId);
-      if (error) databaseFailure("admin.resolveReport", error);
-    } catch (error) {
-      databaseFailure("admin.resolveReport", error);
     }
   }
 

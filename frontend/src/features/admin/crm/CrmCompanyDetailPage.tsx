@@ -28,8 +28,10 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { Skeleton } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmCompanyDetailPage: React.FC = () => {
+  const { currentLocale } = useMarketLocation();
   const { t } = useTranslation();
   usePageMeta({
     title: t("meta.crmCompanyDetail.title"),
@@ -348,7 +350,10 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <strong className="font-mono">
-                        {crmService.formatCrmMoney(opp.estimatedValue)}
+                        {crmService.formatCrmMoney(
+                          opp.estimatedValue,
+                          currentLocale,
+                        )}
                       </strong>
                       <Badge
                         variant={opp.stage === "won" ? "success" : "primary"}

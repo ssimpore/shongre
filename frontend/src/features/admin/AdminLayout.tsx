@@ -22,8 +22,11 @@ import {
   CarFront,
   Building2,
   Landmark,
+  Headphones,
+  Flag,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
   normalizePlatformRole,
   ROLE_DEFINITIONS,
@@ -37,6 +40,7 @@ import { DataModeSettingsControl } from "../../app/layouts/DataModeSettingsContr
 import { useDataMode } from "../../app/providers/DataModeProvider";
 
 export const AdminLayout: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
   const { mode } = useDataMode();
@@ -80,7 +84,9 @@ export const AdminLayout: React.FC = () => {
     /\s+\([^)]*\)\s*$/,
     "",
   );
-  const marketScope = currentUser?.marketScope?.countries || ["FR"];
+  const marketScope = currentUser?.marketScope?.countries || [
+    activeMarket.code,
+  ];
   const marketLabel = marketScope.includes("*")
     ? "Portée Globale (*)"
     : `Marché : ${marketScope.join(", ")}`;
@@ -92,6 +98,12 @@ export const AdminLayout: React.FC = () => {
       label: "Vue d'ensemble",
       icon: LayoutDashboard,
       show: canAccessRoute("adminOverview"),
+    },
+    {
+      to: "/admin/support",
+      label: "Support client",
+      icon: Headphones,
+      show: canAccessRoute("adminSupport"),
     },
     {
       to: "/admin/crm",
@@ -188,6 +200,12 @@ export const AdminLayout: React.FC = () => {
       label: "Tendances de la page d’accueil",
       icon: Flame,
       show: canAccessRoute("adminTrending"),
+    },
+    {
+      to: "/admin/fonctionnalites",
+      label: "Fonctionnalités",
+      icon: Flag,
+      show: canAccessRoute("adminFeatureFlags"),
     },
     {
       to: "/admin/roles",
@@ -365,7 +383,7 @@ export const AdminLayout: React.FC = () => {
               id="admin-section-menu"
               role="menu"
               aria-label={t("admin.adminLayout.sectionsDeLaConsole")}
-              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top"
+              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-admin-menu-max overflow-y-auto animate-in fade-in slide-in-from-top"
             >
               {visibleNavItems.map((item) => {
                 const Icon = item.icon;

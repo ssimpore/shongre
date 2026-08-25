@@ -9,12 +9,9 @@ import {
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
-import {
-  SupportRequest,
-  SupportRequestStatus,
-} from "../../domains/support/support.types";
+import type { SupportCase } from "@shongre/contracts/support";
 import { supportService } from "../../domains/support/support.service";
-import { supportRepository } from "../../repositories/support.repository";
+import { services } from "../../api/client/service-registry";
 import { formatDate } from "../../utilities/formatters";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -30,7 +27,7 @@ export const SupportRequestsPage: React.FC = () => {
   });
 
   const { currentUser } = useAuth();
-  const [requests, setRequests] = useState<SupportRequest[]>([]);
+  const [requests, setRequests] = useState<SupportCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -39,11 +36,12 @@ export const SupportRequestsPage: React.FC = () => {
       if (!currentUser) return;
       setLoading(true);
       try {
-        const res = await supportRepository.getRequests({
-          requesterId: currentUser.id,
-          status: filterStatus as SupportRequestStatus | "all",
-        });
-        setRequests(res.requests);
+        const result = await services.support.listOwnCases();
+        setRequests(
+          filterStatus === "all"
+            ? result
+            : result.filter((item) => item.status === filterStatus),
+        );
       } finally {
         setLoading(false);
       }
@@ -53,8 +51,8 @@ export const SupportRequestsPage: React.FC = () => {
 
   const tabs = [
     { id: "all", label: "Toutes les demandes" },
-    { id: "waiting_for_user", label: "Action requise" },
-    { id: "in_progress", label: "En cours" },
+    { id: "waiting_customer", label: "Action requise" },
+    { id: "waiting_internal", label: "En cours" },
     { id: "resolved", label: "Résolues" },
   ];
 
@@ -161,7 +159,7 @@ export const SupportRequestsPage: React.FC = () => {
                       {statusInfo.label}
                     </Badge>
                     <span className="text-micro text-stone-500">
-                      Mis à jour le {formatDate(req.lastActivityAt)}
+                      Mis à jour le {formatDate(req.updatedAt)}
                     </span>
                   </div>
 
@@ -170,15 +168,14 @@ export const SupportRequestsPage: React.FC = () => {
                   </h3>
 
                   <p className="text-xs text-stone-600 line-clamp-1">
-                    {req.messages[req.messages.length - 1]?.content ||
-                      req.description}
+                    {req.description}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                   <div className="flex items-center gap-1.5 text-xs text-stone-500 font-bold">
                     <MessageSquare className="w-4 h-4" />
-                    <span>{req.messages.length}</span>
+                    <span aria-label="Dossier avec historique">1+</span>
                   </div>
                   <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-0.5 transition-transform" />
                 </div>

@@ -32,7 +32,7 @@ describe("NotificationService", () => {
 
     const groups = notificationService.groupNotificationsByDate(notifs);
     expect(groups.length).toBe(2);
-    expect(groups[0].dateLabel).toBe("Aujourd'hui");
+    expect(groups[0].dateLabel).toBe("Aujourd’hui");
     expect(groups[1].dateLabel).toBe("Hier");
   });
 

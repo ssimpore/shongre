@@ -22,8 +22,10 @@ import { Tabs, TabPanel } from "../../design-system";
 import { useToast } from "../../app/providers/ToastProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 export const AdminVerificationsPage: React.FC = () => {
+  const { formatDateTime } = useRegionalFormatters();
   usePageMeta({
     title: "Conformité progressive | Administration Shongre",
     description: "Revue manuelle, politiques et audit de conformité.",
@@ -228,7 +230,7 @@ export const AdminVerificationsPage: React.FC = () => {
               {policies.map((policy) => (
                 <article
                   key={policy.id}
-                  className="grid gap-2 py-4 sm:grid-cols-[1fr_1.2fr_auto] sm:items-center"
+                  className="grid gap-2 py-4 sm:grid-cols-admin-verification sm:items-center"
                 >
                   <div>
                     <h3 className="text-sm font-bold text-stone-900">
@@ -300,7 +302,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     className="shrink-0 text-micro text-stone-500"
                     dateTime={log.occurredAt}
                   >
-                    {new Date(log.occurredAt).toLocaleString("fr-FR")}
+                    {formatDateTime(log.occurredAt)}
                   </time>
                 </article>
               ))}

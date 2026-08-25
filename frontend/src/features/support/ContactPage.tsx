@@ -11,9 +11,7 @@ import {
   Briefcase,
   ShieldAlert,
   AlertTriangle,
-  UploadCloud,
   CheckCircle2,
-  X,
   MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -27,7 +25,6 @@ import {
 import {
   SupportCategory,
   SupportContext,
-  SupportAttachment,
 } from "../../domains/support/support.types";
 import {
   SUPPORT_CATEGORIES,
@@ -35,7 +32,8 @@ import {
 } from "../../domains/support/support.categories";
 import { supportCapabilitiesService } from "../../domains/support/support.capabilities";
 import { supportService } from "../../domains/support/support.service";
-import { supportRepository } from "../../repositories/support.repository";
+import { services } from "../../api/client/service-registry";
+import type { SupportCaseCategory } from "@shongre/contracts/support";
 import { storageService } from "../../services/storage.service";
 import { SupportContextCard } from "./components/SupportContextCard";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -77,7 +75,6 @@ export const ContactPage: React.FC = () => {
     currentUser?.email || "",
   );
   const [context, setContext] = useState<SupportContext | undefined>(undefined);
-  const [attachments, setAttachments] = useState<SupportAttachment[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedReference, setSubmittedReference] = useState<string | null>(
@@ -151,41 +148,12 @@ export const ContactPage: React.FC = () => {
     }
   }, [currentReasonDef]);
 
-  const handleSimulateAttachment = () => {
-    const sampleFiles = [
-      {
-        name: "capture_ecran_erreur.png",
-        type: "image" as const,
-        size: 245000,
-      },
-      {
-        name: "recu_virement_bancaire.pdf",
-        type: "document" as const,
-        size: 580000,
-      },
-      {
-        name: "photo_colis_endommage.jpg",
-        type: "image" as const,
-        size: 1200000,
-      },
-    ];
-    const picked = sampleFiles[attachments.length % sampleFiles.length];
-    const newAtt: SupportAttachment = {
-      id: `att-${Date.now()}`,
-      type: picked.type,
-      fileName: picked.name,
-      fileSize: picked.size,
-      url: "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80",
-    };
-    setAttachments((prev) => [...prev, newAtt]);
-  };
-
-  const handleRemoveAttachment = (attId: string) => {
-    setAttachments((prev) => prev.filter((a) => a.id !== attId));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      navigate("/connexion?returnTo=%2Fcontact");
+      return;
+    }
     if (!selectedCategory) {
       setErrors({ category: "Veuillez sélectionner un sujet principal." });
       return;
@@ -209,17 +177,24 @@ export const ContactPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const created = await supportRepository.createRequest({
-        requesterId: currentUser?.id,
-        requesterName: requesterName.trim(),
-        requesterEmail: requesterEmail.trim(),
-        category: selectedCategory,
-        reason: selectedReasonId,
+      const categoryMap: Partial<Record<SupportCategory, SupportCaseCategory>> =
+        {
+          account: "account",
+          listing: "listing",
+          payment: "payment",
+          subscription: "subscription",
+          verification: "verification",
+          safety: "safety",
+          privacy: "privacy",
+          technical: "technical",
+        };
+      const created = await services.support.createCase({
+        category: categoryMap[selectedCategory] ?? "other",
         subject: subject.trim(),
         description: description.trim(),
-        context,
-        attachments,
-        priority: currentReasonDef?.defaultPriority || "normal",
+        listingId: context?.type === "listing" ? context.listingId : undefined,
+        orderId:
+          context?.type === "transaction" ? context.transactionId : undefined,
       });
 
       setSubmittedReference(created.reference);
@@ -266,32 +241,18 @@ export const ContactPage: React.FC = () => {
           <div className="text-xs text-stone-500 space-y-1 max-w-md mx-auto">
             <p>
               Un conseiller Shongre étudie votre dossier et vous répondra
-              directement{" "}
-              {isAuthenticated
-                ? "dans votre espace client et par email"
-                : `à l'adresse ${requesterEmail}`}
-              .
+              directement dans votre espace client et par email .
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-            {isAuthenticated ? (
-              <Button
-                variant="primary"
-                onClick={() => navigate("/compte/support")}
-                className="font-bold"
-              >
-                Suivre mes demandes
-              </Button>
-            ) : (
-              <Button
-                variant="primary"
-                onClick={() => navigate("/")}
-                className="font-bold"
-              >
-                {t("support.contactPage.retourALAccueil")}
-              </Button>
-            )}
+            <Button
+              variant="primary"
+              onClick={() => navigate("/compte/support")}
+              className="font-bold"
+            >
+              Suivre mes demandes
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -299,7 +260,6 @@ export const ContactPage: React.FC = () => {
                 setSelectedCategory(null);
                 setSelectedReasonId("");
                 setDescription("");
-                setAttachments([]);
               }}
             >
               {t("support.contactPage.envoyerUneAutreDemande")}
@@ -495,33 +455,24 @@ export const ContactPage: React.FC = () => {
             />
           )}
 
-          {/* Guest Identity Fields (only when unauthenticated) */}
+          {/* Support cases are account-owned so their history cannot leak
+              between visitors sharing the same device. */}
           {!isAuthenticated && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                label={t("support.contactPage.votreNomComplet")}
-                required
-                error={errors.requesterName}
+            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-stone-700">
+              <p className="font-bold text-stone-900">
+                Connectez-vous pour créer et suivre une demande.
+              </p>
+              <p className="mt-1">
+                Votre dossier restera rattaché à votre compte et visible
+                uniquement par vous et l’équipe d’assistance autorisée.
+              </p>
+              <Button
+                to="/connexion?returnTo=%2Fcontact"
+                size="sm"
+                className="mt-3"
               >
-                <Input
-                  value={requesterName}
-                  onChange={(e) => setRequesterName(e.target.value)}
-                  placeholder="ex: Jean Dupont"
-                />
-              </FormField>
-
-              <FormField
-                label={t("support.contactPage.votreAdresseEmail")}
-                required
-                error={errors.requesterEmail}
-              >
-                <Input
-                  type="email"
-                  value={requesterEmail}
-                  onChange={(e) => setRequesterEmail(e.target.value)}
-                  placeholder="ex: jean@exemple.fr"
-                />
-              </FormField>
+                Se connecter
+              </Button>
             </div>
           )}
 
@@ -554,49 +505,6 @@ export const ContactPage: React.FC = () => {
               )}
             />
           </FormField>
-
-          {/* Attachment Picker */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold text-stone-700">
-              {t("support.contactPage.piecesJointesOuCapturesD")}
-            </label>
-
-            {attachments.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2">
-                {attachments.map((att) => (
-                  <div
-                    key={att.id}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-stone-100 border border-stone-200 rounded-xl text-xs text-stone-800"
-                  >
-                    <span className="font-medium truncate max-w-[200px]">
-                      {att.fileName}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveAttachment(att.id)}
-                      className="text-stone-500 hover:text-stone-700"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleSimulateAttachment}
-              className="w-full p-4 border border-dashed border-border-base rounded-2xl bg-stone-50 hover:bg-stone-100 transition-colors flex flex-col items-center justify-center text-center cursor-pointer"
-            >
-              <UploadCloud className="w-5 h-5 text-stone-400 mb-1" />
-              <span className="text-xs font-bold text-stone-800">
-                {t("support.contactPage.ajouterUneCaptureOuUn")}
-              </span>
-              <span className="text-micro text-stone-500">
-                {t("support.contactPage.jpgPngOuPdfMax")}
-              </span>
-            </button>
-          </div>
 
           {errors.submit && (
             <div className="p-3 bg-danger-surface border border-danger-border text-danger rounded-xl text-xs font-medium">

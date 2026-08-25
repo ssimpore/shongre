@@ -17,6 +17,7 @@ import {
 } from "../domains/newsletter/newsletter.service";
 import { newsletterTopicsService } from "../domains/newsletter/newsletter.topics";
 import { storageService } from "../services/storage.service";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 export interface INewsletterRepository {
   getSubscription(
@@ -114,6 +115,7 @@ const INITIAL_CAMPAIGNS: NewsletterCampaign[] = [
         "Des pièces chinées et garanties par nos vendeurs vérifiés.",
       introText:
         "Cette semaine, notre équipe éditoriale a sélectionné pour vous les plus belles pépites de la communauté Shongre.",
+      featuredListingIds: ["list-101", "list-104"],
       ctaText: "Découvrir la sélection",
       ctaUrl: "/recherche?category=furniture",
     },
@@ -146,6 +148,7 @@ const INITIAL_CAMPAIGNS: NewsletterCampaign[] = [
         "Transactions 100% sécurisées avec notre protection acheteur.",
       introText:
         "Profitez de tarifs réduits sur une sélection d'articles reconditionnés et d'occasion.",
+      featuredListingIds: ["list-103", "list-104"],
       ctaText: "Voir tous les bons plans",
       ctaUrl: "/bons-plans",
     },
@@ -180,7 +183,7 @@ export class MockNewsletterRepository implements INewsletterRepository {
 
   async getSubscription(
     email: string,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): Promise<NewsletterSubscription | null> {
     const normalized = newsletterService.normalizeEmail(email);
     const list = this.getSubscriptions();
@@ -201,7 +204,7 @@ export class MockNewsletterRepository implements INewsletterRepository {
     input: SubscribeNewsletterInput,
   ): Promise<NewsletterSubscription> {
     const normalized = newsletterService.normalizeEmail(input.email);
-    const market = input.marketCode || "FR";
+    const market = input.marketCode || DEFAULT_MARKET_CODE;
     const isPro = input.accountType === "pro";
     const list = this.getSubscriptions();
 
@@ -340,7 +343,7 @@ export class MockNewsletterRepository implements INewsletterRepository {
     const newCamp: NewsletterCampaign = {
       id: `camp-${Date.now()}`,
       name: campaign.name || "Nouvelle Campagne",
-      marketCode: campaign.marketCode || "FR",
+      marketCode: campaign.marketCode || DEFAULT_MARKET_CODE,
       locale: campaign.locale || "fr-FR",
       audience: campaign.audience || { marketCode: "FR" },
       topic: campaign.topic,

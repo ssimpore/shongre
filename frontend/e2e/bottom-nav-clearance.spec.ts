@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ALL_ROUTES, DEMO_LISTING_ID } from './routes';
-import { usePersona } from './personas';
+import { useEstablishedConsent, usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
 /**
@@ -22,6 +22,10 @@ import { waitForStableLayout } from './overflow';
  * is invisible: it is purely a stacking conflict, and only geometry finds it.
  */
 const MOBILE = { width: 375, height: 812 };
+
+test.beforeEach(async ({ page }) => {
+  await useEstablishedConsent(page);
+});
 
 /** Top of everything the fixed navigation paints, raised button included. */
 async function obstructionTop(page: import('@playwright/test').Page): Promise<number> {
@@ -91,5 +95,47 @@ test.describe('mobile tab bar clearance', () => {
 
     expect(barBottom, 'listing detail should pin an action bar at this width').not.toBeNull();
     expect(barBottom!, 'the action bar overlaps the raised publish button').toBeLessThanOrEqual(ceiling);
+  });
+
+  test('every mobile conversation keeps its composer above the raised publish button', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await usePersona(page, 'individual_buyer');
+
+    for (const conversationId of ['conv-01', 'conv-02']) {
+      await page.goto(`/compte/messages?convId=${conversationId}`, {
+        waitUntil: 'domcontentloaded',
+      });
+      await waitForStableLayout(page);
+
+      const ceiling = await obstructionTop(page);
+      const composerBottom = await page
+        .locator('[data-message-composer]')
+        .evaluate((composer) => composer.getBoundingClientRect().bottom);
+
+      expect(composerBottom, `${conversationId} should render a composer`).not.toBeNull();
+      expect(
+        composerBottom!,
+        `${conversationId} composer overlaps the raised publish button`,
+      ).toBeLessThanOrEqual(ceiling);
+    }
+  });
+
+  test('mobile conversation filters stay in one horizontal rail', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await usePersona(page, 'individual_buyer');
+    await page.goto('/compte/messages', { waitUntil: 'domcontentloaded' });
+    await waitForStableLayout(page);
+
+    const boxes = await Promise.all(
+      ['Tous', 'Non lus', 'Achats', 'Ventes', 'Commandes'].map(async (name) =>
+        page.getByRole('button', { name: new RegExp(`^${name}`) }).boundingBox(),
+      ),
+    );
+
+    expect(boxes.every(Boolean), 'every inbox filter should be visible').toBe(true);
+    expect(new Set(boxes.map((box) => Math.round(box!.y))).size).toBe(1);
+    expect(boxes.map((box) => box!.x)).toEqual(
+      [...boxes.map((box) => box!.x)].sort((a, b) => a - b),
+    );
   });
 });

@@ -18,6 +18,8 @@ export * from "./fixtures/employment-demo";
 export * from "./schemas/monetization";
 export * from "./schemas/finance";
 export * from "./schemas/compliance";
+export * from "./schemas/support";
+export * from "./schemas/feature-flags";
 export * from "./fixtures/finance-demo";
 export * from "./business-verticals";
 export * from "./types/pagination";

@@ -161,7 +161,7 @@ export function DropdownMenu<T extends string | number = string>({
     touch: "h-control-touch px-3.5 text-xs rounded-control gap-2",
   }[size];
 
-  const effectivePanelWidth = fullWidth ? "w-full min-w-[240px]" : panelWidth;
+  const effectivePanelWidth = fullWidth ? "w-full min-w-60" : panelWidth;
 
   return (
     <div

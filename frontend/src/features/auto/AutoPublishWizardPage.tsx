@@ -23,7 +23,16 @@ import type {
   VehicleDocument,
   VehicleDraft,
 } from "@shongre/contracts/auto";
+import {
+  AUTO_CONSTRAINTS,
+  AUTO_SCHEMA_VERSION,
+  getMaximumVehicleModelYear,
+} from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
+import {
+  EMPTY_AUTO_DRAFT_DATA,
+  type AutoDraftData,
+} from "../../api/contracts/auto.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -32,13 +41,17 @@ import {
   Checkbox,
   FormField,
   Input,
+  ProgressBar,
   SelectableCard,
   Skeleton,
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { formatAutoMoney } from "./auto-format";
+import { formatCurrencySymbol } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { motionDurationMs } from "@shongre/design-tokens";
+import { scrollToTop } from "../../utilities/motion";
 
 const STEPS = [
   ["Type", CarFront],
@@ -54,79 +67,35 @@ const STEPS = [
   ["Validation", CheckCircle2],
 ] as const;
 
-const defaultData = {
-  vehicleType: "car",
-  makeId: "",
-  makeLabel: "",
-  modelId: "",
-  modelLabel: "",
-  generationLabel: "",
-  trimLabel: "",
-  modelYear: 0,
-  firstRegistrationDate: "",
-  mileage: 0,
-  mileageUnit: "km",
-  fuelType: "",
-  transmission: "",
-  bodyType: "",
-  powerHp: 0,
-  fiscalPower: 0,
-  exteriorColor: "",
-  doors: 0,
-  seats: 0,
-  co2GramsPerKm: 0,
-  critAirClass: "",
-  condition: "good",
-  accidentStatus: "unknown",
-  previousOwnerCount: 0,
-  maintenanceBookStatus: "unknown",
-  inspectionStatus: "unknown",
-  inspectionValidUntil: "",
-  warrantyMonths: 0,
-  priceMinor: 0,
-  priceIncludesTax: true,
-  priceNegotiable: false,
-  financingAvailable: false,
-  locationLabel: "",
-  title: "",
-  description: "",
-  mediaUrls: [] as string[],
-  equipment: [] as string[],
-  documents: [] as VehicleDocument[],
-  historyReportStatus: "unavailable",
-  sellerType: "individual",
-  sellerDisplayName: "Vendeur Shongre",
-  planId: "auto_private_free",
-};
-
-type AutoDraftData = typeof defaultData & Record<string, unknown>;
-const now = "2026-08-22T10:00:00.000Z";
+const PUBLISH_STEP = {
+  type: 1,
+  identification: 2,
+  technical: 3,
+  history: 4,
+  documents: 5,
+  pricing: 6,
+  media: 7,
+  preview: 8,
+  offer: 9,
+  payment: 10,
+  validation: 11,
+} as const;
+const FIRST_STEP = AUTO_CONSTRAINTS.publication.firstStep;
+const TOTAL_STEPS = AUTO_CONSTRAINTS.publication.stepCount;
 
 export const AutoPublishWizardPage: React.FC = () => {
+  const { activeMarket, currentLocale } = useMarketLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const accountId = currentUser?.id || "guest";
-  const localKey = `shongre_auto_publication_v1:${accountId}`;
-  const idKey = `${localKey}:id`;
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
-  const [draftId] = useState(() =>
-    storageService.get(
-      idKey,
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : "00000000-0000-4000-8000-000000000012",
-    ),
+  const [draftId, setDraftId] = useState("");
+  const [step, setStep] = useState<number>(FIRST_STEP);
+  const [data, setData] = useState<AutoDraftData>(
+    EMPTY_AUTO_DRAFT_DATA as AutoDraftData,
   );
-  const [step, setStep] = useState(() =>
-    storageService.get(`${localKey}:step`, 1),
-  );
-  const [data, setData] = useState<AutoDraftData>(() =>
-    storageService.get(localKey, defaultData),
-  );
-  const [completedSteps, setCompletedSteps] = useState<number[]>(() =>
-    storageService.get(`${localKey}:completed`, []),
-  );
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [duplicateCheck, setDuplicateCheck] =
     useState<VehicleDraft["duplicateCheck"]>("not_checked");
   const [vin, setVin] = useState("");
@@ -148,42 +117,37 @@ export const AutoPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
-    storageService.set(idKey, draftId);
     Promise.all([
-      services.auto.getCatalog("FR"),
-      services.auto.getDraft(draftId),
+      services.auto.getCatalog(activeMarket.code),
+      services.auto.getOrCreateDraft(accountId, activeMarket.code),
     ])
       .then(([nextCatalog, remote]) => {
         setCatalog(nextCatalog);
-        if (remote) {
-          setStep(remote.currentStep);
-          setCompletedSteps(remote.completedSteps);
-          setDuplicateCheck(remote.duplicateCheck);
-          setData((current) => ({
-            ...current,
-            ...(remote.data as Partial<AutoDraftData>),
-          }));
-        }
+        setDraftId(remote.id);
+        setStep(remote.currentStep);
+        setCompletedSteps(remote.completedSteps);
+        setDuplicateCheck(remote.duplicateCheck);
+        setData({
+          ...(EMPTY_AUTO_DRAFT_DATA as AutoDraftData),
+          ...(remote.data as Partial<AutoDraftData>),
+        });
         hydrated.current = true;
       })
       .catch(() =>
         toast.error("Le catalogue Auto est momentanément indisponible."),
       );
-  }, [draftId, idKey, toast]);
+  }, [accountId, activeMarket.code, toast]);
 
   useEffect(() => {
-    if (!hydrated.current) return;
-    storageService.set(localKey, data);
-    storageService.set(`${localKey}:step`, step);
-    storageService.set(`${localKey}:completed`, completedSteps);
+    if (!hydrated.current || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
         await services.auto.saveDraft({
           id: draftId,
           ownerUserId: accountId,
-          schemaVersion: 1,
-          marketCode: "FR",
+          schemaVersion: AUTO_SCHEMA_VERSION,
+          marketCode: activeMarket.code,
           currentStep: step,
           completedSteps,
           data,
@@ -194,15 +158,15 @@ export const AutoPublishWizardPage: React.FC = () => {
       } finally {
         setSaving(false);
       }
-    }, 350);
+    }, motionDurationMs.slow);
     return () => window.clearTimeout(timer);
   }, [
     accountId,
+    activeMarket.code,
     completedSteps,
     data,
     draftId,
     duplicateCheck,
-    localKey,
     step,
   ]);
 
@@ -214,33 +178,37 @@ export const AutoPublishWizardPage: React.FC = () => {
     String(data.fuelType),
   );
   const canContinue = useMemo(() => {
-    if (step === 1) return Boolean(data.vehicleType);
-    if (step === 2)
+    if (step === PUBLISH_STEP.type) return Boolean(data.vehicleType);
+    if (step === PUBLISH_STEP.identification)
       return Boolean(
         data.makeLabel &&
         data.modelLabel &&
         data.modelYear &&
         ["clear", "possible_match"].includes(duplicateCheck),
       );
-    if (step === 3)
+    if (step === PUBLISH_STEP.technical)
       return (
-        Number(data.mileage) >= 0 &&
+        Number(data.mileage) >= AUTO_CONSTRAINTS.nonNegativeInteger.min &&
         Boolean(data.fuelType && data.transmission) &&
         (!isElectric || Number(data.batteryCapacityKwh) > 0)
       );
-    if (step === 4)
+    if (step === PUBLISH_STEP.history)
       return Boolean(
         data.condition && data.accidentStatus && data.maintenanceBookStatus,
       );
-    if (step === 6)
+    if (step === PUBLISH_STEP.pricing)
       return (
-        Number(data.priceMinor) > 0 && String(data.locationLabel).length >= 2
+        Number(data.priceMinor) > AUTO_CONSTRAINTS.moneyMajor.min &&
+        String(data.locationLabel).length >=
+          AUTO_CONSTRAINTS.listing.locationLabelMinLength
       );
-    if (step === 7)
+    if (step === PUBLISH_STEP.media)
       return Array.isArray(data.mediaUrls) && data.mediaUrls.length > 0;
-    if (step === 8)
+    if (step === PUBLISH_STEP.preview)
       return (
-        String(data.title).length >= 10 && String(data.description).length >= 60
+        String(data.title).length >= AUTO_CONSTRAINTS.listing.titleMinLength &&
+        String(data.description).length >=
+          AUTO_CONSTRAINTS.listing.descriptionMinLength
       );
     return true;
   }, [data, duplicateCheck, isElectric, step]);
@@ -251,12 +219,16 @@ export const AutoPublishWizardPage: React.FC = () => {
       return;
     }
     setCompletedSteps((current) => Array.from(new Set([...current, step])));
-    setStep((current) => Math.min(11, current + 1));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((current) => Math.min(TOTAL_STEPS, current + FIRST_STEP));
+    scrollToTop();
   };
 
   const checkDuplicate = async () => {
-    if (vin.trim().length < 8 && registration.trim().length < 5) {
+    if (
+      vin.trim().length < AUTO_CONSTRAINTS.identity.vinCheckMinLength &&
+      registration.trim().length <
+        AUTO_CONSTRAINTS.identity.registrationCheckMinLength
+    ) {
       toast.warning(
         "Saisissez le VIN ou l’immatriculation pour lancer le contrôle.",
       );
@@ -296,7 +268,7 @@ export const AutoPublishWizardPage: React.FC = () => {
               type,
               status: "uploaded_private",
               publicLabel: label,
-              updatedAt: now,
+              updatedAt: new Date().toISOString(),
             },
           ],
     );
@@ -341,16 +313,18 @@ export const AutoPublishWizardPage: React.FC = () => {
   };
 
   const submit = async () => {
-    const finalCompleted = Array.from(new Set([...completedSteps, 10]));
+    const finalCompleted = Array.from(
+      new Set([...completedSteps, PUBLISH_STEP.payment]),
+    );
     setCompletedSteps(finalCompleted);
     setSubmitting(true);
     try {
       await services.auto.saveDraft({
         id: draftId,
         ownerUserId: accountId,
-        schemaVersion: 1,
-        marketCode: "FR",
-        currentStep: 11,
+        schemaVersion: AUTO_SCHEMA_VERSION,
+        marketCode: activeMarket.code,
+        currentStep: PUBLISH_STEP.validation,
         completedSteps: finalCompleted,
         data,
         duplicateCheck,
@@ -358,10 +332,6 @@ export const AutoPublishWizardPage: React.FC = () => {
       });
       const result = await services.auto.submitDraft(draftId);
       setCompleteId(result.vehicleId);
-      storageService.remove(localKey);
-      storageService.remove(`${localKey}:step`);
-      storageService.remove(`${localKey}:completed`);
-      storageService.remove(idKey);
     } catch {
       toast.error("Le brouillon n’a pas pu être envoyé en validation.");
     } finally {
@@ -369,10 +339,10 @@ export const AutoPublishWizardPage: React.FC = () => {
     }
   };
 
-  if (!catalog)
+  if (!catalog || !draftId)
     return (
       <div className="mx-auto max-w-screen-xl px-4 py-7">
-        <Skeleton className="h-[42rem] rounded-card" />
+        <Skeleton className="h-168 rounded-card" />
       </div>
     );
   if (completeId)
@@ -405,7 +375,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     catalog.plans.find((row) => row.audience === "individual" && row.isActive);
 
   const stepContent = (() => {
-    if (step === 1)
+    if (step === PUBLISH_STEP.type)
       return (
         <>
           <h2 className="text-lg font-black">Quel véhicule vendez-vous ?</h2>
@@ -430,7 +400,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </div>
         </>
       );
-    if (step === 2)
+    if (step === PUBLISH_STEP.identification)
       return (
         <>
           <h2 className="text-lg font-black">Identifier le véhicule</h2>
@@ -481,8 +451,8 @@ export const AutoPublishWizardPage: React.FC = () => {
             <FormField label="Année-modèle" required>
               <Input
                 type="number"
-                min="1880"
-                max="2027"
+                min={AUTO_CONSTRAINTS.modelYear.min}
+                max={getMaximumVehicleModelYear(new Date().getFullYear())}
                 value={Number(data.modelYear)}
                 onChange={(event) =>
                   update("modelYear", Number(event.target.value))
@@ -559,7 +529,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </div>
         </>
       );
-    if (step === 3)
+    if (step === PUBLISH_STEP.technical)
       return (
         <>
           <h2 className="text-lg font-black">Caractéristiques techniques</h2>
@@ -571,7 +541,8 @@ export const AutoPublishWizardPage: React.FC = () => {
             <FormField label="Kilométrage" required>
               <Input
                 type="number"
-                min="0"
+                min={AUTO_CONSTRAINTS.nonNegativeInteger.min}
+                step={AUTO_CONSTRAINTS.nonNegativeInteger.step}
                 value={Number(data.mileage)}
                 onChange={(event) =>
                   update("mileage", Number(event.target.value))
@@ -610,7 +581,8 @@ export const AutoPublishWizardPage: React.FC = () => {
             <FormField label="Puissance (ch)">
               <Input
                 type="number"
-                min="0"
+                min={AUTO_CONSTRAINTS.nonNegativeInteger.min}
+                step={AUTO_CONSTRAINTS.nonNegativeInteger.step}
                 value={Number(data.powerHp)}
                 onChange={(event) =>
                   update("powerHp", Number(event.target.value))
@@ -620,7 +592,8 @@ export const AutoPublishWizardPage: React.FC = () => {
             <FormField label="Puissance fiscale">
               <Input
                 type="number"
-                min="0"
+                min={AUTO_CONSTRAINTS.nonNegativeInteger.min}
+                step={AUTO_CONSTRAINTS.nonNegativeInteger.step}
                 value={Number(data.fiscalPower)}
                 onChange={(event) =>
                   update("fiscalPower", Number(event.target.value))
@@ -632,8 +605,8 @@ export const AutoPublishWizardPage: React.FC = () => {
                 <FormField label="Batterie (kWh)" required>
                   <Input
                     type="number"
-                    min="0"
-                    step="0.1"
+                    min={AUTO_CONSTRAINTS.nonNegativeDecimal.min}
+                    step={AUTO_CONSTRAINTS.nonNegativeDecimal.step}
                     value={Number(data.batteryCapacityKwh || 0)}
                     onChange={(event) =>
                       update("batteryCapacityKwh", Number(event.target.value))
@@ -643,7 +616,8 @@ export const AutoPublishWizardPage: React.FC = () => {
                 <FormField label="Autonomie électrique (km)">
                   <Input
                     type="number"
-                    min="0"
+                    min={AUTO_CONSTRAINTS.nonNegativeInteger.min}
+                    step={AUTO_CONSTRAINTS.nonNegativeInteger.step}
                     value={Number(data.electricRangeKm || 0)}
                     onChange={(event) =>
                       update("electricRangeKm", Number(event.target.value))
@@ -653,8 +627,8 @@ export const AutoPublishWizardPage: React.FC = () => {
                 <FormField label="Recharge maximale (kW)">
                   <Input
                     type="number"
-                    min="0"
-                    step="0.1"
+                    min={AUTO_CONSTRAINTS.nonNegativeDecimal.min}
+                    step={AUTO_CONSTRAINTS.nonNegativeDecimal.step}
                     value={Number(data.chargingPowerKw || 0)}
                     onChange={(event) =>
                       update("chargingPowerKw", Number(event.target.value))
@@ -675,7 +649,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           )}
         </>
       );
-    if (step === 4)
+    if (step === PUBLISH_STEP.history)
       return (
         <>
           <h2 className="text-lg font-black">État et historique</h2>
@@ -713,7 +687,8 @@ export const AutoPublishWizardPage: React.FC = () => {
             <FormField label="Propriétaires précédents">
               <Input
                 type="number"
-                min="0"
+                min={AUTO_CONSTRAINTS.nonNegativeInteger.min}
+                step={AUTO_CONSTRAINTS.nonNegativeInteger.step}
                 value={Number(data.previousOwnerCount)}
                 onChange={(event) =>
                   update("previousOwnerCount", Number(event.target.value))
@@ -783,13 +758,13 @@ export const AutoPublishWizardPage: React.FC = () => {
           </div>
         </>
       );
-    if (step === 5)
+    if (step === PUBLISH_STEP.documents)
       return (
         <>
           <h2 className="text-lg font-black">Documents</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            En France, préparez les pièces utiles. Les fichiers restent privés
-            et ne sont jamais affichés sur l’annonce.
+            Pour {activeMarket.name}, préparez les pièces utiles. Les fichiers
+            restent privés et ne sont jamais affichés sur l’annonce.
           </p>
           <div className="mt-5 divide-y divide-border-subtle rounded-card border border-border-base">
             {(
@@ -825,7 +800,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </div>
         </>
       );
-    if (step === 6)
+    if (step === PUBLISH_STEP.pricing)
       return (
         <>
           <h2 className="text-lg font-black">Prix et localisation</h2>
@@ -833,15 +808,27 @@ export const AutoPublishWizardPage: React.FC = () => {
             Le prix est stocké en centimes et formaté selon le marché.
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <FormField label="Prix affiché (€)" required>
+            <FormField
+              label={`Prix affiché (${formatCurrencySymbol(
+                catalog.config.currency,
+                currentLocale,
+              )})`}
+              required
+            >
               <Input
                 type="number"
-                min="0"
-                value={Number(data.priceMinor) / 100}
+                min={AUTO_CONSTRAINTS.moneyMajor.min}
+                step={AUTO_CONSTRAINTS.moneyMajor.step}
+                value={
+                  Number(data.priceMinor) / AUTO_CONSTRAINTS.minorUnitsPerMajor
+                }
                 onChange={(event) =>
                   update(
                     "priceMinor",
-                    Math.round(Number(event.target.value) * 100),
+                    Math.round(
+                      Number(event.target.value) *
+                        AUTO_CONSTRAINTS.minorUnitsPerMajor,
+                    ),
                   )
                 }
               />
@@ -865,7 +852,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </div>
         </>
       );
-    if (step === 7)
+    if (step === PUBLISH_STEP.media)
       return (
         <>
           <h2 className="text-lg font-black">Photos et médias</h2>
@@ -879,7 +866,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 key={`${url}-${index}`}
                 className="overflow-hidden rounded-card border border-border-base bg-bg-surface"
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-4/3 overflow-hidden">
                   <img
                     src={url}
                     alt={`Photo ${index + 1} du véhicule`}
@@ -926,7 +913,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 </div>
               </div>
             ))}
-            <label className="grid aspect-[4/3] cursor-pointer place-items-center rounded-card border border-dashed border-border-strong bg-bg-subtle text-xs font-bold text-text-secondary">
+            <label className="grid aspect-4/3 cursor-pointer place-items-center rounded-card border border-dashed border-border-strong bg-bg-subtle text-xs font-bold text-text-secondary">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -946,18 +933,18 @@ export const AutoPublishWizardPage: React.FC = () => {
           </p>
         </>
       );
-    if (step === 8)
+    if (step === PUBLISH_STEP.preview)
       return (
         <>
           <h2 className="text-lg font-black">Aperçu de l’annonce</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Relisez le titre et la description avant de choisir une offre.
           </p>
-          <div className="mt-5 grid gap-5 sm:grid-cols-[14rem_minmax(0,1fr)]">
+          <div className="mt-5 grid gap-5 sm:grid-cols-sidebar-compact">
             <img
               src={(data.mediaUrls as string[])[0]}
               alt=""
-              className="aspect-[4/3] w-full rounded-card object-cover"
+              className="aspect-4/3 w-full rounded-card object-cover"
             />
             <div>
               <FormField label="Titre" required>
@@ -976,16 +963,19 @@ export const AutoPublishWizardPage: React.FC = () => {
                 />
               </FormField>
               <p className="mt-3 text-lg font-black text-primary">
-                {formatAutoMoney({
-                  amountMinor: Number(data.priceMinor),
-                  currency: "EUR",
-                })}
+                {formatAutoMoney(
+                  {
+                    amountMinor: Number(data.priceMinor),
+                    currency: catalog.config.currency,
+                  },
+                  currentLocale,
+                )}
               </p>
             </div>
           </div>
         </>
       );
-    if (step === 9)
+    if (step === PUBLISH_STEP.offer)
       return (
         <>
           <h2 className="text-lg font-black">Choisir une offre</h2>
@@ -1019,7 +1009,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                       </span>
                       <Badge>
                         {plan.monthlyPrice
-                          ? formatAutoMoney(plan.monthlyPrice)
+                          ? formatAutoMoney(plan.monthlyPrice, currentLocale)
                           : "Gratuit"}
                       </Badge>
                     </div>
@@ -1039,7 +1029,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </p>
         </>
       );
-    if (step === 10)
+    if (step === PUBLISH_STEP.payment)
       return (
         <>
           <h2 className="text-lg font-black">Paiement</h2>
@@ -1084,10 +1074,13 @@ export const AutoPublishWizardPage: React.FC = () => {
           </p>
           <p className="flex items-center gap-2">
             <Check className="h-icon-sm w-icon-sm text-success" />{" "}
-            {formatAutoMoney({
-              amountMinor: Number(data.priceMinor),
-              currency: "EUR",
-            })}{" "}
+            {formatAutoMoney(
+              {
+                amountMinor: Number(data.priceMinor),
+                currency: catalog.config.currency,
+              },
+              currentLocale,
+            )}{" "}
             · {data.locationLabel}
           </p>
           <p className="flex items-center gap-2">
@@ -1117,9 +1110,9 @@ export const AutoPublishWizardPage: React.FC = () => {
           Publier un véhicule
         </h1>
         <div className="mt-5 overflow-x-auto pb-2">
-          <ol className="flex min-w-[58rem] justify-between gap-2">
+          <ol className="flex min-w-232 justify-between gap-2">
             {STEPS.map(([label], index) => {
-              const number = index + 1;
+              const number = index + FIRST_STEP;
               const active = number === step;
               const done = completedSteps.includes(number);
               return (
@@ -1149,19 +1142,23 @@ export const AutoPublishWizardPage: React.FC = () => {
             })}
           </ol>
         </div>
-        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="mt-4 grid gap-5 lg:grid-cols-content-aside-xs">
           <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
             {stepContent}
             <div className="mt-7 flex justify-between border-t border-border-subtle pt-4">
               <Button
                 variant="outline"
-                disabled={step === 1}
-                onClick={() => setStep((current) => Math.max(1, current - 1))}
+                disabled={step === FIRST_STEP}
+                onClick={() =>
+                  setStep((current) =>
+                    Math.max(FIRST_STEP, current - FIRST_STEP),
+                  )
+                }
                 leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
               >
                 Retour
               </Button>
-              {step < 11 && (
+              {step < TOTAL_STEPS && (
                 <Button
                   onClick={next}
                   disabled={!canContinue}
@@ -1176,15 +1173,25 @@ export const AutoPublishWizardPage: React.FC = () => {
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
               <p className="text-xs font-black">Votre avancement</p>
               <div className="mt-3 flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-full border-4 border-primary-border text-xs font-black text-primary">
-                  {Math.round((completedSteps.length / 11) * 100)}%
-                </div>
-                <div>
-                  <p className="text-xs font-bold">Étape {step} sur 11</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold">
+                    Étape {step} sur {TOTAL_STEPS}
+                  </p>
+                  <ProgressBar
+                    className="mt-2"
+                    value={completedSteps.length}
+                    max={TOTAL_STEPS}
+                    label={`Progression : ${completedSteps.length} étapes sur ${TOTAL_STEPS}`}
+                  />
                   <p className="text-micro text-text-muted">
-                    {11 - completedSteps.length} étape
-                    {11 - completedSteps.length > 1 ? "s" : ""} restante
-                    {11 - completedSteps.length > 1 ? "s" : ""}
+                    {TOTAL_STEPS - completedSteps.length} étape
+                    {TOTAL_STEPS - completedSteps.length > FIRST_STEP
+                      ? "s"
+                      : ""}{" "}
+                    restante
+                    {TOTAL_STEPS - completedSteps.length > FIRST_STEP
+                      ? "s"
+                      : ""}
                   </p>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import {
   IUserRepository,
   repositories,
   AdminStatsSummary,
+  IModerationRepository,
 } from "../../infrastructure/database/repositories/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -15,6 +16,7 @@ export class AdminService {
   constructor(
     private adminRepo: IAdminRepository = repositories.admin,
     private userRepo: IUserRepository = repositories.users,
+    private moderationRepo: IModerationRepository = repositories.moderation,
   ) {}
 
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -140,7 +142,12 @@ export class AdminService {
         message: "Un motif d'au moins 10 caractères est requis.",
       });
     }
-    await this.adminRepo.resolveReport(input.reportId, input.action);
+    await this.moderationRepo.resolveCase({
+      reportId: input.reportId,
+      actorId: input.actor.userId,
+      action: input.action,
+      reason: input.reason.trim(),
+    });
     await this.adminRepo.saveAuditLog({
       actorId: input.actor.userId,
       actorName: input.actor.email,
@@ -203,6 +210,13 @@ export class AdminService {
       reportedUserId: input.reportedUserId,
       reason: input.reason,
       details: input.details.trim(),
+    });
+    await this.moderationRepo.createCaseForReport({
+      reportId: report.id,
+      reporterId: input.reporterId,
+      listingId: input.listingId,
+      reportedUserId: input.reportedUserId,
+      category: input.reason,
     });
     return { ...report, status: "pending" };
   }

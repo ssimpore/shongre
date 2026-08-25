@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 /**
  * The scale is a list of stops, not a linear span.
@@ -13,20 +14,19 @@ import { useTranslation } from "../../i18n/I18nProvider";
  * The final stop is the open end: selected as the maximum it means "and above",
  * and no `maxPrice` is written to the query at all.
  */
-const STOPS = [
-  0, 10, 20, 30, 40, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1_000, 1_500,
-  2_000, 3_000, 5_000, 7_500, 10_000, 15_000, 20_000, 30_000, 50_000, 75_000,
-  100_000, 200_000, 350_000, 500_000,
-] as const;
-
-const LAST = STOPS.length - 1;
+const FIRST_STOP_INDEX = 0;
+const STOP_INDEX_STEP = 1;
 
 /** Nearest stop index at or below `value`, so a URL price always maps onto the scale. */
-function indexForValue(value: number | undefined, fallback: number): number {
+function indexForValue(
+  stops: number[],
+  value: number | undefined,
+  fallback: number,
+): number {
   if (value === undefined || Number.isNaN(value)) return fallback;
-  let best = 0;
-  for (let i = 0; i < STOPS.length; i++) {
-    if (STOPS[i] <= value) best = i;
+  let best = FIRST_STOP_INDEX;
+  for (let i = FIRST_STOP_INDEX; i < stops.length; i += STOP_INDEX_STEP) {
+    if (stops[i] <= value) best = i;
   }
   return best;
 }
@@ -56,10 +56,18 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   min,
   max,
   onChange,
-  currencySymbol = "€",
+  currencySymbol,
   className = "",
 }) => {
   const { t } = useTranslation();
+  const {
+    currentLocale,
+    currencySymbol: marketCurrencySymbol,
+    effectiveConfig,
+  } = useMarketLocation();
+  const stops = effectiveConfig.search.priceFilterStopsMajor;
+  const lastStopIndex = stops.length - STOP_INDEX_STEP;
+  const resolvedCurrencySymbol = currencySymbol || marketCurrencySymbol;
   /**
    * The handles are driven by local state and only reported upward on release.
    *
@@ -71,36 +79,57 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
    * speed; the caller hears one value, when the user lets go.
    */
   const [draft, setDraft] = useState(() => ({
-    low: indexForValue(min, 0),
-    high: max === undefined ? LAST : indexForValue(max, LAST),
+    low: indexForValue(stops, min, FIRST_STOP_INDEX),
+    high:
+      max === undefined
+        ? lastStopIndex
+        : indexForValue(stops, max, lastStopIndex),
   }));
 
   // Resync when the range changes from outside — clearing filters, back/forward.
   useEffect(() => {
     setDraft({
-      low: indexForValue(min, 0),
-      high: max === undefined ? LAST : indexForValue(max, LAST),
+      low: indexForValue(stops, min, FIRST_STOP_INDEX),
+      high:
+        max === undefined
+          ? lastStopIndex
+          : indexForValue(stops, max, lastStopIndex),
     });
-  }, [min, max]);
+  }, [lastStopIndex, max, min, stops]);
 
   const lowIndex = draft.low;
   const highIndex = draft.high;
 
   const format = (value: number) =>
-    `${value.toLocaleString("fr-FR")} ${currencySymbol}`;
+    `${value.toLocaleString(currentLocale)} ${resolvedCurrencySymbol}`;
 
   const label = useMemo(() => {
-    if (lowIndex === 0 && highIndex === LAST) return "Tous les prix";
-    if (lowIndex === 0) return `Jusqu'à ${format(STOPS[highIndex])}`;
-    if (highIndex === LAST) return `À partir de ${format(STOPS[lowIndex])}`;
-    return `${format(STOPS[lowIndex])} – ${format(STOPS[highIndex])}`;
+    if (lowIndex === FIRST_STOP_INDEX && highIndex === lastStopIndex)
+      return t("ui.priceRangeSlider.allPrices");
+    if (lowIndex === FIRST_STOP_INDEX)
+      return t("ui.priceRangeSlider.upTo", {
+        price: format(stops[highIndex]),
+      });
+    if (highIndex === lastStopIndex)
+      return t("ui.priceRangeSlider.from", {
+        price: format(stops[lowIndex]),
+      });
+    return `${format(stops[lowIndex])} – ${format(stops[highIndex])}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lowIndex, highIndex, currencySymbol]);
+  }, [
+    currentLocale,
+    highIndex,
+    lastStopIndex,
+    lowIndex,
+    resolvedCurrencySymbol,
+    stops,
+    t,
+  ]);
 
   const report = (low: number, high: number) => {
     onChange({
-      min: low === 0 ? undefined : STOPS[low],
-      max: high === LAST ? undefined : STOPS[high],
+      min: low === FIRST_STOP_INDEX ? undefined : stops[low],
+      max: high === lastStopIndex ? undefined : stops[high],
     });
   };
 
@@ -115,12 +144,15 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
 
   // Handles cannot cross: each one stops one stop short of the other.
   const handleLow = (raw: number) =>
-    setDraft((d) => ({ ...d, low: Math.min(raw, d.high - 1) }));
+    setDraft((d) => ({
+      ...d,
+      low: Math.min(raw, d.high - STOP_INDEX_STEP),
+    }));
   const handleHigh = (raw: number) =>
-    setDraft((d) => ({ ...d, high: Math.max(raw, d.low + 1) }));
-
-  const leftPct = (lowIndex / LAST) * 100;
-  const rightPct = (highIndex / LAST) * 100;
+    setDraft((d) => ({
+      ...d,
+      high: Math.max(raw, d.low + STOP_INDEX_STEP),
+    }));
 
   const thumb =
     "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 w-full appearance-none bg-transparent " +
@@ -140,10 +172,10 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         <span className="text-xs font-bold text-stone-900 tabular-nums">
           {label}
         </span>
-        {(lowIndex !== 0 || highIndex !== LAST) && (
+        {(lowIndex !== FIRST_STOP_INDEX || highIndex !== lastStopIndex) && (
           <button
             type="button"
-            onClick={() => commit(0, LAST)}
+            onClick={() => commit(FIRST_STOP_INDEX, lastStopIndex)}
             className="text-micro font-semibold text-stone-500 hover:text-primary transition-colors cursor-pointer shrink-0"
           >
             {t("ui.priceRangeSlider.reinitialiser")}
@@ -152,53 +184,51 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
       </div>
 
       <div className="relative h-8">
-        {/* Track */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-pill bg-bg-muted" />
-        {/* Selected span */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-pill bg-primary"
-          style={{ left: `${leftPct}%`, right: `${100 - rightPct}%` }}
-        />
+        <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-pill bg-bg-muted" />
 
         <input
           type="range"
-          min={0}
-          max={LAST}
-          step={1}
+          min={FIRST_STOP_INDEX}
+          max={lastStopIndex}
+          step={STOP_INDEX_STEP}
           value={lowIndex}
           onChange={(e) => handleLow(Number(e.target.value))}
           onPointerUp={release}
           onTouchEnd={release}
           onKeyUp={release}
           onBlur={release}
-          aria-label="Prix minimum"
+          aria-label={t("ui.priceRangeSlider.minimumPrice")}
           aria-valuetext={
-            lowIndex === 0 ? "Aucun minimum" : format(STOPS[lowIndex])
+            lowIndex === FIRST_STOP_INDEX
+              ? t("ui.priceRangeSlider.noMinimum")
+              : format(stops[lowIndex])
           }
           className={thumb}
         />
         <input
           type="range"
-          min={0}
-          max={LAST}
-          step={1}
+          min={FIRST_STOP_INDEX}
+          max={lastStopIndex}
+          step={STOP_INDEX_STEP}
           value={highIndex}
           onChange={(e) => handleHigh(Number(e.target.value))}
           onPointerUp={release}
           onTouchEnd={release}
           onKeyUp={release}
           onBlur={release}
-          aria-label="Prix maximum"
+          aria-label={t("ui.priceRangeSlider.maximumPrice")}
           aria-valuetext={
-            highIndex === LAST ? "Aucun maximum" : format(STOPS[highIndex])
+            highIndex === lastStopIndex
+              ? t("ui.priceRangeSlider.noMaximum")
+              : format(stops[highIndex])
           }
           className={thumb}
         />
       </div>
 
       <div className="flex items-center justify-between text-micro text-stone-500 tabular-nums">
-        <span>{format(STOPS[0])}</span>
-        <span>{format(STOPS[LAST])}+</span>
+        <span>{format(stops[FIRST_STOP_INDEX])}</span>
+        <span>{format(stops[lastStopIndex])}+</span>
       </div>
     </div>
   );

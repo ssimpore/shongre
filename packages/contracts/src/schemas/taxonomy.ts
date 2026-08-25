@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+export const TAXONOMY_PUBLICATION_CONSTRAINTS = {
+  durationDays: { min: 1, max: 365, default: 60, step: 1 },
+  mediaAllowance: { min: 1, max: 50, default: 12, step: 1 },
+} as const;
+
 export const taxonomyLevelSchema = z.enum([
   "category",
   "subcategory",
@@ -163,8 +168,16 @@ const taxonomyStandardPublicationPolicySchema = z.object({
   enabled: z.boolean(),
   label: z.literal("Publication standard gratuite"),
   eligibleSellerTypes: z.array(z.enum(["individual", "professional"])).min(1),
-  durationDays: z.number().int().positive(),
-  mediaAllowance: z.number().int().positive(),
+  durationDays: z
+    .number()
+    .int()
+    .min(TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.min)
+    .max(TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.max),
+  mediaAllowance: z
+    .number()
+    .int()
+    .min(TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.min)
+    .max(TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.max),
   includesMessaging: z.boolean(),
   includesListingManagement: z.boolean(),
   includesStandardStatistics: z.boolean(),

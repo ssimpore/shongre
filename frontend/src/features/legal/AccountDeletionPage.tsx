@@ -6,6 +6,8 @@ import { services } from "../../api/client/service-registry";
 import { Breadcrumbs } from "../../design-system/components/Breadcrumbs";
 import { Button } from "../../design-system/primitives/Button";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { ACCOUNT_CONSTRAINTS } from "@shongre/contracts/account";
+import { FormField, Input, Textarea } from "../../design-system";
 
 export const AccountDeletionPage: React.FC = () => {
   usePageMeta({
@@ -121,37 +123,32 @@ export const AccountDeletionPage: React.FC = () => {
                 Votre mot de passe confirme que la demande vient bien de vous.
               </p>
             </div>
-            <label className="block space-y-1.5 text-sm font-bold text-text-main">
-              <span>Mot de passe actuel</span>
-              <input
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-base font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            <FormField label="Mot de passe actuel" required>
+              <Input
                 type="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 required
               />
-            </label>
-            <label className="block space-y-1.5 text-sm font-bold text-text-main">
-              <span>Motif facultatif</span>
-              <textarea
-                className="min-h-28 w-full rounded-control border border-border-base bg-bg-surface p-3 text-base font-normal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                maxLength={500}
+            </FormField>
+            <FormField label="Motif facultatif">
+              <Textarea
+                maxLength={ACCOUNT_CONSTRAINTS.deletionReasonMaxLength}
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
               />
-            </label>
-            <label className="block space-y-1.5 text-sm font-bold text-text-main">
-              <span>Saisissez SUPPRIMER</span>
-              <input
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-base font-normal uppercase focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            </FormField>
+            <FormField label="Saisissez SUPPRIMER" required>
+              <Input
+                className="uppercase"
                 value={confirmation}
                 onChange={(event) =>
                   setConfirmation(event.target.value.toUpperCase())
                 }
                 required
               />
-            </label>
+            </FormField>
             {error && (
               <p role="alert" className="text-sm font-semibold text-danger">
                 {error}

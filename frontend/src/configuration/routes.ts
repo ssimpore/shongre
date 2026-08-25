@@ -189,6 +189,7 @@ export const routes = {
       requestId
         ? `/compte/support/${pathSegment(requestId)}`
         : "/compte/support",
+    moderationAppeals: () => "/compte/recours",
     newsletter: () => "/compte/newsletter",
     pro: {
       dashboard: () => `/compte/pro/tableau-de-bord`,

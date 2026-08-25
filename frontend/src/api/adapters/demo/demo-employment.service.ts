@@ -18,9 +18,11 @@ import type {
 } from "@shongre/contracts/employment";
 import {
   candidateProfileSchema,
+  EMPLOYMENT_PUBLICATION_CONSTRAINTS,
   employmentSearchQuerySchema,
   jobDraftSchema,
 } from "@shongre/contracts/employment";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 import { DEFAULT_EMPLOYMENT_CATALOG } from "@shongre/contracts/employment-catalog";
 import {
   EMPLOYMENT_DEMO_APPLICATIONS,
@@ -37,12 +39,19 @@ import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
   EmploymentApplicationDraft,
+  EmploymentPublicationDraftData,
   EmploymentServiceContract,
+  SaveEmploymentPublicationDraftInput,
 } from "../../contracts/employment.contract";
+import { EMPTY_EMPLOYMENT_PUBLICATION_DRAFT } from "../../contracts/employment.contract";
 import { AppError } from "../../errors/app-error";
 import { storageService } from "../../../services/storage.service";
 
 const clone = <T>(value: T): T => structuredClone(value);
+const employmentDraftKey = (draftId: string) =>
+  `shongre_employment_draft_v2:${draftId}`;
+const activeEmploymentDraftKey = (ownerUserId: string) =>
+  `shongre_employment_active_draft_v2:${ownerUserId}`;
 const now = () => new Date().toISOString();
 const fail = (
   code: ConstructorParameters<typeof AppError>[0]["code"],
@@ -127,6 +136,15 @@ const relevanceScore = (
   );
 };
 
+const splitPublicationValues = (value: string) =>
+  value
+    .split(/[,\n]/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const parseMoneyMinor = (value: string) =>
+  Math.round(Number(value.replace(",", ".") || 0) * 100);
+
 export class DemoEmploymentService implements EmploymentServiceContract {
   private catalog = clone(DEFAULT_EMPLOYMENT_CATALOG);
   private jobs = new Map(
@@ -181,7 +199,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       profile: {
         id: candidateId,
         userId: user.id,
-        marketCode: user.country || "FR",
+        marketCode: user.country || DEFAULT_MARKET_CODE,
         skillIds: [],
         experiences: [],
         education: [],
@@ -446,16 +464,210 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       .map(clone);
   }
 
+  async getOrCreateDraft(
+    ownerUserId: string,
+    marketCode: string,
+    preferredDraftId?: string,
+  ) {
+    await simulateNetworkDelay();
+    const draftId =
+      preferredDraftId ||
+      storageService.get(
+        activeEmploymentDraftKey(ownerUserId),
+        `demo-employment-draft-${ownerUserId}`,
+      );
+    const existing = await this.getDraft(draftId);
+    if (existing)
+      return this.saveDraft({ ...existing, ownerUserId, marketCode });
+
+    const defaultOffer =
+      this.catalog.offers.find(
+        (offer) => offer.isActive && offer.kind === "free",
+      ) || this.catalog.offers.find((offer) => offer.isActive);
+    const data: EmploymentPublicationDraftData = {
+      ...EMPTY_EMPLOYMENT_PUBLICATION_DRAFT,
+      positionsCount: "1",
+      publishSalary: true,
+    };
+    return this.saveDraft({
+      id: draftId,
+      ownerUserId,
+      privateEmployer: false,
+      marketCode,
+      schemaVersion: 1,
+      currentStep: EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+      completedSteps: [],
+      data,
+      screeningQuestions: [],
+      selectedOfferId: defaultOffer?.id,
+      selectedAddOnIds: [],
+      validationIssues: [],
+      duplicateCandidateIds: [],
+      updatedAt: now(),
+    });
+  }
+
   async getDraft(draftId: string) {
     await simulateNetworkDelay();
-    return this.drafts.has(draftId) ? clone(this.drafts.get(draftId)!) : null;
+    const draft =
+      this.drafts.get(draftId) ||
+      storageService.get<JobDraft | null>(employmentDraftKey(draftId), null);
+    return draft ? clone(draft) : null;
   }
 
   async saveDraft(draft: JobDraft) {
     await simulateNetworkDelay();
     const parsed = jobDraftSchema.parse({ ...draft, updatedAt: now() });
     this.drafts.set(parsed.id, clone(parsed));
+    storageService.set(employmentDraftKey(parsed.id), parsed);
+    storageService.set(activeEmploymentDraftKey(parsed.ownerUserId), parsed.id);
     return clone(parsed);
+  }
+
+  async savePublicationDraft(input: SaveEmploymentPublicationDraftInput) {
+    const selectedEmployer = this.recruiterEmployersForCurrentUser().find(
+      (employer) => employer.id === input.data.employerId,
+    );
+    const employerId = input.privateEmployer
+      ? `private-employer-${input.ownerUserId}`
+      : selectedEmployer?.id || "";
+    const labelFor = (id: string) =>
+      this.catalog.dictionaries.find((entry) => entry.id === id)?.label || id;
+    const skillIdFor = (label: string) =>
+      this.catalog.dictionaries.find(
+        (entry) =>
+          entry.kind === "skill" &&
+          entry.label.toLocaleLowerCase("fr") === label.toLocaleLowerCase("fr"),
+      )?.id;
+    const requiredSkills = splitPublicationValues(input.data.requiredSkills);
+    const preferredSkills = splitPublicationValues(input.data.preferredSkills);
+    const completedSteps = Array.from(
+      {
+        length: Math.max(
+          0,
+          (input.markAllPreviousStepsComplete
+            ? EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount
+            : input.currentStep) - EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+        ),
+      },
+      (_, index) => index + EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+    );
+    const currency = this.catalog.config.currency;
+    const data = {
+      ...input.data,
+      employerId,
+      employer: input.privateEmployer
+        ? {
+            id: employerId,
+            name: "Employeur particulier",
+            slug: "employeur-particulier",
+            employerTypeId: "employment.fr.employer_type.private",
+            description: input.data.employerDescription || undefined,
+            verificationLevel: "self_declared" as const,
+            isPubliclyVerified: false,
+          }
+        : selectedEmployer,
+      professionLabel: labelFor(input.data.professionId),
+      industryLabel: labelFor(input.data.industryId),
+      specializationId: input.data.specializationId || undefined,
+      specializationLabel: input.data.specializationId
+        ? labelFor(input.data.specializationId)
+        : undefined,
+      contractTypeLabel: labelFor(input.data.contractTypeId),
+      workingArrangementLabel: labelFor(input.data.workingArrangementId),
+      responsibilities: splitPublicationValues(input.data.responsibilities),
+      requiredSkills,
+      requiredSkillIds: requiredSkills
+        .map(skillIdFor)
+        .filter((id): id is string => Boolean(id)),
+      preferredSkills,
+      preferredSkillIds: preferredSkills
+        .map(skillIdFor)
+        .filter((id): id is string => Boolean(id)),
+      city: input.data.city,
+      locationLabel: `${input.data.city}${input.data.postalCode ? ` (${input.data.postalCode})` : ""}`,
+      countryCode: input.countryCode,
+      positionsCount: Math.max(1, Number(input.data.positionsCount || 1)),
+      reference: input.data.internalReference || undefined,
+      contractDuration: input.data.contractDuration || undefined,
+      weeklyHours: input.data.weeklyHours
+        ? Number(input.data.weeklyHours.replace(",", "."))
+        : undefined,
+      requiredExperienceId: input.data.requiredExperienceId || undefined,
+      educationLevelId: input.data.educationLevelId || undefined,
+      qualificationSummary: input.data.qualificationSummary || undefined,
+      certifications: splitPublicationValues(input.data.certifications),
+      additionalLocations: splitPublicationValues(
+        input.data.additionalLocations,
+      ).map((location, index) => ({
+        id: `additional-location-${index + 1}-${input.draftId}`,
+        label: location,
+        city: location,
+        countryCode: input.countryCode,
+        isPrimary: false,
+        isPublic: true,
+      })),
+      travelRequirementId: input.data.travelRequirement || undefined,
+      accessibilityInformation:
+        input.data.accessibilityInformation || undefined,
+      benefits: splitPublicationValues(input.data.benefits),
+      trialPeriodInformation: input.data.trialPeriodInformation || undefined,
+      desiredStartDate: input.data.desiredStartDate || undefined,
+      applicationDeadline: input.data.applicationDeadline
+        ? new Date(`${input.data.applicationDeadline}T23:59:59`).toISOString()
+        : undefined,
+      recruitmentProcess: splitPublicationValues(input.data.recruitmentProcess),
+      workScheduleIds: [input.data.workingTimeId].filter(Boolean),
+      contactPreferences: ["messaging"],
+      salary:
+        input.data.publishSalary && input.data.salaryFrequencyId
+          ? {
+              minimum: {
+                amountMinor: parseMoneyMinor(input.data.salaryMinimum),
+                currency,
+              },
+              maximum: input.data.salaryMaximum
+                ? {
+                    amountMinor: parseMoneyMinor(input.data.salaryMaximum),
+                    currency,
+                  }
+                : undefined,
+              frequencyId: input.data.salaryFrequencyId,
+              presentationId: "gross",
+              isPublic: true,
+              bonusDescription: input.data.bonusDescription || undefined,
+            }
+          : undefined,
+    };
+    return this.saveDraft({
+      id: input.draftId,
+      ownerUserId: input.ownerUserId,
+      employerId: input.privateEmployer ? undefined : input.data.employerId,
+      privateEmployer: input.privateEmployer,
+      marketCode: input.marketCode,
+      schemaVersion: this.catalog.config.schemaVersion,
+      currentStep: input.currentStep,
+      completedSteps,
+      data,
+      screeningQuestions: input.data.screeningQuestion.trim()
+        ? [
+            {
+              id: `question-${input.draftId}`,
+              questionTypeId:
+                "employment.fr.screening_question_type.short_text",
+              label: input.data.screeningQuestion.trim(),
+              isRequired: false,
+              options: [],
+              disqualifyingAnswerIds: [],
+            },
+          ]
+        : [],
+      selectedOfferId: input.selectedOfferId,
+      selectedAddOnIds: input.selectedAddOnIds,
+      validationIssues: [],
+      duplicateCandidateIds: input.duplicateCandidateIds,
+      updatedAt: now(),
+    });
   }
 
   async checkDuplicateDraft(draftId: string) {
@@ -488,11 +700,15 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     const flags = await this.flagProhibitedLanguage(
       `${String(draft.data.title || "")} ${String(draft.data.responsibilities || "")}`,
     );
-    return {
+    const result = {
       jobId: this.next("job"),
       lifecycle: "pending_review" as const,
       complianceFlags: flags,
     };
+    this.drafts.delete(draftId);
+    storageService.remove(employmentDraftKey(draftId));
+    storageService.remove(activeEmploymentDraftKey(draft.ownerUserId));
+    return result;
   }
 
   async flagProhibitedLanguage(

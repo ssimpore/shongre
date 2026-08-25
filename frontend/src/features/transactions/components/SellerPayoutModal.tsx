@@ -4,8 +4,9 @@ import { UserProfile, SellerPayoutRequest } from "../../../types";
 import { services } from "../../../api/client/service-registry";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
-import { formatPrice } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { PAYOUT_REQUEST_CONSTRAINTS } from "../../../api/contracts/payments.contract";
 
 interface SellerPayoutModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   onPayoutSuccess,
 }) => {
   const { t } = useTranslation();
+  const { currentCurrency, currencySymbol, formatPrice } = useMarketLocation();
   const [amountStr, setAmountStr] = useState(
     availableBalance > 0 ? availableBalance.toFixed(2) : "0.00",
   );
@@ -42,8 +44,16 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
   const netTransfer = amount;
 
   const handleWithdraw = async () => {
-    if (amount <= 0) {
-      setError("Veuillez saisir un montant supérieur à 0 €.");
+    if (
+      amount <
+      PAYOUT_REQUEST_CONSTRAINTS.minimumAmountMinor /
+        PAYOUT_REQUEST_CONSTRAINTS.minorUnitsPerMajor
+    ) {
+      setError(
+        t("transactions.sellerPayoutModal.amountMustBePositive", {
+          currency: currencySymbol,
+        }),
+      );
       return;
     }
     if (amount > availableBalance) {
@@ -62,8 +72,10 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
 
     try {
       const result = await services.payments.requestSellerPayout({
-        amountMinor: Math.round(amount * 100),
-        currency: "EUR",
+        amountMinor: Math.round(
+          amount * PAYOUT_REQUEST_CONSTRAINTS.minorUnitsPerMajor,
+        ),
+        currency: currentCurrency,
         idempotencyKey: idempotencyKey.current,
       });
       const now = new Date().toISOString();
@@ -133,15 +145,18 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
           <div className="relative">
             <input
               type="number"
-              step="0.01"
-              min="1"
+              step={PAYOUT_REQUEST_CONSTRAINTS.majorInputStep}
+              min={
+                PAYOUT_REQUEST_CONSTRAINTS.minimumAmountMinor /
+                PAYOUT_REQUEST_CONSTRAINTS.minorUnitsPerMajor
+              }
               max={availableBalance}
               value={amountStr}
               onChange={(e) => setAmountStr(e.target.value)}
               className="w-full h-control-lg px-4 pr-10 text-stone-900 bg-white rounded-control border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-black text-lg transition-colors"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-stone-500">
-              €
+              {currencySymbol}
             </span>
           </div>
         </div>

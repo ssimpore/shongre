@@ -36,7 +36,7 @@ export const ListingSellerTrustSection: React.FC<
         </h2>
         <Link
           to={profileUrl}
-          className="text-sm font-bold text-primary hover:text-primary-hover hover:underline flex items-center gap-1 transition-colors"
+          className="flex min-h-6 items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline"
         >
           <span>{isPro ? "Voir la boutique" : "Voir le profil"}</span>
           <ChevronRight className="w-4 h-4" />
@@ -60,7 +60,7 @@ export const ListingSellerTrustSection: React.FC<
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link
               to={profileUrl}
-              className="text-base font-bold text-stone-900 hover:text-primary transition-colors truncate"
+              className="inline-flex min-h-6 max-w-full items-center truncate text-base font-bold text-stone-900 transition-colors hover:text-primary"
             >
               {seller.companyName || seller.name}
             </Link>
@@ -79,7 +79,7 @@ export const ListingSellerTrustSection: React.FC<
           <div className="flex items-center gap-2 text-xs text-stone-600 flex-wrap">
             <Link
               to={`${profileUrl}?tab=reviews`}
-              className="flex items-center gap-1 font-bold text-stone-900 hover:text-primary"
+              className="flex min-h-6 items-center gap-1 font-bold text-stone-900 hover:text-primary"
             >
               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span>{seller.rating ? seller.rating.toFixed(1) : "5.0"}</span>

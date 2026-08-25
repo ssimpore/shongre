@@ -13,6 +13,7 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import {
+  EMPLOYMENT_PUBLICATION_CONSTRAINTS,
   candidateProfileSchema,
   interviewSchema,
   employmentJobReportSchema,
@@ -70,6 +71,18 @@ const getRequiredString = (data: Record<string, unknown>, key: string) => {
       details: { field: key },
     });
   return value.trim();
+};
+
+const readString = (data: Record<string, unknown>, key: string) =>
+  typeof data[key] === "string" ? data[key].trim() : "";
+const splitPublicationValues = (value: unknown) =>
+  String(value || "")
+    .split(/[,\n]/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+const parseMoneyMinor = (value: unknown) => {
+  const amount = Number(String(value || "0").replace(",", "."));
+  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
 };
 
 export class EmploymentService {
@@ -181,6 +194,44 @@ export class EmploymentService {
     return result.items.filter((item) => item.id !== job.id).slice(0, 3);
   }
 
+  async getOrCreateOwnDraft(
+    userId: string,
+    marketCode = "FR",
+    preferredDraftId?: string,
+  ) {
+    const normalizedMarket = marketCode.toUpperCase();
+    if (preferredDraftId) {
+      const preferred = await this.repo.getDraft(preferredDraftId);
+      if (preferred) {
+        if (preferred.ownerUserId !== userId)
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Brouillon Emploi introuvable.",
+          });
+        return preferred;
+      }
+    }
+    const existing = await this.repo.getLatestDraft(userId, normalizedMarket);
+    if (existing) return existing;
+    const catalog = await this.resolveCatalog(normalizedMarket);
+    const defaultOffer =
+      catalog.offers.find((offer) => offer.isActive && offer.kind === "free") ||
+      catalog.offers.find((offer) => offer.isActive);
+    return this.saveOwnDraft(userId, preferredDraftId || randomUUID(), {
+      privateEmployer: false,
+      marketCode: normalizedMarket,
+      schemaVersion: catalog.config.schemaVersion,
+      currentStep: EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+      completedSteps: [],
+      data: {},
+      screeningQuestions: [],
+      selectedOfferId: defaultOffer?.id,
+      selectedAddOnIds: [],
+      validationIssues: [],
+      duplicateCandidateIds: [],
+    });
+  }
+
   async getOwnDraft(userId: string, draftId: string) {
     const draft = await this.repo.getDraft(draftId);
     if (!draft || draft.ownerUserId !== userId)
@@ -261,6 +312,207 @@ export class EmploymentService {
       },
     });
     return saved;
+  }
+
+  async saveOwnPublicationDraft(
+    userId: string,
+    draftId: string,
+    input: unknown,
+  ) {
+    const body = (input || {}) as {
+      marketCode?: string;
+      countryCode?: string;
+      currentStep?: number;
+      privateEmployer?: boolean;
+      data?: Record<string, unknown>;
+      selectedOfferId?: string;
+      selectedAddOnIds?: string[];
+      duplicateCandidateIds?: string[];
+      markAllPreviousStepsComplete?: boolean;
+    };
+    const marketCode = (body.marketCode || "FR").toUpperCase();
+    const catalog = await this.resolveCatalog(marketCode);
+    const raw = { ...(body.data || {}) };
+    const privateEmployer = Boolean(body.privateEmployer);
+    const existing = await this.repo.getDraft(draftId);
+    if (existing && existing.ownerUserId !== userId)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Brouillon Emploi introuvable.",
+      });
+    const employers = privateEmployer
+      ? []
+      : await this.repo.listRecruiterEmployers(userId);
+    const selectedEmployer = employers.find(
+      (employer) => employer.id === readString(raw, "employerId"),
+    );
+    if (!privateEmployer && !selectedEmployer)
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Sélectionnez un employeur auquel votre compte est rattaché.",
+      });
+    const existingEmployer =
+      existing?.data?.employer && typeof existing.data.employer === "object"
+        ? (existing.data.employer as Record<string, unknown>)
+        : undefined;
+    const employer = privateEmployer
+      ? {
+          id: String(existingEmployer?.id || randomUUID()),
+          name: "Employeur particulier",
+          slug: "employeur-particulier",
+          employerTypeId: "employment.fr.employer_type.private",
+          description: readString(raw, "employerDescription") || undefined,
+          verificationLevel: "self_declared" as const,
+          isPubliclyVerified: false,
+        }
+      : selectedEmployer;
+    const labelFor = (id: string) =>
+      catalog.dictionaries.find((entry) => entry.id === id)?.label || id;
+    const skillIdFor = (label: string) =>
+      catalog.dictionaries.find(
+        (entry) =>
+          entry.kind === "skill" &&
+          entry.label.toLocaleLowerCase("fr") === label.toLocaleLowerCase("fr"),
+      )?.id;
+    const requiredSkills = splitPublicationValues(raw.requiredSkills);
+    const preferredSkills = splitPublicationValues(raw.preferredSkills);
+    const currentStep = Math.min(
+      EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount,
+      Math.max(
+        EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+        Number(
+          body.currentStep || EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+        ),
+      ),
+    );
+    const completionTarget = body.markAllPreviousStepsComplete
+      ? EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount
+      : currentStep;
+    const completedSteps = Array.from(
+      {
+        length: Math.max(
+          0,
+          completionTarget - EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+        ),
+      },
+      (_, index) => index + EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep,
+    );
+    const countryCode = (body.countryCode || marketCode).toUpperCase();
+    const city = readString(raw, "city");
+    const postalCode = readString(raw, "postalCode");
+    const salaryFrequencyId = readString(raw, "salaryFrequencyId");
+    const publishSalary = raw.publishSalary === true;
+    const data: Record<string, unknown> = {
+      ...raw,
+      employerId: employer?.id || "",
+      employer,
+      professionLabel: labelFor(readString(raw, "professionId")),
+      industryLabel: labelFor(readString(raw, "industryId")),
+      specializationId: readString(raw, "specializationId") || undefined,
+      specializationLabel: readString(raw, "specializationId")
+        ? labelFor(readString(raw, "specializationId"))
+        : undefined,
+      contractTypeLabel: labelFor(readString(raw, "contractTypeId")),
+      workingArrangementLabel: labelFor(
+        readString(raw, "workingArrangementId"),
+      ),
+      responsibilities: splitPublicationValues(raw.responsibilities),
+      requiredSkills,
+      requiredSkillIds: requiredSkills
+        .map(skillIdFor)
+        .filter((id): id is string => Boolean(id)),
+      preferredSkills,
+      preferredSkillIds: preferredSkills
+        .map(skillIdFor)
+        .filter((id): id is string => Boolean(id)),
+      city,
+      locationLabel: `${city}${postalCode ? ` (${postalCode})` : ""}`,
+      countryCode,
+      positionsCount: Math.max(1, Number(raw.positionsCount || 1)),
+      reference: readString(raw, "internalReference") || undefined,
+      contractDuration: readString(raw, "contractDuration") || undefined,
+      weeklyHours: readString(raw, "weeklyHours")
+        ? Number(readString(raw, "weeklyHours").replace(",", "."))
+        : undefined,
+      requiredExperienceId:
+        readString(raw, "requiredExperienceId") || undefined,
+      educationLevelId: readString(raw, "educationLevelId") || undefined,
+      qualificationSummary:
+        readString(raw, "qualificationSummary") || undefined,
+      certifications: splitPublicationValues(raw.certifications),
+      additionalLocations: splitPublicationValues(raw.additionalLocations).map(
+        (location, index) => ({
+          id: `additional-location-${index + 1}-${draftId}`,
+          label: location,
+          city: location,
+          countryCode,
+          isPrimary: false,
+          isPublic: true,
+        }),
+      ),
+      travelRequirementId: readString(raw, "travelRequirement") || undefined,
+      accessibilityInformation:
+        readString(raw, "accessibilityInformation") || undefined,
+      benefits: splitPublicationValues(raw.benefits),
+      trialPeriodInformation:
+        readString(raw, "trialPeriodInformation") || undefined,
+      desiredStartDate: readString(raw, "desiredStartDate") || undefined,
+      applicationDeadline: readString(raw, "applicationDeadline")
+        ? new Date(
+            `${readString(raw, "applicationDeadline")}T23:59:59`,
+          ).toISOString()
+        : undefined,
+      recruitmentProcess: splitPublicationValues(raw.recruitmentProcess),
+      workScheduleIds: [readString(raw, "workingTimeId")].filter(Boolean),
+      contactPreferences: ["messaging"],
+      salary:
+        publishSalary && salaryFrequencyId
+          ? {
+              minimum: {
+                amountMinor: parseMoneyMinor(raw.salaryMinimum),
+                currency: catalog.config.currency,
+              },
+              maximum: readString(raw, "salaryMaximum")
+                ? {
+                    amountMinor: parseMoneyMinor(raw.salaryMaximum),
+                    currency: catalog.config.currency,
+                  }
+                : undefined,
+              frequencyId: salaryFrequencyId,
+              presentationId: "gross",
+              isPublic: true,
+              bonusDescription:
+                readString(raw, "bonusDescription") || undefined,
+            }
+          : undefined,
+    };
+    const screeningLabel = readString(raw, "screeningQuestion");
+    return this.saveOwnDraft(userId, draftId, {
+      employerId: privateEmployer ? undefined : selectedEmployer?.id,
+      privateEmployer,
+      marketCode,
+      schemaVersion: catalog.config.schemaVersion,
+      currentStep,
+      completedSteps,
+      data,
+      screeningQuestions: screeningLabel
+        ? [
+            {
+              id: `question-${draftId}`,
+              questionTypeId:
+                "employment.fr.screening_question_type.short_text",
+              label: screeningLabel,
+              isRequired: false,
+              options: [],
+              disqualifyingAnswerIds: [],
+            },
+          ]
+        : [],
+      selectedOfferId: body.selectedOfferId,
+      selectedAddOnIds: body.selectedAddOnIds || [],
+      validationIssues: [],
+      duplicateCandidateIds: body.duplicateCandidateIds || [],
+    });
   }
 
   async checkDuplicateDraft(userId: string, draftId: string) {

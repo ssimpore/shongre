@@ -7,6 +7,21 @@ import {
 } from "./vertical";
 
 export const REAL_ESTATE_SCHEMA_VERSION = 1 as const;
+export const REAL_ESTATE_CONSTRAINTS = {
+  title: { minLength: 8, maxLength: 100 },
+  description: { minLength: 30 },
+  leadNote: { maxLength: 4_000 },
+  media: { maxFileSizeBytes: 10 * 1_024 * 1_024, maxFileSizeMegabytes: 10 },
+  publication: {
+    firstStep: 1,
+    stepCount: 10,
+    requiredCompletedSteps: 9,
+  },
+  appointment: { durationMinutes: 30 },
+  nonNegativeInteger: { min: 0 },
+  positiveInteger: { min: 1 },
+  minorUnitsPerMajor: 100,
+} as const;
 export const realEstateVerticalSchema = z.literal("real_estate");
 
 export const propertyTypeSchema = z.enum([
@@ -406,8 +421,18 @@ export const propertyDraftSchema = z.object({
   organizationId: z.string().min(1).optional(),
   schemaVersion: z.number().int().positive(),
   marketCode: marketCodeSchema,
-  currentStep: z.number().int().min(1).max(10),
-  completedSteps: z.array(z.number().int().min(1).max(10)),
+  currentStep: z
+    .number()
+    .int()
+    .min(REAL_ESTATE_CONSTRAINTS.publication.firstStep)
+    .max(REAL_ESTATE_CONSTRAINTS.publication.stepCount),
+  completedSteps: z.array(
+    z
+      .number()
+      .int()
+      .min(REAL_ESTATE_CONSTRAINTS.publication.firstStep)
+      .max(REAL_ESTATE_CONSTRAINTS.publication.stepCount),
+  ),
   data: z.record(z.string(), z.unknown()),
   validationIssues: z.array(
     z.object({
@@ -457,7 +482,11 @@ export const propertyLeadNoteSchema = z.object({
   id: z.string().min(1),
   leadId: z.string().min(1),
   authorUserId: z.string().min(1),
-  body: z.string().trim().min(1).max(4000),
+  body: z
+    .string()
+    .trim()
+    .min(1)
+    .max(REAL_ESTATE_CONSTRAINTS.leadNote.maxLength),
   createdAt: z.string(),
 });
 export type PropertyLeadNote = z.infer<typeof propertyLeadNoteSchema>;

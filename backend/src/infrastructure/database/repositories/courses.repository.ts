@@ -34,6 +34,8 @@ const NOW = "2026-08-22T10:00:00.000Z";
 
 const clone = <T>(value: T): T => structuredClone(value);
 
+export type CourseWorkflowDraftKind = "tutor_onboarding" | "learner_request";
+
 export const DEFAULT_COURSE_MARKET_CONFIG: CourseMarketConfig = {
   vertical: "tutoring",
   schemaVersion: 1,
@@ -736,6 +738,24 @@ export interface ICoursesRepository {
     marketCode: string;
     label: string;
   }): Promise<void>;
+  getWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ): Promise<Record<string, unknown> | null>;
+  saveWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+    payload: Record<string, unknown>,
+  ): Promise<void>;
+  deleteWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ): Promise<void>;
+  getSavedTutorIds(userId: string): Promise<string[]>;
+  toggleSavedTutor(userId: string, tutorProfileId: string): Promise<boolean>;
 }
 
 function matchesTutor(
@@ -905,6 +925,8 @@ export class DemoCoursesRepository implements ICoursesRepository {
     DEMO_COURSE_LEADS.map((item) => [item.id, clone(item)]),
   );
   private organizationMembers = clone(DEMO_COURSE_ORGANIZATION_MEMBERS);
+  private workflowDrafts = new Map<string, Record<string, unknown>>();
+  private savedTutorIds = new Map<string, Set<string>>();
   private organizationLocations = [
     {
       id: "location_lyon_3",
@@ -936,6 +958,40 @@ export class DemoCoursesRepository implements ICoursesRepository {
       plans: catalog.plans.filter((plan) => plan.isActive),
       addOns: catalog.addOns.filter((addOn) => addOn.isActive),
     };
+  }
+
+  async getWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ) {
+    const draft = this.workflowDrafts.get(`${userId}:${marketCode}:${kind}`);
+    return draft ? clone(draft) : null;
+  }
+  async saveWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+    payload: Record<string, unknown>,
+  ) {
+    this.workflowDrafts.set(`${userId}:${marketCode}:${kind}`, clone(payload));
+  }
+  async deleteWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ) {
+    this.workflowDrafts.delete(`${userId}:${marketCode}:${kind}`);
+  }
+  async getSavedTutorIds(userId: string) {
+    return Array.from(this.savedTutorIds.get(userId) || []);
+  }
+  async toggleSavedTutor(userId: string, tutorProfileId: string) {
+    const favorites = this.savedTutorIds.get(userId) || new Set<string>();
+    if (favorites.has(tutorProfileId)) favorites.delete(tutorProfileId);
+    else favorites.add(tutorProfileId);
+    this.savedTutorIds.set(userId, favorites);
+    return favorites.has(tutorProfileId);
   }
 
   async saveMarketConfig(
@@ -1216,6 +1272,72 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       ),
       addOns: (addOnsResult.data || []).map((row: any) => row.public_payload),
     };
+  }
+
+  async getWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ) {
+    const { data, error } = await (getSupabaseAdminClient() as any)
+      .from("course_workflow_drafts")
+      .select("payload")
+      .eq("user_id", userId)
+      .eq("market_code", marketCode)
+      .eq("draft_kind", kind)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+    if (error) throw error;
+    return data?.payload ? clone(data.payload) : null;
+  }
+  async saveWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+    payload: Record<string, unknown>,
+  ) {
+    const now = new Date();
+    const { error } = await (getSupabaseAdminClient() as any)
+      .from("course_workflow_drafts")
+      .upsert({
+        user_id: userId,
+        market_code: marketCode,
+        draft_kind: kind,
+        payload,
+        expires_at: new Date(now.getTime() + 30 * 86_400_000).toISOString(),
+        updated_at: now.toISOString(),
+      });
+    if (error) throw error;
+  }
+  async deleteWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowDraftKind,
+  ) {
+    const { error } = await (getSupabaseAdminClient() as any)
+      .from("course_workflow_drafts")
+      .delete()
+      .eq("user_id", userId)
+      .eq("market_code", marketCode)
+      .eq("draft_kind", kind);
+    if (error) throw error;
+  }
+  async getSavedTutorIds(userId: string) {
+    const { data, error } = await (getSupabaseAdminClient() as any)
+      .from("course_tutor_favorites")
+      .select("tutor_profile_id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data || []).map((row: any) => String(row.tutor_profile_id));
+  }
+  async toggleSavedTutor(userId: string, tutorProfileId: string) {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "toggle_course_tutor_favorite",
+      { p_user_id: userId, p_tutor_profile_id: tutorProfileId },
+    );
+    if (error) throw error;
+    return Boolean(data);
   }
 
   async saveMarketConfig(

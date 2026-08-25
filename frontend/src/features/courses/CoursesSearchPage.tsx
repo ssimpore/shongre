@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -33,6 +34,7 @@ import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { CourseTutorCard } from "./components/CourseTutorCard";
+import { formatMoney } from "../../utilities/formatters";
 
 interface CourseFiltersProps {
   catalog: CourseCatalog;
@@ -67,6 +69,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
   onApplyMobile,
   presentation = "surface",
 }) => {
+  const { locale } = useTranslation();
   const levels = splitParam(params.get("levels"));
   const deliveryModes = splitParam(params.get("delivery"));
   const availability = splitParam(params.get("availability"));
@@ -213,10 +216,15 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
           className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="">Sans maximum</option>
-          <option value="2500">25 € maximum</option>
-          <option value="3000">30 € maximum</option>
-          <option value="4000">40 € maximum</option>
-          <option value="6000">60 € maximum</option>
+          {[2_500, 3_000, 4_000, 6_000].map((amountMinor) => (
+            <option key={amountMinor} value={amountMinor}>
+              {formatMoney(
+                { amountMinor, currency: catalog.config.currency },
+                { locale },
+              )}{" "}
+              maximum
+            </option>
+          ))}
         </select>
       </fieldset>
 
@@ -295,7 +303,7 @@ export const CoursesSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [items, setItems] = useState<TutorSearchItem[]>([]);
@@ -353,7 +361,7 @@ export const CoursesSearchPage: React.FC = () => {
         ? Number(params.get("rating"))
         : undefined,
       sort: (params.get("sort") as TutorSearchQuery["sort"]) || "relevance",
-      limit: 20,
+      limit: PAGE_SIZES.verticalSearch,
     }),
     [activeMarket.code, freeText, params],
   );
@@ -476,7 +484,7 @@ export const CoursesSearchPage: React.FC = () => {
             const data = new FormData(event.currentTarget);
             updateParam("query", String(data.get("query") || "") || undefined);
           }}
-          className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-[minmax(0,1fr)_auto]"
+          className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-content-action"
         >
           <label className="relative min-w-0">
             <span className="sr-only">
@@ -501,7 +509,7 @@ export const CoursesSearchPage: React.FC = () => {
       </div>
 
       <div
-        className={`grid min-w-0 gap-6 ${compared.length > 0 ? "lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(0,1fr)_16rem]" : "lg:grid-cols-[16rem_minmax(0,1fr)]"}`}
+        className={`grid min-w-0 gap-6 ${compared.length > 0 ? "lg:grid-cols-sidebar xl:grid-cols-search-compare-balanced" : "lg:grid-cols-sidebar"}`}
       >
         <aside
           className="hidden self-start lg:sticky lg:top-24 lg:block"
@@ -654,13 +662,13 @@ export const CoursesSearchPage: React.FC = () => {
                       <X className="h-icon-xs w-icon-xs" aria-hidden="true" />
                     </button>
                   </div>
-                  <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-text-secondary">
+                  <dl className="mt-3 grid grid-cols-description-list gap-x-3 gap-y-1 text-text-secondary">
                     <dt>Prix</dt>
                     <dd className="text-right font-semibold text-text-main">
-                      {(item.fromPrice.amountMinor / 100).toLocaleString(
-                        "fr-FR",
-                      )}{" "}
-                      € / h
+                      {formatMoney(item.fromPrice, {
+                        locale: currentLocale,
+                      })}{" "}
+                      / h
                     </dd>
                     <dt>Format</dt>
                     <dd className="text-right">
@@ -715,7 +723,7 @@ export const CoursesSearchPage: React.FC = () => {
       )}
 
       {compared.length > 0 && (
-        <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-total-h)+0.75rem)] z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
+        <div className="fixed inset-x-3 bottom-mobile-nav-clearance-gutter z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-black text-text-main">

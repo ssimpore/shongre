@@ -11,6 +11,7 @@ import {
   RAIL_CONTROL_CLASS,
   RAIL_CONTROL_ICON_CLASS,
 } from "../utils/controlMetrics";
+import { themeInteraction } from "@shongre/design-tokens";
 
 export interface CategoryFilterRailProps {
   /** Currently selected top-level category slug, or undefined for "all" */
@@ -58,8 +59,9 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
     const el = scrollContainerRef.current;
     if (!el) return;
     const { scrollLeft, scrollWidth, clientWidth } = el;
-    setCanScrollLeft(scrollLeft > 4);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+    const tolerance = themeInteraction.scrollBoundaryTolerancePx;
+    setCanScrollLeft(scrollLeft > tolerance);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - tolerance);
   };
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
 
   const handleScroll = (direction: "left" | "right") => {
     if (!scrollContainerRef.current) return;
-    const scrollAmount = 280;
+    const scrollAmount = themeInteraction.categoryRailNudgePx;
     scrollContainerRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -179,7 +181,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               title={t(
                 "ui.categoryFilterRail.afficherToutesLesAnnoncesActives",
               )}
-              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-[0.98] ${
+              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                 !selectedCategorySlug
                   ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                   : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs"
@@ -211,7 +213,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 onClick={() => handleCategoryClick(cat)}
                 aria-pressed={isSelected}
                 title={compactLabel}
-                className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-[0.98] ${
+                className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                   isSelected
                     ? "bg-stone-900 text-white border-stone-900 font-bold shadow-xs"
                     : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs"

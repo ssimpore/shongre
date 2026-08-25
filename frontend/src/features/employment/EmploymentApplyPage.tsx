@@ -11,6 +11,7 @@ import type {
   CandidateWorkspace,
   JobPostingDetail,
 } from "@shongre/contracts/employment";
+import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -179,7 +180,7 @@ export const EmploymentApplyPage: React.FC = () => {
           <ArrowLeft className="h-icon-sm w-icon-sm" />
           Retour à l’offre
         </Link>
-        <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-content-aside-xs">
           <form
             onSubmit={submit}
             className="min-w-0 max-w-full overflow-hidden rounded-card border border-border-base bg-bg-surface p-5 shadow-card sm:p-7"
@@ -261,13 +262,14 @@ export const EmploymentApplyPage: React.FC = () => {
                   id="employment-cover-message"
                   className="mt-2"
                   rows={7}
-                  maxLength={4000}
+                  maxLength={EMPLOYMENT_TEXT_LIMITS.applicationCoverMessage}
                   value={coverMessage}
                   onChange={(event) => setCoverMessage(event.target.value)}
                   placeholder="Expliquez brièvement ce qui vous motive pour ce poste."
                 />
                 <p className="mt-1 text-right text-micro text-text-muted">
-                  {coverMessage.length} / 4 000
+                  {coverMessage.length} /{" "}
+                  {EMPLOYMENT_TEXT_LIMITS.applicationCoverMessage.toLocaleString()}
                 </p>
 
                 {job.screeningQuestions.length ? (

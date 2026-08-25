@@ -6,6 +6,11 @@ import type { ProviderOperationalDefinition } from "@shongre/contracts/provider-
  * multi-market inheritance, and credentials status representations.
  */
 
+export const PROVIDER_CONFIGURATION_CONSTRAINTS = {
+  priority: { min: 1, max: 10, step: 1 },
+  unconfiguredSortPriority: Number.MAX_SAFE_INTEGER,
+} as const;
+
 export type ProviderCategory =
   | "PAYMENT"
   | "PAYOUT"
@@ -236,7 +241,7 @@ export interface EffectiveProviderResolution {
   primaryConfig: ProviderConfiguration | null;
   fallbackProvider: Provider | null;
   fallbackConfig: ProviderConfiguration | null;
-  isInheritedFromFrance: boolean;
+  isInheritedFromBaseline: boolean;
   effectiveHealth: ProviderHealthStatus;
   reason?: string;
 }

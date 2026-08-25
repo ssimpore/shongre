@@ -7,6 +7,7 @@ import { Listing, SearchFilters } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { runUnifiedDiscovery } from "@shongre/shared";
 import { toDemoDiscoveryDocument } from "../../../domains/discovery/discovery.mapper";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 const POPULAR_KEYWORDS = [
   "iPhone 15 Pro",
@@ -85,7 +86,7 @@ export class DemoSearchService implements SearchServiceContract {
       res.listings.map(toDemoDiscoveryDocument),
       {
         requestId: `demo-search:${JSON.stringify(params)}`,
-        marketCode: params.marketCode || "FR",
+        marketCode: params.marketCode || DEFAULT_MARKET_CODE,
         query: params.query,
         categoryId: params.subCategorySlug || params.categorySlug,
         city: params.city,

@@ -1,4 +1,10 @@
-import { ListingsServiceContract } from "../../contracts/listings.contract";
+import {
+  BulkListingImportTemplate,
+  BulkListingImportRow,
+  ListingsServiceContract,
+  ParseBulkListingImportInput,
+  PublishBulkListingsInput,
+} from "../../contracts/listings.contract";
 import { httpClient } from "./http-client";
 import { Listing, ListingStatus, SearchFilters } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
@@ -221,6 +227,34 @@ export class HttpListingsService implements ListingsServiceContract {
     return httpClient.post<{ assetId: string; url: string }>(
       `/media/listings/uploads/${prepared.assetId}/complete`,
     );
+  }
+
+  async getBulkImportTemplate(
+    locale: string,
+  ): Promise<BulkListingImportTemplate> {
+    return httpClient.get<BulkListingImportTemplate>(
+      "/listings/bulk-import/template",
+      { params: { locale } },
+    );
+  }
+
+  async parseBulkImportCsv(
+    input: ParseBulkListingImportInput,
+  ): Promise<BulkListingImportRow[]> {
+    return httpClient.post<BulkListingImportRow[]>(
+      "/listings/bulk-import/parse",
+      input,
+    );
+  }
+
+  async publishBulkListings(
+    input: PublishBulkListingsInput,
+  ): Promise<Listing[]> {
+    const listings = await httpClient.post<BackendListing[]>(
+      "/listings/bulk-import/publish",
+      { marketCode: input.marketCode, rows: input.rows },
+    );
+    return listings.map(mapListing);
   }
 
   async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {

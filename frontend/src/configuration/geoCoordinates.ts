@@ -1,6 +1,4 @@
-/**
- * Geographic coordinates helper for French cities and departments
- */
+/** Geographic coordinates used by the deterministic demo map adapter. */
 
 export interface CityCoordinates {
   lat: number;
@@ -56,6 +54,62 @@ export const FRANCE_CENTER = {
   zoom: 6,
 };
 
+export interface MarketMapConfiguration {
+  center: { lat: number; lng: number; zoom: number };
+  cities: Record<string, CityCoordinates>;
+}
+
+const MARKET_MAP_CONFIGURATIONS: Record<string, MarketMapConfiguration> = {
+  FR: { center: FRANCE_CENTER, cities: FRENCH_MAJOR_CITIES },
+  BE: {
+    center: { lat: 50.5039, lng: 4.4699, zoom: 8 },
+    cities: {
+      bruxelles: { lat: 50.8503, lng: 4.3517, name: "Bruxelles", zoom: 12 },
+      anvers: { lat: 51.2194, lng: 4.4025, name: "Anvers", zoom: 12 },
+      liege: { lat: 50.6326, lng: 5.5797, name: "Liège", zoom: 12 },
+      gand: { lat: 51.0543, lng: 3.7174, name: "Gand", zoom: 12 },
+    },
+  },
+  CH: {
+    center: { lat: 46.8182, lng: 8.2275, zoom: 8 },
+    cities: {
+      geneve: { lat: 46.2044, lng: 6.1432, name: "Genève", zoom: 12 },
+      lausanne: { lat: 46.5197, lng: 6.6323, name: "Lausanne", zoom: 12 },
+      zurich: { lat: 47.3769, lng: 8.5417, name: "Zurich", zoom: 12 },
+      berne: { lat: 46.948, lng: 7.4474, name: "Berne", zoom: 12 },
+    },
+  },
+  ES: {
+    center: { lat: 40.4637, lng: -3.7492, zoom: 6 },
+    cities: {
+      madrid: { lat: 40.4168, lng: -3.7038, name: "Madrid", zoom: 12 },
+      barcelone: { lat: 41.3874, lng: 2.1686, name: "Barcelone", zoom: 12 },
+      valence: { lat: 39.4699, lng: -0.3763, name: "Valence", zoom: 12 },
+      seville: { lat: 37.3891, lng: -5.9845, name: "Séville", zoom: 12 },
+    },
+  },
+  LU: {
+    center: { lat: 49.8153, lng: 6.1296, zoom: 9 },
+    cities: {
+      luxembourg: {
+        lat: 49.6116,
+        lng: 6.1319,
+        name: "Luxembourg",
+        zoom: 12,
+      },
+    },
+  },
+};
+
+export function getMarketMapConfiguration(
+  marketCode?: string,
+): MarketMapConfiguration {
+  return (
+    MARKET_MAP_CONFIGURATIONS[(marketCode || "").toUpperCase()] ||
+    MARKET_MAP_CONFIGURATIONS.FR
+  );
+}
+
 /**
  * Resolve coordinates for a listing based on city name, department, or postal code with unique pseudo-jitter
  */
@@ -66,6 +120,7 @@ export function getListingCoordinates(listing: {
   department?: string;
   latitude?: number;
   longitude?: number;
+  marketCode?: string;
 }): { lat: number; lng: number } {
   if (listing.latitude && listing.longitude) {
     return { lat: listing.latitude, lng: listing.longitude };
@@ -75,13 +130,14 @@ export function getListingCoordinates(listing: {
     .toLowerCase()
     .trim()
     .replace(/^(st|ste)\s+/i, "saint-");
-  const normalizedCity = Object.keys(FRENCH_MAJOR_CITIES).find(
+  const mapConfiguration = getMarketMapConfiguration(listing.marketCode);
+  const normalizedCity = Object.keys(mapConfiguration.cities).find(
     (key) => rawCity.includes(key) || key.includes(rawCity),
   );
 
   const base = normalizedCity
-    ? FRENCH_MAJOR_CITIES[normalizedCity]
-    : FRANCE_CENTER;
+    ? mapConfiguration.cities[normalizedCity]
+    : mapConfiguration.center;
 
   // Generate deterministic jitter based on listing ID so items in same city don't stack on top of each other
   let hash = 0;

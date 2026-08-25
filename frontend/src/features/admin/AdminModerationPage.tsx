@@ -7,6 +7,7 @@ import {
   Unlock,
   Trash2,
   Sparkles,
+  Scale,
 } from "lucide-react";
 import { useToast } from "../../app/providers/ToastProvider";
 import { storageService } from "../../services/storage.service";
@@ -26,9 +27,18 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import type {
+  ModerationAppeal,
+  OwnModerationCase,
+} from "../../api/contracts/moderation.contract";
+import { MODERATION_CONSTRAINTS } from "@shongre/contracts";
+
+type AppealDecision = "upheld" | "overturned" | "rejected";
 
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   usePageMeta({
     title: t("meta.adminModeration.title"),
     description: t("meta.adminModeration.description"),
@@ -43,16 +53,24 @@ export const AdminModerationPage: React.FC = () => {
   const canSuspendUsers = can("user.suspend");
   const canReactivateUsers = can("user.reactivate");
 
-  const [activeTab, setActiveTab] = useState<"reports" | "listings" | "users">(
-    "reports",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "reports" | "appeals" | "listings" | "users"
+  >("reports");
   const [reports, setReports] = useState<any[]>([]);
+  const [moderationCases, setModerationCases] = useState<OwnModerationCase[]>(
+    [],
+  );
+  const [appeals, setAppeals] = useState<ModerationAppeal[]>([]);
   const [listings, setListings] = useState<Listing[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
 
   // Modals state
   const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
   const [suspendUserId, setSuspendUserId] = useState<string | null>(null);
+  const [appealDecision, setAppealDecision] = useState<{
+    appealId: string;
+    decision: AppealDecision;
+  } | null>(null);
 
   // AI Safety Analysis modal state
   const [selectedListingForAI, setSelectedListingForAI] =
@@ -72,14 +90,58 @@ export const AdminModerationPage: React.FC = () => {
     );
   };
 
+  const loadCasework = async () => {
+    if (!canReviewReports) {
+      setModerationCases([]);
+      setAppeals([]);
+      return;
+    }
+    try {
+      const [nextCases, nextAppeals] = await Promise.all([
+        services.moderation.listCases(),
+        services.moderation.listAppeals(),
+      ]);
+      setModerationCases(nextCases);
+      setAppeals(nextAppeals);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Les dossiers de recours sont indisponibles.",
+      );
+    }
+  };
+
   useEffect(() => {
     loadData();
+    void loadCasework();
   }, [
     canModerateListings,
     canReactivateUsers,
     canReviewReports,
     canSuspendUsers,
   ]);
+
+  const handleAppealDecision = async (reason: string) => {
+    if (!appealDecision) return;
+    try {
+      await services.moderation.decideAppeal(
+        appealDecision.appealId,
+        appealDecision.decision,
+        reason,
+      );
+      await loadCasework();
+      toast.success("Décision de recours enregistrée dans le journal d’audit.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "La décision n’a pas pu être enregistrée.",
+      );
+    } finally {
+      setAppealDecision(null);
+    }
+  };
 
   const handleResolveReport = async (reportId: string) => {
     try {
@@ -89,6 +151,7 @@ export const AdminModerationPage: React.FC = () => {
         "Signalement classé sans suite après examen manuel.",
       );
       loadData();
+      await loadCasework();
       toast.success("Signalement classé et marqué comme traité.");
     } catch (error: unknown) {
       toast.error(
@@ -238,6 +301,29 @@ export const AdminModerationPage: React.FC = () => {
           </button>
         )}
 
+        {canReviewReports && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("appeals")}
+            className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === "appeals"
+                ? "border-primary text-primary"
+                : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Scale className="w-4 h-4" />
+            <span>
+              Dossiers & recours (
+              {
+                appeals.filter((appeal) =>
+                  ["submitted", "under_review"].includes(appeal.status),
+                ).length
+              }
+              )
+            </span>
+          </button>
+        )}
+
         {(canSuspendUsers || canReactivateUsers) && (
           <button
             type="button"
@@ -325,6 +411,147 @@ export const AdminModerationPage: React.FC = () => {
         </div>
       )}
 
+      {activeTab === "appeals" && canReviewReports && (
+        <div className="grid gap-4 xl:grid-cols-trending-columns">
+          <section
+            aria-labelledby="moderation-cases-title"
+            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+          >
+            <div className="border-b border-border-subtle p-4">
+              <h2
+                id="moderation-cases-title"
+                className="text-sm font-black text-stone-900"
+              >
+                Dossiers de modération
+              </h2>
+              <p className="mt-1 text-xs text-stone-500">
+                Historique canonique des signalements et décisions appliquées.
+              </p>
+            </div>
+            <div className="divide-y divide-border-subtle">
+              {moderationCases.length === 0 ? (
+                <p className="p-5 text-xs text-stone-500">
+                  Aucun dossier enregistré.
+                </p>
+              ) : (
+                moderationCases.map((moderationCase) => (
+                  <article key={moderationCase.id} className="space-y-2 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-mono text-xs font-bold text-stone-900">
+                        {moderationCase.id}
+                      </span>
+                      <Badge variant="neutral" size="sm">
+                        {labelIdentifier(moderationCase.status)}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-stone-600">
+                      {labelIdentifier(moderationCase.targetType)} ·{" "}
+                      {labelIdentifier(moderationCase.category)}
+                    </p>
+                    {moderationCase.resolutionReason && (
+                      <p className="rounded-xl bg-bg-base p-3 text-xs text-stone-700">
+                        {moderationCase.resolutionReason}
+                      </p>
+                    )}
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="moderation-appeals-title"
+            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+          >
+            <div className="border-b border-border-subtle p-4">
+              <h2
+                id="moderation-appeals-title"
+                className="text-sm font-black text-stone-900"
+              >
+                Recours à examiner
+              </h2>
+              <p className="mt-1 text-xs text-stone-500">
+                Le backend interdit qu’un modérateur révise sa propre décision.
+              </p>
+            </div>
+            <div className="divide-y divide-border-subtle">
+              {appeals.length === 0 ? (
+                <p className="p-5 text-xs text-stone-500">
+                  Aucun recours enregistré.
+                </p>
+              ) : (
+                appeals.map((appeal) => {
+                  const pending = ["submitted", "under_review"].includes(
+                    appeal.status,
+                  );
+                  return (
+                    <article key={appeal.id} className="space-y-3 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-stone-900">
+                          {appeal.id}
+                        </span>
+                        <Badge
+                          variant={pending ? "warning" : "neutral"}
+                          size="sm"
+                        >
+                          {labelIdentifier(appeal.status)}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-stone-600">{appeal.reason}</p>
+                      {appeal.decisionReason && (
+                        <p className="rounded-xl bg-bg-base p-3 text-xs text-stone-700">
+                          Décision : {appeal.decisionReason}
+                        </p>
+                      )}
+                      {pending && (
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setAppealDecision({
+                                appealId: appeal.id,
+                                decision: "upheld",
+                              })
+                            }
+                          >
+                            Confirmer
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              setAppealDecision({
+                                appealId: appeal.id,
+                                decision: "overturned",
+                              })
+                            }
+                          >
+                            Annuler la décision
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              setAppealDecision({
+                                appealId: appeal.id,
+                                decision: "rejected",
+                              })
+                            }
+                          >
+                            Rejeter
+                          </Button>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })
+              )}
+            </div>
+          </section>
+        </div>
+      )}
+
       {/* Tab: Listings with AI Audit */}
       {activeTab === "listings" && canModerateListings && (
         <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
@@ -386,7 +613,9 @@ export const AdminModerationPage: React.FC = () => {
                       {list.sellerName}
                     </td>
                     <td className="p-3.5 font-bold text-stone-900">
-                      {list.price} €
+                      {formatPrice(list.price, {
+                        isFreeDonation: list.isFreeDonation,
+                      })}
                     </td>
                     <td className="p-3.5">
                       <Badge
@@ -504,8 +733,10 @@ export const AdminModerationPage: React.FC = () => {
                 {selectedListingForAI.title}
               </div>
               <div className="text-xs text-stone-500 mt-0.5">
-                {selectedListingForAI.price} € • Vendeur :{" "}
-                {selectedListingForAI.sellerName}
+                {formatPrice(selectedListingForAI.price, {
+                  isFreeDonation: selectedListingForAI.isFreeDonation,
+                })}{" "}
+                • Vendeur : {selectedListingForAI.sellerName}
               </div>
             </div>
 
@@ -631,6 +862,18 @@ export const AdminModerationPage: React.FC = () => {
           "admin.adminModerationPage.exSignalementsMultiplesPourNon",
         )}
         confirmText="Confirmer la suspension"
+        required
+      />
+      <PromptModal
+        isOpen={Boolean(appealDecision)}
+        onClose={() => setAppealDecision(null)}
+        onSubmit={(reason) => void handleAppealDecision(reason)}
+        title="Décider le recours"
+        label="Motif indépendant et vérifiable"
+        placeholder="Expliquez les éléments examinés et la justification de la décision."
+        confirmText="Enregistrer la décision"
+        multiline
+        minLength={MODERATION_CONSTRAINTS.appealReviewReasonMinLength}
         required
       />
     </div>

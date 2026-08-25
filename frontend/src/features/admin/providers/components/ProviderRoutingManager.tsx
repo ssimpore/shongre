@@ -4,12 +4,14 @@ import { Sliders, ShieldCheck } from "lucide-react";
 import {
   Provider,
   ProviderConfiguration,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../../../../domains/providers/provider.types";
 import {
   getAllCapabilities,
   getCategoryMetadata,
 } from "../../../../domains/providers/provider-capabilities";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 
 interface ProviderRoutingManagerProps {
   providers: Provider[];
@@ -23,7 +25,10 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
   onRefresh,
 }) => {
   const { t } = useTranslation();
-  const [selectedMarket, setSelectedMarket] = useState<string>("FR");
+  const { activeMarket, availableMarkets } = useMarketLocation();
+  const [selectedMarket, setSelectedMarket] = useState<string>(
+    activeMarket.code,
+  );
 
   const capabilitiesWithMultipleProviders = useMemo(() => {
     return getAllCapabilities().map((cap) => {
@@ -42,8 +47,10 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
         })
         .sort(
           (a, b) =>
-            (configurations[a.id]?.priority || 999) -
-            (configurations[b.id]?.priority || 999),
+            (configurations[a.id]?.priority ||
+              PROVIDER_CONFIGURATION_CONSTRAINTS.unconfiguredSortPriority) -
+            (configurations[b.id]?.priority ||
+              PROVIDER_CONFIGURATION_CONSTRAINTS.unconfiguredSortPriority),
         );
 
       return {
@@ -81,14 +88,12 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
             onChange={(e) => setSelectedMarket(e.target.value)}
             className="py-1 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-800 font-bold h-control-touch"
           >
-            <option value="FR">
-              {t("admin.providerRoutingManager.franceReference")}
-            </option>
-            <option value="BE">🇧🇪 Belgique</option>
-            <option value="CH">🇨🇭 Suisse</option>
-            <option value="ES">🇪🇸 Espagne</option>
-            <option value="LU">🇱🇺 Luxembourg</option>
-            <option value="DE">🇩🇪 Allemagne</option>
+            {availableMarkets.map((market) => (
+              <option key={market.code} value={market.code}>
+                {market.flag} {market.name}
+                {market.isDefault ? " · référence" : ""}
+              </option>
+            ))}
           </select>
         </div>
       </div>

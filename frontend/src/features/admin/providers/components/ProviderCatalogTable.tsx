@@ -14,6 +14,7 @@ import {
   ProviderConfiguration,
   ProviderEnvironment,
   ProviderHealthStatus,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../../../../domains/providers/provider.types";
 import {
   PROVIDER_CATEGORIES,
@@ -333,7 +334,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                               <span
                                 key={cap}
                                 title={`${cap} — ${implemented ? "implémentée" : demoOnly ? "démo uniquement" : "non implémentée"}`}
-                                className={`max-w-[14rem] whitespace-normal break-words text-micro leading-tight px-1.5 py-0.5 rounded border ${
+                                className={`max-w-56 whitespace-normal break-words text-micro leading-tight px-1.5 py-0.5 rounded border ${
                                   implemented
                                     ? "bg-success-surface text-success border-success-border"
                                     : demoOnly
@@ -365,7 +366,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           {isActive ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface border border-success-border px-2 py-0.5 rounded-full">
                               <CheckCircle2 className="w-3 h-3" />
-                              Actif (P{cfg?.priority || 1})
+                              {`Actif (P${
+                                cfg?.priority ||
+                                PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min
+                              })`}
                             </span>
                           ) : isDemoOnly ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-info bg-info-surface border border-info-border px-2 py-0.5 rounded-full">

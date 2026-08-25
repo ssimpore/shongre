@@ -6,7 +6,7 @@ export const PageSuspense: React.FC = () => {
     <div
       role="status"
       aria-label="Chargement de la page"
-      className="min-h-[70vh] flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-normal"
+      className="min-h-page-loading-min flex flex-col items-center justify-center p-8 w-full max-w-7xl mx-auto animate-in fade-in duration-normal"
     >
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">

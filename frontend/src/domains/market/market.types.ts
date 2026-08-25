@@ -5,7 +5,7 @@
 export type MarketStatus =
   "draft" | "configured" | "coming_soon" | "active" | "paused" | "archived";
 
-export type SettingSource = "FR" | "LOCAL" | "PLATFORM_DEFAULT";
+export type SettingSource = "BASELINE" | "LOCAL" | "PLATFORM_DEFAULT";
 
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -70,6 +70,11 @@ export interface ListingsMarketConfig {
   allowFreeDonations: boolean;
   allowPriceNegotiation: boolean;
   allowInstantBuy: boolean;
+}
+
+export interface SearchMarketConfig {
+  /** Ordered major-unit price stops used by the public range filter. */
+  priceFilterStopsMajor: number[];
 }
 
 export interface PaymentsMarketConfig {
@@ -200,6 +205,7 @@ export interface MarketConfiguration {
   general: GeneralMarketConfig;
   localization: LocalizationMarketConfig;
   listings: ListingsMarketConfig;
+  search: SearchMarketConfig;
   payments: PaymentsMarketConfig;
   reservation: ReservationMarketConfig;
   delivery: DeliveryMarketConfig;
@@ -247,7 +253,7 @@ export interface SettingResolution<T = any> {
   sourceMarketCode: string;
   isInherited: boolean;
   overrideDefined: boolean;
-  frenchReferenceValue: T;
+  baselineReferenceValue: T;
 }
 
 /**

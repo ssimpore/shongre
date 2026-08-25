@@ -7,7 +7,10 @@ import {
   MarketInheritanceMetrics,
 } from "./market.types";
 import { INITIAL_MARKETS } from "./market.defaults";
-import { normalizeRecentSearchesLimit } from "./market.constants";
+import {
+  normalizePriceFilterStops,
+  normalizeRecentSearchesLimit,
+} from "./market.constants";
 import {
   marketResolver,
   setNestedValue,
@@ -53,7 +56,7 @@ export class MarketService {
    */
   public getMarket(code?: string): Market {
     const markets = this.getMarkets();
-    const normalized = (code || "FR").toUpperCase();
+    const normalized = (code || this.getDefaultMarket().code).toUpperCase();
     const found = markets.find((m) => m.code.toUpperCase() === normalized);
     return found || this.getDefaultMarket();
   }
@@ -69,13 +72,15 @@ export class MarketService {
   }
 
   /**
-   * Returns the canonical default market (France, FR)
+   * Returns the canonical default market configured by the market registry.
    */
   public getDefaultMarket(): Market {
     const markets = this.getMarkets();
-    const defaultMarket = markets.find((m) => m.isDefault && m.code === "FR");
+    const defaultMarket = markets.find((m) => m.isDefault);
     if (defaultMarket) return defaultMarket;
-    return markets.find((m) => m.code === "FR") || INITIAL_MARKETS[0];
+    return (
+      INITIAL_MARKETS.find((market) => market.isDefault) || INITIAL_MARKETS[0]
+    );
   }
 
   /**
@@ -83,8 +88,20 @@ export class MarketService {
    */
   public getEffectiveConfig(marketCode?: string): MarketConfiguration {
     const targetMarket = this.getMarket(marketCode);
-    const franceMarket = this.getDefaultMarket();
-    return marketResolver.resolveEffectiveConfig(targetMarket, franceMarket);
+    const baselineMarket = this.getDefaultMarket();
+    const resolved = marketResolver.resolveEffectiveConfig(
+      targetMarket,
+      baselineMarket,
+    );
+    return {
+      ...resolved,
+      search: {
+        ...resolved.search,
+        priceFilterStopsMajor: normalizePriceFilterStops(
+          resolved.search?.priceFilterStopsMajor,
+        ),
+      },
+    };
   }
 
   /**
@@ -95,8 +112,8 @@ export class MarketService {
     path: string,
   ): SettingResolution<T> {
     const targetMarket = this.getMarket(marketCode);
-    const franceMarket = this.getDefaultMarket();
-    return marketResolver.resolveSetting<T>(targetMarket, franceMarket, path);
+    const baselineMarket = this.getDefaultMarket();
+    return marketResolver.resolveSetting<T>(targetMarket, baselineMarket, path);
   }
 
   /**
@@ -104,8 +121,8 @@ export class MarketService {
    */
   public getInheritanceMetrics(marketCode: string): MarketInheritanceMetrics {
     const targetMarket = this.getMarket(marketCode);
-    const franceMarket = this.getDefaultMarket();
-    return marketResolver.getInheritanceMetrics(targetMarket, franceMarket);
+    const baselineMarket = this.getDefaultMarket();
+    return marketResolver.getInheritanceMetrics(targetMarket, baselineMarket);
   }
 
   /**
@@ -137,7 +154,9 @@ export class MarketService {
     const valueToPersist =
       path === "features.recentSearchesLimit"
         ? normalizeRecentSearchesLimit(value)
-        : value;
+        : path === "search.priceFilterStopsMajor"
+          ? normalizePriceFilterStops(value)
+          : value;
     const prevValue = getNestedValue(market.overrides, path);
     const updatedOverrides = { ...market.overrides };
     setNestedValue(updatedOverrides, path, valueToPersist);
@@ -168,7 +187,7 @@ export class MarketService {
   }
 
   /**
-   * Resets an override (deletes the local difference so it resumes dynamic inheritance from France)
+   * Resets an override so it resumes inheritance from the default market.
    */
   public resetMarketOverride(
     marketCode: string,
@@ -184,9 +203,9 @@ export class MarketService {
     }
 
     const market = markets[targetIdx];
-    if (market.isDefault || market.code === "FR") {
+    if (market.isDefault) {
       throw new Error(
-        "Cannot reset overrides on the canonical default France market.",
+        "Cannot reset overrides on the canonical default market.",
       );
     }
 
@@ -210,7 +229,7 @@ export class MarketService {
       actorName: actor?.name || "Administrateur",
       actorRole: (actor?.role as any) || "admin",
       action: "market_scope_updated",
-      details: `Réinitialisation de la surcharge sur [${path}] pour [${market.name}]. Reprise dynamique de l'héritage France.`,
+      details: `Réinitialisation de la surcharge sur [${path}] pour [${market.name}]. Reprise dynamique de l'héritage du marché par défaut.`,
       previousValue: prevValue,
       newValue: "INHERITED_FROM_FRANCE",
       market: market.code,
@@ -220,9 +239,9 @@ export class MarketService {
   }
 
   /**
-   * Resets all overrides for a market, restoring 100% inheritance from France
+   * Resets all overrides for a market, restoring default-market inheritance.
    */
-  public resetAllOverridesToFrance(
+  public resetAllOverridesToBaseline(
     marketCode: string,
     actor?: { id: string; name: string; role: string },
   ): Market {
@@ -235,8 +254,8 @@ export class MarketService {
     }
 
     const market = markets[targetIdx];
-    if (market.isDefault || market.code === "FR") {
-      throw new Error("Cannot reset canonical France market.");
+    if (market.isDefault) {
+      throw new Error("Cannot reset the canonical default market.");
     }
 
     const updatedMarket: Market = {

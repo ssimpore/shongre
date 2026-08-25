@@ -5,14 +5,20 @@ import {
   AuthResult,
   PlatformRole,
 } from "../../types";
+import {
+  deterministicCode,
+  deterministicRuntimeId,
+} from "../../utilities/deterministic-id";
 import { storageService } from "../../services/storage.service";
-import { telemetryService } from "../../services/telemetry.service";
 import { auditService } from "../../security/audit.service";
 import {
   getMarketDefinition,
   validateBusinessIdentifier,
   formatBusinessIdentifier,
 } from "../../configuration/market.config";
+import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
+import { minutesToMilliseconds } from "../../utilities/time";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 const SESSIONS_STORAGE_KEY = "shongre_auth_sessions_v1";
 const SECURITY_EVENTS_STORAGE_KEY = "shongre_auth_security_events_v1";
@@ -68,11 +74,15 @@ export function hashPassword(password: string): string {
 export function verifyPasswordHash(password: string, hash?: string): boolean {
   if (!hash) {
     // For demo accounts without explicit passwordHash, accept standard passwords
-    return password === "Shongre2026!" || password.length >= 6;
+    return (
+      password === "Shongre2026!" ||
+      password.length >= AUTH_CONSTRAINTS.passwordMinLength
+    );
   }
   return (
     hash === hashPassword(password) ||
-    (hash.startsWith("demo_") && password.length >= 6)
+    (hash.startsWith("demo_") &&
+      password.length >= AUTH_CONSTRAINTS.passwordMinLength)
   );
 }
 
@@ -112,20 +122,11 @@ class AuthService {
   // Storage Helpers
   // -------------------------------------------------------------
   private getStorage<T>(key: string, fallback: T): T {
-    try {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : fallback;
-    } catch {
-      return fallback;
-    }
+    return storageService.get(key, fallback);
   }
 
   private setStorage<T>(key: string, value: T): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-      telemetryService.captureException(e, "auth-storage-write");
-    }
+    storageService.set(key, value);
   }
 
   // -------------------------------------------------------------
@@ -222,7 +223,7 @@ class AuthService {
     const { browser, os } = detectClientEnvironment();
 
     const newEvent: AuthSecurityEvent = {
-      id: `sec-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: deterministicRuntimeId("sec", [userId, eventType, metadata]),
       timestamp: new Date().toISOString(),
       userId,
       eventType,
@@ -253,7 +254,7 @@ class AuthService {
         targetName: user?.name || "Compte utilisateur",
         action: eventType,
         details: details || `Événement de sécurité : ${eventType}`,
-        market: user?.country || "FR",
+        market: user?.country || DEFAULT_MARKET_CODE,
       });
     }
 
@@ -299,7 +300,7 @@ class AuthService {
     const { browser, os, deviceType } = detectClientEnvironment();
 
     const newSession: UserSession = {
-      id: `sess-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      id: deterministicRuntimeId("sess", [userId, rememberMe]),
       userId,
       createdAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
@@ -455,7 +456,7 @@ class AuthService {
 
     // Check if MFA is required
     if (user.mfa?.isEnabled) {
-      const tempToken = `mfa_temp_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+      const tempToken = deterministicRuntimeId("mfa_temp", [user.id]);
       this.setStorage(`mfa_pending_${tempToken}`, {
         userId: user.id,
         email: user.email,
@@ -562,7 +563,7 @@ class AuthService {
     }
 
     // Clean pending token
-    localStorage.removeItem(`mfa_pending_${tempToken}`);
+    storageService.remove(`mfa_pending_${tempToken}`);
 
     // Update user login
     const updatedUser: UserProfile = {
@@ -618,8 +619,8 @@ class AuthService {
       };
     }
 
-    const country = (data.country || "FR").toUpperCase();
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const country = (data.country || DEFAULT_MARKET_CODE).toUpperCase();
+    const userId = deterministicRuntimeId("user", [normalizedEmail]);
     const slug = data.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -627,7 +628,7 @@ class AuthService {
 
     const newUser: UserProfile = {
       id: userId,
-      slug: `${slug}-${Math.floor(100 + Math.random() * 900)}`,
+      slug: `${slug}-${deterministicCode("", 3, [normalizedEmail], "0123456789")}`,
       email: normalizedEmail,
       name: data.name.trim(),
       accountType: "individual",
@@ -713,7 +714,7 @@ class AuthService {
       };
     }
 
-    const country = (data.country || "FR").toUpperCase();
+    const country = (data.country || DEFAULT_MARKET_CODE).toUpperCase();
     const formattedSiret = formatBusinessIdentifier(data.sirenSiret, country);
 
     if (!data.companyName.trim()) {
@@ -733,7 +734,7 @@ class AuthService {
       };
     }
 
-    const userId = `user_pro_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const userId = deterministicRuntimeId("user_pro", [normalizedEmail]);
     const storeSlug = data.companyName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -840,7 +841,7 @@ class AuthService {
       };
     }
 
-    const country = (user.country || "FR").toUpperCase();
+    const country = (user.country || DEFAULT_MARKET_CODE).toUpperCase();
     const formattedSiret = formatBusinessIdentifier(
       proData.sirenSiret,
       country,
@@ -921,7 +922,7 @@ class AuthService {
       VERIFICATION_TOKENS_KEY,
       [],
     );
-    const token = `verify_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    const token = deterministicRuntimeId("verify", [userId, email]);
 
     const tokenObj: EmailVerificationToken = {
       token,
@@ -1050,7 +1051,7 @@ class AuthService {
     }
 
     const tokens = this.getStorage<PasswordResetToken[]>(RESET_TOKENS_KEY, []);
-    const token = `reset_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    const token = deterministicRuntimeId("reset", [user.id, normalized]);
 
     const resetEntry: PasswordResetToken = {
       token,
@@ -1189,7 +1190,7 @@ class AuthService {
     phone: string,
   ): { success: boolean; message: string; demoCode?: string } {
     const cleanPhone = phone.trim();
-    if (!cleanPhone || cleanPhone.length < 8) {
+    if (!cleanPhone || cleanPhone.length < AUTH_CONSTRAINTS.phoneMinLength) {
       return { success: false, message: "Numéro de téléphone invalide." };
     }
 
@@ -1204,7 +1205,12 @@ class AuthService {
       phone: cleanPhone,
       code,
       createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      expiresAt: new Date(
+        Date.now() +
+          minutesToMilliseconds(
+            AUTH_CONSTRAINTS.verificationCodeLifetimeMinutes,
+          ),
+      ).toISOString(),
       attempts: 0,
     };
 
@@ -1241,7 +1247,7 @@ class AuthService {
       };
     }
 
-    if (entry.attempts >= 5) {
+    if (entry.attempts >= AUTH_CONSTRAINTS.verificationCodeMaxAttempts) {
       return {
         success: false,
         message: "Trop de tentatives erronées. Veuillez redemander un code.",
@@ -1433,7 +1439,7 @@ class AuthService {
       let sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
       sessions = sessions.filter((s) => s.id !== currentSessionId);
       this.setStorage(SESSIONS_STORAGE_KEY, sessions);
-      localStorage.removeItem("shongre_current_session_id");
+      storageService.remove("shongre_current_session_id");
     }
 
     storageService.setCurrentUserKey("guest");

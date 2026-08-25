@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Headphones,
-  Send,
-  CheckCircle2,
-  Paperclip,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, Headphones, Send } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Textarea } from "../../design-system/primitives/FormField";
-import { SupportRequest } from "../../domains/support/support.types";
+import type { SupportCase, SupportCaseNote } from "@shongre/contracts/support";
 import { supportService } from "../../domains/support/support.service";
-import { supportRepository } from "../../repositories/support.repository";
+import { services } from "../../api/client/service-registry";
 import { formatDate } from "../../utilities/formatters";
-import { SupportContextCard } from "./components/SupportContextCard";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { telemetryService } from "../../services/telemetry.service";
 
 export const SupportRequestDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -36,7 +27,8 @@ export const SupportRequestDetailPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
 
-  const [request, setRequest] = useState<SupportRequest | null>(null);
+  const [request, setRequest] = useState<SupportCase | null>(null);
+  const [notes, setNotes] = useState<SupportCaseNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyText, setReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +38,9 @@ export const SupportRequestDetailPage: React.FC = () => {
       if (!id) return;
       setLoading(true);
       try {
-        const found = await supportRepository.getRequestById(id);
-        setRequest(found);
+        const found = await services.support.getCase(id);
+        setRequest(found.case);
+        setNotes(found.notes);
       } finally {
         setLoading(false);
       }
@@ -61,16 +54,13 @@ export const SupportRequestDetailPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const updated = await supportRepository.addReply(
-        request.id,
-        replyText.trim(),
-        {
-          id: currentUser.id,
-          name: currentUser.name,
-          type: "user",
-        },
-      );
-      setRequest(updated);
+      await services.support.addNote(request.id, {
+        visibility: "customer",
+        body: replyText.trim(),
+      });
+      const updated = await services.support.getCase(request.id);
+      setRequest(updated.case);
+      setNotes(updated.notes);
       setReplyText("");
       toast.success(
         "Votre message a été ajouté au dossier.",
@@ -83,39 +73,6 @@ export const SupportRequestDetailPage: React.FC = () => {
       );
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleSimulateAgentReply = async () => {
-    if (!request) return;
-    try {
-      const updated = await supportRepository.simulateAgentReply(
-        request.id,
-        "Bonjour, merci pour ces précisions. Votre dossier a été mis à jour et validé par notre équipe. N'hésitez pas si vous avez une autre question !",
-      );
-      setRequest(updated);
-      toast.info(
-        "Une réponse du conseiller Hugo a été simulée.",
-        "Simulation Support",
-      );
-    } catch (err: unknown) {
-      telemetryService.captureException(err, "support-simulated-reply");
-      toast.error("La réponse simulée n'a pas pu être ajoutée.");
-    }
-  };
-
-  const handleMarkResolved = async () => {
-    if (!request) return;
-    try {
-      const updated = await supportRepository.resolveRequest(request.id);
-      setRequest(updated);
-      toast.success(
-        "Le dossier est désormais marqué comme résolu.",
-        "Demande résolue",
-      );
-    } catch (err: unknown) {
-      telemetryService.captureException(err, "support-resolution");
-      toast.error("La demande n'a pas pu être marquée comme résolue.");
     }
   };
 
@@ -163,20 +120,6 @@ export const SupportRequestDetailPage: React.FC = () => {
             {t("support.supportRequestDetailPage.retourAMesDemandes")}
           </span>
         </button>
-
-        {!isClosedOrResolved && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleMarkResolved}
-            className="font-bold flex items-center gap-1.5 text-success hover:text-success"
-          >
-            <CheckCircle2 className="w-4 h-4 text-success" />
-            <span>
-              {t("support.supportRequestDetailPage.marquerCommeResolu")}
-            </span>
-          </Button>
-        )}
       </div>
 
       {/* 2. Request Header Card */}
@@ -205,19 +148,20 @@ export const SupportRequestDetailPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Linked Context Card if any */}
-        {request.context && <SupportContextCard context={request.context} />}
+        <p className="text-sm leading-relaxed text-stone-700">
+          {request.description}
+        </p>
       </div>
 
       {/* 3. Messages Timeline */}
       <div className="space-y-4">
         <h2 className="text-xs font-black uppercase tracking-wider text-stone-700 px-1">
-          Historique des échanges ({request.messages.length})
+          Historique des échanges ({notes.length})
         </h2>
 
         <div className="space-y-3">
-          {request.messages.map((msg) => {
-            const isAgent = msg.authorType === "agent";
+          {notes.map((msg) => {
+            const isAgent = msg.authorId !== request.requesterId;
 
             return (
               <div
@@ -240,12 +184,14 @@ export const SupportRequestDetailPage: React.FC = () => {
                       {isAgent ? (
                         <Headphones className="w-3.5 h-3.5" />
                       ) : (
-                        msg.authorName.charAt(0)
+                        currentUser?.name?.charAt(0) || "V"
                       )}
                     </div>
                     <div>
                       <span className="text-xs font-black text-stone-900 block leading-tight">
-                        {msg.authorName}
+                        {isAgent
+                          ? "Équipe Support Shongre"
+                          : currentUser?.name || "Vous"}
                       </span>
                       {isAgent && (
                         <span className="text-micro font-bold text-primary block">
@@ -261,22 +207,8 @@ export const SupportRequestDetailPage: React.FC = () => {
                 </div>
 
                 <p className="text-xs sm:text-sm text-stone-800 leading-relaxed whitespace-pre-line pl-9">
-                  {msg.content}
+                  {msg.body}
                 </p>
-
-                {msg.attachments && msg.attachments.length > 0 && (
-                  <div className="mt-3 pl-9 flex flex-wrap gap-2">
-                    {msg.attachments.map((att) => (
-                      <div
-                        key={att.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 border border-stone-200 text-xs font-medium text-stone-800"
-                      >
-                        <Paperclip className="w-3.5 h-3.5 text-stone-400" />
-                        <span>{att.fileName}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             );
           })}
@@ -306,20 +238,6 @@ export const SupportRequestDetailPage: React.FC = () => {
             <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">
               {t("support.supportRequestDetailPage.repondreANotreEquipe")}
             </h3>
-
-            {/* Demo test button */}
-            <button
-              type="button"
-              onClick={handleSimulateAgentReply}
-              className="text-micro font-bold text-warning bg-warning-surface hover:bg-warning-surface border border-warning-border px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Sparkles className="w-3 h-3 text-warning" />
-              <span>
-                {t(
-                  "support.supportRequestDetailPage.simulerReponseConseillerDemo",
-                )}
-              </span>
-            </button>
           </div>
 
           <Textarea

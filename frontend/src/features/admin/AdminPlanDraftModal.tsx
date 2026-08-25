@@ -3,6 +3,7 @@ import type { MonetizationProduct } from "@shongre/contracts/monetization";
 import {
   hasCommercialEntitlementValue,
   isCommercialEntitlementOperational,
+  MONETIZATION_ADMIN_CONSTRAINTS,
 } from "@shongre/contracts/monetization";
 import { Button } from "../../design-system/primitives/Button";
 import {
@@ -11,6 +12,7 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 type AdminPlanDraftModalProps = {
   product: MonetizationProduct;
@@ -33,12 +35,6 @@ const parseCsv = (value: string) =>
 const localDateTime = (value?: string) => value?.slice(0, 16) || "";
 const optionalIso = (value: string) =>
   value ? new Date(value).toISOString() : undefined;
-const formatMinor = (amountMinor: number, currency: string) =>
-  new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
-
 export function AdminPlanDraftModal({
   product,
   targetVersion,
@@ -46,6 +42,7 @@ export function AdminPlanDraftModal({
   onClose,
   onCreate,
 }: AdminPlanDraftModalProps) {
+  const { formatMoneyMinor } = useRegionalFormatters();
   const [draft, setDraft] = useState<MonetizationProduct>(() =>
     structuredClone(product),
   );
@@ -82,7 +79,11 @@ export function AdminPlanDraftModal({
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (reason.trim().length < 8) return;
+    if (
+      reason.trim().length <
+      MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength
+    )
+      return;
     await onCreate({
       product: draft,
       reason: reason.trim(),
@@ -128,7 +129,10 @@ export function AdminPlanDraftModal({
                   key={price.id}
                   className="text-xs font-black text-text-main"
                 >
-                  {formatMinor(price.amount.amountMinor, price.amount.currency)}
+                  {formatMoneyMinor(
+                    price.amount.amountMinor,
+                    price.amount.currency,
+                  )}
                   {price.billingPeriod === "month"
                     ? " / mois"
                     : price.billingPeriod === "year"
@@ -217,14 +221,18 @@ export function AdminPlanDraftModal({
             <FormField label="Ordre d’affichage">
               <Input
                 type="number"
-                min={0}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
+                step={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.step}
                 value={draft.commercialProfile.displayOrder}
                 onChange={(event) =>
                   setDraft((current) => ({
                     ...current,
                     commercialProfile: {
                       ...current.commercialProfile,
-                      displayOrder: Math.max(0, Number(event.target.value)),
+                      displayOrder: Math.max(
+                        MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+                        Number(event.target.value),
+                      ),
                     },
                   }))
                 }
@@ -295,14 +303,18 @@ export function AdminPlanDraftModal({
                 <FormField label={`Montant ${price.billingPeriod} (centimes)`}>
                   <Input
                     type="number"
-                    min={0}
+                    min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                    step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                     value={price.amount.amountMinor}
                     onChange={(event) =>
                       updatePrice(price.id, (current) => ({
                         ...current,
                         amount: {
                           ...current.amount,
-                          amountMinor: Math.max(0, Number(event.target.value)),
+                          amountMinor: Math.max(
+                            MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min,
+                            Number(event.target.value),
+                          ),
                         },
                       }))
                     }
@@ -311,15 +323,19 @@ export function AdminPlanDraftModal({
                 <FormField label="TVA (points de base)">
                   <Input
                     type="number"
-                    min={0}
-                    max={10_000}
+                    min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                    max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                    step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
                     value={price.taxRateBps}
                     onChange={(event) =>
                       updatePrice(price.id, (current) => ({
                         ...current,
                         taxRateBps: Math.min(
-                          10_000,
-                          Math.max(0, Number(event.target.value)),
+                          MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max,
+                          Math.max(
+                            MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min,
+                            Number(event.target.value),
+                          ),
                         ),
                       }))
                     }
@@ -484,7 +500,11 @@ export function AdminPlanDraftModal({
                           value: Array.isArray(current.value)
                             ? parseCsv(event.target.value)
                             : typeof current.value === "number"
-                              ? Math.max(0, Number(event.target.value))
+                              ? Math.max(
+                                  MONETIZATION_ADMIN_CONSTRAINTS
+                                    .nonNegativeInteger.min,
+                                  Number(event.target.value),
+                                )
                               : event.target.value,
                         }))
                       }
@@ -546,7 +566,9 @@ export function AdminPlanDraftModal({
                           enabled: event.target.checked,
                           durationDays: event.target.checked
                             ? current.commercialProfile.trialPolicy
-                                .durationDays || 30
+                                .durationDays ||
+                              MONETIZATION_ADMIN_CONSTRAINTS.trialDurationDays
+                                .default
                             : undefined,
                         },
                       },
@@ -558,7 +580,8 @@ export function AdminPlanDraftModal({
               <FormField label="Durée (jours)">
                 <Input
                   type="number"
-                  min={1}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.trialDurationDays.min}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.trialDurationDays.step}
                   disabled={!draft.commercialProfile.trialPolicy.enabled}
                   value={draft.commercialProfile.trialPolicy.durationDays || ""}
                   onChange={(event) =>
@@ -568,7 +591,11 @@ export function AdminPlanDraftModal({
                         ...current.commercialProfile,
                         trialPolicy: {
                           ...current.commercialProfile.trialPolicy,
-                          durationDays: Math.max(1, Number(event.target.value)),
+                          durationDays: Math.max(
+                            MONETIZATION_ADMIN_CONSTRAINTS.trialDurationDays
+                              .min,
+                            Number(event.target.value),
+                          ),
                         },
                       },
                     }))
@@ -766,6 +793,8 @@ export function AdminPlanDraftModal({
           >
             <Textarea
               rows={3}
+              minLength={MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength}
+              maxLength={MONETIZATION_ADMIN_CONSTRAINTS.changeReason.maxLength}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
@@ -786,7 +815,14 @@ export function AdminPlanDraftModal({
           <Button type="button" variant="outline" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" disabled={saving || reason.trim().length < 8}>
+          <Button
+            type="submit"
+            disabled={
+              saving ||
+              reason.trim().length <
+                MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength
+            }
+          >
             {saving ? "Création…" : "Créer le brouillon"}
           </Button>
         </div>

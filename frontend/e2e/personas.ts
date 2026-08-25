@@ -26,6 +26,24 @@ export const PERSONAS = {
 
 export type PersonaName = keyof typeof PERSONAS;
 
+/**
+ * Seeds an explicit refusal so a test aimed at another application surface is
+ * not actually testing through the pinned first-visit consent region. Consent
+ * itself has a dedicated suite which deliberately omits this helper.
+ */
+export async function useEstablishedConsent(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'shongre_cookie_consent_v1',
+      JSON.stringify({
+        version: 1,
+        decidedAt: new Date().toISOString(),
+        categories: { necessary: true, analytics: false, marketing: false },
+      }),
+    );
+  });
+}
+
 /** Seeds the persona before any app code runs, for every navigation on `page`. */
 export async function usePersona(page: Page, persona: PersonaName): Promise<void> {
   const { key, role } = PERSONAS[persona];

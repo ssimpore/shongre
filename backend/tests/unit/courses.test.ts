@@ -13,6 +13,31 @@ const createService = () => {
 };
 
 describe("Shongre Education course domain service", () => {
+  it("persists only non-sensitive workflow criteria and account-scoped favorites", async () => {
+    const { service } = createService();
+    await service.saveWorkflowDraft("user_learner", "FR", "learner_request", {
+      subjectId: "subject_mathematics",
+      objective: "Préparer le brevet",
+      guardianName: "must-not-persist",
+      paymentSecret: "must-not-persist",
+    });
+    const draft = await service.getLearnerRequestDraft("user_learner", "FR");
+    expect(draft).toMatchObject({
+      subjectId: "subject_mathematics",
+      objective: "Préparer le brevet",
+    });
+    expect(draft).not.toHaveProperty("guardianName");
+    expect(draft).not.toHaveProperty("paymentSecret");
+
+    await expect(
+      service.toggleSavedTutor("user_learner", "tutor_sophie"),
+    ).resolves.toBe(true);
+    expect(await service.getSavedTutorIds("user_learner")).toEqual([
+      "tutor_sophie",
+    ]);
+    expect(await service.getSavedTutorIds("another_learner")).toEqual([]);
+  });
+
   it("projects Education plan prices from the active commercial version", async () => {
     class CommercialRepository extends DemoBusinessRulesRepository {
       override async getActiveCatalog(marketCode: string) {

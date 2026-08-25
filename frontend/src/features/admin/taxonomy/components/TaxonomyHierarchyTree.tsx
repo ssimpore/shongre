@@ -1,4 +1,14 @@
 import React from "react";
+
+const TREE_DEPTH_PADDING = [
+  "pl-2",
+  "pl-6",
+  "pl-10",
+  "pl-14",
+  "pl-18",
+  "pl-22",
+  "pl-26",
+] as const;
 import {
   ChevronDown,
   ChevronRight,
@@ -97,12 +107,11 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
     return (
       <div key={node.id} className="space-y-1">
         <div
-          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-fast border ${
+          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-fast border ${TREE_DEPTH_PADDING[Math.min(depth, TREE_DEPTH_PADDING.length - 1)]} ${
             isSelected
               ? "bg-primary-light/80 border-primary text-primary font-bold shadow-xs"
               : "border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle"
           }`}
-          style={{ paddingLeft: `${Math.max(8, depth * 18 + 8)}px` }}
         >
           {/* Left: Expand, Icon, Labels, Badges */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -241,7 +250,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
   const filteredRoots = nodes.filter(matchesFilter);
 
   return (
-    <div className="space-y-1 py-1 max-h-[700px] overflow-y-auto pr-1">
+    <div className="space-y-1 py-1 max-h-175 overflow-y-auto pr-1">
       {filteredRoots.length === 0 ? (
         <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
           <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />

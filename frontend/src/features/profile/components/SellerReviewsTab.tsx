@@ -8,7 +8,9 @@ import {
 } from "lucide-react";
 import { ReviewItem, UserProfile } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
+import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 export interface SellerReviewsTabProps {
   seller: UserProfile;
@@ -20,6 +22,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
   reviews,
 }) => {
   const { t } = useTranslation();
+  const { formatDate: formatRegionalDate } = useRegionalFormatters();
   const [selectedRatingFilter, setSelectedRatingFilter] = useState<
     number | null
   >(null);
@@ -68,12 +71,11 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
   // Format date helper
   const formatDate = (isoString: string) => {
     try {
-      const date = new Date(isoString);
-      return new Intl.DateTimeFormat("fr-FR", {
+      return formatRegionalDate(isoString, {
         day: "numeric",
         month: "long",
         year: "numeric",
-      }).format(date);
+      });
     } catch {
       return "Récemment";
     }
@@ -136,12 +138,12 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 </span>
 
-                <div className="flex-1 h-2.5 bg-border-subtle rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 rounded-full transition-all duration-normal"
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
+                <ProgressBar
+                  value={item.percentage}
+                  label={`${item.percentage}% des avis ont ${item.star} étoiles`}
+                  variant="warning"
+                  className="flex-1"
+                />
 
                 <span className="w-12 text-right shrink-0 text-stone-500 text-xs">
                   {item.count} ({item.percentage}%)
@@ -220,7 +222,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                 </div>
 
                 {rev.listingTitle && (
-                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 bg-bg-base px-3 py-1.5 rounded-xl border border-border-base max-w-[240px] truncate">
+                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 bg-bg-base px-3 py-1.5 rounded-xl border border-border-base max-w-60 truncate">
                     <ShoppingBag className="w-3.5 h-3.5 text-stone-400 shrink-0" />
                     <span className="truncate">{rev.listingTitle}</span>
                   </div>

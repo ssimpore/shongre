@@ -5,6 +5,7 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { services } from "../../../api/client/service-registry";
 import { useVerification } from "../../../domains/verification/useVerification";
 import { useToast } from "../../../app/providers/ToastProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export interface BankPayoutModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
 }) => {
   const { currentUser, refreshUser } = useVerification();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
     try {
       const onboarding = await services.verification.startPaymentOnboarding({
         userId: currentUser.id,
-        jurisdiction: currentUser.country || "FR",
+        jurisdiction: currentUser.country || activeMarket.countryCode,
         returnTo,
         contactEmail: currentUser.email,
         displayName: currentUser.name,

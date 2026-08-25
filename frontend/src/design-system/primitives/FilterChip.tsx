@@ -25,6 +25,12 @@ export interface FilterChipProps {
    * name of the remove button ("Retirer le filtre Véhicules").
    */
   label?: string;
+  /** Makes the chip an interactive, single-choice filter control. */
+  onSelect?: () => void;
+  /** Current state for an interactive filter chip. */
+  selected?: boolean;
+  /** Optional result or unread count displayed without changing the label. */
+  count?: number;
   className?: string;
 }
 
@@ -48,17 +54,49 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   tone = "neutral",
   onRemove,
   label,
+  onSelect,
+  selected = false,
+  count,
   className = "",
 }) => {
   const { t } = useTranslation();
+  const resolvedTone = selected ? "strong" : tone;
+
+  const content = (
+    <>
+      <span className="truncate">{children}</span>
+      {count !== undefined && count > 0 ? (
+        <span
+          className={`inline-flex min-w-5 items-center justify-center rounded-pill px-1.5 py-0.5 text-micro font-extrabold ${
+            selected ? "bg-primary text-white" : "bg-primary/15 text-primary"
+          }`}
+        >
+          {count}
+        </span>
+      ) : null}
+    </>
+  );
+
+  if (onSelect) {
+    return (
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={selected}
+        className={`inline-flex min-h-control-sm shrink-0 items-center gap-1.5 rounded-pill border px-3 py-1 text-xs font-semibold pointer-coarse:min-h-control-touch ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${TONE_STYLES[resolvedTone]} ${className}`}
+      >
+        {content}
+      </button>
+    );
+  }
 
   return (
     <span
       className={`inline-flex items-center gap-1 max-w-full text-xs font-semibold pl-2.5 ${
         onRemove ? "pr-1" : "pr-2.5"
-      } py-1 rounded-full border ${TONE_STYLES[tone]} ${className}`}
+      } py-1 rounded-full border ${TONE_STYLES[resolvedTone]} ${className}`}
     >
-      <span className="truncate">{children}</span>
+      {content}
       {onRemove && (
         <button
           type="button"

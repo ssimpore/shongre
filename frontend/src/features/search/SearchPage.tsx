@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
 import {
@@ -89,8 +90,12 @@ export const SearchPage: React.FC = () => {
     location: userLocation,
     resetLocation,
     activeMarket,
+    currentLocale,
+    currencySymbol,
   } = useMarketLocation();
   const toast = useToast();
+  const formatPriceBound = (value: number) =>
+    `${value.toLocaleString(currentLocale)} ${currencySymbol}`;
 
   const urlViewParam = searchParams.get("view") as
     "grid" | "list" | "map" | null;
@@ -174,7 +179,9 @@ export const SearchPage: React.FC = () => {
     .filter(Boolean) as ListingCondition[];
   const sortBy = (searchParams.get("sortBy") as any) || "date_desc";
   const marketCode =
-    searchParams.get("market") || storageService.getActiveMarketCode() || "FR";
+    searchParams.get("market") ||
+    storageService.getActiveMarketCode() ||
+    activeMarket.code;
   const pageParam = Number(searchParams.get("page") || "1");
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
 
@@ -235,7 +242,7 @@ export const SearchPage: React.FC = () => {
       sortBy,
       marketCode,
       page,
-      limit: 24,
+      limit: PAGE_SIZES.marketplaceSearch,
     };
 
     services.search
@@ -653,10 +660,10 @@ export const SearchPage: React.FC = () => {
       title: `Toutes les annonces${place}`,
       description:
         "Parcourez toutes les annonces Shongre : véhicules, immobilier, mode, maison, " +
-        "multimédia et loisirs, partout en France.",
+        `multimédia et loisirs, partout en ${activeMarket.name}.`,
       canonicalPath: "/recherche",
     };
-  }, [query, city, activeSubCat, activeCategory]);
+  }, [activeCategory, activeMarket.name, activeSubCat, city, query]);
 
   usePageMeta(searchMeta);
 
@@ -829,7 +836,15 @@ export const SearchPage: React.FC = () => {
                   updateFilter("maxPrice", undefined);
                 }}
               >
-                {`${minPrice ?? "min"} € – ${maxPrice ?? "max"} €`}
+                {`${
+                  minPrice === undefined
+                    ? t("search.searchPage.minimumShort")
+                    : formatPriceBound(minPrice)
+                } – ${
+                  maxPrice === undefined
+                    ? t("search.searchPage.maximumShort")
+                    : formatPriceBound(maxPrice)
+                }`}
               </FilterChip>
             )}
 
@@ -993,12 +1008,15 @@ export const SearchPage: React.FC = () => {
                   as a commit point is gone with them. */}
               <div className="pt-4 border-t border-border-subtle">
                 <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
-                  Prix (€)
+                  {t("search.searchPage.priceInCurrency", {
+                    currency: currencySymbol,
+                  })}
                 </h2>
                 <PriceRangeSlider
                   min={minPrice}
                   max={maxPrice}
                   onChange={handlePriceChange}
+                  currencySymbol={currencySymbol}
                 />
               </div>
 
@@ -1333,7 +1351,7 @@ export const SearchPage: React.FC = () => {
                   <div
                     role="status"
                     aria-label={t("common.loading")}
-                    className="h-[680px] overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3 lg:h-[720px]"
+                    className="h-search-map overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3 lg:h-search-map-tall"
                   >
                     <Skeleton className="h-full w-full rounded-xl" />
                   </div>
@@ -1561,12 +1579,15 @@ export const SearchPage: React.FC = () => {
           {/* Price */}
           <div>
             <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              Budget (€)
+              {t("search.searchPage.budgetInCurrency", {
+                currency: currencySymbol,
+              })}
             </span>
             <PriceRangeSlider
               min={minPrice}
               max={maxPrice}
               onChange={handlePriceChange}
+              currencySymbol={currencySymbol}
             />
           </div>
 

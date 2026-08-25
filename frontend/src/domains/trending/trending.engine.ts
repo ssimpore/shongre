@@ -6,33 +6,51 @@ import type {
   TrendingTopicOverride,
   TrendWeightKey,
 } from "./trending.types";
+import { TRENDING_SCORE_POLICY } from "./trending.types";
 import { DEFAULT_TREND_WEIGHTS } from "./trending.defaults";
+import { daysToMilliseconds } from "../../utilities/time";
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-const clamp = (value: number, min = 0, max = 1): number =>
-  Math.min(max, Math.max(min, value));
+const clamp = (
+  value: number,
+  min: number = TRENDING_SCORE_POLICY.normalized.min,
+  max: number = TRENDING_SCORE_POLICY.normalized.max,
+): number => Math.min(max, Math.max(min, value));
 
 /** Returns a bounded percentage change. A new signal with no prior activity is full growth. */
 export function calculateGrowth(recent: number, previous: number): number {
   if (recent <= 0 && previous <= 0) return 0;
-  if (previous <= 0) return 1;
-  return clamp((recent - previous) / previous, -1, 1);
+  if (previous <= 0) return TRENDING_SCORE_POLICY.growth.max;
+  return clamp(
+    (recent - previous) / previous,
+    TRENDING_SCORE_POLICY.growth.min,
+    TRENDING_SCORE_POLICY.growth.max,
+  );
 }
 
 /** Converts -100%..+100% growth to a 0..1 score where 0.5 means stable. */
 export function growthScore(recent: number, previous: number): number {
-  return clamp((calculateGrowth(recent, previous) + 1) / 2);
+  return clamp(
+    (calculateGrowth(recent, previous) + TRENDING_SCORE_POLICY.normalized.max) /
+      (TRENDING_SCORE_POLICY.normalized.max - TRENDING_SCORE_POLICY.growth.min),
+  );
 }
 
 export function timeDecay(
   lastActivityAt: string | undefined,
   now: Date,
-  halfLifeDays = 7,
+  halfLifeDays = TRENDING_SCORE_POLICY.timeDecay.defaultHalfLifeDays,
 ): number {
   if (!lastActivityAt) return 0;
   const ageMs = Math.max(0, now.getTime() - new Date(lastActivityAt).getTime());
-  return Math.exp(-ageMs / (Math.max(0.5, halfLifeDays) * DAY_MS));
+  return Math.exp(
+    -ageMs /
+      daysToMilliseconds(
+        Math.max(
+          TRENDING_SCORE_POLICY.timeDecay.minimumHalfLifeDays,
+          halfLifeDays,
+        ),
+      ),
+  );
 }
 
 /** Log normalization prevents large categories from permanently winning on volume alone. */
@@ -66,7 +84,10 @@ function derivedSignals(
   const normalized = (key: keyof TrendingSignalSnapshot): number =>
     normalizeSignal(raw[key] as number, maximums[key]);
   const demandGrowth = clamp(raw.demandGrowth);
-  const viewGrowth = clamp(raw.supplyGrowth * 0.35 + demandGrowth * 0.65);
+  const viewGrowth = clamp(
+    raw.supplyGrowth * TRENDING_SCORE_POLICY.viewGrowthWeights.supply +
+      demandGrowth * TRENDING_SCORE_POLICY.viewGrowthWeights.demand,
+  );
   const freshness = clamp(timeDecay(raw.lastActivityAt, now));
   return {
     searchGrowth: demandGrowth,
@@ -121,10 +142,16 @@ function buildMaximums(
 function activityScore(candidate: TrendingTopicCandidate): number {
   const signals = candidate.signals;
   return clamp(
-    (signals.activeListings > 0 ? 0.35 : 0) +
-      (signals.views > 0 ? 0.25 : 0) +
-      (signals.favorites > 0 ? 0.2 : 0) +
-      (signals.contacts > 0 ? 0.2 : 0),
+    (signals.activeListings > 0
+      ? TRENDING_SCORE_POLICY.activityWeights.activeListings
+      : 0) +
+      (signals.views > 0 ? TRENDING_SCORE_POLICY.activityWeights.views : 0) +
+      (signals.favorites > 0
+        ? TRENDING_SCORE_POLICY.activityWeights.favorites
+        : 0) +
+      (signals.contacts > 0
+        ? TRENDING_SCORE_POLICY.activityWeights.contacts
+        : 0),
   );
 }
 

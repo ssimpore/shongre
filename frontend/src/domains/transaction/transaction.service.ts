@@ -9,6 +9,10 @@ import {
   TransactionDispute,
 } from "../../types";
 import { TRANSACTION_CONFIG } from "../../configuration/transaction.config";
+import {
+  deterministicCode,
+  deterministicRuntimeId,
+} from "../../utilities/deterministic-id";
 import { storageService } from "../../services/storage.service";
 import { auditService } from "../../security/audit.service";
 import { marketService } from "../market/market.service";
@@ -71,7 +75,7 @@ class TransactionService {
     quantity = 1,
     shippingFee = 0,
     sellerType: SellerType = "individual",
-    marketCode = "FR",
+    marketCode = marketService.getDefaultMarket().code,
   ): OrderPricingSnapshot {
     const itemPriceMinor = Math.round(itemPrice * 100);
     const itemSubtotalMinor = itemPriceMinor * quantity;
@@ -121,7 +125,10 @@ class TransactionService {
     marketCode?: string,
   ): AmountBreakdown {
     const itemPriceCents = Math.round(itemPrice * 100);
-    const mCode = marketCode || storageService.getActiveMarketCode() || "FR";
+    const mCode =
+      marketCode ||
+      storageService.getActiveMarketCode() ||
+      marketService.getDefaultMarket().code;
     // Buyer protection fee: rate + fixed fee from effective market config
     const commercials = getDemoTransactionCommercials(mCode, sellerType);
     const rate = commercials.protectionRateBps / 10_000;
@@ -188,12 +195,7 @@ class TransactionService {
    * Generate human-readable transaction reference code
    */
   generateReferenceCode(): string {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let code = "SHG-";
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+    return deterministicCode("SHG-", 6);
   }
 
   /**
@@ -296,7 +298,11 @@ class TransactionService {
         ? undefined
         : sellerConfirmationDeadline,
       payment: {
-        intentId: `pi_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        intentId: deterministicRuntimeId("pi", [
+          input.listingId,
+          input.buyer.id,
+          "reservation",
+        ]),
         provider: "mangopay_escrow",
         paymentMethod: input.paymentMethod,
         cardBrand: input.cardBrand || "Visa",
@@ -451,7 +457,11 @@ class TransactionService {
       verificationCode,
       verificationCodeStatus: "pending",
       payment: {
-        intentId: `pi_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        intentId: deterministicRuntimeId("pi", [
+          input.listingId,
+          input.buyer.id,
+          "purchase",
+        ]),
         provider: "mangopay_escrow",
         paymentMethod: input.paymentMethod,
         cardBrand: input.cardBrand || "Visa",
@@ -1191,7 +1201,8 @@ class TransactionService {
     }
 
     const payoutCommercials = getDemoTransactionCommercials(
-      storageService.getActiveMarketCode() || "FR",
+      storageService.getActiveMarketCode() ||
+        marketService.getDefaultMarket().code,
       "pro",
     );
     const fee =

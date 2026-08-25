@@ -16,6 +16,7 @@ import {
   UpdateTaxonomyNodeInput,
   TaxonomyMarketOverride,
 } from "../domains/taxonomy/taxonomy.types";
+import { deterministicRuntimeId } from "../utilities/deterministic-id";
 import { CANONICAL_TAXONOMY } from "../domains/taxonomy/taxonomy.data";
 import { ATTRIBUTE_REGISTRY } from "../domains/taxonomy/attribute.registry";
 import { storageService } from "../services/storage.service";
@@ -221,7 +222,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     details?: string,
   ) {
     const event: TaxonomyAuditEvent = {
-      id: `audit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: deterministicRuntimeId("audit", [nodeId, action, actor]),
       nodeId,
       nodeLabel,
       action,
@@ -250,7 +251,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     actor?: { id: string; name: string; role: string },
   ) {
     const draft: TaxonomyDraftChange = {
-      id: `draft_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: deterministicRuntimeId("draft", [nodeId, changeType, actor]),
       nodeId,
       nodeLabel,
       changeType,
@@ -733,7 +734,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     const original = this.getNode(id);
     if (!original) throw new Error(`Nœud "${id}" introuvable.`);
 
-    const copySuffix = `copie_${Math.random().toString(36).substring(2, 6)}`;
+    const copySuffix = deterministicRuntimeId("copie", [id]);
     const cloned: TaxonomyNode = JSON.parse(JSON.stringify(original));
 
     cloned.id = `${original.id}_${copySuffix}`;
@@ -984,7 +985,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       // 1. Stable ID
       if (!node.id || node.id.trim().length === 0) {
         issues.push({
-          id: `val_id_${Math.random()}`,
+          id: deterministicRuntimeId("val_id", [node.name]),
           nodeId: node.id,
           nodeLabel: node.name || "Nœud sans nom",
           severity: "error",

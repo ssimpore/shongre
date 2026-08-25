@@ -1,6 +1,73 @@
 import { MARKET_CONFIG } from "../configuration/market.config";
 import { storageService } from "../services/storage.service";
 import { marketService } from "../domains/market/market.service";
+import type { Money } from "@shongre/contracts";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+
+/**
+ * Returns the locale-aware symbol used by `Intl` for a currency. Keeping this
+ * next to the money formatter prevents components from growing their own
+ * EUR/USD/GBP switch statements as new markets are enabled.
+ */
+export function formatCurrencySymbol(
+  currency: string,
+  locale: string = MARKET_CONFIG.defaultLocale,
+): string {
+  const cleanCurrency = currency.trim().toUpperCase();
+  if (!cleanCurrency) return "";
+
+  try {
+    const currencyPart = new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: cleanCurrency,
+      currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+      .formatToParts(0)
+      .find((part) => part.type === "currency");
+    return currencyPart?.value || cleanCurrency;
+  } catch {
+    return cleanCurrency;
+  }
+}
+
+/** Human-readable currency name for regional preference controls. */
+export function getCurrencyDisplayName(
+  currency: string,
+  locale: string = MARKET_CONFIG.defaultLocale,
+): string {
+  const cleanCurrency = currency.trim().toUpperCase();
+  if (!cleanCurrency) return "";
+
+  try {
+    return (
+      new Intl.DisplayNames([locale], { type: "currency" }).of(cleanCurrency) ||
+      cleanCurrency
+    );
+  } catch {
+    return cleanCurrency;
+  }
+}
+
+/** Formats authoritative minor-unit money, including a legitimate zero value. */
+export function formatMoney(
+  money: Money,
+  options: { locale?: string; currencyDisplay?: "symbol" | "code" } = {},
+): string {
+  const locale = options.locale || MARKET_CONFIG.defaultLocale;
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: money.currency,
+      currencyDisplay: options.currencyDisplay || "symbol",
+      minimumFractionDigits: money.amountMinor % 100 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(money.amountMinor / 100);
+  } catch {
+    return `${(money.amountMinor / 100).toFixed(2)} ${money.currency}`;
+  }
+}
 
 /**
  * Format price in EUR or current market currency with proper non-breaking spaces and decimals
@@ -24,7 +91,9 @@ export function formatPrice(
 
   if (!locale || !currency) {
     const marketCode =
-      options.marketCode || storageService.getActiveMarketCode() || "FR";
+      options.marketCode ||
+      storageService.getActiveMarketCode() ||
+      DEFAULT_MARKET_CODE;
     const config = marketService.getEffectiveConfig(marketCode);
     locale =
       locale ||

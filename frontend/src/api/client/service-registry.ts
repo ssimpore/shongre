@@ -1,4 +1,4 @@
-import type { DataMode } from "./api-client.config";
+import { apiClientConfig, type DataMode } from "./api-client.config";
 import { dataModeService } from "./data-mode.service";
 import {
   demoListingsService,
@@ -25,6 +25,9 @@ import {
   demoFinanceService,
   demoCommissionService,
   demoProviderControlPlaneService,
+  demoSupportService,
+  demoFeatureFlagService,
+  demoModerationService,
 } from "../adapters/demo";
 
 import {
@@ -52,6 +55,9 @@ import {
   httpFinanceService,
   httpCommissionService,
   httpProviderControlPlaneService,
+  httpSupportService,
+  httpFeatureFlagService,
+  httpModerationService,
 } from "../adapters/http";
 
 import {
@@ -79,6 +85,9 @@ import {
   FinanceServiceContract,
   CommissionServiceContract,
   ProviderControlPlaneServiceContract,
+  SupportServiceContract,
+  FeatureFlagServiceContract,
+  ModerationServiceContract,
 } from "../contracts";
 
 export interface ServiceRegistry {
@@ -106,6 +115,9 @@ export interface ServiceRegistry {
   finance: FinanceServiceContract;
   commissions: CommissionServiceContract;
   providerControlPlane: ProviderControlPlaneServiceContract;
+  support: SupportServiceContract;
+  featureFlags: FeatureFlagServiceContract;
+  moderation: ModerationServiceContract;
 }
 
 export function createServiceRegistry(
@@ -144,10 +156,17 @@ export function createServiceRegistry(
     providerControlPlane: useDemo
       ? demoProviderControlPlaneService
       : httpProviderControlPlaneService,
+    support: useDemo ? demoSupportService : httpSupportService,
+    featureFlags: useDemo ? demoFeatureFlagService : httpFeatureFlagService,
+    moderation: useDemo ? demoModerationService : httpModerationService,
   };
 }
 
-export const services: ServiceRegistry = createServiceRegistry();
+// Keep module evaluation deterministic across server and browser. A persisted
+// runtime override is restored by DataModeProvider after hydration.
+export const services: ServiceRegistry = createServiceRegistry(
+  apiClientConfig.dataMode,
+);
 
 /** Rebinds the stable registry object before the provider tree is refreshed. */
 export function activateServiceRegistry(mode: DataMode): ServiceRegistry {

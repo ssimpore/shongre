@@ -16,6 +16,7 @@ import type { CourseOrganizationWorkspace } from "@shongre/contracts/courses";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { isCoursePlanFeatureOperational } from "@shongre/contracts/vertical-monetization-adapters";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { routes } from "../../configuration/routes";
 import {
@@ -30,6 +31,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { getPermissionDisplayName } from "../../security/permissions";
 
@@ -43,6 +45,8 @@ const ROLE_LABELS = {
 } as const;
 
 export const CourseOrganizationWorkspacePage: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
+  const { formatNumber } = useRegionalFormatters();
   const { t } = useTranslation();
   const toast = useToast();
   const [workspace, setWorkspace] =
@@ -84,7 +88,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       />
     );
   }
-  if (!workspace) return <Skeleton className="h-[40rem] w-full rounded-card" />;
+  if (!workspace) return <Skeleton className="h-160 w-full rounded-card" />;
 
   const { organization, analytics, plan } = workspace;
   const teamManagementAvailable = isCoursePlanFeatureOperational(
@@ -188,7 +192,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
 
       <section className="grid grid-cols-2 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs lg:grid-cols-5">
         {[
-          [BarChart3, "Vues", analytics.profileViews.toLocaleString("fr-FR")],
+          [BarChart3, "Vues", formatNumber(analytics.profileViews)],
           [Inbox, "Demandes", analytics.leadsReceived],
           [CheckCircle2, "Acceptées", analytics.leadsAccepted],
           [Users, "Professeurs", analytics.activeTutors],
@@ -215,7 +219,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
         })}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid gap-5 xl:grid-cols-content-aside">
         <main className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
@@ -239,7 +243,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
               </p>
             )}
             <ScrollableRegion aria-label="Tableau des membres de l’organisme">
-              <table className="w-full min-w-[42rem] text-left text-xs">
+              <table className="w-full min-w-168 text-left text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-secondary">
                   <tr>
                     <th className="px-4 py-2.5">Membre</th>
@@ -409,7 +413,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">
               Les réservations et versements restent hors service sur le marché
-              France.
+              {activeMarket.name}.
             </p>
           </section>
         </aside>

@@ -36,7 +36,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   return (
     // 3.5rem is the FocusedLayout header, so the card centres in the space
     // actually left to it rather than sitting slightly low.
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-md mx-auto">
         <div className="text-center mb-8">
           {badgeText && (

@@ -4,13 +4,23 @@ import { DEMO_LISTING_ID } from "./routes";
 import { waitForStableLayout } from "./overflow";
 
 test.describe("navigation integrity", () => {
-  test("homepage search context reaches a listing and Back restores it", async ({ page }) => {
+  test("homepage search context reaches a listing and Back restores it", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
     await page.goto("/");
 
     const search = page
       .getByRole("combobox", { name: /rechercher une annonce/i })
       .first();
+    // The header intentionally expands on focus. Model that interaction as two
+    // user steps so WebKit does not combine the focus transition and synthetic
+    // fill into one automation event.
+    await search.focus();
+    await expect(search).toBeFocused();
+    await expect(page.locator("[data-header-search-shell]")).toHaveClass(
+      /max-w-none/,
+    );
     await search.fill("vélo");
     await search.press("Enter");
     await expect(page).toHaveURL(/\/recherche\?[^#]*query=v(%C3%A9|é)lo/);
@@ -27,7 +37,9 @@ test.describe("navigation integrity", () => {
     await expect(search).toHaveValue("vélo");
   });
 
-  test("a guest contact action resumes on the exact listing after login", async ({ page }) => {
+  test("a guest contact action resumes on the exact listing after login", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
     await page.goto(`/annonce/${DEMO_LISTING_ID}`);
     await waitForStableLayout(page);
@@ -46,12 +58,16 @@ test.describe("navigation integrity", () => {
     const dialog = page.getByRole("dialog", { name: /contacter/i });
     await expect(dialog).toBeVisible();
 
-    await dialog.getByRole("textbox").fill("Bonjour, cette annonce est-elle disponible ?");
+    await dialog
+      .getByRole("textbox")
+      .fill("Bonjour, cette annonce est-elle disponible ?");
     await dialog.getByRole("button", { name: /envoyer le message/i }).click();
     await expect(page).toHaveURL(/\/compte\/messages\?convId=.+/);
   });
 
-  test("category, listing and seller links follow the marketplace hierarchy", async ({ page }) => {
+  test("category, listing and seller links follow the marketplace hierarchy", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
     await page.goto("/categories");
 
@@ -63,30 +79,40 @@ test.describe("navigation integrity", () => {
     const listing = page.locator('a[href^="/annonce/"]').first();
     await expect(listing).toBeVisible();
     await listing.click();
-    const seller = page.locator('a[href^="/profil/"], a[href^="/boutique/"]').first();
+    const seller = page
+      .locator('a[href^="/profil/"], a[href^="/boutique/"]')
+      .first();
     await expect(seller).toBeVisible();
     await seller.click();
     await expect(page).toHaveURL(/\/(profil|boutique)\//);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 
-  test("invalid and removed resources provide recovery actions", async ({ page }) => {
+  test("invalid and removed resources provide recovery actions", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
 
     await page.goto("/route-inexistante-navigation-test");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       /page introuvable/i,
     );
-    await expect(page.getByRole("link", { name: /accueil/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /accueil/i }).first(),
+    ).toBeVisible();
 
     await page.goto("/annonce/ressource-supprimee-navigation-test");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       /annonce introuvable/i,
     );
-    await expect(page.getByRole("link", { name: /annonces|explorer|recherche/i }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /annonces|explorer|recherche/i }).first(),
+    ).toBeVisible();
   });
 
-  test("an entity notification deep link opens the exact transaction", async ({ page }) => {
+  test("an entity notification deep link opens the exact transaction", async ({
+    page,
+  }) => {
     await usePersona(page, "individual_buyer");
     await page.goto("/compte/achats?transactionId=tx-901");
 

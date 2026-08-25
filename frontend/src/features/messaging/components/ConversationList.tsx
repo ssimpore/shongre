@@ -8,6 +8,7 @@ import { formatRelativeDate, formatPrice } from "../../../utilities/formatters";
 import { Badge, Avatar } from "../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
+import { FilterChip } from "../../../design-system/primitives/FilterChip";
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
@@ -37,11 +38,18 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   );
 
   const tabs: { id: InboxFilterTab; label: string; count?: number }[] = [
-    { id: "all", label: "Tous" },
-    { id: "unread", label: "Non lus", count: unreadTotal },
-    { id: "purchases", label: "Achats" },
-    { id: "sales", label: "Ventes" },
-    { id: "transactions", label: "Commandes" },
+    { id: "all", label: t("messaging.conversationList.all") },
+    {
+      id: "unread",
+      label: t("messaging.conversationList.unread"),
+      count: unreadTotal,
+    },
+    { id: "purchases", label: t("messaging.conversationList.purchases") },
+    { id: "sales", label: t("messaging.conversationList.sales") },
+    {
+      id: "transactions",
+      label: t("messaging.conversationList.orders"),
+    },
   ];
 
   return (
@@ -97,34 +105,20 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             renders like the bare rail when everything fits. */}
         <ScrollRail
           label={t("messaging.conversationList.filtres")}
-          className="pb-1"
+          className="flex items-center gap-1.5 pb-1"
         >
           {tabs.map((tab) => {
             const isActive = selectedFilter === tab.id;
             return (
-              <button
+              <FilterChip
                 key={tab.id}
-                type="button"
-                onClick={() => onSelectFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-1.5 ${
-                  isActive
-                    ? "bg-stone-900 text-white shadow-xs"
-                    : "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900"
-                }`}
+                onSelect={() => onSelectFilter(tab.id)}
+                selected={isActive}
+                count={tab.count}
+                label={tab.label}
               >
-                <span>{tab.label}</span>
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span
-                    className={`px-1.5 py-0.2 rounded-full text-micro font-extrabold ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "bg-primary/20 text-primary"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
+                {tab.label}
+              </FilterChip>
             );
           })}
         </ScrollRail>

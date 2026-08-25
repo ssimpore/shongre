@@ -9,6 +9,7 @@ import { Image } from "./Image";
 import { IMAGE_SIZES } from "./responsiveImage";
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { MARKET_CONFIG } from "../../configuration/market.config";
 
 export interface ListingCardProps {
   listing: Listing;
@@ -22,17 +23,17 @@ function toListingCardView(listing: Listing): ListingCardView {
     title: listing.title,
     price: {
       amountMinor: Math.round(listing.price * 100),
-      currency: listing.currency ?? "EUR",
+      currency: listing.currency ?? MARKET_CONFIG.defaultCurrency,
     },
     originalPrice: listing.originalPrice
       ? {
           amountMinor: Math.round(listing.originalPrice * 100),
-          currency: listing.currency ?? "EUR",
+          currency: listing.currency ?? MARKET_CONFIG.defaultCurrency,
         }
       : undefined,
     imageUrl: listing.coverImageUrl || undefined,
     city: listing.city,
-    marketCode: listing.marketCode ?? "FR",
+    marketCode: listing.marketCode ?? MARKET_CONFIG.defaultMarket,
     categoryLabel: getListingCategoryLabel(listing),
     conditionLabel: listingDisplayResolver.resolveConditionLabel(
       listing.condition,

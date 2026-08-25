@@ -20,9 +20,10 @@ import {
   TimelineDateGroup,
 } from "../../../domains/messaging/messaging.service";
 import { Button } from "../../../design-system/primitives/Button";
-import { formatPrice } from "../../../utilities/formatters";
+import { formatMoney } from "../../../utilities/formatters";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -30,7 +31,8 @@ interface MessageTimelineProps {
   typingState?: TypingState | null;
   onOpenImage: (url: string) => void;
   onRetryMessage?: (msg: UserTimelineMessage) => void;
-  onRespondOffer?: (accept: boolean, amount?: number) => void;
+  onRespondOffer?: (offerId: string, accept: boolean, amount?: number) => void;
+  onWithdrawOffer?: (offerId: string) => void;
 }
 
 export const MessageTimeline: React.FC<MessageTimelineProps> = ({
@@ -40,8 +42,10 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   onOpenImage,
   onRetryMessage,
   onRespondOffer,
+  onWithdrawOffer,
 }) => {
   const { t } = useTranslation();
+  const { currentLocale } = useMarketLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -64,13 +68,15 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
     list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
   }, [items, typingState]);
 
-  const groups: TimelineDateGroup[] =
-    messagingService.groupTimelineByDate(items);
+  const groups: TimelineDateGroup[] = messagingService.groupTimelineByDate(
+    items,
+    currentLocale,
+  );
 
   const formatTime = (iso: string) => {
     try {
       const date = new Date(iso);
-      return date.toLocaleTimeString("fr-FR", {
+      return date.toLocaleTimeString(currentLocale, {
         hour: "2-digit",
         minute: "2-digit",
       });
@@ -138,6 +144,30 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                 const msg = item as UserTimelineMessage;
                 const isMe = msg.senderId === currentUserId;
                 const isOffer = msg.contentType === "offer";
+                const offerId = msg.offerId || msg.id;
+                const offerStatus =
+                  msg.offerStatus === "pending" &&
+                  msg.offerExpiresAt &&
+                  msg.offerExpiresAt <= new Date().toISOString()
+                    ? "expired"
+                    : msg.offerStatus || "pending";
+                const offerLabel = formatMoney(
+                  {
+                    amountMinor:
+                      msg.offerAmountMinor ??
+                      Math.round((msg.offerAmount || 0) * 100),
+                    currency: msg.offerCurrency || "EUR",
+                  },
+                  { locale: currentLocale },
+                );
+                const offerStatusLabel = {
+                  pending: "En attente",
+                  accepted: "Acceptée",
+                  declined: "Refusée",
+                  countered: "Remplacée par une contre-offre",
+                  withdrawn: "Retirée",
+                  expired: "Expirée",
+                }[offerStatus];
 
                 return (
                   <div
@@ -151,7 +181,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     )}
 
                     <div
-                      className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 shadow-2xs text-xs font-medium ${
+                      className={`max-w-message-bubble sm:max-w-message-bubble-wide rounded-2xl px-4 py-2.5 shadow-2xs text-xs font-medium ${
                         isMe
                           ? "bg-primary text-white rounded-br-xs"
                           : "bg-white text-stone-900 border border-border-base rounded-bl-xs"
@@ -182,35 +212,57 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                         <div className="p-2.5 rounded-xl bg-warning-surface border border-warning-border text-warning mb-2 space-y-2">
                           <div className="flex items-center gap-1.5 font-extrabold text-xs">
                             <DollarSign className="w-4 h-4 text-warning" />
-                            <span>
-                              Offre proposée :{" "}
-                              {formatPrice(msg.offerAmount || 0)}
-                            </span>
+                            <span>Offre proposée : {offerLabel}</span>
                           </div>
-                          {!isMe && onRespondOffer && (
-                            <div className="flex gap-2 pt-1">
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                fullWidth
-                                onClick={() =>
-                                  onRespondOffer(true, msg.offerAmount)
-                                }
-                              >
-                                Accepter
-                              </Button>
+                          <p className="text-micro font-bold" role="status">
+                            {offerStatusLabel}
+                          </p>
+                          {offerStatus === "pending" &&
+                            !isMe &&
+                            onRespondOffer && (
+                              <div className="flex gap-2 pt-1">
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  fullWidth
+                                  onClick={() =>
+                                    onRespondOffer(
+                                      offerId,
+                                      true,
+                                      msg.offerAmount,
+                                    )
+                                  }
+                                >
+                                  Accepter
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  fullWidth
+                                  onClick={() =>
+                                    onRespondOffer(
+                                      offerId,
+                                      false,
+                                      msg.offerAmount,
+                                    )
+                                  }
+                                >
+                                  Refuser
+                                </Button>
+                              </div>
+                            )}
+                          {offerStatus === "pending" &&
+                            isMe &&
+                            onWithdrawOffer && (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 fullWidth
-                                onClick={() =>
-                                  onRespondOffer(false, msg.offerAmount)
-                                }
+                                onClick={() => onWithdrawOffer(offerId)}
                               >
-                                Refuser
+                                Retirer l’offre
                               </Button>
-                            </div>
-                          )}
+                            )}
                         </div>
                       )}
 

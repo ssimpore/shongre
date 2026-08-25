@@ -12,7 +12,9 @@ import type {
   EmploymentAdminOverview,
   EmploymentMarketConfig,
 } from "@shongre/contracts/employment";
+import { EMPLOYMENT_ADMIN_CONSTRAINTS } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -30,6 +32,7 @@ import { labelIdentifier } from "../../utilities/identifier-label";
 type FeatureFlag = keyof EmploymentMarketConfig["featureFlags"];
 
 export const EmploymentAdminPage: React.FC = () => {
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<EmploymentAdminOverview | null>(
     null,
@@ -49,7 +52,7 @@ export const EmploymentAdminPage: React.FC = () => {
   const load = () => {
     setError(undefined);
     services.employment
-      .getAdminOverview("FR")
+      .getAdminOverview(activeMarket.code)
       .then((next) => {
         setOverview(next);
         setConfig(next.catalog.config);
@@ -62,13 +65,16 @@ export const EmploymentAdminPage: React.FC = () => {
         ),
       );
   };
-  useEffect(load, []);
+  useEffect(load, [activeMarket.code]);
 
   const save = async () => {
     if (!config) return;
     setSaving(true);
     try {
-      const saved = await services.employment.updateMarketConfig("FR", config);
+      const saved = await services.employment.updateMarketConfig(
+        activeMarket.code,
+        config,
+      );
       setConfig(saved);
       setOverview((current) =>
         current
@@ -126,7 +132,7 @@ export const EmploymentAdminPage: React.FC = () => {
     return (
       <div className="space-y-4">
         <Skeleton className="h-24 w-full" />
-        <Skeleton className="h-[32rem] w-full" />
+        <Skeleton className="h-128 w-full" />
       </div>
     );
 
@@ -200,8 +206,8 @@ export const EmploymentAdminPage: React.FC = () => {
             Shongre Emploi
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Pilotage du marché France, sans dupliquer la catégorie canonique «
-            Emploi ».
+            Pilotage du marché {activeMarket.name}, sans dupliquer la catégorie
+            canonique « Emploi ».
           </p>
         </div>
         <Button onClick={save} disabled={saving}>
@@ -226,7 +232,7 @@ export const EmploymentAdminPage: React.FC = () => {
         ))}
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
+      <div className="grid gap-6 xl:grid-cols-moderation-content-aside">
         <section className="rounded-card border border-border-base bg-bg-surface p-5">
           <h2 className="flex items-center gap-2 text-lg font-black">
             <Globe2 className="h-icon-md w-icon-md text-primary" />
@@ -236,7 +242,8 @@ export const EmploymentAdminPage: React.FC = () => {
             <FormField label="Durée de publication (jours)">
               <Input
                 type="number"
-                min={1}
+                min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
+                step={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.step}
                 value={config.defaultPublicationDurationDays}
                 onChange={(event) =>
                   setConfig((current) =>
@@ -255,7 +262,8 @@ export const EmploymentAdminPage: React.FC = () => {
             <FormField label="Rétention des brouillons (jours)">
               <Input
                 type="number"
-                min={1}
+                min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
+                step={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.step}
                 value={config.draftRetentionDays}
                 onChange={(event) =>
                   setConfig((current) =>
@@ -272,7 +280,8 @@ export const EmploymentAdminPage: React.FC = () => {
             <FormField label="Rétention des candidatures (jours)">
               <Input
                 type="number"
-                min={1}
+                min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
+                step={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.step}
                 value={config.applicationRetentionDays}
                 onChange={(event) =>
                   setConfig((current) =>
@@ -289,7 +298,8 @@ export const EmploymentAdminPage: React.FC = () => {
             <FormField label="Délai avant nouvelle candidature (jours)">
               <Input
                 type="number"
-                min={0}
+                min={EMPLOYMENT_ADMIN_CONSTRAINTS.cooldownDays.min}
+                step={EMPLOYMENT_ADMIN_CONSTRAINTS.cooldownDays.step}
                 value={config.applicationResubmissionCooldownDays}
                 onChange={(event) =>
                   setConfig((current) =>
@@ -384,7 +394,7 @@ export const EmploymentAdminPage: React.FC = () => {
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
         <h2 className="text-lg font-black">Catalogue des offres employeur</h2>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[50rem] text-left text-xs">
+          <table className="w-full min-w-200 text-left text-xs">
             <thead className="bg-bg-subtle text-text-secondary">
               <tr>
                 <th className="p-3">Offre</th>
@@ -415,6 +425,7 @@ export const EmploymentAdminPage: React.FC = () => {
                         ? formatEmploymentMoney(
                             price.amountMinor,
                             price.currency,
+                            currentLocale,
                           )
                         : offer.kind === "custom"
                           ? "Sur devis"

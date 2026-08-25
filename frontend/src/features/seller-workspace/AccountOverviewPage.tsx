@@ -20,6 +20,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { listingRepository } from "../../repositories/listing.repository";
 import { messagingRepository } from "../../repositories/messaging.repository";
 import { storageService } from "../../services/storage.service";
@@ -28,7 +29,6 @@ import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { useToast } from "../../app/providers/ToastProvider";
 import { PhoneVerificationModal } from "../auth/components/PhoneVerificationModal";
-import { MFAModal } from "../auth/components/MFAModal";
 import { UpgradeToProModal } from "../auth/components/UpgradeToProModal";
 import { BillingHistoryModal } from "./components/BillingHistoryModal";
 import { Image } from "../../design-system/primitives/Image";
@@ -44,6 +44,7 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const AccountOverviewPage: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   usePageMeta({
     title: t("meta.accountOverview.title"),
@@ -80,7 +81,6 @@ export const AccountOverviewPage: React.FC = () => {
   ).replace(/\s+\([^)]*\)\s*$/, "");
 
   const [showPhoneModal, setShowPhoneModal] = useState(false);
-  const [showMfaModal, setShowMfaModal] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
 
@@ -183,7 +183,7 @@ export const AccountOverviewPage: React.FC = () => {
           aria-hidden="true"
         />
 
-        <div className="relative grid items-center gap-5 xl:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="relative grid items-center gap-5 xl:grid-cols-content-action">
           <div className="min-w-0 space-y-3">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <span className="text-sm font-medium text-stone-300">
@@ -383,7 +383,7 @@ export const AccountOverviewPage: React.FC = () => {
             <div className="mt-3 border-t border-border-subtle pt-2">
               <button
                 type="button"
-                onClick={() => setShowMfaModal(true)}
+                onClick={() => navigate("/compte/securite-compte")}
                 className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {currentUser?.mfaEnabled
@@ -620,7 +620,7 @@ export const AccountOverviewPage: React.FC = () => {
               </span>
               <span className="font-bold text-stone-900">
                 {currentUser?.postalCode ? `${currentUser.postalCode} ` : ""}
-                {currentUser?.city || "France"}
+                {currentUser?.city || activeMarket.name}
               </span>
             </div>
           </div>
@@ -746,18 +746,6 @@ export const AccountOverviewPage: React.FC = () => {
             onSuccess={(verifiedPhone) => {
               refreshUser();
               toast.success(`Numéro ${verifiedPhone} vérifié avec succès !`);
-            }}
-          />
-
-          <MFAModal
-            userId={currentUser.id}
-            isOpen={showMfaModal}
-            onClose={() => setShowMfaModal(false)}
-            onSuccess={() => {
-              refreshUser();
-              toast.success(
-                "Double authentification (2FA) activée avec succès !",
-              );
             }}
           />
 

@@ -1,5 +1,7 @@
 import { SecurityAuditLog } from "../types";
 import { telemetryService } from "../services/telemetry.service";
+import { deterministicRuntimeId } from "../utilities/deterministic-id";
+import { storageService } from "../services/storage.service";
 
 const AUDIT_STORAGE_KEY = "shongre_security_audit_logs_v1";
 
@@ -72,23 +74,13 @@ class AuditService {
   private inMemoryLogs: SecurityAuditLog[] = [...INITIAL_AUDIT_LOGS];
 
   private getLogsFromStorage(): SecurityAuditLog[] {
-    try {
-      if (typeof window !== "undefined" && window.localStorage) {
-        const data = window.localStorage.getItem(AUDIT_STORAGE_KEY);
-        return data ? JSON.parse(data) : INITIAL_AUDIT_LOGS;
-      }
-      return this.inMemoryLogs;
-    } catch {
-      return INITIAL_AUDIT_LOGS;
-    }
+    return storageService.get(AUDIT_STORAGE_KEY, this.inMemoryLogs);
   }
 
   private saveLogs(logs: SecurityAuditLog[]): void {
     try {
       this.inMemoryLogs = logs;
-      if (typeof window !== "undefined" && window.localStorage) {
-        window.localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(logs));
-      }
+      storageService.set(AUDIT_STORAGE_KEY, logs);
     } catch (e) {
       telemetryService.captureException(e, "audit-storage-write");
     }
@@ -178,7 +170,7 @@ class AuditService {
   ): SecurityAuditLog {
     const newLog: SecurityAuditLog = {
       ...entry,
-      id: `audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: deterministicRuntimeId("audit", [entry]),
       timestamp: new Date().toISOString(),
     };
 
@@ -190,7 +182,7 @@ class AuditService {
   }
 
   clearLogs(): void {
-    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(INITIAL_AUDIT_LOGS));
+    this.saveLogs([...INITIAL_AUDIT_LOGS]);
   }
 }
 

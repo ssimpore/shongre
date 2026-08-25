@@ -1,5 +1,7 @@
 import { Conversation, Message } from "../types";
 import { storageService } from "../services/storage.service";
+import { OFFER_INPUT_CONSTRAINTS } from "../domains/messaging/messaging.types";
+import { deterministicRuntimeId } from "../utilities/deterministic-id";
 
 export interface CreateOrGetConversationParams {
   listingId: string;
@@ -57,17 +59,18 @@ export interface IMessagingRepository {
     amount?: number,
   ): Promise<Message>;
   respondOffer(
-    conversationId: string,
+    offerId: string,
     senderId: string,
     senderName: string,
     accept: boolean,
   ): Promise<Message>;
   respondToOffer(
-    conversationId: string,
+    offerId: string,
     senderId: string,
     senderName: string,
     accept: boolean,
   ): Promise<Message>;
+  withdrawOffer(offerId: string, senderId: string): Promise<Message>;
   schedulePickup(
     conversationId: string,
     date: string,
@@ -118,7 +121,7 @@ export class MockMessagingRepository implements IMessagingRepository {
     attachmentType?: "image" | "file",
   ): Promise<Message> {
     const newMsg: Message = {
-      id: `msg-${Date.now()}`,
+      id: deterministicRuntimeId("msg", [conversationId, senderId, type]),
       conversationId,
       senderId,
       senderName,
@@ -239,17 +242,37 @@ export class MockMessagingRepository implements IMessagingRepository {
     senderName: string,
     amount: number,
   ): Promise<Message> {
+    if (
+      !Number.isFinite(amount) ||
+      amount < OFFER_INPUT_CONSTRAINTS.minimumMajor
+    )
+      throw new Error("Le montant de l’offre est invalide.");
     const convs = storageService.getConversations();
     const conv = convs.find((c) => c.id === conversationId);
-    if (conv) {
-      conv.currentOffer = {
-        amount,
-        status: "pending",
-        offeredBy: senderId,
-      };
-      storageService.saveConversations(convs);
+    if (!conv || (conv.buyerId !== senderId && conv.sellerId !== senderId)) {
+      throw new Error("Accès interdit à cette conversation.");
     }
-    return this.sendMessage(
+    const now = new Date();
+    const messages = storageService.getMessages(conversationId);
+    const pending = messages.find((message) => {
+      if (message.type !== "offer" || message.offerStatus !== "pending") {
+        return false;
+      }
+      if (
+        message.offerExpiresAt &&
+        message.offerExpiresAt <= now.toISOString()
+      ) {
+        storageService.updateMessage(conversationId, message.id, {
+          offerStatus: "expired",
+        });
+        return false;
+      }
+      return true;
+    });
+    if (pending) {
+      throw new Error("Une offre est déjà en attente dans cette conversation.");
+    }
+    const message = await this.sendMessage(
       conversationId,
       senderId,
       senderName,
@@ -257,6 +280,23 @@ export class MockMessagingRepository implements IMessagingRepository {
       "offer",
       amount,
     );
+    const expiresAt = new Date(
+      now.getTime() + 7 * 24 * 60 * 60 * 1_000,
+    ).toISOString();
+    const offer = storageService.updateMessage(conversationId, message.id, {
+      offerId: message.id,
+      offerAmountMinor: Math.round(amount * 100),
+      offerCurrency: "EUR",
+      offerStatus: "pending",
+      offerExpiresAt: expiresAt,
+    })!;
+    conv.currentOffer = {
+      amount,
+      status: "pending",
+      offeredBy: senderId,
+    };
+    storageService.saveConversations(convs);
+    return offer;
   }
 
   async sendOffer(
@@ -282,38 +322,93 @@ export class MockMessagingRepository implements IMessagingRepository {
   }
 
   async respondOffer(
-    conversationId: string,
+    offerId: string,
     senderId: string,
     senderName: string,
     accept: boolean,
   ): Promise<Message> {
+    const match = this.findOffer(offerId);
+    const { conversationId, offer } = match;
     const convs = storageService.getConversations();
     const conv = convs.find((c) => c.id === conversationId);
-    if (conv && conv.currentOffer) {
-      conv.currentOffer.status = accept ? "accepted" : "declined";
-      storageService.saveConversations(convs);
+    if (!conv) throw new Error("Conversation introuvable.");
+    const recipientId =
+      offer.senderId === conv.buyerId ? conv.sellerId : conv.buyerId;
+    if (recipientId !== senderId) {
+      throw new Error("Seul le destinataire peut répondre à cette offre.");
     }
+    if (offer.offerStatus !== "pending") {
+      throw new Error("Cette offre n’est plus en attente.");
+    }
+    if (
+      offer.offerExpiresAt &&
+      offer.offerExpiresAt <= new Date().toISOString()
+    ) {
+      storageService.updateMessage(conversationId, offer.id, {
+        offerStatus: "expired",
+      });
+      throw new Error("Cette offre a expiré.");
+    }
+    const status = accept ? "accepted" : "declined";
+    const updatedOffer = storageService.updateMessage(
+      conversationId,
+      offer.id,
+      {
+        offerStatus: status,
+      },
+    )!;
+    if (conv.currentOffer) conv.currentOffer.status = status;
+    storageService.saveConversations(convs);
     const type = accept ? "offer_accepted" : "offer_declined";
     const content = accept
-      ? `A accepté votre offre de ${conv?.currentOffer?.amount || ""} € ! Vous pouvez maintenant finaliser l'achat ou planifier le retrait.`
-      : `A refusé l'offre de ${conv?.currentOffer?.amount || ""} €.`;
+      ? `A accepté votre offre de ${offer.offerAmount || ""} € ! Vous pouvez maintenant finaliser l'achat ou planifier le retrait.`
+      : `A refusé l'offre de ${offer.offerAmount || ""} €.`;
 
-    return this.sendMessage(
-      conversationId,
-      senderId,
-      senderName,
-      content,
-      type,
-    );
+    await this.sendMessage(conversationId, senderId, senderName, content, type);
+    return updatedOffer;
   }
 
   async respondToOffer(
-    conversationId: string,
+    offerId: string,
     senderId: string,
     senderName: string,
     accept: boolean,
   ): Promise<Message> {
-    return this.respondOffer(conversationId, senderId, senderName, accept);
+    return this.respondOffer(offerId, senderId, senderName, accept);
+  }
+
+  async withdrawOffer(offerId: string, senderId: string): Promise<Message> {
+    const { conversationId, offer } = this.findOffer(offerId);
+    if (offer.senderId !== senderId) {
+      throw new Error("Seul l’auteur peut retirer cette offre.");
+    }
+    if (offer.offerStatus !== "pending") {
+      throw new Error("Cette offre n’est plus en attente.");
+    }
+    const updated = storageService.updateMessage(conversationId, offer.id, {
+      offerStatus: "withdrawn",
+    })!;
+    await this.sendMessage(
+      conversationId,
+      senderId,
+      "Utilisateur Shongre",
+      "Offre de prix retirée.",
+      "system",
+    );
+    return updated;
+  }
+
+  private findOffer(offerId: string): {
+    conversationId: string;
+    offer: Message;
+  } {
+    for (const conversation of storageService.getConversations()) {
+      const offer = storageService
+        .getMessages(conversation.id)
+        .find((message) => message.id === offerId && message.type === "offer");
+      if (offer) return { conversationId: conversation.id, offer };
+    }
+    throw new Error("Offre introuvable.");
   }
 
   async schedulePickup(

@@ -58,12 +58,15 @@ import type { ListingBoostOption } from "../../configuration/plans.config";
 import { formatPrice, plural } from "../../utilities/formatters";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { Image } from "../../design-system/primitives/Image";
+import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts";
 
 /**
  * Publication is three phases, not ten steps.
@@ -116,6 +119,7 @@ const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
 
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
+  const { currencySymbol } = useMarketLocation();
   usePageMeta({
     title: t("meta.publishWizard.title"),
     description: t("meta.publishWizard.description"),
@@ -126,6 +130,12 @@ export const PublishWizard: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const toast = useToast();
+  const defaultMarket = marketService.getDefaultMarket();
+  const defaultMarketConfig = marketService.getEffectiveConfig(
+    defaultMarket.code,
+  );
+  const defaultMarketCode = defaultMarket.code;
+  const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -149,13 +159,21 @@ export const PublishWizard: React.FC = () => {
       currentUser?.defaultPublicationMarkets &&
       currentUser.defaultPublicationMarkets.length > 0
         ? currentUser.defaultPublicationMarkets
-        : ["FR"];
+        : [defaultMarketCode];
+    const primaryMarketCode = initialMarkets[0] || defaultMarketCode;
+    const primaryCurrency =
+      marketService.getEffectiveConfig(primaryMarketCode).localization
+        .defaultCurrency;
 
     return {
-      marketCode: initialMarkets[0] || "FR",
+      marketCode: primaryMarketCode,
       selectedMarkets: initialMarkets,
       marketPublications: {
-        FR: { status: "active", isPrimary: true, currency: "EUR" },
+        [primaryMarketCode]: {
+          status: "active",
+          isPrimary: true,
+          currency: primaryCurrency,
+        },
       },
       taxonomyNodeId: "",
       listingIntent: "SELL",
@@ -167,7 +185,7 @@ export const PublishWizard: React.FC = () => {
       pricing: {
         priceModel: "fixed",
         amount: 0,
-        currency: "EUR",
+        currency: primaryCurrency,
         isNegotiable: false,
         isFreeDonation: false,
       },
@@ -191,7 +209,7 @@ export const PublishWizard: React.FC = () => {
       location: {
         city: currentUser?.city || "",
         postalCode: currentUser?.postalCode || "",
-        countryCode: "FR",
+        countryCode: primaryMarketCode,
         hideExactAddress: true,
       },
       currentStep: 1,
@@ -587,7 +605,7 @@ export const PublishWizard: React.FC = () => {
             currentUser.id,
             {
               requestedAction,
-              jurisdiction: draft.location.countryCode || "FR",
+              jurisdiction: draft.location.countryCode || defaultMarketCode,
               marketCode: draft.marketCode,
               categoryId: draft.taxonomyNodeId,
               transactionContext: draft.transaction.allowDirectPurchase
@@ -661,19 +679,11 @@ export const PublishWizard: React.FC = () => {
           separate compact treatment — it gets the same rail with the hint text
           dropped. */}
       <div className="bg-white p-3 rounded-2xl border border-border-base shadow-xs space-y-2.5">
-        <div
-          className="h-1.5 rounded-full bg-bg-muted overflow-hidden"
-          role="progressbar"
-          aria-valuenow={currentStep}
-          aria-valuemin={1}
-          aria-valuemax={PHASES.length}
-          aria-label={`Progression de la publication : étape ${currentStep} sur ${PHASES.length}`}
-        >
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-normal"
-            style={{ width: `${(currentStep / PHASES.length) * 100}%` }}
-          />
-        </div>
+        <ProgressBar
+          value={currentStep}
+          max={PHASES.length}
+          label={`Progression de la publication : étape ${currentStep} sur ${PHASES.length}`}
+        />
 
         <ol className="grid grid-cols-3 gap-1.5 text-xs">
           {PHASES.map((p) => {
@@ -756,7 +766,7 @@ export const PublishWizard: React.FC = () => {
                 {
                   value: "GIVE",
                   label: "Faire un don",
-                  desc: "Gratuit (0 €)",
+                  desc: `Gratuit (0 ${currencySymbol})`,
                   Icon: Gift,
                 },
                 {
@@ -1419,7 +1429,7 @@ export const PublishWizard: React.FC = () => {
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               {schema?.listingFamily === "job"
                 ? "Indiquez une fourchette ou choisissez de communiquer la rémunération sur demande."
-                : `Définissez votre tarification en ${schema?.currency.symbol || "€"}.`}
+                : `Définissez votre tarification en ${schema?.currency.symbol || currencySymbol}.`}
             </p>
           </div>
 
@@ -1458,7 +1468,7 @@ export const PublishWizard: React.FC = () => {
               draft.pricing.priceModel !== "on_request" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
-                    label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || "€"})`}
+                    label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || currencySymbol})`}
                     required
                   >
                     <Input
@@ -1516,8 +1526,11 @@ export const PublishWizard: React.FC = () => {
                   >
                     <Input
                       type="number"
-                      min={1}
-                      value={draft.proInventory?.stock ?? 1}
+                      min={PUBLICATION_CONSTRAINTS.stockQuantity.min}
+                      value={
+                        draft.proInventory?.stock ??
+                        PUBLICATION_CONSTRAINTS.stockQuantity.min
+                      }
                       onChange={(e) =>
                         updateDraft({
                           proInventory: {
@@ -1981,7 +1994,9 @@ export const PublishWizard: React.FC = () => {
                       .map((m) => m.code);
                     updateDraft({
                       selectedMarkets:
-                        allEligible.length > 0 ? allEligible : ["FR"],
+                        allEligible.length > 0
+                          ? allEligible
+                          : [defaultMarketCode],
                     });
                     toast.success(
                       "Tous les marchés éligibles ont été sélectionnés.",
@@ -1994,12 +2009,14 @@ export const PublishWizard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    updateDraft({ selectedMarkets: ["FR"] });
-                    toast.info("Diffusion restreinte à la France uniquement.");
+                    updateDraft({ selectedMarkets: [defaultMarketCode] });
+                    toast.info(
+                      `Diffusion restreinte au marché ${defaultMarket.name}.`,
+                    );
                   }}
                   className="text-xs px-3 py-1.5 rounded-xl border border-border-base text-stone-600 hover:bg-stone-50 font-bold transition-colors cursor-pointer"
                 >
-                  France seule
+                  {defaultMarket.name} uniquement
                 </button>
               </div>
             </div>
@@ -2013,10 +2030,10 @@ export const PublishWizard: React.FC = () => {
                   m.code,
                   categorySlug,
                 );
-                const isSelected = (draft.selectedMarkets || ["FR"]).includes(
-                  m.code,
-                );
-                const isPrimary = m.isDefault || m.code === "FR";
+                const isSelected = (
+                  draft.selectedMarkets || [defaultMarketCode]
+                ).includes(m.code);
+                const isPrimary = m.isDefault;
                 const effectiveCfg = marketService.getEffectiveConfig(m.code);
                 const isUnavailable = !isCatEnabled && !isSelected;
 
@@ -2029,18 +2046,21 @@ export const PublishWizard: React.FC = () => {
                   }
                   if (isPrimary && isSelected) {
                     toast.info(
-                      "Le marché France est le marché de référence obligatoire pour cette annonce.",
+                      `Le marché ${defaultMarket.name} est le marché de référence obligatoire pour cette annonce.`,
                     );
                     return;
                   }
 
-                  const currentSelected = draft.selectedMarkets || ["FR"];
+                  const currentSelected = draft.selectedMarkets || [
+                    defaultMarketCode,
+                  ];
                   const next = isSelected
                     ? currentSelected.filter((c) => c !== m.code)
                     : [...currentSelected, m.code];
 
                   updateDraft({
-                    selectedMarkets: next.length === 0 ? ["FR"] : next,
+                    selectedMarkets:
+                      next.length === 0 ? [defaultMarketCode] : next,
                   });
                 };
 
@@ -2128,7 +2148,8 @@ export const PublishWizard: React.FC = () => {
                     </div>
 
                     {/* Transborder Note for Special Currencies */}
-                    {effectiveCfg.localization.defaultCurrency !== "EUR" && (
+                    {effectiveCfg.localization.defaultCurrency !==
+                      defaultCurrency && (
                       <div className="text-micro text-warning bg-warning-surface rounded-lg p-1.5 mt-3 font-medium">
                         Conversion automatique en{" "}
                         {effectiveCfg.localization.defaultCurrency} pour les
@@ -2266,7 +2287,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
                   <span className="text-stone-500">Titre</span>
-                  <span className="font-bold text-stone-900 truncate max-w-[200px]">
+                  <span className="font-bold text-stone-900 truncate max-w-50">
                     {draft.title}
                   </span>
                 </div>
@@ -2283,18 +2304,20 @@ export const PublishWizard: React.FC = () => {
                     {t("publishing.publishWizard.marchesDeDiffusion")}
                   </span>
                   <div className="flex flex-wrap items-center gap-1.5 justify-end">
-                    {(draft.selectedMarkets || ["FR"]).map((mCode) => {
-                      const m = marketService.getMarketByCode(mCode);
-                      return (
-                        <span
-                          key={mCode}
-                          className="text-micro font-bold bg-white border border-border-base px-2 py-0.5 rounded-full text-stone-800"
-                        >
-                          {m?.flag || "🌐"} {m?.name || mCode}{" "}
-                          {mCode === "FR" ? "(Principal)" : ""}
-                        </span>
-                      );
-                    })}
+                    {(draft.selectedMarkets || [defaultMarketCode]).map(
+                      (mCode) => {
+                        const m = marketService.getMarketByCode(mCode);
+                        return (
+                          <span
+                            key={mCode}
+                            className="text-micro font-bold bg-white border border-border-base px-2 py-0.5 rounded-full text-stone-800"
+                          >
+                            {m?.flag || "🌐"} {m?.name || mCode}{" "}
+                            {mCode === defaultMarketCode ? "(Principal)" : ""}
+                          </span>
+                        );
+                      },
+                    )}
                   </div>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
@@ -2324,8 +2347,10 @@ export const PublishWizard: React.FC = () => {
                 <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                 <span className="text-xs font-bold text-success">
                   Prête à être publiée sur{" "}
-                  {(draft.selectedMarkets || ["FR"]).length} marché
-                  {(draft.selectedMarkets || ["FR"]).length > 1 ? "s" : ""}{" "}
+                  {(draft.selectedMarkets || [defaultMarketCode]).length} marché
+                  {(draft.selectedMarkets || [defaultMarketCode]).length > 1
+                    ? "s"
+                    : ""}{" "}
                   Shongre.
                 </span>
               </div>
@@ -2367,8 +2392,8 @@ export const PublishWizard: React.FC = () => {
                   sellerPostalCode: draft.location.postalCode,
                   city: draft.location.city,
                   postalCode: draft.location.postalCode,
-                  department: "75",
-                  region: "Île-de-France",
+                  department: currentUser?.department || "",
+                  region: currentUser?.region || "",
                   photos: draft.photos as any,
                   coverImageUrl: draft.photos[0]?.url || "",
                   deliveryOptions: [
@@ -2386,7 +2411,7 @@ export const PublishWizard: React.FC = () => {
                   isReservable: draft.transaction.allowReservation,
                   attributes: draft.attributes,
                   status: "active",
-                  marketCodes: draft.selectedMarkets || ["FR"],
+                  marketCodes: draft.selectedMarkets || [defaultMarketCode],
                   createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
                   expiresAt: new Date().toISOString(),
@@ -2406,7 +2431,7 @@ export const PublishWizard: React.FC = () => {
           — the user had to scroll to the bottom after every field group to
           advance. It now stays on screen, clears the home indicator via the
           safe-area inset, and keeps the step's one primary action reachable. */}
-      <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-[env(safe-area-inset-bottom)] pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-sticky">
+      <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-safe-area-bottom pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-sticky">
         <div className="bg-white p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between gap-3">
           <Button
             variant="outline"

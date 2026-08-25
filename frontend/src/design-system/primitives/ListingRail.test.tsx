@@ -22,9 +22,7 @@ describe("listing layout primitives", () => {
       </ListingGrid>,
     );
 
-    expect(html).toContain(
-      "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))]",
-    );
+    expect(html).toContain("sm:grid-cols-listing-grid-fixed");
   });
 
   it("fills a result row with token-sized responsive columns", () => {
@@ -35,8 +33,6 @@ describe("listing layout primitives", () => {
     );
 
     expect(html).toContain("listing-grid-fluid");
-    expect(html).toContain(
-      "sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card-grid-min),1fr))]",
-    );
+    expect(html).toContain("sm:grid-cols-listing-grid-fluid");
   });
 });

@@ -28,3 +28,6 @@ export * from "./auto/auto.service.js";
 export * from "./real-estate/real-estate.service.js";
 export * from "./employment/employment.service.js";
 export * from "./providers/index.js";
+export * from "./support/support.service.js";
+export * from "./feature-flags/index.js";
+export * from "./moderation/moderation.service.js";

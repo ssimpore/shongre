@@ -7,6 +7,7 @@ import type {
   CommissionScope,
   MonetizationCatalog,
 } from "@shongre/contracts/monetization";
+import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
 import { services } from "../../api";
 import { Button } from "../../design-system/primitives/Button";
 import {
@@ -15,6 +16,7 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
+import { marketService } from "../../domains/market/market.service";
 
 const EMPTY_SCOPE: CommissionScope = {
   countryCodes: [],
@@ -56,7 +58,11 @@ function initialScope(policy?: CommissionPolicy | null): {
   level: ScopeLevel;
   values: string;
 } {
-  if (!policy) return { level: "countryCodes", values: "FR" };
+  if (!policy)
+    return {
+      level: "countryCodes",
+      values: marketService.getDefaultMarket().countryCode,
+    };
   const scope = policy.rules[0]?.scope;
   const ordered: ScopeKey[] = [
     "accountIds",
@@ -482,8 +488,9 @@ export function AdminCommissionPolicyEditor({
           <FormField label="Priorité" hint="Départage une portée identique.">
             <Input
               type="number"
-              min={0}
-              max={100000}
+              min={MONETIZATION_ADMIN_CONSTRAINTS.priority.min}
+              max={MONETIZATION_ADMIN_CONSTRAINTS.priority.max}
+              step={MONETIZATION_ADMIN_CONSTRAINTS.priority.step}
               value={form.priority}
               onChange={(event) =>
                 setForm((current) => ({
@@ -496,8 +503,9 @@ export function AdminCommissionPolicyEditor({
           <FormField label="Déploiement (bps)" hint="10 000 = 100 %.">
             <Input
               type="number"
-              min={0}
-              max={10000}
+              min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+              max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+              step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
               value={form.rolloutBps}
               onChange={(event) =>
                 setForm((current) => ({
@@ -575,8 +583,9 @@ export function AdminCommissionPolicyEditor({
               <FormField label="Taux (bps)">
                 <Input
                   type="number"
-                  min={0}
-                  max={10000}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                  max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
                   disabled={
                     form.modelType === "fixed" ||
                     form.modelType === "flat_category" ||
@@ -594,7 +603,8 @@ export function AdminCommissionPolicyEditor({
               <FormField label="Fixe (minor)">
                 <Input
                   type="number"
-                  min={0}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                   disabled={
                     form.modelType === "percentage" ||
                     form.modelType === "tiered"
@@ -614,7 +624,8 @@ export function AdminCommissionPolicyEditor({
                 <FormField label="Seuil (minor)" required>
                   <Input
                     type="number"
-                    min={0}
+                    min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                    step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                     value={form.thresholdMinor}
                     onChange={(event) =>
                       setForm((current) => ({
@@ -720,7 +731,8 @@ export function AdminCommissionPolicyEditor({
               <FormField label="Minimum (minor)">
                 <Input
                   type="number"
-                  min={0}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                   value={form.minimumMinor}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -733,7 +745,8 @@ export function AdminCommissionPolicyEditor({
               <FormField label="Maximum (minor)">
                 <Input
                   type="number"
-                  min={0}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                   value={form.maximumMinor}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -826,8 +839,9 @@ export function AdminCommissionPolicyEditor({
               <FormField label="Taux fiscal (bps)">
                 <Input
                   type="number"
-                  min={0}
-                  max={10000}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                  max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                  step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
                   disabled={form.taxMode === "exempt"}
                   value={form.taxRateBps}
                   onChange={(event) =>
@@ -848,8 +862,9 @@ export function AdminCommissionPolicyEditor({
                 <FormField key={key} label={label} required>
                   <Input
                     type="number"
-                    min={0}
-                    max={10000}
+                    min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                    max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                    step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
                     value={
                       form[key as "sellerBps" | "buyerBps" | "absorbedBps"]
                     }
@@ -889,8 +904,9 @@ export function AdminCommissionPolicyEditor({
             <FormField label="Taux (bps)">
               <Input
                 type="number"
-                min={0}
-                max={10000}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                step={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.step}
                 disabled={
                   form.adjustmentType !== "percentage_discount" &&
                   form.adjustmentType !== "rate_override"
@@ -907,7 +923,8 @@ export function AdminCommissionPolicyEditor({
             <FormField label="Montant (minor)">
               <Input
                 type="number"
-                min={0}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min}
+                step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.step}
                 disabled={
                   form.adjustmentType !== "fixed_discount" &&
                   form.adjustmentType !== "fixed_override"
@@ -983,7 +1000,8 @@ export function AdminCommissionPolicyEditor({
         <FormField label="Motif auditable" required>
           <Textarea
             required
-            minLength={8}
+            minLength={MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength}
+            maxLength={MONETIZATION_ADMIN_CONSTRAINTS.changeReason.maxLength}
             value={form.reason}
             onChange={(event) =>
               setForm((current) => ({ ...current, reason: event.target.value }))

@@ -71,8 +71,8 @@ describe("language availability is measured, not declared", () => {
    * `npm run check:i18n` reports no hardcoded copy left, and the catalogue is
    * complete. If either regresses, this pairing is what catches it.
    */
-  it("offers English", () => {
+  it("keeps English unavailable until the complete UI is migrated", () => {
     const english = SUPPORTED_LANGUAGES.find((l) => l.code === "en-US");
-    expect(english?.isAvailable).toBe(true);
+    expect(english?.isAvailable).toBe(false);
   });
 });

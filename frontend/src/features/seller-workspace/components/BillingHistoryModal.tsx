@@ -9,6 +9,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 interface BillingHistoryModalProps {
   isOpen: boolean;
@@ -26,18 +27,12 @@ const STATUS_LABELS: Record<MonetizationInvoice["status"], string> = {
   uncollectible: "Impayée",
 };
 
-function formatMoney(amountMinor: number, currency: string) {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-  }).format(amountMinor / 100);
-}
-
 export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
   isOpen,
   onClose,
   userType = "individual",
 }) => {
+  const { formatDate, formatMoneyMinor } = useRegionalFormatters();
   const toast = useToast();
   const [billing, setBilling] = useState<BillingOverview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -186,20 +181,19 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                         </Badge>
                       </div>
                       <p className="mt-1 text-xs text-text-secondary">
-                        Émise le{" "}
-                        {new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}
+                        Émise le {formatDate(invoice.issuedAt)}
                         {invoice.subscriptionId
                           ? " · abonnement"
                           : " · achat ponctuel"}
                       </p>
                       <p className="mt-1 text-micro text-text-muted">
                         HT{" "}
-                        {formatMoney(
+                        {formatMoneyMinor(
                           invoice.subtotal.amountMinor,
                           invoice.subtotal.currency,
                         )}{" "}
                         · TVA{" "}
-                        {formatMoney(
+                        {formatMoneyMinor(
                           invoice.tax.amountMinor,
                           invoice.tax.currency,
                         )}
@@ -208,7 +202,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-border-subtle pt-3 sm:border-0 sm:pt-0">
                     <strong className="text-sm text-text-main">
-                      {formatMoney(
+                      {formatMoneyMinor(
                         invoice.total.amountMinor,
                         invoice.total.currency,
                       )}{" "}

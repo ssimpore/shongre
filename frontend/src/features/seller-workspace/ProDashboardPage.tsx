@@ -9,9 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
-import { listingRepository } from "../../repositories/listing.repository";
-import { Listing } from "../../types";
-import { formatPrice } from "../../utilities/formatters";
+import { formatMoney, formatPrice } from "../../utilities/formatters";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Button } from "../../design-system/primitives/Button";
 import { Link } from "react-router-dom";
@@ -19,6 +17,10 @@ import { BillingHistoryModal } from "./components/BillingHistoryModal";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { services } from "../../api/client/service-registry";
+import type { ProAnalyticsSnapshot } from "../../api/contracts/workspace.contract";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === "string") return photo;
@@ -27,7 +29,8 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const ProDashboardPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { currentLocale } = useMarketLocation();
   usePageMeta({
     title: t("meta.proDashboard.title"),
     description: t("meta.proDashboard.description"),
@@ -37,52 +40,30 @@ export const ProDashboardPage: React.FC = () => {
 
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
-  const [listings, setListings] = useState<Listing[]>([]);
+  const [analytics, setAnalytics] = useState<ProAnalyticsSnapshot | null>(null);
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    listingRepository
-      .getListingsBySeller(currentUser.id)
-      .then((items) => {
-        setListings(items || []);
+    services.workspace
+      .getProAnalytics(currentUser.id)
+      .then((snapshot) => {
+        setAnalytics(snapshot);
       })
       .catch(() => {
-        setListings([]);
+        setAnalytics(null);
       });
   }, [currentUser?.id]);
 
-  const totalViews = listings.reduce(
-    (acc, l) => acc + (l.viewsCount ?? l.viewCount ?? 0),
-    0,
+  const hasCatalogue = Boolean(analytics?.topListings.length);
+  const weeklyStats = analytics?.weeklyStats || [];
+  const maximumWeeklyViews = Math.max(
+    ...weeklyStats.map((item) => item.views),
+    1,
   );
-
-  /**
-   * A catalogue with nothing in it has no performance to report.
-   *
-   * `totalViews` is real — it is summed from the seller's own listings — while
-   * the growth badge, the three KPI cards beside it and the weekly chart are
-   * fixed sample figures. On an account with zero listings that produced
-   * "Vues totales catalogue: 0" sitting under "+18.4% cette semaine", beside a
-   * chart headed "Total : 3 320 vues uniques". Three numbers, three different
-   * stories, on a page sold as performance tracking.
-   *
-   * Until the analytics service exists, the honest behaviour is to show the
-   * figures only where there is a catalogue to have produced them.
-   *
-   * TODO(analytics): replace `weeklyStats` and the three fixed KPIs with the
-   * seller analytics endpoint, and drop this flag.
-   */
-  const hasCatalogue = listings.length > 0;
-
-  const weeklyStats = [
-    { day: "Lun", views: 240, leads: 12 },
-    { day: "Mar", views: 310, leads: 18 },
-    { day: "Mer", views: 420, leads: 24 },
-    { day: "Jeu", views: 390, leads: 19 },
-    { day: "Ven", views: 560, leads: 32 },
-    { day: "Sam", views: 680, leads: 41 },
-    { day: "Dim", views: 720, leads: 48 },
-  ];
+  const formatDay = (date: string) =>
+    new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" })
+      .format(new Date(`${date}T12:00:00Z`))
+      .replace(".", "");
 
   return (
     <div className="space-y-6">
@@ -131,12 +112,13 @@ export const ProDashboardPage: React.FC = () => {
             <Eye className="w-4 h-4 text-primary" />
           </div>
           <div className="text-2xl font-black text-stone-900">
-            {totalViews.toLocaleString()}
+            {(analytics?.monthlyViews || 0).toLocaleString(locale)}
           </div>
           {hasCatalogue ? (
             <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-              <TrendingUp className="w-3 h-3" aria-hidden="true" /> +18.4% cette
-              semaine
+              <TrendingUp className="w-3 h-3" aria-hidden="true" />+
+              {analytics?.weeklyViewsChangePercent.toLocaleString(locale)}%
+              cette semaine
             </div>
           ) : (
             <div className="text-xs text-stone-500 mt-1">
@@ -151,11 +133,12 @@ export const ProDashboardPage: React.FC = () => {
             <MessageSquare className="w-4 h-4 text-info" />
           </div>
           <div className="text-2xl font-black text-stone-900">
-            {hasCatalogue ? "194" : "0"}
+            {analytics?.contactsCount.toLocaleString(locale) || "0"}
           </div>
           {hasCatalogue ? (
             <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-              <TrendingUp className="w-3 h-3" aria-hidden="true" /> +12.1%
+              <TrendingUp className="w-3 h-3" aria-hidden="true" />+
+              {analytics?.weeklyContactsChangePercent.toLocaleString(locale)}%
             </div>
           ) : (
             <div className="text-xs text-stone-500 mt-1">
@@ -172,7 +155,7 @@ export const ProDashboardPage: React.FC = () => {
             <BarChart2 className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl font-black text-stone-900">
-            {hasCatalogue ? "5.8%" : "—"}
+            {hasCatalogue ? `${analytics?.conversionRate}%` : "—"}
           </div>
           <div className="text-xs text-stone-500 mt-1">
             {hasCatalogue
@@ -189,7 +172,11 @@ export const ProDashboardPage: React.FC = () => {
             <DollarSign className="w-4 h-4 text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">
-            {hasCatalogue ? formatPrice(14250) : formatPrice(0)}
+            {analytics
+              ? formatMoney(analytics.monthlyRevenue, {
+                  locale: currentLocale,
+                })
+              : "—"}
           </div>
           <div className="text-xs text-stone-500 mt-1">
             {hasCatalogue
@@ -214,23 +201,21 @@ export const ProDashboardPage: React.FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 items-end h-44 pt-4 border-b border-border-subtle">
+        <div className="space-y-2 border-b border-border-subtle pb-3 pt-4">
           {weeklyStats.map((item) => {
-            const heightPercent = (item.views / 750) * 100;
             return (
-              <div
-                key={item.day}
-                className="flex flex-col items-center gap-1.5 h-full justify-end"
-              >
-                <div className="text-micro font-bold text-stone-600">
-                  {item.views}
-                </div>
-                <div
-                  className="w-full max-w-[40px] bg-gradient-to-t from-primary to-orange-400 rounded-t-lg transition-all duration-normal hover:opacity-90 shadow-2xs"
-                  style={{ height: `${heightPercent}%` }}
+              <div key={item.date} className="flex items-center gap-2">
+                <span className="w-16 shrink-0 text-xs font-bold text-stone-500 capitalize">
+                  {formatDay(item.date)}
+                </span>
+                <ProgressBar
+                  value={item.views}
+                  max={maximumWeeklyViews}
+                  label={`${item.views} vues ${formatDay(item.date)}`}
+                  className="flex-1"
                 />
-                <span className="text-xs font-bold text-stone-500">
-                  {item.day}
+                <span className="w-16 shrink-0 text-right text-micro font-bold text-stone-600">
+                  {item.views}
                 </span>
               </div>
             );
@@ -245,14 +230,16 @@ export const ProDashboardPage: React.FC = () => {
         </h2>
 
         <div className="divide-y divide-border-subtle">
-          {listings.slice(0, 5).map((l) => (
+          {(analytics?.topListings || []).map(({ listing, conversionRate }) => (
             <div
-              key={l.id}
+              key={listing.id}
               className="py-3 flex items-center justify-between gap-4"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Image
-                  src={getPhotoUrl(l.coverImageUrl || l.photos?.[0])}
+                  src={getPhotoUrl(
+                    listing.coverImageUrl || listing.photos?.[0],
+                  )}
                   alt=""
                   sizes="48px"
                   className="w-12 h-12 rounded-lg object-cover border border-border-base shrink-0"
@@ -260,10 +247,10 @@ export const ProDashboardPage: React.FC = () => {
                 />
                 <div className="min-w-0">
                   <div className="font-bold text-xs sm:text-sm text-stone-900 truncate">
-                    {l.title}
+                    {listing.title}
                   </div>
                   <div className="text-xs text-stone-500">
-                    {formatPrice(l.price)}
+                    {formatPrice(listing.price)}
                   </div>
                 </div>
               </div>
@@ -271,12 +258,14 @@ export const ProDashboardPage: React.FC = () => {
               <div className="flex items-center gap-6 text-xs text-stone-600 shrink-0">
                 <div className="text-right">
                   <div className="font-bold text-stone-900">
-                    {l.viewsCount ?? l.viewCount ?? 0}
+                    {listing.viewsCount ?? listing.viewCount ?? 0}
                   </div>
                   <div className="text-micro text-stone-500">Vues</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-success">8.2%</div>
+                  <div className="font-bold text-success">
+                    {conversionRate}%
+                  </div>
                   <div className="text-micro text-stone-500">Conversion</div>
                 </div>
               </div>

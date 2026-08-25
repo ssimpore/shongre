@@ -1,6 +1,26 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 
+export const COURSE_CONSTRAINTS = {
+  learnerObjective: { minLength: 10, maxLength: 600 },
+  learnerContext: { maxLength: 3_000 },
+  serviceRadiusKm: { min: 0, max: 250 },
+  learnerRequestDefaultRadiusKm: 15,
+  tutorExperienceYears: { min: 0, max: 70 },
+  tutorDisplayName: { minLength: 2 },
+  tutorOrganizationName: { minLength: 2 },
+  tutorCity: { minLength: 2 },
+  tutorHeadline: { minLength: 10 },
+  tutorBiography: { minLength: 60 },
+  tutorTeachingApproach: { minLength: 30 },
+  tutorAvailability: { minItems: 1 },
+  hourlyPriceMinor: { min: 1_000 },
+  budgetMajor: { min: 0, step: 1 },
+  priceMajorStep: 1,
+  minorUnitsPerMajor: 100,
+  validity: { min: 1 },
+} as const;
+
 /**
  * Public, versioned contract for the tutoring vertical.
  *
@@ -126,7 +146,10 @@ export const courseServiceAreaSchema = z.object({
   region: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
-  radiusKm: z.number().nonnegative().max(250),
+  radiusKm: z
+    .number()
+    .min(COURSE_CONSTRAINTS.serviceRadiusKm.min)
+    .max(COURSE_CONSTRAINTS.serviceRadiusKm.max),
   publicLocationLabel: z.string(),
 });
 export type CourseServiceArea = z.infer<typeof courseServiceAreaSchema>;
@@ -213,12 +236,18 @@ export const tutorProfileSchema = z.object({
   organizationId: z.string().optional(),
   profileType: z.enum(["individual", "organization_member"]),
   slug: z.string().min(1),
-  displayName: z.string().min(1),
+  displayName: z.string().min(COURSE_CONSTRAINTS.tutorDisplayName.minLength),
   avatarUrl: z.string().url().optional(),
-  headline: z.string(),
-  biography: z.string(),
-  teachingApproach: z.string(),
-  experienceYears: z.number().int().nonnegative(),
+  headline: z.string().min(COURSE_CONSTRAINTS.tutorHeadline.minLength),
+  biography: z.string().min(COURSE_CONSTRAINTS.tutorBiography.minLength),
+  teachingApproach: z
+    .string()
+    .min(COURSE_CONSTRAINTS.tutorTeachingApproach.minLength),
+  experienceYears: z
+    .number()
+    .int()
+    .min(COURSE_CONSTRAINTS.tutorExperienceYears.min)
+    .max(COURSE_CONSTRAINTS.tutorExperienceYears.max),
   subjectIds: z.array(z.string()),
   levelIds: z.array(z.string()),
   languages: z.array(z.string()),
@@ -315,7 +344,11 @@ export const tutorSearchQuerySchema = z.object({
   levelIds: z.array(z.string()).optional(),
   goalId: z.string().optional(),
   city: z.string().optional(),
-  radiusKm: z.number().nonnegative().max(250).optional(),
+  radiusKm: z
+    .number()
+    .min(COURSE_CONSTRAINTS.serviceRadiusKm.min)
+    .max(COURSE_CONSTRAINTS.serviceRadiusKm.max)
+    .optional(),
   deliveryModes: z.array(deliveryModeSchema).optional(),
   minPriceMinor: z.number().int().nonnegative().optional(),
   maxPriceMinor: z.number().int().nonnegative().optional(),
@@ -368,15 +401,22 @@ export const learnerRequestSchema = z.object({
   marketCode: marketCodeSchema,
   subjectId: z.string().min(1),
   levelId: z.string().min(1),
-  objective: z.string().min(10),
+  objective: z
+    .string()
+    .min(COURSE_CONSTRAINTS.learnerObjective.minLength)
+    .max(COURSE_CONSTRAINTS.learnerObjective.maxLength),
   preferredSchedule: z.array(z.string()).min(1),
   deliveryModes: z.array(deliveryModeSchema).min(1),
   city: z.string().optional(),
-  radiusKm: z.number().nonnegative().max(250).optional(),
+  radiusKm: z
+    .number()
+    .min(COURSE_CONSTRAINTS.serviceRadiusKm.min)
+    .max(COURSE_CONSTRAINTS.serviceRadiusKm.max)
+    .optional(),
   budgetMin: moneySchema.optional(),
   budgetMax: moneySchema.optional(),
   desiredStartDate: z.string(),
-  context: z.string().max(3000),
+  context: z.string().max(COURSE_CONSTRAINTS.learnerContext.maxLength),
   learnerAgeBand: z.enum(["under_13", "13_15", "16_17", "adult"]),
   guardianContact: guardianContactSchema.optional(),
   status: z.enum(["draft", "submitted", "matched", "closed", "expired"]),

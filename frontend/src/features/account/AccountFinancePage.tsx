@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type { AccountFinanceDashboard } from "@shongre/contracts/finance";
 import type { BillingOverview } from "@shongre/contracts/monetization";
-import { formatMoney } from "@shongre/shared";
 import {
   ArrowDownToLine,
   BadgeEuro,
@@ -17,6 +16,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { ScrollableRegion } from "../../design-system/primitives/ScrollableRegion";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { BillingHistoryModal } from "../seller-workspace/components/BillingHistoryModal";
 
 function AccountMetric({
@@ -30,6 +30,7 @@ function AccountMetric({
   definition: string;
   icon: React.ComponentType<{ className?: string }>;
 }) {
+  const { formatMoney } = useRegionalFormatters();
   return (
     <article className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
       <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary-light text-primary">
@@ -49,6 +50,7 @@ function AccountMetric({
 export const AccountFinancePage: React.FC<{
   scope?: "account" | "organization";
 }> = ({ scope = "account" }) => {
+  const { formatDate, formatDateTime, formatMoney } = useRegionalFormatters();
   usePageMeta({
     title: "Mes finances",
     description: "Dépenses, revenus vendeur, virements et factures Shongre.",
@@ -90,7 +92,7 @@ export const AccountFinancePage: React.FC<{
 
   if (!dashboard && !error) {
     return (
-      <div className="flex min-h-[320px] items-center justify-center">
+      <div className="flex min-h-80 items-center justify-center">
         <LoaderCircle
           className="h-6 w-6 animate-spin text-primary"
           aria-label="Chargement de vos finances"
@@ -123,16 +125,12 @@ export const AccountFinancePage: React.FC<{
               : "Mes finances"}
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
-            {dashboard.accountLabel} · montants en euros, taxes comprises
-            lorsqu’indiqué.
+            {dashboard.accountLabel} · montants dans leur devise, taxes
+            comprises lorsqu’indiqué.
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
             <CheckCircle2 className="h-4 w-4" />
-            Solde actualisé le{" "}
-            {new Intl.DateTimeFormat("fr-FR", {
-              dateStyle: "medium",
-              timeStyle: "short",
-            }).format(new Date(dashboard.asOf))}
+            Solde actualisé le {formatDateTime(dashboard.asOf)}
           </p>
         </div>
       </header>
@@ -169,7 +167,7 @@ export const AccountFinancePage: React.FC<{
         />
       </div>
       {billing?.currentSubscription && (
-        <section className="grid gap-4 rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <section className="grid gap-4 rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:grid-cols-content-action sm:items-center">
           <div>
             <p className="text-micro font-bold uppercase tracking-wide text-text-secondary">
               Abonnement actuel
@@ -186,9 +184,7 @@ export const AccountFinancePage: React.FC<{
                 ? "actif"
                 : billing.currentSubscription.status}{" "}
               · prochaine échéance le{" "}
-              {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(
-                new Date(billing.currentSubscription.currentPeriodEnd),
-              )}
+              {formatDate(billing.currentSubscription.currentPeriodEnd)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -238,7 +234,7 @@ export const AccountFinancePage: React.FC<{
           </Button>
         </div>
         <ScrollableRegion aria-label="Historique financier du compte">
-          <table className="w-full min-w-[680px] text-left text-xs">
+          <table className="w-full min-w-170 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-secondary">
               <tr>
                 <th className="px-4 py-2">Date</th>
@@ -253,9 +249,7 @@ export const AccountFinancePage: React.FC<{
               {dashboard.transactions.map((transaction) => (
                 <tr key={transaction.id}>
                   <td className="px-4 py-3">
-                    {new Intl.DateTimeFormat("fr-FR", {
-                      dateStyle: "medium",
-                    }).format(new Date(transaction.occurredAt))}
+                    {formatDate(transaction.occurredAt)}
                   </td>
                   <td className="px-3 py-3 font-mono text-micro font-bold">
                     {transaction.reference}

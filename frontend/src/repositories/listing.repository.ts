@@ -12,6 +12,7 @@ import {
   searchTextIncludes,
 } from "../utilities/search-text";
 import { demoVerticalDiscoveryStore } from "../domains/discovery/demo-vertical-discovery.store";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 export interface IListingRepository {
   getListings(filters?: SearchFilters): Promise<{
@@ -146,7 +147,7 @@ export class MockListingRepository implements IListingRepository {
           return item.marketCodes.some((code) => code.toUpperCase() === mCode);
         }
         // 3. Fallback to primary marketCode or FR
-        return (item.marketCode || "FR").toUpperCase() === mCode;
+        return (item.marketCode || DEFAULT_MARKET_CODE).toUpperCase() === mCode;
       });
     }
 
@@ -404,7 +405,8 @@ export class MockListingRepository implements IListingRepository {
     }
 
     const now = new Date().toISOString();
-    const activeMarket = storageService.getActiveMarketCode() || "FR";
+    const activeMarket =
+      storageService.getActiveMarketCode() || DEFAULT_MARKET_CODE;
     const newListing: Listing = {
       ...input,
       marketCode: (input as any).marketCode || activeMarket,
@@ -619,7 +621,8 @@ export class MockListingRepository implements IListingRepository {
     const normalizedCodes = Array.from(
       new Set(marketCodes.map((c) => c.toUpperCase())),
     );
-    const primary = listing.marketCode || normalizedCodes[0] || "FR";
+    const primary =
+      listing.marketCode || normalizedCodes[0] || DEFAULT_MARKET_CODE;
 
     const pubs =
       marketPublications && marketPublications.length > 0

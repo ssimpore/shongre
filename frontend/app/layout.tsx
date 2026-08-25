@@ -2,6 +2,11 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { colors } from "@shongre/design-tokens";
 import "../src/index.css";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_TITLE,
+} from "../src/services/seo.service";
+import { DEFAULT_LOCALE } from "../src/i18n/locale";
 
 const inter = localFont({
   src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
@@ -15,11 +20,10 @@ const origin = process.env.PRODUCTION_WEB_URL ?? "https://shongre.com";
 export const metadata: Metadata = {
   metadataBase: new URL(origin),
   title: {
-    default: "Shongre - Petites Annonces Particuliers & Pros",
+    default: DEFAULT_TITLE,
     template: "%s",
   },
-  description:
-    "Plateforme moderne de petites annonces pour particuliers et professionnels avec réservation sécurisée, paiement, remise en main propre et livraison.",
+  description: DEFAULT_DESCRIPTION,
   applicationName: "Shongre",
   icons: { icon: "/favicon.svg", apple: "/favicon.svg" },
 };
@@ -42,7 +46,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="fr" className={inter.variable}>
+    <html lang={DEFAULT_LOCALE.split("-")[0]} className={inter.variable}>
       <body>
         {children}
         <script

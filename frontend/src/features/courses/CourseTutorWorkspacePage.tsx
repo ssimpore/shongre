@@ -23,6 +23,7 @@ import type {
 } from "@shongre/contracts/courses";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -33,6 +34,7 @@ import {
 } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 function requestForLead(
@@ -42,17 +44,12 @@ function requestForLead(
   return requests.find((request) => request.id === lead.learnerRequestId);
 }
 
-const euro = (amountMinor: number) =>
-  new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(amountMinor / 100);
-
 export const CourseTutorWorkspacePage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
+  const { formatDate, formatMoney, formatNumber } = useRegionalFormatters();
   const [workspace, setWorkspace] = useState<TutorWorkspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -123,7 +120,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <Skeleton className="h-[42rem] w-full rounded-card" />;
+    return <Skeleton className="h-168 w-full rounded-card" />;
   }
 
   if (error || !workspace) {
@@ -177,9 +174,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
         </div>
       </header>
 
-      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-content-aside-sm">
         <main className="min-w-0 space-y-5">
-          <section className="grid gap-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center 2xl:grid-cols-[auto_minmax(0,1fr)_minmax(12rem,0.7fr)_minmax(12rem,0.7fr)]">
+          <section className="grid gap-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:grid-cols-action-content sm:items-center 2xl:grid-cols-workspace-metrics">
             <Image
               src={tutor.avatarUrl}
               alt={`Portrait de ${tutor.displayName}`}
@@ -229,11 +226,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
           <section className="grid grid-cols-2 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs sm:grid-cols-5">
             {[
-              [
-                Eye,
-                "Vues du profil",
-                analytics.profileViews.toLocaleString("fr-FR"),
-              ],
+              [Eye, "Vues du profil", formatNumber(analytics.profileViews)],
               [Inbox, "Demandes reçues", String(analytics.requestsReceived)],
               [
                 MessageSquare,
@@ -299,7 +292,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               </Button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[42rem] text-left text-xs">
+              <table className="w-full min-w-168 text-left text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-muted">
                   <tr>
                     <th className="px-4 py-2.5">Cours</th>
@@ -330,7 +323,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                             : "Présentiel"}
                       </td>
                       <td className="px-4 py-3 font-semibold text-text-main">
-                        {euro(offer.pricingOptions[0]?.price.amountMinor || 0)}{" "}
+                        {offer.pricingOptions[0]
+                          ? formatMoney(offer.pricingOptions[0].price)
+                          : "—"}{" "}
                         / h
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
@@ -397,7 +392,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   Disponibilités
                 </h2>
                 <p className="text-micro text-text-muted">
-                  Cette semaine · Europe/Paris
+                  Cette semaine · {activeMarket.timezone}
                 </p>
               </div>
               <Button
@@ -409,7 +404,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               </Button>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[44rem] text-center text-xs">
+              <table className="w-full min-w-176 text-center text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold text-text-muted">
                   <tr>
                     <th className="px-3 py-2 text-left">Créneau</th>
@@ -518,7 +513,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   return (
                     <article
                       key={lead.id}
-                      className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                      className="grid gap-3 p-4 sm:grid-cols-content-action sm:items-center"
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -543,14 +538,11 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                           <span>{request?.city || "En ligne"}</span>
                           <span>
                             {request?.budgetMin && request?.budgetMax
-                              ? `${euro(request.budgetMin.amountMinor)}–${euro(request.budgetMax.amountMinor)} / h`
+                              ? `${formatMoney(request.budgetMin)}–${formatMoney(request.budgetMax)} / h`
                               : "Budget non précisé"}
                           </span>
                           <span className="text-warning">
-                            Expire le{" "}
-                            {new Date(lead.expiresAt).toLocaleDateString(
-                              "fr-FR",
-                            )}
+                            Expire le {formatDate(lead.expiresAt)}
                           </span>
                         </div>
                         <p className="mt-2 text-micro text-text-secondary">

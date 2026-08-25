@@ -2,6 +2,7 @@ import React from "react";
 import { Modal } from "./Modal";
 import { Button } from "./Button";
 import { AlertTriangle, Info, CheckCircle2, ShieldAlert } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export interface ConfirmModalProps {
   isOpen: boolean;
@@ -21,11 +22,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = "Confirmer",
-  cancelText = "Annuler",
+  confirmText,
+  cancelText,
   variant = "primary",
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
+  const resolvedConfirmText = confirmText ?? t("common.confirm");
+  const resolvedCancelText = cancelText ?? t("common.cancel");
   const iconConfig = {
     danger: {
       icon: <ShieldAlert className="w-6 h-6 text-danger" />,
@@ -36,7 +40,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     warning: {
       icon: <AlertTriangle className="w-6 h-6 text-warning" />,
       btnVariant: "primary" as const,
-      btnClass: "bg-amber-600 hover:bg-amber-700 text-white",
+      btnClass:
+        "bg-warning hover:bg-warning-hover active:bg-warning-active text-white",
       bgClass: "bg-warning-surface border-warning-border",
     },
     primary: {
@@ -74,7 +79,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onClose}
             disabled={isLoading}
           >
-            {cancelText}
+            {resolvedCancelText}
           </Button>
           <Button
             variant={iconConfig.btnVariant}
@@ -83,7 +88,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onConfirm}
             isLoading={isLoading}
           >
-            {confirmText}
+            {resolvedConfirmText}
           </Button>
         </div>
       </div>

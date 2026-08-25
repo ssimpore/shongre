@@ -25,6 +25,8 @@ export interface Principal {
   capabilities?: readonly Permission[];
   /** Present for revocable sessions; absent on rollout-compatible legacy JWTs. */
   sessionId?: string;
+  /** True only after a TOTP or one-time recovery code was accepted for this session. */
+  mfaVerified?: boolean;
 }
 
 /** An anonymous caller. Kept explicit so route handlers never see `null` unexpectedly. */
@@ -65,6 +67,14 @@ export function requirePermission(
   permission: Permission,
 ): Principal {
   requireAuthenticated(principal);
+  if (principal.accountType === "staff" && principal.mfaVerified === false) {
+    throw new AppError({
+      code: "FORBIDDEN",
+      message:
+        "Une authentification à deux facteurs est requise pour accéder à cet espace.",
+      details: { reason: "mfa_required" },
+    });
+  }
   const allowed = principal.capabilities
     ? principal.capabilities.includes(permission)
     : hasPermission(principal.role, permission);

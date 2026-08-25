@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../../configuration/pagination.config";
 import { isProSeller } from "../../../domains/user/user.domain";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -85,7 +86,10 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
      the search page would then refuse to honour. */
   useEffect(() => {
     listingRepository
-      .getListings({ marketCode: activeMarket.code, limit: 50 })
+      .getListings({
+        marketCode: activeMarket.code,
+        limit: PAGE_SIZES.homepagePromotedListings,
+      })
       .then((res) => {
         setAllListings(res.listings || []);
       })
@@ -312,13 +316,13 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
         <Link
           to={`/annonce/${item.id}`}
           onClick={() => onListingClick?.(item)}
-          className="absolute inset-0 block focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus"
+          className="absolute inset-0 block focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-focus"
         >
           <Image
             src={photoUrl}
             alt={item.title}
             sizes={IMAGE_SIZES.gallery}
-            className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-[1.025]"
+            className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
 

@@ -10,9 +10,9 @@ import { useEffect, useState } from "react";
  * first-paint mismatch.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() =>
-    typeof window === "undefined" ? false : window.matchMedia(query).matches,
-  );
+  // A deterministic first render is required for SSR hydration. The effect
+  // applies the real browser result immediately after mount.
+  const [matches, setMatches] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia(query);

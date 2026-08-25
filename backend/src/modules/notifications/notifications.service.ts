@@ -2,6 +2,9 @@ import { NotificationItem } from "../../shared/types/index.js";
 import { randomUUID } from "node:crypto";
 import {
   INotificationRepository,
+  NotificationCategory,
+  NotificationCategoryPreference,
+  NotificationPreferenceSet,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
@@ -74,31 +77,172 @@ export class NotificationsService {
     await this.notificationRepo.unregisterDevice(userId, token);
   }
 
+  async getPreferences(userId: string): Promise<
+    NotificationPreferenceSet & {
+      userId: string;
+      updatedAt: string;
+    }
+  > {
+    const saved = await this.notificationRepo.getPreferences(userId);
+    return {
+      ...this.defaultPreferences(),
+      ...saved,
+      userId,
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  async updatePreferences(
+    userId: string,
+    input: Record<string, unknown>,
+  ): Promise<
+    NotificationPreferenceSet & {
+      userId: string;
+      updatedAt: string;
+    }
+  > {
+    const current = await this.getPreferences(userId);
+    const next = this.defaultPreferences();
+    for (const category of Object.keys(next) as NotificationCategory[]) {
+      const candidate = input?.[category];
+      const previous = current[category];
+      next[category] = this.normalizePreference(category, candidate, previous);
+    }
+    await this.notificationRepo.savePreferences(userId, next);
+    return { ...next, userId, updatedAt: new Date().toISOString() };
+  }
+
   async dispatchNotification(
     userId: string,
     type: string,
     title: string,
     body: string,
     linkUrl?: string,
+    requestedCategory?: NotificationCategory,
   ): Promise<NotificationItem> {
+    if (
+      !userId ||
+      typeof title !== "string" ||
+      !title.trim() ||
+      title.trim().length > 255 ||
+      typeof body !== "string" ||
+      !body.trim() ||
+      body.trim().length > 5_000
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le contenu de la notification est invalide.",
+      });
+    }
+    if (linkUrl && !linkUrl.startsWith("/")) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le lien de notification doit rester interne à Shongre.",
+      });
+    }
+    const category = requestedCategory || this.resolveCategory(type);
+    const preferences = await this.getPreferences(userId);
+    const categoryPreference = preferences[category];
     const notif: NotificationItem = {
       id: randomUUID(),
       userId,
       type,
-      title,
-      body,
+      category,
+      title: title.trim(),
+      body: body.trim(),
       linkUrl,
       isRead: false,
+      inAppVisible: categoryPreference.inApp,
       createdAt: new Date().toISOString(),
     };
 
-    const saved = await this.notificationRepo.save(notif);
-    await realtimeBroadcaster.broadcastEvent(
-      `user:${userId}:notifications`,
-      "notification_received",
-      saved,
+    const channels = [
+      ...(categoryPreference.email ? (["email"] as const) : []),
+      ...(categoryPreference.push ? (["push"] as const) : []),
+    ];
+    const saved = await this.notificationRepo.saveWithDeliveries(
+      notif,
+      category,
+      categoryPreference.inApp,
+      channels,
     );
+    if (categoryPreference.inApp) {
+      await realtimeBroadcaster.broadcastEvent(
+        `user:${userId}:notifications`,
+        "notification_received",
+        saved,
+      );
+    }
     return saved;
+  }
+
+  private defaultPreferences(): NotificationPreferenceSet {
+    return {
+      messages: { inApp: true, email: false, push: true },
+      transactions: {
+        inApp: true,
+        email: true,
+        push: true,
+        isMandatory: true,
+      },
+      listings: { inApp: true, email: true, push: false },
+      delivery: {
+        inApp: true,
+        email: true,
+        push: true,
+        isMandatory: true,
+      },
+      reviews: { inApp: true, email: false, push: true },
+      promotions: { inApp: true, email: false, push: false },
+      security: {
+        inApp: true,
+        email: true,
+        push: true,
+        isMandatory: true,
+      },
+      marketing: { inApp: false, email: false, push: false },
+    };
+  }
+
+  private normalizePreference(
+    category: NotificationCategory,
+    input: unknown,
+    fallback: NotificationCategoryPreference,
+  ): NotificationCategoryPreference {
+    if (!input || typeof input !== "object" || Array.isArray(input)) {
+      return { ...fallback };
+    }
+    const candidate = input as Record<string, unknown>;
+    for (const channel of ["inApp", "email", "push"] as const) {
+      if (typeof candidate[channel] !== "boolean") {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `Préférence ${category}.${channel} invalide.`,
+        });
+      }
+    }
+    const mandatory = ["transactions", "delivery", "security"].includes(
+      category,
+    );
+    return {
+      inApp: mandatory ? true : Boolean(candidate.inApp),
+      email: mandatory ? true : Boolean(candidate.email),
+      push: Boolean(candidate.push),
+      ...(mandatory ? { isMandatory: true } : {}),
+    };
+  }
+
+  private resolveCategory(type: string): NotificationCategory {
+    const normalized = String(type || "").toLowerCase();
+    if (/message|offer|conversation/.test(normalized)) return "messages";
+    if (/payment|order|escrow|refund|payout|transaction/.test(normalized))
+      return "transactions";
+    if (/delivery|pickup|shipping|handover/.test(normalized)) return "delivery";
+    if (/listing|publication|search/.test(normalized)) return "listings";
+    if (/review|rating/.test(normalized)) return "reviews";
+    if (/promotion|boost|subscription/.test(normalized)) return "promotions";
+    if (/marketing|newsletter|campaign/.test(normalized)) return "marketing";
+    return "security";
   }
 }
 

@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   FinanceMetric,
@@ -8,7 +9,7 @@ import type {
   ReconciliationCase,
 } from "@shongre/contracts/finance";
 import type { CommissionAnalyticsRow } from "@shongre/contracts/monetization";
-import { formatMoney } from "@shongre/shared";
+import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -34,8 +35,11 @@ import { services } from "../../api/client/service-registry";
 import { Button } from "../../design-system/primitives/Button";
 import { ScrollableRegion } from "../../design-system/primitives/ScrollableRegion";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
+import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useAuthorization } from "../../security/useAuthorization";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 type FinanceTab =
   "overview" | "transactions" | "reconciliation" | "subscriptions";
@@ -83,19 +87,6 @@ const STATUS_STYLES: Record<FinanceTransactionStatus, string> = {
   reversed: "border-border-base bg-bg-subtle text-text-secondary",
 };
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatPercentBps(value: number) {
-  return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(value / 100)} %`;
-}
-
 function downloadTextFile(fileName: string, mimeType: string, content: string) {
   const url = URL.createObjectURL(new Blob([content], { type: mimeType }));
   const link = document.createElement("a");
@@ -128,6 +119,7 @@ function MetricCard({
   metric: FinanceMetric;
   icon: React.ComponentType<{ className?: string }>;
 }) {
+  const { formatMoney, formatPercentFromBps } = useRegionalFormatters();
   const change = metric.changeBps;
   const positive = (change ?? 0) >= 0;
   return (
@@ -152,7 +144,7 @@ function MetricCard({
           ) : (
             <ArrowDownRight className="h-3.5 w-3.5" />
           )}
-          {formatPercentBps(Math.abs(change))}
+          {formatPercentFromBps(Math.abs(change), 1)}
           <span className="font-normal text-text-muted">
             vs période précédente
           </span>
@@ -166,6 +158,7 @@ function MetricCard({
 }
 
 function TrendChart({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
+  const { formatDate } = useRegionalFormatters();
   const values = dashboard.timeSeries.flatMap((point) => [
     point.platformRevenue.amountMinor,
     point.netRevenue.amountMinor,
@@ -249,10 +242,10 @@ function TrendChart({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
           .filter((_, index) => index % 2 === 0)
           .map((point) => (
             <span key={point.date}>
-              {new Intl.DateTimeFormat("fr-FR", {
+              {formatDate(point.date, {
                 day: "numeric",
                 month: "short",
-              }).format(new Date(point.date))}
+              })}
             </span>
           ))}
       </div>
@@ -265,6 +258,7 @@ function RevenueSources({
 }: {
   dashboard: PlatformFinanceDashboard;
 }) {
+  const { formatMoney, formatPercentFromBps } = useRegionalFormatters();
   return (
     <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
       <h2 className="text-sm font-bold text-text-main">Sources de revenus</h2>
@@ -280,14 +274,14 @@ function RevenueSources({
               </span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-stone-100">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${source.shareBps / 100}%` }}
-                />
-              </div>
+              <ProgressBar
+                className="flex-1"
+                value={source.shareBps}
+                max={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max}
+                label={`Part de ${source.label}`}
+              />
               <span className="w-10 text-right text-micro text-text-muted">
-                {formatPercentBps(source.shareBps)}
+                {formatPercentFromBps(source.shareBps, 1)}
               </span>
             </div>
           </div>
@@ -304,6 +298,8 @@ function CommissionAnalytics({
   rows: CommissionAnalyticsRow[];
   currency: string;
 }) {
+  const { formatMoneyMinor, formatNumber, formatPercentFromBps } =
+    useRegionalFormatters();
   const totals = rows.reduce(
     (sum, row) => ({
       transactions: sum.transactions + row.transactionCount,
@@ -326,7 +322,7 @@ function CommissionAnalytics({
   const takeRateBps =
     totals.gmvMinor > 0 ? Math.round((netMinor * 10_000) / totals.gmvMinor) : 0;
   const amount = (amountMinor: number) =>
-    formatMoney({ amountMinor, currency });
+    formatMoneyMinor(amountMinor, currency);
 
   return (
     <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
@@ -346,7 +342,7 @@ function CommissionAnalytics({
           ["Remises / exonérations", amount(totals.discountsMinor)],
           ["Remboursements", amount(totals.refundsMinor)],
           ["Revenu net commission", amount(netMinor)],
-          ["Take rate effectif", formatPercentBps(takeRateBps)],
+          ["Take rate effectif", formatPercentFromBps(takeRateBps, 1)],
           [
             "Moyenne / transaction",
             amount(
@@ -355,10 +351,7 @@ function CommissionAnalytics({
                 : 0,
             ),
           ],
-          [
-            "Transactions",
-            new Intl.NumberFormat("fr-FR").format(totals.transactions),
-          ],
+          ["Transactions", formatNumber(totals.transactions)],
         ].map(([label, value]) => (
           <div key={label} className="rounded-control bg-bg-subtle p-3">
             <dt className="text-micro font-semibold uppercase tracking-wide text-text-secondary">
@@ -375,7 +368,7 @@ function CommissionAnalytics({
           aria-label="Commissions par verticale, catégorie et forfait"
           className="mt-4 rounded-control border border-border-base"
         >
-          <table className="w-full min-w-[720px] text-left text-xs">
+          <table className="w-full min-w-180 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
               <tr>
                 <th className="px-3 py-2">Verticale / catégorie</th>
@@ -409,7 +402,7 @@ function CommissionAnalytics({
                       {amount(rowNet)}
                     </td>
                     <td className="px-3 py-3 text-right font-bold text-success">
-                      {formatPercentBps(rowTakeRate)}
+                      {formatPercentFromBps(rowTakeRate, 1)}
                     </td>
                   </tr>
                 );
@@ -429,6 +422,7 @@ function OverviewTab({
   dashboard: PlatformFinanceDashboard;
   commissionAnalytics: CommissionAnalyticsRow[];
 }) {
+  const { formatMoney, formatPercentFromBps } = useRegionalFormatters();
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -505,7 +499,7 @@ function OverviewTab({
             <div>
               <dt className="text-micro text-text-muted">Attrition</dt>
               <dd className="text-lg font-black">
-                {formatPercentBps(dashboard.subscriptionHealth.churnBps)}
+                {formatPercentFromBps(dashboard.subscriptionHealth.churnBps, 1)}
               </dd>
             </div>
             <div>
@@ -550,7 +544,7 @@ function OverviewTab({
             aria-label="Résultats financiers par marché"
             className="mt-2"
           >
-            <table className="w-full min-w-[420px] text-left text-xs">
+            <table className="w-full min-w-105 text-left text-xs">
               <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
                 <tr>
                   <th className="px-4 py-2">Marché</th>
@@ -590,6 +584,7 @@ function TransactionDetail({
   transaction: FinanceTransaction;
   reconciliation?: ReconciliationCase;
 }) {
+  const { formatDate, formatMoney } = useRegionalFormatters();
   const debitMinor = transaction.entries
     .filter((item) => item.side === "debit")
     .reduce((sum, item) => sum + item.amount.amountMinor, 0);
@@ -610,7 +605,7 @@ function TransactionDetail({
         </div>
         <StatusPill status={transaction.status} />
       </div>
-      <dl className="mt-4 grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 border-b border-border-subtle pb-4 text-xs">
+      <dl className="mt-4 grid grid-cols-label-value gap-x-3 gap-y-2 border-b border-border-subtle pb-4 text-xs">
         <dt className="text-text-muted">Type</dt>
         <dd className="font-semibold">{TYPE_LABELS[transaction.type]}</dd>
         <dt className="text-text-muted">Marché</dt>
@@ -628,10 +623,10 @@ function TransactionDetail({
         </dd>
         <dt className="text-text-muted">Horodatage</dt>
         <dd>
-          {new Intl.DateTimeFormat("fr-FR", {
+          {formatDate(transaction.occurredAt, {
             dateStyle: "medium",
             timeStyle: "medium",
-          }).format(new Date(transaction.occurredAt))}
+          })}
         </dd>
       </dl>
       <h3 className="mt-4 text-xs font-bold text-text-main">
@@ -641,7 +636,7 @@ function TransactionDetail({
         aria-label="Écriture comptable en partie double"
         className="mt-2 rounded-control border border-border-base"
       >
-        <table className="w-full min-w-[360px] text-left text-micro">
+        <table className="w-full min-w-90 text-left text-micro">
           <thead className="bg-bg-subtle text-text-secondary">
             <tr>
               <th className="px-2 py-2">Compte</th>
@@ -719,8 +714,9 @@ function TransactionsTab({
   onSelect: (item: FinanceTransaction) => void;
   reconciliation?: ReconciliationCase;
 }) {
+  const { formatDateTime, formatMoney } = useRegionalFormatters();
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
+    <div className="grid gap-4 xl:grid-cols-finance-content-aside">
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="flex items-center justify-between border-b border-border-base px-4 py-3">
           <h2 className="text-sm font-black">1 248 transactions</h2>
@@ -732,7 +728,7 @@ function TransactionsTab({
           aria-label="Transactions de la plateforme"
           className="hidden md:block"
         >
-          <table className="w-full min-w-[820px] text-left text-xs">
+          <table className="w-full min-w-205 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-secondary">
               <tr>
                 <th className="px-3 py-2">Date</th>
@@ -831,6 +827,8 @@ function ReconciliationTab({
   transactions: FinanceTransaction[];
   onOpen: (transaction: FinanceTransaction) => void;
 }) {
+  const { currentCurrency, formatDateTime, formatMoney } =
+    useRegionalFormatters();
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs lg:col-span-2">
@@ -894,7 +892,7 @@ function ReconciliationTab({
                   (sum, item) => sum + item.difference.amountMinor,
                   0,
                 ),
-                currency: "EUR",
+                currency: cases[0]?.difference.currency || currentCurrency,
               })}
             </dd>
           </div>
@@ -909,6 +907,8 @@ function SubscriptionsTab({
 }: {
   dashboard: PlatformFinanceDashboard;
 }) {
+  const { currentCurrency, formatMoney, formatPercentFromBps } =
+    useRegionalFormatters();
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -927,7 +927,7 @@ function SubscriptionsTab({
           metric={{
             amount: dashboard.revenueSources[0]?.amount ?? {
               amountMinor: 0,
-              currency: "EUR",
+              currency: currentCurrency,
             },
             definition: "Abonnements reconnus sur la période.",
           }}
@@ -941,7 +941,7 @@ function SubscriptionsTab({
           </p>
           <p className="mt-2 text-xs text-text-secondary">
             {dashboard.subscriptionHealth.newSubscriptions} nouveaux · attrition{" "}
-            {formatPercentBps(dashboard.subscriptionHealth.churnBps)}
+            {formatPercentFromBps(dashboard.subscriptionHealth.churnBps, 1)}
           </p>
         </section>
       </div>
@@ -956,7 +956,7 @@ function SubscriptionsTab({
           </p>
         </div>
         <ScrollableRegion aria-label="Performance financière des abonnements par verticale">
-          <table className="w-full min-w-[760px] text-left text-xs">
+          <table className="w-full min-w-190 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
               <tr>
                 <th className="px-4 py-2">Verticale</th>
@@ -989,7 +989,7 @@ function SubscriptionsTab({
                     {vertical.activeTrials}
                   </td>
                   <td className="px-3 py-3 text-right font-bold text-success">
-                    {formatPercentBps(vertical.conversionBps)}
+                    {formatPercentFromBps(vertical.conversionBps, 1)}
                   </td>
                 </tr>
               ))}
@@ -1002,6 +1002,8 @@ function SubscriptionsTab({
 }
 
 export const AdminFinancePage: React.FC = () => {
+  const { availableMarkets, currentCurrency } = useMarketLocation();
+  const { formatDate } = useRegionalFormatters();
   usePageMeta({
     title: "Finance de la plateforme",
     description: "Revenus, transactions et rapprochement financier Shongre.",
@@ -1015,7 +1017,7 @@ export const AdminFinancePage: React.FC = () => {
   const [scope, setScope] = useState<FinanceScope>({
     period: "30d",
     marketCode: "ALL",
-    currency: "EUR",
+    currency: currentCurrency,
   });
   const [dashboard, setDashboard] = useState<PlatformFinanceDashboard | null>(
     null,
@@ -1052,7 +1054,7 @@ export const AdminFinancePage: React.FC = () => {
           ...scope,
           query,
           status: status === "all" ? undefined : status,
-          limit: 25,
+          limit: PAGE_SIZES.adminFinanceRows,
         }),
         canManageReconciliation
           ? services.finance.listReconciliationCases()
@@ -1107,7 +1109,7 @@ export const AdminFinancePage: React.FC = () => {
       ...scope,
       query,
       status: status === "all" ? undefined : status,
-      limit: 1000,
+      limit: PAGE_SIZES.adminFinanceExportRows,
     });
     downloadTextFile(file.fileName, file.mimeType, file.content);
   };
@@ -1125,7 +1127,7 @@ export const AdminFinancePage: React.FC = () => {
 
   if (loading && !dashboard)
     return (
-      <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex min-h-105 items-center justify-center">
         <LoaderCircle
           className="h-6 w-6 animate-spin text-primary"
           aria-label="Chargement des finances"
@@ -1159,12 +1161,12 @@ export const AdminFinancePage: React.FC = () => {
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
             <CheckCircle2 className="h-4 w-4" />
             {dashboard.isPeriodClosed ? "Finalisé" : "Provisoire"} au{" "}
-            {new Intl.DateTimeFormat("fr-FR", {
+            {formatDate(dashboard.asOf, {
               day: "numeric",
               month: "long",
               hour: "2-digit",
               minute: "2-digit",
-            }).format(new Date(dashboard.asOf))}
+            })}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -1216,8 +1218,11 @@ export const AdminFinancePage: React.FC = () => {
             }
           >
             <option value="ALL">Tous les marchés</option>
-            <option value="FR">France</option>
-            <option value="BE">Belgique</option>
+            {availableMarkets.map((market) => (
+              <option key={market.code} value={market.code}>
+                {market.name}
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -1232,7 +1237,13 @@ export const AdminFinancePage: React.FC = () => {
               }))
             }
           >
-            <option value="EUR">EUR · Euro</option>
+            {Array.from(
+              new Set(availableMarkets.map((market) => market.currency)),
+            ).map((currency) => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
           </select>
         </label>
       </div>

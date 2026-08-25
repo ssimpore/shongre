@@ -14,6 +14,7 @@ import type {
 } from "@shongre/contracts/real-estate";
 import { applyMonetizationToRealEstateCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import {
+  REAL_ESTATE_CONSTRAINTS,
   propertyDraftSchema,
   propertyLeadSchema,
   propertyLeadExportSchema,
@@ -183,6 +184,20 @@ export class RealEstateService {
     await this.getPublicProperty(propertyId);
     await this.repo.markRecentlyViewed(userId, propertyId);
     return { success: true };
+  }
+
+  async getOrCreateOwnDraft(userId: string, marketCode = "FR") {
+    const normalizedMarket = marketCode.toUpperCase();
+    const existing = await this.repo.getLatestDraft(userId, normalizedMarket);
+    if (existing) return existing;
+    return this.saveOwnDraft(userId, randomUUID(), {
+      schemaVersion: 1,
+      marketCode: normalizedMarket,
+      currentStep: REAL_ESTATE_CONSTRAINTS.publication.firstStep,
+      completedSteps: [],
+      data: {},
+      validationIssues: [],
+    });
   }
 
   async getOwnPrivateDocumentAccess(

@@ -25,6 +25,7 @@ import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import type {
   EmploymentApplicationDraft,
   EmploymentServiceContract,
+  SaveEmploymentPublicationDraftInput,
 } from "../../contracts/employment.contract";
 import { httpClient } from "./http-client";
 
@@ -47,6 +48,16 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       `/employment/jobs/${encodeURIComponent(idOrSlug)}/similar`,
     );
   }
+  getOrCreateDraft(
+    _ownerUserId: string,
+    marketCode: string,
+    preferredDraftId?: string,
+  ): Promise<JobDraft> {
+    return httpClient.post<JobDraft>("/employment/drafts", {
+      marketCode,
+      preferredDraftId,
+    });
+  }
   async getDraft(draftId: string) {
     try {
       return await httpClient.get<JobDraft>(
@@ -67,6 +78,24 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     return httpClient.put<JobDraft>(
       `/employment/drafts/${encodeURIComponent(draft.id)}`,
       draft,
+    );
+  }
+  savePublicationDraft(
+    input: SaveEmploymentPublicationDraftInput,
+  ): Promise<JobDraft> {
+    return httpClient.put<JobDraft>(
+      `/employment/drafts/${encodeURIComponent(input.draftId)}/publication`,
+      {
+        marketCode: input.marketCode,
+        countryCode: input.countryCode,
+        currentStep: input.currentStep,
+        privateEmployer: input.privateEmployer,
+        data: input.data,
+        selectedOfferId: input.selectedOfferId,
+        selectedAddOnIds: input.selectedAddOnIds,
+        duplicateCandidateIds: input.duplicateCandidateIds,
+        markAllPreviousStepsComplete: input.markAllPreviousStepsComplete,
+      },
     );
   }
   checkDuplicateDraft(draftId: string) {

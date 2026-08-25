@@ -9,7 +9,7 @@ import {
 describe("MessagingService", () => {
   it("correctly labels today, yesterday and past dates", () => {
     const today = new Date().toISOString();
-    expect(messagingService.getDateSeparatorLabel(today)).toBe("Aujourd'hui");
+    expect(messagingService.getDateSeparatorLabel(today)).toBe("Aujourd’hui");
 
     const yesterday = new Date(Date.now() - 86400000).toISOString();
     expect(messagingService.getDateSeparatorLabel(yesterday)).toBe("Hier");
@@ -49,7 +49,7 @@ describe("MessagingService", () => {
     const groups = messagingService.groupTimelineByDate(items);
     expect(groups.length).toBe(2);
     expect(groups[0].dateLabel).toBe("Hier");
-    expect(groups[1].dateLabel).toBe("Aujourd'hui");
+    expect(groups[1].dateLabel).toBe("Aujourd’hui");
   });
 
   it("calculates total unread messages across conversations", () => {

@@ -38,7 +38,7 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
+    min-height: var(--spacing-page-viewport-min);
     overflow-x: hidden;
   }
 
@@ -183,8 +183,8 @@
 
   /* Focus visible accessibility outline */
   *:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: var(--border-strong) solid var(--color-primary);
+    outline-offset: var(--spacing-focus-ring-offset);
   }
 
   /* Global prefers-reduced-motion compliance */
@@ -192,9 +192,9 @@
     *,
     ::before,
     ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      animation-duration: var(--duration-reduced) !important;
+      animation-iteration-count: var(--motion-iteration-once) !important;
+      transition-duration: var(--duration-reduced) !important;
       scroll-behavior: auto !important;
     }
   }
@@ -241,16 +241,16 @@
   }
 
   .zoom-in-95 {
-    --enter-scale: 0.95;
+    --enter-scale: var(--motion-enter-scale);
   }
   .slide-in-from-top {
-    --enter-y: -0.5rem;
+    --enter-y: calc(-1 * var(--motion-enter-shift));
   }
   .slide-in-from-bottom {
-    --enter-y: 0.5rem;
+    --enter-y: var(--motion-enter-shift);
   }
   .slide-in-from-left {
-    --enter-x: -0.5rem;
+    --enter-x: calc(-1 * var(--motion-enter-shift));
   }
   .slide-in-from-right {
     --enter-x: 100%;
@@ -388,6 +388,92 @@
   z-index: var(--z-tooltip);
 }
 
+/* Native progress owns dynamic sizing without leaking inline visual styles
+   into feature modules. All presentation remains token-backed here. */
+.progress-bar {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: var(--spacing-semantic-sm);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-muted);
+}
+
+.progress-bar::-webkit-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-muted);
+}
+
+.progress-bar::-webkit-progress-value {
+  border-radius: var(--radius-pill);
+  background: var(--progress-color, var(--color-primary));
+}
+
+.progress-bar::-moz-progress-bar {
+  border-radius: var(--radius-pill);
+  background: var(--progress-color, var(--color-primary));
+}
+
+.progress-bar-primary {
+  --progress-color: var(--color-primary);
+}
+
+.progress-bar-success {
+  --progress-color: var(--color-success);
+}
+
+.progress-bar-warning {
+  --progress-color: var(--color-warning);
+}
+
+.progress-bar-danger {
+  --progress-color: var(--color-danger);
+}
+
+.progress-bar-info {
+  --progress-color: var(--color-info);
+}
+
+.scrollable-region {
+  contain: layout paint;
+}
+
+.category-icon-tone {
+  color: var(--category-accent, currentColor);
+}
+
+.category-icon-tone-with-background {
+  background: color-mix(
+    in srgb,
+    var(--category-accent, currentColor) var(--opacity-category-tone),
+    transparent
+  );
+}
+
+/* A coarse pointer gets the WCAG-sized target without changing the visible
+   favorite button footprint or relying on generated pseudo-content classes. */
+@media (pointer: coarse) {
+  .favorite-touch-target::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--spacing-control-touch);
+    height: var(--spacing-control-touch);
+    content: "";
+    transform: translate(-50%, -50%);
+  }
+}
+
+.collections-dot-pattern {
+  background-image: radial-gradient(
+    var(--color-primary) var(--border-hairline),
+    transparent var(--border-hairline)
+  );
+  background-size: var(--spacing-semantic-xl) var(--spacing-semantic-xl);
+}
+
 /* --- Critical runtime contracts ------------------------------------------
    Tailwind normally emits these from `@theme` / `@utility`. Keep the small set
    that controls page geometry as explicit CSS as well: a stale incremental
@@ -399,37 +485,37 @@
    the canonical card token and preserve usable geometry if a custom property
    is temporarily unavailable. */
 .z-base {
-  z-index: var(--z-base, 0);
+  z-index: var(--z-base);
 }
 .z-raised {
-  z-index: var(--z-raised, 10);
+  z-index: var(--z-raised);
 }
 .z-sticky {
-  z-index: var(--z-sticky, 20);
+  z-index: var(--z-sticky);
 }
 .z-dropdown {
-  z-index: var(--z-dropdown, 30);
+  z-index: var(--z-dropdown);
 }
 .z-popover {
-  z-index: var(--z-popover, 35);
+  z-index: var(--z-popover);
 }
 .z-header {
-  z-index: var(--z-header, 40);
+  z-index: var(--z-header);
 }
 .z-drawer {
-  z-index: var(--z-drawer, 45);
+  z-index: var(--z-drawer);
 }
 .z-modal {
-  z-index: var(--z-modal, 50);
+  z-index: var(--z-modal);
 }
 .z-toast {
-  z-index: var(--z-toast, 60);
+  z-index: var(--z-toast);
 }
 .z-tooltip {
-  z-index: var(--z-tooltip, 70);
+  z-index: var(--z-tooltip);
 }
 .w-listing-card {
-  width: var(--spacing-listing-card, 15rem);
+  width: var(--spacing-listing-card);
 }
 
 /* Safari can otherwise let a wide flex track contribute its max-content width
@@ -437,7 +523,7 @@
    inside an overflow-x scroller. From `sm` upward the rail has no negative
    margin bleed, so its shared shell can safely clip that off-screen paint. The
    phone treatment stays edge-to-edge. */
-@media (min-width: 40rem) {
+@variant sm {
   .scroll-rail-shell {
     overflow-x: clip;
   }
@@ -449,7 +535,7 @@
    narrow the card horizontally; its height stays tokenized. */
 .listing-card-standard,
 .listing-card-skeleton {
-  height: var(--spacing-listing-card-height, 25rem);
+  height: var(--spacing-listing-card-height);
 }
 
 /* Horizontal results use a fixed shared footprint so cards stay aligned when
@@ -457,9 +543,9 @@
    token-backed slot rather than an ad-hoc width utility: it grows on larger
    screens while preserving enough copy width on phones. */
 .listing-card-list {
-  height: var(--spacing-listing-card-list-height, 15rem);
-  min-height: var(--spacing-listing-card-list-height, 15rem);
-  max-height: var(--spacing-listing-card-list-height, 15rem);
+  height: var(--spacing-listing-card-list-height);
+  min-height: var(--spacing-listing-card-list-height);
+  max-height: var(--spacing-listing-card-list-height);
 }
 
 .listing-card-list > a {
@@ -468,10 +554,10 @@
 }
 
 .listing-card-list-image {
-  width: var(--spacing-listing-card-list-image, 9rem);
-  min-width: var(--spacing-listing-card-list-image, 9rem);
+  width: var(--spacing-listing-card-list-image);
+  min-width: var(--spacing-listing-card-list-image);
   height: 100%;
-  flex: 0 0 var(--spacing-listing-card-list-image, 9rem);
+  flex: 0 0 var(--spacing-listing-card-list-image);
 }
 
 .listing-card-list-content {
@@ -479,27 +565,27 @@
   overflow: hidden;
 }
 
-@media (min-width: 40rem) {
+@variant sm {
   .listing-card-list-image {
-    width: var(--spacing-listing-card-list-image-md, 12rem);
-    min-width: var(--spacing-listing-card-list-image-md, 12rem);
-    flex-basis: var(--spacing-listing-card-list-image-md, 12rem);
+    width: var(--spacing-listing-card-list-image-md);
+    min-width: var(--spacing-listing-card-list-image-md);
+    flex-basis: var(--spacing-listing-card-list-image-md);
   }
 }
 
-@media (min-width: 64rem) {
+@variant lg {
   .listing-card-list-image {
-    width: var(--spacing-listing-card-list-image-lg, 14rem);
-    min-width: var(--spacing-listing-card-list-image-lg, 14rem);
-    flex-basis: var(--spacing-listing-card-list-image-lg, 14rem);
+    width: var(--spacing-listing-card-list-image-lg);
+    min-width: var(--spacing-listing-card-list-image-lg);
+    flex-basis: var(--spacing-listing-card-list-image-lg);
   }
 }
 
-@media (min-width: 40rem) {
+@variant sm {
   .listing-card-standard {
-    width: var(--spacing-listing-card, 15rem);
-    min-width: var(--spacing-listing-card, 15rem);
-    max-width: var(--spacing-listing-card, 15rem);
+    width: var(--spacing-listing-card);
+    min-width: var(--spacing-listing-card);
+    max-width: var(--spacing-listing-card);
   }
 
   /* Result grids should consume the complete content row. Rails and curated
@@ -519,8 +605,8 @@
 .listing-rail-cell {
   display: flex;
   flex-direction: column;
-  flex: 0 0 var(--spacing-listing-card, 15rem);
-  min-width: var(--spacing-listing-card, 15rem);
+  flex: 0 0 var(--spacing-listing-card);
+  min-width: var(--spacing-listing-card);
 }
 
 .listing-rail-cell > * {
@@ -534,13 +620,13 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-50%);
+    transform: translateY(var(--motion-marquee-travel));
   }
 }
 
 @keyframes vertical-scroll-down {
   0% {
-    transform: translateY(-50%);
+    transform: translateY(var(--motion-marquee-travel));
   }
   100% {
     transform: translateY(0);
@@ -552,24 +638,24 @@
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(var(--motion-marquee-travel));
   }
 }
 
 .animate-marquee-vertical-up {
-  animation: vertical-scroll-up 28s linear infinite;
+  animation: vertical-scroll-up var(--duration-marquee-normal) linear infinite;
 }
 
 .animate-marquee-vertical-up-slow {
-  animation: vertical-scroll-up 38s linear infinite;
+  animation: vertical-scroll-up var(--duration-marquee-slow) linear infinite;
 }
 
 .animate-marquee-vertical-down {
-  animation: vertical-scroll-down 32s linear infinite;
+  animation: vertical-scroll-down var(--duration-marquee-reverse) linear infinite;
 }
 
 .animate-marquee-horizontal {
-  animation: horizontal-scroll-left 24s linear infinite;
+  animation: horizontal-scroll-left var(--duration-marquee-fast) linear infinite;
 }
 
 .pause-animation {
@@ -622,8 +708,8 @@
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: var(--spacing-scrollbar);
+  height: var(--spacing-scrollbar);
 }
 ::-webkit-scrollbar-track {
   background: transparent;

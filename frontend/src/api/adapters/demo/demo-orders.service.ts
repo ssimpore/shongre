@@ -4,6 +4,7 @@ import {
   CreateReservationInput,
   OrderCheckoutResult,
   DirectPurchaseQuote,
+  ORDER_HANDOVER_POLICY,
 } from "../../contracts/orders.contract";
 import { transactionRepository } from "../../../repositories/transaction.repository";
 import { transactionService } from "../../../domains/transaction/transaction.service";
@@ -11,6 +12,8 @@ import { listingRepository } from "../../../repositories/listing.repository";
 import { storageService } from "../../../services/storage.service";
 import { Transaction } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { minutesToMilliseconds } from "../../../utilities/time";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 export class DemoOrdersService implements OrdersServiceContract {
   async getOrderById(orderId: string): Promise<Transaction | null> {
@@ -45,7 +48,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       1,
       option.price || 0,
       listing.sellerType,
-      listing.marketCodes?.[0] || "FR",
+      listing.marketCodes?.[0] || DEFAULT_MARKET_CODE,
     );
     return {
       listingId: listing.id,
@@ -70,7 +73,7 @@ export class DemoOrdersService implements OrdersServiceContract {
       1,
       4.99,
       listing.sellerType,
-      listing.marketCodes?.[0] || "FR",
+      listing.marketCodes?.[0] || DEFAULT_MARKET_CODE,
     );
 
     const tx = await transactionRepository.createTransaction({
@@ -140,7 +143,10 @@ export class DemoOrdersService implements OrdersServiceContract {
     }
     return {
       code: order.verificationCode,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      expiresAt: new Date(
+        Date.now() +
+          minutesToMilliseconds(ORDER_HANDOVER_POLICY.lifetimeMinutes),
+      ).toISOString(),
     };
   }
 

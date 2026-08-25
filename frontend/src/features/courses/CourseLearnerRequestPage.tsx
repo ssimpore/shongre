@@ -15,71 +15,35 @@ import type {
   DeliveryMode,
   LearnerRequest,
 } from "@shongre/contracts/courses";
-import type { LearnerRequestDraft } from "../../api/contracts/courses.contract";
+import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
+import type {
+  LearnerRequestDraft,
+  LearnerRequestProgressDraft,
+} from "../../api/contracts/courses.contract";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button, Container, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
 
-const DRAFT_KEY = "shongre_courses_learner_request_draft_v1";
-
-interface RequestFormState {
-  subjectId: string;
-  levelId: string;
-  objective: string;
-  preferredSchedule: string[];
-  deliveryModes: DeliveryMode[];
-  city: string;
-  radiusKm: number;
-  budgetMinEuros: string;
-  budgetMaxEuros: string;
-  desiredStartDate: string;
-  context: string;
-  learnerAgeBand: LearnerRequestDraft["learnerAgeBand"];
+interface RequestFormState extends LearnerRequestProgressDraft {
   guardianName: string;
   guardianRelationship: string;
   guardianConsent: boolean;
 }
 
-function readDraft(subjectId = ""): RequestFormState {
-  const fallback: RequestFormState = {
-    subjectId,
-    levelId: "",
-    objective: "",
-    preferredSchedule: [],
-    deliveryModes: ["online"],
-    city: "",
-    radiusKm: 15,
-    budgetMinEuros: "",
-    budgetMaxEuros: "",
-    desiredStartDate: "",
-    context: "",
-    learnerAgeBand: "adult",
-    guardianName: "",
-    guardianRelationship: "",
-    guardianConsent: false,
-  };
-  if (typeof window === "undefined") return fallback;
-  try {
-    const stored = JSON.parse(window.localStorage.getItem(DRAFT_KEY) || "null");
-    return stored ? { ...fallback, ...stored } : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 export const CourseLearnerRequestPage: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currencySymbol } = useMarketLocation();
+  const { currentUser } = useAuth();
   const toast = useToast();
+  const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<RequestFormState>(() =>
-    readDraft(searchParams.get("subject") || ""),
-  );
+  const [form, setForm] = useState<RequestFormState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<LearnerRequest | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -93,23 +57,38 @@ export const CourseLearnerRequestPage: React.FC = () => {
   });
 
   useEffect(() => {
-    services.courses
-      .getCatalog(activeMarket.code)
-      .then(setCatalog)
+    Promise.all([
+      services.courses.getCatalog(activeMarket.code),
+      services.courses.getLearnerRequestDraft(
+        accountId,
+        activeMarket.code,
+        searchParams.get("subject") || undefined,
+      ),
+    ])
+      .then(([nextCatalog, savedDraft]) => {
+        setCatalog(nextCatalog);
+        setForm({
+          ...savedDraft,
+          guardianName: "",
+          guardianRelationship: "",
+          guardianConsent: false,
+        });
+      })
       .catch(() => setLoadError(true));
-  }, [activeMarket.code]);
+  }, [accountId, activeMarket.code, searchParams]);
 
   useEffect(() => {
     // Persist only non-contact learning criteria. Guardian names and consent
     // remain memory-only and are sent directly to the service on submission.
+    if (!form) return;
     const {
       guardianName: _name,
       guardianRelationship: _relationship,
       guardianConsent: _consent,
       ...safeDraft
     } = form;
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(safeDraft));
-  }, [form]);
+    void services.courses.saveLearnerRequestDraft(accountId, safeDraft);
+  }, [accountId, form]);
 
   const steps = [
     "Besoin",
@@ -117,12 +96,12 @@ export const CourseLearnerRequestPage: React.FC = () => {
     "Budget et date",
     "Responsable et sécurité",
   ];
-  const isMinor = form.learnerAgeBand !== "adult";
+  const isMinor = form ? form.learnerAgeBand !== "adult" : false;
 
   const update = <K extends keyof RequestFormState>(
     key: K,
     value: RequestFormState[K],
-  ) => setForm((current) => ({ ...current, [key]: value }));
+  ) => setForm((current) => (current ? { ...current, [key]: value } : current));
 
   const toggleArray = <T extends string>(current: T[], value: T): T[] =>
     current.includes(value)
@@ -130,6 +109,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
       : [...current, value];
 
   const stepIsValid = useMemo(() => {
+    if (!form) return false;
     if (step === 0)
       return Boolean(
         form.subjectId && form.levelId && form.objective.trim().length >= 10,
@@ -158,7 +138,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
   }, [form, isMinor, step]);
 
   const submit = async () => {
-    if (!stepIsValid) return;
+    if (!stepIsValid || !form) return;
     const request: LearnerRequestDraft = {
       marketCode: activeMarket.code,
       subjectId: form.subjectId,
@@ -172,14 +152,20 @@ export const CourseLearnerRequestPage: React.FC = () => {
         : undefined,
       budgetMin: form.budgetMinEuros
         ? {
-            amountMinor: Math.round(Number(form.budgetMinEuros) * 100),
-            currency: "EUR",
+            amountMinor: Math.round(
+              Number(form.budgetMinEuros) *
+                COURSE_CONSTRAINTS.minorUnitsPerMajor,
+            ),
+            currency: catalog?.config.currency || activeMarket.currency,
           }
         : undefined,
       budgetMax: form.budgetMaxEuros
         ? {
-            amountMinor: Math.round(Number(form.budgetMaxEuros) * 100),
-            currency: "EUR",
+            amountMinor: Math.round(
+              Number(form.budgetMaxEuros) *
+                COURSE_CONSTRAINTS.minorUnitsPerMajor,
+            ),
+            currency: catalog?.config.currency || activeMarket.currency,
           }
         : undefined,
       desiredStartDate: form.desiredStartDate,
@@ -197,7 +183,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
     try {
       const result = await services.courses.submitLearnerRequest(request);
       setSubmitted(result);
-      window.localStorage.removeItem(DRAFT_KEY);
+      await services.courses.clearLearnerRequestDraft(accountId);
       toast.success("Votre demande a été transmise.");
     } catch (reason) {
       toast.error(
@@ -224,10 +210,10 @@ export const CourseLearnerRequestPage: React.FC = () => {
     );
   }
 
-  if (!catalog) {
+  if (!catalog || !form) {
     return (
       <Container className="py-8">
-        <Skeleton className="mx-auto h-[34rem] max-w-3xl rounded-card" />
+        <Skeleton className="mx-auto h-136 max-w-3xl rounded-card" />
       </Container>
     );
   }
@@ -344,12 +330,14 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   value={form.objective}
                   onChange={(event) => update("objective", event.target.value)}
                   placeholder="Ex. reprendre les bases et préparer le brevet"
-                  maxLength={600}
+                  maxLength={COURSE_CONSTRAINTS.learnerObjective.maxLength}
                   rows={4}
                   className="mt-2 w-full rounded-control border border-border-base bg-bg-base p-3 text-sm font-normal leading-relaxed min-h-control-touch"
                 />
                 <span className="mt-1 block text-micro font-normal text-text-muted">
-                  10 caractères minimum · {form.objective.length}/600
+                  {COURSE_CONSTRAINTS.learnerObjective.minLength} caractères
+                  minimum · {form.objective.length}/
+                  {COURSE_CONSTRAINTS.learnerObjective.maxLength}
                 </span>
               </label>
             </section>
@@ -417,7 +405,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 </div>
               </fieldset>
               {form.deliveryModes.includes("in_person") && (
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
+                <div className="grid gap-3 sm:grid-cols-content-compact-aside">
                   <label className="block text-xs font-bold text-text-main">
                     Ville
                     <div className="relative mt-2">
@@ -507,7 +495,8 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   <div className="relative mt-2">
                     <input
                       type="number"
-                      min="0"
+                      min={COURSE_CONSTRAINTS.budgetMajor.min}
+                      step={COURSE_CONSTRAINTS.budgetMajor.step}
                       value={form.budgetMinEuros}
                       onChange={(event) =>
                         update("budgetMinEuros", event.target.value)
@@ -515,7 +504,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       className="h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 pr-9 text-sm font-normal"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">
-                      €
+                      {currencySymbol}
                     </span>
                   </div>
                 </label>
@@ -524,7 +513,8 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   <div className="relative mt-2">
                     <input
                       type="number"
-                      min="0"
+                      min={COURSE_CONSTRAINTS.budgetMajor.min}
+                      step={COURSE_CONSTRAINTS.budgetMajor.step}
                       value={form.budgetMaxEuros}
                       onChange={(event) =>
                         update("budgetMaxEuros", event.target.value)
@@ -532,7 +522,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       className="h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 pr-9 text-sm font-normal"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-muted">
-                      €
+                      {currencySymbol}
                     </span>
                   </div>
                 </label>
@@ -559,7 +549,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 <textarea
                   value={form.context}
                   onChange={(event) => update("context", event.target.value)}
-                  maxLength={3000}
+                  maxLength={COURSE_CONSTRAINTS.learnerContext.maxLength}
                   rows={5}
                   placeholder="Rythme actuel, difficultés, échéances ou aménagements utiles…"
                   className="mt-2 w-full rounded-control border border-border-base bg-bg-base p-3 text-sm font-normal leading-relaxed min-h-control-touch"

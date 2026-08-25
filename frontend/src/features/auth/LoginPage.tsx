@@ -59,7 +59,9 @@ export const LoginPage: React.FC = () => {
         const result = await loginWithMFA(tempMfaToken, mfaCode);
         if (result.success) {
           toast.success("Authentification 2FA réussie. Bienvenue !");
-          navigate(redirectUrl);
+          navigate(
+            result.user?.accountType === "staff" ? "/admin" : redirectUrl,
+          );
         } else {
           setErrorMessage(result.errorMessage || "Code 2FA invalide.");
         }
@@ -67,7 +69,11 @@ export const LoginPage: React.FC = () => {
         const result = await login(email, password, { rememberMe });
         if (result.success) {
           toast.success("Connexion réussie ! Bienvenue sur Shongre.");
-          navigate(redirectUrl);
+          navigate(
+            result.user?.accountType === "staff"
+              ? "/securite-interne"
+              : redirectUrl,
+          );
         } else if (result.requiresMfa && result.tempMfaToken) {
           setRequiresMfa(true);
           setTempMfaToken(result.tempMfaToken);
@@ -132,10 +138,6 @@ export const LoginPage: React.FC = () => {
               required
               className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
             />
-            <p className="mt-1.5 text-micro text-stone-500 text-center">
-              {t("auth.loginPage.pourLeTestVousPouvez")}
-              <code>123456</code>.
-            </p>
           </div>
 
           <Button

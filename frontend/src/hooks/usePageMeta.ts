@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { applyPageMeta, PageMeta } from "../services/seo.service";
+import { useMarketLocation } from "../app/providers/MarketLocationProvider";
 
 /**
  * Declares a route's metadata from inside the page that owns it.
@@ -14,7 +15,11 @@ import { applyPageMeta, PageMeta } from "../services/seo.service";
  * (loading, 404) still call this so the previous page's title never lingers.
  */
 export function usePageMeta(meta: PageMeta): void {
-  const serialised = JSON.stringify(meta);
+  const { currentLocale } = useMarketLocation();
+  const serialised = JSON.stringify({
+    ...meta,
+    locale: meta.locale || currentLocale,
+  });
 
   useEffect(() => {
     const parsed = JSON.parse(serialised) as PageMeta;

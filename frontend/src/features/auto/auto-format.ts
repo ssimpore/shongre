@@ -1,7 +1,7 @@
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type { Money } from "@shongre/contracts";
 
-export function formatAutoMoney(money: Money, locale = "fr-FR") {
+export function formatAutoMoney(money: Money, locale: string) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: money.currency,
@@ -9,8 +9,8 @@ export function formatAutoMoney(money: Money, locale = "fr-FR") {
   }).format(money.amountMinor / 100);
 }
 
-export function formatAutoMileage(vehicle: VehiclePublic) {
-  return `${new Intl.NumberFormat("fr-FR").format(vehicle.technical.mileage)} ${vehicle.technical.mileageUnit}`;
+export function formatAutoMileage(vehicle: VehiclePublic, locale: string) {
+  return `${new Intl.NumberFormat(locale).format(vehicle.technical.mileage)} ${vehicle.technical.mileageUnit}`;
 }
 
 export const fuelLabels: Record<

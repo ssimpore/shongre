@@ -55,7 +55,7 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
         {entries.map(([key, item]) => (
           <div
             key={key}
-            className="grid gap-1 rounded-control border border-stone-200 bg-white p-2 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-3"
+            className="grid gap-1 rounded-control border border-stone-200 bg-white p-2 sm:grid-cols-audit-row sm:gap-3"
           >
             <dt className="font-semibold text-stone-600">
               {auditFieldLabel(key)}
@@ -327,7 +327,7 @@ export const AdminAuditLogsPage: React.FC = () => {
       >
         {selectedLog && (
           <div className="space-y-5">
-            <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-[9rem_minmax(0,1fr)]">
+            <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-audit-row">
               <dt className="font-semibold text-stone-600">Date et heure</dt>
               <dd className="text-stone-900">
                 <time
@@ -407,7 +407,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               <summary className="cursor-pointer px-3 py-2 font-semibold text-stone-600">
                 Données techniques
               </summary>
-              <dl className="grid gap-2 border-t border-stone-200 p-3 sm:grid-cols-[9rem_minmax(0,1fr)]">
+              <dl className="grid gap-2 border-t border-stone-200 p-3 sm:grid-cols-audit-row">
                 <dt className="text-stone-500">Événement</dt>
                 <dd className="break-all font-mono text-micro text-stone-700">
                   {selectedLog.id}

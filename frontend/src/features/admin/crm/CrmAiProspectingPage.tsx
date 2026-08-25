@@ -24,16 +24,17 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { plural } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
-
-const EXAMPLE_PROMPTS = [
-  "Boutiques de mobilier design vintage en Île-de-France",
-  "Installateurs de bornes de recharge et solutions solaires en France",
-  "Magasins de vélos et équipements de mobilité à Lyon",
-  "Antiquaires et galeries d'art avec catalogue en ligne",
-];
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmAiProspectingPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, popularCities } = useMarketLocation();
+  const examplePrompts = [
+    `Boutiques de mobilier design vintage en ${activeMarket.name}`,
+    `Installateurs de bornes de recharge et solutions solaires en ${activeMarket.name}`,
+    `Magasins de vélos et équipements de mobilité à ${popularCities[0]?.name || activeMarket.name}`,
+    "Antiquaires et galeries d'art avec catalogue en ligne",
+  ];
   usePageMeta({
     title: t("meta.crmAiProspecting.title"),
     description: t("meta.crmAiProspecting.description"),
@@ -79,18 +80,9 @@ export const CrmAiProspectingPage: React.FC = () => {
     );
 
     try {
-      setTimeout(
-        () => setSearchStep("Analyse des catalogues et signaux d'activité..."),
-        200,
-      );
-      setTimeout(
-        () => setSearchStep("Calcul du Fit Shongre & déduplication..."),
-        450,
-      );
-
       const res = await prospectResearchService.searchProspects({
         naturalLanguageQuery: activeQuery.trim(),
-        marketCode: "FR",
+        marketCode: activeMarket.code,
       });
 
       // Check for duplicates against existing CRM companies
@@ -237,7 +229,7 @@ export const CrmAiProspectingPage: React.FC = () => {
               <span className="font-bold text-stone-500 text-micro">
                 Exemples :
               </span>
-              {EXAMPLE_PROMPTS.map((prompt, idx) => (
+              {examplePrompts.map((prompt, idx) => (
                 <button
                   key={idx}
                   type="button"

@@ -53,8 +53,7 @@ describe("FavoriteButton", () => {
     expect(classes).not.toMatch(
       /(?:^|\s)pointer-coarse:w-control-touch(?:\s|$)/,
     );
-    expect(classes).toContain("pointer-coarse:after:w-control-touch");
-    expect(classes).toContain("pointer-coarse:after:h-control-touch");
+    expect(classes).toContain("favorite-touch-target");
   });
 
   it("names its state for assistive technology", () => {

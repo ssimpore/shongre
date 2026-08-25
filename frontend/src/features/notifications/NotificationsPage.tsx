@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Check, Settings } from "lucide-react";
@@ -10,7 +11,7 @@ import {
   NotificationDateGroup,
 } from "../../domains/notifications/notification.service";
 import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
-import { notificationRepository } from "../../repositories/notification.repository";
+import { services } from "../../api/client/service-registry";
 import { useNotifications } from "../../app/providers/NotificationProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
@@ -18,9 +19,11 @@ import { NotificationItemCard } from "./components/NotificationItemCard";
 import { NotificationDemoToolbar } from "./components/NotificationDemoToolbar";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const NotificationsPage: React.FC = () => {
   const { t } = useTranslation();
+  const { currentLocale } = useMarketLocation();
   usePageMeta({
     title: t("meta.notifications.title"),
     description: t("meta.notifications.description"),
@@ -43,11 +46,9 @@ export const NotificationsPage: React.FC = () => {
   const loadNotifications = async () => {
     setIsLoading(true);
     try {
-      const res = await notificationRepository.getNotifications({
-        recipientId: currentUserId,
-        limit: 100,
-      });
-      setNotifications(res.notifications);
+      const items =
+        await services.notifications.getUserNotifications(currentUserId);
+      setNotifications(items.slice(0, PAGE_SIZES.notificationCenter));
     } finally {
       setIsLoading(false);
     }
@@ -78,8 +79,11 @@ export const NotificationsPage: React.FC = () => {
 
   // Group by date
   const groupedNotifications: NotificationDateGroup[] = useMemo(() => {
-    return notificationService.groupNotificationsByDate(filteredNotifications);
-  }, [filteredNotifications]);
+    return notificationService.groupNotificationsByDate(
+      filteredNotifications,
+      currentLocale,
+    );
+  }, [currentLocale, filteredNotifications]);
 
   const tabs: { id: NotificationFilterTab; label: string; count?: number }[] = [
     { id: "all", label: "Toutes" },

@@ -16,7 +16,7 @@ export function dictionaryLabel(
 export function formatEmploymentMoney(
   amountMinor: number,
   currency: string,
-  locale = "fr-FR",
+  locale: string,
 ) {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -27,30 +27,31 @@ export function formatEmploymentMoney(
 
 export function formatSalary(
   salary: SalaryRange | undefined,
-  catalog?: EmploymentCatalog | null,
+  catalog: EmploymentCatalog | null | undefined,
+  locale: string,
 ) {
   if (!salary?.isPublic) return "Rémunération non communiquée";
   const minimum = salary.minimum
     ? formatEmploymentMoney(
         salary.minimum.amountMinor,
         salary.minimum.currency,
-        catalog?.config.locale,
+        locale,
       )
     : undefined;
   const maximum = salary.maximum
     ? formatEmploymentMoney(
         salary.maximum.amountMinor,
         salary.maximum.currency,
-        catalog?.config.locale,
+        locale,
       )
     : undefined;
   const frequency = dictionaryLabel(catalog, salary.frequencyId);
   const range =
     minimum && maximum ? `${minimum} – ${maximum}` : minimum || maximum;
-  return `${range || "Rémunération communiquée"}${frequency ? ` · ${frequency.toLocaleLowerCase(catalog?.config.locale || "fr-FR")}` : ""}`;
+  return `${range || "Rémunération communiquée"}${frequency ? ` · ${frequency.toLocaleLowerCase(locale)}` : ""}`;
 }
 
-export function formatEmploymentDate(value: string, locale = "fr-FR") {
+export function formatEmploymentDate(value: string, locale: string) {
   return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
@@ -58,7 +59,7 @@ export function formatEmploymentDate(value: string, locale = "fr-FR") {
   }).format(new Date(value));
 }
 
-export function relativeEmploymentDate(value: string, locale = "fr-FR") {
+export function relativeEmploymentDate(value: string, locale: string) {
   const days = Math.max(
     0,
     Math.round((Date.now() - Date.parse(value)) / 86_400_000),

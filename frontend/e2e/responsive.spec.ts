@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { VIEWPORTS } from "./viewports";
 import { ALL_ROUTES, PUBLIC_ROUTES } from "./routes";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 /**
@@ -15,6 +15,10 @@ import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 const CRITICAL_WIDTHS = VIEWPORTS.filter((v) =>
   ["320-small-phone", "787-awkward-gap", "1024-lg-breakpoint"].includes(v.name),
 );
+
+test.beforeEach(async ({ page }) => {
+  await useEstablishedConsent(page);
+});
 
 test.describe("horizontal overflow", () => {
   for (const viewport of CRITICAL_WIDTHS) {
@@ -236,23 +240,19 @@ test.describe("toolbar controls align", () => {
 });
 
 /**
- * The two store badges are the same size as each other, at every width.
- *
- * They were `inline-flex` and therefore each sized to its own wording:
- * "Télécharger sur / l'App Store" is longer than "DISPONIBLE SUR / Google Play",
- * so the pair rendered visibly mismatched. Equal-width cells fix that, but
- * pairing them too early is its own bug — two columns gave 92px cells on a phone
- * and ellipsised the store name, which is equal width bought at the cost of the
- * one thing a store badge has to say. Both properties are asserted together.
+ * The compact footer keeps its legally important controls reachable without
+ * recreating the former app-badge/sitemap block. App download badges were
+ * removed because no store destinations are configured in this demo; dead
+ * promotional controls would add noise and imply unavailable downloads.
  */
-test.describe("app store badges", () => {
+test.describe("compact footer", () => {
   for (const viewport of [
     { name: "320-small-phone", width: 320, height: 720 },
     { name: "375-iphone-se", width: 375, height: 812 },
     { name: "768-tablet-portrait", width: 768, height: 1024 },
     { name: "1440-desktop", width: 1440, height: 900 },
   ]) {
-    test(`match each other at ${viewport.name}`, async ({ page }) => {
+    test(`keeps legal controls usable at ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize({
         width: viewport.width,
         height: viewport.height,
@@ -261,38 +261,15 @@ test.describe("app store badges", () => {
       await page.goto("/", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      const badges = await page.evaluate(() =>
-        [...document.querySelectorAll("footer li")]
-          .filter((li) => /app store|google play/i.test(li.textContent || ""))
-          .map((li) => {
-            const badge = li.firstElementChild as HTMLElement;
-            const rect = badge.getBoundingClientRect();
-            const labels = [
-              ...badge.querySelectorAll("span span"),
-            ] as HTMLElement[];
-            return {
-              width: Math.round(rect.width),
-              height: Math.round(rect.height),
-              // `sr-only` text is measured out of flow; only the visible pair matters.
-              truncated: labels
-                .filter((el) => !el.className.includes("sr-only"))
-                .some((el) => el.scrollWidth > el.clientWidth + 1),
-            };
-          }),
-      );
-
-      expect(badges, "expected both store badges").toHaveLength(2);
-      expect(badges[0].width, `widths differ: ${JSON.stringify(badges)}`).toBe(
-        badges[1].width,
-      );
-      expect(
-        badges[0].height,
-        `heights differ: ${JSON.stringify(badges)}`,
-      ).toBe(badges[1].height);
-      expect(
-        badges.some((b) => b.truncated),
-        `a store name is ellipsised: ${JSON.stringify(badges)}`,
-      ).toBe(false);
+      const footer = page.locator("footer");
+      await footer.scrollIntoViewIfNeeded();
+      const legal = footer.getByRole("navigation");
+      await expect(legal).toBeVisible();
+      await expect(
+        legal.getByRole("button", { name: /gestion des cookies/i }),
+      ).toBeVisible();
+      await expect(legal.getByRole("link")).toHaveCount(4);
+      await expectNoHorizontalOverflow(page, `footer @ ${viewport.name}`);
     });
   }
 });
@@ -344,16 +321,14 @@ test.describe("list view cards", () => {
 });
 
 /**
- * The collections rail pages cleanly, one card at a time.
+ * Shared listing rails page cleanly, one card at a time.
  *
  * Two things this pins that cannot be checked by eye in a CDP-driven browser:
- * `scrollBy({ behavior: 'smooth' })` does not animate there, so the arrows read
- * as dead on every rail — snapped or not — while working perfectly in real
- * Chromium. And the cards carried `snap-start` while the track never declared
- * `snap-x`, so half the snap contract was missing and a nudge left a card
- * stranded mid-word against the edge.
+ * The cards carry `snap-start` and the shared track owns `snap-x`; this test
+ * keeps both halves of that contract together and catches a nudge that strands
+ * a card mid-word against the edge.
  */
-test.describe("collections rail", () => {
+test.describe("listing rail", () => {
   test("an arrow advances one card and leaves it flush", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await usePersona(page, "guest");
@@ -361,7 +336,7 @@ test.describe("collections rail", () => {
     await waitForStableLayout(page);
 
     const heading = page.getByRole("heading", {
-      name: /tendance en ce moment|collections du moment/i,
+      name: /annonces récentes/i,
     });
     await heading.scrollIntoViewIfNeeded();
     const section = page.locator("section").filter({ has: heading });
@@ -371,9 +346,7 @@ test.describe("collections rail", () => {
 
     const state = await page.evaluate(() => {
       const h = [...document.querySelectorAll("h2")].find((x) =>
-        /tendance en ce moment|collections du moment/i.test(
-          (x as HTMLElement).innerText,
-        ),
+        /annonces récentes/i.test((x as HTMLElement).innerText),
       );
       const track = [
         ...h!.closest("section")!.querySelectorAll("div.overflow-x-auto"),

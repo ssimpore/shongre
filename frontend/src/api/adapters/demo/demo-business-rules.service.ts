@@ -22,6 +22,9 @@ import type {
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
 import {
+  commercialDraftPatchSchema,
+  complimentaryGrantDecisionInputSchema,
+  complimentaryGrantRequestInputSchema,
   isCommercialAudienceCompatible,
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
@@ -42,6 +45,7 @@ import type {
 } from "../../contracts/business-rules.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 const createdAt = BASELINE_MONETIZATION_CATALOG.generatedAt;
 const versions: CommercialConfigurationVersion[] = [
@@ -367,7 +371,7 @@ function digest(value: string) {
 }
 
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
-  async getCatalog(marketCode = "FR") {
+  async getCatalog(marketCode = DEFAULT_MARKET_CODE) {
     await simulateNetworkDelay();
     const version = versions.find(
       (entry) => entry.marketCode === marketCode && entry.status === "active",
@@ -943,7 +947,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
                     line1: user.businessAddress,
                     postalCode: user.postalCode,
                     city: user.city,
-                    countryCode: user.country || "FR",
+                    countryCode: user.country || DEFAULT_MARKET_CODE,
                   }
                 : undefined,
             providerCustomerId: `demo_customer_${digest(accountId).slice(0, 12)}`,
@@ -1159,7 +1163,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(subscription);
   }
 
-  async getAdminOverview(marketCode = "FR") {
+  async getAdminOverview(marketCode = DEFAULT_MARKET_CODE) {
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
     const marketVersions = versions.filter(
@@ -1201,13 +1205,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async requestComplimentaryGrant(input: ComplimentaryGrantRequestInput) {
     await simulateNetworkDelay();
-    if (
-      !input.accountId ||
-      !input.productVersionId ||
-      input.reason.trim().length < 12 ||
-      new Date(input.endsAt) <= new Date(input.startsAt)
-    )
+    const parsed = complimentaryGrantRequestInputSchema.safeParse(input);
+    if (!parsed.success)
       throw new Error("Demande de forfait offert incomplète");
+    input = parsed.data;
     const actorId = currentAccountId();
     const requestKey = `${actorId}:${input.idempotencyKey}`;
     const existing = complimentaryRequests.get(requestKey);
@@ -1229,6 +1230,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     input: ComplimentaryGrantDecisionInput,
   ) {
     await simulateNetworkDelay();
+    const parsed = complimentaryGrantDecisionInputSchema.safeParse(input);
+    if (!parsed.success)
+      throw new Error("Décision de forfait offert incomplète");
+    input = parsed.data;
     const request = complimentaryRequests.get(requestId);
     if (!request) throw new Error("Demande de forfait offert introuvable");
     const actorId = currentAccountId();
@@ -1281,6 +1286,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async createDraft(patch: CommercialDraftPatch) {
     await simulateNetworkDelay();
+    patch = commercialDraftPatchSchema.parse(patch);
     const current = await this.getCatalog("FR");
     const number =
       Math.max(...versions.map((version) => version.versionNumber)) + 1;

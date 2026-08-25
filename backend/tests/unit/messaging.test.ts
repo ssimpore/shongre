@@ -109,4 +109,86 @@ describe("MessagingService", () => {
       }),
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
+
+  it("stores authoritative minor-unit offers and permits only the recipient to respond", async () => {
+    const repository = new DemoMessagingRepository();
+    const service = new MessagingService(
+      repository,
+      new DemoListingRepository(),
+    );
+    const offer = await service.makeOffer({
+      conversationId: "conv_1",
+      senderId: "user_thomas",
+      amountMinor: 22_500,
+    });
+
+    expect(offer).toMatchObject({
+      offerAmountMinor: 22_500,
+      offerCurrency: "EUR",
+      offerStatus: "pending",
+    });
+    await expect(
+      service.respondToOffer({
+        offerId: offer.id,
+        userId: "user_thomas",
+        accept: true,
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    const accepted = await service.respondToOffer({
+      offerId: offer.id,
+      userId: "user_camille",
+      accept: true,
+    });
+    expect(accepted.offerStatus).toBe("accepted");
+  });
+
+  it("serializes competing offer decisions so only one transition wins", async () => {
+    const repository = new DemoMessagingRepository();
+    const service = new MessagingService(
+      repository,
+      new DemoListingRepository(),
+    );
+    const offer = await service.makeOffer({
+      conversationId: "conv_1",
+      senderId: "user_thomas",
+      amountMinor: 20_000,
+    });
+
+    const outcomes = await Promise.allSettled([
+      service.respondToOffer({
+        offerId: offer.id,
+        userId: "user_camille",
+        accept: true,
+      }),
+      service.respondToOffer({
+        offerId: offer.id,
+        userId: "user_camille",
+        accept: false,
+      }),
+    ]);
+    expect(
+      outcomes.filter((outcome) => outcome.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      outcomes.filter((outcome) => outcome.status === "rejected"),
+    ).toHaveLength(1);
+  });
+
+  it("allows only the creator to withdraw a still-pending offer", async () => {
+    const service = new MessagingService(
+      new DemoMessagingRepository(),
+      new DemoListingRepository(),
+    );
+    const offer = await service.makeOffer({
+      conversationId: "conv_1",
+      senderId: "user_thomas",
+      amountMinor: 21_000,
+    });
+    await expect(
+      service.withdrawOffer(offer.id, "user_camille"),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    const withdrawn = await service.withdrawOffer(offer.id, "user_thomas");
+    expect(withdrawn.offerStatus).toBe("withdrawn");
+  });
 });

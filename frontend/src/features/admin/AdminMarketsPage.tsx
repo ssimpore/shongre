@@ -22,6 +22,8 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Badge } from "../../design-system/primitives/Badge";
+import { ProgressBar } from "../../design-system/primitives/ProgressBar";
+import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { marketService } from "../../domains/market/market.service";
 import { MarketStatus } from "../../domains/market/market.types";
 import { plural } from "../../utilities/formatters";
@@ -35,11 +37,13 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   normalizeRecentSearchesLimit,
+  normalizePriceFilterStops,
   RECENT_SEARCHES_LIMIT_DEFAULT,
   RECENT_SEARCHES_LIMIT_MAX,
   RECENT_SEARCHES_LIMIT_MIN,
 } from "../../domains/market/market.constants";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { MARKET_CODE_LENGTH } from "@shongre/contracts";
 
 type AdminTab = "overview" | "editor" | "matrix";
 type DomainTab =
@@ -57,6 +61,7 @@ type DomainTab =
 
 export const AdminMarketsPage: React.FC = () => {
   const { t } = useTranslation();
+  const baselineMarket = marketService.getDefaultMarket();
   usePageMeta({
     title: t("meta.adminMarkets.title"),
     description: t("meta.adminMarkets.description"),
@@ -67,13 +72,20 @@ export const AdminMarketsPage: React.FC = () => {
   const { can, currentUser } = useAuth();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<AdminTab>("overview");
-  const [selectedMarketCode, setSelectedMarketCode] = useState<string>("BE");
+  const [selectedMarketCode, setSelectedMarketCode] = useState<string>(
+    () =>
+      marketService.getMarkets().find((market) => !market.isDefault)?.code ||
+      baselineMarket.code,
+  );
   const [activeDomainTab, setActiveDomainTab] = useState<DomainTab>("payments");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Modals state
   const [isAddMarketModalOpen, setIsAddMarketModalOpen] = useState(false);
   const [isEditOverrideModalOpen, setIsEditOverrideModalOpen] = useState(false);
+  const [pendingResetMarketCode, setPendingResetMarketCode] = useState<
+    string | null
+  >(null);
   const [activeEditingPath, setActiveEditingPath] = useState<string | null>(
     null,
   );
@@ -87,8 +99,12 @@ export const AdminMarketsPage: React.FC = () => {
   const [newMarketCode, setNewMarketCode] = useState("");
   const [newMarketName, setNewMarketName] = useState("");
   const [newMarketFlag, setNewMarketFlag] = useState("🌐");
-  const [newMarketLocale, setNewMarketLocale] = useState("fr-FR");
-  const [newMarketCurrency, setNewMarketCurrency] = useState("EUR");
+  const [newMarketLocale, setNewMarketLocale] = useState(
+    baselineMarket.defaultLocale,
+  );
+  const [newMarketCurrency, setNewMarketCurrency] = useState(
+    baselineMarket.currency,
+  );
   const [newMarketStatus, setNewMarketStatus] = useState<MarketStatus>("draft");
 
   const canManageMarkets = can("market.manage");
@@ -145,8 +161,8 @@ export const AdminMarketsPage: React.FC = () => {
       setSelectedMarketCode(created.code);
       setActiveTab("editor");
       handleRefresh();
-    } catch (err: any) {
-      alert(err.message || "Erreur lors de la création du marché");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     }
   };
 
@@ -164,8 +180,8 @@ export const AdminMarketsPage: React.FC = () => {
           : undefined,
       );
       handleRefresh();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     }
   };
 
@@ -183,22 +199,20 @@ export const AdminMarketsPage: React.FC = () => {
           : undefined,
       );
       handleRefresh();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     }
   };
 
   const handleResetAllToFrance = (code: string) => {
-    if (
-      !window.confirm(
-        `Êtes-vous sûr de vouloir réinitialiser toutes les surcharges pour le marché [${selectedMarket.name}] ? Toutes ses configurations hériteront à 100% de la France.`,
-      )
-    ) {
-      return;
-    }
+    setPendingResetMarketCode(code);
+  };
+
+  const confirmResetAll = () => {
+    if (!pendingResetMarketCode) return;
     try {
-      marketService.resetAllOverridesToFrance(
-        code,
+      marketService.resetAllOverridesToBaseline(
+        pendingResetMarketCode,
         currentUser
           ? {
               id: currentUser.id,
@@ -207,9 +221,10 @@ export const AdminMarketsPage: React.FC = () => {
             }
           : undefined,
       );
+      setPendingResetMarketCode(null);
       handleRefresh();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     }
   };
 
@@ -230,7 +245,9 @@ export const AdminMarketsPage: React.FC = () => {
     if (!activeEditingPath) return;
 
     let parsedVal: any = editingValueInput;
-    if (editingValueType === "number") {
+    if (activeEditingPath === "search.priceFilterStopsMajor") {
+      parsedVal = normalizePriceFilterStops(editingValueInput);
+    } else if (editingValueType === "number") {
       parsedVal = Number(editingValueInput);
       if (activeEditingPath === "features.recentSearchesLimit") {
         parsedVal = normalizeRecentSearchesLimit(parsedVal);
@@ -254,8 +271,8 @@ export const AdminMarketsPage: React.FC = () => {
       );
       setIsEditOverrideModalOpen(false);
       handleRefresh();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("common.error"));
     }
   };
 
@@ -293,17 +310,20 @@ export const AdminMarketsPage: React.FC = () => {
     formatter?: (val: any) => string,
   ) => {
     const resolution = marketService.resolveSetting(selectedMarket.code, path);
-    const isFR = selectedMarket.isDefault || selectedMarket.code === "FR";
+    const isBaseline =
+      selectedMarket.isDefault || selectedMarket.code === baselineMarket.code;
     const isOverridden = resolution.overrideDefined;
     const displayValue = formatter
       ? formatter(resolution.value)
       : String(resolution.value);
     const frenchRefDisplay = formatter
-      ? formatter(resolution.frenchReferenceValue)
-      : String(resolution.frenchReferenceValue);
+      ? formatter(resolution.baselineReferenceValue)
+      : String(resolution.baselineReferenceValue);
 
-    // If editing France, calculate how many other markets currently inherit this setting
-    const impactedMarkets = isFR ? marketService.getImpactedMarkets(path) : [];
+    // If editing the baseline, calculate which markets inherit this setting.
+    const impactedMarkets = isBaseline
+      ? marketService.getImpactedMarkets(path)
+      : [];
 
     return (
       <div className="py-3.5 px-4 rounded-xl border border-border-subtle bg-white hover:border-border-base transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -314,9 +334,9 @@ export const AdminMarketsPage: React.FC = () => {
               ({path})
             </span>
 
-            {isFR ? (
+            {isBaseline ? (
               <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-full border border-stone-200">
-                {t("admin.adminMarketsPage.valeurCanoniqueFranceDefaut")}
+                Valeur canonique {baselineMarket.name}
               </span>
             ) : isOverridden ? (
               <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
@@ -324,7 +344,7 @@ export const AdminMarketsPage: React.FC = () => {
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full border border-success-border">
-                {t("admin.adminMarketsPage.heriteDeFrance")}
+                Hérité de {baselineMarket.name}
               </span>
             )}
           </div>
@@ -337,17 +357,17 @@ export const AdminMarketsPage: React.FC = () => {
             <div className="text-xs font-extrabold text-stone-900 font-mono">
               {displayValue}
             </div>
-            {!isFR && !isOverridden && (
+            {!isBaseline && !isOverridden && (
               <div className="text-micro text-stone-500">
-                {t("admin.adminMarketsPage.identiqueAFrance")}
+                Identique à {baselineMarket.name}
               </div>
             )}
-            {!isFR && isOverridden && (
+            {!isBaseline && isOverridden && (
               <div className="text-micro text-warning">
-                (France: {frenchRefDisplay})
+                ({baselineMarket.name} : {frenchRefDisplay})
               </div>
             )}
-            {isFR && impactedMarkets.length > 0 && (
+            {isBaseline && impactedMarkets.length > 0 && (
               <div className="text-micro text-info font-medium">
                 Hérité par {impactedMarkets.join(", ")}
               </div>
@@ -365,7 +385,7 @@ export const AdminMarketsPage: React.FC = () => {
                   openEditOverride(path, label, resolution.value, type)
                 }
               >
-                {isFR
+                {isBaseline
                   ? "Modifier"
                   : isOverridden
                     ? "Modifier"
@@ -373,7 +393,7 @@ export const AdminMarketsPage: React.FC = () => {
               </Button>
             )}
 
-            {!isFR && isOverridden && canConfigureMarkets && (
+            {!isBaseline && isOverridden && canConfigureMarkets && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -384,7 +404,7 @@ export const AdminMarketsPage: React.FC = () => {
                 onClick={() => handleResetOverride(path)}
               >
                 <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />
-                {t("admin.adminMarketsPage.reinitialiserSurFrance")}
+                Réinitialiser sur {baselineMarket.name}
               </Button>
             )}
           </div>
@@ -497,7 +517,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {markets.map((m) => {
               const metrics = marketService.getInheritanceMetrics(m.code);
-              const isDefault = m.isDefault || m.code === "FR";
+              const isDefault = m.isDefault || m.code === baselineMarket.code;
 
               return (
                 <div
@@ -542,7 +562,8 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <span className="text-success">
-                              {metrics.percentInherited}% hérité de France
+                              {metrics.percentInherited}% hérité de{" "}
+                              {baselineMarket.name}
                             </span>
                             <span className="text-warning">
                               {metrics.percentOverridden}% personnalisé
@@ -550,22 +571,15 @@ export const AdminMarketsPage: React.FC = () => {
                           </>
                         )}
                       </div>
-                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden flex">
-                        {isDefault ? (
-                          <div className="h-full bg-primary w-full" />
-                        ) : (
-                          <>
-                            <div
-                              className="h-full bg-success"
-                              style={{ width: `${metrics.percentInherited}%` }}
-                            />
-                            <div
-                              className="h-full bg-amber-500"
-                              style={{ width: `${metrics.percentOverridden}%` }}
-                            />
-                          </>
-                        )}
-                      </div>
+                      <ProgressBar
+                        value={isDefault ? 100 : metrics.percentInherited}
+                        label={
+                          isDefault
+                            ? "Marché canonique"
+                            : `Part héritée de ${baselineMarket.name}`
+                        }
+                        variant={isDefault ? "primary" : "success"}
+                      />
                     </div>
                   </div>
 
@@ -640,7 +654,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <p className="text-xs text-stone-500">
                   {selectedMarket.isDefault
                     ? "Toutes les modifications sur ce marché constituent la base de référence pour l'ensemble des pays."
-                    : `${inheritanceMetrics.percentInherited}% hérité de France • ${inheritanceMetrics.percentOverridden}% surchargé localement`}
+                    : `${inheritanceMetrics.percentInherited}% hérité de ${baselineMarket.name} • ${inheritanceMetrics.percentOverridden}% surchargé localement`}
                 </p>
               </div>
             </div>
@@ -669,13 +683,13 @@ export const AdminMarketsPage: React.FC = () => {
                   onClick={() => handleResetAllToFrance(selectedMarket.code)}
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                  {t("admin.adminMarketsPage.toutReinitialiserSurFrance")}
+                  Tout réinitialiser sur {baselineMarket.name}
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Canonical Warning for France */}
+          {/* Canonical market warning */}
           {selectedMarket.isDefault && (
             <div className="p-4 rounded-2xl bg-info-surface border border-info-border flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-info shrink-0 mt-0.5" />
@@ -684,9 +698,9 @@ export const AdminMarketsPage: React.FC = () => {
                   Avertissement d'impact global :
                 </span>
                 <p>
-                  {t("admin.adminMarketsPage.vousEditezActuellementLa")}
-                  <strong>configuration canonique France</strong>. Toute
-                  modification de valeur sur cette page se propagera
+                  Vous éditez actuellement la{" "}
+                  <strong>configuration canonique {baselineMarket.name}</strong>
+                  . Toute modification de valeur sur cette page se propagera
                   automatiquement et instantanément à tous les marchés
                   dépendants (Belgique, Espagne, Suisse, etc.) qui n'ont pas
                   défini de surcharge explicite sur le paramètre concerné.
@@ -782,12 +796,18 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "localization.currencySymbol",
                   "Symbole Devise",
-                  "Symbole monétaire (ex: €, CHF)",
+                  `Symbole monétaire (ex. ${markets
+                    .map((market) => market.currencySymbol)
+                    .filter(
+                      (symbol, index, all) => all.indexOf(symbol) === index,
+                    )
+                    .slice(0, 2)
+                    .join(", ")})`,
                 )}
                 {renderSettingRow(
                   "localization.timezone",
                   "Fuseau Horaire",
-                  "Identifiant IANA (ex: Europe/Paris, Europe/Brussels)",
+                  `Identifiant IANA (ex: ${baselineMarket.timezone})`,
                 )}
                 {renderSettingRow(
                   "localization.phonePrefix",
@@ -824,8 +844,8 @@ export const AdminMarketsPage: React.FC = () => {
                     </span>
                     <p>
                       Par défaut, tous les marchés héritent des catégories de la
-                      France. Vous pouvez activer ou désactiver spécifiquement
-                      des catégories ou sous-catégories pour{" "}
+                      {baselineMarket.name}. Vous pouvez activer ou désactiver
+                      spécifiquement des catégories ou sous-catégories pour{" "}
                       {selectedMarket.name} ({selectedMarket.code}).
                     </p>
                   </div>
@@ -992,7 +1012,7 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "listings.allowFreeDonations",
                   "Autoriser les Dons / Gratuit",
-                  "Permet la publication d'annonces à 0€",
+                  `Permet la publication d'annonces à 0 ${effectiveConfig.localization.currencySymbol}`,
                   "boolean",
                   (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
                 )}
@@ -1009,6 +1029,13 @@ export const AdminMarketsPage: React.FC = () => {
                   "Permet le paiement sans validation préalable du vendeur",
                   "boolean",
                   (v) => (v ? "Activé (Oui)" : "Désactivé (Non)"),
+                )}
+                {renderSettingRow(
+                  "search.priceFilterStopsMajor",
+                  "Paliers du filtre de prix",
+                  "Montants en unité majeure, séparés par des virgules et hérités par marché",
+                  "string",
+                  (value) => normalizePriceFilterStops(value).join(", "),
                 )}
               </>
             )}
@@ -1335,7 +1362,7 @@ export const AdminMarketsPage: React.FC = () => {
                     <th
                       scope="col"
                       key={m.code}
-                      className="p-3 font-bold text-stone-900 min-w-[160px]"
+                      className="p-3 font-bold text-stone-900 min-w-40"
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="text-base">{m.flag}</span>
@@ -1514,7 +1541,8 @@ export const AdminMarketsPage: React.FC = () => {
               <input
                 type="text"
                 required
-                maxLength={2}
+                minLength={MARKET_CODE_LENGTH}
+                maxLength={MARKET_CODE_LENGTH}
                 placeholder={t("admin.adminMarketsPage.exItPtDeUk")}
                 value={newMarketCode}
                 onChange={(e) => setNewMarketCode(e.target.value.toUpperCase())}
@@ -1613,7 +1641,7 @@ export const AdminMarketsPage: React.FC = () => {
               Annuler
             </Button>
             <Button variant="primary" size="sm" type="submit">
-              {t("admin.adminMarketsPage.creerAvecHeritageFrance")}
+              Créer avec héritage {baselineMarket.name}
             </Button>
           </div>
         </form>
@@ -1699,6 +1727,19 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <ConfirmModal
+        isOpen={pendingResetMarketCode !== null}
+        onClose={() => setPendingResetMarketCode(null)}
+        onConfirm={confirmResetAll}
+        title={t("admin.adminMarketsPage.resetAllTitle")}
+        message={t("admin.adminMarketsPage.resetAllMessage", {
+          market: selectedMarket.name,
+          baseline: baselineMarket.name,
+        })}
+        confirmText={t("admin.adminMarketsPage.resetAllConfirm")}
+        variant="warning"
+      />
     </div>
   );
 };

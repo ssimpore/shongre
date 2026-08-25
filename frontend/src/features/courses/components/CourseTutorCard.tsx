@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { TutorSearchItem } from "@shongre/contracts/courses";
 import { Badge, Button, Image } from "../../../design-system";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 interface CourseTutorCardProps {
   item: TutorSearchItem;
@@ -21,17 +22,11 @@ interface CourseTutorCardProps {
   onToggleSaved: (id: string) => void;
 }
 
-const priceFormatter = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
-
-function responseLabel(minutes?: number) {
+function responseLabel(minutes: number | undefined, locale: string) {
   if (minutes === undefined) return "Non renseigné";
   if (minutes < 60) return `${minutes} min en moyenne`;
   const hours = Math.round((minutes / 60) * 10) / 10;
-  return `${hours.toLocaleString("fr-FR")} h en moyenne`;
+  return `${hours.toLocaleString(locale)} h en moyenne`;
 }
 
 export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
@@ -41,14 +36,15 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
   onToggleCompare,
   onToggleSaved,
 }) => {
+  const { currentLocale, formatMoney } = useRegionalFormatters();
   const { tutor, offer } = item;
   const isIdentityVerified = tutor.verifications.identity === "verified";
 
   return (
     <article className="relative overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:border-border-hover hover:shadow-sm">
-      <div className="grid min-w-0 gap-4 p-4 sm:grid-cols-[9rem_minmax(0,1fr)_10rem] sm:p-5">
+      <div className="grid min-w-0 gap-4 p-4 sm:grid-cols-course-card sm:p-5">
         <div className="min-w-0">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-bg-subtle sm:aspect-square">
+          <div className="relative aspect-4/3 overflow-hidden rounded-card bg-bg-subtle sm:aspect-square">
             <Image
               src={tutor.avatarUrl}
               alt={`Portrait de ${tutor.displayName}`}
@@ -151,7 +147,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
               <div>
                 <span className="block text-text-muted">Réponse</span>
                 <span className="font-semibold text-text-main">
-                  {responseLabel(tutor.responseTimeMinutes)}
+                  {responseLabel(tutor.responseTimeMinutes, currentLocale)}
                 </span>
               </div>
             </div>
@@ -172,7 +168,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
 
         <div className="flex min-w-0 flex-col border-t border-border-subtle pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
           <p className="text-xl font-black text-text-main">
-            {priceFormatter.format(item.fromPrice.amountMinor / 100)}
+            {formatMoney(item.fromPrice)}
             <span className="ml-1 text-xs font-medium text-text-muted">
               / h
             </span>

@@ -12,6 +12,7 @@ import type {
 import {
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
+  MONETIZATION_ADMIN_CONSTRAINTS,
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
@@ -45,6 +46,7 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
+import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AdminDiscoveryConfigurationPanel } from "./AdminDiscoveryConfigurationPanel";
 import { AdminPlanDraftModal } from "./AdminPlanDraftModal";
@@ -52,6 +54,9 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useAuthorization } from "../../security/useAuthorization";
 import { AdminCommissionPanel } from "./AdminCommissionPanel";
+import { formatCurrencySymbol } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 type TabId =
   | "catalog"
@@ -65,6 +70,26 @@ type TabId =
   | "operations"
   | "complimentary"
   | "history";
+
+interface CampaignDraftForm {
+  name: string;
+  code: string;
+  verticalId: string;
+  discountType: Promotion["discountType"];
+  discountValue: number;
+  activationMode: Promotion["activationMode"];
+  eligibleCustomerType: Promotion["eligibleCustomerType"];
+  stackingPolicy: Promotion["stackingPolicy"];
+  maximumRedemptions: number;
+  maximumRedemptionsPerAccount: number;
+  freePeriodDays: number;
+  durationBillingPeriods: number;
+  minimumCommitmentPeriods: number;
+  providerCouponId: string;
+  startsAt: string;
+  endsAt: string;
+  reason: string;
+}
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: "catalog", label: "Catalogue" },
@@ -92,14 +117,6 @@ const PRODUCT_KIND: Record<MonetizationProduct["kind"], string> = {
   verification_service: "Vérification",
   sponsored_placement: "Placement sponsorisé",
 };
-
-function formatMinor(amountMinor: number, currency = "EUR") {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 2,
-  }).format(amountMinor / 100);
-}
 
 function entitlementReadiness(entitlement: MonetizationEntitlement): {
   label: string;
@@ -138,15 +155,17 @@ function statusLabel(status: CommercialConfigurationVersion["status"]) {
 function formatRuleOutcomeValue(
   key: keyof CommercialRuleOutcome | string,
   value: unknown,
+  formatMinor: (amountMinor: number, currency?: string) => string,
+  formatNumber: (value: number, options?: Intl.NumberFormatOptions) => string,
 ): string {
   if (typeof value === "boolean") return value ? "Oui" : "Non";
   if (typeof value === "number") {
     if (key.endsWith("Minor")) return formatMinor(value);
     if (key.endsWith("Bps")) {
-      return `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(value / 100)} %`;
+      return `${formatNumber(value / 100, { maximumFractionDigits: 2 })} %`;
     }
     if (key.endsWith("Days")) return `${value} jours`;
-    return new Intl.NumberFormat("fr-FR").format(value);
+    return formatNumber(value);
   }
   if (Array.isArray(value)) return value.map(String).join(", ");
   return labelIdentifier(String(value));
@@ -154,6 +173,13 @@ function formatRuleOutcomeValue(
 
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
+  const {
+    formatDate,
+    formatDateTime,
+    formatMoneyMinor: formatMinor,
+    formatNumber,
+  } = useRegionalFormatters();
   const { can } = useAuthorization();
   usePageMeta({
     title: "Règles business et monétisation",
@@ -197,20 +223,22 @@ export const AdminMonetizationPage: React.FC = () => {
     | null
   >(null);
   const [verticalReason, setVerticalReason] = useState("");
-  const [campaign, setCampaign] = useState({
+  const [campaign, setCampaign] = useState<CampaignDraftForm>({
     name: "",
     code: "",
-    verticalId: "auto",
+    verticalId: "",
     discountType: "percentage" as Promotion["discountType"],
-    discountValue: 20,
+    discountValue: MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor.min,
     activationMode: "coupon" as Promotion["activationMode"],
     eligibleCustomerType: "new" as Promotion["eligibleCustomerType"],
     stackingPolicy: "exclusive" as Promotion["stackingPolicy"],
-    maximumRedemptions: 0,
-    maximumRedemptionsPerAccount: 1,
-    freePeriodDays: 0,
-    durationBillingPeriods: 1,
-    minimumCommitmentPeriods: 0,
+    maximumRedemptions: MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+    maximumRedemptionsPerAccount:
+      MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min,
+    freePeriodDays: MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+    durationBillingPeriods: MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min,
+    minimumCommitmentPeriods:
+      MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
     providerCouponId: "",
     startsAt: "",
     endsAt: "",
@@ -229,16 +257,26 @@ export const AdminMonetizationPage: React.FC = () => {
     decision: "approved" as "approved" | "rejected",
     reason: "",
   });
+  const [pendingTransition, setPendingTransition] = useState<{
+    version: CommercialConfigurationVersion;
+    action: "submit" | "approve" | "publish" | "rollback";
+  } | null>(null);
 
   const loadOverview = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await services.businessRules.getAdminOverview("FR");
+      const result = await services.businessRules.getAdminOverview(
+        activeMarket.code,
+      );
       setOverview(result);
       setSelectedProductId(
         (current) => current || result.catalog.products[0]?.id || null,
       );
+      setCampaign((current) => ({
+        ...current,
+        verticalId: current.verticalId || result.catalog.verticals[0]?.id || "",
+      }));
     } catch (caught) {
       setError(
         caught instanceof Error ? caught.message : "Chargement impossible.",
@@ -246,7 +284,7 @@ export const AdminMonetizationPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeMarket.code]);
 
   useEffect(() => {
     void loadOverview();
@@ -289,8 +327,8 @@ export const AdminMonetizationPage: React.FC = () => {
     try {
       setEvaluation(
         await services.businessRules.evaluate({
-          marketCode: "FR",
-          currency: "EUR",
+          marketCode: activeMarket.code,
+          currency: activeMarket.currency,
           userType: simulation.userType,
           categoryId: simulation.categoryId,
           publicationChannel: "web",
@@ -350,9 +388,11 @@ export const AdminMonetizationPage: React.FC = () => {
     const currentOverview = overview;
     if (
       !currentOverview ||
-      campaign.reason.trim().length < 8 ||
+      campaign.reason.trim().length <
+        MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength ||
       !campaign.name.trim() ||
-      campaign.code.trim().length < 3 ||
+      campaign.code.trim().length <
+        MONETIZATION_ADMIN_CONSTRAINTS.promotionCode.minLength ||
       !campaign.startsAt ||
       !campaign.endsAt
     )
@@ -375,10 +415,16 @@ export const AdminMonetizationPage: React.FC = () => {
       const code = campaign.code.trim().toUpperCase();
       const discountValue =
         campaign.discountType === "percentage"
-          ? Math.round(campaign.discountValue * 100)
+          ? Math.round(
+              campaign.discountValue *
+                MONETIZATION_ADMIN_CONSTRAINTS.percentageToBps,
+            )
           : campaign.discountType === "free_period"
             ? 0
-            : Math.round(campaign.discountValue * 100);
+            : Math.round(
+                campaign.discountValue *
+                  MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
+              );
       const version = await services.businessRules.createDraft({
         reason: campaign.reason.trim(),
         promotions: [
@@ -389,8 +435,8 @@ export const AdminMonetizationPage: React.FC = () => {
             name: campaign.name.trim(),
             status: "draft",
             scope: {
-              marketCodes: ["FR"],
-              currencies: ["EUR"],
+              marketCodes: [activeMarket.code],
+              currencies: [activeMarket.currency],
               categoryIds:
                 currentOverview.catalog.verticals.find(
                   (vertical) => vertical.id === campaign.verticalId,
@@ -454,7 +500,9 @@ export const AdminMonetizationPage: React.FC = () => {
             categoryIds: "",
             capabilityKeys: "",
             status: "disabled",
-            sortOrder: (overview?.catalog.verticals.length || 0) * 10,
+            sortOrder:
+              (overview?.catalog.verticals.length || 0) *
+              MONETIZATION_ADMIN_CONSTRAINTS.sortOrderIncrement,
             existing: false,
           },
     );
@@ -465,7 +513,8 @@ export const AdminMonetizationPage: React.FC = () => {
     if (
       !overview ||
       !verticalEditor ||
-      verticalReason.trim().length < 8 ||
+      verticalReason.trim().length <
+        MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength ||
       !verticalEditor.id.trim() ||
       !verticalEditor.name.trim()
     )
@@ -579,23 +628,23 @@ export const AdminMonetizationPage: React.FC = () => {
     }
   };
 
-  const transition = async (
+  const transition = (
     version: CommercialConfigurationVersion,
     action: "submit" | "approve" | "publish" | "rollback",
   ) => {
-    const reason = window
-      .prompt(
-        "Motif obligatoire (8 caractères minimum)",
-        "Validation du catalogue commercial",
-      )
-      ?.trim();
-    if (!reason || reason.length < 8) return;
+    setPendingTransition({ version, action });
+  };
+
+  const confirmTransition = async (reason: string) => {
+    if (!pendingTransition) return;
+    const { version, action } = pendingTransition;
     try {
       await services.businessRules.transitionVersion(
         version.id,
         action,
         reason,
       );
+      setPendingTransition(null);
       setNotice(
         `Version v${version.versionNumber} : action « ${action} » enregistrée.`,
       );
@@ -660,7 +709,9 @@ export const AdminMonetizationPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 text-micro font-black uppercase tracking-wider text-primary">
               <BadgeEuro className="w-4 h-4" /> Pilotage commercial
               <span className="text-stone-300">•</span>
-              <span className="text-stone-500">France · EUR</span>
+              <span className="text-stone-500">
+                {activeMarket.name} · {activeMarket.currency}
+              </span>
             </div>
             <h1 className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-stone-950">
               Business & Monétisation
@@ -828,14 +879,14 @@ export const AdminMonetizationPage: React.FC = () => {
         )}
 
         <div
-          className={`grid min-h-96 ${tab === "discovery" ? "grid-cols-1" : "xl:grid-cols-[minmax(0,1fr)_340px]"}`}
+          className={`grid min-h-96 ${tab === "discovery" ? "grid-cols-1" : "xl:grid-cols-admin-content-aside"}`}
         >
           <div
             className={`min-w-0 ${tab === "discovery" ? "" : "xl:border-r border-border-subtle"}`}
           >
             {(tab === "catalog" || tab === "plans") && (
               <div className="divide-y divide-border-subtle">
-                <div className="hidden md:grid grid-cols-[minmax(220px,1fr)_130px_110px_110px_32px] gap-3 px-4 py-2 bg-bg-subtle text-micro font-black uppercase tracking-wide text-stone-500">
+                <div className="hidden md:grid grid-cols-admin-monetization gap-3 px-4 py-2 bg-bg-subtle text-micro font-black uppercase tracking-wide text-stone-500">
                   <span>Produit</span>
                   <span>
                     {tab === "plans" ? "Verticale · niveau" : "Audience"}
@@ -853,7 +904,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       key={product.id}
                       type="button"
                       onClick={() => setSelectedProductId(product.id)}
-                      className={`w-full text-left p-4 md:grid md:grid-cols-[minmax(220px,1fr)_130px_110px_110px_32px] md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
+                      className={`w-full text-left p-4 md:grid md:grid-cols-admin-monetization md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
                     >
                       <span className="min-w-0">
                         <span className="block text-xs font-black text-stone-950 truncate">
@@ -1030,7 +1081,12 @@ export const AdminMonetizationPage: React.FC = () => {
                             className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
                           >
                             {labelIdentifier(key)} :{" "}
-                            {formatRuleOutcomeValue(key, value)}
+                            {formatRuleOutcomeValue(
+                              key,
+                              value,
+                              formatMinor,
+                              formatNumber,
+                            )}
                           </span>
                         ))}
                       </div>
@@ -1111,9 +1167,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         <div>
                           <dt className="text-stone-500">Fin</dt>
                           <dd className="font-bold text-stone-800">
-                            {new Date(promotion.endsAt).toLocaleDateString(
-                              "fr-FR",
-                            )}
+                            {formatDate(promotion.endsAt)}
                           </dd>
                         </div>
                       </dl>
@@ -1156,7 +1210,12 @@ export const AdminMonetizationPage: React.FC = () => {
                               className="text-xs font-bold text-stone-800"
                             >
                               {labelIdentifier(key)} :{" "}
-                              {formatRuleOutcomeValue(key, value)}
+                              {formatRuleOutcomeValue(
+                                key,
+                                value,
+                                formatMinor,
+                                formatNumber,
+                              )}
                             </div>
                           ))}
                       </div>
@@ -1276,7 +1335,10 @@ export const AdminMonetizationPage: React.FC = () => {
                     Motif auditable
                     <Textarea
                       required
-                      minLength={12}
+                      minLength={
+                        MONETIZATION_ADMIN_CONSTRAINTS
+                          .complimentaryRequestReason.minLength
+                      }
                       value={complimentaryGrant.reason}
                       onChange={(event) =>
                         setComplimentaryGrant((current) => ({
@@ -1345,7 +1407,10 @@ export const AdminMonetizationPage: React.FC = () => {
                     Motif de décision
                     <Textarea
                       required
-                      minLength={8}
+                      minLength={
+                        MONETIZATION_ADMIN_CONSTRAINTS
+                          .complimentaryDecisionReason.minLength
+                      }
                       value={complimentaryDecision.reason}
                       onChange={(event) =>
                         setComplimentaryDecision((current) => ({
@@ -1427,7 +1492,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     Abonnements par compte
                   </h2>
                   <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
-                    <table className="w-full min-w-[760px] text-xs">
+                    <table className="w-full min-w-190 text-xs">
                       <thead className="bg-bg-subtle text-left text-stone-600">
                         <tr>
                           <th className="px-3 py-2 font-bold" scope="col">
@@ -1482,10 +1547,10 @@ export const AdminMonetizationPage: React.FC = () => {
                                 </Badge>
                               </td>
                               <td className="px-3 py-2 text-stone-700">
-                                {new Date(
+                                {formatDate(
                                   subscription.scheduledChangeAt ||
                                     subscription.currentPeriodEnd,
-                                ).toLocaleDateString("fr-FR")}
+                                )}
                                 {subscription.scheduledProductId
                                   ? ` · ${
                                       overview.catalog.products.find(
@@ -1518,7 +1583,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     Registre financier
                   </h2>
                   <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
-                    <table className="w-full min-w-[620px] text-xs">
+                    <table className="w-full min-w-155 text-xs">
                       <thead className="bg-bg-subtle text-left text-stone-600">
                         <tr>
                           <th className="px-3 py-2 font-bold" scope="col">
@@ -1638,9 +1703,8 @@ export const AdminMonetizationPage: React.FC = () => {
                           {event.action} · {event.entityId}
                         </div>
                         <div className="mt-0.5 text-micro text-stone-500">
-                          {event.actorName} ·{" "}
-                          {new Date(event.createdAt).toLocaleString("fr-FR")} ·{" "}
-                          {event.reason}
+                          {event.actorName} · {formatDateTime(event.createdAt)}{" "}
+                          · {event.reason}
                         </div>
                       </div>
                     ))}
@@ -1793,12 +1857,15 @@ export const AdminMonetizationPage: React.FC = () => {
                   Utilisation actuelle
                   <input
                     type="number"
-                    min={0}
+                    min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
                     value={simulation.usageLevel}
                     onChange={(event) =>
                       setSimulation((current) => ({
                         ...current,
-                        usageLevel: Math.max(0, Number(event.target.value)),
+                        usageLevel: Math.max(
+                          MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+                          Number(event.target.value),
+                        ),
                       }))
                     }
                     className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
@@ -2116,14 +2183,18 @@ export const AdminMonetizationPage: React.FC = () => {
               <FormField label="Ordre d’affichage" required>
                 <Input
                   type="number"
-                  min={0}
+                  min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
                   value={verticalEditor.sortOrder}
                   onChange={(event) =>
                     setVerticalEditor((current) =>
                       current
                         ? {
                             ...current,
-                            sortOrder: Math.max(0, Number(event.target.value)),
+                            sortOrder: Math.max(
+                              MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
+                                .min,
+                              Number(event.target.value),
+                            ),
                           }
                         : current,
                     )
@@ -2151,7 +2222,11 @@ export const AdminMonetizationPage: React.FC = () => {
               <Button
                 type="submit"
                 size="sm"
-                disabled={saving || verticalReason.trim().length < 8}
+                disabled={
+                  saving ||
+                  verticalReason.trim().length <
+                    MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength
+                }
               >
                 {saving ? (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -2241,16 +2316,34 @@ export const AdminMonetizationPage: React.FC = () => {
                   campaign.discountType === "percentage"
                     ? "Remise (%)"
                     : campaign.discountType === "fixed"
-                      ? "Montant de remise (€)"
-                      : "Prix d’introduction (€)"
+                      ? `Montant de remise (${formatCurrencySymbol(
+                          overview?.catalog.currency || currentCurrency,
+                          currentLocale,
+                        )})`
+                      : `Prix d’introduction (${formatCurrencySymbol(
+                          overview?.catalog.currency || currentCurrency,
+                          currentLocale,
+                        )})`
                 }
                 required
               >
                 <Input
                   type="number"
-                  min={campaign.discountType === "percentage" ? 1 : 0}
-                  max={campaign.discountType === "percentage" ? 100 : undefined}
-                  step={campaign.discountType === "percentage" ? 1 : 0.01}
+                  min={
+                    campaign.discountType === "percentage"
+                      ? MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor.min
+                      : MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.min
+                  }
+                  max={
+                    campaign.discountType === "percentage"
+                      ? MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor.max
+                      : undefined
+                  }
+                  step={
+                    campaign.discountType === "percentage"
+                      ? MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor.step
+                      : MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.step
+                  }
                   value={campaign.discountValue}
                   onChange={(event) =>
                     setCampaign((current) => ({
@@ -2258,10 +2351,18 @@ export const AdminMonetizationPage: React.FC = () => {
                       discountValue:
                         current.discountType === "percentage"
                           ? Math.min(
-                              100,
-                              Math.max(1, Number(event.target.value)),
+                              MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor
+                                .max,
+                              Math.max(
+                                MONETIZATION_ADMIN_CONSTRAINTS.percentageMajor
+                                  .min,
+                                Number(event.target.value),
+                              ),
                             )
-                          : Math.max(0, Number(event.target.value)),
+                          : Math.max(
+                              MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.min,
+                              Number(event.target.value),
+                            ),
                     }))
                   }
                 />
@@ -2328,12 +2429,15 @@ export const AdminMonetizationPage: React.FC = () => {
             >
               <Input
                 type="number"
-                min={0}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
                 value={campaign.maximumRedemptions}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    maximumRedemptions: Math.max(0, Number(event.target.value)),
+                    maximumRedemptions: Math.max(
+                      MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+                      Number(event.target.value),
+                    ),
                   }))
                 }
               />
@@ -2341,13 +2445,13 @@ export const AdminMonetizationPage: React.FC = () => {
             <FormField label="Utilisations par compte" required>
               <Input
                 type="number"
-                min={1}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min}
                 value={campaign.maximumRedemptionsPerAccount}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
                     maximumRedemptionsPerAccount: Math.max(
-                      1,
+                      MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min,
                       Number(event.target.value),
                     ),
                   }))
@@ -2360,15 +2464,14 @@ export const AdminMonetizationPage: React.FC = () => {
             >
               <Input
                 type="number"
-                min={0}
-                max={365}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
                 value={campaign.freePeriodDays}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    freePeriodDays: Math.min(
-                      365,
-                      Math.max(0, Number(event.target.value)),
+                    freePeriodDays: Math.max(
+                      MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+                      Number(event.target.value),
                     ),
                   }))
                 }
@@ -2401,15 +2504,14 @@ export const AdminMonetizationPage: React.FC = () => {
             <FormField label="Périodes remisées" required>
               <Input
                 type="number"
-                min={1}
-                max={24}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min}
                 value={campaign.durationBillingPeriods}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    durationBillingPeriods: Math.min(
-                      24,
-                      Math.max(1, Number(event.target.value)),
+                    durationBillingPeriods: Math.max(
+                      MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min,
+                      Number(event.target.value),
                     ),
                   }))
                 }
@@ -2418,15 +2520,14 @@ export const AdminMonetizationPage: React.FC = () => {
             <FormField label="Engagement minimal (périodes)">
               <Input
                 type="number"
-                min={0}
-                max={24}
+                min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
                 value={campaign.minimumCommitmentPeriods}
                 onChange={(event) =>
                   setCampaign((current) => ({
                     ...current,
-                    minimumCommitmentPeriods: Math.min(
-                      24,
-                      Math.max(0, Number(event.target.value)),
+                    minimumCommitmentPeriods: Math.max(
+                      MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min,
+                      Number(event.target.value),
                     ),
                   }))
                 }
@@ -2479,7 +2580,11 @@ export const AdminMonetizationPage: React.FC = () => {
             </Button>
             <Button
               type="submit"
-              disabled={saving || campaign.reason.trim().length < 8}
+              disabled={
+                saving ||
+                campaign.reason.trim().length <
+                  MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength
+              }
             >
               {saving ? (
                 <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -2491,6 +2596,18 @@ export const AdminMonetizationPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      <PromptModal
+        isOpen={pendingTransition !== null}
+        onClose={() => setPendingTransition(null)}
+        onSubmit={(reason) => void confirmTransition(reason)}
+        title={t("admin.monetization.transitionTitle")}
+        label={t("admin.monetization.transitionReason")}
+        initialValue={t("admin.monetization.transitionReasonDefault")}
+        minLength={MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength}
+        multiline
+        confirmText={t("common.confirm")}
+      />
     </div>
   );
 };

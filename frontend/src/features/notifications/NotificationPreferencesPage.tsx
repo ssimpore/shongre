@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Bell, Mail, Smartphone, Save, Lock } from "lucide-react";
 import { NotificationPreferences } from "../../domains/notifications/notification.types";
-import { notificationRepository } from "../../repositories/notification.repository";
+import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
@@ -30,7 +30,7 @@ export const NotificationPreferencesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    notificationRepository.getPreferences(currentUserId).then((prefs) => {
+    services.notifications.getPreferences(currentUserId).then((prefs) => {
       setPreferences(prefs);
       setIsLoading(false);
     });
@@ -66,7 +66,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     if (!preferences) return;
     setIsSaving(true);
     try {
-      await notificationRepository.updatePreferences(
+      await services.notifications.updatePreferences(
         currentUserId,
         preferences,
       );

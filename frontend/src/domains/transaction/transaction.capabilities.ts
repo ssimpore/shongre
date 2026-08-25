@@ -34,7 +34,7 @@ export class TransactionCapabilitiesService {
   resolve(params: ResolveTransactionParams): TransactionCapabilitiesResult {
     const {
       taxonomyNodeId,
-      marketCode = "FR",
+      marketCode = marketService.getDefaultMarket().code,
       sellerIsVerified = true,
       listingIntent = "SELL",
       price = 0,

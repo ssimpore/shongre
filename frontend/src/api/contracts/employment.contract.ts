@@ -31,13 +31,125 @@ export interface EmploymentApplicationDraft {
   privacyPolicyVersion: string;
 }
 
+export interface EmploymentPublicationDraftData {
+  [key: string]: unknown;
+  employerId: string;
+  employerName: string;
+  employerDescription: string;
+  positionsCount: string;
+  internalReference: string;
+  title: string;
+  professionId: string;
+  specializationId: string;
+  industryId: string;
+  responsibilities: string;
+  requiredSkills: string;
+  preferredSkills: string;
+  contractTypeId: string;
+  contractDuration: string;
+  workingArrangementId: string;
+  workingTimeId: string;
+  weeklyHours: string;
+  requiredExperienceId: string;
+  educationLevelId: string;
+  qualificationSummary: string;
+  certifications: string;
+  city: string;
+  postalCode: string;
+  additionalLocations: string;
+  travelRequirement: string;
+  accessibilityInformation: string;
+  salaryMinimum: string;
+  salaryMaximum: string;
+  salaryFrequencyId: string;
+  benefits: string;
+  bonusDescription: string;
+  trialPeriodInformation: string;
+  desiredStartDate: string;
+  applicationDeadline: string;
+  recruitmentProcess: string;
+  publishSalary: boolean;
+  applicationMethod: "shongre" | "external" | "contact_recruiter";
+  externalApplicationUrl: string;
+  screeningQuestion: string;
+  privacyNoticeAccepted: boolean;
+  checkoutId: string;
+}
+
+export const EMPTY_EMPLOYMENT_PUBLICATION_DRAFT: EmploymentPublicationDraftData =
+  {
+    employerId: "",
+    employerName: "",
+    employerDescription: "",
+    positionsCount: "",
+    internalReference: "",
+    title: "",
+    professionId: "",
+    specializationId: "",
+    industryId: "",
+    responsibilities: "",
+    requiredSkills: "",
+    preferredSkills: "",
+    contractTypeId: "",
+    contractDuration: "",
+    workingArrangementId: "",
+    workingTimeId: "",
+    weeklyHours: "",
+    requiredExperienceId: "",
+    educationLevelId: "",
+    qualificationSummary: "",
+    certifications: "",
+    city: "",
+    postalCode: "",
+    additionalLocations: "",
+    travelRequirement: "",
+    accessibilityInformation: "",
+    salaryMinimum: "",
+    salaryMaximum: "",
+    salaryFrequencyId: "",
+    benefits: "",
+    bonusDescription: "",
+    trialPeriodInformation: "",
+    desiredStartDate: "",
+    applicationDeadline: "",
+    recruitmentProcess: "",
+    publishSalary: false,
+    applicationMethod: "shongre",
+    externalApplicationUrl: "",
+    screeningQuestion: "",
+    privacyNoticeAccepted: false,
+    checkoutId: "",
+  };
+
+export interface SaveEmploymentPublicationDraftInput {
+  draftId: string;
+  ownerUserId: string;
+  marketCode: string;
+  countryCode: string;
+  currentStep: number;
+  privateEmployer: boolean;
+  data: EmploymentPublicationDraftData;
+  selectedOfferId: string;
+  selectedAddOnIds: string[];
+  duplicateCandidateIds: string[];
+  markAllPreviousStepsComplete?: boolean;
+}
+
 export interface EmploymentServiceContract {
   getCatalog(marketCode: string): Promise<EmploymentCatalog>;
   searchJobs(query: EmploymentSearchQuery): Promise<EmploymentSearchResult>;
   getJob(idOrSlug: string): Promise<JobPostingDetail>;
   getSimilarJobs(idOrSlug: string): Promise<JobPostingCard[]>;
+  getOrCreateDraft(
+    ownerUserId: string,
+    marketCode: string,
+    preferredDraftId?: string,
+  ): Promise<JobDraft>;
   getDraft(draftId: string): Promise<JobDraft | null>;
   saveDraft(draft: JobDraft): Promise<JobDraft>;
+  savePublicationDraft(
+    input: SaveEmploymentPublicationDraftInput,
+  ): Promise<JobDraft>;
   checkDuplicateDraft(
     draftId: string,
   ): Promise<{ duplicateCandidateIds: string[] }>;

@@ -55,6 +55,47 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
     expect(market.currency).toBe("EUR");
   });
 
+  it("delivers locale-aware composer options through messaging", async () => {
+    const individual = await services.messaging.getComposerOptions({
+      conversationId: "conv-01",
+      userId: "user-thomas",
+      isProfessional: false,
+      locale: "en-US",
+    });
+    expect(individual.attachmentOptions[0]?.label).toBe("Condition photo");
+    expect(individual.quickReplies).toEqual([]);
+
+    const professional = await services.messaging.getComposerOptions({
+      conversationId: "conv-01",
+      userId: "seller-pro-1",
+      isProfessional: true,
+      locale: "fr-FR",
+    });
+    expect(professional.quickReplies).toHaveLength(4);
+    expect(professional.quickReplies[0]).toContain("disponible");
+  });
+
+  it("parses bulk-import money and validation deterministically", async () => {
+    const template = await services.listings.getBulkImportTemplate("fr-FR");
+    const rows = await services.listings.parseBulkImportCsv({
+      content: `${template.content}\nabc;home_garden;furniture;0;good;1;Lyon;69002;Invalide`,
+      marketCode: "FR",
+      defaultCity: "Paris",
+      defaultPostalCode: "75001",
+    });
+
+    expect(rows[0]).toMatchObject({
+      id: "bulk-row-1",
+      price: { amountMinor: 18_000, currency: "EUR" },
+      isValid: true,
+    });
+    expect(rows.at(-1)).toMatchObject({
+      id: "bulk-row-5",
+      isValid: false,
+      validationErrorCode: "TITLE_TOO_SHORT",
+    });
+  });
+
   it("retrieves canonical taxonomy categories and attributes", async () => {
     const rootCats = await services.taxonomy.getRootCategories();
     expect(rootCats.length).toBeGreaterThan(0);

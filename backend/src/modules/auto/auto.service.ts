@@ -12,6 +12,8 @@ import type {
 } from "@shongre/contracts/auto";
 import { applyMonetizationToAutoCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import {
+  AUTO_CONSTRAINTS,
+  AUTO_SCHEMA_VERSION,
   autoAddOnSchema,
   autoLeadSchema,
   autoMarketConfigSchema,
@@ -92,6 +94,29 @@ export class AutoService {
       ...publicVehicle
     } = vehicle;
     return publicVehicle;
+  }
+
+  getFavoriteVehicleIds(userId: string) {
+    return this.repo.getFavoriteVehicleIds(userId);
+  }
+
+  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
+    await this.getPublicVehicle(vehicleId);
+    return this.repo.toggleFavoriteVehicle(userId, vehicleId);
+  }
+
+  async getOrCreateOwnDraft(userId: string, marketCode = "FR") {
+    const normalizedMarket = marketCode.toUpperCase();
+    const existing = await this.repo.getLatestDraft(userId, normalizedMarket);
+    if (existing) return existing;
+    return this.saveOwnDraft(userId, randomUUID(), {
+      schemaVersion: AUTO_SCHEMA_VERSION,
+      marketCode: normalizedMarket,
+      currentStep: AUTO_CONSTRAINTS.publication.firstStep,
+      completedSteps: [],
+      data: {},
+      duplicateCheck: "not_checked",
+    });
   }
 
   async getOwnDraft(userId: string, draftId: string) {

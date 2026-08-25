@@ -33,6 +33,7 @@ import {
   Skeleton,
   StatePanel,
   Textarea,
+  ProgressBar,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentDate } from "./employment-format";
@@ -67,7 +68,7 @@ const profileRecordText = (records: Array<Record<string, unknown>>) =>
 
 export const EmploymentCandidateWorkspacePage: React.FC = () => {
   const toast = useToast();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const [workspace, setWorkspace] = useState<CandidateWorkspace | null>(null);
   const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
   const [jobs, setJobs] = useState<Record<string, JobPostingCard>>({});
@@ -356,12 +357,11 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             <span className="font-bold">Profil complété</span>
             <span>{completion}%</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-pill bg-bg-subtle">
-            <div
-              className="h-full rounded-pill bg-primary"
-              style={{ width: `${completion}%` }}
-            />
-          </div>
+          <ProgressBar
+            className="mt-2"
+            value={completion}
+            label="Profil complété"
+          />
         </div>
       </header>
 
@@ -415,7 +415,10 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                         </Badge>
                         <span className="text-micro text-text-muted">
                           Envoyée le{" "}
-                          {formatEmploymentDate(application.submittedAt)}
+                          {formatEmploymentDate(
+                            application.submittedAt,
+                            currentLocale,
+                          )}
                         </span>
                       </div>
                       <h3 className="mt-2 text-base font-black text-text-main">
@@ -824,7 +827,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                         </Badge>
                       </div>
                       <p className="mt-1 text-sm text-text-secondary">
-                        {new Intl.DateTimeFormat("fr-FR", {
+                        {new Intl.DateTimeFormat(currentLocale, {
                           dateStyle: "long",
                           timeStyle: "short",
                           timeZone: interview.timezone,

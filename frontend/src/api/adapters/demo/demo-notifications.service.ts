@@ -1,15 +1,18 @@
 import { NotificationsServiceContract } from "../../contracts/notifications.contract";
 import { notificationRepository } from "../../../repositories/notification.repository";
-import { NotificationItem } from "../../../types";
+import type {
+  Notification,
+  NotificationPreferences,
+} from "../../../domains/notifications/notification.types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 
 export class DemoNotificationsService implements NotificationsServiceContract {
-  async getUserNotifications(userId: string): Promise<NotificationItem[]> {
+  async getUserNotifications(userId: string): Promise<Notification[]> {
     await simulateNetworkDelay();
     const result = await notificationRepository.getNotifications({
       recipientId: userId,
     });
-    return result.notifications as any;
+    return result.notifications;
   }
 
   async getUnreadCount(userId: string): Promise<number> {
@@ -30,6 +33,24 @@ export class DemoNotificationsService implements NotificationsServiceContract {
   async deleteNotification(notificationId: string): Promise<void> {
     await simulateNetworkDelay();
     await notificationRepository.deleteNotification(notificationId);
+  }
+
+  async getPreferences(userId: string): Promise<NotificationPreferences> {
+    await simulateNetworkDelay();
+    return notificationRepository.getPreferences(userId);
+  }
+
+  async updatePreferences(
+    userId: string,
+    preferences: NotificationPreferences,
+  ): Promise<NotificationPreferences> {
+    await simulateNetworkDelay();
+    return notificationRepository.updatePreferences(userId, preferences);
+  }
+
+  async simulateNotification(notification: Notification): Promise<void> {
+    await simulateNetworkDelay();
+    await notificationRepository.createNotification(notification);
   }
 }
 

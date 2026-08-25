@@ -6,6 +6,8 @@ import {
   type RegisterProfessionalInput,
   type SocialAuthProvider,
   type SocialAuthStartInput,
+  type MfaStatusView,
+  type MfaSetupView,
 } from "../../contracts/auth.contract";
 import { httpClient } from "./http-client";
 import {
@@ -15,8 +17,10 @@ import {
 } from "../../../types";
 
 interface BackendAuthResponse {
-  user: UserProfile;
+  user?: UserProfile;
   token?: string;
+  requiresMfa?: boolean;
+  tempMfaToken?: string;
 }
 
 export class HttpAuthService implements AuthServiceContract {
@@ -34,6 +38,14 @@ export class HttpAuthService implements AuthServiceContract {
         "/auth/login",
         credentials,
       );
+      if (response.requiresMfa && response.tempMfaToken) {
+        return {
+          success: false,
+          requiresMfa: true,
+          tempMfaToken: response.tempMfaToken,
+        };
+      }
+      if (!response.user) throw new Error("Réponse de connexion incomplète.");
       return { success: true, user: response.user };
     } catch (error) {
       return {
@@ -44,12 +56,44 @@ export class HttpAuthService implements AuthServiceContract {
     }
   }
 
-  async loginWithMFA(): Promise<AuthResult> {
-    return {
-      success: false,
-      errorMessage:
-        "La validation MFA doit être effectuée par le serveur d’authentification.",
-    };
+  async loginWithMFA(tempMfaToken: string, code: string): Promise<AuthResult> {
+    try {
+      const response = await httpClient.post<BackendAuthResponse>(
+        "/auth/mfa/challenge",
+        { tempMfaToken, code },
+      );
+      if (!response.user) throw new Error("Réponse de connexion incomplète.");
+      return { success: true, user: response.user };
+    } catch (error) {
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error ? error.message : "Code MFA invalide.",
+      };
+    }
+  }
+
+  getMfaStatus(): Promise<MfaStatusView> {
+    return httpClient.get<MfaStatusView>("/auth/mfa");
+  }
+
+  beginMfaEnrollment(): Promise<MfaSetupView> {
+    return httpClient.post<MfaSetupView>("/auth/mfa/setup");
+  }
+
+  async confirmMfaEnrollment(code: string): Promise<void> {
+    await httpClient.post("/auth/mfa/confirm", { code });
+  }
+
+  async verifySessionMfa(code: string): Promise<void> {
+    await httpClient.post("/auth/mfa/session-confirm", { code });
+  }
+
+  async disableMfa(code: string): Promise<void> {
+    await httpClient.request("/auth/mfa", {
+      method: "DELETE",
+      body: JSON.stringify({ code }),
+    });
   }
 
   async registerIndividual(
@@ -115,6 +159,7 @@ export class HttpAuthService implements AuthServiceContract {
       "/auth/switch-role",
       { role },
     );
+    if (!response.user) throw new Error("Profil utilisateur indisponible.");
     return response.user;
   }
 

@@ -7,6 +7,7 @@ import {
   RAIL_CONTROL_CLASS,
   RAIL_CONTROL_ICON_CLASS,
 } from "../utils/controlMetrics";
+import { themeInteraction } from "@shongre/design-tokens";
 
 export interface ScrollRailProps {
   children: React.ReactNode;
@@ -65,9 +66,10 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
     const el = trackRef.current;
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
+    const tolerance = themeInteraction.scrollBoundaryTolerancePx;
     setOverflow({
-      left: el.scrollLeft > 2,
-      right: max > 2 && el.scrollLeft < max - 2,
+      left: el.scrollLeft > tolerance,
+      right: max > tolerance && el.scrollLeft < max - tolerance,
     });
   }, []);
 
@@ -90,7 +92,12 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
     const el = trackRef.current;
     if (!el) return;
     el.scrollBy({
-      left: dir * Math.max(160, el.clientWidth * 0.7),
+      left:
+        dir *
+        Math.max(
+          themeInteraction.railNudgeMinimumPx,
+          el.clientWidth * themeInteraction.railNudgeViewportRatio,
+        ),
       behavior: "smooth",
     });
   };

@@ -28,13 +28,8 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
-
-const priceFormatter = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
 
 function VerificationRow({ label, status }: { label: string; status: string }) {
   const verified = status === "verified";
@@ -56,6 +51,7 @@ function VerificationRow({ label, status }: { label: string; status: string }) {
 
 export const CourseTutorProfilePage: React.FC = () => {
   const { t } = useTranslation();
+  const { formatMoney } = useRegionalFormatters();
   const { slug = "" } = useParams<{ slug: string }>();
   const [tutor, setTutor] = useState<TutorPublicProfile | null>(null);
   const [offers, setOffers] = useState<CoursePublicOffer[]>([]);
@@ -103,8 +99,8 @@ export const CourseTutorProfilePage: React.FC = () => {
   if (isLoading) {
     return (
       <Container className="py-7">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <Skeleton className="h-[34rem] rounded-card" />
+        <div className="grid gap-6 lg:grid-cols-content-aside">
+          <Skeleton className="h-136 rounded-card" />
           <Skeleton className="h-96 rounded-card" />
         </div>
       </Container>
@@ -138,10 +134,10 @@ export const CourseTutorProfilePage: React.FC = () => {
         <span aria-hidden="true">/</span> {tutor.displayName}
       </nav>
 
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-content-aside">
         <main className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
-            <div className="grid gap-5 p-5 sm:grid-cols-[10rem_minmax(0,1fr)] sm:p-6">
+            <div className="grid gap-5 p-5 sm:grid-cols-media-content-sm sm:p-6">
               <div className="aspect-square overflow-hidden rounded-card bg-bg-subtle">
                 <Image
                   src={tutor.avatarUrl}
@@ -254,7 +250,7 @@ export const CourseTutorProfilePage: React.FC = () => {
                 return (
                   <article
                     key={offer.id}
-                    className="grid gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_auto]"
+                    className="grid gap-4 p-5 sm:grid-cols-content-action"
                   >
                     <div>
                       <h3 className="text-sm font-bold text-text-main">
@@ -294,7 +290,7 @@ export const CourseTutorProfilePage: React.FC = () => {
                     {price && (
                       <div className="text-left sm:text-right">
                         <p className="text-lg font-black text-text-main">
-                          {priceFormatter.format(price.price.amountMinor / 100)}
+                          {formatMoney(price.price)}
                           <span className="text-xs font-medium text-text-muted">
                             {" "}
                             / h
@@ -396,7 +392,7 @@ export const CourseTutorProfilePage: React.FC = () => {
           <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
             {hourlyPrice && (
               <p className="text-2xl font-black text-text-main">
-                {priceFormatter.format(hourlyPrice.price.amountMinor / 100)}
+                {formatMoney(hourlyPrice.price)}
                 <span className="ml-1 text-xs font-medium text-text-muted">
                   / h
                 </span>

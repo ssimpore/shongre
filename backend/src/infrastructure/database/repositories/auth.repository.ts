@@ -27,10 +27,31 @@ export interface AuthSessionRecord {
   ipPrefix: string | null;
   issuedAt: string;
   lastReauthenticatedAt: string | null;
+  mfaVerifiedAt?: string | null;
   lastUsedAt: string | null;
   expiresAt: string;
   revokedAt: string | null;
   revokedReason: string | null;
+}
+
+export interface MfaCredentialRecord {
+  userId: string;
+  secretCiphertext: string;
+  secretIv: string;
+  secretAuthTag: string;
+  backupCodeHashes: string[];
+  enabledAt: string | null;
+  disabledAt: string | null;
+  lastUsedCounter: number | null;
+}
+
+export interface MfaChallengeRecord {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  attempts: number;
+  expiresAt: string;
+  consumedAt: string | null;
 }
 
 export interface OAuthFlowRecord {
@@ -164,6 +185,7 @@ export interface IAuthRepository {
   findSessionById(id: string): Promise<AuthSessionRecord | null>;
   findSessionByRefreshHash(hash: string): Promise<AuthSessionRecord | null>;
   markSessionReauthenticated(id: string): Promise<void>;
+  markSessionMfaVerified(id: string): Promise<void>;
   touchSession(id: string): Promise<void>;
   listSessions(userId: string): Promise<AuthSessionRecord[]>;
   revokeSession(id: string, reason: string): Promise<void>;
@@ -197,6 +219,17 @@ export interface IAuthRepository {
   ): Promise<RateLimitDecision>;
   clearRateLimit(keyHash: string, action: string): Promise<void>;
   recordSecurityEvent(input: SecurityEventInput): Promise<void>;
+  getMfaCredential(userId: string): Promise<MfaCredentialRecord | null>;
+  saveMfaCredential(value: MfaCredentialRecord): Promise<void>;
+  disableMfaCredential(userId: string): Promise<void>;
+  acceptMfaCounter(userId: string, counter: number): Promise<boolean>;
+  consumeMfaBackupCode(userId: string, codeHash: string): Promise<boolean>;
+  createMfaChallenge(
+    input: Omit<MfaChallengeRecord, "id" | "attempts" | "consumedAt">,
+  ): Promise<void>;
+  findMfaChallenge(tokenHash: string): Promise<MfaChallengeRecord | null>;
+  incrementMfaChallengeAttempts(id: string): Promise<void>;
+  consumeMfaChallenge(id: string): Promise<void>;
 }
 
 function mapIdentity(row: any): ExternalIdentityRecord {
@@ -226,6 +259,7 @@ function mapSession(row: any): AuthSessionRecord {
     ipPrefix: row.ip_prefix,
     issuedAt: row.issued_at,
     lastReauthenticatedAt: row.last_reauthenticated_at,
+    mfaVerifiedAt: row.mfa_verified_at,
     lastUsedAt: row.last_used_at,
     expiresAt: row.expires_at,
     revokedAt: row.revoked_at,
@@ -304,6 +338,8 @@ export class DemoAuthRepository implements IAuthRepository {
     { attempts: number; resetAt: number; lockedUntil: number }
   >();
   readonly events: SecurityEventInput[] = [];
+  private mfaCredentials = new Map<string, MfaCredentialRecord>();
+  private mfaChallenges = new Map<string, MfaChallengeRecord>();
 
   private identityKey(provider: AuthProvider, subject: string): string {
     return `${provider}:${subject}`;
@@ -462,6 +498,15 @@ export class DemoAuthRepository implements IAuthRepository {
       this.sessions.set(id, {
         ...current,
         lastReauthenticatedAt: new Date().toISOString(),
+      });
+  }
+
+  async markSessionMfaVerified(id: string): Promise<void> {
+    const current = this.sessions.get(id);
+    if (current)
+      this.sessions.set(id, {
+        ...current,
+        mfaVerifiedAt: new Date().toISOString(),
       });
   }
 
@@ -624,6 +669,88 @@ export class DemoAuthRepository implements IAuthRepository {
 
   async recordSecurityEvent(input: SecurityEventInput): Promise<void> {
     this.events.unshift(input);
+  }
+
+  async getMfaCredential(userId: string) {
+    const value = this.mfaCredentials.get(userId);
+    return value ? structuredClone(value) : null;
+  }
+
+  async saveMfaCredential(value: MfaCredentialRecord): Promise<void> {
+    this.mfaCredentials.set(value.userId, structuredClone(value));
+  }
+
+  async disableMfaCredential(userId: string): Promise<void> {
+    const value = this.mfaCredentials.get(userId);
+    if (value)
+      this.mfaCredentials.set(userId, {
+        ...value,
+        disabledAt: new Date().toISOString(),
+      });
+  }
+
+  async acceptMfaCounter(userId: string, counter: number): Promise<boolean> {
+    const value = this.mfaCredentials.get(userId);
+    if (
+      !value ||
+      !value.enabledAt ||
+      value.disabledAt ||
+      (value.lastUsedCounter !== null && value.lastUsedCounter >= counter)
+    )
+      return false;
+    this.mfaCredentials.set(userId, { ...value, lastUsedCounter: counter });
+    return true;
+  }
+
+  async consumeMfaBackupCode(
+    userId: string,
+    codeHash: string,
+  ): Promise<boolean> {
+    const value = this.mfaCredentials.get(userId);
+    if (!value || !value.backupCodeHashes.includes(codeHash)) return false;
+    this.mfaCredentials.set(userId, {
+      ...value,
+      backupCodeHashes: value.backupCodeHashes.filter(
+        (candidate) => candidate !== codeHash,
+      ),
+    });
+    return true;
+  }
+
+  async createMfaChallenge(
+    input: Omit<MfaChallengeRecord, "id" | "attempts" | "consumedAt">,
+  ): Promise<void> {
+    this.mfaChallenges.set(input.tokenHash, {
+      ...input,
+      id: randomUUID(),
+      attempts: 0,
+      consumedAt: null,
+    });
+  }
+
+  async findMfaChallenge(tokenHash: string) {
+    const value = this.mfaChallenges.get(tokenHash);
+    return value ? structuredClone(value) : null;
+  }
+
+  async incrementMfaChallengeAttempts(id: string): Promise<void> {
+    for (const [key, value] of this.mfaChallenges) {
+      if (value.id === id)
+        this.mfaChallenges.set(key, {
+          ...value,
+          attempts: Math.min(5, value.attempts + 1),
+        });
+    }
+  }
+
+  async consumeMfaChallenge(id: string): Promise<void> {
+    for (const [key, value] of this.mfaChallenges) {
+      if (value.id === id)
+        this.mfaChallenges.set(key, {
+          ...value,
+          consumedAt: new Date().toISOString(),
+        });
+    }
   }
 }
 
@@ -847,6 +974,7 @@ export class PostgresAuthRepository implements IAuthRepository {
         device_label: input.deviceLabel,
         ip_prefix: input.ipPrefix,
         last_reauthenticated_at: input.lastReauthenticatedAt,
+        mfa_verified_at: input.mfaVerifiedAt,
         expires_at: input.expiresAt,
       })
       .select("*")
@@ -890,6 +1018,15 @@ export class PostgresAuthRepository implements IAuthRepository {
       throw new Error(
         `session reauthentication update failed: ${error.message}`,
       );
+  }
+
+  async markSessionMfaVerified(id: string): Promise<void> {
+    const { error } = await this.client()
+      .from("auth_sessions")
+      .update({ mfa_verified_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("revoked_at", null);
+    if (error) throw new Error(`session MFA update failed: ${error.message}`);
   }
 
   async touchSession(id: string): Promise<void> {
@@ -1118,6 +1255,130 @@ export class PostgresAuthRepository implements IAuthRepository {
         metadata: input.metadata || {},
       });
     if (error) throw new Error(`security event write failed: ${error.message}`);
+  }
+
+  async getMfaCredential(userId: string): Promise<MfaCredentialRecord | null> {
+    const { data, error } = await this.client()
+      .from("auth_mfa_credentials")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw new Error(`MFA credential read failed: ${error.message}`);
+    return data
+      ? {
+          userId: data.user_id,
+          secretCiphertext: data.secret_ciphertext,
+          secretIv: data.secret_iv,
+          secretAuthTag: data.secret_auth_tag,
+          backupCodeHashes: data.backup_code_hashes || [],
+          enabledAt: data.enabled_at,
+          disabledAt: data.disabled_at,
+          lastUsedCounter:
+            data.last_used_counter === null
+              ? null
+              : Number(data.last_used_counter),
+        }
+      : null;
+  }
+
+  async saveMfaCredential(value: MfaCredentialRecord): Promise<void> {
+    const { error } = await this.client().from("auth_mfa_credentials").upsert({
+      user_id: value.userId,
+      secret_ciphertext: value.secretCiphertext,
+      secret_iv: value.secretIv,
+      secret_auth_tag: value.secretAuthTag,
+      backup_code_hashes: value.backupCodeHashes,
+      enabled_at: value.enabledAt,
+      disabled_at: value.disabledAt,
+      last_used_counter: value.lastUsedCounter,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new Error(`MFA credential write failed: ${error.message}`);
+  }
+
+  async disableMfaCredential(userId: string): Promise<void> {
+    const { error } = await this.client()
+      .from("auth_mfa_credentials")
+      .update({
+        disabled_at: new Date().toISOString(),
+        backup_code_hashes: [],
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+    if (error) throw new Error(`MFA disable failed: ${error.message}`);
+  }
+
+  async acceptMfaCounter(userId: string, counter: number): Promise<boolean> {
+    const { data, error } = await this.client().rpc("accept_auth_mfa_counter", {
+      p_user_id: userId,
+      p_counter: counter,
+    });
+    if (error) throw new Error(`MFA replay check failed: ${error.message}`);
+    return Boolean(data);
+  }
+
+  async consumeMfaBackupCode(
+    userId: string,
+    codeHash: string,
+  ): Promise<boolean> {
+    const { data, error } = await this.client().rpc(
+      "consume_auth_mfa_backup_code",
+      { p_user_id: userId, p_code_hash: codeHash },
+    );
+    if (error)
+      throw new Error(`MFA recovery-code check failed: ${error.message}`);
+    return Boolean(data);
+  }
+
+  async createMfaChallenge(
+    input: Omit<MfaChallengeRecord, "id" | "attempts" | "consumedAt">,
+  ): Promise<void> {
+    const { error } = await this.client().from("auth_mfa_challenges").insert({
+      user_id: input.userId,
+      token_hash: input.tokenHash,
+      purpose: "login",
+      expires_at: input.expiresAt,
+    });
+    if (error) throw new Error(`MFA challenge write failed: ${error.message}`);
+  }
+
+  async findMfaChallenge(
+    tokenHash: string,
+  ): Promise<MfaChallengeRecord | null> {
+    const { data, error } = await this.client()
+      .from("auth_mfa_challenges")
+      .select("*")
+      .eq("token_hash", tokenHash)
+      .maybeSingle();
+    if (error) throw new Error(`MFA challenge read failed: ${error.message}`);
+    return data
+      ? {
+          id: data.id,
+          userId: data.user_id,
+          tokenHash: data.token_hash,
+          attempts: Number(data.attempts),
+          expiresAt: data.expires_at,
+          consumedAt: data.consumed_at,
+        }
+      : null;
+  }
+
+  async incrementMfaChallengeAttempts(id: string): Promise<void> {
+    const { error } = await this.client().rpc(
+      "increment_auth_mfa_challenge_attempts",
+      { p_challenge_id: id },
+    );
+    if (error) throw new Error(`MFA challenge update failed: ${error.message}`);
+  }
+
+  async consumeMfaChallenge(id: string): Promise<void> {
+    const { error } = await this.client()
+      .from("auth_mfa_challenges")
+      .update({ consumed_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("consumed_at", null);
+    if (error)
+      throw new Error(`MFA challenge consumption failed: ${error.message}`);
   }
 }
 

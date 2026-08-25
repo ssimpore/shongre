@@ -1,6 +1,7 @@
 import type { DiscoveryDocument } from "@shongre/shared";
 import type { PromotionPlacementType } from "@shongre/contracts";
 import type { Listing } from "../../types";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 function promotionFor(listing: Listing): DiscoveryDocument["promotion"] {
   if (listing.promotionType) {
@@ -62,7 +63,9 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
       listing.publisherUserId ||
       listing.sellerId,
     publisherType,
-    marketCodes: listing.marketCodes || [listing.marketCode || "FR"],
+    marketCodes: listing.marketCodes || [
+      listing.marketCode || DEFAULT_MARKET_CODE,
+    ],
     categoryId: listing.subCategorySlug || listing.categorySlug,
     categoryPath: [listing.categorySlug, listing.subCategorySlug],
     title: listing.title,

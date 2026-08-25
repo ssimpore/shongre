@@ -29,6 +29,7 @@ import type {
   ProviderConfiguration,
   ProviderHealthStatus,
 } from "../../../domains/providers/provider.types";
+import { PROVIDER_CONFIGURATION_CONSTRAINTS } from "../../../domains/providers/provider.types";
 
 type MainTab = "overview" | "catalog" | "matrix" | "routing" | "audit";
 
@@ -114,7 +115,8 @@ export const AdminProvidersPage: React.FC = () => {
         providerId: entry.definition.id,
         enabled: runtime.enabled,
         environment: runtime.environment,
-        priority: current?.priority || 1,
+        priority:
+          current?.priority || PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
         credentialStatus: runtime.configured
           ? "configured"
           : entry.definition.requiredEnvironmentVariables.length === 0

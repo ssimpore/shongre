@@ -49,7 +49,7 @@ const PERSONA_STORAGE = {
     key: "support_hugo",
     role: "support",
     label: "9. Support Shongre",
-    staffPath: "/admin",
+    staffPath: "/admin/support",
   },
   moderator: {
     key: "moderator_claire",

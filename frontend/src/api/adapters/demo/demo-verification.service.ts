@@ -19,6 +19,7 @@ import type {
   VerificationDimension,
   VerificationRecord,
 } from "@shongre/contracts/compliance";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 import { complianceRuleSchema } from "@shongre/contracts/compliance";
 import { DEMO_COMPLIANCE_RULES } from "./demo-compliance-rules";
 
@@ -257,7 +258,7 @@ export class DemoVerificationService implements VerificationServiceContract {
           ? "registered"
           : "declared"
         : "none",
-      country: user?.country || "FR",
+      country: user?.country || DEFAULT_MARKET_CODE,
       verification: {
         email: record("email", summary.dimensions.email.state === "verified"),
         phone: record("phone", summary.dimensions.phone.state === "verified"),

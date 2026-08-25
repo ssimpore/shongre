@@ -5,6 +5,7 @@
 
 import { UserProfile } from "../../types";
 import { authorizationService } from "../../security/authorization.service";
+import { marketService } from "../market/market.service";
 
 export interface CrmCapabilities {
   canAccessCrm: boolean;
@@ -22,6 +23,8 @@ export class CrmCapabilitiesService {
     marketCode?: string;
   }): CrmCapabilities {
     const { viewer } = params;
+    const fallbackMarketCode =
+      params.marketCode || marketService.getDefaultMarket().code;
     if (!viewer) {
       return {
         canAccessCrm: false,
@@ -30,7 +33,7 @@ export class CrmCapabilitiesService {
         canManageOpportunities: false,
         canUseAiProspecting: false,
         canExport: false,
-        marketScope: ["FR"],
+        marketScope: [fallbackMarketCode],
       };
     }
 
@@ -55,7 +58,7 @@ export class CrmCapabilitiesService {
     // a sensitive data export from a broad administrative label.
     const canExport = false;
 
-    const marketScope = viewer.marketScope?.countries || ["FR"];
+    const marketScope = viewer.marketScope?.countries || [fallbackMarketCode];
 
     return {
       canAccessCrm,

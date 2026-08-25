@@ -10,6 +10,7 @@ import {
   InboxFilterTab,
 } from "./messaging.types";
 import { Message } from "../../types";
+import { DEFAULT_LOCALE } from "../../i18n/locale";
 
 export interface TimelineDateGroup {
   dateLabel: string;
@@ -20,7 +21,7 @@ export class MessagingService {
   /**
    * Formats an ISO date into a localized timeline date separator label.
    */
-  getDateSeparatorLabel(isoDate: string): string {
+  getDateSeparatorLabel(isoDate: string, locale = DEFAULT_LOCALE): string {
     try {
       const date = new Date(isoDate);
       const now = new Date();
@@ -30,7 +31,13 @@ export class MessagingService {
         date.getMonth() === now.getMonth() &&
         date.getFullYear() === now.getFullYear();
 
-      if (isToday) return "Aujourd'hui";
+      if (isToday)
+        return this.capitalize(
+          new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+            0,
+            "day",
+          ),
+        );
 
       const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
@@ -39,27 +46,40 @@ export class MessagingService {
         date.getMonth() === yesterday.getMonth() &&
         date.getFullYear() === yesterday.getFullYear();
 
-      if (isYesterday) return "Hier";
+      if (isYesterday)
+        return this.capitalize(
+          new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
+            -1,
+            "day",
+          ),
+        );
 
-      return new Intl.DateTimeFormat("fr-FR", {
+      return new Intl.DateTimeFormat(locale, {
         day: "numeric",
         month: "long",
         year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
       }).format(date);
     } catch {
-      return "Date récente";
+      return "—";
     }
+  }
+
+  private capitalize(value: string): string {
+    return value ? value.charAt(0).toLocaleUpperCase() + value.slice(1) : value;
   }
 
   /**
    * Groups chronological timeline items into date-separated sections.
    */
-  groupTimelineByDate(items: TimelineItem[]): TimelineDateGroup[] {
+  groupTimelineByDate(
+    items: TimelineItem[],
+    locale = DEFAULT_LOCALE,
+  ): TimelineDateGroup[] {
     const groups: TimelineDateGroup[] = [];
     const map = new Map<string, TimelineItem[]>();
 
     items.forEach((item) => {
-      const label = this.getDateSeparatorLabel(item.createdAt);
+      const label = this.getDateSeparatorLabel(item.createdAt, locale);
       if (!map.has(label)) {
         map.set(label, []);
       }
@@ -163,6 +183,15 @@ export class MessagingService {
       contentType: msg.type || "text",
       status: msg.isRead ? "read" : "delivered",
       offerAmount: msg.offerAmount,
+      offerId: msg.offerId || (msg.type === "offer" ? msg.id : undefined),
+      offerAmountMinor:
+        msg.offerAmountMinor ??
+        (msg.offerAmount !== undefined
+          ? Math.round(msg.offerAmount * 100)
+          : undefined),
+      offerCurrency: msg.offerCurrency,
+      offerStatus: msg.offerStatus,
+      offerExpiresAt: msg.offerExpiresAt,
       attachment: msg.attachmentUrl
         ? {
             id: `att-${msg.id}`,

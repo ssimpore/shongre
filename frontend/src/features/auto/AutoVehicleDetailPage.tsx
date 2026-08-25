@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -21,6 +22,7 @@ import {
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { routes } from "../../configuration/routes";
 import {
@@ -57,6 +59,7 @@ type LeadFormState = {
 export const AutoVehicleDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [vehicle, setVehicle] = useState<VehiclePublic | null>(null);
   const [similar, setSimilar] = useState<VehiclePublic[]>([]);
@@ -81,10 +84,10 @@ export const AutoVehicleDetailPage: React.FC = () => {
       .then((result) => {
         setVehicle(result);
         return services.auto.searchVehicles({
-          marketCode: "FR",
+          marketCode: result.marketCodes[0] || activeMarket.code,
           makeIds: result.makeId ? [result.makeId] : undefined,
           sort: "relevance",
-          limit: 4,
+          limit: PAGE_SIZES.similarVerticalListings,
         });
       })
       .then((result) =>
@@ -92,12 +95,12 @@ export const AutoVehicleDetailPage: React.FC = () => {
       )
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [activeMarket.code, slug]);
 
   usePageMeta({
     title: vehicle?.title || "Véhicule d’occasion",
     description: vehicle
-      ? `${vehicle.technical.modelYear}, ${formatAutoMileage(vehicle)}, ${fuelLabels[vehicle.technical.fuelType]}. ${vehicle.locationLabel}.`
+      ? `${vehicle.technical.modelYear}, ${formatAutoMileage(vehicle, currentLocale)}, ${fuelLabels[vehicle.technical.fuelType]}. ${vehicle.locationLabel}.`
       : "Découvrez les caractéristiques et informations de confiance de ce véhicule.",
     canonicalPath: `/auto/vehicule/${slug}`,
     type: "product",
@@ -169,8 +172,8 @@ export const AutoVehicleDetailPage: React.FC = () => {
   if (loading)
     return (
       <Container className="py-7">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
-          <Skeleton className="h-[42rem] rounded-card" />
+        <div className="grid gap-5 lg:grid-cols-content-aside-md">
+          <Skeleton className="h-168 rounded-card" />
           <Skeleton className="h-96 rounded-card" />
         </div>
       </Container>
@@ -208,7 +211,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
   const characteristicRows: Array<[LucideIcon, string, React.ReactNode]> = [
     [CalendarDays, "Année", vehicle.technical.modelYear],
-    [Gauge, "Kilométrage", formatAutoMileage(vehicle)],
+    [Gauge, "Kilométrage", formatAutoMileage(vehicle, currentLocale)],
     [Fuel, "Énergie", fuelLabels[vehicle.technical.fuelType]],
     [CarFront, "Boîte", transmissionLabels[vehicle.technical.transmission]],
     [
@@ -239,10 +242,10 @@ export const AutoVehicleDetailPage: React.FC = () => {
           <span aria-hidden="true">/</span> {vehicle.makeLabel}{" "}
           {vehicle.modelLabel}
         </nav>
-        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-content-aside-md">
           <main className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
-              <div className="relative aspect-[16/9] bg-bg-subtle">
+              <div className="relative aspect-video bg-bg-subtle">
                 <Image
                   src={vehicle.mediaUrls[0]}
                   alt={vehicle.title}
@@ -304,12 +307,16 @@ export const AutoVehicleDetailPage: React.FC = () => {
                   </div>
                   <div className="sm:text-right">
                     <p className="text-2xl font-black text-primary">
-                      {formatAutoMoney(vehicle.price)}
+                      {formatAutoMoney(vehicle.price, currentLocale)}
                     </p>
                     {vehicle.financingMonthlyEstimate && (
                       <p className="mt-1 text-sm font-bold text-text-main">
-                        ou {formatAutoMoney(vehicle.financingMonthlyEstimate)} /
-                        mois
+                        ou{" "}
+                        {formatAutoMoney(
+                          vehicle.financingMonthlyEstimate,
+                          currentLocale,
+                        )}{" "}
+                        / mois
                       </p>
                     )}
                     {vehicle.financingMonthlyEstimate && (
@@ -332,10 +339,16 @@ export const AutoVehicleDetailPage: React.FC = () => {
                       <p className="mt-1 text-micro leading-relaxed text-text-secondary">
                         Entre{" "}
                         {vehicle.priceEstimate.low &&
-                          formatAutoMoney(vehicle.priceEstimate.low)}{" "}
+                          formatAutoMoney(
+                            vehicle.priceEstimate.low,
+                            currentLocale,
+                          )}{" "}
                         et{" "}
                         {vehicle.priceEstimate.high &&
-                          formatAutoMoney(vehicle.priceEstimate.high)}
+                          formatAutoMoney(
+                            vehicle.priceEstimate.high,
+                            currentLocale,
+                          )}
                         , selon {vehicle.priceEstimate.sampleSize} annonces
                         comparables. {vehicle.priceEstimate.disclaimer}
                       </p>

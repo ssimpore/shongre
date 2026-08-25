@@ -81,6 +81,19 @@ export interface AuthSecurityOverview {
   recentAuthenticationRequired: boolean;
 }
 
+export interface MfaStatusView {
+  enabled: boolean;
+  required: boolean;
+  backupCodesRemaining: number;
+  sessionVerified: boolean;
+}
+
+export interface MfaSetupView {
+  secret: string;
+  otpauthUri: string;
+  backupCodes: string[];
+}
+
 export interface SocialAuthStartInput {
   provider: SocialAuthProvider;
   intent?: "sign_in" | "link";
@@ -92,6 +105,11 @@ export interface AuthServiceContract {
   getCurrentUser(): Promise<UserProfile | null>;
   login(credentials: LoginCredentials): Promise<AuthResult>;
   loginWithMFA(tempToken: string, code: string): Promise<AuthResult>;
+  getMfaStatus(): Promise<MfaStatusView>;
+  beginMfaEnrollment(): Promise<MfaSetupView>;
+  confirmMfaEnrollment(code: string): Promise<void>;
+  verifySessionMfa(code: string): Promise<void>;
+  disableMfa(code: string): Promise<void>;
   registerIndividual(input: RegisterIndividualInput): Promise<AuthResult>;
   registerProfessional(input: RegisterProfessionalInput): Promise<AuthResult>;
   logout(): Promise<void>;

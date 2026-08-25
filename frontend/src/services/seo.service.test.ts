@@ -5,6 +5,7 @@ import {
   buildBreadcrumbSchema,
   DEFAULT_TITLE,
   SITE_NAME,
+  resolveOpenGraphLocale,
 } from "./seo.service";
 
 describe("resolveTitle", () => {
@@ -53,6 +54,18 @@ describe("resolveCanonical", () => {
     expect(resolveCanonical("categories", origin)).toBe(`${origin}/categories`);
     expect(resolveCanonical("/", origin)).toBe(`${origin}/`);
     expect(resolveCanonical("/", `${origin}/`)).toBe(`${origin}/`);
+  });
+});
+
+describe("resolveOpenGraphLocale", () => {
+  it("normalises BCP 47 and underscore locales", () => {
+    expect(resolveOpenGraphLocale("fr-FR")).toBe("fr_FR");
+    expect(resolveOpenGraphLocale("en_US")).toBe("en_US");
+  });
+
+  it("supplies a territory for a language-only preference", () => {
+    expect(resolveOpenGraphLocale("es")).toBe("es_ES");
+    expect(resolveOpenGraphLocale()).toBe("fr_FR");
   });
 });
 

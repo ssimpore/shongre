@@ -22,6 +22,7 @@ import { INITIAL_MARKETS } from "../domains/market/market.defaults";
 import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -109,7 +110,9 @@ class StorageService {
     return list.map((l) => {
       const canonicalCategory = normalizeListingTaxonomyIdentity(l);
 
-      const primaryMarket = ((l as any).marketCode || "FR").toUpperCase();
+      const primaryMarket = (
+        (l as any).marketCode || DEFAULT_MARKET_CODE
+      ).toUpperCase();
       const rawCodes =
         (l as any).marketCodes &&
         Array.isArray((l as any).marketCodes) &&
@@ -378,6 +381,24 @@ class StorageService {
     }
   }
 
+  updateMessage(
+    conversationId: string,
+    messageId: string,
+    updates: Partial<import("../types").Message>,
+  ): import("../types").Message | null {
+    const all = this.get<Record<string, import("../types").Message[]>>(
+      KEYS.MESSAGES,
+      INITIAL_MESSAGES,
+    );
+    const list = all[conversationId] || [];
+    const index = list.findIndex((message) => message.id === messageId);
+    if (index < 0) return null;
+    list[index] = { ...list[index], ...updates };
+    all[conversationId] = list;
+    this.set(KEYS.MESSAGES, all);
+    return { ...list[index] };
+  }
+
   // Transactions
   getTransactions(): Transaction[] {
     return this.get<Transaction[]>(KEYS.TRANSACTIONS, INITIAL_TRANSACTIONS);
@@ -451,6 +472,14 @@ class StorageService {
 
   removeSavedSearch(id: string): void {
     this.deleteSavedSearch(id);
+  }
+
+  setSavedSearchNotifications(id: string, enabled: boolean): SavedSearch[] {
+    const next = this.getSavedSearches().map((search) =>
+      search.id === id ? { ...search, hasNotifications: enabled } : search,
+    );
+    this.set(KEYS.SAVED_SEARCHES, next);
+    return next;
   }
 
   // Recent Searches
@@ -707,7 +736,7 @@ class StorageService {
   }
 
   clearPublishDraft(): void {
-    localStorage.removeItem(KEYS.PUBLISH_DRAFT);
+    this.remove(KEYS.PUBLISH_DRAFT);
   }
 
   // Location preference
@@ -741,7 +770,7 @@ class StorageService {
   }
 
   saveActiveMarketCode(code: string): void {
-    this.set(KEYS.ACTIVE_MARKET, (code || "FR").toUpperCase());
+    this.set(KEYS.ACTIVE_MARKET, (code || DEFAULT_MARKET_CODE).toUpperCase());
   }
 
   // User Local Preferences

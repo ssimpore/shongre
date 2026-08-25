@@ -20,6 +20,8 @@ import {
   providerRepository,
   IProviderRepository,
 } from "../../repositories/provider.repository";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
+import { marketService } from "../market/market.service";
 import {
   getAllCapabilities,
   getCapabilitiesByCategory,
@@ -120,7 +122,7 @@ export class ProviderService {
 
   public resolveEffectiveProviders(
     capability: ProviderCapability,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): EffectiveProviderResolution {
     return this.repo.resolveEffectiveProviders(capability, marketCode);
   }
@@ -130,7 +132,7 @@ export class ProviderService {
    */
   public isCapabilityAvailable(
     capability: ProviderCapability,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): boolean {
     const resolution = this.resolveEffectiveProviders(capability, marketCode);
     return (
@@ -140,14 +142,14 @@ export class ProviderService {
 
   public resolveCapabilityHealth(
     capability: ProviderCapability,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): CapabilityHealthResult {
     return this.repo.resolveCapabilityHealth(capability, marketCode);
   }
 
   public analyzeImpact(
     providerId: string,
-    targetMarketCode = "FR",
+    targetMarketCode = DEFAULT_MARKET_CODE,
   ): ProviderImpactAnalysis {
     return this.repo.analyzeImpact(providerId, targetMarketCode);
   }
@@ -160,7 +162,9 @@ export class ProviderService {
    * Generates a complete cross-market coverage matrix for administrative inspection
    */
   public getMarketCoverageMatrix(
-    marketCodes: string[] = ["FR", "BE", "CH", "ES", "LU", "DE"],
+    marketCodes: string[] = marketService
+      .getMarkets()
+      .map((market) => market.code),
     categoryFilter?: ProviderCategory,
   ): MarketCoverageRow[] {
     const capabilities = categoryFilter
@@ -187,7 +191,7 @@ export class ProviderService {
           activeProviderName: active?.name || "Désactivé / Inexistant",
           activeProviderId: active?.id || "",
           isAvailable: resolution.isAvailable,
-          isInherited: resolution.isInheritedFromFrance,
+          isInherited: resolution.isInheritedFromBaseline,
           health: resolution.effectiveHealth,
           mode,
         };

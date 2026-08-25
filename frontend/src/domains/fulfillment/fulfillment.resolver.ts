@@ -57,7 +57,7 @@ export class FulfillmentResolver {
   ): FulfillmentCapabilitiesResult {
     const {
       taxonomyNodeId,
-      marketCode = "FR",
+      marketCode = marketService.getDefaultMarket().code,
       sellerType = "individual",
     } = params;
     const node = taxonomyService.getNode(taxonomyNodeId);
@@ -142,7 +142,11 @@ export class FulfillmentResolver {
    * Resolves concrete delivery quotes available to the buyer at checkout.
    */
   resolveAvailableQuotes(params: ResolveDeliveryQuotesParams): DeliveryQuote[] {
-    const { listing, marketCode = "FR", packageSpecs } = params;
+    const {
+      listing,
+      marketCode = marketService.getDefaultMarket().code,
+      packageSpecs,
+    } = params;
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
     const quotes: DeliveryQuote[] = [];
 
@@ -337,7 +341,12 @@ export class FulfillmentResolver {
   calculateOrderPricing(
     params: CalculateOrderPricingParams,
   ): OrderPricingBreakdown {
-    const { listing, quantity = 1, selectedQuote, marketCode = "FR" } = params;
+    const {
+      listing,
+      quantity = 1,
+      selectedQuote,
+      marketCode = marketService.getDefaultMarket().code,
+    } = params;
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
 
     const itemSubtotal = (listing.price || 0) * quantity;

@@ -5,6 +5,15 @@
  */
 
 import { ListingStatus, DeliveryType } from "../../types";
+import type { OfferStatus } from "../../types";
+
+export const OFFER_INPUT_CONSTRAINTS = {
+  minimumMajor: 1,
+  stepMajor: 1,
+  defaultDiscountPercent: 10,
+  quickDiscountPercents: [5, 10, 15] as const,
+  percentageScale: 100,
+} as const;
 
 export type ConversationType =
   "listing" | "transaction" | "support" | "general";
@@ -101,6 +110,11 @@ export interface UserTimelineMessage extends BaseTimelineItem {
   clientMessageId?: string;
   attachment?: MessageAttachment;
   offerAmount?: number;
+  offerId?: string;
+  offerAmountMinor?: number;
+  offerCurrency?: string;
+  offerStatus?: OfferStatus;
+  offerExpiresAt?: string;
   isRead: boolean;
 }
 
@@ -178,6 +192,7 @@ export interface MessagingRealtimeEvent {
     | "new_message"
     | "system_event"
     | "message_status_updated"
+    | "offer_updated"
     | "typing"
     | "conversation_read"
     | "presence";

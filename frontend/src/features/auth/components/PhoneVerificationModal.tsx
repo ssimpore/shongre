@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Smartphone, CheckCircle2, AlertCircle, RefreshCw } from "lucide-react";
+import { Smartphone, RefreshCw } from "lucide-react";
 import { authService } from "../../../domains/auth/auth.service";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { SUPPORTED_MARKETS } from "../../../configuration/market.config";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
+import { FormField, Input, Notice, Select } from "../../../design-system";
+import { secondsToMilliseconds } from "../../../utilities/time";
 
 export interface PhoneVerificationModalProps {
   userId: string;
@@ -22,34 +26,42 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   onSuccess,
 }) => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   const [step, setStep] = useState<"input" | "otp">("input");
   const [phone, setPhone] = useState(initialPhone);
-  const [selectedCountry, setSelectedCountry] = useState("FR");
+  const [selectedCountry, setSelectedCountry] = useState(activeMarket.code);
   const [otpCode, setOtpCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [demoCodeHint, setDemoCodeHint] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState<number>(
+    AUTH_CONSTRAINTS.verificationCodeResendCooldownSeconds,
+  );
 
   useEffect(() => {
-    let timer: any;
+    let timer: ReturnType<typeof setInterval> | undefined;
     if (step === "otp" && countdown > 0) {
-      timer = setInterval(() => setCountdown((c) => c - 1), 1000);
+      timer = setInterval(
+        () => setCountdown((current) => current - 1),
+        secondsToMilliseconds(1),
+      );
     }
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [step, countdown]);
 
   if (!isOpen) return null;
 
   const currentMarket =
-    SUPPORTED_MARKETS[selectedCountry] || SUPPORTED_MARKETS["FR"];
+    SUPPORTED_MARKETS[selectedCountry] || SUPPORTED_MARKETS[activeMarket.code];
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!phone.trim()) {
-      setError("Veuillez renseigner votre numéro de téléphone.");
+      setError(t("auth.phoneVerificationModal.phoneRequired"));
       return;
     }
 
@@ -61,14 +73,14 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       const res = authService.sendPhoneCode(userId, fullPhone);
       if (res.success) {
         setStep("otp");
-        setCountdown(60);
-        setDemoCodeHint(res.demoCode || "123456");
+        setCountdown(AUTH_CONSTRAINTS.verificationCodeResendCooldownSeconds);
+        setDemoCodeHint(res.demoCode || null);
         setSuccessMessage(res.message);
       } else {
         setError(res.message);
       }
     } catch (err: any) {
-      setError(err.message || "Erreur lors de l'envoi du SMS.");
+      setError(err.message || t("auth.phoneVerificationModal.sendError"));
     } finally {
       setIsLoading(false);
     }
@@ -77,8 +89,12 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (otpCode.length < 6) {
-      setError("Veuillez saisir le code à 6 chiffres.");
+    if (otpCode.length !== AUTH_CONSTRAINTS.verificationCodeLength) {
+      setError(
+        t("auth.phoneVerificationModal.codeLength", {
+          count: AUTH_CONSTRAINTS.verificationCodeLength,
+        }),
+      );
       return;
     }
 
@@ -92,7 +108,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         setError(res.message);
       }
     } catch (err: any) {
-      setError(err.message || "Erreur lors de la validation du code.");
+      setError(err.message || t("auth.phoneVerificationModal.validateError"));
     } finally {
       setIsLoading(false);
     }
@@ -105,9 +121,9 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       : `${currentMarket.phonePrefix} ${phone}`;
     const res = authService.sendPhoneCode(userId, fullPhone);
     if (res.success) {
-      setCountdown(60);
-      setDemoCodeHint(res.demoCode || "123456");
-      setSuccessMessage("Nouveau code envoyé par SMS.");
+      setCountdown(AUTH_CONSTRAINTS.verificationCodeResendCooldownSeconds);
+      setDemoCodeHint(res.demoCode || null);
+      setSuccessMessage(t("auth.phoneVerificationModal.resendSuccess"));
       setError(null);
     }
   };
@@ -127,53 +143,58 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       }
     >
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>{error}</span>
-        </div>
+        <Notice variant="error" className="mb-4">
+          {error}
+        </Notice>
       )}
 
       {successMessage && step === "otp" && (
-        <div className="mb-4 p-3 rounded-xl bg-success-surface border border-success-border text-xs font-semibold text-success flex items-start gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+        <Notice variant="success" className="mb-4">
           <div>
             <p>{successMessage}</p>
             {demoCodeHint && (
-              <p className="mt-1 text-success font-bold bg-success-surface/80 px-2 py-0.5 rounded inline-block">
-                Code SMS de test : {demoCodeHint}
+              <p className="mt-1 font-bold">
+                {t("auth.phoneVerificationModal.demoCode", {
+                  code: demoCodeHint,
+                })}
               </p>
             )}
           </div>
-        </div>
+        </Notice>
       )}
 
       {step === "input" ? (
         <form onSubmit={handleSendCode} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              {t("auth.phoneVerificationModal.paysEtIndicatif")}
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <select
+          <div className="grid grid-cols-3 gap-2">
+            <FormField
+              className="col-span-1"
+              label={t("auth.phoneVerificationModal.paysEtIndicatif")}
+            >
+              <Select
+                aria-label={t("auth.phoneVerificationModal.paysEtIndicatif")}
                 value={selectedCountry}
                 onChange={(e) => setSelectedCountry(e.target.value)}
-                className="col-span-1 px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               >
                 {Object.values(SUPPORTED_MARKETS).map((m) => (
                   <option key={m.code} value={m.code}>
                     {m.flag} {m.code} ({m.phonePrefix})
                   </option>
                 ))}
-              </select>
-              <input
+              </Select>
+            </FormField>
+            <FormField
+              className="col-span-2"
+              label={t("auth.phoneVerificationModal.phoneNumber")}
+              required
+            >
+              <Input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={currentMarket.phonePlaceholder}
                 required
-                className="col-span-2 px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
-            </div>
+            </FormField>
           </div>
 
           <Button
@@ -188,13 +209,14 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
         </form>
       ) : (
         <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
-              {t("auth.phoneVerificationModal.saisissezLeCodeRecuPar")}
-            </label>
-            <input
+          <FormField
+            label={t("auth.phoneVerificationModal.saisissezLeCodeRecuPar")}
+            required
+          >
+            <Input
               type="text"
-              maxLength={6}
+              inputMode="numeric"
+              maxLength={AUTH_CONSTRAINTS.verificationCodeLength}
               value={otpCode}
               onChange={(e) =>
                 setOtpCode(e.target.value.replace(/[^0-9]/g, ""))
@@ -202,9 +224,9 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               placeholder="123456"
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-code text-xl font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+              className="text-center font-black tracking-code"
             />
-          </div>
+          </FormField>
 
           <Button
             type="submit"
@@ -235,7 +257,11 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               className={countdown > 0 ? "text-stone-500" : "text-primary"}
               leftIcon={<RefreshCw className="w-3 h-3" />}
             >
-              {countdown > 0 ? `Renvoyer (${countdown}s)` : "Renvoyer le code"}
+              {countdown > 0
+                ? t("auth.phoneVerificationModal.resendCountdown", {
+                    count: countdown,
+                  })
+                : t("auth.phoneVerificationModal.resend")}
             </Button>
           </div>
         </form>

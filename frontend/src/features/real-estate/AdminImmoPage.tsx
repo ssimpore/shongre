@@ -19,6 +19,9 @@ import { Badge, Button, Skeleton, Switch } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatImmoMoney } from "./immo-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { formatCurrencySymbol } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
 
 const featureFlagLabels: Record<string, string> = {
   verticalEnabled: "Verticale disponible",
@@ -35,6 +38,7 @@ const featureFlagLabels: Record<string, string> = {
 };
 
 export const AdminImmoPage: React.FC = () => {
+  const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<RealEstateAdminOverview | null>(
     null,
@@ -49,18 +53,21 @@ export const AdminImmoPage: React.FC = () => {
   });
   useEffect(() => {
     services.realEstate
-      .getAdminOverview("FR")
+      .getAdminOverview(activeMarket.code)
       .then(setOverview)
       .catch(() => toast.error("Administration Immo indisponible."));
-  }, [toast]);
+  }, [activeMarket.code, toast]);
 
   const toggleMarket = async () => {
     if (!overview) return;
     setSaving(true);
     try {
-      const config = await services.realEstate.updateMarketConfig("FR", {
-        isEnabled: !overview.catalog.config.isEnabled,
-      });
+      const config = await services.realEstate.updateMarketConfig(
+        activeMarket.code,
+        {
+          isEnabled: !overview.catalog.config.isEnabled,
+        },
+      );
       setOverview({
         ...overview,
         catalog: {
@@ -73,7 +80,7 @@ export const AdminImmoPage: React.FC = () => {
         },
       });
       toast.success(
-        `Vertical Immo ${config.isEnabled ? "activé" : "désactivé"} pour la France.`,
+        `Vertical Immo ${config.isEnabled ? "activé" : "désactivé"} pour ${activeMarket.name}.`,
       );
     } catch {
       toast.error("Configuration non enregistrée.");
@@ -84,7 +91,11 @@ export const AdminImmoPage: React.FC = () => {
   const saveOffer = async (id: string, patch: Partial<VerticalOffer>) => {
     if (!overview) return;
     try {
-      const updated = await services.realEstate.updateOffer("FR", id, patch);
+      const updated = await services.realEstate.updateOffer(
+        activeMarket.code,
+        id,
+        patch,
+      );
       setOverview((current) =>
         current
           ? {
@@ -108,7 +119,11 @@ export const AdminImmoPage: React.FC = () => {
   const saveAddOn = async (id: string, patch: Partial<VerticalAddOn>) => {
     if (!overview) return;
     try {
-      const updated = await services.realEstate.updateAddOn("FR", id, patch);
+      const updated = await services.realEstate.updateAddOn(
+        activeMarket.code,
+        id,
+        patch,
+      );
       setOverview((current) =>
         current
           ? {
@@ -135,7 +150,7 @@ export const AdminImmoPage: React.FC = () => {
   ) => {
     if (!overview) return;
     const updated = await services.realEstate.updateFieldRule(
-      "FR",
+      activeMarket.code,
       rule.id,
       patch,
     );
@@ -151,7 +166,7 @@ export const AdminImmoPage: React.FC = () => {
     toast.success("Règle de publication mise à jour.");
   };
 
-  if (!overview) return <Skeleton className="h-[42rem] rounded-card" />;
+  if (!overview) return <Skeleton className="h-168 rounded-card" />;
   const metrics = [
     ["Biens actifs", overview.metrics.activeProperties, Building2],
     ["À modérer", overview.metrics.pendingModeration, Flag],
@@ -169,7 +184,9 @@ export const AdminImmoPage: React.FC = () => {
           <p className="text-xs font-bold uppercase tracking-wide text-primary">
             Verticale spécialisée
           </p>
-          <h1 className="mt-1 text-xl font-black">Shongre Immo · France</h1>
+          <h1 className="mt-1 text-xl font-black">
+            Shongre Immo · {activeMarket.name}
+          </h1>
           <p className="mt-1 text-xs text-text-muted">
             Schéma v{overview.catalog.config.schemaVersion} · contenu
             réglementaire {overview.catalog.config.regulatoryContentVersion}
@@ -181,7 +198,7 @@ export const AdminImmoPage: React.FC = () => {
             checked={overview.catalog.config.isEnabled}
             onChange={toggleMarket}
             disabled={saving}
-            aria-label="Activer le marché immobilier France"
+            aria-label={`Activer le marché immobilier ${activeMarket.name}`}
           />
         </div>
       </header>
@@ -201,7 +218,7 @@ export const AdminImmoPage: React.FC = () => {
         ))}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <section className="grid gap-4 xl:grid-cols-content-aside-lg">
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -213,7 +230,7 @@ export const AdminImmoPage: React.FC = () => {
             <CircleDollarSign className="h-5 w-5 text-primary" />
           </div>
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[54rem] text-left text-xs">
+            <table className="w-full min-w-216 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
                   <th className="p-3">Offre</th>
@@ -239,12 +256,13 @@ export const AdminImmoPage: React.FC = () => {
                     <td className="p-3 font-bold">
                       {offer.prices[0] ? (
                         <input
-                          aria-label={`Prix de ${offer.name} en euros`}
+                          aria-label={`Prix de ${offer.name} en ${overview.catalog.config.currency}`}
                           type="number"
-                          min="0"
-                          step="0.01"
+                          min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.min}
+                          step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.step}
                           defaultValue={
-                            offer.prices[0].amount.amountMinor / 100
+                            offer.prices[0].amount.amountMinor /
+                            MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor
                           }
                           className="h-control-md w-24 rounded-control border border-border-base bg-white px-2"
                           onBlur={(event) =>
@@ -256,9 +274,11 @@ export const AdminImmoPage: React.FC = () => {
                                       amount: {
                                         ...price.amount,
                                         amountMinor: Math.max(
-                                          0,
+                                          MONETIZATION_ADMIN_CONSTRAINTS
+                                            .moneyMinor.min,
                                           Math.round(
-                                            Number(event.target.value) * 100,
+                                            Number(event.target.value) *
+                                              MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
                                           ),
                                         ),
                                       },
@@ -276,9 +296,16 @@ export const AdminImmoPage: React.FC = () => {
                       <input
                         aria-label={`Quota de biens actifs de ${offer.name}`}
                         type="number"
-                        min="0"
+                        min={
+                          MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min
+                        }
+                        step={
+                          MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.step
+                        }
                         defaultValue={Number(
-                          offer.entitlements.maxActiveListings || 0,
+                          offer.entitlements.maxActiveListings ||
+                            MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
+                              .min,
                         )}
                         className="h-control-md w-20 rounded-control border border-border-base bg-white px-2"
                         onBlur={(event) =>
@@ -286,7 +313,8 @@ export const AdminImmoPage: React.FC = () => {
                             entitlements: {
                               ...offer.entitlements,
                               maxActiveListings: Math.max(
-                                0,
+                                MONETIZATION_ADMIN_CONSTRAINTS
+                                  .nonNegativeInteger.min,
                                 Number(event.target.value),
                               ),
                             },
@@ -299,7 +327,12 @@ export const AdminImmoPage: React.FC = () => {
                         <input
                           aria-label={`Durée de ${offer.name} en jours`}
                           type="number"
-                          min="1"
+                          min={
+                            MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min
+                          }
+                          step={
+                            MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.step
+                          }
                           defaultValue={offer.prices[0].durationDays || ""}
                           className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
                           onBlur={(event) =>
@@ -326,8 +359,19 @@ export const AdminImmoPage: React.FC = () => {
                         <input
                           aria-label={`Essai de ${offer.name} en jours`}
                           type="number"
-                          min="0"
-                          defaultValue={offer.prices[0].trialDays || 0}
+                          min={
+                            MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
+                              .min
+                          }
+                          step={
+                            MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
+                              .step
+                          }
+                          defaultValue={
+                            offer.prices[0].trialDays ||
+                            MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
+                              .min
+                          }
                           className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
@@ -336,7 +380,8 @@ export const AdminImmoPage: React.FC = () => {
                                   ? {
                                       ...price,
                                       trialDays: Math.max(
-                                        0,
+                                        MONETIZATION_ADMIN_CONSTRAINTS
+                                          .nonNegativeInteger.min,
                                         Number(event.target.value),
                                       ),
                                     }
@@ -354,10 +399,16 @@ export const AdminImmoPage: React.FC = () => {
                         <input
                           aria-label={`Taxe de ${offer.name} en pourcentage`}
                           type="number"
-                          min="0"
-                          max="100"
-                          step="0.01"
-                          defaultValue={offer.prices[0].taxRateBps / 100}
+                          min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
+                          max={
+                            MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max /
+                            MONETIZATION_ADMIN_CONSTRAINTS.percentageToBps
+                          }
+                          step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.step}
+                          defaultValue={
+                            offer.prices[0].taxRateBps /
+                            MONETIZATION_ADMIN_CONSTRAINTS.percentageToBps
+                          }
                           className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
@@ -366,11 +417,14 @@ export const AdminImmoPage: React.FC = () => {
                                   ? {
                                       ...price,
                                       taxRateBps: Math.min(
-                                        10_000,
+                                        MONETIZATION_ADMIN_CONSTRAINTS
+                                          .basisPoints.max,
                                         Math.max(
-                                          0,
+                                          MONETIZATION_ADMIN_CONSTRAINTS
+                                            .basisPoints.min,
                                           Math.round(
-                                            Number(event.target.value) * 100,
+                                            Number(event.target.value) *
+                                              MONETIZATION_ADMIN_CONSTRAINTS.percentageToBps,
                                           ),
                                         ),
                                       ),
@@ -401,7 +455,9 @@ export const AdminImmoPage: React.FC = () => {
         </div>
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <Settings2 className="h-6 w-6 text-primary" />
-          <h2 className="mt-3 text-sm font-black">Fonctionnalités France</h2>
+          <h2 className="mt-3 text-sm font-black">
+            Fonctionnalités {activeMarket.name}
+          </h2>
           <div className="mt-4 space-y-3">
             {Object.entries(overview.catalog.config.featureFlags).map(
               ([key, active]) => (
@@ -411,12 +467,15 @@ export const AdminImmoPage: React.FC = () => {
                     label={featureFlagLabels[key] || key}
                     onChange={async (checked) => {
                       const config =
-                        await services.realEstate.updateMarketConfig("FR", {
-                          featureFlags: {
-                            ...overview.catalog.config.featureFlags,
-                            [key]: checked,
+                        await services.realEstate.updateMarketConfig(
+                          activeMarket.code,
+                          {
+                            featureFlags: {
+                              ...overview.catalog.config.featureFlags,
+                              [key]: checked,
+                            },
                           },
-                        });
+                        );
                       setOverview({
                         ...overview,
                         catalog: { ...overview.catalog, config },
@@ -439,11 +498,19 @@ export const AdminImmoPage: React.FC = () => {
             </p>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[35rem] text-left text-xs">
+            <table className="w-full min-w-140 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
                   <th className="p-3">Option</th>
-                  <th className="p-3">Prix €</th>
+                  <th className="p-3">
+                    Prix (
+                    {formatCurrencySymbol(
+                      overview.catalog.addOns[0]?.price.currency ||
+                        currentCurrency,
+                      currentLocale,
+                    )}
+                    )
+                  </th>
                   <th className="p-3">Jours</th>
                   <th className="p-3">Active</th>
                 </tr>
@@ -454,19 +521,25 @@ export const AdminImmoPage: React.FC = () => {
                     <td className="p-3 font-black">{addOn.name}</td>
                     <td className="p-3">
                       <input
-                        aria-label={`Prix de ${addOn.name} en euros`}
+                        aria-label={`Prix de ${addOn.name} en ${addOn.price.currency}`}
                         type="number"
-                        min="0"
-                        step="0.01"
-                        defaultValue={addOn.price.amountMinor / 100}
+                        min={MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.min}
+                        step={MONETIZATION_ADMIN_CONSTRAINTS.moneyMajor.step}
+                        defaultValue={
+                          addOn.price.amountMinor /
+                          MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor
+                        }
                         className="h-control-md w-20 rounded-control border border-border-base bg-white px-2"
                         onBlur={(event) =>
                           saveAddOn(addOn.id, {
                             price: {
                               ...addOn.price,
                               amountMinor: Math.max(
-                                0,
-                                Math.round(Number(event.target.value) * 100),
+                                MONETIZATION_ADMIN_CONSTRAINTS.moneyMinor.min,
+                                Math.round(
+                                  Number(event.target.value) *
+                                    MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
+                                ),
                               ),
                             },
                           })
@@ -477,7 +550,10 @@ export const AdminImmoPage: React.FC = () => {
                       <input
                         aria-label={`Durée de ${addOn.name} en jours`}
                         type="number"
-                        min="1"
+                        min={MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min}
+                        step={
+                          MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.step
+                        }
                         defaultValue={addOn.validityDays || ""}
                         className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
                         onBlur={(event) =>
@@ -508,7 +584,7 @@ export const AdminImmoPage: React.FC = () => {
           <div className="border-b border-border-base p-5">
             <h2 className="text-sm font-black">Types de biens</h2>
             <p className="mt-1 text-micro text-text-muted">
-              Activation et transactions permises pour la France.
+              Activation et transactions permises pour {activeMarket.name}.
             </p>
           </div>
           <div className="divide-y divide-border-subtle">
@@ -530,7 +606,7 @@ export const AdminImmoPage: React.FC = () => {
                   onChange={async (checked) => {
                     const updated =
                       await services.realEstate.updatePropertyType(
-                        "FR",
+                        activeMarket.code,
                         type.type,
                         { isActive: checked },
                       );
@@ -556,11 +632,11 @@ export const AdminImmoPage: React.FC = () => {
           <h2 className="text-sm font-black">Champs requis par marché</h2>
           <p className="mt-1 text-micro text-text-muted">
             Ces règles versionnées pilotent la validation de publication sans
-            condition France dans l’interface.
+            condition propre à {activeMarket.name} dans l’interface.
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[42rem] text-left text-xs">
+          <table className="w-full min-w-168 text-left text-xs">
             <thead className="bg-bg-subtle text-text-muted">
               <tr>
                 <th className="p-3">Champ</th>
@@ -675,25 +751,31 @@ export const AdminImmoPage: React.FC = () => {
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu mensuel récurrent</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.subscriptionMrr)}
+                {formatImmoMoney(
+                  overview.metrics.subscriptionMrr,
+                  currentLocale,
+                )}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu options</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.addOnRevenue)}
+                {formatImmoMoney(overview.metrics.addOnRevenue, currentLocale)}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Coût par lead</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.costPerLead)}
+                {formatImmoMoney(overview.metrics.costPerLead, currentLocale)}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu par lead</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.revenuePerLead)}
+                {formatImmoMoney(
+                  overview.metrics.revenuePerLead,
+                  currentLocale,
+                )}
               </dd>
             </div>
           </dl>

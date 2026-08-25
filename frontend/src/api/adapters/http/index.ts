@@ -23,3 +23,6 @@ export * from "./http-business-rules.service";
 export * from "./http-finance.service";
 export * from "./http-commission.service";
 export * from "./http-provider-control-plane.service";
+export * from "./http-support.service";
+export * from "./http-feature-flag.service";
+export * from "./http-moderation.service";

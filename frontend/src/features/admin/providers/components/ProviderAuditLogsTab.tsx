@@ -4,6 +4,7 @@ import { providerService } from "../../../../domains/providers/provider.service"
 import { roleLabel } from "../../../../security/roles.config";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { PROVIDER_AUDIT_ACTION_LABELS } from "../../../../domains/providers/provider-capabilities";
+import { useRegionalFormatters } from "../../../../hooks/useRegionalFormatters";
 
 interface ProviderAuditLogsTabProps {
   providerId?: string;
@@ -13,6 +14,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
   providerId,
 }) => {
   const { t } = useTranslation();
+  const { formatDateTime } = useRegionalFormatters();
   const auditLogs = useMemo(() => {
     return providerService.getAuditHistory(providerId);
   }, [providerId]);
@@ -58,7 +60,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
                 <span className="font-medium text-stone-600">
                   {log.actorName} ({roleLabel(log.actorRole)})
                 </span>
-                <span>{new Date(log.timestamp).toLocaleString("fr-FR")}</span>
+                <span>{formatDateTime(log.timestamp)}</span>
               </div>
             </div>
           ))}

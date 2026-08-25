@@ -9,6 +9,7 @@ import type {
   VehicleSearchQuery,
   VehicleTypeConfig,
 } from "@shongre/contracts/auto";
+import { AUTO_CONSTRAINTS, AUTO_SCHEMA_VERSION } from "@shongre/contracts/auto";
 import { applyMonetizationToAutoCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { simulateNetworkDelay } from "../../client/api-client.config";
@@ -27,8 +28,12 @@ import {
   AUTO_DEMO_WORKSPACE,
   toPublicVehicle,
 } from "../../../mocks/autoDemoData";
+import { storageService } from "../../../services/storage.service";
 
 const clone = <T>(value: T): T => structuredClone(value);
+const autoDraftKey = (draftId: string) => `shongre_auto_draft_v2:${draftId}`;
+const activeAutoDraftKey = (ownerUserId: string) =>
+  `shongre_auto_active_draft_v2:${ownerUserId}`;
 
 function matches(query: VehicleSearchQuery, vehicle: VehiclePrivate) {
   if (
@@ -234,22 +239,42 @@ export class DemoAutoService implements AutoServiceContract {
     return clone(toPublicVehicle(row));
   }
 
+  async getOrCreateDraft(ownerUserId: string, marketCode: string) {
+    await simulateNetworkDelay();
+    const activeId = storageService.get(
+      activeAutoDraftKey(ownerUserId),
+      `demo-auto-draft-${ownerUserId}`,
+    );
+    const existing = await this.getDraft(activeId);
+    const draft = {
+      ...existing,
+      id: activeId,
+      ownerUserId,
+      marketCode,
+    } as VehicleDraft;
+    storageService.set(activeAutoDraftKey(ownerUserId), activeId);
+    return this.saveDraft(draft);
+  }
+
   async getDraft(draftId: string) {
     await simulateNetworkDelay();
-    const existing = this.drafts.get(draftId);
+    const existing =
+      this.drafts.get(draftId) ||
+      storageService.get<VehicleDraft | null>(autoDraftKey(draftId), null);
     if (existing) return clone(existing);
     const seeded: VehicleDraft = {
       id: draftId,
       ownerUserId: "demo_auto_seller",
-      schemaVersion: 1,
+      schemaVersion: AUTO_SCHEMA_VERSION,
       marketCode: "FR",
-      currentStep: 1,
+      currentStep: AUTO_CONSTRAINTS.publication.firstStep,
       completedSteps: [],
       data: clone(AUTO_DEMO_DRAFT_DATA),
       duplicateCheck: "not_checked",
       updatedAt: AUTO_DEMO_NOW,
     };
     this.drafts.set(draftId, seeded);
+    storageService.set(autoDraftKey(draftId), seeded);
     return clone(seeded);
   }
 
@@ -257,6 +282,8 @@ export class DemoAutoService implements AutoServiceContract {
     await simulateNetworkDelay();
     const next = clone({ ...draft, updatedAt: AUTO_DEMO_NOW });
     this.drafts.set(next.id, next);
+    storageService.set(autoDraftKey(next.id), next);
+    storageService.set(activeAutoDraftKey(next.ownerUserId), next.id);
     return clone(next);
   }
 
@@ -271,26 +298,37 @@ export class DemoAutoService implements AutoServiceContract {
       registration?.replaceAll(/\s|-/g, "").toUpperCase() === "AA123AA";
     const current = this.drafts.get(draftId);
     const status = duplicate ? ("possible_match" as const) : ("clear" as const);
-    if (current)
-      this.drafts.set(draftId, {
+    if (current) {
+      const next = {
         ...current,
         duplicateCheck: status,
         updatedAt: AUTO_DEMO_NOW,
-      });
+      };
+      this.drafts.set(draftId, next);
+      storageService.set(autoDraftKey(draftId), next);
+    }
     return { status };
   }
 
   async submitDraft(draftId: string) {
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
-    if (!draft || draft.completedSteps.length < 10)
+    if (
+      !draft ||
+      draft.completedSteps.length <
+        AUTO_CONSTRAINTS.publication.requiredCompletedSteps
+    )
       throw new Error("Complétez les étapes obligatoires.");
     if (!["clear", "possible_match"].includes(draft.duplicateCheck))
       throw new Error("Terminez le contrôle anti-doublon.");
-    return {
+    const result = {
       vehicleId: `vehicle_pending_${this.sequence++}`,
       lifecycle: "pending_review" as const,
     };
+    this.drafts.delete(draftId);
+    storageService.remove(autoDraftKey(draftId));
+    storageService.remove(activeAutoDraftKey(draft.ownerUserId));
+    return result;
   }
 
   async uploadDraftMedia(

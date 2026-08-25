@@ -4,10 +4,19 @@ import type {
   DiscoveryMetrics,
   RankingWeights,
 } from "@shongre/contracts/discovery";
+import { DISCOVERY_CONFIGURATION_CONSTRAINTS } from "@shongre/contracts/discovery";
 import { AlertTriangle, LoaderCircle, Save, ShieldCheck } from "lucide-react";
 import { services } from "../../api";
-import { Badge, Button, StatePanel } from "../../design-system";
+import {
+  Badge,
+  Button,
+  FormField,
+  Input,
+  StatePanel,
+} from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { PromptModal } from "../../design-system/primitives/PromptModal";
 
 const WEIGHT_LABELS: Record<
   keyof RankingWeights,
@@ -39,6 +48,7 @@ const METRIC_LABELS: Array<
 
 export const AdminDiscoveryConfigurationPanel: React.FC = () => {
   const { t, locale } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   const [configuration, setConfiguration] =
     useState<DiscoveryConfiguration | null>(null);
   const [metrics, setMetrics] = useState<DiscoveryMetrics | null>(null);
@@ -46,14 +56,17 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [pendingActivation, setPendingActivation] = useState<boolean | null>(
+    null,
+  );
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
       const [nextConfiguration, nextMetrics] = await Promise.all([
-        services.admin.getDiscoveryConfiguration("FR"),
-        services.admin.getDiscoveryMetrics("FR"),
+        services.admin.getDiscoveryConfiguration(activeMarket.code),
+        services.admin.getDiscoveryMetrics(activeMarket.code),
       ]);
       setConfiguration(nextConfiguration);
       setMetrics(nextMetrics);
@@ -70,19 +83,15 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [activeMarket.code]);
 
-  const save = async (activate: boolean) => {
+  const save = (activate: boolean) => {
+    setPendingActivation(activate);
+  };
+
+  const confirmSave = async (reason: string) => {
     if (!configuration) return;
-    const reason = window
-      .prompt(
-        t("admin.discovery.reasonPrompt"),
-        activate
-          ? t("admin.discovery.publishReason")
-          : t("admin.discovery.draftReason"),
-      )
-      ?.trim();
-    if (!reason || reason.length < 8) return;
+    const activate = pendingActivation === true;
     setSaving(true);
     setError(null);
     try {
@@ -92,6 +101,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
         activate,
       );
       if (activate) setConfiguration(saved);
+      setPendingActivation(null);
       setNotice(
         activate
           ? t("admin.discovery.publishedNotice", { version: saved.version })
@@ -157,11 +167,11 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
             size="sm"
             variant="outline"
             disabled={saving}
-            onClick={() => void save(false)}
+            onClick={() => save(false)}
           >
             <Save className="w-4 h-4" /> {t("admin.discovery.saveDraft")}
           </Button>
-          <Button size="sm" disabled={saving} onClick={() => void save(true)}>
+          <Button size="sm" disabled={saving} onClick={() => save(true)}>
             {saving ? (
               <LoaderCircle className="w-4 h-4 animate-spin" />
             ) : (
@@ -225,7 +235,13 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
             {t("admin.discovery.weightsTitle")}
           </h3>
           <Badge
-            variant={Math.abs(weightTotal - 1) < 0.001 ? "success" : "warning"}
+            variant={
+              Math.abs(
+                weightTotal - DISCOVERY_CONFIGURATION_CONSTRAINTS.weightTotal,
+              ) < DISCOVERY_CONFIGURATION_CONSTRAINTS.weightTotalTolerance
+                ? "success"
+                : "warning"
+            }
           >
             {t("admin.discovery.total", { total: weightTotal.toFixed(2) })}
           </Badge>
@@ -234,16 +250,13 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
           {(
             Object.keys(configuration.weights) as Array<keyof RankingWeights>
           ).map((key) => (
-            <label
-              key={key}
-              className="text-micro font-bold text-text-secondary"
-            >
-              {t(WEIGHT_LABELS[key])}
-              <input
+            <FormField key={key} label={t(WEIGHT_LABELS[key])}>
+              <Input
                 type="number"
-                min={0}
-                max={1}
-                step={0.01}
+                size="sm"
+                min={DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min}
+                max={DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max}
+                step={DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.step}
                 value={configuration.weights[key]}
                 onChange={(event) =>
                   setConfiguration((current) =>
@@ -258,9 +271,8 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
                       : current,
                   )
                 }
-                className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs focus-visible:outline-2 focus-visible:outline-primary"
               />
-            </label>
+            </FormField>
           ))}
         </div>
       </section>
@@ -273,9 +285,9 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
           {t("admin.discovery.sponsoredTitle")}
         </h3>
         <div className="mt-2 grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          <label className="text-micro font-bold text-text-secondary">
-            {t("admin.discovery.positions")}
-            <input
+          <FormField label={t("admin.discovery.positions")}>
+            <Input
+              size="sm"
               value={configuration.sponsored.positions.join(", ")}
               onChange={(event) =>
                 setConfiguration((current) =>
@@ -288,33 +300,45 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
                             .split(",")
                             .map((value) => Number(value.trim()))
                             .filter(
-                              (value) => Number.isInteger(value) && value > 0,
+                              (value) =>
+                                Number.isInteger(value) &&
+                                value >=
+                                  DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored
+                                    .positionMin,
                             ),
                         },
                       }
                     : current,
                 )
               }
-              className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs focus-visible:outline-2 focus-visible:outline-primary"
             />
-          </label>
+          </FormField>
           {(
             [
-              ["maxPerPage", "admin.discovery.maxPerPage", 1],
-              ["maxShare", "admin.discovery.maxShare", 0.05],
-              ["minimumRelevance", "admin.discovery.minimumRelevance", 0.05],
+              [
+                "maxPerPage",
+                "admin.discovery.maxPerPage",
+                DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.maxPerPage,
+              ],
+              [
+                "maxShare",
+                "admin.discovery.maxShare",
+                DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.maxShare,
+              ],
+              [
+                "minimumRelevance",
+                "admin.discovery.minimumRelevance",
+                DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.minimumRelevance,
+              ],
             ] as const
-          ).map(([key, label, step]) => (
-            <label
-              key={key}
-              className="text-micro font-bold text-text-secondary"
-            >
-              {t(label)}
-              <input
+          ).map(([key, label, constraints]) => (
+            <FormField key={key} label={t(label)}>
+              <Input
                 type="number"
-                min={0}
-                max={key === "maxPerPage" ? 20 : 1}
-                step={step}
+                size="sm"
+                min={constraints.min}
+                max={"max" in constraints ? constraints.max : undefined}
+                step={constraints.step}
                 value={configuration.sponsored[key]}
                 onChange={(event) =>
                   setConfiguration((current) =>
@@ -329,12 +353,30 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
                       : current,
                   )
                 }
-                className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs focus-visible:outline-2 focus-visible:outline-primary"
               />
-            </label>
+            </FormField>
           ))}
         </div>
       </section>
+
+      <PromptModal
+        isOpen={pendingActivation !== null}
+        onClose={() => setPendingActivation(null)}
+        onSubmit={(reason) => void confirmSave(reason)}
+        title={
+          pendingActivation
+            ? t("admin.discovery.publish")
+            : t("admin.discovery.saveDraft")
+        }
+        label={t("admin.discovery.reasonPrompt")}
+        initialValue={
+          pendingActivation
+            ? t("admin.discovery.publishReason")
+            : t("admin.discovery.draftReason")
+        }
+        minLength={DISCOVERY_CONFIGURATION_CONSTRAINTS.changeReason.minLength}
+        multiline
+      />
     </div>
   );
 };

@@ -2,13 +2,18 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
-import { consentService } from "../../domains/consent/consent.service";
+import {
+  consentService,
+  defaultCategories,
+} from "../../domains/consent/consent.service";
 import {
   ConsentCategories,
   ConsentCategory,
+  ConsentDecision,
 } from "../../domains/consent/consent.types";
 
 interface ConsentContextValue {
@@ -42,11 +47,18 @@ const ConsentContext = createContext<ConsentContextValue | undefined>(
 export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [decision, setDecision] = useState(() => consentService.getDecision());
+  // The server cannot read browser storage, so the client must begin from the
+  // same opt-in state. Restoring a current decision after mount avoids a
+  // hydration mismatch without ever creating a pre-consent tracking window.
+  const [decision, setDecision] = useState<ConsentDecision | null>(null);
   const [isPreferencesOpen, setPreferencesOpen] = useState(false);
 
+  useEffect(() => {
+    setDecision(consentService.getDecision());
+  }, []);
+
   const categories = useMemo(
-    () => decision?.categories ?? consentService.getCategories(),
+    () => decision?.categories ?? defaultCategories(),
     [decision],
   );
 

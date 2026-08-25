@@ -18,8 +18,18 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { RealEstateCatalog } from "@shongre/contracts/real-estate";
+import {
+  REAL_ESTATE_CONSTRAINTS,
+  REAL_ESTATE_SCHEMA_VERSION,
+} from "@shongre/contracts/real-estate";
+import { motionDurationMs } from "@shongre/design-tokens";
 import { services } from "../../api/client/service-registry";
+import {
+  EMPTY_PROPERTY_PUBLICATION_DRAFT,
+  type PropertyPublicationDraftData,
+} from "../../api/contracts/real-estate.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -27,13 +37,14 @@ import {
   Checkbox,
   FormField,
   Input,
+  ProgressBar,
   Skeleton,
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { formatImmoMoney } from "./immo-format";
 import { ImmoLocationPicker } from "./components/ImmoLocationPicker";
+import { scrollToTop } from "../../utilities/motion";
 
 const STEPS = [
   ["Projet", KeyRound],
@@ -48,183 +59,42 @@ const STEPS = [
   ["Publication", CheckCircle2],
 ] as const;
 
-type DraftData = {
-  transactionType: string;
-  propertyType: string;
-  marketCodes: string[];
-  city: string;
-  postalCode: string;
-  publicLabel: string;
-  exactAddress: string;
-  latitude: number;
-  longitude: number;
-  locationPrecision: "street" | "district" | "city";
-  livingAreaSquareMeters: number;
-  landAreaSquareMeters: number;
-  rooms: number;
-  bedrooms: number;
-  bathrooms: number;
-  amenities: string[];
-  condition: string;
-  isFurnished: boolean;
-  priceMinor: number;
-  chargesMinor: number;
-  period: string;
-  feesPaidBy: string;
-  dpeClass: string;
-  gesClass: string;
-  coOwnershipApplicable: boolean;
-  coOwnershipLots: number;
-  ownershipDeclared: boolean;
-  title: string;
-  description: string;
-  mediaUrls: string[];
-  privateDocumentKeys: string[];
-  sellerType: string;
-  sellerDisplayName: string;
-  offerId: string;
-  addOnIds: string[];
-};
+const PUBLISH_STEP = {
+  project: 1,
+  location: 2,
+  characteristics: 3,
+  pricing: 4,
+  legal: 5,
+  content: 6,
+  preview: 7,
+  offer: 8,
+  payment: 9,
+  publication: 10,
+} as const;
+const FIRST_STEP = REAL_ESTATE_CONSTRAINTS.publication.firstStep;
+const TOTAL_STEPS = REAL_ESTATE_CONSTRAINTS.publication.stepCount;
 
-const initialData: DraftData = {
-  transactionType: "sale",
-  propertyType: "apartment",
-  marketCodes: ["FR"],
-  city: "Lyon",
-  postalCode: "69003",
-  publicLabel: "Lyon 3e · Montchat",
-  exactAddress: "",
-  latitude: 45.764,
-  longitude: 4.8357,
-  locationPrecision: "district",
-  livingAreaSquareMeters: 0,
-  landAreaSquareMeters: 0,
-  rooms: 0,
-  bedrooms: 0,
-  bathrooms: 0,
-  amenities: [],
-  condition: "good",
-  isFurnished: false,
-  priceMinor: 0,
-  chargesMinor: 0,
-  period: "total",
-  feesPaidBy: "seller",
-  dpeClass: "",
-  gesClass: "",
-  coOwnershipApplicable: false,
-  coOwnershipLots: 0,
-  ownershipDeclared: false,
-  title: "",
-  description: "",
-  mediaUrls: [],
-  privateDocumentKeys: [],
-  sellerType: "owner",
-  sellerDisplayName: "",
-  offerId: "immo_owner_free",
-  addOnIds: [],
-};
+type DraftData = PropertyPublicationDraftData;
 
 const fieldClass =
   "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
 
-const serializeDraftData = (data: DraftData) => ({
-  ...data,
-  address: {
-    city: data.city,
-    postalCode: data.postalCode,
-    countryCode: "FR",
-    latitude: data.latitude,
-    longitude: data.longitude,
-    precision: data.locationPrecision,
-    publicLabel: data.publicLabel,
-    exactAddress: data.exactAddress || undefined,
-  },
-  characteristics: {
-    livingAreaSquareMeters: data.livingAreaSquareMeters,
-    landAreaSquareMeters: data.landAreaSquareMeters || undefined,
-    rooms: data.rooms,
-    bedrooms: data.bedrooms,
-    bathrooms: data.bathrooms,
-    condition: data.condition,
-    isFurnished: data.isFurnished,
-    amenities: data.amenities,
-    accessibilityFeatures: [],
-  },
-  financials: {
-    price: { amountMinor: data.priceMinor, currency: "EUR" },
-    charges: data.chargesMinor
-      ? { amountMinor: data.chargesMinor, currency: "EUR" }
-      : undefined,
-    period: data.period,
-    feesPaidBy: data.feesPaidBy,
-    isNegotiable: false,
-  },
-  energy: {
-    dpeClass: data.dpeClass || undefined,
-    gesClass: data.gesClass || undefined,
-  },
-  regulatory: {
-    coOwnershipApplicable: data.coOwnershipApplicable,
-    coOwnershipLots: data.coOwnershipLots || undefined,
-    coOwnershipProcedureStatus: data.coOwnershipApplicable
-      ? "none"
-      : "not_applicable",
-    riskInformationStatus: "available",
-    ownershipDeclared: data.ownershipDeclared,
-    legalNotices: [],
-  },
-  media: { photos: data.mediaUrls, floorPlans: [] },
-  seller: {
-    type: data.sellerType,
-    id: data.sellerType === "owner" ? "owner_demo" : "agency_canopee",
-    displayName: data.sellerDisplayName,
-    verificationLabels: [],
-  },
-  documents: data.privateDocumentKeys.map((privateStorageKey, index) => ({
-    id: `draft-document-${index + 1}`,
-    type: "other",
-    status: "uploaded",
-    privateStorageKey,
-  })),
-});
-
 export const ImmoPublishWizardPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const accountId = currentUser?.id || "guest";
-  const localKey = `shongre_immo_publication_v1:${accountId}`;
-  const idKey = `${localKey}:id`;
-  const [draftId] = useState(() =>
-    storageService.get(
-      idKey,
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : "00000000-0000-4000-8000-000000000014",
-    ),
-  );
-  const [step, setStep] = useState(() =>
-    storageService.get(`${localKey}:step`, 1),
-  );
-  const [completedSteps, setCompletedSteps] = useState<number[]>(() =>
-    storageService.get(`${localKey}:completed`, []),
-  );
-  const [data, setData] = useState<DraftData>(() =>
-    storageService.get(localKey, {
-      ...initialData,
-      sellerDisplayName: currentUser?.name || "",
-    }),
-  );
+  const [draftId, setDraftId] = useState("");
+  const [step, setStep] = useState<number>(FIRST_STEP);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [data, setData] = useState<DraftData>(EMPTY_PROPERTY_PUBLICATION_DRAFT);
   const [catalog, setCatalog] = useState<RealEstateCatalog | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [publishedId, setPublishedId] = useState<string>();
-  const [paymentStatus, setPaymentStatus] = useState<string | undefined>(
-    () =>
-      storageService.get<string | null>(`${localKey}:payment`, null) ||
-      undefined,
-  );
+  const [paymentStatus, setPaymentStatus] = useState<string>();
   const hydrated = useRef(false);
   const checkoutRecoveryStarted = useRef(false);
 
@@ -236,59 +106,66 @@ export const ImmoPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
-    storageService.set(idKey, draftId);
     Promise.all([
-      services.realEstate.getCatalog("FR"),
-      services.realEstate.getDraft(draftId),
+      services.realEstate.getCatalog(activeMarket.code),
+      services.realEstate.getOrCreateDraft(
+        accountId,
+        activeMarket.code,
+        currentUser?.name,
+      ),
     ])
       .then(([nextCatalog, remote]) => {
         setCatalog(nextCatalog);
-        if (remote) {
-          setStep(remote.currentStep);
-          setCompletedSteps(remote.completedSteps);
-          setData((current) => ({
-            ...current,
-            ...(remote.data as Partial<DraftData>),
-          }));
-        }
+        setDraftId(remote.id);
+        setStep(remote.currentStep);
+        setCompletedSteps(remote.completedSteps);
+        setData({
+          ...EMPTY_PROPERTY_PUBLICATION_DRAFT,
+          ...(remote.data as Partial<DraftData>),
+        });
+        const restoredPaymentStatus = remote.data.paymentStatus;
+        setPaymentStatus(
+          typeof restoredPaymentStatus === "string"
+            ? restoredPaymentStatus
+            : undefined,
+        );
         hydrated.current = true;
       })
       .catch(() =>
         toast.error("Le service de publication Immo est indisponible."),
       );
-  }, [draftId, idKey, toast]);
+  }, [accountId, activeMarket.code, currentUser?.name, toast]);
 
   useEffect(() => {
-    if (!hydrated.current) return;
-    storageService.set(localKey, data);
-    storageService.set(`${localKey}:step`, step);
-    storageService.set(`${localKey}:completed`, completedSteps);
+    if (!hydrated.current || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
         await services.realEstate.saveDraft({
           id: draftId,
           ownerUserId: accountId,
-          organizationId:
-            data.sellerType === "owner" ? undefined : "agency_canopee",
-          schemaVersion: 1,
-          marketCode: "FR",
+          schemaVersion: REAL_ESTATE_SCHEMA_VERSION,
+          marketCode: activeMarket.code,
           currentStep: step,
           completedSteps,
-          data: serializeDraftData(data),
+          data: { ...data, paymentStatus },
           validationIssues: [],
           updatedAt: new Date().toISOString(),
         });
       } finally {
         setSaving(false);
       }
-    }, 350);
+    }, motionDurationMs.slow);
     return () => window.clearTimeout(timer);
-  }, [accountId, completedSteps, data, draftId, localKey, step]);
-
-  useEffect(() => {
-    storageService.set(`${localKey}:payment`, paymentStatus || null);
-  }, [localKey, paymentStatus]);
+  }, [
+    accountId,
+    activeMarket.code,
+    completedSteps,
+    data,
+    draftId,
+    paymentStatus,
+    step,
+  ]);
 
   useEffect(() => {
     if (
@@ -301,7 +178,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
     services.realEstate
       .createCheckout({
         accountId,
-        marketCode: "FR",
+        marketCode: activeMarket.code,
         offerId: data.offerId,
         addOnIds: data.addOnIds,
         idempotencyKey: `immo-${draftId}-${data.offerId}`,
@@ -309,19 +186,29 @@ export const ImmoPublishWizardPage: React.FC = () => {
       .then((result) => {
         setPaymentStatus(result.status);
         if (result.status === "paid") {
-          setCompletedSteps((current) => Array.from(new Set([...current, 9])));
-          setStep(10);
+          setCompletedSteps((current) =>
+            Array.from(new Set([...current, PUBLISH_STEP.payment])),
+          );
+          setStep(PUBLISH_STEP.publication);
           toast.success("Paiement confirmé. Vous pouvez envoyer l’annonce.");
         } else {
-          setStep(9);
+          setStep(PUBLISH_STEP.payment);
           toast.info("Le paiement est encore en cours de confirmation.");
         }
       })
       .catch(() => {
-        setStep(9);
+        setStep(PUBLISH_STEP.payment);
         toast.error("La confirmation du paiement n’a pas pu être récupérée.");
       });
-  }, [accountId, catalog, data.addOnIds, data.offerId, draftId, toast]);
+  }, [
+    accountId,
+    activeMarket.code,
+    catalog,
+    data.addOnIds,
+    data.offerId,
+    draftId,
+    toast,
+  ]);
 
   const update = <K extends keyof DraftData>(key: K, value: DraftData[K]) =>
     setData((current) => ({ ...current, [key]: value }));
@@ -334,23 +221,38 @@ export const ImmoPublishWizardPage: React.FC = () => {
     );
 
   const validate = () => {
-    if (step === 1 && (!data.transactionType || !data.propertyType))
+    if (
+      step === PUBLISH_STEP.project &&
+      (!data.transactionType || !data.propertyType)
+    )
       return "Choisissez le projet et le type de bien.";
-    if (step === 2 && (!data.city || !data.postalCode || !data.publicLabel))
+    if (
+      step === PUBLISH_STEP.location &&
+      (!data.city || !data.postalCode || !data.publicLabel)
+    )
       return "Renseignez une localisation publique.";
-    if (step === 3 && (!data.livingAreaSquareMeters || !data.rooms))
+    if (
+      step === PUBLISH_STEP.characteristics &&
+      (!data.livingAreaSquareMeters || !data.rooms)
+    )
       return "La surface et le nombre de pièces sont requis.";
-    if (step === 4 && !data.priceMinor) return "Renseignez le prix demandé.";
-    if (step === 5 && (!data.ownershipDeclared || !data.sellerDisplayName))
+    if (step === PUBLISH_STEP.pricing && !data.priceMinor)
+      return "Renseignez le prix demandé.";
+    if (
+      step === PUBLISH_STEP.legal &&
+      (!data.ownershipDeclared || !data.sellerDisplayName)
+    )
       return "Confirmez votre droit à publier et le nom de l’annonceur.";
     if (
-      step === 6 &&
-      (data.title.length < 8 ||
-        data.description.length < 30 ||
+      step === PUBLISH_STEP.content &&
+      (data.title.length < REAL_ESTATE_CONSTRAINTS.title.minLength ||
+        data.description.length <
+          REAL_ESTATE_CONSTRAINTS.description.minLength ||
         !data.mediaUrls.length)
     )
       return "Précisez le titre, la description et ajoutez une photo.";
-    if (step === 8 && !data.offerId) return "Sélectionnez une offre.";
+    if (step === PUBLISH_STEP.offer && !data.offerId)
+      return "Sélectionnez une offre.";
     return undefined;
   };
 
@@ -361,8 +263,8 @@ export const ImmoPublishWizardPage: React.FC = () => {
       return;
     }
     setCompletedSteps((current) => Array.from(new Set([...current, step])));
-    setStep((current) => Math.min(10, current + 1));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((current) => Math.min(TOTAL_STEPS, current + FIRST_STEP));
+    scrollToTop();
   };
 
   const upload = async (
@@ -425,11 +327,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
     try {
       const checkout = await services.realEstate.createCheckout({
         accountId,
-        marketCode: "FR",
+        marketCode: activeMarket.code,
         offerId: data.offerId,
         addOnIds: data.addOnIds,
         idempotencyKey: `immo-${draftId}-${data.offerId}`,
-        scenario: "success",
       });
       setPaymentStatus(checkout.status);
       if (checkout.provider === "stripe" && checkout.providerCheckoutUrl) {
@@ -444,8 +345,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
         );
         return;
       }
-      setCompletedSteps((current) => Array.from(new Set([...current, 9])));
-      setStep(10);
+      setCompletedSteps((current) =>
+        Array.from(new Set([...current, PUBLISH_STEP.payment])),
+      );
+      setStep(PUBLISH_STEP.publication);
     } catch (cause) {
       toast.error(
         cause instanceof Error ? cause.message : "Paiement impossible.",
@@ -462,25 +365,24 @@ export const ImmoPublishWizardPage: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      const done = Array.from({ length: 9 }, (_, index) => index + 1);
+      const done = Array.from(
+        { length: PUBLISH_STEP.publication - FIRST_STEP },
+        (_, index) => index + FIRST_STEP,
+      );
       setCompletedSteps(done);
       await services.realEstate.saveDraft({
         id: draftId,
         ownerUserId: accountId,
-        organizationId:
-          data.sellerType === "owner" ? undefined : "agency_canopee",
-        schemaVersion: 1,
-        marketCode: "FR",
-        currentStep: 10,
+        schemaVersion: REAL_ESTATE_SCHEMA_VERSION,
+        marketCode: activeMarket.code,
+        currentStep: PUBLISH_STEP.publication,
         completedSteps: done,
-        data: serializeDraftData(data),
+        data: { ...data, paymentStatus },
         validationIssues: [],
         updatedAt: new Date().toISOString(),
       });
       const result = await services.realEstate.submitDraft(draftId);
       setPublishedId(result.propertyId);
-      storageService.set(localKey, initialData);
-      storageService.set(`${localKey}:payment`, null);
       toast.success(
         "Annonce envoyée en validation. Aucun paiement réel n’a été effectué en mode démo.",
       );
@@ -493,10 +395,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
     }
   };
 
-  if (!catalog)
+  if (!catalog || !draftId)
     return (
       <div className="mx-auto max-w-5xl p-6">
-        <Skeleton className="h-[42rem] rounded-card" />
+        <Skeleton className="h-168 rounded-card" />
       </div>
     );
   const offer =
@@ -521,11 +423,11 @@ export const ImmoPublishWizardPage: React.FC = () => {
           </p>
         </div>
       </div>
-      <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-5 px-4 py-6 sm:px-6 lg:grid-cols-media-content-lg">
         <aside className="hidden rounded-card border border-border-base bg-bg-surface p-3 lg:block">
           <ol className="space-y-1">
             {STEPS.map(([label, Icon], index) => {
-              const number = index + 1;
+              const number = index + FIRST_STEP;
               const active = number === step;
               const complete = completedSteps.includes(number);
               return (
@@ -533,7 +435,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      number <= Math.max(step, ...completedSteps, 1) &&
+                      number <= Math.max(step, ...completedSteps, FIRST_STEP) &&
                       setStep(number)
                     }
                     className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-xs font-bold ${active ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
@@ -561,24 +463,27 @@ export const ImmoPublishWizardPage: React.FC = () => {
           <div className="mb-6">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-bold text-primary">
-                Étape {step} sur 10
+                Étape {step} sur {TOTAL_STEPS}
               </p>
               <span className="text-xs text-text-muted">
-                {Math.round((step / 10) * 100)} %
+                {new Intl.NumberFormat(currentLocale, {
+                  style: "percent",
+                  maximumFractionDigits: 0,
+                }).format(step / TOTAL_STEPS)}
               </span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-subtle">
-              <div
-                className="h-full bg-primary transition-all"
-                style={{ width: `${step * 10}%` }}
-              />
-            </div>
+            <ProgressBar
+              className="mt-2"
+              value={step}
+              max={TOTAL_STEPS}
+              label={`Étape ${step} sur ${TOTAL_STEPS}`}
+            />
             <h2 className="mt-4 text-xl font-black text-text-main">
-              {STEPS[step - 1][0]}
+              {STEPS[step - FIRST_STEP][0]}
             </h2>
           </div>
 
-          {step === 1 ? (
+          {step === PUBLISH_STEP.project ? (
             <div className="space-y-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-bold">
@@ -623,7 +528,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 2 ? (
+          {step === PUBLISH_STEP.location ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField label="Ville" required>
@@ -705,23 +610,24 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   Marchés de publication
                 </legend>
                 <label className="mt-2 flex items-center gap-2 text-xs">
-                  <Checkbox checked label="France" readOnly /> France — actif
+                  <Checkbox checked label={activeMarket.name} readOnly />{" "}
+                  {activeMarket.name} — actif
                 </label>
                 <p className="mt-2 text-micro text-text-muted">
-                  Belgique et Luxembourg seront proposés lorsque la
-                  configuration les activera.
+                  D’autres marchés compatibles seront proposés lorsque leur
+                  configuration autorisera cette publication.
                 </p>
               </fieldset>
             </div>
           ) : null}
 
-          {step === 3 ? (
+          {step === PUBLISH_STEP.characteristics ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-3">
                 <FormField label="Surface habitable (m²)" required>
                   <Input
                     type="number"
-                    min="1"
+                    min={REAL_ESTATE_CONSTRAINTS.positiveInteger.min}
                     value={data.livingAreaSquareMeters || ""}
                     onChange={(event) =>
                       update(
@@ -734,7 +640,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <FormField label="Pièces" required>
                   <Input
                     type="number"
-                    min="0"
+                    min={REAL_ESTATE_CONSTRAINTS.nonNegativeInteger.min}
                     value={data.rooms || ""}
                     onChange={(event) =>
                       update("rooms", Number(event.target.value))
@@ -744,7 +650,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <FormField label="Chambres">
                   <Input
                     type="number"
-                    min="0"
+                    min={REAL_ESTATE_CONSTRAINTS.nonNegativeInteger.min}
                     value={data.bedrooms || ""}
                     onChange={(event) =>
                       update("bedrooms", Number(event.target.value))
@@ -756,7 +662,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <FormField label="Salles de bain">
                   <Input
                     type="number"
-                    min="0"
+                    min={REAL_ESTATE_CONSTRAINTS.nonNegativeInteger.min}
                     value={data.bathrooms || ""}
                     onChange={(event) =>
                       update("bathrooms", Number(event.target.value))
@@ -803,22 +709,30 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 4 ? (
+          {step === PUBLISH_STEP.pricing ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField
                   label="Prix"
                   required
-                  hint="Saisi en euros, conservé en centimes dans le contrat."
+                  hint={`Saisi en ${catalog.config.currency}, conservé en unités mineures dans le contrat.`}
                 >
                   <Input
                     type="number"
-                    min="0"
-                    value={data.priceMinor ? data.priceMinor / 100 : ""}
+                    min={REAL_ESTATE_CONSTRAINTS.nonNegativeInteger.min}
+                    value={
+                      data.priceMinor
+                        ? data.priceMinor /
+                          REAL_ESTATE_CONSTRAINTS.minorUnitsPerMajor
+                        : ""
+                    }
                     onChange={(event) =>
                       update(
                         "priceMinor",
-                        Math.round(Number(event.target.value) * 100),
+                        Math.round(
+                          Number(event.target.value) *
+                            REAL_ESTATE_CONSTRAINTS.minorUnitsPerMajor,
+                        ),
                       )
                     }
                   />
@@ -826,12 +740,20 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <FormField label="Charges">
                   <Input
                     type="number"
-                    min="0"
-                    value={data.chargesMinor ? data.chargesMinor / 100 : ""}
+                    min={REAL_ESTATE_CONSTRAINTS.nonNegativeInteger.min}
+                    value={
+                      data.chargesMinor
+                        ? data.chargesMinor /
+                          REAL_ESTATE_CONSTRAINTS.minorUnitsPerMajor
+                        : ""
+                    }
                     onChange={(event) =>
                       update(
                         "chargesMinor",
-                        Math.round(Number(event.target.value) * 100),
+                        Math.round(
+                          Number(event.target.value) *
+                            REAL_ESTATE_CONSTRAINTS.minorUnitsPerMajor,
+                        ),
                       )
                     }
                   />
@@ -871,7 +793,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 5 ? (
+          {step === PUBLISH_STEP.legal ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-bold">
@@ -912,7 +834,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <FormField label="Nombre de lots" required>
                   <Input
                     type="number"
-                    min="1"
+                    min={REAL_ESTATE_CONSTRAINTS.positiveInteger.min}
                     value={data.coOwnershipLots || ""}
                     onChange={(event) =>
                       update("coOwnershipLots", Number(event.target.value))
@@ -936,11 +858,12 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 6 ? (
+          {step === PUBLISH_STEP.content ? (
             <div className="space-y-4">
               <FormField label="Titre" required>
                 <Input
-                  maxLength={100}
+                  minLength={REAL_ESTATE_CONSTRAINTS.title.minLength}
+                  maxLength={REAL_ESTATE_CONSTRAINTS.title.maxLength}
                   value={data.title}
                   onChange={(event) => update("title", event.target.value)}
                 />
@@ -952,7 +875,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               >
                 <Textarea
                   rows={9}
-                  minLength={30}
+                  minLength={REAL_ESTATE_CONSTRAINTS.description.minLength}
                   value={data.description}
                   onChange={(event) =>
                     update("description", event.target.value)
@@ -962,13 +885,14 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 6 ? (
+          {step === PUBLISH_STEP.content ? (
             <div className="space-y-5">
               <div className="rounded-card border border-dashed border-primary-border bg-primary-light p-5 text-center">
                 <Camera className="mx-auto h-7 w-7 text-primary" />
                 <p className="mt-2 text-sm font-black">Photos publiques</p>
                 <p className="mt-1 text-xs text-text-muted">
-                  JPG, PNG ou WebP, 10 Mo maximum.
+                  JPG, PNG ou WebP · maximum{" "}
+                  {REAL_ESTATE_CONSTRAINTS.media.maxFileSizeMegabytes} Mo.
                 </p>
                 <label className="mt-3 inline-flex cursor-pointer rounded-control bg-primary px-4 py-2 text-xs font-bold text-white">
                   <input
@@ -1009,7 +933,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 5 ? (
+          {step === PUBLISH_STEP.legal ? (
             <div className="space-y-4">
               <label className="text-xs font-bold">
                 Vous publiez comme
@@ -1045,10 +969,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 7 ? (
+          {step === PUBLISH_STEP.preview ? (
             <div className="space-y-5">
               <div className="overflow-hidden rounded-card border border-border-base">
-                <div className="aspect-[16/8] bg-bg-subtle">
+                <div className="aspect-2/1 bg-bg-subtle">
                   {data.mediaUrls[0] ? (
                     <img
                       src={data.mediaUrls[0]}
@@ -1077,10 +1001,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     {data.publicLabel} · localisation approximative
                   </p>
                   <p className="mt-4 text-xl font-black text-primary">
-                    {formatImmoMoney({
-                      amountMinor: data.priceMinor,
-                      currency: "EUR",
-                    })}
+                    {formatImmoMoney(
+                      {
+                        amountMinor: data.priceMinor,
+                        currency: catalog.config.currency,
+                      },
+                      currentLocale,
+                    )}
                     {data.period === "month" ? "/mois" : ""}
                   </p>
                   <p className="mt-3 text-sm text-text-secondary">
@@ -1096,7 +1023,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 8 ? (
+          {step === PUBLISH_STEP.offer ? (
             <div className="space-y-6">
               {publishedId ? (
                 <div className="rounded-card bg-success-surface p-6 text-center">
@@ -1150,7 +1077,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
                               {item.description}
                             </p>
                             <p className="mt-3 text-base font-black text-primary">
-                              {price ? formatImmoMoney(price) : "Sur devis"}
+                              {price
+                                ? formatImmoMoney(price, currentLocale)
+                                : "Sur devis"}
                               {item.kind === "subscription" ? "/mois" : ""}
                             </p>
                           </button>
@@ -1163,7 +1092,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       {catalog.addOns.map((item) => (
                         <Checkbox
                           key={item.id}
-                          label={`${item.name} · ${formatImmoMoney(item.price)}`}
+                          label={`${item.name} · ${formatImmoMoney(item.price, currentLocale)}`}
                           checked={data.addOnIds.includes(item.id)}
                           onChange={() => toggle("addOnIds", item.id)}
                         />
@@ -1197,7 +1126,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 9 ? (
+          {step === PUBLISH_STEP.payment ? (
             <div className="space-y-5">
               <div className="rounded-card border border-border-base bg-bg-subtle p-5">
                 <h3 className="text-sm font-black text-text-main">
@@ -1207,7 +1136,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   <span>{offer.name}</span>
                   <strong>
                     {offer.prices[0]
-                      ? formatImmoMoney(offer.prices[0].amount)
+                      ? formatImmoMoney(offer.prices[0].amount, currentLocale)
                       : "Sur devis"}
                   </strong>
                 </div>
@@ -1219,7 +1148,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       className="mt-3 flex items-center justify-between text-xs"
                     >
                       <span>{item.name}</span>
-                      <strong>{formatImmoMoney(item.price)}</strong>
+                      <strong>
+                        {formatImmoMoney(item.price, currentLocale)}
+                      </strong>
                     </div>
                   ))}
                 <p className="mt-4 border-t border-border-base pt-4 text-micro text-text-muted">
@@ -1254,7 +1185,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </div>
           ) : null}
 
-          {step === 10 ? (
+          {step === PUBLISH_STEP.publication ? (
             <div className="space-y-5">
               {publishedId ? (
                 <div className="rounded-card bg-success-surface p-6 text-center">
@@ -1280,10 +1211,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     Dernière vérification avant modération
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-text-secondary">
-                    Votre annonce sera contrôlée selon les règles France. Une
-                    demande de justificatif ou de correction peut suivre.
-                    Shongre ne présente aucun document comme vérifié sans examen
-                    autorisé.
+                    Votre annonce sera contrôlée selon les règles du marché{" "}
+                    {activeMarket.name}. Une demande de justificatif ou de
+                    correction peut suivre. Shongre ne présente aucun document
+                    comme vérifié sans examen autorisé.
                   </p>
                   <Button
                     variant="primary"
@@ -1303,13 +1234,17 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <div className="mt-8 flex items-center justify-between border-t border-border-subtle pt-5">
               <Button
                 variant="outline"
-                onClick={() => setStep((current) => Math.max(1, current - 1))}
-                disabled={step === 1}
+                onClick={() =>
+                  setStep((current) =>
+                    Math.max(FIRST_STEP, current - FIRST_STEP),
+                  )
+                }
+                disabled={step === FIRST_STEP}
                 leftIcon={<ArrowLeft className="h-4 w-4" />}
               >
                 Retour
               </Button>
-              {step < 8 ? (
+              {step < PUBLISH_STEP.offer ? (
                 <Button
                   variant="primary"
                   onClick={next}

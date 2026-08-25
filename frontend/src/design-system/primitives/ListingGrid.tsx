@@ -23,8 +23,8 @@ export const ListingGrid: React.FC<ListingGridProps> = ({
   <div
     className={`listing-grid grid grid-cols-2 gap-3 sm:gap-4 ${
       fluid
-        ? "listing-grid-fluid sm:grid-cols-[repeat(auto-fill,minmax(var(--spacing-listing-card-grid-min),1fr))]"
-        : "sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))] sm:justify-start"
+        ? "listing-grid-fluid sm:grid-cols-listing-grid-fluid"
+        : "sm:grid-cols-listing-grid-fixed sm:justify-start"
     } ${className}`}
   >
     {children}

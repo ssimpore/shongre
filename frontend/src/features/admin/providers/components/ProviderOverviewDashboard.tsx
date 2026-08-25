@@ -24,6 +24,7 @@ import { providerService } from "../../../../domains/providers/provider.service"
 import { PROVIDER_CATEGORIES } from "../../../../domains/providers/provider-capabilities";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { useRegionalFormatters } from "../../../../hooks/useRegionalFormatters";
 
 interface ProviderOverviewDashboardProps {
   providers: Provider[];
@@ -36,6 +37,7 @@ export const ProviderOverviewDashboard: React.FC<
   ProviderOverviewDashboardProps
 > = ({ providers, configurations, onSelectCategory, onNavigateToTab }) => {
   const { t } = useTranslation();
+  const { formatDate } = useRegionalFormatters();
   // Key Metrics
   const metrics = useMemo(() => {
     let implementedCount = 0;
@@ -250,7 +252,7 @@ export const ProviderOverviewDashboard: React.FC<
         </div>
       </div>
 
-      {/* 2. Critical Platform Capabilities Matrix (France Baseline) */}
+      {/* 2. Critical platform capabilities matrix */}
       <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
@@ -363,12 +365,12 @@ export const ProviderOverviewDashboard: React.FC<
                   {catalogOwner ? (
                     <Link
                       to={`/admin/fournisseurs/${catalogOwner.id}`}
-                      className="font-semibold text-primary hover:underline truncate max-w-[140px]"
+                      className="font-semibold text-primary hover:underline truncate max-w-35"
                     >
                       {owner?.displayName}
                     </Link>
                   ) : (
-                    <span className="font-semibold text-stone-700 truncate max-w-[140px]">
+                    <span className="font-semibold text-stone-700 truncate max-w-35">
                       {owner?.displayName || "Aucun propriétaire"}
                     </span>
                   )}
@@ -460,7 +462,7 @@ export const ProviderOverviewDashboard: React.FC<
                       {evt.providerName}
                     </span>
                     <span>
-                      {new Date(evt.timestamp).toLocaleDateString("fr-FR", {
+                      {formatDate(evt.timestamp, {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}

@@ -297,7 +297,12 @@ export interface Message {
   attachments?: string[];
   isOffer?: boolean;
   offerPrice?: number;
-  offerStatus?: "pending" | "accepted" | "declined" | "expired";
+  offerId?: string;
+  offerAmountMinor?: number;
+  offerCurrency?: string;
+  offerExpiresAt?: string;
+  offerStatus?:
+    "pending" | "accepted" | "declined" | "countered" | "withdrawn" | "expired";
   isPickupProposal?: boolean;
   pickupDetails?: Record<string, any>;
   createdAt: string;
@@ -315,10 +320,12 @@ export interface NotificationItem {
   id: string;
   userId: string;
   type: string;
+  category?: string;
   title: string;
   body: string;
   linkUrl?: string;
   isRead: boolean;
+  inAppVisible?: boolean;
   createdAt: string;
 }
 

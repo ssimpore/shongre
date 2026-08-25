@@ -2,7 +2,7 @@ import type { PropertyPublic } from "@shongre/contracts/real-estate";
 
 export const formatImmoMoney = (
   money: { amountMinor: number; currency: string },
-  locale = "fr-FR",
+  locale: string,
 ) =>
   new Intl.NumberFormat(locale, {
     style: "currency",

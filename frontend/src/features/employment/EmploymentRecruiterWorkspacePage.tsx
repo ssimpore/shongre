@@ -19,6 +19,7 @@ import type {
 } from "@shongre/contracts/employment";
 import { useNavigate } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -55,6 +56,7 @@ const systemBadge = (
         : "neutral";
 
 export const EmploymentRecruiterWorkspacePage: React.FC = () => {
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const [workspace, setWorkspace] = useState<RecruiterWorkspace | null>(null);
@@ -177,7 +179,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
         interviewDraft.applicationId,
         {
           modeId: "video",
-          timezone: "Europe/Paris",
+          timezone: activeMarket.timezone,
           startsAt,
           endsAt,
           status: "proposed",
@@ -502,7 +504,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                   <h3 className="mt-2 font-black">{job.title}</h3>
                   <p className="mt-1 text-xs text-text-secondary">
                     {job.primaryLocation.label} · expire le{" "}
-                    {formatEmploymentDate(job.expiresAt)}
+                    {formatEmploymentDate(job.expiresAt, currentLocale)}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -618,7 +620,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       )}
 
       {tab === "interviews" && (
-        <section className="grid gap-5 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <section className="grid gap-5 xl:grid-cols-aside-content-lg">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <h2 className="text-lg font-black">Proposer un entretien</h2>
             <div className="mt-4 space-y-4">
@@ -648,7 +650,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                     ))}
                 </Select>
               </FormField>
-              <FormField label="Date et heure (Europe/Paris)">
+              <FormField label={`Date et heure (${activeMarket.timezone})`}>
                 <Input
                   type="datetime-local"
                   value={interviewDraft.startsAt}
@@ -686,7 +688,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       )}
                     </p>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {new Intl.DateTimeFormat("fr-FR", {
+                      {new Intl.DateTimeFormat(currentLocale, {
                         dateStyle: "long",
                         timeStyle: "short",
                         timeZone: interview.timezone,
@@ -779,7 +781,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             )}
           </div>
           <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface">
-            <table className="w-full min-w-[44rem] text-left text-xs">
+            <table className="w-full min-w-176 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
                   <th className="p-3">Source</th>

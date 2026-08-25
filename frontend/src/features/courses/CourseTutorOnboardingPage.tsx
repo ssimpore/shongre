@@ -15,8 +15,10 @@ import {
   UserRound,
 } from "lucide-react";
 import type { CourseCatalog, DeliveryMode } from "@shongre/contracts/courses";
+import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
+import type { TutorOnboardingDraft } from "../../api/contracts/courses.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -29,49 +31,10 @@ import {
   Skeleton,
   Textarea,
 } from "../../design-system";
-import { storageService } from "../../services/storage.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-
-type OnboardingDraft = {
-  accountKind: "individual" | "organization";
-  displayName: string;
-  organizationName: string;
-  headline: string;
-  subjectIds: string[];
-  levelIds: string[];
-  deliveryModes: DeliveryMode[];
-  city: string;
-  radiusKm: number;
-  languages: string[];
-  experienceYears: number;
-  biography: string;
-  teachingApproach: string;
-  priceMinor: number;
-  availability: string[];
-  planId: string;
-};
-
-const DEFAULT_DRAFT: OnboardingDraft = {
-  accountKind: "individual",
-  displayName: "Sophie Martin",
-  organizationName: "",
-  headline: "Professeure de mathématiques — collège et lycée",
-  subjectIds: ["subject_mathematics"],
-  levelIds: ["middle_school", "high_school"],
-  deliveryModes: ["online", "in_person"],
-  city: "Lyon",
-  radiusKm: 15,
-  languages: ["fr"],
-  experienceYears: 8,
-  biography:
-    "Professeure certifiée, j’accompagne les élèves pour retrouver confiance, consolider leurs bases et préparer leurs examens.",
-  teachingApproach:
-    "Je pars des acquis de l’élève, rends les objectifs visibles et alterne explications, exercices guidés et autonomie.",
-  priceMinor: 3200,
-  availability: ["weekday_evening", "wednesday_afternoon", "saturday_morning"],
-  planId: "tutor_pro",
-};
+import { formatCurrencySymbol, formatMoney } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 const STEPS = [
   { label: "Profil", icon: UserRound },
@@ -83,36 +46,38 @@ const STEPS = [
   { label: "Vérification", icon: ShieldCheck },
 ] as const;
 
+const ONBOARDING_STEP = {
+  profile: 0,
+  expertise: 1,
+  formats: 2,
+  presentation: 3,
+  availability: 4,
+  plan: 5,
+  verification: 6,
+} as const;
+const ONBOARDING_STEP_DELTA = 1;
+const LAST_ONBOARDING_STEP = STEPS.length - ONBOARDING_STEP_DELTA;
+
 const toggle = <T,>(values: T[], value: T): T[] =>
   values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
 
-const slugify = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
 export const CourseTutorOnboardingPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const draftKey = `shongre_courses_onboarding_v1:${currentUser?.id || "guest"}`;
+  const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
-  const [step, setStep] = useState(() =>
-    searchParams.get("step") === "availability" ? 4 : 0,
+  const [step, setStep] = useState<number>(() =>
+    searchParams.get("step") === "availability"
+      ? ONBOARDING_STEP.availability
+      : ONBOARDING_STEP.profile,
   );
-  const [draft, setDraft] = useState<OnboardingDraft>(() =>
-    storageService.get(draftKey, {
-      ...DEFAULT_DRAFT,
-      displayName: currentUser?.name || DEFAULT_DRAFT.displayName,
-    }),
-  );
+  const [draft, setDraft] = useState<TutorOnboardingDraft | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
@@ -125,174 +90,89 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   });
 
   useEffect(() => {
-    services.courses
-      .getCatalog("FR")
-      .then(setCatalog)
+    Promise.all([
+      services.courses.getCatalog(activeMarket.code),
+      services.courses.getTutorOnboardingDraft(
+        accountId,
+        activeMarket.code,
+        currentUser?.name,
+      ),
+    ])
+      .then(([nextCatalog, savedDraft]) => {
+        setCatalog(nextCatalog);
+        setDraft(savedDraft);
+      })
       .catch(() => {
         toast.error(t("verticals.education.catalogUnavailable"));
       });
-  }, [t, toast]);
+  }, [accountId, activeMarket.code, currentUser?.name, t, toast]);
 
   useEffect(() => {
-    // No identity document, payment data or guardian data is stored here.
-    storageService.set(draftKey, draft);
-  }, [draft, draftKey]);
+    if (!draft) return;
+    // The adapter owns draft persistence; UI never chooses a storage backend.
+    void services.courses.saveTutorOnboardingDraft(accountId, draft);
+  }, [accountId, draft]);
 
   const availableLevels = useMemo(() => {
-    if (!catalog) return [];
+    if (!catalog || !draft) return [];
     const allowed = new Set(
       catalog.subjects
         .filter((subject) => draft.subjectIds.includes(subject.id))
         .flatMap((subject) => subject.levelIds),
     );
     return catalog.levels.filter((level) => allowed.has(level.id));
-  }, [catalog, draft.subjectIds]);
+  }, [catalog, draft]);
 
-  const update = <K extends keyof OnboardingDraft>(
+  const update = <K extends keyof TutorOnboardingDraft>(
     key: K,
-    value: OnboardingDraft[K],
+    value: TutorOnboardingDraft[K],
   ) => {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((current) => (current ? { ...current, [key]: value } : current));
   };
 
   const canContinue = (() => {
-    if (step === 0) {
+    if (!draft) return false;
+    if (step === ONBOARDING_STEP.profile) {
       return (
-        draft.displayName.trim().length >= 2 &&
+        draft.displayName.trim().length >=
+          COURSE_CONSTRAINTS.tutorDisplayName.minLength &&
         (draft.accountKind === "individual" ||
-          draft.organizationName.trim().length >= 2)
+          draft.organizationName.trim().length >=
+            COURSE_CONSTRAINTS.tutorOrganizationName.minLength)
       );
     }
-    if (step === 1)
+    if (step === ONBOARDING_STEP.expertise)
       return draft.subjectIds.length > 0 && draft.levelIds.length > 0;
-    if (step === 2)
-      return draft.deliveryModes.length > 0 && draft.city.trim().length >= 2;
-    if (step === 3)
+    if (step === ONBOARDING_STEP.formats)
       return (
-        draft.headline.length >= 10 &&
-        draft.biography.length >= 60 &&
-        draft.teachingApproach.length >= 30
+        draft.deliveryModes.length > 0 &&
+        draft.city.trim().length >= COURSE_CONSTRAINTS.tutorCity.minLength
       );
-    if (step === 4)
-      return draft.priceMinor >= 1000 && draft.availability.length > 0;
+    if (step === ONBOARDING_STEP.presentation)
+      return (
+        draft.headline.length >= COURSE_CONSTRAINTS.tutorHeadline.minLength &&
+        draft.biography.length >= COURSE_CONSTRAINTS.tutorBiography.minLength &&
+        draft.teachingApproach.length >=
+          COURSE_CONSTRAINTS.tutorTeachingApproach.minLength
+      );
+    if (step === ONBOARDING_STEP.availability)
+      return (
+        draft.priceMinor >= COURSE_CONSTRAINTS.hourlyPriceMinor.min &&
+        draft.availability.length >=
+          COURSE_CONSTRAINTS.tutorAvailability.minItems
+      );
     return true;
   })();
 
   const publish = async () => {
-    if (!catalog || isSubmitting) return;
+    if (!catalog || !draft || isSubmitting || !canContinue) return;
     setIsSubmitting(true);
     try {
-      const now = new Date().toISOString();
-      const profile = await services.courses.saveTutorProfile({
-        organizationId:
-          draft.accountKind === "organization" ? "org_lumiere" : undefined,
-        profileType:
-          draft.accountKind === "organization"
-            ? "organization_member"
-            : "individual",
-        slug: slugify(draft.displayName),
-        displayName: draft.displayName,
-        avatarUrl:
-          currentUser?.avatarUrl ||
-          "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=85",
-        headline: draft.headline,
-        biography: draft.biography,
-        teachingApproach: draft.teachingApproach,
-        experienceYears: draft.experienceYears,
-        subjectIds: draft.subjectIds,
-        levelIds: draft.levelIds,
-        languages: draft.languages,
-        deliveryModes: draft.deliveryModes,
-        serviceArea: draft.deliveryModes.includes("in_person")
-          ? {
-              marketCode: "FR",
-              cityLabel: draft.city,
-              radiusKm: draft.radiusKm,
-              publicLocationLabel: `${draft.city} et alentours`,
-            }
-          : undefined,
-        availabilityRules: [
-          {
-            id: "availability-onboarding",
-            dayOfWeek: 3,
-            startsAtLocal: "17:00",
-            endsAtLocal: "20:00",
-            timezone: "Europe/Paris",
-            deliveryModes: draft.deliveryModes,
-            effectiveFrom: now.slice(0, 10),
-          },
-        ],
-        availabilityExceptions: [],
-        responseTimeMinutes: 0,
-        responseRatePercent: 0,
-        reviewCount: 0,
-        ratingIsStatisticallyMeaningful: false,
-        mediaUrls: [],
-        qualifications: [
-          {
-            id: "qualification-onboarding",
-            type: "degree",
-            label: "Formation et expérience déclarées",
-            evidenceStatus: "self_declared",
-            verificationStatus: "not_submitted",
-            publicLabel: "Déclaré par le professeur — non vérifié",
-            publicDetailsAllowed: true,
-          },
-        ],
-        verifications: {
-          email: currentUser?.isEmailVerified ? "verified" : "not_submitted",
-          phone: currentUser?.isPhoneVerified ? "verified" : "not_submitted",
-          identity: currentUser?.isIdentityVerified
-            ? "verified"
-            : "not_submitted",
-          qualifications: "not_submitted",
-          business:
-            draft.accountKind === "organization" ? "pending" : "not_submitted",
-          representative:
-            draft.accountKind === "organization" ? "pending" : "not_submitted",
-          payment: "not_submitted",
-          payout: "not_submitted",
-          personalServicesEligibility: "not_submitted",
-        },
-        taxEligibility: {
-          status: "not_submitted",
-          publicWording: catalog.config.taxEligibilityWording,
-        },
-        planId: draft.planId,
-        moderationStatus: "pending_review",
-        profileCompletionPercent: 82,
-        isFeatured: false,
-      });
-
-      await services.courses.createCourseOffer({
-        tutorProfileId: profile.id,
-        organizationId: profile.organizationId,
-        slug: `${slugify(draft.subjectIds[0] || "cours")}-${profile.slug}`,
-        title: draft.headline,
-        description: `${draft.biography}\n\n${draft.teachingApproach}`,
-        subjectId: draft.subjectIds[0] || "subject_mathematics",
-        levelIds: draft.levelIds,
-        goalIds: ["confidence", "exam_preparation"],
-        languages: draft.languages,
-        deliveryModes: draft.deliveryModes,
-        serviceArea: profile.serviceArea,
-        pricingOptions: [
-          {
-            id: "hourly-onboarding",
-            type: "hourly",
-            label: "Cours à l’heure",
-            price: { amountMinor: draft.priceMinor, currency: "EUR" },
-            durationMinutes: 60,
-            isActive: true,
-          },
-        ],
-        availabilitySummary: "Créneaux en semaine et le samedi",
-        trialLessonAvailable: false,
-        status: "pending_review",
-        marketCodes: ["FR"],
-        capacityStatus: "available",
-      });
-      storageService.remove(draftKey);
+      await services.courses.submitTutorOnboarding(
+        accountId,
+        activeMarket.code,
+        draft,
+      );
       setIsComplete(true);
     } catch (reason) {
       toast.error(
@@ -303,10 +183,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     }
   };
 
-  if (!catalog)
-    return (
-      <Skeleton className="mx-auto h-[38rem] w-full max-w-5xl rounded-card" />
-    );
+  if (!catalog || !draft)
+    return <Skeleton className="mx-auto h-152 w-full max-w-5xl rounded-card" />;
 
   if (isComplete) {
     return (
@@ -351,7 +229,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[14rem_minmax(0,1fr)]">
+      <div className="grid gap-5 lg:grid-cols-sidebar-compact">
         <aside className="rounded-card border border-border-base bg-bg-surface p-3 shadow-xs">
           <ol className="grid grid-cols-4 gap-1 lg:grid-cols-1">
             {STEPS.map(({ label, icon: Icon }, index) => (
@@ -381,7 +259,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         </aside>
 
         <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
-          {step === 0 && (
+          {step === ONBOARDING_STEP.profile && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Qui propose les cours ?
@@ -415,7 +293,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                       onSelect={() =>
                         update(
                           "accountKind",
-                          value as OnboardingDraft["accountKind"],
+                          value as TutorOnboardingDraft["accountKind"],
                         )
                       }
                       className="rounded-card border border-border-base p-4"
@@ -457,14 +335,14 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 1 && (
+          {step === ONBOARDING_STEP.expertise && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Matières et niveaux enseignés
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
                 Les niveaux proposés dépendent des matières activées pour le
-                marché France.
+                marché {activeMarket.name}.
               </p>
               <fieldset className="mt-5">
                 <legend className="text-xs font-bold text-text-main">
@@ -508,7 +386,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 2 && (
+          {step === ONBOARDING_STEP.formats && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Où et comment enseignez-vous ?
@@ -561,8 +439,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                 <FormField label="Rayon de déplacement (km)">
                   <Input
                     type="number"
-                    min={0}
-                    max={250}
+                    min={COURSE_CONSTRAINTS.serviceRadiusKm.min}
+                    max={COURSE_CONSTRAINTS.serviceRadiusKm.max}
                     value={draft.radiusKm}
                     onChange={(event) =>
                       update("radiusKm", Number(event.target.value))
@@ -573,7 +451,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 3 && (
+          {step === ONBOARDING_STEP.presentation && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Présentez votre pédagogie
@@ -588,7 +466,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                 <FormField
                   label="À propos"
                   required
-                  hint={`${draft.biography.length} caractères · minimum 60`}
+                  hint={`${draft.biography.length} caractères · minimum ${COURSE_CONSTRAINTS.tutorBiography.minLength}`}
                 >
                   <Textarea
                     rows={5}
@@ -610,8 +488,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                 <FormField label="Années d’expérience">
                   <Input
                     type="number"
-                    min={0}
-                    max={70}
+                    min={COURSE_CONSTRAINTS.tutorExperienceYears.min}
+                    max={COURSE_CONSTRAINTS.tutorExperienceYears.max}
                     value={draft.experienceYears}
                     onChange={(event) =>
                       update("experienceYears", Number(event.target.value))
@@ -622,26 +500,37 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 4 && (
+          {step === ONBOARDING_STEP.availability && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Tarif et disponibilités
               </h2>
               <div className="mt-5 max-w-sm">
                 <FormField
-                  label="Tarif horaire (€)"
+                  label={`Tarif horaire (${formatCurrencySymbol(
+                    catalog.config.currency,
+                    locale,
+                  )})`}
                   required
                   hint="Le montant public est affiché toutes taxes comprises lorsque cela s’applique."
                 >
                   <Input
                     type="number"
-                    min={10}
-                    step={1}
-                    value={draft.priceMinor / 100}
+                    min={
+                      COURSE_CONSTRAINTS.hourlyPriceMinor.min /
+                      COURSE_CONSTRAINTS.minorUnitsPerMajor
+                    }
+                    step={COURSE_CONSTRAINTS.priceMajorStep}
+                    value={
+                      draft.priceMinor / COURSE_CONSTRAINTS.minorUnitsPerMajor
+                    }
                     onChange={(event) =>
                       update(
                         "priceMinor",
-                        Math.round(Number(event.target.value) * 100),
+                        Math.round(
+                          Number(event.target.value) *
+                            COURSE_CONSTRAINTS.minorUnitsPerMajor,
+                        ),
                       )
                     }
                   />
@@ -676,7 +565,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 5 && (
+          {step === ONBOARDING_STEP.plan && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Choisissez votre formule
@@ -714,7 +603,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                       </p>
                       <p className="mt-4 text-lg font-black text-text-main">
                         {plan.monthlyPrice
-                          ? `${(plan.monthlyPrice.amountMinor / 100).toLocaleString("fr-FR")} €`
+                          ? formatMoney(plan.monthlyPrice, { locale })
                           : "Gratuit"}
                         {plan.monthlyPrice && (
                           <span className="text-xs font-medium text-text-muted">
@@ -742,7 +631,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
             </section>
           )}
 
-          {step === 6 && (
+          {step === ONBOARDING_STEP.verification && (
             <section>
               <h2 className="text-lg font-black text-text-main">
                 Vérifications et publication
@@ -792,8 +681,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
               </dl>
               <div className="mt-5 rounded-card border border-warning-border bg-warning-surface p-4 text-xs text-text-secondary">
                 Les réservations, paiements, versements et forfaits récurrents
-                sont désactivés en France tant que les obligations prestataire,
-                fiscales et réglementaires ne sont pas validées.
+                sont désactivés en {activeMarket.name} tant que les obligations
+                prestataire, fiscales et réglementaires ne sont pas validées.
               </div>
             </section>
           )}
@@ -801,16 +690,18 @@ export const CourseTutorOnboardingPage: React.FC = () => {
           <footer className="mt-8 flex items-center justify-between gap-3 border-t border-border-subtle pt-5">
             <Button
               variant="ghost"
-              disabled={step === 0 || isSubmitting}
-              onClick={() => setStep((value) => value - 1)}
+              disabled={step === ONBOARDING_STEP.profile || isSubmitting}
+              onClick={() => setStep((value) => value - ONBOARDING_STEP_DELTA)}
               leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
             >
               Retour
             </Button>
-            {step < STEPS.length - 1 ? (
+            {step < LAST_ONBOARDING_STEP ? (
               <Button
                 disabled={!canContinue}
-                onClick={() => setStep((value) => value + 1)}
+                onClick={() =>
+                  setStep((value) => value + ONBOARDING_STEP_DELTA)
+                }
                 rightIcon={<ArrowRight className="h-icon-sm w-icon-sm" />}
               >
                 Continuer

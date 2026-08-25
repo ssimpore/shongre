@@ -14,14 +14,18 @@ import type {
   TrendingAdminConfig,
   TrendingSectionResponse,
 } from "../../domains/trending/trending.types";
+import { TRENDING_ADMIN_CONSTRAINTS } from "../../domains/trending/trending.types";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
+import {
+  FormField,
+  Input,
+  Textarea,
+  Checkbox,
+} from "../../design-system/primitives/FormField";
 import { usePageMeta } from "../../hooks/usePageMeta";
-
-const inputClass =
-  "mt-1 h-control-touch w-full rounded-control border border-stone-200 bg-white px-3 text-sm text-stone-900 shadow-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/10";
 
 export const AdminTrendingPage: React.FC = () => {
   usePageMeta({
@@ -182,7 +186,7 @@ export const AdminTrendingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+      <div className="grid gap-6 xl:grid-cols-trending-columns">
         <section
           className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs"
           aria-labelledby="trending-settings-title"
@@ -197,24 +201,23 @@ export const AdminTrendingPage: React.FC = () => {
             </h2>
           </div>
           <div className="space-y-4">
-            <label className="flex items-center justify-between gap-3 rounded-control border border-stone-200 bg-stone-50 px-3 py-3 text-sm font-semibold">
-              <span>Section active</span>
-              <input
-                type="checkbox"
+            <div className="rounded-control border border-border-base bg-bg-subtle px-3 py-3">
+              <Checkbox
+                label="Section active"
                 checked={config.enabled}
                 onChange={(event) => update("enabled", event.target.checked)}
-                className="h-4 w-4 accent-primary"
               />
-            </label>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <label className="text-xs font-bold text-stone-600">
-                Maximum de sous-sections
-                <input
-                  aria-label="Maximum de sous-sections"
-                  className={inputClass}
+              <FormField label="Maximum de sous-sections">
+                <Input
                   type="number"
-                  min={Math.max(1, config.minTopics)}
-                  max={12}
+                  min={Math.max(
+                    TRENDING_ADMIN_CONSTRAINTS.topicCount.min,
+                    config.minTopics,
+                  )}
+                  max={TRENDING_ADMIN_CONSTRAINTS.topicCount.max}
+                  step={TRENDING_ADMIN_CONSTRAINTS.topicCount.step}
                   value={config.maxTopics}
                   onChange={(event) =>
                     update(
@@ -223,64 +226,58 @@ export const AdminTrendingPage: React.FC = () => {
                     )
                   }
                 />
-              </label>
-              <label className="text-xs font-bold text-stone-600">
-                Minimum d’activité
-                <input
-                  className={inputClass}
+              </FormField>
+              <FormField label="Minimum d’activité">
+                <Input
                   type="number"
-                  min={0}
-                  max={1}
-                  step={0.01}
+                  min={TRENDING_ADMIN_CONSTRAINTS.minimumActivity.min}
+                  max={TRENDING_ADMIN_CONSTRAINTS.minimumActivity.max}
+                  step={TRENDING_ADMIN_CONSTRAINTS.minimumActivity.step}
                   value={config.minimumActivity}
                   onChange={(event) =>
                     update("minimumActivity", Number(event.target.value))
                   }
                 />
-              </label>
-              <label className="text-xs font-bold text-stone-600">
-                Période (jours)
-                <input
-                  className={inputClass}
+              </FormField>
+              <FormField label="Période (jours)">
+                <Input
                   type="number"
-                  min={1}
-                  max={30}
+                  min={TRENDING_ADMIN_CONSTRAINTS.displayPeriodDays.min}
+                  max={TRENDING_ADMIN_CONSTRAINTS.displayPeriodDays.max}
+                  step={TRENDING_ADMIN_CONSTRAINTS.displayPeriodDays.step}
                   value={config.displayPeriodDays}
                   onChange={(event) =>
                     update("displayPeriodDays", Number(event.target.value))
                   }
                 />
-              </label>
-              <label className="text-xs font-bold text-stone-600">
-                TTL cache (minutes)
-                <input
-                  className={inputClass}
+              </FormField>
+              <FormField label="TTL cache (minutes)">
+                <Input
                   type="number"
-                  min={5}
-                  max={120}
+                  min={TRENDING_ADMIN_CONSTRAINTS.cacheTtlMinutes.min}
+                  max={TRENDING_ADMIN_CONSTRAINTS.cacheTtlMinutes.max}
+                  step={TRENDING_ADMIN_CONSTRAINTS.cacheTtlMinutes.step}
                   value={config.cacheTtlMinutes}
                   onChange={(event) =>
                     update("cacheTtlMinutes", Number(event.target.value))
                   }
                 />
-              </label>
+              </FormField>
             </div>
-            <label className="text-xs font-bold text-stone-600">
-              Titre public
-              <input
-                className={inputClass}
+            <FormField label="Titre public">
+              <Input
+                maxLength={TRENDING_ADMIN_CONSTRAINTS.publicTitle.maxLength}
                 value={config.title}
                 onChange={(event) => update("title", event.target.value)}
               />
-            </label>
-            <label className="text-xs font-bold text-stone-600">
-              Sous-titre public
-              <textarea
-                className={`${inputClass} h-auto min-h-20 py-2`}
+            </FormField>
+            <FormField label="Sous-titre public">
+              <Textarea
+                maxLength={TRENDING_ADMIN_CONSTRAINTS.publicSubtitle.maxLength}
                 value={config.subtitle}
                 onChange={(event) => update("subtitle", event.target.value)}
               />
-            </label>
+            </FormField>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex items-center gap-2 text-xs font-semibold text-stone-700">
                 <input
@@ -305,10 +302,8 @@ export const AdminTrendingPage: React.FC = () => {
                 Desktop visible
               </label>
             </div>
-            <label className="text-xs font-bold text-stone-600">
-              Catégories exclues (slugs séparés par des virgules)
-              <input
-                className={inputClass}
+            <FormField label="Catégories exclues (slugs séparés par des virgules)">
+              <Input
                 value={config.excludedCategories.join(", ")}
                 onChange={(event) =>
                   update(
@@ -320,7 +315,7 @@ export const AdminTrendingPage: React.FC = () => {
                   )
                 }
               />
-            </label>
+            </FormField>
           </div>
         </section>
 

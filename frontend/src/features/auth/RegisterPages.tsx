@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { PasswordField } from "./components/PasswordField";
@@ -76,7 +77,7 @@ export const RegisterChoicePage: React.FC = () => {
   return (
     // 3.5rem is the FocusedLayout header. The brand mark it already shows is
     // why there is no logo repeated here.
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-3">
@@ -160,11 +161,12 @@ export const RegisterIndividualPage: React.FC = () => {
   const returnTo = useRegistrationReturn(routes.workspace.overview());
   const { registerIndividual } = useAuth();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [country, setCountry] = useState("FR");
+  const [country, setCountry] = useState(activeMarket.code);
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -218,7 +220,7 @@ export const RegisterIndividualPage: React.FC = () => {
     }
   };
 
-  const market = SUPPORTED_MARKETS[country] || SUPPORTED_MARKETS["FR"];
+  const market = SUPPORTED_MARKETS[country];
 
   return (
     <AuthLayout
@@ -427,6 +429,7 @@ export const RegisterProPage: React.FC = () => {
   const returnTo = useRegistrationReturn(routes.workspace.pro.dashboard());
   const { registerProfessional } = useAuth();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
 
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -440,7 +443,7 @@ export const RegisterProPage: React.FC = () => {
   const [companyName, setCompanyName] = useState("");
   const [professionalVertical, setProfessionalVertical] =
     useState<ProfessionalVertical>("generic");
-  const [country, setCountry] = useState("FR");
+  const [country, setCountry] = useState(activeMarket.code);
   const [sirenSiret, setSirenSiret] = useState("");
   const [legalForm, setLegalForm] = useState(
     "Micro-entreprise / Auto-entrepreneur",
@@ -454,7 +457,7 @@ export const RegisterProPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const currentMarket = SUPPORTED_MARKETS[country] || SUPPORTED_MARKETS["FR"];
+  const currentMarket = SUPPORTED_MARKETS[country];
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -539,7 +542,7 @@ export const RegisterProPage: React.FC = () => {
 
   return (
     // 3.5rem is the FocusedLayout header, which already carries the brand mark.
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
       <div className="w-full max-w-xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">

@@ -22,3 +22,6 @@ export * from "./demo-business-rules.service";
 export * from "./demo-finance.service";
 export * from "./demo-commission.service";
 export * from "./demo-provider-control-plane.service";
+export * from "./demo-support.service";
+export * from "./demo-feature-flag.service";
+export * from "./demo-moderation.service";

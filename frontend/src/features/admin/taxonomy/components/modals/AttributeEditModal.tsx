@@ -16,6 +16,7 @@ import { useToast } from "../../../../../app/providers/ToastProvider";
 import { useAuth } from "../../../../../app/providers/AuthProvider";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "../../../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../../../app/providers/MarketLocationProvider";
 
 export interface AttributeEditModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
   onSuccess,
 }) => {
   const { t } = useTranslation();
+  const { currencySymbol } = useMarketLocation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const isEditing = Boolean(attribute);
@@ -247,7 +249,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
 
           <FormField
             label={t("admin.attributeEditModal.uniteDeMesureOptionnelle")}
-            hint="Ex: km, m², kWh, kg, ch, €"
+            hint={`Ex: km, m², kWh, kg, ch, ${currencySymbol}`}
           >
             <Input
               value={unit}

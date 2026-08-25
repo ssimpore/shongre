@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, {
   useState,
   useEffect,
@@ -59,6 +60,7 @@ import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../design-system/primitives/ListingRail";
 import { Image } from "../../design-system/primitives/Image";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -83,6 +85,7 @@ import {
 } from "../../domains/taxonomy/taxonomy.display";
 
 export const ListingDetailPage: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -131,7 +134,10 @@ export const ListingDetailPage: React.FC = () => {
 
         // Load similar listings by category
         listingRepository
-          .getListings({ categorySlug: item.categorySlug, limit: 5 })
+          .getListings({
+            categorySlug: item.categorySlug,
+            limit: PAGE_SIZES.similarListings,
+          })
           .then((res) => {
             setSimilarListings(
               res.listings.filter((l) => l.id !== item.id).slice(0, 4),
@@ -157,9 +163,11 @@ export const ListingDetailPage: React.FC = () => {
 
   const effectiveMarket = useMemo(() => {
     const marketCode =
-      listing?.marketCode || storageService.getActiveMarketCode() || "FR";
+      listing?.marketCode ||
+      storageService.getActiveMarketCode() ||
+      activeMarket.code;
     return marketService.getEffectiveConfig(marketCode);
-  }, [listing]);
+  }, [activeMarket.code, listing]);
 
   const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : "";
   const displaySubCategoryLabel = listing
@@ -492,12 +500,12 @@ export const ListingDetailPage: React.FC = () => {
           title={t("listings.listingDetailPage.annonceIntrouvableOuSupprimee")}
           description={t("listings.listingDetailPage.cetteAnnonceNEstPlus")}
           action={
-            <Button variant="primary" onClick={() => navigate(routes.search())}>
+            <Button variant="primary" to={routes.search()}>
               {t("listings.listingDetailPage.explorerLesAnnoncesSimilaires")}
             </Button>
           }
           secondaryAction={
-            <Button variant="outline" onClick={() => navigate("/")}>
+            <Button variant="outline" to={routes.home()}>
               {t("listings.listingDetailPage.retourALAccueil")}
             </Button>
           }
@@ -697,7 +705,7 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="text-sm font-bold text-primary hover:text-primary-hover hover:underline pt-2 cursor-pointer transition-colors"
+                className="inline-flex min-h-6 cursor-pointer items-center pt-2 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline"
               >
                 {isDescriptionExpanded ? "Afficher moins" : "Afficher la suite"}
               </button>
@@ -723,7 +731,7 @@ export const ListingDetailPage: React.FC = () => {
             </span>
             <Link
               to={routes.contact({ context: "listing", listingId: listing.id })}
-              className="text-primary hover:underline font-bold inline-flex items-center gap-1"
+              className="inline-flex min-h-6 items-center gap-1 font-bold text-primary hover:underline"
             >
               {t("listings.listingDetailPage.signalerOuDemanderDeL")}
             </Link>
@@ -1230,7 +1238,7 @@ export const ListingDetailPage: React.FC = () => {
           produce. From `sm` there is room for a single row again. */}
       <div
         ref={actionBarRef}
-        className="lg:hidden fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+        className="lg:hidden fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
       >
         {/* The total is a full-width summary on phones, matching the action
             hierarchy: amount first, choices second, primary CTA last. */}

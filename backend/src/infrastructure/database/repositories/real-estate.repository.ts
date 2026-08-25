@@ -840,6 +840,10 @@ export interface IRealEstateRepository {
     mediaUrls: string[];
   }): Promise<string[]>;
   getDraft(id: string): Promise<PropertyDraft | null>;
+  getLatestDraft(
+    ownerUserId: string,
+    marketCode: string,
+  ): Promise<PropertyDraft | null>;
   saveDraft(draft: PropertyDraft): Promise<PropertyDraft>;
   getLead(id: string): Promise<PropertyLead | null>;
   findDuplicateLead(
@@ -1029,6 +1033,16 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
   }
   async getDraft(id: string) {
     return this.drafts.has(id) ? clone(this.drafts.get(id)!) : null;
+  }
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const draft = Array.from(this.drafts.values())
+      .filter(
+        (candidate) =>
+          candidate.ownerUserId === ownerUserId &&
+          candidate.marketCode === marketCode,
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
+    return draft ? clone(draft) : null;
   }
   async saveDraft(draft: PropertyDraft) {
     const parsed = propertyDraftSchema.parse(draft);
@@ -2818,6 +2832,18 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       validationIssues: data.validation_issues,
       updatedAt: data.updated_at,
     });
+  }
+  override async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const { data, error } = await this.db()
+      .from("real_estate_drafts")
+      .select("id")
+      .eq("owner_user_id", ownerUserId)
+      .eq("market_code", marketCode)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getDraft(data.id) : null;
   }
   override async saveDraft(draft: PropertyDraft) {
     const parsed = propertyDraftSchema.parse(draft);

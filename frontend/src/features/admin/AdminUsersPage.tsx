@@ -16,6 +16,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ export const AdminUsersPage: React.FC = () => {
   });
 
   const { can } = useAuth();
+  const { activeMarket } = useMarketLocation();
   const toast = useToast();
 
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -337,7 +339,8 @@ export const AdminUsersPage: React.FC = () => {
                     <td className="p-3.5 text-stone-600">
                       <div>{u.city || "Non renseigné"}</div>
                       <div className="text-micro text-stone-500 font-mono">
-                        {u.marketScope?.countries.join(", ") || "FR"}
+                        {u.marketScope?.countries.join(", ") ||
+                          activeMarket.code}
                       </div>
                     </td>
 

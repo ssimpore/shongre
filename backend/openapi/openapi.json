@@ -190,140 +190,19 @@
       "description": "Operations owned by the workspace API domain."
     },
     {
+      "name": "feature-flags",
+      "description": "Safe public feature evaluation operations."
+    },
+    {
+      "name": "admin-feature-flags",
+      "description": "Audited feature rollout administration."
+    },
+    {
       "name": "operations",
       "description": "Process liveness and dependency readiness operations served outside the versioned business API prefix."
     }
   ],
   "paths": {
-    "/health": {
-      "get": {
-        "operationId": "getHealth",
-        "tags": ["operations"],
-        "summary": "Process health and liveness",
-        "servers": [
-          {
-            "url": "/"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The HTTP process is alive.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["status", "service", "version"],
-                  "properties": {
-                    "status": {
-                      "const": "ok"
-                    },
-                    "service": {
-                      "const": "shongre-backend"
-                    },
-                    "version": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-runtime": "server",
-        "x-shongre-source": "backend/src/app/server/index.ts"
-      }
-    },
-    "/livez": {
-      "get": {
-        "operationId": "getLiveness",
-        "tags": ["operations"],
-        "summary": "Orchestrator liveness probe",
-        "servers": [
-          {
-            "url": "/"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The HTTP process is alive.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": ["status", "service", "version"],
-                  "properties": {
-                    "status": {
-                      "const": "ok"
-                    },
-                    "service": {
-                      "const": "shongre-backend"
-                    },
-                    "version": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-runtime": "server",
-        "x-shongre-source": "backend/src/app/server/index.ts"
-      }
-    },
-    "/readyz": {
-      "get": {
-        "operationId": "getReadiness",
-        "tags": ["operations"],
-        "summary": "Dependency-aware readiness probe",
-        "servers": [
-          {
-            "url": "/"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "The process and its database dependency are ready.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "503": {
-            "description": "A required dependency is unavailable.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-runtime": "server",
-        "x-shongre-source": "backend/src/app/server/index.ts"
-      }
-    },
     "/account/delete": {
       "post": {
         "operationId": "postAccountDelete",
@@ -2813,6 +2692,309 @@
         "x-shongre-permission": "commercial_rules.read"
       }
     },
+    "/admin/feature-flags": {
+      "get": {
+        "operationId": "getAdminFeatureFlags",
+        "tags": ["admin-feature-flags"],
+        "summary": "List feature definitions and scoped rollout rules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feature flag control-plane snapshot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/feature-flags/{key}": {
+      "put": {
+        "operationId": "putAdminFeatureFlag",
+        "tags": ["admin-feature-flags"],
+        "summary": "Create or update an audited feature definition",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated feature definition.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/feature-flags/{key}/rules/{ruleId}": {
+      "put": {
+        "operationId": "putAdminFeatureFlagRule",
+        "tags": ["admin-feature-flags"],
+        "summary": "Create or update an audited scoped rollout rule",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          {
+            "name": "ruleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated feature rollout rule.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/moderation/appeals": {
+      "get": {
+        "operationId": "getAdminModerationAppeals",
+        "tags": ["moderation"],
+        "summary": "List moderation appeals for independent review",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Appeal queue.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.review",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/moderation/appeals/{appealId}/decision": {
+      "post": {
+        "operationId": "postAdminModerationAppealDecision",
+        "tags": ["moderation"],
+        "summary": "Decide an appeal with reviewer separation",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          {
+            "name": "appealId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/JsonValue" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Decided appeal.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.action",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/moderation/cases": {
+      "get": {
+        "operationId": "getAdminModerationCases",
+        "tags": ["moderation"],
+        "summary": "List canonical moderation cases",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "name": "status", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Moderation case queue.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.review",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/admin/monetization/complimentary-grants/requests": {
       "post": {
         "operationId": "postAdminMonetizationComplimentaryGrantsRequests",
@@ -4343,6 +4525,316 @@
         "security": [],
         "x-shongre-access": "public",
         "x-shongre-source": "backend/src/api/v1/router.ts:164"
+      }
+    },
+    "/auth/mfa": {
+      "get": {
+        "operationId": "getAuthMfa",
+        "tags": ["auth"],
+        "summary": "Read MFA enrollment and current-session state",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MFA state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "delete": {
+        "operationId": "deleteAuthMfa",
+        "tags": ["auth"],
+        "summary": "Disable optional MFA after recent authentication",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MFA disabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/auth/mfa/challenge": {
+      "post": {
+        "operationId": "postAuthMfaChallenge",
+        "tags": ["auth"],
+        "summary": "Complete a short-lived MFA login challenge",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/auth/mfa/confirm": {
+      "post": {
+        "operationId": "postAuthMfaConfirm",
+        "tags": ["auth"],
+        "summary": "Verify and activate a pending TOTP enrollment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MFA activated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/auth/mfa/session-confirm": {
+      "post": {
+        "operationId": "postAuthMfaSessionConfirm",
+        "tags": ["auth"],
+        "summary": "Step up an authenticated session with TOTP or recovery code",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session MFA proof accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/auth/mfa/setup": {
+      "post": {
+        "operationId": "postAuthMfaSetup",
+        "tags": ["auth"],
+        "summary": "Begin TOTP enrollment and issue one-time recovery codes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending MFA setup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/auth/oauth/{provider}/callback": {
@@ -6762,6 +7254,83 @@
         "x-shongre-permission": "auto.dealer.manage.own"
       }
     },
+    "/auto/drafts": {
+      "post": {
+        "operationId": "postAutoDrafts",
+        "tags": ["auto"],
+        "summary": "POST /auto/drafts",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "auto.vehicle.manage.own"
+      }
+    },
     "/auto/drafts/{id}": {
       "get": {
         "operationId": "getAutoDraftsById",
@@ -7087,6 +7656,70 @@
         "x-shongre-permission": "auto.vehicle.manage.own"
       }
     },
+    "/auto/favorites": {
+      "get": {
+        "operationId": "getAutoFavorites",
+        "tags": ["auto"],
+        "summary": "GET /auto/favorites",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/auto/leads": {
       "post": {
         "operationId": "postAutoLeads",
@@ -7366,6 +7999,91 @@
         "security": [],
         "x-shongre-access": "public",
         "x-shongre-source": "backend/src/api/v1/router.ts:892"
+      }
+    },
+    "/auto/vehicles/{id}/favorite": {
+      "post": {
+        "operationId": "postAutoVehiclesByIdFavorite",
+        "tags": ["auto"],
+        "summary": "POST /auto/vehicles/:id/favorite",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        }
       }
     },
     "/business-rules/catalog": {
@@ -8399,6 +9117,70 @@
         "x-shongre-source": "backend/src/api/v1/router.ts:733"
       }
     },
+    "/education/favorites": {
+      "get": {
+        "operationId": "getEducationFavorites",
+        "tags": ["education"],
+        "summary": "GET /education/favorites",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/education/leads/{leadId}": {
       "patch": {
         "operationId": "patchEducationLeadsByLeadId",
@@ -8647,6 +9429,83 @@
           }
         },
         "x-shongre-permission": "course.offer.manage.own"
+      }
+    },
+    "/education/onboarding/submit": {
+      "post": {
+        "operationId": "postEducationOnboardingSubmit",
+        "tags": ["education"],
+        "summary": "POST /education/onboarding/submit",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "course.profile.manage.own"
       }
     },
     "/education/organizations/{organizationId}/locations": {
@@ -9111,6 +9970,497 @@
             }
           }
         },
+        "x-shongre-permission": "course.profile.manage.own"
+      }
+    },
+    "/education/tutors/{id}/favorite": {
+      "post": {
+        "operationId": "postEducationTutorsByIdFavorite",
+        "tags": ["education"],
+        "summary": "POST /education/tutors/:id/favorite",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/education/workflow-drafts/learner-request": {
+      "get": {
+        "operationId": "getEducationWorkflowdraftsLearnerrequest",
+        "tags": ["education"],
+        "summary": "GET /education/workflow-drafts/learner-request",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-permission": "course.request.create"
+      },
+      "put": {
+        "operationId": "putEducationWorkflowdraftsLearnerrequest",
+        "tags": ["education"],
+        "summary": "PUT /education/workflow-drafts/learner-request",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "course.request.create"
+      },
+      "delete": {
+        "operationId": "deleteEducationWorkflowdraftsLearnerrequest",
+        "tags": ["education"],
+        "summary": "DELETE /education/workflow-drafts/learner-request",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-permission": "course.request.create"
+      }
+    },
+    "/education/workflow-drafts/tutor-onboarding": {
+      "get": {
+        "operationId": "getEducationWorkflowdraftsTutoronboarding",
+        "tags": ["education"],
+        "summary": "GET /education/workflow-drafts/tutor-onboarding",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-permission": "course.profile.manage.own"
+      },
+      "put": {
+        "operationId": "putEducationWorkflowdraftsTutoronboarding",
+        "tags": ["education"],
+        "summary": "PUT /education/workflow-drafts/tutor-onboarding",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "course.profile.manage.own"
+      },
+      "delete": {
+        "operationId": "deleteEducationWorkflowdraftsTutoronboarding",
+        "tags": ["education"],
+        "summary": "DELETE /education/workflow-drafts/tutor-onboarding",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
         "x-shongre-permission": "course.profile.manage.own"
       }
     },
@@ -10246,6 +11596,83 @@
         "x-shongre-permission": "employment.job.manage.own"
       }
     },
+    "/employment/drafts": {
+      "post": {
+        "operationId": "postEmploymentDrafts",
+        "tags": ["employment"],
+        "summary": "POST /employment/drafts",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "employment.job.manage.own"
+      }
+    },
     "/employment/drafts/{id}": {
       "get": {
         "operationId": "getEmploymentDraftsById",
@@ -10475,6 +11902,92 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:1236",
+        "x-shongre-permission": "employment.job.manage.own"
+      }
+    },
+    "/employment/drafts/{id}/publication": {
+      "put": {
+        "operationId": "putEmploymentDraftsByIdPublication",
+        "tags": ["employment"],
+        "summary": "PUT /employment/drafts/:id/publication",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
         "x-shongre-permission": "employment.job.manage.own"
       }
     },
@@ -11755,6 +13268,69 @@
         "x-shongre-permission": "favorite.manage.own"
       }
     },
+    "/feature-flags/{key}": {
+      "get": {
+        "operationId": "getFeatureFlagEvaluation",
+        "tags": ["feature-flags"],
+        "summary": "Evaluate a public feature flag using server-owned rules",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 3
+            }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          },
+          {
+            "name": "anonymousId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe evaluated state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/finance/account/overview": {
       "get": {
         "operationId": "getFinanceAccountOverview",
@@ -12354,6 +13930,50 @@
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:1775",
         "x-shongre-permission": "finance.transactions.read"
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": ["operations"],
+        "summary": "Process health and liveness",
+        "servers": [
+          {
+            "url": "/"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The HTTP process is alive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["status", "service", "version"],
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    },
+                    "service": {
+                      "const": "shongre-backend"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-runtime": "server",
+        "x-shongre-source": "backend/src/app/server/index.ts"
       }
     },
     "/home/trending": {
@@ -13012,6 +14632,225 @@
         "x-shongre-permission": "favorite.manage.own"
       }
     },
+    "/listings/bulk-import/parse": {
+      "post": {
+        "operationId": "postListingsBulkimportParse",
+        "tags": ["listings"],
+        "summary": "POST /listings/bulk-import/parse",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "listing.create"
+      }
+    },
+    "/listings/bulk-import/publish": {
+      "post": {
+        "operationId": "postListingsBulkimportPublish",
+        "tags": ["listings"],
+        "summary": "POST /listings/bulk-import/publish",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "listing.publish"
+      }
+    },
+    "/listings/bulk-import/template": {
+      "get": {
+        "operationId": "getListingsBulkimportTemplate",
+        "tags": ["listings"],
+        "summary": "GET /listings/bulk-import/template",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-permission": "listing.create"
+      }
+    },
     "/listings/publish": {
       "post": {
         "operationId": "postListingsPublish",
@@ -13160,6 +14999,50 @@
             }
           }
         }
+      }
+    },
+    "/livez": {
+      "get": {
+        "operationId": "getLiveness",
+        "tags": ["operations"],
+        "summary": "Orchestrator liveness probe",
+        "servers": [
+          {
+            "url": "/"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The HTTP process is alive.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["status", "service", "version"],
+                  "properties": {
+                    "status": {
+                      "const": "ok"
+                    },
+                    "service": {
+                      "const": "shongre-backend"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-runtime": "server",
+        "x-shongre-source": "backend/src/app/server/index.ts"
       }
     },
     "/markets": {
@@ -14406,13 +16289,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "amount": {
+                  "amountMinor": {
                     "$ref": "#/components/schemas/JsonValue"
                   },
                   "conversationId": {
-                    "$ref": "#/components/schemas/JsonValue"
-                  },
-                  "senderName": {
                     "$ref": "#/components/schemas/JsonValue"
                   }
                 },
@@ -14496,10 +16376,7 @@
                   "accept": {
                     "$ref": "#/components/schemas/JsonValue"
                   },
-                  "conversationId": {
-                    "$ref": "#/components/schemas/JsonValue"
-                  },
-                  "userName": {
+                  "offerId": {
                     "$ref": "#/components/schemas/JsonValue"
                   }
                 },
@@ -14509,6 +16386,124 @@
           }
         },
         "x-shongre-permission": "message.send"
+      }
+    },
+    "/messaging/offers/{id}/counter": {
+      "post": {
+        "operationId": "postMessagingOffersIdCounter",
+        "tags": ["messaging"],
+        "summary": "Counter a pending marketplace offer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The newly created counter-offer.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["conversationId", "amountMinor"],
+                "properties": {
+                  "conversationId": {
+                    "$ref": "#/components/schemas/JsonValue"
+                  },
+                  "amountMinor": { "$ref": "#/components/schemas/JsonValue" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "message.send",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/messaging/offers/{id}/withdraw": {
+      "post": {
+        "operationId": "postMessagingOffersIdWithdraw",
+        "tags": ["messaging"],
+        "summary": "Withdraw a pending marketplace offer",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The withdrawn offer.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "message.send",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/messaging/read": {
@@ -15670,6 +17665,109 @@
         "x-shongre-permission": "subscription.manage.own"
       }
     },
+    "/moderation/appeals/mine": {
+      "get": {
+        "operationId": "getOwnModerationAppeals",
+        "tags": ["moderation"],
+        "summary": "List the signed-in account's moderation appeals",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Account-owned appeals.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/moderation/cases/mine": {
+      "get": {
+        "operationId": "getOwnModerationCases",
+        "tags": ["moderation"],
+        "summary": "List sanitized moderation cases affecting the signed-in account",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Account-owned moderation cases without reporter identity.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/moderation/cases/{caseId}/appeals": {
+      "post": {
+        "operationId": "postModerationCaseAppeal",
+        "tags": ["moderation"],
+        "summary": "Appeal an eligible moderation enforcement action",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          {
+            "name": "caseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/JsonValue" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submitted appeal.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/notifications": {
       "get": {
         "operationId": "getNotifications",
@@ -16044,6 +18142,76 @@
             }
           }
         }
+      }
+    },
+    "/notifications/preferences": {
+      "get": {
+        "operationId": "getNotificationPreferences",
+        "tags": ["notifications"],
+        "summary": "Get account notification preferences",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Current preference matrix.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "put": {
+        "operationId": "putNotificationPreferences",
+        "tags": ["notifications"],
+        "summary": "Replace account notification preferences",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/JsonValue" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated preference matrix.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/notifications/read-all": {
@@ -17552,6 +19720,47 @@
         "x-shongre-permission": "listing.create"
       }
     },
+    "/readyz": {
+      "get": {
+        "operationId": "getReadiness",
+        "tags": ["operations"],
+        "summary": "Dependency-aware readiness probe",
+        "servers": [
+          {
+            "url": "/"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The process and its database dependency are ready.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "description": "A required dependency is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-runtime": "server",
+        "x-shongre-source": "backend/src/app/server/index.ts"
+      }
+    },
     "/real-estate/admin/markets/{marketCode}": {
       "put": {
         "operationId": "putRealEstateAdminMarketsByMarketCode",
@@ -18769,6 +20978,83 @@
         "x-shongre-permission": "payment.refund"
       }
     },
+    "/real-estate/drafts": {
+      "post": {
+        "operationId": "postRealestateDrafts",
+        "tags": ["real-estate"],
+        "summary": "POST /real-estate/drafts",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "x-shongre-permission": "immo.property.manage.own"
+      }
+    },
     "/real-estate/drafts/{id}": {
       "get": {
         "operationId": "getRealEstateDraftsById",
@@ -19803,6 +22089,534 @@
         "security": [],
         "x-shongre-access": "public",
         "x-shongre-source": "backend/src/api/v1/router.ts:2383"
+      }
+    },
+    "/support/cases": {
+      "get": {
+        "operationId": "getSupportCases",
+        "tags": ["support"],
+        "summary": "List support cases for support staff",
+        "description": "Implemented by backend/src/api/v1/router.ts:2482.",
+        "parameters": [
+          {
+            "name": "assigneeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "support.case.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2482"
+      },
+      "post": {
+        "operationId": "postSupportCases",
+        "tags": ["support"],
+        "summary": "Create a support case",
+        "description": "Implemented by backend/src/api/v1/router.ts:2468.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2468"
+      }
+    },
+    "/support/cases/{id}": {
+      "get": {
+        "operationId": "getSupportCasesById",
+        "tags": ["support"],
+        "summary": "Read an authorized support case",
+        "description": "Implemented by backend/src/api/v1/router.ts:2494.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2494"
+      },
+      "patch": {
+        "operationId": "patchSupportCasesById",
+        "tags": ["support"],
+        "summary": "Update a support case with an audited reason",
+        "description": "Implemented by backend/src/api/v1/router.ts:2501.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "support.case.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2501"
+      }
+    },
+    "/support/cases/{id}/notes": {
+      "post": {
+        "operationId": "postSupportCasesByIdNotes",
+        "tags": ["support"],
+        "summary": "Add an authorized support case reply or internal note",
+        "description": "Implemented by backend/src/api/v1/router.ts:2508.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2508"
+      }
+    },
+    "/support/cases/mine": {
+      "get": {
+        "operationId": "getSupportCasesMine",
+        "tags": ["support"],
+        "summary": "List the current user's support cases",
+        "description": "Implemented by backend/src/api/v1/router.ts:2474.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2474"
+      }
+    },
+    "/support/metrics": {
+      "get": {
+        "operationId": "getSupportMetrics",
+        "tags": ["support"],
+        "summary": "Read support queue and SLA metrics",
+        "description": "Implemented by backend/src/api/v1/router.ts:2515.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "support.case.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2515"
       }
     },
     "/taxonomy/nodes/{id}": {
@@ -21013,12 +23827,26 @@
       "JsonValue": {
         "description": "A JSON-compatible payload whose domain representation is mapped by the owning service adapter.",
         "oneOf": [
-          { "type": "null" },
-          { "type": "boolean" },
-          { "type": "number" },
-          { "type": "string" },
-          { "type": "array", "items": {} },
-          { "type": "object", "additionalProperties": true }
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {}
+          },
+          {
+            "type": "object",
+            "additionalProperties": true
+          }
         ]
       },
       "ErrorDetail": {

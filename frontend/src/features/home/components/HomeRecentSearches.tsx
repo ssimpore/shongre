@@ -16,16 +16,15 @@ import { normalizeRecentSearchesLimit } from "../../../domains/market/market.con
 export const HomeRecentSearches: React.FC = () => {
   const { t } = useTranslation();
   const { effectiveConfig } = useMarketLocation();
-  // Read once during state initialisation. Rendering an empty rail and filling
-  // it in an effect caused a visible layout shift after the home page mounted.
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(() =>
-    storageService.getRecentSearchItems(),
-  );
+  // Browser persistence cannot influence the initial hydrated tree.
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
 
   useEffect(() => {
     const refreshRecentSearches = () => {
       setRecentSearches(storageService.getRecentSearchItems());
     };
+
+    refreshRecentSearches();
 
     // The custom event covers same-tab writes; the native event covers another
     // tab. Both keep the section reactive without turning storage into a second

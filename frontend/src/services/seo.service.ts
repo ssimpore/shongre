@@ -19,6 +19,11 @@
  * this project runs Vitest in Node, and the DOM application is covered from
  * Playwright instead.
  */
+import {
+  DEFAULT_MARKET_LANGUAGE,
+  DEFAULT_MARKET_LOCALE,
+  DEFAULT_MARKET_REGION,
+} from "../configuration/market-baseline";
 
 export const SITE_NAME = "Shongre";
 
@@ -47,7 +52,33 @@ export interface PageMeta {
   type?: "website" | "article" | "product" | "profile";
   /** Keeps a page out of the index. Use for anything behind auth or transient. */
   noIndex?: boolean;
+  /** BCP 47 locale from the active market, e.g. `fr-FR` or `en-US`. */
+  locale?: string;
   structuredData?: StructuredData[];
+}
+
+const DEFAULT_REGION_BY_LANGUAGE: Record<string, string> = {
+  de: "DE",
+  en: "US",
+  es: "ES",
+  fr: "FR",
+  it: "IT",
+  nl: "NL",
+};
+
+/** Converts a BCP 47 locale into the Open Graph `language_TERRITORY` form. */
+export function resolveOpenGraphLocale(locale?: string): string {
+  const [rawLanguage = DEFAULT_MARKET_LANGUAGE, rawRegion] = (
+    locale || DEFAULT_MARKET_LOCALE
+  )
+    .replace(/_/g, "-")
+    .split("-");
+  const language = rawLanguage.toLowerCase();
+  const region =
+    rawRegion?.toUpperCase() ||
+    DEFAULT_REGION_BY_LANGUAGE[language] ||
+    DEFAULT_MARKET_REGION;
+  return `${language}_${region}`;
 }
 
 /**
@@ -223,7 +254,12 @@ export function applyPageMeta(meta: PageMeta): void {
     "og:site_name",
     SITE_NAME,
   );
-  upsertMeta('meta[property="og:locale"]', "property", "og:locale", "fr_FR");
+  upsertMeta(
+    'meta[property="og:locale"]',
+    "property",
+    "og:locale",
+    resolveOpenGraphLocale(meta.locale || document.documentElement.lang),
+  );
   upsertMeta('meta[property="og:image"]', "property", "og:image", meta.image);
 
   // A `summary_large_image` card with no image renders as a blank panel, so the

@@ -25,11 +25,11 @@ export const MobileBottomNav: React.FC = () => {
   return (
     <nav
       aria-label={t("nav.mobileLabel")}
-      className="md:hidden fixed bottom-0 left-0 right-0 z-header bg-bg-surface/90 backdrop-blur-xl border-t border-border-base pb-[env(safe-area-inset-bottom)] shadow-sticky"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-header bg-bg-surface/90 backdrop-blur-xl border-t border-border-base pb-safe-area-bottom shadow-sticky"
     >
       {/* Height comes from `--mobile-nav-h` so the bar and everything pinned
           above it (toasts, the listing-detail buy bar) cannot disagree. */}
-      <div className="grid grid-cols-5 h-[var(--mobile-nav-h)] items-center px-1">
+      <div className="grid grid-cols-5 h-mobile-nav-bar items-center px-1">
         {/* Home */}
         <NavLink
           to={routes.home()}

@@ -1,6 +1,7 @@
 import { apiClientConfig } from "../../client/api-client.config";
 import { AppError, AppErrorCode } from "../../errors/app-error";
 import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
+import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
 
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -78,7 +79,10 @@ export class HttpClient {
     const defaultHeaders: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "X-Request-Id": `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      "X-Request-Id":
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : deterministicRuntimeId("req", [method, endpoint]),
       ...(csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)
         ? { "X-CSRF-Token": csrfToken }
         : {}),

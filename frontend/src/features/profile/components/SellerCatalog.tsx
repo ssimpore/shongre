@@ -23,6 +23,8 @@ import { usePublishCta } from "../../../security/usePublishCta";
 import { DropdownMenu } from "../../../design-system/primitives/DropdownMenu";
 import { ViewModeToggle } from "../../../design-system/primitives/ViewModeToggle";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { PRICE_FILTER_INPUT_CONSTRAINTS } from "../../../domains/market/market.constants";
 
 export interface SellerCatalogProps {
   listings: Listing[];
@@ -38,6 +40,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
   isOwnProfile = false,
 }) => {
   const { t } = useTranslation();
+  const { currencySymbol } = useMarketLocation();
   const publishCta = usePublishCta();
   const isPro = isProSeller(seller);
 
@@ -314,9 +317,10 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 type="number"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                placeholder="Min €"
+                placeholder={`Min ${currencySymbol}`}
                 aria-label={t("profile.sellerCatalog.prixMinimum")}
-                min="0"
+                min={PRICE_FILTER_INPUT_CONSTRAINTS.minMajor}
+                step={PRICE_FILTER_INPUT_CONSTRAINTS.stepMajor}
                 className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
               />
               <span className="text-stone-500 text-xs">—</span>
@@ -324,9 +328,10 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 type="number"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                placeholder="Max €"
+                placeholder={`Max ${currencySymbol}`}
                 aria-label={t("profile.sellerCatalog.prixMaximum")}
-                min="0"
+                min={PRICE_FILTER_INPUT_CONSTRAINTS.minMajor}
+                step={PRICE_FILTER_INPUT_CONSTRAINTS.stepMajor}
                 className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
               />
             </div>

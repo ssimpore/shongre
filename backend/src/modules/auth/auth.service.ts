@@ -39,6 +39,14 @@ import {
 import { randomOAuthValue, sha256 } from "./oauth-provider.client.js";
 import { authEmailSender, type AuthEmailSender } from "./auth-email.sender.js";
 import { randomUUID } from "node:crypto";
+import {
+  createMfaSecret,
+  createMfaSetup,
+  decryptMfaSecret,
+  encryptMfaSecret,
+  hashMfaBackupCode,
+  verifyTotp,
+} from "./mfa.service.js";
 
 export interface LoginCredentials {
   email: string;
@@ -62,6 +70,12 @@ export interface AuthResult {
   refreshToken?: string;
   expiresAt?: string;
   sessionId?: string;
+}
+
+export interface MfaChallengeResult {
+  requiresMfa: true;
+  tempMfaToken: string;
+  expiresAt: string;
 }
 
 export const DEMO_PROFILES = CANONICAL_DEMO_USERS;
@@ -147,6 +161,7 @@ export class AuthService {
         staffRoleFromLegacyRole(user.primaryRole || user.role),
       capabilities: permissionsForSubject(user),
       sessionId: claims.sid,
+      mfaVerified: await this.sessions.isMfaVerified(claims.sid),
     };
   }
 
@@ -158,7 +173,7 @@ export class AuthService {
   async login(
     credentials: LoginCredentials,
     metadata: AuthRequestMetadata = {},
-  ): Promise<AuthResult> {
+  ): Promise<AuthResult | MfaChallengeResult> {
     const email = (credentials?.email || "").toLowerCase().trim();
     const password = credentials?.password || "";
 
@@ -233,6 +248,23 @@ export class AuthService {
     }
 
     await this.authRepo.clearRateLimit(limitKey, "login");
+    const mfaCredential = await this.authRepo.getMfaCredential(user.id);
+    if (mfaCredential?.enabledAt && !mfaCredential.disabledAt) {
+      const tempMfaToken = randomOAuthValue(32);
+      const expiresAt = new Date(Date.now() + 5 * 60_000).toISOString();
+      await this.authRepo.createMfaChallenge({
+        userId: user.id,
+        tokenHash: sha256(tempMfaToken),
+        expiresAt,
+      });
+      await this.authRepo.recordSecurityEvent({
+        userId: user.id,
+        eventType: "mfa_challenge_created",
+        provider: "password",
+        ipPrefix: metadata.ipPrefix,
+      });
+      return { requiresMfa: true, tempMfaToken, expiresAt };
+    }
     await this.authRepo.recordSecurityEvent({
       userId: user.id,
       eventType: "login_succeeded",
@@ -242,6 +274,246 @@ export class AuthService {
     logger.info(`Authentication succeeded for profile ${user.id}`);
     const tokens = await this.sessions.create(user, "password", metadata);
     return { user, ...tokens };
+  }
+
+  async verifyMfaLogin(
+    tempMfaToken: string,
+    codeInput: string,
+    metadata: AuthRequestMetadata = {},
+  ): Promise<AuthResult> {
+    const challenge = await this.authRepo.findMfaChallenge(
+      sha256(String(tempMfaToken || "")),
+    );
+    if (
+      !challenge ||
+      challenge.consumedAt ||
+      challenge.attempts >= 5 ||
+      Date.parse(challenge.expiresAt) <= Date.now()
+    ) {
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Le défi de sécurité est invalide ou expiré.",
+      });
+    }
+    const credential = await this.authRepo.getMfaCredential(challenge.userId);
+    if (!credential?.enabledAt || credential.disabledAt)
+      throw invalidCredentials();
+    const code = String(codeInput || "").trim();
+    let accepted = false;
+    let recoveryCodeUsed = false;
+    const counter = verifyTotp(decryptMfaSecret(credential), code);
+    if (counter !== null) {
+      accepted = await this.authRepo.acceptMfaCounter(
+        challenge.userId,
+        counter,
+      );
+    } else if (/^[A-Za-z0-9-]{8,20}$/.test(code)) {
+      accepted = await this.authRepo.consumeMfaBackupCode(
+        challenge.userId,
+        hashMfaBackupCode(code),
+      );
+      recoveryCodeUsed = accepted;
+    }
+    if (!accepted) {
+      await this.authRepo.incrementMfaChallengeAttempts(challenge.id);
+      await this.authRepo.recordSecurityEvent({
+        userId: challenge.userId,
+        eventType: "mfa_challenge_failed",
+        provider: "password",
+        failureReason: "invalid_code",
+        ipPrefix: metadata.ipPrefix,
+      });
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Code de sécurité invalide.",
+      });
+    }
+    await this.authRepo.consumeMfaChallenge(challenge.id);
+    const user = await this.userRepo.findById(challenge.userId);
+    if (!user) throw invalidCredentials();
+    const tokens = await this.sessions.create(
+      user,
+      "password",
+      metadata,
+      true,
+      true,
+    );
+    await this.authRepo.recordSecurityEvent({
+      userId: user.id,
+      eventType: recoveryCodeUsed
+        ? "mfa_recovery_code_used"
+        : "mfa_login_succeeded",
+      provider: "password",
+      ipPrefix: metadata.ipPrefix,
+    });
+    return { user, ...tokens };
+  }
+
+  async getMfaStatus(principal: Principal) {
+    if (!principal.userId) throw invalidCredentials();
+    const credential = await this.authRepo.getMfaCredential(principal.userId);
+    return {
+      enabled: Boolean(credential?.enabledAt && !credential.disabledAt),
+      required: principal.accountType === "staff",
+      backupCodesRemaining:
+        credential?.enabledAt && !credential.disabledAt
+          ? credential.backupCodeHashes.length
+          : 0,
+      sessionVerified: Boolean(principal.mfaVerified),
+    };
+  }
+
+  async beginMfaEnrollment(principal: Principal) {
+    if (!principal.userId || !principal.sessionId) throw invalidCredentials();
+    if (!(await this.sessions.hasRecentAuthentication(principal.sessionId))) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Confirmez à nouveau votre identité avant cette action.",
+        details: { reason: "recent_authentication_required" },
+      });
+    }
+    const secret = createMfaSecret();
+    const setup = createMfaSetup(secret, principal.email);
+    await this.authRepo.saveMfaCredential({
+      userId: principal.userId,
+      ...encryptMfaSecret(secret),
+      backupCodeHashes: setup.backupCodes.map(hashMfaBackupCode),
+      enabledAt: null,
+      disabledAt: null,
+      lastUsedCounter: null,
+    });
+    await this.authRepo.recordSecurityEvent({
+      userId: principal.userId,
+      eventType: "mfa_enrollment_started",
+    });
+    return setup;
+  }
+
+  async confirmMfaEnrollment(principal: Principal, codeInput: string) {
+    if (!principal.userId || !principal.sessionId) throw invalidCredentials();
+    const credential = await this.authRepo.getMfaCredential(principal.userId);
+    if (!credential || credential.enabledAt || credential.disabledAt) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Aucune activation MFA n’est en attente.",
+      });
+    }
+    const counter = verifyTotp(
+      decryptMfaSecret(credential),
+      String(codeInput || "").trim(),
+    );
+    if (counter === null) {
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Code de sécurité invalide.",
+      });
+    }
+    await this.authRepo.saveMfaCredential({
+      ...credential,
+      enabledAt: new Date().toISOString(),
+      lastUsedCounter: counter,
+    });
+    await this.sessions.markMfaVerified(principal.sessionId);
+    await this.authRepo.recordSecurityEvent({
+      userId: principal.userId,
+      eventType: "mfa_enabled",
+    });
+    return { enabled: true };
+  }
+
+  async verifySessionMfa(principal: Principal, codeInput: string) {
+    if (!principal.userId || !principal.sessionId) throw invalidCredentials();
+    const limit = await this.authRepo.consumeRateLimit(
+      sha256(principal.userId),
+      "mfa_session",
+      5,
+      300,
+      900,
+    );
+    if (!limit.allowed)
+      throw new AppError({
+        code: "RATE_LIMITED",
+        message: "Trop de tentatives. Réessayez plus tard.",
+        details: { retryAfterSeconds: limit.retryAfterSeconds },
+      });
+    const credential = await this.authRepo.getMfaCredential(principal.userId);
+    if (!credential?.enabledAt || credential.disabledAt)
+      throw new AppError({
+        code: "CONFLICT",
+        message: "MFA n’est pas encore activée.",
+      });
+    const code = String(codeInput || "").trim();
+    const counter = verifyTotp(decryptMfaSecret(credential), code);
+    const accepted =
+      counter !== null
+        ? await this.authRepo.acceptMfaCounter(principal.userId, counter)
+        : await this.authRepo.consumeMfaBackupCode(
+            principal.userId,
+            hashMfaBackupCode(code),
+          );
+    if (!accepted) {
+      await this.authRepo.recordSecurityEvent({
+        userId: principal.userId,
+        eventType: "mfa_challenge_failed",
+        failureReason: "invalid_code",
+      });
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Code de sécurité invalide.",
+      });
+    }
+    await this.authRepo.clearRateLimit(sha256(principal.userId), "mfa_session");
+    await this.sessions.markMfaVerified(principal.sessionId);
+    await this.authRepo.recordSecurityEvent({
+      userId: principal.userId,
+      eventType: "mfa_login_succeeded",
+    });
+    return { verified: true };
+  }
+
+  async disableMfa(principal: Principal, codeInput: string) {
+    if (!principal.userId || !principal.sessionId) throw invalidCredentials();
+    if (principal.accountType === "staff") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "La double authentification est obligatoire pour les comptes internes.",
+      });
+    }
+    if (!(await this.sessions.hasRecentAuthentication(principal.sessionId))) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Confirmez à nouveau votre identité avant cette action.",
+      });
+    }
+    const credential = await this.authRepo.getMfaCredential(principal.userId);
+    if (!credential?.enabledAt || credential.disabledAt) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "MFA n’est pas activée.",
+      });
+    }
+    const code = String(codeInput || "").trim();
+    const counter = verifyTotp(decryptMfaSecret(credential), code);
+    const accepted =
+      counter !== null
+        ? await this.authRepo.acceptMfaCounter(principal.userId, counter)
+        : await this.authRepo.consumeMfaBackupCode(
+            principal.userId,
+            hashMfaBackupCode(code),
+          );
+    if (!accepted)
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Code de sécurité invalide.",
+      });
+    await this.authRepo.disableMfaCredential(principal.userId);
+    await this.sessions.revokeAll(principal.userId, principal.sessionId);
+    await this.authRepo.recordSecurityEvent({
+      userId: principal.userId,
+      eventType: "mfa_disabled",
+    });
+    return { enabled: false };
   }
 
   async register(

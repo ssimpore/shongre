@@ -142,7 +142,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           sizes={IMAGE_SIZES.gallery}
           priority
           onClick={() => setIsLightboxOpen(true)}
-          className="relative w-full h-full object-contain cursor-zoom-in transition-transform duration-normal hover:scale-[1.02]"
+          className="relative w-full h-full object-contain cursor-zoom-in transition-transform duration-normal hover:scale-105"
           referrerPolicy="no-referrer"
         />
 
@@ -270,7 +270,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               src={currentUrl!}
               alt={`${title} - Grand format`}
               sizes={IMAGE_SIZES.gallery}
-              className="max-h-[80vh] max-w-[90vw] object-contain rounded-lg shadow-2xl"
+              className="max-h-media-preview-max-height max-w-dialog-viewport-max-width object-contain rounded-lg shadow-2xl"
               referrerPolicy="no-referrer"
             />
 

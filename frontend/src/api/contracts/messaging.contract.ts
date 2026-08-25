@@ -1,5 +1,9 @@
 import { Conversation, Message } from "../../types";
 
+export const MESSAGE_INPUT_CONSTRAINTS = {
+  maxLength: 2000,
+} as const;
+
 export interface SendMessageInput {
   conversationId: string;
   senderId: string;
@@ -17,10 +21,31 @@ export interface CreateOrGetConversationInput {
   initialMessage?: string;
 }
 
+export interface MessageAttachmentOption {
+  id: string;
+  label: string;
+  url: string;
+}
+
+export interface MessageComposerOptions {
+  attachmentOptions: MessageAttachmentOption[];
+  quickReplies: string[];
+}
+
+export interface MessageComposerOptionsInput {
+  conversationId: string;
+  userId: string;
+  isProfessional: boolean;
+  locale: string;
+}
+
 export interface MessagingServiceContract {
   getUserConversations(userId: string): Promise<Conversation[]>;
   getConversationById(id: string): Promise<Conversation | null>;
   getMessages(conversationId: string, cursor?: string): Promise<Message[]>;
+  getComposerOptions(
+    input: MessageComposerOptionsInput,
+  ): Promise<MessageComposerOptions>;
   createOrGetConversation(
     input: CreateOrGetConversationInput,
   ): Promise<Conversation>;
@@ -32,11 +57,12 @@ export interface MessagingServiceContract {
     amount: number,
   ): Promise<Message>;
   respondToOffer(
-    conversationId: string,
+    offerId: string,
     userId: string,
     userName: string,
     accept: boolean,
   ): Promise<Message>;
+  withdrawOffer(offerId: string, userId: string): Promise<Message>;
   schedulePickup(
     conversationId: string,
     date: string,

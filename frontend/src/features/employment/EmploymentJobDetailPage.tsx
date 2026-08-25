@@ -24,8 +24,10 @@ import type {
   JobPostingCard,
   JobPostingDetail,
 } from "@shongre/contracts/employment";
+import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -46,6 +48,7 @@ import { formatEmploymentDate, formatSalary } from "./employment-format";
 export const EmploymentJobDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
+  const { currentLocale } = useMarketLocation();
   const navigate = useNavigate();
   const toast = useToast();
   const [job, setJob] = useState<JobPostingDetail | null>(null);
@@ -128,8 +131,8 @@ export const EmploymentJobDetailPage: React.FC = () => {
   if (loading) {
     return (
       <main className="bg-bg-page py-8">
-        <Container className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <Skeleton className="h-[38rem] rounded-card" />
+        <Container className="grid gap-5 lg:grid-cols-content-aside">
+          <Skeleton className="h-152 rounded-card" />
           <Skeleton className="h-80 rounded-card" />
         </Container>
       </main>
@@ -214,7 +217,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
           <span>{job.professionLabel}</span>
         </nav>
 
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_21rem]">
+        <div className="grid items-start gap-5 lg:grid-cols-content-aside-md">
           <div className="min-w-0 space-y-5">
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-7">
               <div className="flex flex-wrap items-start justify-between gap-4">
@@ -312,16 +315,17 @@ export const EmploymentJobDetailPage: React.FC = () => {
               </dl>
 
               <p className="mt-5 text-lg font-black text-primary">
-                {formatSalary(job.salary, catalog)}
+                {formatSalary(job.salary, catalog, currentLocale)}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-text-secondary">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-icon-xs w-icon-xs" />
-                  Publiée le {formatEmploymentDate(job.publishedAt)}
+                  Publiée le{" "}
+                  {formatEmploymentDate(job.publishedAt, currentLocale)}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-icon-xs w-icon-xs" />
-                  Expire le {formatEmploymentDate(job.expiresAt)}
+                  Expire le {formatEmploymentDate(job.expiresAt, currentLocale)}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <UsersRound className="h-icon-xs w-icon-xs" />
@@ -510,7 +514,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
             <FormField label="Précisions (facultatif)">
               <Textarea
                 rows={4}
-                maxLength={2000}
+                maxLength={EMPLOYMENT_TEXT_LIMITS.reportDetails}
                 value={reportDetails}
                 onChange={(event) => setReportDetails(event.target.value)}
               />

@@ -604,6 +604,108 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/feature-flags": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List feature definitions and scoped rollout rules */
+        readonly get: operations["getAdminFeatureFlags"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/feature-flags/{key}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Create or update an audited feature definition */
+        readonly put: operations["putAdminFeatureFlag"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/feature-flags/{key}/rules/{ruleId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Create or update an audited scoped rollout rule */
+        readonly put: operations["putAdminFeatureFlagRule"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/moderation/appeals": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List moderation appeals for independent review */
+        readonly get: operations["getAdminModerationAppeals"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/moderation/appeals/{appealId}/decision": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Decide an appeal with reviewer separation */
+        readonly post: operations["postAdminModerationAppealDecision"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/moderation/cases": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List canonical moderation cases */
+        readonly get: operations["getAdminModerationCases"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/monetization/complimentary-grants/requests": {
         readonly parameters: {
             readonly query?: never;
@@ -982,6 +1084,92 @@ export interface paths {
         readonly get: operations["getAuthMe"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/mfa": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read MFA enrollment and current-session state */
+        readonly get: operations["getAuthMfa"];
+        readonly put?: never;
+        readonly post?: never;
+        /** Disable optional MFA after recent authentication */
+        readonly delete: operations["deleteAuthMfa"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/mfa/challenge": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Complete a short-lived MFA login challenge */
+        readonly post: operations["postAuthMfaChallenge"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/mfa/confirm": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Verify and activate a pending TOTP enrollment */
+        readonly post: operations["postAuthMfaConfirm"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/mfa/session-confirm": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Step up an authenticated session with TOTP or recovery code */
+        readonly post: operations["postAuthMfaSessionConfirm"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/mfa/setup": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Begin TOTP enrollment and issue one-time recovery codes */
+        readonly post: operations["postAuthMfaSetup"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -1592,6 +1780,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/auto/drafts": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /auto/drafts
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postAutoDrafts"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/auto/drafts/{id}": {
         readonly parameters: {
             readonly query?: never;
@@ -1650,6 +1858,26 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:921.
          */
         readonly post: operations["postAutoDraftsByIdSubmit"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auto/favorites": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /auto/favorites
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getAutoFavorites"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -1730,6 +1958,26 @@ export interface paths {
         readonly get: operations["getAutoVehiclesById"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auto/vehicles/{id}/favorite": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /auto/vehicles/:id/favorite
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postAutoVehiclesByIdFavorite"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -1996,6 +2244,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/education/favorites": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /education/favorites
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getEducationFavorites"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/education/leads/{leadId}": {
         readonly parameters: {
             readonly query?: never;
@@ -2050,6 +2318,26 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:752.
          */
         readonly post: operations["postEducationOffers"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/education/onboarding/submit": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /education/onboarding/submit
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postEducationOnboardingSubmit"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -2155,6 +2443,82 @@ export interface paths {
         readonly put: operations["putEducationTutorsById"];
         readonly post?: never;
         readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/education/tutors/{id}/favorite": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /education/tutors/:id/favorite
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postEducationTutorsByIdFavorite"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/education/workflow-drafts/learner-request": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /education/workflow-drafts/learner-request
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getEducationWorkflowdraftsLearnerrequest"];
+        /**
+         * PUT /education/workflow-drafts/learner-request
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly put: operations["putEducationWorkflowdraftsLearnerrequest"];
+        readonly post?: never;
+        /**
+         * DELETE /education/workflow-drafts/learner-request
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly delete: operations["deleteEducationWorkflowdraftsLearnerrequest"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/education/workflow-drafts/tutor-onboarding": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /education/workflow-drafts/tutor-onboarding
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getEducationWorkflowdraftsTutoronboarding"];
+        /**
+         * PUT /education/workflow-drafts/tutor-onboarding
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly put: operations["putEducationWorkflowdraftsTutoronboarding"];
+        readonly post?: never;
+        /**
+         * DELETE /education/workflow-drafts/tutor-onboarding
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly delete: operations["deleteEducationWorkflowdraftsTutoronboarding"];
         readonly options?: never;
         readonly head?: never;
         readonly patch?: never;
@@ -2460,6 +2824,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/employment/drafts": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /employment/drafts
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postEmploymentDrafts"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/employment/drafts/{id}": {
         readonly parameters: {
             readonly query?: never;
@@ -2498,6 +2882,26 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:1236.
          */
         readonly post: operations["postEmploymentDraftsByIdDuplicateCheck"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/employment/drafts/{id}/publication": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /**
+         * PUT /employment/drafts/:id/publication
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly put: operations["putEmploymentDraftsByIdPublication"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -2824,6 +3228,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/feature-flags/{key}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Evaluate a public feature flag using server-owned rules */
+        readonly get: operations["getFeatureFlagEvaluation"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/finance/account/overview": {
         readonly parameters: {
             readonly query?: never;
@@ -3107,6 +3528,66 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:676.
          */
         readonly post: operations["postListingsByIdFavorite"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/bulk-import/parse": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /listings/bulk-import/parse
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postListingsBulkimportParse"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/bulk-import/publish": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /listings/bulk-import/publish
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postListingsBulkimportPublish"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/bulk-import/template": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /listings/bulk-import/template
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getListingsBulkimportTemplate"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -3482,6 +3963,40 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/messaging/offers/{id}/counter": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Counter a pending marketplace offer */
+        readonly post: operations["postMessagingOffersIdCounter"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/messaging/offers/{id}/withdraw": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Withdraw a pending marketplace offer */
+        readonly post: operations["postMessagingOffersIdWithdraw"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/messaging/read": {
         readonly parameters: {
             readonly query?: never;
@@ -3536,6 +4051,57 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:2291.
          */
         readonly post: operations["postMessagingUnblock"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/moderation/appeals/mine": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the signed-in account's moderation appeals */
+        readonly get: operations["getOwnModerationAppeals"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/moderation/cases/{caseId}/appeals": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Appeal an eligible moderation enforcement action */
+        readonly post: operations["postModerationCaseAppeal"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/moderation/cases/mine": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List sanitized moderation cases affecting the signed-in account */
+        readonly get: operations["getOwnModerationCases"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -3876,6 +4442,24 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:2366.
          */
         readonly post: operations["postNotificationsDevicesUnregister"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/notifications/preferences": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get account notification preferences */
+        readonly get: operations["getNotificationPreferences"];
+        /** Replace account notification preferences */
+        readonly put: operations["putNotificationPreferences"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -4559,6 +5143,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/real-estate/drafts": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * POST /real-estate/drafts
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly post: operations["postRealestateDrafts"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/real-estate/drafts/{id}": {
         readonly parameters: {
             readonly query?: never;
@@ -4799,6 +5403,114 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:2383.
          */
         readonly get: operations["getReviewsUserByUserId"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/support/cases": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List support cases for support staff
+         * @description Implemented by backend/src/api/v1/router.ts:2482.
+         */
+        readonly get: operations["getSupportCases"];
+        readonly put?: never;
+        /**
+         * Create a support case
+         * @description Implemented by backend/src/api/v1/router.ts:2468.
+         */
+        readonly post: operations["postSupportCases"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/support/cases/{id}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read an authorized support case
+         * @description Implemented by backend/src/api/v1/router.ts:2494.
+         */
+        readonly get: operations["getSupportCasesById"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update a support case with an audited reason
+         * @description Implemented by backend/src/api/v1/router.ts:2501.
+         */
+        readonly patch: operations["patchSupportCasesById"];
+        readonly trace?: never;
+    };
+    readonly "/support/cases/{id}/notes": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Add an authorized support case reply or internal note
+         * @description Implemented by backend/src/api/v1/router.ts:2508.
+         */
+        readonly post: operations["postSupportCasesByIdNotes"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/support/cases/mine": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List the current user's support cases
+         * @description Implemented by backend/src/api/v1/router.ts:2474.
+         */
+        readonly get: operations["getSupportCasesMine"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/support/metrics": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read support queue and SLA metrics
+         * @description Implemented by backend/src/api/v1/router.ts:2515.
+         */
+        readonly get: operations["getSupportMetrics"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -6383,6 +7095,204 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getAdminFeatureFlags: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Feature flag control-plane snapshot. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminFeatureFlag: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly key: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated feature definition. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminFeatureFlagRule: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly key: string;
+                readonly ruleId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated feature rollout rule. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminModerationAppeals: {
+        readonly parameters: {
+            readonly query?: {
+                readonly status?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Appeal queue. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminModerationAppealDecision: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly appealId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Decided appeal. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminModerationCases: {
+        readonly parameters: {
+            readonly query?: {
+                readonly status?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Moderation case queue. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postAdminMonetizationComplimentaryGrantsRequests: {
         readonly parameters: {
             readonly query?: never;
@@ -7122,6 +8032,185 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAuthMfa: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description MFA state. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteAuthMfa: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description MFA disabled. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthMfaChallenge: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Authenticated session. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthMfaConfirm: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description MFA activated. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthMfaSessionConfirm: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Session MFA proof accepted. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthMfaSetup: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Pending MFA setup. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -8328,6 +9417,44 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly postAutoDrafts: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getAutoDraftsById: {
         readonly parameters: {
             readonly query?: never;
@@ -8479,6 +9606,38 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getAutoFavorites: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postAutoLeads: {
         readonly parameters: {
             readonly query?: never;
@@ -8606,6 +9765,46 @@ export interface operations {
             readonly cookie?: never;
         };
         readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAutoVehiclesByIdFavorite: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
         readonly responses: {
             /** @description Successful response. */
             readonly 200: {
@@ -9124,6 +10323,38 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getEducationFavorites: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly patchEducationLeadsByLeadId: {
         readonly parameters: {
             readonly query?: never;
@@ -9207,6 +10438,44 @@ export interface operations {
         };
     };
     readonly postEducationOffers: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postEducationOnboardingSubmit: {
         readonly parameters: {
             readonly query?: never;
             readonly header?: {
@@ -9449,6 +10718,250 @@ export interface operations {
                 };
             };
         };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postEducationTutorsByIdFavorite: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getEducationWorkflowdraftsLearnerrequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putEducationWorkflowdraftsLearnerrequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteEducationWorkflowdraftsLearnerrequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getEducationWorkflowdraftsTutoronboarding: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putEducationWorkflowdraftsTutoronboarding: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteEducationWorkflowdraftsTutoronboarding: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
         readonly responses: {
             /** @description Successful response. */
             readonly 200: {
@@ -10013,6 +11526,44 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly postEmploymentDrafts: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getEmploymentDraftsById: {
         readonly parameters: {
             readonly query?: never;
@@ -10100,6 +11651,46 @@ export interface operations {
             readonly cookie?: never;
         };
         readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putEmploymentDraftsByIdPublication: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
         readonly responses: {
             /** @description Successful response. */
             readonly 200: {
@@ -10717,6 +12308,37 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getFeatureFlagEvaluation: {
+        readonly parameters: {
+            readonly query?: {
+                readonly anonymousId?: string;
+                readonly marketCode?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly key: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Safe evaluated state. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getFinanceAccountOverview: {
         readonly parameters: {
             readonly query?: never;
@@ -11280,6 +12902,114 @@ export interface operations {
             readonly path: {
                 readonly id: string;
             };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postListingsBulkimportParse: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postListingsBulkimportPublish: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getListingsBulkimportTemplate: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
             readonly cookie?: never;
         };
         readonly requestBody?: never;
@@ -11998,9 +13728,8 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
-                    readonly amount?: components["schemas"]["JsonValue"];
+                    readonly amountMinor?: components["schemas"]["JsonValue"];
                     readonly conversationId?: components["schemas"]["JsonValue"];
-                    readonly senderName?: components["schemas"]["JsonValue"];
                 } & {
                     readonly [key: string]: unknown;
                 };
@@ -12041,8 +13770,7 @@ export interface operations {
             readonly content: {
                 readonly "application/json": {
                     readonly accept?: components["schemas"]["JsonValue"];
-                    readonly conversationId?: components["schemas"]["JsonValue"];
-                    readonly userName?: components["schemas"]["JsonValue"];
+                    readonly offerId?: components["schemas"]["JsonValue"];
                 } & {
                     readonly [key: string]: unknown;
                 };
@@ -12050,6 +13778,81 @@ export interface operations {
         };
         readonly responses: {
             /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postMessagingOffersIdCounter: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly amountMinor: components["schemas"]["JsonValue"];
+                    readonly conversationId: components["schemas"]["JsonValue"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description The newly created counter-offer. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postMessagingOffersIdWithdraw: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The withdrawn offer. */
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];
@@ -12176,6 +13979,105 @@ export interface operations {
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOwnModerationAppeals: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Account-owned appeals. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postModerationCaseAppeal: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly caseId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Submitted appeal. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOwnModerationCases: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Account-owned moderation cases without reporter identity. */
+            readonly 200: {
+                headers: {
                     readonly [name: string]: unknown;
                 };
                 content: {
@@ -12798,6 +14700,74 @@ export interface operations {
         };
         readonly responses: {
             /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getNotificationPreferences: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current preference matrix. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putNotificationPreferences: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated preference matrix. */
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];
@@ -14119,6 +16089,44 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly postRealestateDrafts: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getRealEstateDraftsById: {
         readonly parameters: {
             readonly query?: never;
@@ -14606,6 +16614,252 @@ export interface operations {
             readonly path: {
                 readonly userId: string;
             };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSupportCases: {
+        readonly parameters: {
+            readonly query?: {
+                readonly assigneeId?: string;
+                readonly priority?: string;
+                readonly status?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postSupportCases: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSupportCasesById: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly patchSupportCasesById: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postSupportCasesByIdNotes: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["JsonValue"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSupportCasesMine: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSupportMetrics: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
             readonly cookie?: never;
         };
         readonly requestBody?: never;

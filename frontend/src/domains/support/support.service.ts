@@ -7,6 +7,8 @@ import {
   SupportRequestStatus,
   CreateSupportRequestInput,
 } from "./support.types";
+import type { SupportCaseStatus } from "@shongre/contracts/support";
+import { deterministicCode } from "../../utilities/deterministic-id";
 
 export interface SupportStatusInfo {
   label: string;
@@ -19,15 +21,17 @@ export class SupportService {
    * Generates a unique, friendly support ticket reference (e.g. SHG-849201).
    */
   generateReference(): string {
-    const num = Math.floor(100000 + Math.random() * 900000);
-    return `SHG-${num}`;
+    return deterministicCode("SHG-", 6, [], "0123456789");
   }
 
   /**
    * Localized human-readable status details.
    */
-  getStatusInfo(status: SupportRequestStatus): SupportStatusInfo {
+  getStatusInfo(
+    status: SupportRequestStatus | SupportCaseStatus,
+  ): SupportStatusInfo {
     switch (status) {
+      case "open":
       case "submitted":
         return {
           label: "Demande envoyée",
@@ -35,6 +39,8 @@ export class SupportService {
           description:
             "Votre demande a bien été reçue et est en file d'attente.",
         };
+      case "assigned":
+      case "waiting_internal":
       case "in_progress":
         return {
           label: "En cours de traitement",
@@ -42,6 +48,7 @@ export class SupportService {
           description:
             "Un conseiller du support Shongre examine actuellement votre dossier.",
         };
+      case "waiting_customer":
       case "waiting_for_user":
         return {
           label: "Réponse attendue de votre part",

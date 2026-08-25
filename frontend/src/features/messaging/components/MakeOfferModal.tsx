@@ -3,8 +3,9 @@ import { DollarSign } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { FormField, Input } from "../../../design-system/primitives/FormField";
-import { formatPrice } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { OFFER_INPUT_CONSTRAINTS } from "../../../domains/messaging/messaging.types";
 
 interface MakeOfferModalProps {
   isOpen: boolean;
@@ -20,15 +21,21 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
   onSendOffer,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   const [offerAmount, setOfferAmount] = useState<string>(
-    Math.round(currentPrice * 0.9).toString(),
+    Math.round(
+      currentPrice *
+        (1 -
+          OFFER_INPUT_CONSTRAINTS.defaultDiscountPercent /
+            OFFER_INPUT_CONSTRAINTS.percentageScale),
+    ).toString(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(offerAmount);
-    if (isNaN(val) || val <= 0) return;
+    if (isNaN(val) || val < OFFER_INPUT_CONSTRAINTS.minimumMajor) return;
 
     setIsSubmitting(true);
     try {
@@ -44,7 +51,9 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={t("messaging.makeOfferModal.faireUneOffreDePrix")}
-      description={`Prix affiché : ${formatPrice(currentPrice)}. Le vendeur pourra accepter ou refuser votre proposition.`}
+      description={t("messaging.makeOfferModal.displayedPriceDescription", {
+        price: formatPrice(currentPrice),
+      })}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <FormField
@@ -53,9 +62,9 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
         >
           <Input
             type="number"
-            min="1"
+            min={OFFER_INPUT_CONSTRAINTS.minimumMajor}
             max={currentPrice}
-            step="1"
+            step={OFFER_INPUT_CONSTRAINTS.stepMajor}
             value={offerAmount}
             onChange={(e) => setOfferAmount(e.target.value)}
             required
@@ -65,16 +74,19 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
 
         {/* Quick Discount Presets */}
         <div className="flex gap-2">
-          {[-5, -10, -15].map((pct) => {
-            const calculated = Math.round(currentPrice * (1 + pct / 100));
+          {OFFER_INPUT_CONSTRAINTS.quickDiscountPercents.map((discount) => {
+            const calculated = Math.round(
+              currentPrice *
+                (1 - discount / OFFER_INPUT_CONSTRAINTS.percentageScale),
+            );
             return (
               <button
-                key={pct}
+                key={discount}
                 type="button"
                 onClick={() => setOfferAmount(calculated.toString())}
                 className="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg font-bold text-micro transition-colors"
               >
-                {pct}% ({calculated} €)
+                -{discount}% ({formatPrice(calculated)})
               </button>
             );
           })}
@@ -82,7 +94,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
 
         <div className="flex gap-2 pt-2">
           <Button variant="outline" fullWidth onClick={onClose} type="button">
-            Annuler
+            {t("messaging.makeOfferModal.cancel")}
           </Button>
           <Button
             variant="primary"
@@ -91,7 +103,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
             isLoading={isSubmitting}
             leftIcon={<DollarSign className="w-4 h-4" />}
           >
-            Transmettre l'offre
+            {t("messaging.makeOfferModal.submitOffer")}
           </Button>
         </div>
       </form>

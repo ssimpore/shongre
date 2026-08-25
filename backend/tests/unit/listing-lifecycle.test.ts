@@ -25,6 +25,24 @@ describe("Listing & Order Lifecycle", () => {
     ).rejects.toThrow();
   });
 
+  it("parses bounded professional CSV imports with market money", async () => {
+    const parsed = await listingsService.parseBulkImportCsv({
+      marketCode: "FR",
+      defaultCity: "Lyon",
+      defaultPostalCode: "69002",
+      content:
+        "Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\nTable de salle à manger;home_garden;furniture;280,50;very_good;2;;;Bois massif",
+    });
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0]).toMatchObject({
+      title: "Table de salle à manger",
+      city: "Lyon",
+      postalCode: "69002",
+      isValid: true,
+      price: { amountMinor: 28_050, currency: "EUR" },
+    });
+  });
+
   it("publishes a valid listing with automated safety assessment", async () => {
     const published = await listingsService.publishListing(
       {

@@ -1,5 +1,8 @@
 import { Market, MarketConfiguration } from "./market.types";
-import { RECENT_SEARCHES_LIMIT_DEFAULT } from "./market.constants";
+import {
+  PRICE_FILTER_STOPS_MAJOR_DEFAULT,
+  RECENT_SEARCHES_LIMIT_DEFAULT,
+} from "./market.constants";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import {
   isCommercialEntitlementOperational,
@@ -87,6 +90,9 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
     allowFreeDonations: true,
     allowPriceNegotiation: true,
     allowInstantBuy: true,
+  },
+  search: {
+    priceFilterStopsMajor: [...PRICE_FILTER_STOPS_MAJOR_DEFAULT],
   },
   payments: {
     enabled: true,

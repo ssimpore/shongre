@@ -4,9 +4,11 @@ import {
   Provider,
   ProviderConfiguration,
   ProviderEnvironment,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../../../../domains/providers/provider.types";
 import { providerService } from "../../../../domains/providers/provider.service";
 import { Button } from "../../../../design-system/primitives/Button";
+import { Switch } from "../../../../design-system/primitives/FormField";
 import { useToast } from "../../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 
@@ -111,16 +113,16 @@ export const ProviderConfigurationForm: React.FC<
               Autorise uniquement l’adaptateur disponible dans cet environnement
               ; ne prouve pas sa santé.
             </p>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2">
+              <Switch
                 checked={enabled}
                 disabled={!canEnable}
-                onChange={(e) => setEnabled(e.target.checked)}
-                className="sr-only peer"
+                onChange={setEnabled}
+                aria-label={t(
+                  "admin.providerConfigurationForm.etatDActivation",
+                )}
               />
-              <div className="w-9 h-5 bg-stone-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-              <span className="ml-2 text-xs font-semibold text-stone-700">
+              <span className="text-xs font-semibold text-stone-700">
                 {!canEnable
                   ? "Adaptateur absent"
                   : enabled
@@ -129,7 +131,7 @@ export const ProviderConfigurationForm: React.FC<
                       : "Activé · non vérifié"
                     : "Désactivé"}
               </span>
-            </label>
+            </div>
           </div>
 
           {/* Environment selector */}
@@ -179,10 +181,16 @@ export const ProviderConfigurationForm: React.FC<
             <input
               id="provider-priority"
               type="number"
-              min={1}
-              max={10}
+              min={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min}
+              max={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max}
+              step={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.step}
               value={priority}
-              onChange={(e) => setPriority(parseInt(e.target.value, 10) || 1)}
+              onChange={(e) =>
+                setPriority(
+                  Number.parseInt(e.target.value, 10) ||
+                    PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+                )
+              }
               className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-bold text-stone-800 w-24 h-control-touch"
             />
           </div>

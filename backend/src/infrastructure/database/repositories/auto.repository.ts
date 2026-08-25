@@ -820,6 +820,8 @@ export interface IAutoRepository {
   ): Promise<VehicleTypeConfig>;
   search(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
   getVehicle(idOrSlug: string): Promise<VehiclePrivate | null>;
+  getFavoriteVehicleIds(userId: string): Promise<string[]>;
+  toggleFavoriteVehicle(userId: string, vehicleId: string): Promise<boolean>;
   saveVehicle(vehicle: VehiclePrivate): Promise<VehiclePrivate>;
   hasDuplicateIdentity(identity: {
     vinHash?: string;
@@ -838,6 +840,10 @@ export interface IAutoRepository {
     dealerOrganizationId?: string;
   }): Promise<number>;
   getDraft(id: string): Promise<VehicleDraft | null>;
+  getLatestDraft(
+    ownerUserId: string,
+    marketCode: string,
+  ): Promise<VehicleDraft | null>;
   saveDraft(draft: VehicleDraft): Promise<VehicleDraft>;
   getDraftIdentity(id: string): Promise<{
     vinHash?: string;
@@ -1022,6 +1028,7 @@ export class DemoAutoRepository implements IAutoRepository {
   );
   private leads = new Map(DEMO_LEADS.map((lead) => [lead.id, clone(lead)]));
   private drafts = new Map<string, VehicleDraft>();
+  private favoriteVehicleIds = new Map<string, Set<string>>();
   private draftIdentities = new Map<
     string,
     { vinHash?: string; vinMasked?: string; registrationHash?: string }
@@ -1107,6 +1114,16 @@ export class DemoAutoRepository implements IAutoRepository {
       Array.from(this.vehicles.values()).find((row) => row.slug === idOrSlug);
     return value ? clone(value) : null;
   }
+  async getFavoriteVehicleIds(userId: string) {
+    return Array.from(this.favoriteVehicleIds.get(userId) || []);
+  }
+  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
+    const favorites = this.favoriteVehicleIds.get(userId) || new Set<string>();
+    if (favorites.has(vehicleId)) favorites.delete(vehicleId);
+    else favorites.add(vehicleId);
+    this.favoriteVehicleIds.set(userId, favorites);
+    return favorites.has(vehicleId);
+  }
   async saveVehicle(vehicle: VehiclePrivate) {
     const parsed = vehiclePrivateSchema.parse(vehicle);
     this.vehicles.set(parsed.id, clone(parsed));
@@ -1175,6 +1192,16 @@ export class DemoAutoRepository implements IAutoRepository {
   }
   async getDraft(id: string) {
     const draft = this.drafts.get(id);
+    return draft ? clone(draft) : null;
+  }
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const draft = Array.from(this.drafts.values())
+      .filter(
+        (candidate) =>
+          candidate.ownerUserId === ownerUserId &&
+          candidate.marketCode === marketCode,
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
     return draft ? clone(draft) : null;
   }
   async saveDraft(draft: VehicleDraft) {
@@ -1607,6 +1634,23 @@ export class PostgresAutoRepository implements IAutoRepository {
       ? vehiclePrivateSchema.parse(result.data.private_payload)
       : null;
   }
+  async getFavoriteVehicleIds(userId: string) {
+    const { data, error } = await this.db()
+      .from("auto_vehicle_favorites")
+      .select("vehicle_id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data || []).map((row: any) => String(row.vehicle_id));
+  }
+  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
+    const { data, error } = await this.db().rpc(
+      "toggle_auto_vehicle_favorite",
+      { p_user_id: userId, p_vehicle_id: vehicleId },
+    );
+    if (error) throw error;
+    return Boolean(data);
+  }
   async saveVehicle(vehicle: VehiclePrivate) {
     const parsed = vehiclePrivateSchema.parse(vehicle);
     const { error } = await this.db()
@@ -1781,6 +1825,18 @@ export class PostgresAutoRepository implements IAutoRepository {
       .maybeSingle();
     if (error) throw error;
     return data ? vehicleDraftSchema.parse(data.payload) : null;
+  }
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const { data, error } = await this.db()
+      .from("auto_vehicle_drafts")
+      .select("id")
+      .eq("owner_user_id", ownerUserId)
+      .eq("market_code", marketCode)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getDraft(data.id) : null;
   }
   async saveDraft(draft: VehicleDraft) {
     const parsed = vehicleDraftSchema.parse(draft);

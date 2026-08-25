@@ -20,6 +20,7 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -65,6 +66,7 @@ const amenityLabels: Record<string, string> = {
 export const ImmoPropertyDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
+  const { currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -106,7 +108,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   usePageMeta({
     title: property?.title || "Bien immobilier",
     description: property
-      ? `${propertyTypeLabels[property.propertyType]} de ${property.characteristics.livingAreaSquareMeters} m² à ${property.address.publicLabel}, proposé à ${formatImmoMoney(property.financials.price)}.`
+      ? `${propertyTypeLabels[property.propertyType]} de ${property.characteristics.livingAreaSquareMeters} m² à ${property.address.publicLabel}, proposé à ${formatImmoMoney(property.financials.price, currentLocale)}.`
       : "Découvrez ce bien immobilier et contactez son annonceur.",
     canonicalPath: `/immo/bien/${slug}`,
     type: "product",
@@ -215,9 +217,9 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   if (loading)
     return (
       <Container className="py-8">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <Skeleton className="h-[42rem] rounded-card" />
-          <Skeleton className="h-[34rem] rounded-card" />
+        <div className="grid gap-5 lg:grid-cols-content-aside-lg">
+          <Skeleton className="h-168 rounded-card" />
+          <Skeleton className="h-136 rounded-card" />
         </div>
       </Container>
     );
@@ -240,10 +242,10 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           Immobilier / {propertyTypeLabels[property.propertyType]} /{" "}
           {property.address.city}
         </nav>
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid items-start gap-5 lg:grid-cols-content-aside-lg">
           <div className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
-              <div className="relative aspect-[16/9] bg-bg-subtle">
+              <div className="relative aspect-video bg-bg-subtle">
                 <Image
                   src={property.media.photos[0]}
                   alt={property.title}
@@ -288,7 +290,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <p className="shrink-0 text-xl font-black text-primary">
-                    {formatImmoMoney(property.financials.price)}
+                    {formatImmoMoney(property.financials.price, currentLocale)}
                     {pricePeriodSuffix[property.financials.period]}
                   </p>
                 </div>

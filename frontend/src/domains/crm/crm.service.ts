@@ -12,6 +12,7 @@ import {
   CrmMoney,
   CrmCompany,
 } from "./crm.types";
+import { marketService } from "../market/market.service";
 
 export interface StageMetadata {
   id: OpportunityStage;
@@ -151,9 +152,12 @@ export class CrmService {
     }
   }
 
-  formatCrmMoney(money: CrmMoney): string {
+  formatCrmMoney(
+    money: CrmMoney,
+    locale = marketService.getDefaultMarket().defaultLocale,
+  ): string {
     const euros = money.amountMinor / 100;
-    return new Intl.NumberFormat("fr-FR", {
+    return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: money.currency,
       maximumFractionDigits: 0,

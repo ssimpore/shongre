@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal } from "./Modal";
 import { Button } from "./Button";
 import { Input, Textarea, FormField } from "./FormField";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export interface PromptModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export interface PromptModalProps {
   multiline?: boolean;
   required?: boolean;
   hint?: string;
+  minLength?: number;
+  validationMessage?: string;
 }
 
 export const PromptModal: React.FC<PromptModalProps> = ({
@@ -26,12 +29,15 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   label,
   placeholder = "",
   initialValue = "",
-  confirmText = "Valider",
-  cancelText = "Annuler",
+  confirmText,
+  cancelText,
   multiline = false,
   required = true,
   hint,
+  minLength,
+  validationMessage,
 }) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,7 +51,14 @@ export const PromptModal: React.FC<PromptModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (required && !value.trim()) {
-      setError("Ce champ est obligatoire.");
+      setError(t("common.requiredField"));
+      return;
+    }
+    if (minLength && value.trim().length < minLength) {
+      setError(
+        validationMessage ??
+          t("common.minimumCharacters", { count: minLength }),
+      );
       return;
     }
     onSubmit(value.trim());
@@ -88,10 +101,10 @@ export const PromptModal: React.FC<PromptModalProps> = ({
 
         <div className="flex items-center justify-end gap-2.5 pt-2">
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            {cancelText}
+            {cancelText ?? t("common.cancel")}
           </Button>
           <Button type="submit" variant="primary" size="sm">
-            {confirmText}
+            {confirmText ?? t("common.validate")}
           </Button>
         </div>
       </form>

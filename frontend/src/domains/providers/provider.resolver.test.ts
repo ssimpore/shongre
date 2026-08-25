@@ -45,7 +45,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     expect(resolution.isAvailable).toBe(true);
     expect(resolution.primaryProvider?.id).toBe("mangopay");
     expect(resolution.fallbackProvider?.id).toBe("stripe");
-    expect(resolution.isInheritedFromFrance).toBe(false);
+    expect(resolution.isInheritedFromBaseline).toBe(false);
   });
 
   it("inherits France configuration for Belgium when no override exists", () => {
@@ -58,7 +58,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     expect(resolution.isAvailable).toBe(true);
     expect(resolution.primaryProvider?.id).toBe("mangopay");
     expect(resolution.fallbackProvider?.id).toBe("stripe");
-    expect(resolution.isInheritedFromFrance).toBe(true);
+    expect(resolution.isInheritedFromBaseline).toBe(true);
   });
 
   it("respects explicit custom override for Belgium (e.g. Stripe prioritized over MangoPay)", () => {
@@ -92,7 +92,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     });
     expect(beResolution.primaryProvider?.id).toBe("stripe");
     expect(beResolution.fallbackProvider?.id).toBe("mangopay");
-    expect(beResolution.isInheritedFromFrance).toBe(false);
+    expect(beResolution.isInheritedFromBaseline).toBe(false);
 
     // France should still remain MangoPay as primary
     const frResolution = providerResolver.resolveEffectiveProviders({
@@ -182,7 +182,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     });
 
     expect(chResolution.primaryProvider?.id).toBe("stripe");
-    expect(chResolution.isInheritedFromFrance).toBe(true);
+    expect(chResolution.isInheritedFromBaseline).toBe(true);
   });
 
   it("activates fallback provider when primary provider becomes unavailable", () => {

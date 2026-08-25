@@ -1,5 +1,5 @@
 import { routes } from "../../configuration/routes";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Bell, Trash2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SavedSearch } from "../../types";
@@ -22,9 +22,12 @@ export const SavedSearchesPage: React.FC = () => {
 
   const navigate = useNavigate();
   const toast = useToast();
-  const [searches, setSearches] = useState<SavedSearch[]>(() =>
-    storageService.getSavedSearches(),
-  );
+  // Browser persistence is restored after mount so SSR and hydration agree.
+  const [searches, setSearches] = useState<SavedSearch[]>([]);
+
+  useEffect(() => {
+    setSearches(storageService.getSavedSearches());
+  }, []);
 
   const handleDelete = (id: string) => {
     storageService.removeSavedSearch(id);
@@ -33,11 +36,11 @@ export const SavedSearchesPage: React.FC = () => {
   };
 
   const handleToggleNotif = (id: string) => {
-    const next = searches.map((s) =>
-      s.id === id ? { ...s, hasNotifications: !s.hasNotifications } : s,
+    const current = searches.find((search) => search.id === id);
+    if (!current) return;
+    setSearches(
+      storageService.setSavedSearchNotifications(id, !current.hasNotifications),
     );
-    setSearches(next);
-    localStorage.setItem("shongre_saved_searches", JSON.stringify(next));
     toast.success("Préférences d'alerte mises à jour.");
   };
 

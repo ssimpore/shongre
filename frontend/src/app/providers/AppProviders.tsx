@@ -9,13 +9,14 @@ import { ConsentProvider } from "./ConsentProvider";
 import { I18nProvider } from "../../i18n/I18nProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { DataModeProvider } from "./DataModeProvider";
+import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 3, // 3 minutes
+      staleTime: QUERY_CLIENT_CONFIG.staleTimeMs,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: QUERY_CLIENT_CONFIG.retryCount,
     },
   },
 });

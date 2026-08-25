@@ -20,6 +20,9 @@ import type {
 } from "@shongre/contracts/monetization";
 import {
   commercialDraftPatchSchema,
+  commercialChangeReasonSchema,
+  complimentaryGrantDecisionInputSchema,
+  complimentaryGrantRequestInputSchema,
   monetizationCatalogSchema,
   monetizationAdminOverviewSchema,
   monetizationOrderSchema,
@@ -1332,18 +1335,14 @@ export class BusinessRulesService {
       idempotencyKey: string;
     },
   ) {
-    if (
-      !input?.accountId ||
-      !input.productVersionId ||
-      input.reason?.trim().length < 12 ||
-      !input.idempotencyKey ||
-      new Date(input.endsAt) <= new Date(input.startsAt)
-    ) {
+    const parsedInput = complimentaryGrantRequestInputSchema.safeParse(input);
+    if (!parsedInput.success) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Demande de forfait offert incomplète.",
       });
     }
+    input = parsedInput.data;
     if (config.dataMode !== "database") {
       return {
         id: deterministicId(
@@ -1379,17 +1378,14 @@ export class BusinessRulesService {
       idempotencyKey: string;
     },
   ) {
-    if (
-      !requestId ||
-      !["approved", "rejected"].includes(input?.decision) ||
-      input.reason?.trim().length < 8 ||
-      !input.idempotencyKey
-    ) {
+    const parsedInput = complimentaryGrantDecisionInputSchema.safeParse(input);
+    if (!requestId || !parsedInput.success) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Décision de forfait offert incomplète.",
       });
     }
+    input = parsedInput.data;
     if (config.dataMode !== "database") {
       return {
         requestId,
@@ -1636,11 +1632,13 @@ export class BusinessRulesService {
     actorId: string;
     reason: string;
   }) {
-    if (input.reason.trim().length < 8)
+    const parsedReason = commercialChangeReasonSchema.safeParse(input.reason);
+    if (!parsedReason.success)
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Motif détaillé requis.",
       });
+    input.reason = parsedReason.data;
     const catalog = await this.repository.getCatalogVersion(input.versionId);
     if (!catalog)
       throw new AppError({

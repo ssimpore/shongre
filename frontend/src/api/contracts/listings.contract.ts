@@ -1,5 +1,42 @@
 import { Listing, SearchFilters } from "../../types";
 import { PublicationDraftState } from "../../domains/publication/publication.types";
+import type { Money } from "@shongre/contracts";
+
+export type BulkImportValidationCode =
+  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "PRICE_INVALID";
+
+export interface BulkListingImportRow {
+  id: string;
+  title: string;
+  description: string;
+  categorySlug: string;
+  subCategorySlug: string;
+  price: Money;
+  condition: string;
+  stock: number;
+  city: string;
+  postalCode: string;
+  isValid: boolean;
+  validationErrorCode?: BulkImportValidationCode;
+}
+
+export interface BulkListingImportTemplate {
+  fileName: string;
+  content: string;
+}
+
+export interface ParseBulkListingImportInput {
+  content: string;
+  marketCode: string;
+  defaultCity: string;
+  defaultPostalCode: string;
+}
+
+export interface PublishBulkListingsInput {
+  sellerId: string;
+  marketCode: string;
+  rows: BulkListingImportRow[];
+}
 
 export interface ListingsServiceContract {
   getListings(
@@ -23,6 +60,11 @@ export interface ListingsServiceContract {
     sellerId: string,
   ): Promise<Listing>;
   uploadListingPhoto(file: File): Promise<{ assetId: string; url: string }>;
+  getBulkImportTemplate(locale: string): Promise<BulkListingImportTemplate>;
+  parseBulkImportCsv(
+    input: ParseBulkListingImportInput,
+  ): Promise<BulkListingImportRow[]>;
+  publishBulkListings(input: PublishBulkListingsInput): Promise<Listing[]>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
   deleteListing(id: string): Promise<boolean>;
   toggleFavorite(listingId: string): Promise<boolean>;

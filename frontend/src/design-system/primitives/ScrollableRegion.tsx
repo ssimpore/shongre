@@ -24,8 +24,11 @@ export const ScrollableRegion = React.forwardRef<
     ref={ref}
     role="region"
     tabIndex={0}
-    className={cn("max-w-full overflow-x-auto overscroll-contain", className)}
-    style={{ ...style, contain: "layout paint" }}
+    className={cn(
+      "scrollable-region max-w-full overflow-x-auto overscroll-contain",
+      className,
+    )}
+    style={style}
     {...props}
   >
     {children}

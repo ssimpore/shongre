@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Bell,
@@ -71,6 +72,7 @@ const EmploymentFilters: React.FC<{
   onApply,
   resultCount = 0,
 }) => {
+  const { currencySymbol, currentLocale } = useMarketLocation();
   const dictionaries = (
     kind: EmploymentCatalog["dictionaries"][number]["kind"],
   ) =>
@@ -173,7 +175,7 @@ const EmploymentFilters: React.FC<{
           id="employment-salary"
           inputMode="numeric"
           className={fieldClass}
-          placeholder="Ex. 35 000 €"
+          placeholder={`Ex. ${new Intl.NumberFormat(currentLocale).format(35_000)} ${currencySymbol}`}
           value={params.get("salary") || ""}
           onChange={(event) =>
             setParam("salary", event.target.value || undefined)
@@ -286,7 +288,7 @@ export const EmploymentSearchPage: React.FC = () => {
       accessibilityOnly: params.get("accessible") === "true",
       sort:
         (params.get("sort") as EmploymentSearchQuery["sort"]) || "relevance",
-      limit: 24,
+      limit: PAGE_SIZES.marketplaceSearch,
     }),
     [activeMarket.code, params],
   );
@@ -433,7 +435,7 @@ export const EmploymentSearchPage: React.FC = () => {
               {t("employment.search.subtitle")}
             </p>
             <form
-              className="mt-6 grid gap-2 rounded-card bg-bg-surface p-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto]"
+              className="mt-6 grid gap-2 rounded-card bg-bg-surface p-2 sm:grid-cols-search-fields"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = new FormData(event.currentTarget);
@@ -550,7 +552,7 @@ export const EmploymentSearchPage: React.FC = () => {
           </p>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="grid gap-6 lg:grid-cols-sidebar">
           <aside
             className="hidden self-start lg:sticky lg:top-24 lg:block"
             aria-label="Filtres emploi"

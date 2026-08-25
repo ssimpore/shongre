@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   ShieldCheck,
 } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";
@@ -17,8 +18,41 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import {
+  MOBILE_STORE_LINKS,
+  SOCIAL_LINKS,
+  type MobileStoreId,
+  type SocialNetworkId,
+} from "../../configuration/footer-links.config";
+import {
+  AppleBrandIcon,
+  FacebookBrandIcon,
+  GooglePlayBrandIcon,
+  InstagramBrandIcon,
+  LinkedInBrandIcon,
+  YouTubeBrandIcon,
+} from "../../design-system/primitives/BrandIcons";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../../design-system/utils/controlMetrics";
 
 const PANEL = "rounded-card border border-stone-800/80 bg-stone-900/40";
+const EXTERNAL_CONTROL = `inline-flex items-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`;
+
+type BrandIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
+const STORE_ICONS: Record<MobileStoreId, BrandIcon> = {
+  "app-store": AppleBrandIcon,
+  "google-play": GooglePlayBrandIcon,
+};
+
+const SOCIAL_ICONS: Record<SocialNetworkId, BrandIcon> = {
+  instagram: InstagramBrandIcon,
+  facebook: FacebookBrandIcon,
+  linkedin: LinkedInBrandIcon,
+  youtube: YouTubeBrandIcon,
+};
 
 const LEGAL_LINKS = [
   { to: "/conditions-utilisation", labelKey: "footer.terms" },
@@ -46,6 +80,88 @@ const FooterLink: React.FC<{
     </Link>
   </li>
 );
+
+const StoreBadge: React.FC<{
+  name: string;
+  url: string | null;
+  Icon: BrandIcon;
+  statusLabel: string;
+  accessibleLabel: string;
+  unavailableLabel: string;
+}> = ({ name, url, Icon, statusLabel, accessibleLabel, unavailableLabel }) => {
+  const content = (
+    <>
+      <Icon className="h-5 w-5 shrink-0" />
+      <span className="min-w-0 text-left leading-tight">
+        <span className="block text-micro font-medium text-stone-400">
+          {statusLabel}
+        </span>
+        <span className="block truncate text-xs font-bold text-white">
+          {name}
+        </span>
+      </span>
+    </>
+  );
+  const className = `${EXTERNAL_CONTROL} h-control-touch min-w-0 gap-2 rounded-control border px-2.5 sm:min-w-36 sm:px-3.5 ${
+    url
+      ? "border-stone-700 bg-stone-950 text-white hover:border-stone-500 hover:bg-stone-900"
+      : "border-stone-800 bg-stone-950/60 text-stone-400"
+  }`;
+
+  return url ? (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={accessibleLabel}
+      className={className}
+    >
+      {content}
+    </a>
+  ) : (
+    <span aria-disabled="true" title={unavailableLabel} className={className}>
+      {content}
+    </span>
+  );
+};
+
+const SocialLink: React.FC<{
+  name: string;
+  url: string | null;
+  Icon: BrandIcon;
+  accessibleLabel: string;
+  unavailableLabel: string;
+}> = ({ name, url, Icon, accessibleLabel, unavailableLabel }) => {
+  const content = <Icon className="h-5 w-5" />;
+  const className = `${EXTERNAL_CONTROL} h-control-touch w-control-touch justify-center rounded-control border ${
+    url
+      ? "border-stone-700 bg-stone-950 text-stone-300 hover:border-primary-on-dark hover:text-primary-on-dark"
+      : "border-stone-800 bg-stone-950/60 text-stone-600"
+  }`;
+
+  return url ? (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={accessibleLabel}
+      title={name}
+      className={className}
+    >
+      {content}
+    </a>
+  ) : (
+    <span
+      role="img"
+      aria-label={unavailableLabel}
+      aria-disabled="true"
+      title={unavailableLabel}
+      className={className}
+    >
+      {content}
+    </span>
+  );
+};
 
 const FooterColumn: React.FC<{
   id: string;
@@ -114,7 +230,7 @@ export const Footer: React.FC = () => {
     <footer className="border-t border-stone-800 bg-stone-950 pb-36 pt-10 text-xs text-stone-300 lg:pb-10">
       <Container className="space-y-6">
         <div className={`${PANEL} p-5 sm:p-7`}>
-          <div className="grid gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-[repeat(3,minmax(0,1fr))_minmax(16rem,1.25fr)] lg:gap-x-0 lg:gap-y-0">
+          <div className="grid gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-footer lg:gap-x-0 lg:gap-y-0">
             <FooterColumn
               id="categories"
               title={t("footer.sectionCategories")}
@@ -179,6 +295,81 @@ export const Footer: React.FC = () => {
               <NewsletterSignup variant="footer" source="footer" />
             </aside>
           </div>
+        </div>
+
+        <div
+          className={`${PANEL} flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between`}
+        >
+          <section
+            aria-labelledby="footer-mobile-apps-heading"
+            className="min-w-0 flex-1"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <h2
+                  id="footer-mobile-apps-heading"
+                  className="text-sm font-bold text-white"
+                >
+                  {t("footer.mobileAppsHeading")}
+                </h2>
+                <p className="mt-1 leading-relaxed text-stone-400">
+                  {t("footer.appPitch")}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                {MOBILE_STORE_LINKS.map((store) => {
+                  const isAvailable = Boolean(store.url);
+                  return (
+                    <StoreBadge
+                      key={store.id}
+                      name={store.name}
+                      url={store.url}
+                      Icon={STORE_ICONS[store.id]}
+                      statusLabel={t(
+                        isAvailable
+                          ? "footer.downloadFrom"
+                          : "footer.comingToStore",
+                      )}
+                      accessibleLabel={t("footer.downloadApp", {
+                        store: store.name,
+                      })}
+                      unavailableLabel={t("footer.comingSoon", {
+                        name: store.name,
+                      })}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="footer-social-heading"
+            className="border-t border-stone-800/60 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
+          >
+            <h2
+              id="footer-social-heading"
+              className="text-sm font-bold text-white"
+            >
+              {t("footer.followHeading")}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {SOCIAL_LINKS.map((social) => (
+                <SocialLink
+                  key={social.id}
+                  name={social.name}
+                  url={social.url}
+                  Icon={SOCIAL_ICONS[social.id]}
+                  accessibleLabel={t("footer.followOn", {
+                    network: social.name,
+                  })}
+                  unavailableLabel={t("footer.comingSoon", {
+                    name: social.name,
+                  })}
+                />
+              ))}
+            </div>
+          </section>
         </div>
 
         <div className="flex flex-col gap-4 pt-1 text-xs text-stone-400 md:flex-row md:items-center md:justify-between">

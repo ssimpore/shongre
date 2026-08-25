@@ -16,9 +16,11 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { Skeleton, EmptyState } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmContactsPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   usePageMeta({
     title: t("meta.crmContacts.title"),
     description: t("meta.crmContacts.description"),
@@ -76,7 +78,7 @@ export const CrmContactsPage: React.FC = () => {
         companyName: companyName.trim() || undefined,
         lifecycle: "prospect",
         qualification: "medium",
-        marketCode: "FR",
+        marketCode: activeMarket.code,
         source: "manual",
       });
 

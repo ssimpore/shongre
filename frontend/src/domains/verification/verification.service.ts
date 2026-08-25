@@ -10,6 +10,8 @@ import {
 } from "./verification.types";
 import { storageService } from "../../services/storage.service";
 import { calculateVatNumber } from "../../configuration/market.config";
+import { deterministicRuntimeId } from "../../utilities/deterministic-id";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 const VERIFICATION_AUDIT_KEY = "shongre_verification_audit_logs";
 
@@ -61,7 +63,7 @@ export class VerificationService {
     const logs = this.getAuditLogs();
     const newEntry: VerificationAuditEntry = {
       ...entry,
-      id: `valog_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      id: deterministicRuntimeId("valog", [entry]),
       timestamp: new Date().toISOString(),
     };
     logs.unshift(newEntry);
@@ -240,7 +242,8 @@ export class VerificationService {
       reviewedAt: instantApprove ? now : undefined,
       reviewedBy: instantApprove ? "Automated OCR & Liveness Check" : undefined,
       documentType: data.documentType,
-      issuingCountry: data.issuingCountry || user.country || "FR",
+      issuingCountry:
+        data.issuingCountry || user.country || DEFAULT_MARKET_CODE,
       providerReference: `identity_demo_${userId}`,
       verificationMethod: "hosted_provider_session",
       notes: instantApprove
@@ -352,7 +355,7 @@ export class VerificationService {
 
     const calculatedVat =
       data.vatNumber?.trim() ||
-      calculateVatNumber(cleanSiret, data.country || "FR");
+      calculateVatNumber(cleanSiret, data.country || DEFAULT_MARKET_CODE);
 
     user.accountType = "professional";
     user.primaryRole = "pro_seller";

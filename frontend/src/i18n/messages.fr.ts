@@ -17,6 +17,10 @@ export const messagesFr = {
   "common.retry": "Réessayer",
   "common.cancel": "Annuler",
   "common.save": "Enregistrer",
+  "common.confirm": "Confirmer",
+  "common.validate": "Valider",
+  "common.requiredField": "Ce champ est obligatoire.",
+  "common.minimumCharacters": "{count} caractères minimum.",
   "common.notifications": "Notifications",
   "a11y.skipToContent": "Aller au contenu principal",
   "common.close": "Fermer",
@@ -119,7 +123,13 @@ export const messagesFr = {
     "Recevez notre sélection hebdomadaire d’annonces et de nouveautés.",
   "footer.marketContext": "Marché France",
   "footer.privacyControls": "Consentement modifiable",
+  "footer.mobileAppsHeading": "Applications mobiles Shongre",
   "footer.appPitch": "Emportez Shongre partout avec vous.",
+  "footer.downloadFrom": "Télécharger sur",
+  "footer.comingToStore": "Bientôt sur",
+  "footer.downloadApp": "Télécharger Shongre sur {store}",
+  "footer.followHeading": "Suivez Shongre",
+  "footer.followOn": "Suivre Shongre sur {network}",
   "footer.trust.escrowTitle": "Paiement via Stripe",
   "footer.trust.escrowBody":
     "Les paiements en ligne sont traités par notre prestataire ; leur statut est suivi dans votre commande.",
@@ -222,6 +232,8 @@ export const messagesFr = {
   "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
     "Personnalisez votre pays de navigation, votre devise d'affichage et votre langue",
   "shell.preferencesModal.marchePays": "Marché / Pays",
+  "shell.preferencesModal.deviseAffichage": "Devise d'affichage",
+  "shell.preferencesModal.bientot": "Bientôt",
   "shell.preferencesModal.langueDeLInterface": "Langue de l'interface",
 
   // --- shell.errorBoundary ---
@@ -274,6 +286,22 @@ export const messagesFr = {
   // --- ui.noResultsFound ---
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
     "Conseils pour trouver votre bonheur :",
+  "ui.noResultsFound.title": "Aucune annonce trouvée",
+  "ui.noResultsFound.titleForQuery": "Aucun résultat pour « {query} »",
+  "ui.noResultsFound.description":
+    "Aucune annonce ne correspond aux filtres actuellement sélectionnés.",
+  "ui.noResultsFound.descriptionForQuery":
+    "Nous n’avons trouvé aucune annonce correspondant exactement à votre recherche.",
+  "ui.noResultsFound.clearFilters": "Effacer les filtres",
+  "ui.noResultsFound.createAlert": "Créer une alerte",
+  "ui.noResultsFound.suggestionSpelling":
+    "Vérifiez l’orthographe des mots-clés saisis",
+  "ui.noResultsFound.suggestionLocation":
+    "Élargissez le rayon géographique ou choisissez tout le marché {market}",
+  "ui.noResultsFound.suggestionFilters":
+    "Supprimez ou élargissez vos filtres de prix et de catégorie",
+  "ui.noResultsFound.suggestionRestrictions":
+    "Désactivez les critères restrictifs (livraison seule, bons plans)",
 
   // --- ui.searchAutocomplete ---
   "ui.searchAutocomplete.suggestionsDeRecherche": "Suggestions de recherche",
@@ -615,6 +643,11 @@ export const messagesFr = {
   "messaging.conversationList.rechercherParNomOuAnnonce":
     "Rechercher par nom ou annonce...",
   "messaging.conversationList.effacerLaRecherche": "Effacer la recherche",
+  "messaging.conversationList.all": "Tous",
+  "messaging.conversationList.unread": "Non lus",
+  "messaging.conversationList.purchases": "Achats",
+  "messaging.conversationList.sales": "Ventes",
+  "messaging.conversationList.orders": "Commandes",
   "messaging.conversationList.aucuneConversationTrouvee":
     "Aucune conversation trouvée",
 
@@ -627,13 +660,27 @@ export const messagesFr = {
   "messaging.messageComposer.supprimerLaPhoto": "Supprimer la photo",
   "messaging.messageComposer.joindreUnePhoto": "Joindre une photo",
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":
-    "Écrivez votre message... (Entrée pour envoyer)",
+    "Écrivez votre message…",
+  "messaging.messageComposer.keyboardHint":
+    "Entrée pour envoyer. Majuscule plus Entrée pour aller à la ligne.",
   "messaging.messageComposer.photoPreteAEtreEnvoyee":
     "Photo prête à être envoyée",
   "messaging.messageComposer.seraTransmiseAvecVotreMessage":
     "Sera transmise avec votre message",
   "messaging.messageComposer.ajouterUnePhotoALa":
     "Ajouter une photo à la conversation",
+  "messaging.messageComposer.envoyer": "Envoyer",
+  "messaging.messageComposer.demoAttachmentCondition": "Photo état",
+  "messaging.messageComposer.demoAttachmentInvoice": "Facture / Garantie",
+  "messaging.messageComposer.demoAttachmentAccessories": "Accessoires inclus",
+  "messaging.messageComposer.quickReplyAvailable":
+    "Bonjour, oui, l'article est disponible en stock.",
+  "messaging.messageComposer.quickReplyShipping":
+    "Bonjour, expédition possible sous 24h avec suivi.",
+  "messaging.messageComposer.quickReplyPickup":
+    "Bonjour, nous pouvons convenir d'un retrait en boutique.",
+  "messaging.messageComposer.quickReplyInvoice":
+    "Bonjour, facture avec TVA fournie sur demande.",
 
   // --- messaging.messageTimeline ---
   "messaging.messageTimeline.historiqueDeLaConversation":
@@ -2515,6 +2562,13 @@ export const messagesFr = {
   "auth.mFAModal.3EntrezLeCodeA":
     "3. Entrez le code à 6 chiffres généré par votre application",
   "auth.mFAModal.verifierEtActiverLe2fa": "Vérifier et activer le 2FA",
+  "auth.mFAModal.codeLength": "Saisissez le code à {count} chiffres.",
+  "auth.mFAModal.activationError":
+    "L’activation de la double authentification a échoué.",
+  "auth.mFAModal.qrCodeAlt":
+    "Code QR de configuration de la double authentification",
+  "auth.mFAModal.copied": "Copiés",
+  "auth.mFAModal.copyBackupCodes": "Copier les {count} codes",
 
   // --- auth.phoneVerificationModal ---
   "auth.phoneVerificationModal.verificationDuNumeroDeTelephone":
@@ -2522,12 +2576,25 @@ export const messagesFr = {
   "auth.phoneVerificationModal.laVerificationTelephoniqueProtegeLes":
     "La vérification téléphonique protège les acheteurs et vendeurs lors des remises en main propre et renforce la confiance.",
   "auth.phoneVerificationModal.paysEtIndicatif": "Pays et indicatif",
+  "auth.phoneVerificationModal.phoneNumber": "Numéro de téléphone",
   "auth.phoneVerificationModal.recevoirMonCodeParSms":
     "Recevoir mon code par SMS",
   "auth.phoneVerificationModal.saisissezLeCodeRecuPar":
     "Saisissez le code reçu par SMS (6 chiffres)",
   "auth.phoneVerificationModal.confirmerLeNumero": "Confirmer le numéro",
   "auth.phoneVerificationModal.changerDeNumero": "Changer de numéro",
+  "auth.phoneVerificationModal.phoneRequired":
+    "Renseignez votre numéro de téléphone.",
+  "auth.phoneVerificationModal.sendError": "L’envoi du code par SMS a échoué.",
+  "auth.phoneVerificationModal.codeLength":
+    "Saisissez le code à {count} chiffres.",
+  "auth.phoneVerificationModal.validateError":
+    "La validation du code a échoué.",
+  "auth.phoneVerificationModal.resendSuccess":
+    "Un nouveau code a été envoyé par SMS.",
+  "auth.phoneVerificationModal.demoCode": "Code SMS de test : {code}",
+  "auth.phoneVerificationModal.resendCountdown": "Renvoyer ({count} s)",
+  "auth.phoneVerificationModal.resend": "Renvoyer le code",
 
   // --- auth.upgradeToProModal ---
   "auth.upgradeToProModal.passerEnCompteProfessionnel":
@@ -3064,6 +3131,27 @@ export const messagesFr = {
     "Parcourir un fichier CSV...",
   "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur":
     "Utilisez notre modèle avec séparateur point-virgule (;) contenant colonnes Titre, Catégorie, Prix, État et Stock.",
+  "sellerworkspace.bulkImportModal.csvDownloaded":
+    "Le modèle CSV a été téléchargé.",
+  "sellerworkspace.bulkImportModal.csvParseError":
+    "Impossible d'analyser ce fichier CSV.",
+  "sellerworkspace.bulkImportModal.importSuccess":
+    "{count} annonce(s) importée(s) et publiée(s) avec succès.",
+  "sellerworkspace.bulkImportModal.importError":
+    "Erreur lors de l'import des annonces.",
+  "sellerworkspace.bulkImportModal.validationTitleRequired":
+    "Titre obligatoire",
+  "sellerworkspace.bulkImportModal.validationTitleTooShort":
+    "Titre trop court (5 caractères minimum)",
+  "sellerworkspace.bulkImportModal.validationPriceInvalid": "Prix invalide",
+  "sellerworkspace.bulkImportModal.rowsDetected":
+    "{total} lignes détectées ({valid} valides)",
+  "sellerworkspace.bulkImportModal.invalidRows": "{count} ligne(s) invalide(s)",
+  "sellerworkspace.bulkImportModal.quantity": "Qté : {count}",
+  "sellerworkspace.bulkImportModal.valid": "Valide",
+  "sellerworkspace.bulkImportModal.cancel": "Annuler",
+  "sellerworkspace.bulkImportModal.importAndPublish":
+    "Importer et publier {count} annonce(s)",
 
   // --- support.contactPage ---
   "support.contactPage.votreDemandeABienEte":
@@ -3462,6 +3550,29 @@ export const messagesFr = {
 
   /* Accessible names for controls that previously had only a placeholder. */
   "messaging.messageComposer.votreMessage": "Votre message",
+  "messaging.makeOfferModal.displayedPriceDescription":
+    "Prix affiché : {price}. Le vendeur pourra accepter ou refuser votre proposition.",
+  "messaging.makeOfferModal.cancel": "Annuler",
+  "messaging.makeOfferModal.submitOffer": "Transmettre l'offre",
+  "messaging.messagingPage.sendFailed": "Échec de l'envoi du message.",
+  "messaging.messagingPage.offerSent":
+    "Offre de {price} transmise au vendeur !",
+  "messaging.messagingPage.offerAccepted": "Offre acceptée à {price} !",
+  "messaging.messagingPage.offerAcceptedGeneric": "Offre acceptée !",
+  "messaging.messagingPage.offerDeclined": "Offre déclinée.",
+  "ui.priceRangeSlider.allPrices": "Tous les prix",
+  "ui.priceRangeSlider.upTo": "Jusqu'à {price}",
+  "ui.priceRangeSlider.from": "À partir de {price}",
+  "ui.priceRangeSlider.minimumPrice": "Prix minimum",
+  "ui.priceRangeSlider.maximumPrice": "Prix maximum",
+  "ui.priceRangeSlider.noMinimum": "Aucun minimum",
+  "ui.priceRangeSlider.noMaximum": "Aucun maximum",
+  "search.searchPage.minimumShort": "min",
+  "search.searchPage.maximumShort": "max",
+  "search.searchPage.priceInCurrency": "Prix ({currency})",
+  "search.searchPage.budgetInCurrency": "Budget ({currency})",
+  "transactions.sellerPayoutModal.amountMustBePositive":
+    "Veuillez saisir un montant supérieur à 0 {currency}.",
   "profile.sellerCatalog.prixMinimum": "Prix minimum en euros",
   "profile.sellerCatalog.prixMaximum": "Prix maximum en euros",
   "publishing.publishWizard.rechercherUneCategorie":
@@ -3595,6 +3706,15 @@ export const messagesFr = {
   "admin.discovery.metric.duplicates": "Doublons écartés",
   "admin.discovery.metric.diversity": "Diversifications",
   "admin.discovery.metric.latency": "Latence moyenne (ms)",
+  "admin.adminMarketsPage.resetAllTitle":
+    "Réinitialiser la configuration du marché",
+  "admin.adminMarketsPage.resetAllMessage":
+    "Toutes les surcharges de {market} seront supprimées. Sa configuration héritera de nouveau du marché de référence {baseline}.",
+  "admin.adminMarketsPage.resetAllConfirm": "Réinitialiser les surcharges",
+  "admin.monetization.transitionTitle": "Valider une transition du catalogue",
+  "admin.monetization.transitionReason": "Motif de la transition",
+  "admin.monetization.transitionReasonDefault":
+    "Validation du catalogue commercial",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Monitor, Smartphone, ArrowRight } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { NewsletterCampaign } from "../../../domains/newsletter/newsletter.types";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { services } from "../../../api/client/service-registry";
+import type { Listing } from "../../../types";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface NewsletterPreviewModalProps {
   isOpen: boolean;
@@ -18,7 +21,36 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
   campaign,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
+  const [featuredListings, setFeaturedListings] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    const listingIds = campaign.content.featuredListingIds?.slice(0, 2) || [];
+    setFeaturedListings([]);
+
+    Promise.all(
+      listingIds.map((listingId) =>
+        services.listings.getListingById(listingId),
+      ),
+    )
+      .then((listings) => {
+        if (!cancelled) {
+          setFeaturedListings(
+            listings.filter((listing): listing is Listing => listing !== null),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setFeaturedListings([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [campaign.content.featuredListingIds, isOpen]);
 
   return (
     <Modal
@@ -88,7 +120,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
         <div className="p-4 bg-stone-200 rounded-2xl flex justify-center overflow-x-auto">
           <div
             className={`bg-white rounded-2xl shadow-sm border border-stone-300 overflow-hidden transition-all text-stone-800 ${
-              viewMode === "mobile" ? "w-[360px]" : "w-[560px]"
+              viewMode === "mobile" ? "w-90" : "w-140"
             }`}
           >
             {/* Email Header */}
@@ -124,42 +156,36 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 </p>
               )}
 
-              {/* Sample Showcase Cards */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-xl border border-stone-200 bg-stone-50 space-y-1.5">
-                  <div className="h-24 bg-stone-200 rounded-lg overflow-hidden flex items-center justify-center text-stone-400">
-                    <Image
-                      src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&q=80"
-                      alt="Fauteuil"
-                      sizes="(max-width: 640px) 45vw, 240px"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="font-bold text-stone-900 text-xs line-clamp-1">
-                    Fauteuil Design Teck
-                  </span>
-                  <span className="text-primary font-black text-xs block">
-                    280 €
-                  </span>
+              {/* Showcase resolves the campaign's listing IDs through the same
+                  service contract as the marketplace, so prices and inventory
+                  cannot drift from a second set of mock cards in this modal. */}
+              {featuredListings.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  {featuredListings.map((listing) => (
+                    <div
+                      key={listing.id}
+                      className="p-3 rounded-xl border border-stone-200 bg-stone-50 space-y-1.5"
+                    >
+                      <div className="h-24 bg-stone-200 rounded-lg overflow-hidden flex items-center justify-center text-stone-400">
+                        <Image
+                          src={listing.coverImageUrl}
+                          alt=""
+                          sizes="(max-width: 640px) 45vw, 240px"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="font-bold text-stone-900 text-xs line-clamp-1">
+                        {listing.title}
+                      </span>
+                      <span className="text-primary font-black text-xs block">
+                        {formatPrice(listing.price, {
+                          isFreeDonation: listing.isFreeDonation,
+                        })}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-
-                <div className="p-3 rounded-xl border border-stone-200 bg-stone-50 space-y-1.5">
-                  <div className="h-24 bg-stone-200 rounded-lg overflow-hidden flex items-center justify-center text-stone-400">
-                    <Image
-                      src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80"
-                      alt={t("newsletter.newsletterPreviewModal.velo")}
-                      sizes="(max-width: 640px) 45vw, 240px"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="font-bold text-stone-900 text-xs line-clamp-1">
-                    {t("newsletter.newsletterPreviewModal.veloGravelAluminium")}
-                  </span>
-                  <span className="text-primary font-black text-xs block">
-                    450 €
-                  </span>
-                </div>
-              </div>
+              )}
 
               {/* Main CTA */}
               <div className="text-center pt-4">

@@ -31,6 +31,7 @@ import {
 } from "../../domains/taxonomy/taxonomy.display";
 import { services } from "../../api/client/service-registry";
 import type { DirectPurchaseQuote } from "../../api/contracts/orders.contract";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export interface DirectPurchaseCheckoutModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
 > = ({ isOpen, onClose, listing, onSuccess }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
   const toast = useToast();
 
   const [step, setStep] = useState<"delivery" | "payment" | "success">(
@@ -179,7 +181,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
           street: shippingAddress.addressLine,
           postalCode: shippingAddress.postalCode,
           city: shippingAddress.city,
-          country: listing.marketCode || "FR",
+          country: listing.marketCode || activeMarket.countryCode,
         },
         idempotencyKey: operationKey.current,
       });

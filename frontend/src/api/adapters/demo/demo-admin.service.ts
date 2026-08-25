@@ -21,10 +21,12 @@ import type {
 } from "../../../domains/trending/trending.types";
 import {
   discoveryConfigurationSchema,
+  discoveryChangeReasonSchema,
   type DiscoveryConfiguration,
   type DiscoveryMetrics,
 } from "@shongre/contracts/discovery";
 import { DEFAULT_DISCOVERY_CONFIGURATION } from "@shongre/shared";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 export class DemoAdminService implements AdminServiceContract {
   private discoveryConfiguration = structuredClone(
@@ -176,14 +178,16 @@ export class DemoAdminService implements AdminServiceContract {
     ];
   }
 
-  async getTrendingConfig(marketCode = "FR"): Promise<TrendingAdminConfig> {
+  async getTrendingConfig(
+    marketCode = DEFAULT_MARKET_CODE,
+  ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
     return getTrendingAdminConfig(marketCode);
   }
 
   async updateTrendingConfig(
     updates: Partial<TrendingAdminConfig>,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
     return updateTrendingAdminConfig(updates, marketCode);
@@ -196,12 +200,14 @@ export class DemoAdminService implements AdminServiceContract {
     return upsertTrendingOverride(override);
   }
 
-  async getDiscoveryConfiguration(marketCode = "FR") {
+  async getDiscoveryConfiguration(marketCode = DEFAULT_MARKET_CODE) {
     await simulateNetworkDelay();
     return { ...structuredClone(this.discoveryConfiguration), marketCode };
   }
 
-  async getDiscoveryMetrics(marketCode = "FR"): Promise<DiscoveryMetrics> {
+  async getDiscoveryMetrics(
+    marketCode = DEFAULT_MARKET_CODE,
+  ): Promise<DiscoveryMetrics> {
     await simulateNetworkDelay();
     return {
       marketCode,
@@ -225,8 +231,8 @@ export class DemoAdminService implements AdminServiceContract {
     activate: boolean,
   ) {
     await simulateNetworkDelay();
-    if (changeReason.trim().length < 8)
-      throw new Error("Un motif détaillé est requis.");
+    const reason = discoveryChangeReasonSchema.safeParse(changeReason);
+    if (!reason.success) throw new Error("Un motif détaillé est requis.");
     const parsed = discoveryConfigurationSchema.parse(configuration);
     const version = {
       ...structuredClone(parsed),

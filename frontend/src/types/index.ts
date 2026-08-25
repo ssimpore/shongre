@@ -518,7 +518,8 @@ export type MessageType =
   | "offer_declined"
   | "reservation"
   | "system";
-export type OfferStatus = "pending" | "accepted" | "declined" | "countered";
+export type OfferStatus =
+  "pending" | "accepted" | "declined" | "countered" | "withdrawn" | "expired";
 
 export interface Message {
   id: string;
@@ -528,6 +529,11 @@ export interface Message {
   content: string;
   type: MessageType;
   offerAmount?: number;
+  offerId?: string;
+  offerAmountMinor?: number;
+  offerCurrency?: string;
+  offerStatus?: OfferStatus;
+  offerExpiresAt?: string;
   attachmentUrl?: string;
   attachmentType?: "image" | "file";
   createdAt: string;

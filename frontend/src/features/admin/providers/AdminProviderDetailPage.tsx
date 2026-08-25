@@ -26,12 +26,14 @@ import { StatePanel } from "../../../design-system/primitives/StatePanel";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { labelIdentifier } from "../../../utilities/identifier-label";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 type DetailTab =
   "configuration" | "markets" | "health" | "dependencies" | "audit";
 
 export const AdminProviderDetailPage: React.FC = () => {
   const { t } = useTranslation();
+  const { formatDate } = useRegionalFormatters();
   usePageMeta({
     title: t("meta.adminProviderDetail.title"),
     description: t("meta.adminProviderDetail.description"),
@@ -159,12 +161,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                   Version config : <strong>v{configuration.version}</strong>
                 </span>
                 <span>•</span>
-                <span>
-                  Modifié le :{" "}
-                  {new Date(configuration.updatedAt).toLocaleDateString(
-                    "fr-FR",
-                  )}
-                </span>
+                <span>Modifié le : {formatDate(configuration.updatedAt)}</span>
               </div>
             </div>
           </div>

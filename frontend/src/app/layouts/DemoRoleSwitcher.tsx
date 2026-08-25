@@ -21,8 +21,8 @@ import type { MessageKey } from "../../i18n/messages.fr";
 import { useToast } from "../providers/ToastProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../../configuration/routes";
-import { isDemoMode } from "../../api/client/data-mode.service";
 import { DataModeSettingsControl } from "./DataModeSettingsControl";
+import { useDataMode } from "../providers/DataModeProvider";
 
 interface DemoPersona {
   userKey: string;
@@ -125,7 +125,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     label: "9. Support Shongre (Hugo)",
     desc: "Dossiers support et consultation limitée des comptes",
     group: "staff",
-    destination: routes.admin.overview(),
+    destination: "/admin/support",
     Icon: Shield,
     iconClassName: "text-info",
   },
@@ -383,7 +383,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
               role="menu"
               aria-label={t("shell.demoRoleSwitcher.changerDeRolePourTester")}
               onKeyDown={handleMenuKeyDown}
-              className="absolute right-0 mt-1 w-[calc(100vw-24px)] max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
+              className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
             >
               <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-stone-400">
                 {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
@@ -529,5 +529,7 @@ const LiveModeToolbar: React.FC = () => {
 // Persona simulation exists only in Demo mode. Live mode keeps the same shell
 // position for an unambiguous source indicator and exposes settings only to
 // accounts carrying the central administration permission.
-export const DemoRoleSwitcher: React.FC = () =>
-  isDemoMode() ? <DemoRoleSwitcherContent /> : <LiveModeToolbar />;
+export const DemoRoleSwitcher: React.FC = () => {
+  const { mode } = useDataMode();
+  return mode === "demo" ? <DemoRoleSwitcherContent /> : <LiveModeToolbar />;
+};

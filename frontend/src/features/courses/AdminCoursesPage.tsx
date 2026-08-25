@@ -19,21 +19,23 @@ import type {
   CoursePlan,
   CourseSubject,
 } from "@shongre/contracts/courses";
+import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Input, Skeleton, Switch } from "../../design-system";
+import {
+  Badge,
+  Button,
+  Input,
+  ProgressBar,
+  Skeleton,
+  Switch,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 type Tab = "overview" | "taxonomy" | "plans" | "settings";
-
-const money = (amountMinor?: number) =>
-  amountMinor === undefined
-    ? "Gratuit"
-    : new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-      }).format(amountMinor / 100);
 
 const FLAG_LABELS: Record<keyof CourseFeatureFlags, string> = {
   learnerRequestsEnabled: "Demandes guidées d’élèves",
@@ -47,6 +49,8 @@ const FLAG_LABELS: Record<keyof CourseFeatureFlags, string> = {
 
 export const AdminCoursesPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
+  const { formatMoneyMinor } = useRegionalFormatters();
   const toast = useToast();
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [config, setConfig] = useState<CourseMarketConfig | null>(null);
@@ -62,7 +66,7 @@ export const AdminCoursesPage: React.FC = () => {
 
   const load = () => {
     services.courses
-      .getAdminCatalog("FR")
+      .getAdminCatalog(activeMarket.code)
       .then((next) => {
         setCatalog(next);
         setConfig(next.config);
@@ -70,13 +74,16 @@ export const AdminCoursesPage: React.FC = () => {
       .catch(() => toast.error(t("verticals.education.adminLoadError")));
   };
 
-  useEffect(load, [toast]);
+  useEffect(load, [activeMarket.code, toast]);
 
   const saveConfig = async () => {
     if (!config) return;
     setIsSaving(true);
     try {
-      const updated = await services.courses.updateMarketConfig("FR", config);
+      const updated = await services.courses.updateMarketConfig(
+        activeMarket.code,
+        config,
+      );
       setConfig(updated);
       setCatalog((current) =>
         current ? { ...current, config: updated } : current,
@@ -93,9 +100,11 @@ export const AdminCoursesPage: React.FC = () => {
 
   const toggleSubject = async (subject: CourseSubject) => {
     try {
-      const updated = await services.courses.updateSubject("FR", subject.id, {
-        isActive: !subject.isActive,
-      });
+      const updated = await services.courses.updateSubject(
+        activeMarket.code,
+        subject.id,
+        { isActive: !subject.isActive },
+      );
       setCatalog((current) =>
         current
           ? {
@@ -121,7 +130,11 @@ export const AdminCoursesPage: React.FC = () => {
     patch: Parameters<typeof services.courses.updatePlan>[2],
   ) => {
     try {
-      const updated = await services.courses.updatePlan("FR", plan.id, patch);
+      const updated = await services.courses.updatePlan(
+        activeMarket.code,
+        plan.id,
+        patch,
+      );
       setCatalog((current) =>
         current
           ? {
@@ -141,7 +154,7 @@ export const AdminCoursesPage: React.FC = () => {
   };
 
   if (!catalog || !config)
-    return <Skeleton className="h-[42rem] w-full rounded-card" />;
+    return <Skeleton className="h-168 w-full rounded-card" />;
 
   const phase2Enabled = Object.entries(config.featureFlags)
     .filter(([key]) =>
@@ -164,7 +177,7 @@ export const AdminCoursesPage: React.FC = () => {
               {t("verticals.education.brand")}
             </h1>
             <Badge variant={config.isEnabled ? "success" : "neutral"}>
-              France · {config.isEnabled ? "Actif" : "Inactif"}
+              {activeMarket.name} · {config.isEnabled ? "Actif" : "Inactif"}
             </Badge>
             <Badge variant="primary">Schéma v{config.schemaVersion}</Badge>
           </div>
@@ -273,12 +286,11 @@ export const AdminCoursesPage: React.FC = () => {
                         {Number(percent)} %
                       </span>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-pill bg-bg-muted">
-                      <div
-                        className="h-full rounded-pill bg-primary"
-                        style={{ width: `${Number(percent)}%` }}
-                      />
-                    </div>
+                    <ProgressBar
+                      value={Number(percent)}
+                      label={`${String(label)} : ${Number(percent)} %`}
+                      className="mt-1.5"
+                    />
                   </div>
                 ))}
               </div>
@@ -322,7 +334,7 @@ export const AdminCoursesPage: React.FC = () => {
         <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
           <div className="border-b border-border-subtle p-5">
             <h2 className="text-sm font-black text-text-main">
-              Matières actives en France
+              Matières actives en {activeMarket.name}
             </h2>
             <p className="mt-1 text-xs text-text-secondary">
               Les niveaux autorisés pilotent le formulaire professeur et les
@@ -385,7 +397,12 @@ export const AdminCoursesPage: React.FC = () => {
                   />
                 </div>
                 <p className="mt-4 text-lg font-black text-text-main">
-                  {money(plan.monthlyPrice?.amountMinor)}
+                  {plan.monthlyPrice
+                    ? formatMoneyMinor(
+                        plan.monthlyPrice.amountMinor,
+                        plan.monthlyPrice.currency,
+                      )
+                    : "Gratuit"}
                   {plan.monthlyPrice && (
                     <span className="text-xs font-medium text-text-muted">
                       {" "}
@@ -464,7 +481,10 @@ export const AdminCoursesPage: React.FC = () => {
                     {addOn.name}
                   </p>
                   <p className="mt-1 text-sm font-black text-primary">
-                    {money(addOn.price.amountMinor)}
+                    {formatMoneyMinor(
+                      addOn.price.amountMinor,
+                      addOn.price.currency,
+                    )}
                   </p>
                   <p className="mt-1 text-micro text-text-muted">
                     {addOn.validityDays
@@ -481,10 +501,10 @@ export const AdminCoursesPage: React.FC = () => {
       )}
 
       {tab === "settings" && (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid gap-5 xl:grid-cols-content-aside-lg">
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
             <h2 className="text-sm font-black text-text-main">
-              Fonctionnalités du marché France
+              Fonctionnalités du marché {activeMarket.name}
             </h2>
             <div className="mt-4 divide-y divide-border-subtle">
               {(
@@ -535,7 +555,7 @@ export const AdminCoursesPage: React.FC = () => {
                 <Input
                   className="mt-2"
                   type="number"
-                  min={1}
+                  min={COURSE_CONSTRAINTS.validity.min}
                   value={config.learnerRequestValidityDays}
                   onChange={(event) =>
                     setConfig({
@@ -550,7 +570,7 @@ export const AdminCoursesPage: React.FC = () => {
                 <Input
                   className="mt-2"
                   type="number"
-                  min={1}
+                  min={COURSE_CONSTRAINTS.validity.min}
                   value={config.leadValidityHours}
                   onChange={(event) =>
                     setConfig({

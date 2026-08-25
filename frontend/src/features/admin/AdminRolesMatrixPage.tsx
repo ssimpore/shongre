@@ -265,7 +265,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
               <tr className="bg-stone-900 text-white font-bold border-b border-stone-800">
                 <th
                   scope="col"
-                  className="p-3 min-w-[280px] sticky left-0 bg-stone-900 z-raised"
+                  className="p-3 min-w-70 sticky left-0 bg-stone-900 z-raised"
                 >
                   {t("admin.adminRolesMatrixPage.permissionPerimetre")}
                 </th>
@@ -276,7 +276,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                     <th
                       scope="col"
                       key={r}
-                      className={`p-2.5 text-center min-w-[90px] border-l border-stone-800 ${
+                      className={`p-2.5 text-center min-w-22.5 border-l border-stone-800 ${
                         isCurrent ? "bg-primary-hover text-white" : ""
                       }`}
                       title={`${def.title} (niveau ${def.hierarchyLevel})`}

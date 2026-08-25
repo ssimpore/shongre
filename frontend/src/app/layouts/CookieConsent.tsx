@@ -47,7 +47,7 @@ const CookieBanner: React.FC = () => {
          without claiming behaviour it does not implement. */
       role="region"
       aria-labelledby="cookie-banner-title"
-      className="fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-0 z-header p-3 sm:p-4 pointer-events-none"
+      className="fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-0 z-header p-3 sm:p-4 pointer-events-none"
     >
       <div className="pointer-events-auto mx-auto max-w-4xl bg-white rounded-2xl border border-border-base shadow-xl p-4 sm:p-5">
         <div className="flex items-start gap-3">

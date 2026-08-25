@@ -247,6 +247,14 @@ const BG_SIZE_CLASSES = {
   xl: "w-16 h-16 rounded-2xl",
 };
 
+/**
+ * Category accents can be configured by taxonomy data, so they cannot be
+ * compiled into a finite utility class. Expose the value through one scoped
+ * custom property; all visual rules remain centralized in the stylesheet.
+ */
+const categoryToneStyle = (accent: string): React.CSSProperties =>
+  ({ "--category-accent": accent }) as React.CSSProperties;
+
 export const CategoryIcon: React.FC<CategoryIconProps> = ({
   category,
   iconName,
@@ -312,33 +320,19 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
 
     return (
       <div
-        className={`flex items-center justify-center shrink-0 shadow-2xs transition-transform ${bgSizeClass} ${className}`}
-        style={{
-          backgroundColor: `${effectiveColor}15`,
-          color: effectiveColor,
-        }}
+        className={`category-icon-tone category-icon-tone-with-background flex items-center justify-center shrink-0 shadow-2xs transition-transform ${bgSizeClass} ${className}`}
+        style={categoryToneStyle(effectiveColor)}
       >
-        <IconComponent
-          className={sizeClass}
-          style={
-            customPixelSize
-              ? { width: customPixelSize, height: customPixelSize }
-              : {}
-          }
-        />
+        <IconComponent className={sizeClass} size={customPixelSize} />
       </div>
     );
   }
 
   return (
     <IconComponent
-      className={`${sizeClass} ${className}`}
-      style={{
-        color: effectiveColor,
-        ...(customPixelSize
-          ? { width: customPixelSize, height: customPixelSize }
-          : {}),
-      }}
+      className={`category-icon-tone ${sizeClass} ${className}`}
+      style={categoryToneStyle(effectiveColor)}
+      size={customPixelSize}
     />
   );
 };

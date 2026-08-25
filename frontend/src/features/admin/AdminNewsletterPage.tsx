@@ -22,9 +22,11 @@ import { Skeleton, EmptyState } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const AdminNewsletterPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   usePageMeta({
     title: t("meta.adminNewsletter.title"),
     description: t("meta.adminNewsletter.description"),
@@ -79,10 +81,10 @@ export const AdminNewsletterPage: React.FC = () => {
         subject: subject.trim(),
         previewText: previewText.trim(),
         topic: targetTopic,
-        marketCode: "FR",
-        locale: "fr-FR",
+        marketCode: activeMarket.code,
+        locale: currentLocale,
         audience: {
-          marketCode: "FR",
+          marketCode: activeMarket.code,
           accountTypes:
             targetAudience === "all" ? ["individual", "pro"] : [targetAudience],
           topicIds: [targetTopic],

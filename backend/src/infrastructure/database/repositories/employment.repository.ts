@@ -113,6 +113,10 @@ export interface EmploymentRepository {
     employerId: string,
   ): Promise<"active" | "pending" | "suspended" | "closed" | null>;
   getDraft(id: string): Promise<JobDraft | null>;
+  getLatestDraft(
+    ownerUserId: string,
+    marketCode: string,
+  ): Promise<JobDraft | null>;
   saveDraft(draft: JobDraft): Promise<JobDraft>;
   countActiveJobs(owner: {
     ownerUserId?: string;
@@ -541,6 +545,16 @@ export class DemoEmploymentRepository implements EmploymentRepository {
   }
   async getDraft(id: string) {
     return this.drafts.has(id) ? clone(this.drafts.get(id)!) : null;
+  }
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const draft = Array.from(this.drafts.values())
+      .filter(
+        (candidate) =>
+          candidate.ownerUserId === ownerUserId &&
+          candidate.marketCode === marketCode,
+      )
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0];
+    return draft ? clone(draft) : null;
   }
   async saveDraft(draft: JobDraft) {
     const parsed = jobDraftSchema.parse(draft);
@@ -1598,6 +1612,19 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       duplicateCandidateIds: data.duplicate_fingerprints,
       updatedAt: data.updated_at,
     });
+  }
+  override async getLatestDraft(ownerUserId: string, marketCode: string) {
+    const { data, error } = await this.db()
+      .from("employment_job_drafts")
+      .select("id")
+      .eq("owner_user_id", ownerUserId)
+      .eq("market_code", marketCode)
+      .gt("expires_at", new Date().toISOString())
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getDraft(data.id) : null;
   }
 
   override async saveDraft(draft: JobDraft) {

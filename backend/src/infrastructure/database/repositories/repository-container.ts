@@ -95,6 +95,21 @@ import {
   PostgresDiscoveryConfigurationRepository,
 } from "./discovery-configuration.repository.js";
 import { logger } from "../../logging/logger.js";
+import {
+  ISupportRepository,
+  DemoSupportRepository,
+  PostgresSupportRepository,
+} from "./support.repository.js";
+import {
+  IFeatureFlagRepository,
+  DemoFeatureFlagRepository,
+  PostgresFeatureFlagRepository,
+} from "./feature-flag.repository.js";
+import {
+  IModerationRepository,
+  DemoModerationRepository,
+  PostgresModerationRepository,
+} from "./moderation.repository.js";
 
 export interface RepositoryContainer {
   users: IUserRepository;
@@ -116,6 +131,9 @@ export interface RepositoryContainer {
   employment: EmploymentRepository;
   publishers: IPublisherRepository;
   discoveryConfiguration: IDiscoveryConfigurationRepository;
+  support: ISupportRepository;
+  featureFlags: IFeatureFlagRepository;
+  moderation: IModerationRepository;
 }
 
 export function createRepositoryContainer(
@@ -147,6 +165,9 @@ export function createRepositoryContainer(
       employment: new PostgresEmploymentRepository(),
       publishers: new PostgresPublisherRepository(),
       discoveryConfiguration: new PostgresDiscoveryConfigurationRepository(),
+      support: new PostgresSupportRepository(),
+      featureFlags: new PostgresFeatureFlagRepository(),
+      moderation: new PostgresModerationRepository(),
     };
   }
 
@@ -171,6 +192,9 @@ export function createRepositoryContainer(
     employment: new DemoEmploymentRepository(),
     publishers: new DemoPublisherRepository(users),
     discoveryConfiguration: new DemoDiscoveryConfigurationRepository(),
+    support: new DemoSupportRepository(),
+    featureFlags: new DemoFeatureFlagRepository(),
+    moderation: new DemoModerationRepository(),
   };
 }
 

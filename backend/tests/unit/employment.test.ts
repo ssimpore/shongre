@@ -50,6 +50,53 @@ const standardJobData = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("EmploymentService", () => {
+  it("creates one recoverable draft per owner and normalizes publication form data server-side", async () => {
+    const service = createService();
+    const first = await service.getOrCreateOwnDraft("user_pro_atelier", "FR");
+    const second = await service.getOrCreateOwnDraft("user_pro_atelier", "fr");
+    expect(second.id).toBe(first.id);
+    const normalized = await service.saveOwnPublicationDraft(
+      "user_pro_atelier",
+      first.id,
+      {
+        marketCode: "FR",
+        countryCode: "FR",
+        currentStep: 4,
+        privateEmployer: false,
+        selectedOfferId: "employment.employer.free",
+        selectedAddOnIds: [],
+        duplicateCandidateIds: [],
+        data: {
+          employerId: "employer-technova",
+          title: "Responsable qualité web",
+          professionId: "employment.fr.profession.frontend_engineer",
+          industryId: "employment.fr.sector.technology",
+          contractTypeId: "employment.fr.contract_type.permanent",
+          workingArrangementId: "employment.fr.working_arrangement.hybrid",
+          workingTimeId: "employment.fr.work_schedule.full_time",
+          responsibilities: "Qualité, Accessibilité",
+          requiredSkills: "Accessibilité, TypeScript",
+          preferredSkills: "React",
+          city: "Lyon",
+          postalCode: "69002",
+          positionsCount: "1",
+          publishSalary: true,
+          salaryMinimum: "3500",
+          salaryFrequencyId: "employment.fr.salary_frequency.monthly",
+          screeningQuestion: "Décrivez un audit récent",
+        },
+      },
+    );
+    expect(normalized.data.responsibilities).toEqual([
+      "Qualité",
+      "Accessibilité",
+    ]);
+    expect(normalized.data.salary).toMatchObject({
+      minimum: { amountMinor: 350_000, currency: "EUR" },
+    });
+    expect(normalized.screeningQuestions).toHaveLength(1);
+  });
+
   it("keeps the standard employer publication path free and available to a private employer", async () => {
     const service = createService();
     const catalog = await service.getCatalog("FR");

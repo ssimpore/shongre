@@ -8,6 +8,7 @@ import {
   getCategoryMetadata,
 } from "../../../../domains/providers/provider-capabilities";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 
 interface ProviderMarketMatrixProps {
   onSelectProvider?: (providerId: string) => void;
@@ -15,19 +16,15 @@ interface ProviderMarketMatrixProps {
 
 export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
   const { t } = useTranslation();
+  const { availableMarkets } = useMarketLocation();
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-  const marketCodes = ["FR", "BE", "CH", "ES", "LU", "DE"];
-  const marketLabels: Record<
-    string,
-    { name: string; flag: string; isDefault?: boolean }
-  > = {
-    FR: { name: "France", flag: "🇫🇷", isDefault: true },
-    BE: { name: "Belgique", flag: "🇧🇪" },
-    CH: { name: "Suisse", flag: "🇨🇭" },
-    ES: { name: "Espagne", flag: "🇪🇸" },
-    LU: { name: "Luxembourg", flag: "🇱🇺" },
-    DE: { name: "Allemagne", flag: "🇩🇪" },
-  };
+  const marketCodes = availableMarkets.map((market) => market.code);
+  const marketLabels = Object.fromEntries(
+    availableMarkets.map((market) => [market.code, market]),
+  );
+  const defaultMarketCode =
+    availableMarkets.find((market) => market.isDefault)?.code ||
+    availableMarkets[0]?.code;
 
   const matrixRows = useMemo(() => {
     const cat =
@@ -35,7 +32,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
         ? undefined
         : (selectedCategory as ProviderCategory);
     return providerService.getMarketCoverageMatrix(marketCodes, cat);
-  }, [selectedCategory]);
+  }, [marketCodes.join(","), selectedCategory]);
 
   return (
     <div className="space-y-4">
@@ -47,7 +44,10 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
             {t("admin.providerMarketMatrix.matriceDeCouvertureMultiMarches")}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            {t("admin.providerMarketMatrix.laFranceEstLeMarche")}
+            {availableMarkets.find((market) => market.isDefault)?.name ||
+              "Le marché par défaut"}{" "}
+            est la référence canonique ; les autres marchés peuvent hériter de
+            sa configuration.
           </p>
         </div>
 
@@ -97,7 +97,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
           <table className="w-full text-left text-xs text-stone-700 border-collapse">
             <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
               <tr>
-                <th scope="col" className="py-3 px-4 min-w-[220px]">
+                <th scope="col" className="py-3 px-4 min-w-55">
                   {t("admin.providerMarketMatrix.fonctionnaliteCapacite")}
                 </th>
                 {marketCodes.map((code) => {
@@ -106,7 +106,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                     <th
                       scope="col"
                       key={code}
-                      className={`py-3 px-3 text-center min-w-[140px] ${
+                      className={`py-3 px-3 text-center min-w-35 ${
                         m.isDefault
                           ? "bg-primary/5 text-primary border-x border-primary/20"
                           : ""
@@ -156,7 +156,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                     {/* Market columns */}
                     {marketCodes.map((code) => {
                       const cell = row.markets[code];
-                      const isDefaultMarket = code === "FR";
+                      const isDefaultMarket = code === defaultMarketCode;
                       const isInherited = cell.isInherited && !isDefaultMarket;
                       const isCustomized =
                         !cell.isInherited &&
@@ -179,7 +179,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                           ) : (
                             <Link
                               to={`/admin/fournisseurs/${cell.activeProviderId}`}
-                              className={`inline-flex flex-col items-center p-1.5 rounded-lg border transition-colors max-w-[130px] ${
+                              className={`inline-flex flex-col items-center p-1.5 rounded-lg border transition-colors max-w-32.5 ${
                                 cell.mode === "live"
                                   ? "bg-success-surface text-success border-success-border"
                                   : cell.mode === "demo"
@@ -187,7 +187,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                                     : "bg-stone-100 text-stone-700 border-stone-200"
                               }`}
                             >
-                              <span className="font-bold text-micro truncate max-w-[120px]">
+                              <span className="font-bold text-micro truncate max-w-30">
                                 {cell.activeProviderName}
                               </span>
                               <span className="text-micro font-medium">

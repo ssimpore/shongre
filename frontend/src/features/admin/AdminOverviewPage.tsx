@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { formatLogTimestamp } from "../../utilities/formatters";
 import {
   ROLE_DEFINITIONS,
@@ -28,6 +29,7 @@ import { auditActionLabel, type UserProfile } from "../../types";
 import { useAuthorization } from "../../security/useAuthorization";
 
 export const AdminOverviewPage: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   usePageMeta({
     title: t("meta.adminOverview.title"),
@@ -109,7 +111,8 @@ export const AdminOverviewPage: React.FC = () => {
             <strong className="text-stone-900">{staffRoleMeta.title}</strong>{" "}
             sur le périmètre territorial{" "}
             <strong className="text-stone-900">
-              {currentUser?.marketScope?.countries.join(", ") || "FR"}
+              {currentUser?.marketScope?.countries.join(", ") ||
+                activeMarket.code}
             </strong>
             .
           </p>

@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `http://127.0.0.1:4000/api/v1`
-- Operations: **267**
-- Specification SHA-256: `9e67e2f089863827`
+- Operations: **312**
+- Specification SHA-256: `6f83b87fc987eafd`
 
 ## account
 
@@ -67,6 +67,14 @@
 | `POST` | `/admin/discovery/explain` | `postAdminDiscoveryExplain` | `permission` | `commercial_rules.read` | `200` |
 | `GET` | `/admin/discovery/metrics` | `getAdminDiscoveryMetrics` | `permission` | `commercial_rules.read` | `200` |
 
+## admin-feature-flags
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `PUT` | `/admin/feature-flags/{key}/rules/{ruleId}` | `putAdminFeatureFlagRule` | `permission` | `admin.configuration.manage` | `200` |
+| `PUT` | `/admin/feature-flags/{key}` | `putAdminFeatureFlag` | `permission` | `admin.configuration.manage` | `200` |
+| `GET` | `/admin/feature-flags` | `getAdminFeatureFlags` | `permission` | `admin.configuration.manage` | `200` |
+
 ## admin-monetization
 
 | Method | Path | Operation ID | Access | Permission | Success |
@@ -126,6 +134,12 @@
 | `POST` | `/auth/logout-all` | `postAuthLogoutAll` | `authenticated` | — | `200` |
 | `POST` | `/auth/logout` | `postAuthLogout` | `public` | — | `200` |
 | `GET` | `/auth/me` | `getAuthMe` | `public` | — | `200` |
+| `POST` | `/auth/mfa/challenge` | `postAuthMfaChallenge` | `public` | — | `200` |
+| `POST` | `/auth/mfa/confirm` | `postAuthMfaConfirm` | `authenticated` | — | `200` |
+| `POST` | `/auth/mfa/session-confirm` | `postAuthMfaSessionConfirm` | `authenticated` | — | `200` |
+| `POST` | `/auth/mfa/setup` | `postAuthMfaSetup` | `authenticated` | — | `200` |
+| `DELETE` | `/auth/mfa` | `deleteAuthMfa` | `authenticated` | — | `200` |
+| `GET` | `/auth/mfa` | `getAuthMfa` | `authenticated` | — | `200` |
 | `GET` | `/auth/oauth/{provider}/callback` | `getAuthOauthByProviderCallback` | `public` | — | `302` |
 | `POST` | `/auth/oauth/{provider}/callback` | `postAuthOauthByProviderCallback` | `public` | — | `302` |
 | `POST` | `/auth/oauth/{provider}/start` | `postAuthOauthByProviderStart` | `public` | — | `200` |
@@ -166,8 +180,11 @@
 | `POST` | `/auto/drafts/{id}/submit` | `postAutoDraftsByIdSubmit` | `permission` | `auto.vehicle.manage.own` | `200` |
 | `GET` | `/auto/drafts/{id}` | `getAutoDraftsById` | `permission` | `auto.vehicle.manage.own` | `200` |
 | `PUT` | `/auto/drafts/{id}` | `putAutoDraftsById` | `permission` | `auto.vehicle.manage.own` | `200` |
+| `POST` | `/auto/drafts` | `postAutoDrafts` | `permission` | `auto.vehicle.manage.own` | `200` |
+| `GET` | `/auto/favorites` | `getAutoFavorites` | `authenticated` | — | `200` |
 | `POST` | `/auto/leads` | `postAutoLeads` | `public` | — | `200` |
 | `POST` | `/auto/search` | `postAutoSearch` | `public` | — | `200` |
+| `POST` | `/auto/vehicles/{id}/favorite` | `postAutoVehiclesByIdFavorite` | `authenticated` | — | `200` |
 | `GET` | `/auto/vehicles/{id}` | `getAutoVehiclesById` | `public` | — | `200` |
 | `POST` | `/auto/vehicles` | `postAutoVehicles` | `permission` | `auto.vehicle.manage.own` | `200` |
 
@@ -198,15 +215,24 @@
 | `PUT` | `/education/admin/markets/{marketCode}` | `putEducationAdminMarketsByMarketCode` | `permission` | `course.admin.manage` | `200` |
 | `POST` | `/education/bookings` | `postEducationBookings` | `permission` | `course.booking.create` | `200` |
 | `GET` | `/education/catalog` | `getEducationCatalog` | `public` | — | `200` |
+| `GET` | `/education/favorites` | `getEducationFavorites` | `authenticated` | — | `200` |
 | `PATCH` | `/education/leads/{leadId}` | `patchEducationLeadsByLeadId` | `permission` | `course.lead.respond.own` | `200` |
 | `POST` | `/education/learner-requests` | `postEducationLearnerRequests` | `permission` | `course.request.create` | `200` |
 | `POST` | `/education/offers` | `postEducationOffers` | `permission` | `course.offer.manage.own` | `200` |
+| `POST` | `/education/onboarding/submit` | `postEducationOnboardingSubmit` | `permission` | `course.profile.manage.own` | `200` |
 | `POST` | `/education/organizations/{organizationId}/locations` | `postEducationOrganizationsByOrganizationIdLocations` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/organizations/{organizationId}/members` | `postEducationOrganizationsByOrganizationIdMembers` | `permission` | `course.organization.manage.own` | `200` |
 | `GET` | `/education/organizations/{organizationId}/workspace` | `getEducationOrganizationsByOrganizationIdWorkspace` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/search` | `postEducationSearch` | `public` | — | `200` |
+| `POST` | `/education/tutors/{id}/favorite` | `postEducationTutorsByIdFavorite` | `authenticated` | — | `200` |
 | `GET` | `/education/tutors/{id}` | `getEducationTutorsById` | `public` | — | `200` |
 | `PUT` | `/education/tutors/{id}` | `putEducationTutorsById` | `permission` | `course.profile.manage.own` | `200` |
+| `DELETE` | `/education/workflow-drafts/learner-request` | `deleteEducationWorkflowdraftsLearnerrequest` | `permission` | `course.request.create` | `200` |
+| `GET` | `/education/workflow-drafts/learner-request` | `getEducationWorkflowdraftsLearnerrequest` | `permission` | `course.request.create` | `200` |
+| `PUT` | `/education/workflow-drafts/learner-request` | `putEducationWorkflowdraftsLearnerrequest` | `permission` | `course.request.create` | `200` |
+| `DELETE` | `/education/workflow-drafts/tutor-onboarding` | `deleteEducationWorkflowdraftsTutoronboarding` | `permission` | `course.profile.manage.own` | `200` |
+| `GET` | `/education/workflow-drafts/tutor-onboarding` | `getEducationWorkflowdraftsTutoronboarding` | `permission` | `course.profile.manage.own` | `200` |
+| `PUT` | `/education/workflow-drafts/tutor-onboarding` | `putEducationWorkflowdraftsTutoronboarding` | `permission` | `course.profile.manage.own` | `200` |
 | `GET` | `/education/workspace/{tutorProfileId}` | `getEducationWorkspaceByTutorProfileId` | `permission` | `course.lead.read.own` | `200` |
 
 ## employment
@@ -228,9 +254,11 @@
 | `POST` | `/employment/checkouts` | `postEmploymentCheckouts` | `permission` | `payment.initiate` | `200` |
 | `POST` | `/employment/compliance/prohibited-language` | `postEmploymentComplianceProhibitedLanguage` | `permission` | `employment.job.manage.own` | `200` |
 | `POST` | `/employment/drafts/{id}/duplicate-check` | `postEmploymentDraftsByIdDuplicateCheck` | `permission` | `employment.job.manage.own` | `200` |
+| `PUT` | `/employment/drafts/{id}/publication` | `putEmploymentDraftsByIdPublication` | `permission` | `employment.job.manage.own` | `200` |
 | `POST` | `/employment/drafts/{id}/submit` | `postEmploymentDraftsByIdSubmit` | `permission` | `employment.job.manage.own` | `200` |
 | `GET` | `/employment/drafts/{id}` | `getEmploymentDraftsById` | `permission` | `employment.job.manage.own` | `200` |
 | `PUT` | `/employment/drafts/{id}` | `putEmploymentDraftsById` | `permission` | `employment.job.manage.own` | `200` |
+| `POST` | `/employment/drafts` | `postEmploymentDrafts` | `permission` | `employment.job.manage.own` | `200` |
 | `POST` | `/employment/employers/{employerId}/applications/{applicationId}/interviews` | `postEmploymentEmployersByEmployerIdApplicationsByApplicationIdInterviews` | `permission` | `employment.application.manage.own` | `200` |
 | `POST` | `/employment/employers/{employerId}/applications/{applicationId}/notes` | `postEmploymentEmployersByEmployerIdApplicationsByApplicationIdNotes` | `permission` | `employment.application.manage.own` | `200` |
 | `PATCH` | `/employment/employers/{employerId}/applications/{applicationId}/stage` | `patchEmploymentEmployersByEmployerIdApplicationsByApplicationIdStage` | `permission` | `employment.application.manage.own` | `200` |
@@ -251,6 +279,12 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/favorites` | `getFavorites` | `permission` | `favorite.manage.own` | `200` |
+
+## feature-flags
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/feature-flags/{key}` | `getFeatureFlagEvaluation` | `public` | — | `200` |
 
 ## finance
 
@@ -286,6 +320,9 @@
 | `DELETE` | `/listings/{id}` | `deleteListingsById` | `permission` | `listing.delete.own` | `200` |
 | `GET` | `/listings/{id}` | `getListingsById` | `public` | — | `200` |
 | `PUT` | `/listings/{id}` | `putListingsById` | `permission` | `listing.update.own` | `200` |
+| `POST` | `/listings/bulk-import/parse` | `postListingsBulkimportParse` | `permission` | `listing.create` | `200` |
+| `POST` | `/listings/bulk-import/publish` | `postListingsBulkimportPublish` | `permission` | `listing.publish` | `200` |
+| `GET` | `/listings/bulk-import/template` | `getListingsBulkimportTemplate` | `permission` | `listing.create` | `200` |
 | `POST` | `/listings/publish` | `postListingsPublish` | `permission` | `listing.publish` | `200` |
 | `POST` | `/listings/search` | `postListingsSearch` | `public` | — | `200` |
 | `GET` | `/listings` | `getListings` | `public` | — | `200` |
@@ -322,9 +359,22 @@
 | `POST` | `/messaging/conversations` | `postMessagingConversations` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/offer-response` | `postMessagingOfferResponse` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/offer` | `postMessagingOffer` | `permission` | `message.send` | `200` |
+| `POST` | `/messaging/offers/{id}/counter` | `postMessagingOffersIdCounter` | `permission` | `message.send` | `200` |
+| `POST` | `/messaging/offers/{id}/withdraw` | `postMessagingOffersIdWithdraw` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/read` | `postMessagingRead` | `permission` | `message.read.own` | `200` |
 | `POST` | `/messaging/schedule-pickup` | `postMessagingSchedulePickup` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/unblock` | `postMessagingUnblock` | `authenticated` | — | `200` |
+
+## moderation
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/admin/moderation/appeals/{appealId}/decision` | `postAdminModerationAppealDecision` | `permission` | `moderation.action` | `200` |
+| `GET` | `/admin/moderation/appeals` | `getAdminModerationAppeals` | `permission` | `moderation.review` | `200` |
+| `GET` | `/admin/moderation/cases` | `getAdminModerationCases` | `permission` | `moderation.review` | `200` |
+| `GET` | `/moderation/appeals/mine` | `getOwnModerationAppeals` | `authenticated` | — | `200` |
+| `POST` | `/moderation/cases/{caseId}/appeals` | `postModerationCaseAppeal` | `authenticated` | — | `200` |
+| `GET` | `/moderation/cases/mine` | `getOwnModerationCases` | `authenticated` | — | `200` |
 
 ## monetization
 
@@ -351,6 +401,8 @@
 | `DELETE` | `/notifications/{id}` | `deleteNotificationsById` | `authenticated` | — | `200` |
 | `POST` | `/notifications/devices/unregister` | `postNotificationsDevicesUnregister` | `authenticated` | — | `200` |
 | `POST` | `/notifications/devices` | `postNotificationsDevices` | `authenticated` | — | `200` |
+| `GET` | `/notifications/preferences` | `getNotificationPreferences` | `authenticated` | — | `200` |
+| `PUT` | `/notifications/preferences` | `putNotificationPreferences` | `authenticated` | — | `200` |
 | `POST` | `/notifications/read-all` | `postNotificationsReadAll` | `authenticated` | — | `200` |
 | `GET` | `/notifications/unread-count` | `getNotificationsUnreadCount` | `authenticated` | — | `200` |
 | `GET` | `/notifications` | `getNotifications` | `authenticated` | — | `200` |
@@ -416,6 +468,7 @@
 | `POST` | `/real-estate/drafts/{id}/submit` | `postRealEstateDraftsByIdSubmit` | `permission` | `immo.property.manage.own` | `200` |
 | `GET` | `/real-estate/drafts/{id}` | `getRealEstateDraftsById` | `permission` | `immo.property.manage.own` | `200` |
 | `PUT` | `/real-estate/drafts/{id}` | `putRealEstateDraftsById` | `permission` | `immo.property.manage.own` | `200` |
+| `POST` | `/real-estate/drafts` | `postRealestateDrafts` | `permission` | `immo.property.manage.own` | `200` |
 | `POST` | `/real-estate/leads/{leadId}/appointments` | `postRealEstateLeadsByLeadIdAppointments` | `authenticated` | — | `200` |
 | `POST` | `/real-estate/leads` | `postRealEstateLeads` | `public` | — | `200` |
 | `GET` | `/real-estate/properties/{id}/comparables` | `getRealEstatePropertiesByIdComparables` | `public` | — | `200` |
@@ -437,6 +490,18 @@
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/reviews/submit` | `postReviewsSubmit` | `permission` | `review.create` | `200` |
 | `GET` | `/reviews/user/{userId}` | `getReviewsUserByUserId` | `public` | — | `200` |
+
+## support
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/support/cases/{id}/notes` | `postSupportCasesByIdNotes` | `authenticated` | — | `200` |
+| `GET` | `/support/cases/{id}` | `getSupportCasesById` | `authenticated` | — | `200` |
+| `PATCH` | `/support/cases/{id}` | `patchSupportCasesById` | `permission` | `support.case.manage` | `200` |
+| `GET` | `/support/cases/mine` | `getSupportCasesMine` | `authenticated` | — | `200` |
+| `GET` | `/support/cases` | `getSupportCases` | `permission` | `support.case.read` | `200` |
+| `POST` | `/support/cases` | `postSupportCases` | `authenticated` | — | `200` |
+| `GET` | `/support/metrics` | `getSupportMetrics` | `permission` | `support.case.read` | `200` |
 
 ## taxonomy
 

@@ -1,9 +1,11 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useRef } from "react";
 import {
   createBrowserRouter,
+  createMemoryRouter,
   RouterProvider,
   Navigate,
   useLocation,
+  type RouteObject,
 } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { AccountLayout } from "../layouts/AccountLayout";
@@ -13,6 +15,7 @@ import { PageSuspense } from "../layouts/PageSuspense";
 // Security & RBAC Guards
 import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
 import { RequireRoutePolicy } from "../../security/components/RequireRoutePolicy";
+import { RequireStaffMfa } from "../../security/components/RequireStaffMfa";
 import { AdminLayout } from "../../features/admin/AdminLayout";
 
 // Lazy Loaded Features
@@ -180,6 +183,11 @@ const NotificationPreferencesPage = lazy(() =>
     (m) => ({ default: m.NotificationPreferencesPage }),
   ),
 );
+const ModerationAppealsPage = lazy(() =>
+  import("../../features/moderation/ModerationAppealsPage").then((m) => ({
+    default: m.ModerationAppealsPage,
+  })),
+);
 const TransactionsPage = lazy(() =>
   import("../../features/transactions/TransactionsPage").then((m) => ({
     default: m.TransactionsPage,
@@ -328,6 +336,21 @@ const SupportRequestsPage = lazy(() =>
 const SupportRequestDetailPage = lazy(() =>
   import("../../features/support/SupportRequestDetailPage").then((m) => ({
     default: m.SupportRequestDetailPage,
+  })),
+);
+const AdminSupportPage = lazy(() =>
+  import("../../features/admin/AdminSupportPage").then((m) => ({
+    default: m.AdminSupportPage,
+  })),
+);
+const AdminFeatureFlagsPage = lazy(() =>
+  import("../../features/admin/AdminFeatureFlagsPage").then((m) => ({
+    default: m.AdminFeatureFlagsPage,
+  })),
+);
+const StaffMfaPage = lazy(() =>
+  import("../../features/auth/StaffMfaPage").then((m) => ({
+    default: m.StaffMfaPage,
   })),
 );
 const NewsletterLandingPage = lazy(() =>
@@ -512,7 +535,7 @@ const LegacyEducationRedirect: React.FC = () => {
   );
 };
 
-export const router = createBrowserRouter([
+export const APP_ROUTES: RouteObject[] = [
   // Task-completion flows get a focused shell rather than the marketplace one.
   {
     path: "/",
@@ -695,6 +718,14 @@ export const router = createBrowserRouter([
       { path: "support", element: withSuspense(HelpCenterPage) },
       { path: "securite", element: withSuspense(HelpSafetyPage) },
       { path: "contact", element: withSuspense(ContactPage) },
+      {
+        path: "securite-interne",
+        element: (
+          <RequireRoutePolicy policyId="staffMfa">
+            {withSuspense(StaffMfaPage)}
+          </RequireRoutePolicy>
+        ),
+      },
       { path: "newsletter", element: withSuspense(NewsletterLandingPage) },
       {
         path: "newsletter/confirmer",
@@ -761,6 +792,14 @@ export const router = createBrowserRouter([
             element: (
               <RequireRoutePolicy policyId="accountNotificationPreferences">
                 {withSuspense(NotificationPreferencesPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "recours",
+            element: (
+              <RequireRoutePolicy policyId="accountModerationAppeals">
+                {withSuspense(ModerationAppealsPage)}
               </RequireRoutePolicy>
             ),
           },
@@ -933,11 +972,29 @@ export const router = createBrowserRouter([
     path: "/admin",
     element: (
       <RequireRoutePolicy policyId="adminOverview" standalone>
-        <AdminLayout />
+        <RequireStaffMfa>
+          <AdminLayout />
+        </RequireStaffMfa>
       </RequireRoutePolicy>
     ),
     children: [
       { index: true, element: withSuspense(AdminOverviewPage) },
+      {
+        path: "support",
+        element: (
+          <RequireRoutePolicy policyId="adminSupport">
+            {withSuspense(AdminSupportPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
+        path: "fonctionnalites",
+        element: (
+          <RequireRoutePolicy policyId="adminFeatureFlags">
+            {withSuspense(AdminFeatureFlagsPage)}
+          </RequireRoutePolicy>
+        ),
+      },
       {
         path: "moderation",
         element: (
@@ -1150,8 +1207,23 @@ export const router = createBrowserRouter([
       },
     ],
   },
-]);
+];
 
-export const AppRouter: React.FC = () => {
-  return <RouterProvider router={router} />;
+const browserRouter =
+  typeof window === "undefined" ? null : createBrowserRouter(APP_ROUTES);
+
+export const AppRouter: React.FC<{ initialPath?: string }> = ({
+  initialPath = "/",
+}) => {
+  const memoryRouter = useRef<ReturnType<typeof createMemoryRouter> | null>(
+    null,
+  );
+  if (!browserRouter && !memoryRouter.current) {
+    memoryRouter.current = createMemoryRouter(APP_ROUTES, {
+      initialEntries: [initialPath],
+    });
+  }
+  const activeRouter = browserRouter || memoryRouter.current;
+  if (!activeRouter) return null;
+  return <RouterProvider router={activeRouter} />;
 };

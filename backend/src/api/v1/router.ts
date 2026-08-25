@@ -29,6 +29,9 @@ import {
   complianceService,
   providerControlPlaneService,
   aiService,
+  supportService,
+  featureFlagService,
+  moderationService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -227,6 +230,7 @@ export class ApiV1Router {
     );
     this.addRoute("POST", "/auth/login", PUBLIC, async ({ body, req, res }) => {
       const result = await authService.login(body, requestMetadata(req));
+      if ("requiresMfa" in result) return result;
       if (result.refreshToken && result.expiresAt && result.sessionId) {
         setSessionCookies(res, {
           token: result.token,
@@ -237,6 +241,27 @@ export class ApiV1Router {
       }
       return publicAuthResult(result, req);
     });
+    this.addRoute(
+      "POST",
+      "/auth/mfa/challenge",
+      PUBLIC,
+      async ({ body, req, res }) => {
+        const result = await authService.verifyMfaLogin(
+          body?.tempMfaToken,
+          body?.code,
+          requestMetadata(req),
+        );
+        if (result.refreshToken && result.expiresAt && result.sessionId) {
+          setSessionCookies(res, {
+            token: result.token,
+            refreshToken: result.refreshToken,
+            expiresAt: result.expiresAt,
+            sessionId: result.sessionId,
+          });
+        }
+        return publicAuthResult(result, req);
+      },
+    );
     this.addRoute(
       "POST",
       "/auth/register",
@@ -321,6 +346,36 @@ export class ApiV1Router {
       AUTHENTICATED,
       async ({ principal, body }) =>
         authService.reauthenticate(principal, body?.password),
+    );
+    this.addRoute("GET", "/auth/mfa", AUTHENTICATED, async ({ principal }) =>
+      authService.getMfaStatus(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/mfa/setup",
+      AUTHENTICATED,
+      async ({ principal }) => authService.beginMfaEnrollment(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/mfa/confirm",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        authService.confirmMfaEnrollment(principal, body?.code),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/mfa/session-confirm",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        authService.verifySessionMfa(principal, body?.code),
+    );
+    this.addRoute(
+      "DELETE",
+      "/auth/mfa",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        authService.disableMfa(principal, body?.code),
     );
     this.addRoute(
       "POST",
@@ -644,6 +699,26 @@ export class ApiV1Router {
       },
     );
     this.addRoute(
+      "GET",
+      "/listings/bulk-import/template",
+      permission("listing.create"),
+      async ({ query }) =>
+        listingsService.getBulkImportTemplate(query.get("locale") || "fr-FR"),
+    );
+    this.addRoute(
+      "POST",
+      "/listings/bulk-import/parse",
+      permission("listing.create"),
+      async ({ body }) => listingsService.parseBulkImportCsv(body),
+    );
+    this.addRoute(
+      "POST",
+      "/listings/bulk-import/publish",
+      permission("listing.publish"),
+      async ({ principal, body }) =>
+        listingsService.publishBulkListings(principal.userId, body),
+    );
+    this.addRoute(
       "POST",
       "/media/listings/uploads",
       permission("listing.create"),
@@ -801,6 +876,113 @@ export class ApiV1Router {
       coursesService.getTutorPublicProfile(params.id),
     );
     this.addEducationRoute(
+      "GET",
+      "/favorites",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        tutorProfileIds: await coursesService.getSavedTutorIds(
+          principal.userId,
+        ),
+      }),
+    );
+    this.addEducationRoute(
+      "POST",
+      "/tutors/:id/favorite",
+      AUTHENTICATED,
+      async ({ principal, params }) => ({
+        isFavorite: await coursesService.toggleSavedTutor(
+          principal.userId,
+          params.id,
+        ),
+      }),
+    );
+    this.addEducationRoute(
+      "GET",
+      "/workflow-drafts/tutor-onboarding",
+      permission("course.profile.manage.own"),
+      async ({ principal, query }) =>
+        coursesService.getTutorOnboardingDraft(
+          principal.userId,
+          query.get("market") || "FR",
+        ),
+    );
+    this.addEducationRoute(
+      "PUT",
+      "/workflow-drafts/tutor-onboarding",
+      permission("course.profile.manage.own"),
+      async ({ principal, body }) => {
+        await coursesService.saveWorkflowDraft(
+          principal.userId,
+          body?.marketCode || "FR",
+          "tutor_onboarding",
+          body?.draft,
+        );
+        return { success: true };
+      },
+    );
+    this.addEducationRoute(
+      "DELETE",
+      "/workflow-drafts/tutor-onboarding",
+      permission("course.profile.manage.own"),
+      async ({ principal, query }) => {
+        await coursesService.deleteWorkflowDraft(
+          principal.userId,
+          query.get("market") || "FR",
+          "tutor_onboarding",
+        );
+        return { success: true };
+      },
+    );
+    this.addEducationRoute(
+      "POST",
+      "/onboarding/submit",
+      permission("course.profile.manage.own"),
+      async ({ principal, body }) =>
+        coursesService.submitTutorOnboarding(
+          principal.userId,
+          body?.marketCode || "FR",
+          body?.draft,
+        ),
+    );
+    this.addEducationRoute(
+      "GET",
+      "/workflow-drafts/learner-request",
+      permission("course.request.create"),
+      async ({ principal, query }) =>
+        coursesService.getLearnerRequestDraft(
+          principal.userId,
+          query.get("market") || "FR",
+          query.get("subject") || "",
+        ),
+    );
+    this.addEducationRoute(
+      "PUT",
+      "/workflow-drafts/learner-request",
+      permission("course.request.create"),
+      async ({ principal, body }) => {
+        await coursesService.saveWorkflowDraft(
+          principal.userId,
+          body?.marketCode || "FR",
+          "learner_request",
+          body?.draft,
+        );
+        return { success: true };
+      },
+    );
+    this.addEducationRoute(
+      "DELETE",
+      "/workflow-drafts/learner-request",
+      permission("course.request.create"),
+      async ({ principal, query }) => {
+        await coursesService.deleteWorkflowDraft(
+          principal.userId,
+          query.get("market") || "FR",
+          "learner_request",
+        );
+        return { success: true };
+      },
+    );
+    this.addEducationRoute(
       "PUT",
       "/tutors/:id",
       permission("course.profile.manage.own"),
@@ -952,6 +1134,35 @@ export class ApiV1Router {
     );
     this.addRoute("GET", "/auto/vehicles/:id", PUBLIC, async ({ params }) =>
       autoService.getPublicVehicle(params.id),
+    );
+    this.addRoute(
+      "GET",
+      "/auto/favorites",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        vehicleIds: await autoService.getFavoriteVehicleIds(principal.userId),
+      }),
+    );
+    this.addRoute(
+      "POST",
+      "/auto/vehicles/:id/favorite",
+      AUTHENTICATED,
+      async ({ principal, params }) => ({
+        isFavorite: await autoService.toggleFavoriteVehicle(
+          principal.userId,
+          params.id,
+        ),
+      }),
+    );
+    this.addRoute(
+      "POST",
+      "/auto/drafts",
+      permission("auto.vehicle.manage.own"),
+      async ({ principal, body }) =>
+        autoService.getOrCreateOwnDraft(
+          principal.userId,
+          body?.marketCode || "FR",
+        ),
     );
     this.addRoute(
       "GET",
@@ -1107,6 +1318,16 @@ export class ApiV1Router {
         realEstateService.markRecentlyViewed(
           principal.userId,
           body?.propertyId,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/real-estate/drafts",
+      permission("immo.property.manage.own"),
+      async ({ principal, body }) =>
+        realEstateService.getOrCreateOwnDraft(
+          principal.userId,
+          body?.marketCode || "FR",
         ),
     );
     this.addRoute(
@@ -1281,6 +1502,17 @@ export class ApiV1Router {
       async ({ params }) => employmentService.getSimilarJobs(params.id),
     );
     this.addRoute(
+      "POST",
+      "/employment/drafts",
+      permission("employment.job.manage.own"),
+      async ({ principal, body }) =>
+        employmentService.getOrCreateOwnDraft(
+          principal.userId,
+          body?.marketCode || "FR",
+          body?.preferredDraftId,
+        ),
+    );
+    this.addRoute(
       "GET",
       "/employment/drafts/:id",
       permission("employment.job.manage.own"),
@@ -1293,6 +1525,17 @@ export class ApiV1Router {
       permission("employment.job.manage.own"),
       async ({ principal, params, body }) =>
         employmentService.saveOwnDraft(principal.userId, params.id, body),
+    );
+    this.addRoute(
+      "PUT",
+      "/employment/drafts/:id/publication",
+      permission("employment.job.manage.own"),
+      async ({ principal, params, body }) =>
+        employmentService.saveOwnPublicationDraft(
+          principal.userId,
+          params.id,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
@@ -2282,12 +2525,11 @@ export class ApiV1Router {
       permission("message.send"),
       async ({ principal, body }) => {
         await this.assertConversationAccess(principal, body?.conversationId);
-        return messagingService.makeOffer(
-          body?.conversationId,
-          principal.userId,
-          body?.senderName,
-          body?.amount,
-        );
+        return messagingService.makeOffer({
+          conversationId: body?.conversationId,
+          senderId: principal.userId,
+          amountMinor: body?.amountMinor,
+        });
       },
     );
     this.addRoute(
@@ -2295,14 +2537,31 @@ export class ApiV1Router {
       "/messaging/offer-response",
       permission("message.send"),
       async ({ principal, body }) => {
-        await this.assertConversationAccess(principal, body?.conversationId);
-        return messagingService.respondToOffer(
-          body?.conversationId,
-          principal.userId,
-          body?.userName,
-          body?.accept,
-        );
+        return messagingService.respondToOffer({
+          offerId: body?.offerId,
+          userId: principal.userId,
+          accept: body?.accept,
+        });
       },
+    );
+    this.addRoute(
+      "POST",
+      "/messaging/offers/:id/counter",
+      permission("message.send"),
+      async ({ principal, params, body }) =>
+        messagingService.makeOffer({
+          conversationId: body?.conversationId,
+          senderId: principal.userId,
+          amountMinor: body?.amountMinor,
+          parentOfferId: params.id,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/messaging/offers/:id/withdraw",
+      permission("message.send"),
+      async ({ principal, params }) =>
+        messagingService.withdrawOffer(params.id, principal.userId),
     );
     this.addRoute(
       "POST",
@@ -2384,6 +2643,20 @@ export class ApiV1Router {
       },
     );
     this.addRoute(
+      "GET",
+      "/notifications/preferences",
+      AUTHENTICATED,
+      async ({ principal }) =>
+        notificationsService.getPreferences(principal.userId),
+    );
+    this.addRoute(
+      "PUT",
+      "/notifications/preferences",
+      AUTHENTICATED,
+      async ({ principal, body }) =>
+        notificationsService.updatePreferences(principal.userId, body || {}),
+    );
+    this.addRoute(
       "POST",
       "/notifications/:id/read",
       AUTHENTICATED,
@@ -2459,6 +2732,129 @@ export class ApiV1Router {
       permission("report.create"),
       async ({ principal, body }) =>
         adminService.submitReport({ ...body, reporterId: principal.userId }),
+    );
+    this.addRoute(
+      "POST",
+      "/moderation/cases/:caseId/appeals",
+      AUTHENTICATED,
+      async ({ principal, params, body }) =>
+        moderationService.submitAppeal(
+          principal.userId,
+          params.caseId,
+          body?.reason,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/moderation/cases/mine",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        items: await moderationService.listOwnCases(principal.userId),
+      }),
+    );
+    this.addRoute(
+      "GET",
+      "/moderation/appeals/mine",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        items: await moderationService.listOwnAppeals(principal.userId),
+      }),
+    );
+
+    // --------------------------------------------------------------------------
+    // SUPPORT ROUTES
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "POST",
+      "/support/cases",
+      AUTHENTICATED,
+      async ({ principal, body }) => supportService.createCase(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/support/cases/mine",
+      AUTHENTICATED,
+      async ({ principal }) => ({
+        items: await supportService.listOwnCases(principal),
+      }),
+    );
+    this.addRoute(
+      "GET",
+      "/support/cases",
+      permission("support.case.read"),
+      async ({ principal, query }) => ({
+        items: await supportService.listCases(principal, {
+          assigneeId: query.get("assigneeId") || undefined,
+          status: query.get("status") || undefined,
+          priority: query.get("priority") || undefined,
+        } as Parameters<typeof supportService.listCases>[1]),
+      }),
+    );
+    this.addRoute(
+      "GET",
+      "/support/cases/:id",
+      AUTHENTICATED,
+      async ({ principal, params }) =>
+        supportService.getCase(principal, params.id),
+    );
+    this.addRoute(
+      "PATCH",
+      "/support/cases/:id",
+      permission("support.case.manage"),
+      async ({ principal, params, body }) =>
+        supportService.updateCase(principal, params.id, body),
+    );
+    this.addRoute(
+      "POST",
+      "/support/cases/:id/notes",
+      AUTHENTICATED,
+      async ({ principal, params, body }) =>
+        supportService.addNote(principal, params.id, body),
+    );
+    this.addRoute(
+      "GET",
+      "/support/metrics",
+      permission("support.case.read"),
+      async ({ principal }) => supportService.getMetrics(principal),
+    );
+
+    // --------------------------------------------------------------------------
+    // FEATURE FLAGS
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/feature-flags/:key",
+      PUBLIC,
+      async ({ principal, params, query }) =>
+        featureFlagService.evaluatePublic(principal, params.key, {
+          marketCode: query.get("marketCode") || undefined,
+          anonymousId: query.get("anonymousId") || undefined,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/feature-flags",
+      permission("admin.configuration.manage"),
+      async ({ principal }) => featureFlagService.getAdminSnapshot(principal),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/feature-flags/:key",
+      permission("admin.configuration.manage"),
+      async ({ principal, params, body }) =>
+        featureFlagService.upsertDefinition(principal, params.key, body),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/feature-flags/:key/rules/:ruleId",
+      permission("admin.configuration.manage"),
+      async ({ principal, params, body }) =>
+        featureFlagService.upsertRule(
+          principal,
+          params.key,
+          params.ruleId,
+          body,
+        ),
     );
 
     // --------------------------------------------------------------------------
@@ -2627,6 +3023,38 @@ export class ApiV1Router {
       "/admin/reports",
       permission("report.review"),
       async () => adminService.getPendingReports(),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/moderation/cases",
+      permission("moderation.review"),
+      async ({ query }) => ({
+        items: await moderationService.listCases(
+          query.get("status") || undefined,
+        ),
+      }),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/moderation/appeals",
+      permission("moderation.review"),
+      async ({ query }) => ({
+        items: await moderationService.listAppeals(
+          query.get("status") || undefined,
+        ),
+      }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/moderation/appeals/:appealId/decision",
+      permission("moderation.action"),
+      async ({ principal, params, body }) =>
+        moderationService.decideAppeal({
+          appealId: params.appealId,
+          reviewerId: principal.userId,
+          decision: body?.decision,
+          reason: body?.reason,
+        }),
     );
     this.addRoute(
       "POST",

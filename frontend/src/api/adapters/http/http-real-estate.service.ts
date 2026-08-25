@@ -60,6 +60,15 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       propertyId,
     });
   }
+  getOrCreateDraft(
+    _ownerUserId: string,
+    marketCode: string,
+    _sellerDisplayName?: string,
+  ): Promise<PropertyDraft> {
+    return httpClient.post<PropertyDraft>("/real-estate/drafts", {
+      marketCode,
+    });
+  }
   async getDraft(draftId: string) {
     try {
       return await httpClient.get<PropertyDraft>(

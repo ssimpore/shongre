@@ -7,6 +7,7 @@ import { lifecycleWorker } from "./lifecycle/lifecycle-worker.js";
 import { commercialConfigurationWorker } from "./monetization/commercial-configuration-worker.js";
 import { monetizationLifecycleWorker } from "./monetization/monetization-lifecycle-worker.js";
 import { ordersService } from "../modules/orders/orders.service.js";
+import { notificationsWorker } from "./notifications/notifications-worker.js";
 
 interface ScheduledJob {
   name: string;
@@ -15,6 +16,11 @@ interface ScheduledJob {
 }
 
 const jobs: ScheduledJob[] = [
+  {
+    name: "notification_delivery",
+    intervalSeconds: 15,
+    run: () => notificationsWorker.run(),
+  },
   {
     name: "commercial_configuration",
     intervalSeconds: 60,

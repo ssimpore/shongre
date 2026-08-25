@@ -4,12 +4,14 @@ import {
   Provider,
   ProviderConfiguration,
   ProviderMarketOverride,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../../../../domains/providers/provider.types";
 import { providerService } from "../../../../domains/providers/provider.service";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useToast } from "../../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { labelIdentifier } from "../../../../utilities/identifier-label";
+import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 
 interface ProviderMarketOverridesTabProps {
   provider: Provider;
@@ -22,15 +24,15 @@ export const ProviderMarketOverridesTab: React.FC<
 > = ({ provider, configuration, onUpdated }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [selectedMarket, setSelectedMarket] = useState<string>("BE");
-
-  const nonFranceMarkets = [
-    { code: "BE", name: "Belgique", flag: "🇧🇪" },
-    { code: "CH", name: "Suisse", flag: "🇨🇭" },
-    { code: "ES", name: "Espagne", flag: "🇪🇸" },
-    { code: "LU", name: "Luxembourg", flag: "🇱🇺" },
-    { code: "DE", name: "Allemagne", flag: "🇩🇪" },
-  ];
+  const { activeMarket, availableMarkets } = useMarketLocation();
+  const defaultMarket =
+    availableMarkets.find((market) => market.isDefault) || activeMarket;
+  const nonDefaultMarkets = availableMarkets.filter(
+    (market) => market.code !== defaultMarket.code,
+  );
+  const [selectedMarket, setSelectedMarket] = useState<string>(
+    nonDefaultMarkets[0]?.code || activeMarket.code,
+  );
 
   const currentOverride: ProviderMarketOverride | undefined =
     configuration.marketOverrides?.[selectedMarket];
@@ -73,7 +75,7 @@ export const ProviderMarketOverridesTab: React.FC<
     try {
       await providerService.resetMarketOverride(provider.id, selectedMarket);
       toast.success(
-        `Surcharge supprimée. ${selectedMarket} hérite à nouveau de la France.`,
+        `Surcharge supprimée. ${selectedMarket} hérite à nouveau de ${defaultMarket.name}.`,
       );
       onUpdated();
     } catch (err: any) {
@@ -93,7 +95,7 @@ export const ProviderMarketOverridesTab: React.FC<
           {t("admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter")}
         </label>
         <div className="flex flex-wrap gap-2">
-          {nonFranceMarkets.map((m) => {
+          {nonDefaultMarkets.map((m) => {
             const hasOverride = Boolean(
               configuration.marketOverrides?.[m.code],
             );
@@ -129,13 +131,14 @@ export const ProviderMarketOverridesTab: React.FC<
         </div>
       </div>
 
-      {/* 2. Side-by-side France Baseline vs Target Market */}
+      {/* 2. Side-by-side canonical baseline vs target market */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* France Reference Card */}
+        {/* Canonical market reference card */}
         <div className="bg-stone-50/80 p-5 rounded-xl border border-stone-200 space-y-3">
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
             <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
-              <span>🇫🇷</span> France (Référence Canonique)
+              <span>{defaultMarket.flag}</span> {defaultMarket.name} (Référence
+              canonique)
             </span>
             <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
               {t("admin.providerMarketOverridesTab.baseDHeritage")}
@@ -165,7 +168,8 @@ export const ProviderMarketOverridesTab: React.FC<
             </div>
           </div>
           <p className="text-micro text-stone-500 italic pt-2">
-            {t("admin.providerMarketOverridesTab.touteModificationApporteeALa")}
+            Toute modification de cette base affecte les marchés qui en
+            héritent.
           </p>
         </div>
 
@@ -180,9 +184,9 @@ export const ProviderMarketOverridesTab: React.FC<
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
             <span className="text-xs font-black text-stone-900 flex items-center gap-1.5">
               <span>
-                {nonFranceMarkets.find((m) => m.code === selectedMarket)?.flag}
+                {nonDefaultMarkets.find((m) => m.code === selectedMarket)?.flag}
               </span>
-              {nonFranceMarkets.find((m) => m.code === selectedMarket)?.name} (
+              {nonDefaultMarkets.find((m) => m.code === selectedMarket)?.name} (
               {selectedMarket})
             </span>
 
@@ -194,7 +198,7 @@ export const ProviderMarketOverridesTab: React.FC<
               </span>
             ) : (
               <span className="text-micro font-semibold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">
-                {t("admin.providerMarketOverridesTab.heriteDeFrance")}
+                Hérite de {defaultMarket.name}
               </span>
             )}
           </div>
@@ -227,11 +231,15 @@ export const ProviderMarketOverridesTab: React.FC<
               </span>
               <input
                 type="number"
-                min={1}
-                max={10}
+                min={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min}
+                max={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.max}
+                step={PROVIDER_CONFIGURATION_CONSTRAINTS.priority.step}
                 value={overridePriority}
                 onChange={(e) =>
-                  setOverridePriority(parseInt(e.target.value, 10) || 1)
+                  setOverridePriority(
+                    Number.parseInt(e.target.value, 10) ||
+                      PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+                  )
                 }
                 className="w-20 py-1 px-2 text-xs rounded border border-stone-200 font-bold text-stone-800 text-center h-control-touch"
               />
@@ -264,7 +272,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
                 className="text-xs text-danger hover:bg-danger-surface"
               >
-                {t("admin.providerMarketOverridesTab.reinitialiserSurFrance")}
+                Réinitialiser sur {defaultMarket.name}
               </Button>
             ) : (
               <span className="text-xs text-stone-500 italic">

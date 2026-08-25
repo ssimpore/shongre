@@ -3,6 +3,8 @@ import type {
   BillingOverview,
   CommercialConfigurationVersion,
   CommercialDraftPatch,
+  ComplimentaryGrantDecisionInput,
+  ComplimentaryGrantRequestInput,
   MonetizationAdminOverview,
   MonetizationCatalog,
   MonetizationOrder,
@@ -24,26 +26,15 @@ export interface InvoiceDocument {
   content: string;
 }
 
-export interface ComplimentaryGrantRequestInput {
-  accountId: string;
-  productVersionId: string;
-  campaignId?: string;
-  reason: string;
-  startsAt: string;
-  endsAt: string;
-  idempotencyKey: string;
-}
+export type {
+  ComplimentaryGrantDecisionInput,
+  ComplimentaryGrantRequestInput,
+} from "@shongre/contracts/monetization";
 
 export interface ComplimentaryGrantRequestResult extends ComplimentaryGrantRequestInput {
   id: string;
   status: "pending_approval";
   requestedBy: string;
-}
-
-export interface ComplimentaryGrantDecisionInput {
-  decision: "approved" | "rejected";
-  reason: string;
-  idempotencyKey: string;
 }
 
 export interface ComplimentaryGrantDecisionResult {

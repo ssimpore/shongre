@@ -19,6 +19,7 @@ import {
   getDemoPublicationPolicy,
   normalizeCommercialCategory,
 } from "../monetization/demo-commercial-catalog";
+import { marketService } from "../market/market.service";
 
 const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_";
 
@@ -33,7 +34,8 @@ export class PublicationService {
     const errors: ValidationError[] = [];
     const warnings: string[] = [];
 
-    const marketCode = draft.marketCode || "FR";
+    const marketCode =
+      draft.marketCode || marketService.getDefaultMarket().code;
     const resolvedSchema = draft.taxonomyNodeId
       ? publicationResolver.resolve({
           taxonomyNodeId: draft.taxonomyNodeId,
@@ -404,7 +406,9 @@ export class PublicationService {
     const ancestors = taxonomyService.getAncestors(draft.taxonomyNodeId);
     const rootNode = ancestors[0] || node;
     const policy = getDemoPublicationPolicy({
-      marketCode: (draft.marketCode || "FR").toUpperCase(),
+      marketCode: (
+        draft.marketCode || marketService.getDefaultMarket().code
+      ).toUpperCase(),
       audience: user.role === "pro_seller" ? "professional" : "individual",
       categoryId: normalizeCommercialCategory(rootNode?.slug || node?.slug),
       planId: user.activePlanId,
@@ -473,7 +477,7 @@ export class PublicationService {
     const rawSelectedMarkets =
       draft.selectedMarkets && draft.selectedMarkets.length > 0
         ? draft.selectedMarkets
-        : [draft.marketCode || "FR"];
+        : [draft.marketCode || marketService.getDefaultMarket().code];
     const selectedMarkets = Array.from(
       new Set(rawSelectedMarkets.map((m) => m.toUpperCase())),
     );
@@ -599,7 +603,10 @@ export class PublicationService {
     }
 
     const mergedDraft: PublicationDraftState = {
-      marketCode: updates.marketCode || existing.marketCode || "FR",
+      marketCode:
+        updates.marketCode ||
+        existing.marketCode ||
+        marketService.getDefaultMarket().code,
       taxonomyNodeId: updates.taxonomyNodeId || existing.subCategorySlug,
       listingIntent: updates.listingIntent || "SELL",
       title: updates.title ?? existing.title,
@@ -655,7 +662,7 @@ export class PublicationService {
     }
 
     const draft: PublicationDraftState = {
-      marketCode: existing.marketCode || "FR",
+      marketCode: existing.marketCode || marketService.getDefaultMarket().code,
       taxonomyNodeId: existing.subCategorySlug,
       listingIntent: "SELL",
       title: `${existing.title} (Copie)`,
@@ -700,62 +707,22 @@ export class PublicationService {
   // ==========================================
   // AUTOSAVE & DRAFT LIFECYCLE
   // ==========================================
-  private memoryDraftStore = new Map<string, string>();
-
   saveDraft(draft: PublicationDraftState, userId?: string): void {
     const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    const serialized = JSON.stringify({
+    storageService.set(key, {
       ...draft,
       updatedAt: new Date().toISOString(),
     });
-    this.memoryDraftStore.set(key, serialized);
-    if (
-      typeof localStorage !== "undefined" &&
-      typeof localStorage.setItem === "function"
-    ) {
-      try {
-        localStorage.setItem(key, serialized);
-      } catch {
-        // Ignore quota/access errors
-      }
-    }
   }
 
   getDraft(userId?: string): PublicationDraftState | null {
     const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    let raw = this.memoryDraftStore.get(key);
-    if (
-      !raw &&
-      typeof localStorage !== "undefined" &&
-      typeof localStorage.getItem === "function"
-    ) {
-      try {
-        raw = localStorage.getItem(key) || undefined;
-      } catch {
-        // Ignore storage access errors
-      }
-    }
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return null;
-    }
+    return storageService.get<PublicationDraftState | null>(key, null);
   }
 
   clearDraft(userId?: string): void {
     const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    this.memoryDraftStore.delete(key);
-    if (
-      typeof localStorage !== "undefined" &&
-      typeof localStorage.removeItem === "function"
-    ) {
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        // Ignore storage access errors
-      }
-    }
+    storageService.remove(key);
   }
 
   restoreGuestDraft(user: UserProfile): PublicationDraftState | null {

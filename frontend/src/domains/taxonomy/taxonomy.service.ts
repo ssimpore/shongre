@@ -16,6 +16,7 @@ import { getTaxonomyLabel } from "./taxonomy.labels";
 export { getTaxonomyLabel } from "./taxonomy.labels";
 import { ATTRIBUTE_REGISTRY } from "./attribute.registry";
 import { CONDITION_SCHEMES } from "./condition.schemes";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 import { activeDataLocale } from "../../i18n/localized";
 import {
   normalizeSearchText,
@@ -275,7 +276,7 @@ export class TaxonomyService {
   // ==========================================
   resolvePublicationSchema(
     nodeId: string,
-    marketCode: string = "FR",
+    marketCode: string = DEFAULT_MARKET_CODE,
   ): ResolvedPublicationSchema | null {
     const node = this.nodesMap.get(nodeId);
     if (!node) return null;
@@ -436,7 +437,7 @@ export class TaxonomyService {
 
   resolveSearchFilters(
     nodeId?: string,
-    marketCode: string = "FR",
+    marketCode: string = DEFAULT_MARKET_CODE,
   ): SearchFacetDefinition[] {
     if (!nodeId) {
       // Global facets: Price, Condition, Location, SellerType

@@ -20,13 +20,18 @@ import type {
   CourseOrganizationLocationInput,
   CoursesServiceContract,
   LearnerRequestDraft,
+  LearnerRequestProgressDraft,
   TutorProfileDraft,
+  TutorOnboardingDraft,
 } from "../../contracts/courses.contract";
 import { httpClient } from "./http-client";
 
 const EDUCATION_API_BASE = "/education";
 
 export class HttpCoursesService implements CoursesServiceContract {
+  private readonly tutorDraftMarkets = new Map<string, string>();
+  private readonly learnerDraftMarkets = new Map<string, string>();
+
   getCatalog(marketCode: string): Promise<CourseCatalog> {
     return httpClient.get(`${EDUCATION_API_BASE}/catalog`, {
       params: { market: marketCode },
@@ -64,6 +69,86 @@ export class HttpCoursesService implements CoursesServiceContract {
 
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest> {
     return httpClient.post(`${EDUCATION_API_BASE}/learner-requests`, request);
+  }
+
+  getTutorOnboardingDraft(
+    accountId: string,
+    marketCode: string,
+    _displayName?: string,
+  ): Promise<TutorOnboardingDraft> {
+    this.tutorDraftMarkets.set(accountId, marketCode);
+    return httpClient.get(
+      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
+      { params: { market: marketCode } },
+    );
+  }
+
+  saveTutorOnboardingDraft(
+    accountId: string,
+    draft: TutorOnboardingDraft,
+  ): Promise<void> {
+    return httpClient.put(
+      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
+      {
+        marketCode: this.tutorDraftMarkets.get(accountId) || "FR",
+        draft,
+      },
+    );
+  }
+
+  submitTutorOnboarding(
+    accountId: string,
+    marketCode: string,
+    draft: TutorOnboardingDraft,
+  ): Promise<{ profile: TutorProfile; offer: CourseOffer }> {
+    this.tutorDraftMarkets.set(accountId, marketCode);
+    return httpClient.post(`${EDUCATION_API_BASE}/onboarding/submit`, {
+      marketCode,
+      draft,
+    });
+  }
+
+  async clearTutorOnboardingDraft(accountId: string): Promise<void> {
+    const market = this.tutorDraftMarkets.get(accountId) || "FR";
+    await httpClient.delete(
+      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
+      { params: { market } },
+    );
+    this.tutorDraftMarkets.delete(accountId);
+  }
+
+  getLearnerRequestDraft(
+    accountId: string,
+    marketCode: string,
+    subjectId?: string,
+  ): Promise<LearnerRequestProgressDraft> {
+    this.learnerDraftMarkets.set(accountId, marketCode);
+    return httpClient.get(
+      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
+      { params: { market: marketCode, subject: subjectId } },
+    );
+  }
+
+  saveLearnerRequestDraft(
+    accountId: string,
+    draft: LearnerRequestProgressDraft,
+  ): Promise<void> {
+    return httpClient.put(
+      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
+      {
+        marketCode: this.learnerDraftMarkets.get(accountId) || "FR",
+        draft,
+      },
+    );
+  }
+
+  async clearLearnerRequestDraft(accountId: string): Promise<void> {
+    const market = this.learnerDraftMarkets.get(accountId) || "FR";
+    await httpClient.delete(
+      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
+      { params: { market } },
+    );
+    this.learnerDraftMarkets.delete(accountId);
   }
 
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
@@ -115,21 +200,21 @@ export class HttpCoursesService implements CoursesServiceContract {
     );
   }
 
-  // Saved tutors currently reuse account-scoped frontend storage. The API
-  // endpoint is reserved until the generic favorites table gains a typed
-  // vertical target. API mode therefore exposes an empty server state rather
-  // than leaking another account's local bucket.
   async getSavedTutorIds(_accountId: string): Promise<string[]> {
-    return [];
+    const result = await httpClient.get<{ tutorProfileIds: string[] }>(
+      `${EDUCATION_API_BASE}/favorites`,
+    );
+    return result.tutorProfileIds;
   }
 
   async toggleSavedTutor(
     _accountId: string,
-    _tutorProfileId: string,
+    tutorProfileId: string,
   ): Promise<boolean> {
-    throw new Error(
-      "La sauvegarde des professeurs sera disponible après migration des favoris verticaux.",
+    const result = await httpClient.post<{ isFavorite: boolean }>(
+      `${EDUCATION_API_BASE}/tutors/${encodeURIComponent(tutorProfileId)}/favorite`,
     );
+    return result.isFavorite;
   }
 
   updateMarketConfig(

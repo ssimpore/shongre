@@ -22,6 +22,7 @@ import { join, relative } from "path";
 
 const ROOT = "src";
 const SHOW_LIST = process.argv.includes("--list");
+const LOCALE_IDENTITY = "src/i18n/locale.ts";
 
 /** Surfaces already migrated; regressions here are what the gate protects. */
 const MIGRATED = [
@@ -136,6 +137,17 @@ for (const file of walk(ROOT)) {
 
 const totalStrings = findings.length;
 const migratedRegressions = MIGRATED.filter((file) => perFile.has(file));
+const localeSource = readFileSync(LOCALE_IDENTITY, "utf8");
+const shippedDeclaration = localeSource.match(
+  /SHIPPED_LOCALES\s*=\s*\[([^\]]*)\]/,
+);
+const shippedLocales = Array.from(
+  shippedDeclaration?.[1].matchAll(/["']([^"']+)["']/g) ?? [],
+  (match) => match[1],
+);
+const incompleteShippedLocales = shippedLocales.filter(
+  (locale) => locale !== "fr-FR" && totalStrings > 0,
+);
 
 const ranked = [...perFile.entries()].sort((a, b) => b[1] - a[1]);
 
@@ -160,6 +172,14 @@ if (migratedRegressions.length) {
       migratedRegressions
         .map((file) => `    ${file} (${perFile.get(file)})`)
         .join("\n"),
+  );
+  process.exit(1);
+}
+
+if (incompleteShippedLocales.length) {
+  console.error(
+    "\n✖ Locales cannot ship while user-visible copy remains outside the catalogue:\n" +
+      incompleteShippedLocales.map((locale) => `    ${locale}`).join("\n"),
   );
   process.exit(1);
 }

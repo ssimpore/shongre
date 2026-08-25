@@ -59,6 +59,21 @@ async function saveCompleteDraft(
 }
 
 describe("Shongre Auto domain service", () => {
+  it("reuses the latest market draft and scopes favorites to the account", async () => {
+    const { service } = createService();
+    const first = await service.getOrCreateOwnDraft("seller_a", "fr");
+    const second = await service.getOrCreateOwnDraft("seller_a", "FR");
+    expect(second.id).toBe(first.id);
+    expect(await service.getFavoriteVehicleIds("buyer_a")).toEqual([]);
+    await expect(
+      service.toggleFavoriteVehicle("buyer_a", "vehicle_3008_petrol"),
+    ).resolves.toBe(true);
+    expect(await service.getFavoriteVehicleIds("buyer_a")).toEqual([
+      "vehicle_3008_petrol",
+    ]);
+    expect(await service.getFavoriteVehicleIds("buyer_b")).toEqual([]);
+  });
+
   it("projects Auto prices from the active commercial version", async () => {
     class CommercialRepository extends DemoBusinessRulesRepository {
       override async getActiveCatalog(marketCode: string) {

@@ -18,6 +18,7 @@ import type {
   VehicleTypeConfig,
 } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -25,6 +26,7 @@ import { routes } from "../../configuration/routes";
 import { formatAutoMoney } from "./auto-format";
 import { autoFeatureFlagLabel } from "./auto-feature-flag-labels";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 const TABS = [
   "Vue d’ensemble",
@@ -38,6 +40,8 @@ const TABS = [
 type Tab = (typeof TABS)[number];
 
 export const AdminAutoPage: React.FC = () => {
+  const { activeMarket, currentLocale } = useMarketLocation();
+  const { formatNumber } = useRegionalFormatters();
   const toast = useToast();
   const [overview, setOverview] = useState<AutoAdminOverview | null>(null);
   const [tab, setTab] = useState<Tab>("Vue d’ensemble");
@@ -54,13 +58,13 @@ export const AdminAutoPage: React.FC = () => {
   const load = () => {
     setLoading(true);
     services.auto
-      .getAdminOverview("FR")
+      .getAdminOverview(activeMarket.code)
       .then(setOverview)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
-  if (loading) return <Skeleton className="h-[46rem] rounded-card" />;
+  useEffect(load, [activeMarket.code]);
+  if (loading) return <Skeleton className="h-184 rounded-card" />;
   if (error || !overview)
     return (
       <StatePanel
@@ -73,9 +77,13 @@ export const AdminAutoPage: React.FC = () => {
 
   const updateType = async (type: VehicleTypeConfig) => {
     try {
-      const next = await services.auto.updateVehicleType("FR", type.type, {
-        isActive: !type.isActive,
-      });
+      const next = await services.auto.updateVehicleType(
+        activeMarket.code,
+        type.type,
+        {
+          isActive: !type.isActive,
+        },
+      );
       setOverview({
         ...overview,
         catalog: {
@@ -95,7 +103,7 @@ export const AdminAutoPage: React.FC = () => {
 
   const togglePlan = async (plan: AutoPlan) => {
     try {
-      const next = await services.auto.updatePlan("FR", plan.id, {
+      const next = await services.auto.updatePlan(activeMarket.code, plan.id, {
         isActive: !plan.isActive,
       });
       setOverview({
@@ -119,9 +127,13 @@ export const AdminAutoPage: React.FC = () => {
 
   const toggleAddOn = async (addOn: AutoAddOn) => {
     try {
-      const next = await services.auto.updateAddOn("FR", addOn.id, {
-        isActive: !addOn.isActive,
-      });
+      const next = await services.auto.updateAddOn(
+        activeMarket.code,
+        addOn.id,
+        {
+          isActive: !addOn.isActive,
+        },
+      );
       setOverview({
         ...overview,
         catalog: {
@@ -163,16 +175,16 @@ export const AdminAutoPage: React.FC = () => {
               className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
             >
               <Icon className="h-icon-md w-icon-md text-primary" />
-              <p className="mt-3 text-2xl font-black">
-                {new Intl.NumberFormat("fr-FR").format(value)}
-              </p>
+              <p className="mt-3 text-2xl font-black">{formatNumber(value)}</p>
               <p className="text-xs text-text-secondary">{label}</p>
             </div>
           ))}
         </div>
         <div className="grid gap-4 xl:grid-cols-2">
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-base font-black">Configuration du marché FR</h2>
+            <h2 className="text-base font-black">
+              Configuration du marché {activeMarket.code}
+            </h2>
             <dl className="mt-4 divide-y divide-border-subtle text-xs">
               {Object.entries(overview.catalog.config.featureFlags).map(
                 ([flag, enabled]) => (
@@ -217,7 +229,7 @@ export const AdminAutoPage: React.FC = () => {
         </div>
       </div>
     ) : tab === "Types & attributs" ? (
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-4 xl:grid-cols-content-aside-lg">
         <section className="rounded-card border border-border-base bg-bg-surface shadow-xs">
           <div className="border-b border-border-subtle p-4">
             <h2 className="text-base font-black">Types de véhicules</h2>
@@ -294,7 +306,7 @@ export const AdminAutoPage: React.FC = () => {
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[52rem] text-left text-xs">
+          <table className="w-full min-w-208 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase text-text-muted">
               <tr>
                 <th className="px-4 py-3">Formule</th>
@@ -315,7 +327,7 @@ export const AdminAutoPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     {plan.monthlyPrice
-                      ? formatAutoMoney(plan.monthlyPrice)
+                      ? formatAutoMoney(plan.monthlyPrice, currentLocale)
                       : "Gratuit"}
                   </td>
                   <td className="px-4 py-3">
@@ -366,7 +378,7 @@ export const AdminAutoPage: React.FC = () => {
                 <div>
                   <p className="font-bold">{addOn.name}</p>
                   <p className="mt-1 text-micro text-text-muted">
-                    {formatAutoMoney(addOn.price)} ·{" "}
+                    {formatAutoMoney(addOn.price, currentLocale)} ·{" "}
                     {labelIdentifier(addOn.type)}
                   </p>
                 </div>
@@ -480,7 +492,8 @@ export const AdminAutoPage: React.FC = () => {
             Administration Shongre Auto
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
-            Marché France · schéma v{overview.catalog.config.schemaVersion}
+            Marché {activeMarket.name} · schéma v
+            {overview.catalog.config.schemaVersion}
           </p>
         </div>
         <Badge

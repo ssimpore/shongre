@@ -101,15 +101,63 @@ export const discoveryPresentationSchema = z.object({
 });
 export type DiscoveryPresentation = z.infer<typeof discoveryPresentationSchema>;
 
+/**
+ * Canonical constraints shared by discovery validation and its admin editor.
+ * Keeping these beside the contract prevents the UI, demo adapter and backend
+ * from quietly assigning different limits to the same commercial policy.
+ */
+export const DISCOVERY_CONFIGURATION_CONSTRAINTS = {
+  weight: { min: 0, max: 1, step: 0.01 },
+  weightTotal: 1,
+  weightTotalTolerance: 0.001,
+  sponsored: {
+    positionMin: 1,
+    maxPerPage: { min: 0, step: 1 },
+    maxShare: { min: 0, max: 0.4, step: 0.05 },
+    minimumRelevance: { min: 0, max: 1, step: 0.05 },
+  },
+  changeReason: { minLength: 8, maxLength: 500 },
+} as const;
+
+export const discoveryChangeReasonSchema = z
+  .string()
+  .trim()
+  .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.changeReason.minLength)
+  .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.changeReason.maxLength);
+
 export const rankingWeightsSchema = z.object({
-  relevance: z.number().min(0).max(1),
-  category: z.number().min(0).max(1),
-  location: z.number().min(0).max(1),
-  quality: z.number().min(0).max(1),
-  freshness: z.number().min(0).max(1),
-  trust: z.number().min(0).max(1),
-  price: z.number().min(0).max(1),
-  personalization: z.number().min(0).max(1),
+  relevance: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  category: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  location: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  quality: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  freshness: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  trust: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  price: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
+  personalization: z
+    .number()
+    .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.min)
+    .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.weight.max),
 });
 export type RankingWeights = z.infer<typeof rankingWeightsSchema>;
 
@@ -130,8 +178,16 @@ export const discoveryConfigurationSchema = z
     sponsored: z.object({
       positions: z.array(z.number().int().positive()),
       maxPerPage: z.number().int().nonnegative(),
-      maxShare: z.number().min(0).max(0.4),
-      minimumRelevance: z.number().min(0).max(1),
+      maxShare: z
+        .number()
+        .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.maxShare.min)
+        .max(DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.maxShare.max),
+      minimumRelevance: z
+        .number()
+        .min(DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.minimumRelevance.min)
+        .max(
+          DISCOVERY_CONFIGURATION_CONSTRAINTS.sponsored.minimumRelevance.max,
+        ),
       minimumOrganicResults: z.number().int().positive(),
     }),
   })
@@ -140,7 +196,10 @@ export const discoveryConfigurationSchema = z
       (sum, weight) => sum + weight,
       0,
     );
-    if (Math.abs(weightTotal - 1) > 0.001) {
+    if (
+      Math.abs(weightTotal - DISCOVERY_CONFIGURATION_CONSTRAINTS.weightTotal) >
+      DISCOVERY_CONFIGURATION_CONSTRAINTS.weightTotalTolerance
+    ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["weights"],

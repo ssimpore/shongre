@@ -81,6 +81,16 @@ export const BUYER_ROUTES: RouteUnderTest[] = [
     persona: "individual_buyer",
   },
   {
+    path: "/compte/notifications/preferences",
+    name: "notification-preferences",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/recours",
+    name: "moderation-appeals",
+    persona: "individual_buyer",
+  },
+  {
     path: "/compte/recherches",
     name: "saved-searches",
     persona: "individual_buyer",
@@ -172,6 +182,13 @@ export const PRO_ROUTES: RouteUnderTest[] = [
 export const ADMIN_ROUTES: RouteUnderTest[] = [
   { path: "/admin/finance", name: "platform-finance", persona: "finance" },
   { path: "/admin", name: "admin-overview", persona: "admin" },
+  { path: "/admin/support", name: "admin-support", persona: "support" },
+  {
+    path: "/admin/fonctionnalites",
+    name: "admin-feature-flags",
+    persona: "admin",
+  },
+  { path: "/securite-interne", name: "staff-mfa", persona: "admin" },
   { path: "/admin/moderation", name: "admin-moderation", persona: "moderator" },
   { path: "/admin/utilisateurs", name: "admin-users", persona: "admin" },
   {

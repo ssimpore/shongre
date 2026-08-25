@@ -104,7 +104,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         aria-live="polite"
         aria-relevant="additions"
         aria-atomic="false"
-        className="fixed inset-x-0 bottom-[var(--mobile-nav-total-h)] md:bottom-4 md:inset-x-auto md:right-4 z-toast flex flex-col gap-2 md:max-w-sm w-full pointer-events-none p-4"
+        className="fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-4 md:inset-x-auto md:right-4 z-toast flex flex-col gap-2 md:max-w-sm w-full pointer-events-none p-4"
       >
         {toasts.map((toast) => {
           const typeStyles = {

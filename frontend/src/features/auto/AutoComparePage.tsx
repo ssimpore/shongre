@@ -11,6 +11,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
   formatAutoMileage,
   formatAutoMoney,
@@ -19,6 +20,7 @@ import {
 } from "./auto-format";
 
 export const AutoComparePage: React.FC = () => {
+  const { currentLocale } = useMarketLocation();
   const [params, setParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export const AutoComparePage: React.FC = () => {
   if (loading)
     return (
       <Container className="py-7">
-        <Skeleton className="h-[35rem] rounded-card" />
+        <Skeleton className="h-140 rounded-card" />
       </Container>
     );
   if (vehicles.length < 2)
@@ -60,9 +62,15 @@ export const AutoComparePage: React.FC = () => {
     );
 
   const rows = [
-    ["Prix", (vehicle: VehiclePublic) => formatAutoMoney(vehicle.price)],
+    [
+      "Prix",
+      (vehicle: VehiclePublic) => formatAutoMoney(vehicle.price, currentLocale),
+    ],
     ["Année", (vehicle: VehiclePublic) => String(vehicle.technical.modelYear)],
-    ["Kilométrage", formatAutoMileage],
+    [
+      "Kilométrage",
+      (vehicle: VehiclePublic) => formatAutoMileage(vehicle, currentLocale),
+    ],
     [
       "Énergie",
       (vehicle: VehiclePublic) => fuelLabels[vehicle.technical.fuelType],
@@ -117,7 +125,7 @@ export const AutoComparePage: React.FC = () => {
         </Button>
       </div>
       <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface shadow-xs">
-        <table className="w-full min-w-[44rem] border-collapse text-left text-xs">
+        <table className="w-full min-w-176 border-collapse text-left text-xs">
           <caption className="sr-only">
             Comparaison détaillée de {vehicles.length} véhicules
           </caption>

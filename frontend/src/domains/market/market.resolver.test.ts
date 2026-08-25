@@ -174,7 +174,7 @@ describe("Multi-Market Inheritance Engine (MarketResolver)", () => {
         "listings.maxActiveListingsIndividual",
       );
       expect(inheritedRes.isInherited).toBe(true);
-      expect(inheritedRes.source).toBe("FR");
+      expect(inheritedRes.source).toBe("BASELINE");
       expect(inheritedRes.sourceMarketCode).toBe("FR");
       expect(inheritedRes.overrideDefined).toBe(false);
       expect(inheritedRes.value).toBe(20);
@@ -190,7 +190,7 @@ describe("Multi-Market Inheritance Engine (MarketResolver)", () => {
       expect(overriddenRes.sourceMarketCode).toBe("BE");
       expect(overriddenRes.overrideDefined).toBe(true);
       expect(overriddenRes.value).toBe(0.21);
-      expect(overriddenRes.frenchReferenceValue).toBe(0.2);
+      expect(overriddenRes.baselineReferenceValue).toBe(0.2);
     });
 
     it("calculates inheritance metrics accurately", () => {

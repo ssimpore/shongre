@@ -24,6 +24,7 @@ import type {
   InventoryImport,
 } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { routes } from "../../configuration/routes";
 import {
@@ -36,6 +37,7 @@ import {
   StatePanel,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { formatAutoMileage, formatAutoMoney } from "./auto-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
 
@@ -93,6 +95,8 @@ const Metric = ({
 );
 
 export const AutoDealerWorkspacePage: React.FC = () => {
+  const { activeMarket, currentLocale } = useMarketLocation();
+  const { formatDateTime, formatNumber } = useRegionalFormatters();
   const toast = useToast();
   const [workspace, setWorkspace] = useState<DealerWorkspace | null>(null);
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
@@ -114,7 +118,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
     setLoading(true);
     Promise.all([
       services.auto.getDealerWorkspace("dealer_auto_select_lyon"),
-      services.auto.getCatalog("FR"),
+      services.auto.getCatalog(activeMarket.code),
     ])
       .then(([nextWorkspace, nextCatalog]) => {
         setWorkspace(nextWorkspace);
@@ -123,7 +127,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   };
-  useEffect(load, []);
+  useEffect(load, [activeMarket.code]);
 
   const plan = useMemo(
     () =>
@@ -224,7 +228,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
   if (loading)
     return (
       <Container className="py-7">
-        <Skeleton className="h-[48rem] rounded-card" />
+        <Skeleton className="h-192 rounded-card" />
       </Container>
     );
   if (error || !workspace || !plan)
@@ -299,7 +303,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         </div>
       )}
       <ScrollableRegion aria-label="Tableau du stock automobile">
-        <table className="w-full min-w-[50rem] text-left text-xs">
+        <table className="w-full min-w-200 text-left text-xs">
           <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-secondary">
             <tr>
               <th className="px-4 py-3">Réf. stock</th>
@@ -337,13 +341,13 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                         </p>
                         <p className="text-micro text-text-muted">
                           {vehicle.technical.modelYear} ·{" "}
-                          {formatAutoMileage(vehicle)}
+                          {formatAutoMileage(vehicle, currentLocale)}
                         </p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold">
-                    {formatAutoMoney(vehicle.price)}
+                    {formatAutoMoney(vehicle.price, currentLocale)}
                   </td>
                   <td className="px-4 py-3">
                     {vehicleMetric
@@ -438,7 +442,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         </button>
       </div>
       <ScrollableRegion aria-label="Tableau des demandes automobiles">
-        <table className="w-full min-w-[45rem] text-left text-xs">
+        <table className="w-full min-w-180 text-left text-xs">
           <thead className="bg-bg-subtle text-micro uppercase text-text-secondary">
             <tr>
               <th className="px-4 py-3">Intention</th>
@@ -575,7 +579,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         {workspace.imports.map((item) => (
           <article
             key={item.id}
-            className="grid gap-3 p-4 text-xs sm:grid-cols-[minmax(0,1fr)_auto]"
+            className="grid gap-3 p-4 text-xs sm:grid-cols-content-action"
           >
             <div>
               <p className="font-bold">
@@ -583,7 +587,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                   `Synchronisation ${labelIdentifier(item.type)}`}
               </p>
               <p className="mt-1 text-text-muted">
-                Demandé le {new Date(item.requestedAt).toLocaleString("fr-FR")}
+                Demandé le {formatDateTime(item.requestedAt)}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -707,7 +711,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             <dt>Prix catalogue mensuel</dt>
             <dd className="font-bold">
               {plan.monthlyPrice
-                ? formatAutoMoney(plan.monthlyPrice)
+                ? formatAutoMoney(plan.monthlyPrice, currentLocale)
                 : "Sur devis"}
             </dd>
           </div>
@@ -751,9 +755,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Metric
           icon={BarChart3}
-          value={new Intl.NumberFormat("fr-FR").format(
-            workspace.analytics.views30d,
-          )}
+          value={formatNumber(workspace.analytics.views30d)}
           label="vues sur 30 jours"
           hint="Mesure agrégée"
         />
@@ -941,7 +943,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           ))}
         </div>
       </nav>
-      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="mt-5 grid gap-4 xl:grid-cols-content-aside-xs">
         <main className="min-w-0">{content}</main>
         <aside className="self-start space-y-4 xl:sticky xl:top-24">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">

@@ -20,6 +20,9 @@ export interface SendMessageInput {
   offerPrice?: number;
 }
 
+const OFFER_LIFETIME_MS = 7 * 24 * 60 * 60 * 1_000;
+const MAX_OFFER_AMOUNT_MINOR = 999_999_999_999;
+
 export class MessagingService {
   constructor(
     private messagingRepo: IMessagingRepository = repositories.messaging,
@@ -117,13 +120,10 @@ export class MessagingService {
         message: "Une pièce jointe au message est invalide.",
       });
     }
-    if (
-      input.offerPrice !== undefined &&
-      (!Number.isFinite(input.offerPrice) || input.offerPrice <= 0)
-    ) {
+    if (input.offerPrice !== undefined) {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Le montant de l’offre est invalide.",
+        message: "Utilisez le parcours d’offre de prix dédié.",
       });
     }
     const message: Message = {
@@ -132,9 +132,6 @@ export class MessagingService {
       senderId: input.senderId,
       text,
       attachments,
-      offerPrice: input.offerPrice,
-      isOffer: Boolean(input.offerPrice),
-      offerStatus: input.offerPrice ? "pending" : undefined,
       createdAt: new Date().toISOString(),
     };
 
@@ -147,33 +144,84 @@ export class MessagingService {
     return saved;
   }
 
-  async makeOffer(
-    conversationId: string,
-    senderId: string,
-    senderName: string,
-    amount: number,
-  ): Promise<Message> {
-    return this.sendMessage({
-      conversationId,
-      senderId,
-      text: `${senderName} propose une offre de prix à ${amount} €`,
-      offerPrice: amount,
+  async makeOffer(input: {
+    conversationId: string;
+    senderId: string;
+    amountMinor: number;
+    parentOfferId?: string;
+  }): Promise<Message> {
+    if (
+      !Number.isSafeInteger(input.amountMinor) ||
+      input.amountMinor <= 0 ||
+      input.amountMinor > MAX_OFFER_AMOUNT_MINOR
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le montant de l’offre est invalide.",
+      });
+    }
+    const conversation = await this.assertInteractionAllowed(
+      input.conversationId,
+      input.senderId,
+    );
+    const listing = await this.listingRepo.findById(conversation.listingId);
+    if (!listing?.currency) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La devise de cette annonce est indisponible.",
+      });
+    }
+    const amountLabel = (input.amountMinor / 100).toFixed(2);
+    const saved = await this.messagingRepo.createMarketplaceOffer({
+      conversationId: input.conversationId,
+      actorId: input.senderId,
+      amountMinor: input.amountMinor,
+      currency: listing.currency,
+      messageText: input.parentOfferId
+        ? `Contre-offre de ${amountLabel} ${listing.currency}.`
+        : `Offre de prix proposée : ${amountLabel} ${listing.currency}.`,
+      expiresAt: new Date(Date.now() + OFFER_LIFETIME_MS).toISOString(),
+      parentOfferId: input.parentOfferId,
     });
+    await realtimeBroadcaster.broadcastEvent(
+      `conversation:${input.conversationId}`,
+      "new_message",
+      saved,
+    );
+    return saved;
   }
 
-  async respondToOffer(
-    conversationId: string,
-    userId: string,
-    userName: string,
-    accept: boolean,
-  ): Promise<Message> {
-    return this.sendMessage({
-      conversationId,
-      senderId: userId,
-      text: accept
-        ? `${userName} a accepté l'offre de prix.`
-        : `${userName} a décliné l'offre de prix.`,
+  async respondToOffer(input: {
+    offerId: string;
+    userId: string;
+    accept: boolean;
+  }): Promise<Message> {
+    const result = await this.messagingRepo.respondToMarketplaceOffer({
+      offerId: input.offerId,
+      actorId: input.userId,
+      decision: input.accept ? "accepted" : "declined",
+      messageText: input.accept
+        ? "Offre de prix acceptée."
+        : "Offre de prix refusée.",
     });
+    if (result.offerMessage.offerStatus === "expired") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette offre a expiré.",
+      });
+    }
+    await this.broadcastOfferTransition(result);
+    return result.offerMessage;
+  }
+
+  async withdrawOffer(offerId: string, userId: string): Promise<Message> {
+    const result = await this.messagingRepo.withdrawMarketplaceOffer({
+      offerId,
+      actorId: userId,
+      messageText: "Offre de prix retirée.",
+    });
+    await this.broadcastOfferTransition(result);
+    return result.offerMessage;
   }
 
   async schedulePickup(
@@ -246,11 +294,35 @@ export class MessagingService {
     return this.messagingRepo.getBlockedUserIds(userId);
   }
 
+  private async broadcastOfferTransition(result: {
+    offerMessage: Message;
+    eventMessage?: Message;
+  }): Promise<void> {
+    await realtimeBroadcaster.broadcastEvent(
+      `conversation:${result.offerMessage.conversationId}`,
+      "offer_updated",
+      result.offerMessage,
+    );
+    if (result.eventMessage) {
+      await realtimeBroadcaster.broadcastEvent(
+        `conversation:${result.offerMessage.conversationId}`,
+        "new_message",
+        result.eventMessage,
+      );
+    }
+  }
+
   private async assertInteractionAllowed(
     conversationId: string,
     senderId: string,
-  ): Promise<void> {
-    if (senderId === "system") return;
+  ): Promise<Conversation> {
+    if (senderId === "system") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Une action utilisateur ne peut pas être attribuée au système.",
+      });
+    }
     const conversation =
       await this.messagingRepo.getConversationById(conversationId);
     if (!conversation)
@@ -277,6 +349,7 @@ export class MessagingService {
         message: "Cette conversation est temporairement indisponible.",
       });
     }
+    return conversation;
   }
 
   private async assertParticipant(

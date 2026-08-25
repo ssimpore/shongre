@@ -39,9 +39,12 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Button } from "../../design-system/primitives/Button";
 import { Modal } from "../../design-system/primitives/Modal";
+import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { BillingHistoryModal } from "./components/BillingHistoryModal";
 import { FormField, Input } from "../../design-system/primitives/FormField";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 type BillingInterval = "month" | "year";
 
@@ -56,23 +59,6 @@ const STATUS_LABELS: Record<string, string> = {
   suspended: "Suspendu",
   incomplete: "Activation en cours",
 };
-
-function formatMoney(amountMinor: number, currency = "EUR") {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
-  }).format(amountMinor / 100);
-}
-
-function formatDate(value?: string) {
-  if (!value) return "—";
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 function displayEntitlement(value: string | number | boolean | string[]) {
   if (value === true) return "Inclus";
@@ -106,6 +92,7 @@ function PriceDisplay({
   price: MonetizationPrice;
   interval: BillingInterval;
 }) {
+  const { formatMoneyMinor } = useRegionalFormatters();
   const isAnnual =
     product.kind === "subscription" && price.billingPeriod === "year";
   const displayAmount = isAnnual
@@ -115,7 +102,7 @@ function PriceDisplay({
     <div className="min-h-20">
       <div className="flex items-end gap-1.5">
         <span className="text-3xl sm:text-4xl font-black tracking-tight text-text-main">
-          {formatMoney(displayAmount, price.amount.currency)}
+          {formatMoneyMinor(displayAmount, price.amount.currency)}
         </span>
         <span className="pb-1 text-xs font-semibold text-text-muted">
           HT / {product.kind === "subscription" ? "mois" : "option"}
@@ -123,7 +110,7 @@ function PriceDisplay({
       </div>
       <p className="mt-1 text-xs text-text-muted">
         {isAnnual
-          ? `Facturé ${formatMoney(price.amount.amountMinor, price.amount.currency)} HT par an`
+          ? `Facturé ${formatMoneyMinor(price.amount.amountMinor, price.amount.currency)} HT par an`
           : product.kind === "subscription" && interval === "month"
             ? "Facturation mensuelle, sans engagement annuel"
             : product.audience === "individual"
@@ -136,6 +123,8 @@ function PriceDisplay({
 
 export const ProPlansPage: React.FC = () => {
   const { currentUser, isAuthenticated } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
   const toast = useToast();
   const operationSequence = useRef(0);
   const [catalog, setCatalog] = useState<MonetizationCatalog | null>(null);
@@ -169,12 +158,12 @@ export const ProPlansPage: React.FC = () => {
 
   const loadCommercialState = useCallback(async () => {
     const [nextCatalog, nextBilling] = await Promise.all([
-      services.businessRules.getCatalog("FR"),
+      services.businessRules.getCatalog(activeMarket.code),
       services.businessRules.getBillingOverview(),
     ]);
     setCatalog(nextCatalog);
     setBilling(nextBilling);
-  }, []);
+  }, [activeMarket.code]);
 
   useEffect(() => {
     let active = true;
@@ -329,7 +318,7 @@ export const ProPlansPage: React.FC = () => {
           await services.businessRules.createQuote({
             productIds: [product.id],
             priceIds: { [product.id]: price.id },
-            marketCode: "FR",
+            marketCode: activeMarket.code,
             categoryId: catalog?.verticals.find(
               (vertical) => vertical.id === selectedVertical,
             )?.categoryIds[0],
@@ -358,7 +347,7 @@ export const ProPlansPage: React.FC = () => {
         await services.businessRules.createQuote({
           productIds: [selectedProduct.id],
           priceIds: { [selectedProduct.id]: selectedPrice.id },
-          marketCode: "FR",
+          marketCode: activeMarket.code,
           categoryId: catalog?.verticals.find(
             (vertical) => vertical.id === selectedVertical,
           )?.categoryIds[0],
@@ -763,7 +752,7 @@ export const ProPlansPage: React.FC = () => {
                 <Layers3 className="h-6 w-6 text-primary" aria-hidden="true" />
               </div>
               <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface shadow-xs">
-                <table className="w-full min-w-[760px] border-collapse text-xs">
+                <table className="w-full min-w-190 border-collapse text-xs">
                   <thead>
                     <tr className="bg-bg-subtle text-left text-text-main">
                       <th scope="col" className="px-4 py-3 font-black">
@@ -971,7 +960,7 @@ export const ProPlansPage: React.FC = () => {
                     })}
                 </div>
               )}
-              <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr_1fr] lg:divide-x lg:divide-border-subtle">
+              <div className="grid gap-6 lg:grid-cols-plans-tiers lg:divide-x lg:divide-border-subtle">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
                     Forfait actuel
@@ -1014,19 +1003,7 @@ export const ProPlansPage: React.FC = () => {
                                 {usage.used} / {usage.limit ?? "∞"}
                               </span>
                             </div>
-                            <div
-                              className="h-1.5 overflow-hidden rounded-full bg-bg-muted"
-                              role="progressbar"
-                              aria-label={usage.label}
-                              aria-valuenow={usage.used}
-                              aria-valuemin={0}
-                              aria-valuemax={usage.limit ?? undefined}
-                            >
-                              <div
-                                className="h-full rounded-full bg-primary"
-                                style={{ width: `${percent}%` }}
-                              />
-                            </div>
+                            <ProgressBar value={percent} label={usage.label} />
                           </div>
                         );
                       })

@@ -1,6 +1,27 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 
+/** Shared commercial editor constraints; schemas, UI, and services consume one policy. */
+export const MONETIZATION_ADMIN_CONSTRAINTS = {
+  nonNegativeInteger: { min: 0, step: 1 },
+  positiveInteger: { min: 1, step: 1 },
+  basisPoints: { min: 0, max: 10_000, step: 1 },
+  signedBasisPoints: { min: -10_000, max: 10_000, step: 1 },
+  priority: { min: 0, max: 100_000, step: 1 },
+  percentageMajor: { min: 1, max: 100, step: 1 },
+  percentageBpsMax: 10_000,
+  percentageToBps: 100,
+  moneyMajor: { min: 0, step: 0.01 },
+  moneyMajorToMinor: 100,
+  moneyMinor: { min: 0, step: 1 },
+  trialDurationDays: { min: 1, default: 30, step: 1 },
+  sortOrderIncrement: 10,
+  promotionCode: { minLength: 3, maxLength: 40 },
+  changeReason: { minLength: 8, maxLength: 500 },
+  complimentaryRequestReason: { minLength: 12, maxLength: 500 },
+  complimentaryDecisionReason: { minLength: 8, maxLength: 500 },
+} as const;
+
 export const commercialConfigurationStatusSchema = z.enum([
   "draft",
   "pending_approval",
@@ -245,12 +266,22 @@ export const commercialRuleOutcomeSchema = z
     percentageAdjustmentBps: z
       .number()
       .int()
-      .min(-10_000)
-      .max(10_000)
+      .min(MONETIZATION_ADMIN_CONSTRAINTS.signedBasisPoints.min)
+      .max(MONETIZATION_ADMIN_CONSTRAINTS.signedBasisPoints.max)
       .optional(),
-    feeRateBps: z.number().int().min(0).max(10_000).optional(),
+    feeRateBps: z
+      .number()
+      .int()
+      .min(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min)
+      .max(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max)
+      .optional(),
     fixedFeeMinor: z.number().int().nonnegative().optional(),
-    taxRateBps: z.number().int().min(0).max(10_000).optional(),
+    taxRateBps: z
+      .number()
+      .int()
+      .min(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min)
+      .max(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max)
+      .optional(),
     entitlementKey: z.string().min(1).optional(),
     entitlementValue: commercialScalarSchema.optional(),
   })
@@ -264,7 +295,11 @@ export const commercialRuleSchema = z.object({
   key: z.string().regex(/^[a-z0-9_.-]+$/),
   name: z.string().min(1),
   description: z.string(),
-  priority: z.number().int().min(0).max(100_000),
+  priority: z
+    .number()
+    .int()
+    .min(MONETIZATION_ADMIN_CONSTRAINTS.priority.min)
+    .max(MONETIZATION_ADMIN_CONSTRAINTS.priority.max),
   mandatory: z.boolean().default(false),
   scope: commercialScopeSchema,
   conditions: z.array(commercialConditionSchema).max(24),
@@ -280,7 +315,11 @@ export const monetizationPriceSchema = z.object({
   providerPriceId: z.string().min(1).optional(),
   amount: moneySchema.extend({ amountMinor: z.number().int().nonnegative() }),
   billingPeriod: z.enum(["once", "month", "year"]),
-  taxRateBps: z.number().int().min(0).max(10_000),
+  taxRateBps: z
+    .number()
+    .int()
+    .min(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min)
+    .max(MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max),
   priceIncludesTax: z.boolean(),
   durationDays: z.number().int().positive().optional(),
   trialDays: z.number().int().nonnegative().optional(),
@@ -385,12 +424,18 @@ export function isCommercialProductPurchasable(
   );
 }
 
+export const commercialChangeReasonSchema = z
+  .string()
+  .trim()
+  .min(MONETIZATION_ADMIN_CONSTRAINTS.changeReason.minLength)
+  .max(MONETIZATION_ADMIN_CONSTRAINTS.changeReason.maxLength);
+
 export const promotionSchema = z.object({
   id: z.string().min(1),
   code: z
     .string()
-    .min(3)
-    .max(40)
+    .min(MONETIZATION_ADMIN_CONSTRAINTS.promotionCode.minLength)
+    .max(MONETIZATION_ADMIN_CONSTRAINTS.promotionCode.maxLength)
     .transform((value) => value.toUpperCase()),
   name: z.string().min(1),
   status: commercialConfigurationStatusSchema,
@@ -418,6 +463,41 @@ export const promotionSchema = z.object({
   endsAt: z.string().datetime(),
 });
 export type Promotion = z.infer<typeof promotionSchema>;
+
+export const complimentaryGrantRequestInputSchema = z
+  .object({
+    accountId: z.string().min(1),
+    productVersionId: z.string().min(1),
+    campaignId: z.string().min(1).optional(),
+    reason: z
+      .string()
+      .trim()
+      .min(MONETIZATION_ADMIN_CONSTRAINTS.complimentaryRequestReason.minLength)
+      .max(MONETIZATION_ADMIN_CONSTRAINTS.complimentaryRequestReason.maxLength),
+    startsAt: z.string().datetime(),
+    endsAt: z.string().datetime(),
+    idempotencyKey: z.string().min(8).max(200),
+  })
+  .refine((input) => input.endsAt > input.startsAt, {
+    path: ["endsAt"],
+    message: "The complimentary grant must end after it starts.",
+  });
+export type ComplimentaryGrantRequestInput = z.infer<
+  typeof complimentaryGrantRequestInputSchema
+>;
+
+export const complimentaryGrantDecisionInputSchema = z.object({
+  decision: z.enum(["approved", "rejected"]),
+  reason: z
+    .string()
+    .trim()
+    .min(MONETIZATION_ADMIN_CONSTRAINTS.complimentaryDecisionReason.minLength)
+    .max(MONETIZATION_ADMIN_CONSTRAINTS.complimentaryDecisionReason.maxLength),
+  idempotencyKey: z.string().min(8).max(200),
+});
+export type ComplimentaryGrantDecisionInput = z.infer<
+  typeof complimentaryGrantDecisionInputSchema
+>;
 
 export const ruleEvaluationContextSchema = z.object({
   marketCode: marketCodeSchema.default("FR"),
@@ -1531,7 +1611,7 @@ export type MonetizationAdminOverview = z.infer<
 >;
 
 export const commercialDraftPatchSchema = z.object({
-  reason: z.string().min(8).max(500),
+  reason: commercialChangeReasonSchema,
   effectiveFrom: z.string().datetime().optional(),
   verticals: z.array(businessVerticalSchema).optional(),
   products: z.array(monetizationProductSchema).optional(),

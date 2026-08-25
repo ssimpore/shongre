@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -30,6 +31,8 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import { formatAutoMoney, fuelLabels } from "./auto-format";
+import { formatCurrencySymbol } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 const split = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
@@ -74,6 +77,11 @@ const AutoFilters: React.FC<FiltersProps> = ({
   onApply,
   presentation = "surface",
 }) => {
+  const { currentLocale } = useMarketLocation();
+  const currencySymbol = formatCurrencySymbol(
+    catalog.config.currency,
+    currentLocale,
+  );
   const fuels = split(params.get("fuel"));
   const bodyTypeOptions =
     catalog.attributes.find((attribute) => attribute.id === "bodyType")
@@ -184,7 +192,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Localisation
         </legend>
-        <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
+        <div className="grid grid-cols-filter-action gap-2">
           <input
             aria-label="Ville"
             value={params.get("city") || ""}
@@ -259,7 +267,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
             onChange={(event) =>
               update("minPrice", event.target.value || undefined)
             }
-            placeholder="Min. €"
+            placeholder={`Min. ${currencySymbol}`}
             className="h-control-touch min-w-0 rounded-control border border-border-base px-3 text-xs"
           />
           <input
@@ -269,7 +277,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
             onChange={(event) =>
               update("maxPrice", event.target.value || undefined)
             }
-            placeholder="Max. €"
+            placeholder={`Max. ${currencySymbol}`}
             className="h-control-touch min-w-0 rounded-control border border-border-base px-3 text-xs"
           />
         </div>
@@ -401,6 +409,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
 export const AutoSearchPage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
@@ -435,7 +444,7 @@ export const AutoSearchPage: React.FC = () => {
 
   const query = useMemo<VehicleSearchQuery>(
     () => ({
-      marketCode: "FR",
+      marketCode: activeMarket.code,
       query: params.get("query") || undefined,
       vehicleTypes: (split(params.get("type")).length
         ? split(params.get("type"))
@@ -485,9 +494,9 @@ export const AutoSearchPage: React.FC = () => {
       warrantyOnly: params.get("warranty") === "true" || undefined,
       financingAvailable: params.get("financing") === "true" || undefined,
       sort: (params.get("sort") || "relevance") as VehicleSearchQuery["sort"],
-      limit: 20,
+      limit: PAGE_SIZES.verticalSearch,
     }),
-    [catalog, params],
+    [activeMarket.code, catalog, params],
   );
 
   usePageMeta({
@@ -502,10 +511,10 @@ export const AutoSearchPage: React.FC = () => {
 
   useEffect(() => {
     services.auto
-      .getCatalog("FR")
+      .getCatalog(activeMarket.code)
       .then(setCatalog)
       .catch(() => setError(true));
-  }, []);
+  }, [activeMarket.code]);
   useEffect(() => {
     setLoading(true);
     setError(false);
@@ -589,7 +598,7 @@ export const AutoSearchPage: React.FC = () => {
             Voitures d’occasion
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            {loading ? "…" : new Intl.NumberFormat("fr-FR").format(total)}{" "}
+            {loading ? "…" : new Intl.NumberFormat(currentLocale).format(total)}{" "}
             véhicules
           </p>
         </div>
@@ -637,7 +646,7 @@ export const AutoSearchPage: React.FC = () => {
       </form>
 
       <div
-        className={`grid min-w-0 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] ${compared.length ? "xl:grid-cols-[16rem_minmax(0,1fr)_17rem]" : ""}`}
+        className={`grid min-w-0 gap-6 lg:grid-cols-sidebar ${compared.length ? "xl:grid-cols-search-compare-auto" : ""}`}
       >
         {catalog && (
           <aside
@@ -744,7 +753,7 @@ export const AutoSearchPage: React.FC = () => {
                       {vehicle.title}
                     </p>
                     <p className="mt-1 text-xs font-black text-primary">
-                      {formatAutoMoney(vehicle.price)}
+                      {formatAutoMoney(vehicle.price, currentLocale)}
                     </p>
                   </div>
                   <button
@@ -793,7 +802,7 @@ export const AutoSearchPage: React.FC = () => {
         </Drawer>
       )}
       {compared.length > 0 && (
-        <div className="fixed inset-x-3 bottom-[calc(var(--mobile-nav-total-h)+0.75rem)] z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
+        <div className="fixed inset-x-3 bottom-mobile-nav-clearance-gutter z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black">

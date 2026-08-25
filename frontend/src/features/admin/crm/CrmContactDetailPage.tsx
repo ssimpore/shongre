@@ -35,9 +35,11 @@ import { Skeleton } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmContactDetailPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   usePageMeta({
     title: t("meta.crmContactDetail.title"),
     description: t("meta.crmContactDetail.description"),
@@ -338,7 +340,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 Localisation
               </span>
               <strong className="text-success">
-                {linkedUser.city || "France"}
+                {linkedUser.city || activeMarket.name}
               </strong>
             </div>
           </div>

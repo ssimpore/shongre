@@ -1,5 +1,7 @@
 import {
   CreateOrGetConversationInput,
+  MessageComposerOptions,
+  MessageComposerOptionsInput,
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
@@ -8,6 +10,32 @@ import { userRepository } from "../../../repositories/user.repository";
 import { storageService } from "../../../services/storage.service";
 import { Conversation, Message } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { translate } from "../../../i18n/i18n.service";
+
+const DEMO_ATTACHMENT_LIBRARY = [
+  {
+    id: "condition-photo",
+    labelKey: "messaging.messageComposer.demoAttachmentCondition" as const,
+    url: "https://images.unsplash.com/photo-1580481077195-c3a9927b74b7?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "invoice-warranty",
+    labelKey: "messaging.messageComposer.demoAttachmentInvoice" as const,
+    url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80",
+  },
+  {
+    id: "included-accessories",
+    labelKey: "messaging.messageComposer.demoAttachmentAccessories" as const,
+    url: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+  },
+];
+
+const PRO_QUICK_REPLY_KEYS = [
+  "messaging.messageComposer.quickReplyAvailable",
+  "messaging.messageComposer.quickReplyShipping",
+  "messaging.messageComposer.quickReplyPickup",
+  "messaging.messageComposer.quickReplyInvoice",
+] as const;
 
 export class DemoMessagingService implements MessagingServiceContract {
   async getUserConversations(userId: string): Promise<Conversation[]> {
@@ -23,6 +51,22 @@ export class DemoMessagingService implements MessagingServiceContract {
   async getMessages(conversationId: string): Promise<Message[]> {
     await simulateNetworkDelay();
     return messagingRepository.getMessages(conversationId);
+  }
+
+  async getComposerOptions(
+    input: MessageComposerOptionsInput,
+  ): Promise<MessageComposerOptions> {
+    await simulateNetworkDelay();
+    return {
+      attachmentOptions: DEMO_ATTACHMENT_LIBRARY.map((option) => ({
+        id: option.id,
+        label: translate(option.labelKey, input.locale),
+        url: option.url,
+      })),
+      quickReplies: input.isProfessional
+        ? PRO_QUICK_REPLY_KEYS.map((key) => translate(key, input.locale))
+        : [],
+    };
   }
 
   async createOrGetConversation(
@@ -77,18 +121,23 @@ export class DemoMessagingService implements MessagingServiceContract {
   }
 
   async respondToOffer(
-    conversationId: string,
+    offerId: string,
     userId: string,
     userName: string,
     accept: boolean,
   ): Promise<Message> {
     await simulateNetworkDelay();
     return messagingRepository.respondToOffer(
-      conversationId,
+      offerId,
       userId,
       userName,
       accept,
     );
+  }
+
+  async withdrawOffer(offerId: string, userId: string): Promise<Message> {
+    await simulateNetworkDelay();
+    return messagingRepository.withdrawOffer(offerId, userId);
   }
 
   async schedulePickup(

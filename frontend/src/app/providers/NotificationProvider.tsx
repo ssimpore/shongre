@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, {
   createContext,
   useContext,
@@ -9,7 +10,7 @@ import {
   Notification,
   NotificationType,
 } from "../../domains/notifications/notification.types";
-import { notificationRepository } from "../../repositories/notification.repository";
+import { services } from "../../api/client/service-registry";
 import { notificationRealtimeClient } from "../../domains/notifications/notification.realtime";
 import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
 import { useAuth } from "./AuthProvider";
@@ -48,12 +49,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   // Load recent notifications & unread count
   const refresh = useCallback(async () => {
     try {
-      const res = await notificationRepository.getNotifications({
-        recipientId: currentUserId,
-        limit: 8,
-      });
-      setRecentNotifications(res.notifications);
-      setUnreadCount(res.unreadCount);
+      const [items, count] = await Promise.all([
+        services.notifications.getUserNotifications(currentUserId),
+        services.notifications.getUnreadCount(currentUserId),
+      ]);
+      setRecentNotifications(items.slice(0, PAGE_SIZES.notificationPreview));
+      setUnreadCount(count);
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +106,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [currentUserId, toast]);
 
   const markAsRead = async (id: string) => {
-    await notificationRepository.markAsRead(id);
+    await services.notifications.markAsRead(id);
     setRecentNotifications((prev) =>
       prev.map((n) =>
         n.id === id ? { ...n, isRead: true, status: "read" } : n,
@@ -115,7 +116,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const markAllAsRead = async () => {
-    await notificationRepository.markAllAsRead(currentUserId);
+    await services.notifications.markAllAsRead(currentUserId);
     setRecentNotifications((prev) =>
       prev.map((n) => ({ ...n, isRead: true, status: "read" })),
     );
@@ -131,7 +132,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       recipientId: currentUserId,
       context,
     });
-    await notificationRepository.createNotification(notif);
+    if (!services.notifications.simulateNotification) {
+      toast.info(
+        "Les scénarios de notification sont disponibles en mode démo.",
+      );
+      return;
+    }
+    await services.notifications.simulateNotification(notif);
   };
 
   return (

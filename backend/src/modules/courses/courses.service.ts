@@ -16,9 +16,11 @@ import type {
   TutorSearchQuery,
   TutorSearchResponse,
   TutorWorkspace,
+  DeliveryMode,
 } from "@shongre/contracts/courses";
 import { applyMonetizationToCourseCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import {
+  COURSE_CONSTRAINTS,
   courseMarketConfigSchema,
   courseOfferSchema,
   coursePlanSchema,
@@ -54,6 +56,67 @@ type LearnerRequestInput = Omit<
   "id" | "requesterUserId" | "status" | "createdAt" | "expiresAt"
 >;
 
+type CourseWorkflowKind = "tutor_onboarding" | "learner_request";
+
+const TUTOR_DRAFT_FIELDS = new Set([
+  "accountKind",
+  "organizationId",
+  "displayName",
+  "organizationName",
+  "headline",
+  "subjectIds",
+  "levelIds",
+  "deliveryModes",
+  "city",
+  "radiusKm",
+  "languages",
+  "experienceYears",
+  "biography",
+  "teachingApproach",
+  "priceMinor",
+  "availability",
+  "planId",
+]);
+const LEARNER_DRAFT_FIELDS = new Set([
+  "subjectId",
+  "levelId",
+  "objective",
+  "preferredSchedule",
+  "deliveryModes",
+  "city",
+  "radiusKm",
+  "budgetMinEuros",
+  "budgetMaxEuros",
+  "desiredStartDate",
+  "context",
+  "learnerAgeBand",
+]);
+const sanitizeWorkflowDraft = (
+  kind: CourseWorkflowKind,
+  input: unknown,
+): Record<string, unknown> => {
+  const source =
+    input && typeof input === "object"
+      ? (input as Record<string, unknown>)
+      : {};
+  const allowed =
+    kind === "tutor_onboarding" ? TUTOR_DRAFT_FIELDS : LEARNER_DRAFT_FIELDS;
+  return Object.fromEntries(
+    Object.entries(source).filter(([key]) => allowed.has(key)),
+  );
+};
+const stringArray = (value: unknown): string[] =>
+  Array.isArray(value) ? value.map(String).filter(Boolean) : [];
+const textValue = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
+const slugify = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 export class CoursesService {
   constructor(
     private readonly courseRepo: ICoursesRepository = repositories.courses,
@@ -79,6 +142,250 @@ export class CoursesService {
 
   getAdminCatalog(marketCode = "FR"): Promise<CourseCatalog> {
     return this.resolveCatalog(marketCode, true);
+  }
+
+  async getTutorOnboardingDraft(userId: string, marketCode = "FR") {
+    const normalized = marketCode.toUpperCase();
+    const [catalog, stored, user] = await Promise.all([
+      this.resolveCatalog(normalized),
+      this.courseRepo.getWorkflowDraft(userId, normalized, "tutor_onboarding"),
+      this.users.findById(userId),
+    ]);
+    const plan =
+      catalog.plans.find(
+        (candidate) =>
+          candidate.audience === "individual" && candidate.isActive,
+      ) || catalog.plans[0];
+    const subject = catalog.subjects.find((candidate) => candidate.isActive);
+    return {
+      accountKind: "individual",
+      displayName: user?.name || "",
+      organizationName: "",
+      headline: "",
+      subjectIds: subject ? [subject.id] : [],
+      levelIds: subject?.levelIds.slice(0, 2) || [],
+      deliveryModes: ["online"],
+      city: user?.city || "",
+      radiusKm: COURSE_CONSTRAINTS.learnerRequestDefaultRadiusKm,
+      languages: ["fr"],
+      experienceYears: 0,
+      biography: "",
+      teachingApproach: "",
+      priceMinor: 0,
+      availability: [],
+      planId: plan?.id || "",
+      ...(stored || {}),
+    };
+  }
+
+  saveWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowKind,
+    input: unknown,
+  ) {
+    return this.courseRepo.saveWorkflowDraft(
+      userId,
+      marketCode.toUpperCase(),
+      kind,
+      sanitizeWorkflowDraft(kind, input),
+    );
+  }
+
+  deleteWorkflowDraft(
+    userId: string,
+    marketCode: string,
+    kind: CourseWorkflowKind,
+  ) {
+    return this.courseRepo.deleteWorkflowDraft(
+      userId,
+      marketCode.toUpperCase(),
+      kind,
+    );
+  }
+
+  async getLearnerRequestDraft(
+    userId: string,
+    marketCode = "FR",
+    subjectId = "",
+  ) {
+    const normalized = marketCode.toUpperCase();
+    const stored = await this.courseRepo.getWorkflowDraft(
+      userId,
+      normalized,
+      "learner_request",
+    );
+    return {
+      levelId: "",
+      objective: "",
+      preferredSchedule: [],
+      deliveryModes: ["online"],
+      city: "",
+      radiusKm: COURSE_CONSTRAINTS.learnerRequestDefaultRadiusKm,
+      budgetMinEuros: "",
+      budgetMaxEuros: "",
+      desiredStartDate: "",
+      context: "",
+      learnerAgeBand: "adult",
+      ...(stored || {}),
+      subjectId: textValue(stored?.subjectId) || subjectId,
+    };
+  }
+
+  async submitTutorOnboarding(
+    userId: string,
+    marketCode: string,
+    input: unknown,
+  ) {
+    const normalized = marketCode.toUpperCase();
+    const draft = sanitizeWorkflowDraft("tutor_onboarding", input);
+    const catalog = await this.resolveCatalog(normalized);
+    const subjectIds = stringArray(draft.subjectIds);
+    const levelIds = stringArray(draft.levelIds);
+    const deliveryModes = stringArray(draft.deliveryModes) as DeliveryMode[];
+    const languages = stringArray(draft.languages);
+    const primarySubjectId = subjectIds[0];
+    if (!primarySubjectId)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Sélectionnez au moins une matière.",
+      });
+    const accountKind =
+      draft.accountKind === "organization" ? "organization" : "individual";
+    const organizationId =
+      accountKind === "organization"
+        ? textValue(draft.organizationId)
+        : undefined;
+    if (accountKind === "organization") {
+      if (!organizationId)
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Sélectionnez un organisme.",
+        });
+      await this.getOwnOrganizationWorkspace(userId, organizationId);
+    }
+    const displayName = textValue(draft.displayName);
+    const headline = textValue(draft.headline);
+    const biography = textValue(draft.biography);
+    const teachingApproach = textValue(draft.teachingApproach);
+    const city = textValue(draft.city);
+    const now = new Date().toISOString();
+    const profile = await this.saveOwnTutorProfile(userId, {
+      organizationId,
+      profileType:
+        accountKind === "organization" ? "organization_member" : "individual",
+      slug: `${slugify(displayName)}-${userId.slice(0, 8)}`,
+      displayName,
+      headline,
+      biography,
+      teachingApproach,
+      experienceYears: Number(draft.experienceYears || 0),
+      subjectIds,
+      levelIds,
+      languages,
+      deliveryModes,
+      serviceArea: deliveryModes.includes("in_person")
+        ? {
+            marketCode: normalized,
+            cityLabel: city,
+            radiusKm: Number(
+              draft.radiusKm ||
+                COURSE_CONSTRAINTS.learnerRequestDefaultRadiusKm,
+            ),
+            publicLocationLabel: `${city} et alentours`,
+          }
+        : undefined,
+      availabilityRules: [
+        {
+          id: "availability-onboarding",
+          dayOfWeek: 3,
+          startsAtLocal: "17:00",
+          endsAtLocal: "20:00",
+          timezone: catalog.config.timezone,
+          deliveryModes,
+          effectiveFrom: now.slice(0, 10),
+        },
+      ],
+      availabilityExceptions: [],
+      responseTimeMinutes: 0,
+      responseRatePercent: 0,
+      reviewCount: 0,
+      ratingIsStatisticallyMeaningful: false,
+      mediaUrls: [],
+      qualifications: [
+        {
+          id: "qualification-onboarding",
+          type: "degree",
+          label: "Formation et expérience déclarées",
+          evidenceStatus: "self_declared",
+          verificationStatus: "not_submitted",
+          publicLabel: "Déclaré par le professeur — non vérifié",
+          publicDetailsAllowed: true,
+        },
+      ],
+      verifications: {
+        email: "verified",
+        phone: "verified",
+        identity: "not_submitted",
+        qualifications: "not_submitted",
+        business: accountKind === "organization" ? "pending" : "not_submitted",
+        representative:
+          accountKind === "organization" ? "pending" : "not_submitted",
+        payment: "not_submitted",
+        payout: "not_submitted",
+        personalServicesEligibility: "not_submitted",
+      },
+      taxEligibility: {
+        status: "not_submitted",
+        publicWording: catalog.config.taxEligibilityWording,
+      },
+      planId: textValue(draft.planId),
+      moderationStatus: "pending_review",
+      profileCompletionPercent: 82,
+      isFeatured: false,
+    });
+    const offer = await this.createOwnCourseOffer(userId, {
+      tutorProfileId: profile.id,
+      organizationId: profile.organizationId,
+      slug: `${slugify(primarySubjectId)}-${profile.slug}`,
+      title: headline,
+      description: `${biography}\n\n${teachingApproach}`,
+      subjectId: primarySubjectId,
+      levelIds,
+      goalIds: ["confidence", "exam_preparation"],
+      languages,
+      deliveryModes,
+      serviceArea: profile.serviceArea,
+      pricingOptions: [
+        {
+          id: "hourly-onboarding",
+          type: "hourly",
+          label: "Cours à l’heure",
+          price: {
+            amountMinor: Number(draft.priceMinor || 0),
+            currency: catalog.config.currency,
+          },
+          durationMinutes: 60,
+          isActive: true,
+        },
+      ],
+      availabilitySummary: "Créneaux en semaine et le samedi",
+      trialLessonAvailable: false,
+      status: "pending_review",
+      marketCodes: [normalized],
+      capacityStatus: "available",
+    });
+    await this.deleteWorkflowDraft(userId, normalized, "tutor_onboarding");
+    return { profile, offer };
+  }
+
+  getSavedTutorIds(userId: string) {
+    return this.courseRepo.getSavedTutorIds(userId);
+  }
+
+  async toggleSavedTutor(userId: string, tutorProfileId: string) {
+    await this.getTutorPublicProfile(tutorProfileId);
+    return this.courseRepo.toggleSavedTutor(userId, tutorProfileId);
   }
 
   async searchTutors(input: unknown): Promise<TutorSearchResponse> {

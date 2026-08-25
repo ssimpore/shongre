@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeOff, Check, X, ShieldAlert } from "lucide-react";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { IconButton } from "../../../design-system/primitives/IconButton";
+import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
 
 export interface PasswordFieldProps {
   id?: string;
@@ -54,20 +55,24 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   ].filter(Boolean).length;
 
   let strengthLabel = "Faible";
-  let strengthColor = "bg-danger text-danger";
+  let strengthVariant: "danger" | "warning" | "primary" | "success" = "danger";
+  let strengthTextClass = "text-danger";
   let strengthPercent = 20;
 
   if (score >= 4) {
     strengthLabel = "Très robuste";
-    strengthColor = "bg-success text-success";
+    strengthVariant = "success";
+    strengthTextClass = "text-success";
     strengthPercent = 100;
   } else if (score === 3) {
     strengthLabel = "Bon";
-    strengthColor = "bg-primary text-primary";
+    strengthVariant = "primary";
+    strengthTextClass = "text-primary";
     strengthPercent = 75;
   } else if (score === 2) {
     strengthLabel = "Moyen";
-    strengthColor = "bg-amber-500 text-warning";
+    strengthVariant = "warning";
+    strengthTextClass = "text-warning";
     strengthPercent = 50;
   }
 
@@ -132,15 +137,15 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
             <span className="text-stone-500">
               {t("auth.passwordField.robustesseDuMotDePasse")}
             </span>
-            <span className={strengthColor.split(" ")[1]}>{strengthLabel}</span>
+            <span className={strengthTextClass}>{strengthLabel}</span>
           </div>
 
-          <div className="h-1.5 w-full bg-stone-200 rounded-full overflow-hidden mb-2">
-            <div
-              className={`h-full transition-all duration-normal ${strengthColor.split(" ")[0]}`}
-              style={{ width: `${strengthPercent}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={strengthPercent}
+            label={`${t("auth.passwordField.robustesseDuMotDePasse")} : ${strengthLabel}`}
+            variant={strengthVariant}
+            className="mb-2"
+          />
 
           <div className="grid grid-cols-2 gap-1 text-micro text-stone-600">
             <div className="flex items-center gap-1">

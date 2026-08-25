@@ -281,7 +281,7 @@ export const SellerPublicPage: React.FC = () => {
               <ChevronRight className="w-3 h-3 text-stone-400" />
             </>
           )}
-          <span className="text-stone-900 font-bold truncate max-w-[200px]">
+          <span className="text-stone-900 font-bold truncate max-w-50">
             {displayName}
           </span>
         </nav>

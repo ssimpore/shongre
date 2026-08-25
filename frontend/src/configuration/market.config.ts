@@ -4,6 +4,14 @@ import {
   getDemoTaxRateBps,
   getDemoTransactionCommercials,
 } from "../domains/monetization/demo-commercial-catalog";
+import {
+  DEFAULT_MARKET_CODE,
+  DEFAULT_MARKET_CURRENCY,
+  DEFAULT_MARKET_CURRENCY_SYMBOL,
+  DEFAULT_MARKET_LOCALE,
+  DEFAULT_MARKET_TIMEZONE,
+} from "./market-baseline";
+import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
 
 export interface CountryMarketDefinition {
   code: string;
@@ -104,22 +112,24 @@ export const SUPPORTED_MARKETS: Record<string, CountryMarketDefinition> =
   );
 
 export const MARKET_CONFIG = {
-  defaultMarket: "FR",
-  defaultLocale: "fr-FR",
-  defaultCurrency: "EUR",
-  defaultCurrencySymbol: "€",
-  timezone: "Europe/Paris",
+  defaultMarket: DEFAULT_MARKET_CODE,
+  defaultLocale: DEFAULT_MARKET_LOCALE,
+  defaultCurrency: DEFAULT_MARKET_CURRENCY,
+  defaultCurrencySymbol: DEFAULT_MARKET_CURRENCY_SYMBOL,
+  timezone: DEFAULT_MARKET_TIMEZONE,
   dateFormat: "dd/MM/yyyy",
   dateTimeFormat: "dd/MM/yyyy HH:mm",
   postalCodeRegex: /^[0-9]{5}$/,
   phonePrefix: "+33",
-  vatRateStandard: getDemoTaxRateBps("FR") / 10_000,
+  vatRateStandard:
+    getDemoTaxRateBps(DEFAULT_MARKET_CODE) /
+    MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max,
   buyerProtectionFeePercent:
-    getDemoTransactionCommercials("FR", "individual").protectionRateBps /
-    10_000,
+    getDemoTransactionCommercials(DEFAULT_MARKET_CODE, "individual")
+      .protectionRateBps / MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max,
   buyerProtectionFixedFee:
-    getDemoTransactionCommercials("FR", "individual").protectionFixedMinor /
-    100,
+    getDemoTransactionCommercials(DEFAULT_MARKET_CODE, "individual")
+      .protectionFixedMinor / MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
   maxPhotosPerListing: {
     individual: 8,
     pro: 20,
@@ -213,12 +223,12 @@ export const CONDITION_OPTIONS = [
 
 export const validateBusinessIdentifier = (
   identifier: string,
-  countryCode = "FR",
+  countryCode = DEFAULT_MARKET_CODE,
 ): boolean => {
   const clean = identifier.replace(/[\s.-]/g, "");
   if (!clean) return false;
   const def = getMarketDefinition(countryCode);
-  if (countryCode.toUpperCase() === "FR") {
+  if (countryCode.toUpperCase() === DEFAULT_MARKET_CODE) {
     return /^\d{9}$/.test(clean) || /^\d{14}$/.test(clean);
   }
   return (
@@ -229,10 +239,10 @@ export const validateBusinessIdentifier = (
 
 export const formatBusinessIdentifier = (
   identifier: string,
-  countryCode = "FR",
+  countryCode = DEFAULT_MARKET_CODE,
 ): string => {
   const clean = identifier.replace(/[\s.-]/g, "");
-  if (countryCode.toUpperCase() === "FR") {
+  if (countryCode.toUpperCase() === DEFAULT_MARKET_CODE) {
     if (clean.length === 14) {
       return `${clean.slice(0, 3)} ${clean.slice(3, 6)} ${clean.slice(6, 9)} ${clean.slice(9, 14)}`;
     }
@@ -248,10 +258,10 @@ export const formatBusinessIdentifier = (
 
 export const calculateVatNumber = (
   siren: string,
-  countryCode = "FR",
+  countryCode = DEFAULT_MARKET_CODE,
 ): string => {
   const clean = siren.replace(/\D/g, "").slice(0, 9);
-  if (countryCode.toUpperCase() === "FR" && clean.length === 9) {
+  if (countryCode.toUpperCase() === DEFAULT_MARKET_CODE && clean.length === 9) {
     const sirenNum = parseInt(clean, 10);
     const key = (12 + 3 * (sirenNum % 97)) % 97;
     const keyStr = key < 10 ? `0${key}` : `${key}`;

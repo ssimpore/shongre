@@ -28,6 +28,7 @@ import {
   KeyRound,
   Users,
   BadgeEuro,
+  Scale,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -161,6 +162,12 @@ export const AccountLayout: React.FC = () => {
       label: "Aide & Assistance",
       icon: <Headphones className="w-4 h-4" />,
       visible: canAccessRoute("accountSupport"),
+    },
+    {
+      to: routes.workspace.moderationAppeals(),
+      label: "Décisions & Recours",
+      icon: <Scale className="w-4 h-4" />,
+      visible: canAccessRoute("accountModerationAppeals"),
     },
     {
       to: "/compte/newsletter",

@@ -67,6 +67,17 @@ function collectRouteObjects(array, parent = "") {
 }
 
 function findRouter(node) {
+  // The route table is exported once and passed to both the browser router and
+  // the SSR memory router. Read that shared declaration rather than requiring
+  // createBrowserRouter to contain an inline array literal.
+  if (
+    ts.isVariableDeclaration(node) &&
+    node.name.getText(routerAst) === "APP_ROUTES" &&
+    node.initializer &&
+    ts.isArrayLiteralExpression(node.initializer)
+  ) {
+    collectRouteObjects(node.initializer);
+  }
   if (
     ts.isCallExpression(node) &&
     node.expression.getText(routerAst) === "createBrowserRouter" &&

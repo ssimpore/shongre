@@ -336,7 +336,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    executeSearch();
+    // Read the live field value at the submit boundary. WebKit can dispatch a
+    // form submit before React has committed the final controlled-input state,
+    // which previously navigated to `/recherche` without the typed query.
+    executeSearch({ query: searchInputRef.current?.value ?? query });
   };
 
   const handleAutocompleteSelect = (selection: AutocompleteSelection) => {
@@ -509,7 +512,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-3.5 h-3.5 text-stone-500" />
                 )}
-                <span className="max-w-[56px] xl:max-w-[104px] truncate">
+                <span className="max-w-14 xl:max-w-26 truncate">
                   {activeCategoryLabel}
                 </span>
                 <ChevronDown
@@ -594,10 +597,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           {/* Search Keyword Input with Autocomplete.
 
               The floor is a real one, not a token gesture: at `lg` the category
-              and location triggers appear, and a `min-w-[60px]` field was
+              and location triggers appear, and a fixed 60px field was
               squeezed down to a 32px sliver showing a single letter of its own
               placeholder. The triggers shrink before the field does now. */}
-          <div className="flex-1 min-w-[9rem] relative flex items-center pl-3">
+          <div className="flex-1 min-w-36 relative flex items-center pl-3">
             <Search className="w-4 h-4 text-stone-400 shrink-0" />
             <input
               ref={searchInputRef}
@@ -652,7 +655,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={openLocationModal}
               aria-label={`Localisation : ${city || userLocation.label}`}
-              className={`hidden xl:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-[110px] 2xl:max-w-[180px] focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
+              className={`hidden xl:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-27.5 2xl:max-w-45 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
             >
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="truncate whitespace-nowrap">
@@ -670,7 +673,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                reaches the outer edge — otherwise a pale 1px rim traced the top,
                right and bottom of the orange block and read as a seam. The radius
                matches the form's *outer* 10px, not the inner 11px. */
-            className={`bg-primary hover:bg-primary-hover active:bg-primary-active text-white px-4 -my-px -mr-px h-[calc(100%+2px)] flex items-center justify-center font-bold text-xs ${CONTROL_MOTION_CLASS} cursor-pointer shrink-0 rounded-r-control focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset`}
+            className={`bg-primary hover:bg-primary-hover active:bg-primary-active text-white px-4 -my-px -mr-px h-search-submit-height flex items-center justify-center font-bold text-xs ${CONTROL_MOTION_CLASS} cursor-pointer shrink-0 rounded-r-control focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset`}
           >
             <Search className="w-4 h-4" />
           </button>
@@ -891,7 +894,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                   ) : (
                     <Layers className="w-3.5 h-3.5 text-stone-500" />
                   )}
-                  <span className="truncate max-w-[130px]">
+                  <span className="truncate max-w-32.5">
                     {activeCategoryLabel}
                   </span>
                 </div>
@@ -1026,7 +1029,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={openLocationModal}
                 aria-label={`Localisation : ${city || userLocation.label}`}
-                className="hidden sm:flex h-control-touch px-3.5 rounded-control border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 items-center gap-1.5 cursor-pointer max-w-full sm:max-w-[160px] truncate"
+                className="hidden sm:flex h-control-touch px-3.5 rounded-control border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 items-center gap-1.5 cursor-pointer max-w-full sm:max-w-40 truncate"
               >
                 <MapPin className="w-4 h-4 text-primary shrink-0" />
                 <span className="truncate">{city || userLocation.label}</span>
@@ -1136,7 +1139,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 ) : (
                   <Layers className="w-4 h-4 text-stone-500" />
                 )}
-                <span className="truncate max-w-[130px]">
+                <span className="truncate max-w-32.5">
                   {activeCategoryLabel}
                 </span>
               </div>
@@ -1267,7 +1270,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             type="button"
             onClick={openLocationModal}
             aria-label={`Changer de localisation et préférences, actuellement : ${city || userLocation.label} (${activeMarket.name})`}
-            className={`flex items-center justify-between md:justify-start gap-2 px-3.5 h-control-touch bg-bg-base hover:bg-bg-subtle active:bg-bg-muted rounded-control text-xs font-semibold text-stone-700 border border-border-base hover:border-border-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 max-w-full md:max-w-[200px]`}
+            className={`flex items-center justify-between md:justify-start gap-2 px-3.5 h-control-touch bg-bg-base hover:bg-bg-subtle active:bg-bg-muted rounded-control text-xs font-semibold text-stone-700 border border-border-base hover:border-border-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 max-w-full md:max-w-50`}
           >
             <div className="flex items-center gap-1.5 truncate">
               <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />

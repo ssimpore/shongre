@@ -51,6 +51,7 @@ export class SessionService {
     provider: AuthProvider,
     metadata: AuthRequestMetadata = {},
     recentlyAuthenticated = true,
+    mfaVerified = false,
   ): Promise<SessionTokens> {
     const refreshToken = randomOAuthValue(48);
     const now = Date.now();
@@ -65,6 +66,7 @@ export class SessionService {
       lastReauthenticatedAt: recentlyAuthenticated
         ? new Date(now).toISOString()
         : null,
+      mfaVerifiedAt: mfaVerified ? new Date(now).toISOString() : null,
       expiresAt: new Date(
         now + config.authRefreshTokenTtlSeconds * 1000,
       ).toISOString(),
@@ -113,6 +115,7 @@ export class SessionService {
       deviceLabel: metadata.deviceLabel?.slice(0, 120) || existing.deviceLabel,
       ipPrefix: metadata.ipPrefix || existing.ipPrefix,
       lastReauthenticatedAt: existing.lastReauthenticatedAt,
+      mfaVerifiedAt: existing.mfaVerifiedAt,
       expiresAt: existing.expiresAt,
     });
     return {
@@ -166,6 +169,16 @@ export class SessionService {
 
   async markReauthenticated(sessionId: string): Promise<void> {
     await this.repository.markSessionReauthenticated(sessionId);
+  }
+
+  async isMfaVerified(sessionId: string | undefined): Promise<boolean> {
+    if (!sessionId) return false;
+    const session = await this.repository.findSessionById(sessionId);
+    return Boolean(session && !session.revokedAt && session.mfaVerifiedAt);
+  }
+
+  async markMfaVerified(sessionId: string): Promise<void> {
+    await this.repository.markSessionMfaVerified(sessionId);
   }
 
   async touch(sessionId: string): Promise<void> {

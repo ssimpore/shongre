@@ -11,6 +11,7 @@ export * from "@shongre/design-tokens";
 
 // Foundational primitives
 export * from "./primitives/Badge";
+export * from "./primitives/BrandIcons";
 export * from "./primitives/Button";
 export * from "./primitives/DataTable";
 export * from "./primitives/DropdownMenu";
@@ -48,6 +49,7 @@ export * from "./primitives/ListingGrid";
 export * from "./primitives/ListingRail";
 export * from "./primitives/NoResultsFound";
 export * from "./primitives/PriceRangeSlider";
+export * from "./primitives/ProgressBar";
 export * from "./primitives/PublishCtaButton";
 export * from "./primitives/SearchAutocomplete";
 export * from "./primitives/SellerCard";

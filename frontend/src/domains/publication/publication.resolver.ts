@@ -70,7 +70,7 @@ export class PublicationResolver {
   ): ResolvedPublicationEngineSchema | null {
     const {
       taxonomyNodeId,
-      marketCode = "FR",
+      marketCode = marketService.getDefaultMarket().code,
       listingIntent,
       currentValues = {},
     } = params;

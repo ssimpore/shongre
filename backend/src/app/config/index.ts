@@ -33,6 +33,7 @@ export interface AppConfig {
   supabaseServiceRoleKey: string;
   databaseUrl?: string;
   jwtSecret: string;
+  mfaEncryptionKey: string;
   authTokenTtlSeconds: number;
   authRefreshTokenTtlSeconds: number;
   authRecentAuthenticationSeconds: number;
@@ -332,6 +333,8 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
     candidate.handoverPinPepper.length < 32
   )
     missing.push("HANDOVER_PIN_PEPPER (at least 32 characters)");
+  if (!process.env.MFA_ENCRYPTION_KEY || candidate.mfaEncryptionKey.length < 32)
+    missing.push("MFA_ENCRYPTION_KEY (at least 32 characters)");
 
   if (missing.length > 0) {
     throw new Error(
@@ -377,6 +380,9 @@ const candidateConfig: AppConfig = {
     process.env.SUPABASE_SERVICE_ROLE_KEY || "dummy-service-role-key",
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: resolveJwtSecret(nodeEnv),
+  mfaEncryptionKey:
+    process.env.MFA_ENCRYPTION_KEY ||
+    "shongre-development-mfa-encryption-key-not-for-production",
   // Access tokens are deliberately short lived. AUTH_TOKEN_TTL_SECONDS remains
   // accepted as a backwards-compatible alias for existing deployments.
   authTokenTtlSeconds: parseInt(

@@ -12,6 +12,7 @@ import {
   NotificationContext,
   NotificationAction,
 } from "./notification.types";
+import { deterministicRuntimeId } from "../../utilities/deterministic-id";
 import { formatPrice } from "../../utilities/formatters";
 import { routes } from "../../configuration/routes";
 import { resolveSafeReturn } from "../../security/safe-return";
@@ -700,7 +701,7 @@ export class NotificationCatalogService {
 
     if (!template) {
       return {
-        id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        id: deterministicRuntimeId("notif", [type, recipientId, context]),
         type,
         category: "system",
         recipientId,
@@ -723,7 +724,7 @@ export class NotificationCatalogService {
       (template.getActions ? template.getActions(context) : undefined);
 
     return {
-      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: deterministicRuntimeId("notif", [type, recipientId, context]),
       type,
       category: template.category,
       recipientId,

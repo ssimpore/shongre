@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { discoveryConfigurationSchema } from "../src/schemas/discovery";
+import {
+  DISCOVERY_CONFIGURATION_CONSTRAINTS,
+  discoveryChangeReasonSchema,
+  discoveryConfigurationSchema,
+} from "../src/schemas/discovery";
 
 const configuration = {
   version: "test-v1",
@@ -45,5 +49,14 @@ describe("discovery configuration", () => {
       sponsored: { ...configuration.sponsored, maxShare: 0.75 },
     });
     expect(result.success).toBe(false);
+  });
+
+  it("shares the auditable change-reason constraint with every consumer", () => {
+    expect(discoveryChangeReasonSchema.safeParse("short").success).toBe(false);
+    expect(
+      discoveryChangeReasonSchema.safeParse(
+        "x".repeat(DISCOVERY_CONFIGURATION_CONSTRAINTS.changeReason.minLength),
+      ).success,
+    ).toBe(true);
   });
 });

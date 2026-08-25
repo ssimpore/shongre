@@ -1,3 +1,4 @@
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useMemo, useState } from "react";
 import { Bell, Filter, List, Map, Search } from "lucide-react";
 import type {
@@ -24,6 +25,8 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { ImmoMap } from "./components/ImmoMap";
 import { PropertyCard } from "./components/PropertyCard";
+import { formatCurrencySymbol } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 const fieldClass =
   "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
@@ -65,6 +68,11 @@ const ImmoFilters: React.FC<{
   onApply,
   resultCount = 0,
 }) => {
+  const { currentLocale } = useMarketLocation();
+  const currencySymbol = formatCurrencySymbol(
+    catalog.config.currency,
+    currentLocale,
+  );
   const selectedTypes = csv(params.get("types"));
   const selectedAmenities = csv(params.get("amenities"));
   const toggleType = (type: string) => {
@@ -138,7 +146,7 @@ const ImmoFilters: React.FC<{
             aria-label="Budget minimum"
             inputMode="numeric"
             className={fieldClass}
-            placeholder="Min. €"
+            placeholder={`Min. ${currencySymbol}`}
             value={params.get("minPrice") || ""}
             onChange={(event) =>
               setParam("minPrice", event.target.value || undefined)
@@ -148,7 +156,7 @@ const ImmoFilters: React.FC<{
             aria-label="Budget maximum"
             inputMode="numeric"
             className={fieldClass}
-            placeholder="Max. €"
+            placeholder={`Max. ${currencySymbol}`}
             value={params.get("maxPrice") || ""}
             onChange={(event) =>
               setParam("maxPrice", event.target.value || undefined)
@@ -158,7 +166,7 @@ const ImmoFilters: React.FC<{
             aria-label="Prix minimum par mètre carré"
             inputMode="numeric"
             className={fieldClass}
-            placeholder="Min. €/m²"
+            placeholder={`Min. ${currencySymbol}/m²`}
             value={params.get("minPricePerSquareMeter") || ""}
             onChange={(event) =>
               setParam(
@@ -171,7 +179,7 @@ const ImmoFilters: React.FC<{
             aria-label="Prix maximum par mètre carré"
             inputMode="numeric"
             className={fieldClass}
-            placeholder="Max. €/m²"
+            placeholder={`Max. ${currencySymbol}/m²`}
             value={params.get("maxPricePerSquareMeter") || ""}
             onChange={(event) =>
               setParam(
@@ -315,6 +323,7 @@ const ImmoFilters: React.FC<{
 
 export const ImmoSearchPage: React.FC = () => {
   const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const { favoriteIds, toggleFavorite } = useFavorites();
@@ -354,7 +363,7 @@ export const ImmoSearchPage: React.FC = () => {
     const south = number(params.get("south"));
     const west = number(params.get("west"));
     return {
-      marketCode: "FR",
+      marketCode: activeMarket.code,
       query: queryText || undefined,
       city,
       center:
@@ -406,16 +415,16 @@ export const ImmoSearchPage: React.FC = () => {
         PropertySearchQuery["sellerTypes"]
       >,
       sort: (params.get("sort") || "promoted") as PropertySearchQuery["sort"],
-      limit: 20,
+      limit: PAGE_SIZES.verticalSearch,
     };
-  }, [params, queryText]);
+  }, [activeMarket.code, params, queryText]);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
     setError(undefined);
     Promise.all([
-      services.realEstate.getCatalog("FR"),
+      services.realEstate.getCatalog(activeMarket.code),
       services.realEstate.searchProperties(query),
     ])
       .then(([nextCatalog, result]) => {
@@ -520,7 +529,7 @@ export const ImmoSearchPage: React.FC = () => {
         query: query.query,
         city: query.city,
         categorySlug: catalog.activation.categoryIds[0],
-        marketCode: "FR",
+        marketCode: activeMarket.code,
       },
       createdAt: new Date().toISOString(),
       hasNotifications: true,
@@ -548,7 +557,7 @@ export const ImmoSearchPage: React.FC = () => {
                 qualifiées
               </p>
             </div>
-            <div className="grid w-full gap-2 sm:grid-cols-[minmax(0,1fr)_11rem_8rem] lg:max-w-2xl">
+            <div className="grid w-full gap-2 sm:grid-cols-filter-row lg:max-w-2xl">
               <label className="relative block">
                 <span className="sr-only">Rechercher un bien</span>
                 <Search
@@ -664,7 +673,7 @@ export const ImmoSearchPage: React.FC = () => {
           />
         ) : null}
         {!error && catalog ? (
-          <div className="grid items-start gap-6 lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[16rem_minmax(30rem,0.9fr)_minmax(24rem,1.1fr)]">
+          <div className="grid items-start gap-6 lg:grid-cols-sidebar xl:grid-cols-search-properties">
             <aside
               className="sticky top-24 hidden lg:block"
               aria-label="Filtres immobiliers"
@@ -678,7 +687,7 @@ export const ImmoSearchPage: React.FC = () => {
             </aside>
             <section
               aria-label="Résultats immobiliers"
-              className={`min-w-0 space-y-3 ${view === "map" ? "xl:max-h-[calc(100vh-13rem)] xl:overflow-y-auto xl:pr-1" : "xl:col-span-2"}`}
+              className={`min-w-0 space-y-3 ${view === "map" ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1" : "xl:col-span-2"}`}
             >
               {loading ? (
                 Array.from({ length: 3 }, (_, index) => (
@@ -711,7 +720,7 @@ export const ImmoSearchPage: React.FC = () => {
               )}
             </section>
             {view === "map" ? (
-              <aside className="sticky top-24 hidden h-[calc(100vh-9rem)] overflow-hidden rounded-card border border-border-base bg-bg-surface xl:block">
+              <aside className="sticky top-24 hidden h-search-map-panel overflow-hidden rounded-card border border-border-base bg-bg-surface xl:block">
                 <ImmoMap
                   properties={visibleItems}
                   selectedId={selectedId}

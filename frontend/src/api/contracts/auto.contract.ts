@@ -26,11 +26,77 @@ export type AutoLeadDraft = Pick<
   | "marketingConsent"
 >;
 
+/** Neutral form shape used only while an adapter-backed draft is loading. */
+export const EMPTY_AUTO_DRAFT_DATA = {
+  vehicleType: "",
+  makeId: "",
+  makeLabel: "",
+  modelId: "",
+  modelLabel: "",
+  generationLabel: "",
+  trimLabel: "",
+  modelYear: 0,
+  firstRegistrationDate: "",
+  mileage: 0,
+  mileageUnit: "km",
+  fuelType: "",
+  transmission: "",
+  bodyType: "",
+  powerHp: 0,
+  fiscalPower: 0,
+  exteriorColor: "",
+  doors: 0,
+  seats: 0,
+  co2GramsPerKm: 0,
+  critAirClass: "",
+  condition: "",
+  accidentStatus: "",
+  previousOwnerCount: 0,
+  maintenanceBookStatus: "",
+  inspectionStatus: "",
+  inspectionValidUntil: "",
+  warrantyMonths: 0,
+  priceMinor: 0,
+  priceIncludesTax: false,
+  priceNegotiable: false,
+  financingAvailable: false,
+  locationLabel: "",
+  title: "",
+  description: "",
+  mediaUrls: [] as string[],
+  equipment: [] as string[],
+  documents: [] as import("@shongre/contracts/auto").VehicleDocument[],
+  historyReportStatus: "",
+  sellerType: "",
+  sellerDisplayName: "",
+  planId: "",
+} as const;
+
+type WidenDraftValue<Value> = Value extends readonly (infer Item)[]
+  ? Item[]
+  : Value extends string
+    ? string
+    : Value extends number
+      ? number
+      : Value extends boolean
+        ? boolean
+        : Value;
+
+export type AutoDraftData = {
+  -readonly [Key in keyof typeof EMPTY_AUTO_DRAFT_DATA]: WidenDraftValue<
+    (typeof EMPTY_AUTO_DRAFT_DATA)[Key]
+  >;
+} & Record<string, unknown>;
+
 export interface AutoServiceContract {
   getCatalog(marketCode: string): Promise<AutoCatalog>;
   getAdminOverview(marketCode: string): Promise<AutoAdminOverview>;
   searchVehicles(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
   getVehicle(idOrSlug: string): Promise<VehiclePublic>;
+  getOrCreateDraft(
+    ownerUserId: string,
+    marketCode: string,
+  ): Promise<VehicleDraft>;
   getDraft(draftId: string): Promise<VehicleDraft | null>;
   saveDraft(draft: VehicleDraft): Promise<VehicleDraft>;
   checkDuplicateIdentity(

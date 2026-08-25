@@ -1,5 +1,6 @@
 import { MarketCity } from "./market.types";
 import { FRENCH_MAJOR_CITIES } from "../../configuration/geoCoordinates";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 export interface GeoCoordinates {
   latitude: number;
@@ -39,7 +40,13 @@ const normalizeCity = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-const NON_FRENCH_CITY_POINTS: Record<string, Record<string, CityPoint>> = {
+const CITY_POINTS_BY_MARKET: Record<string, Record<string, CityPoint>> = {
+  [DEFAULT_MARKET_CODE]: Object.fromEntries(
+    Object.entries(FRENCH_MAJOR_CITIES).map(([city, point]) => [
+      city,
+      { latitude: point.lat, longitude: point.lng },
+    ]),
+  ),
   BE: {
     bruxelles: { latitude: 50.8503, longitude: 4.3517 },
     liege: { latitude: 50.6326, longitude: 5.5797 },
@@ -99,13 +106,7 @@ export const distanceBetweenKm = (
 
 const cityPoint = (marketCode: string, cityName: string): CityPoint | null => {
   const normalized = normalizeCity(cityName);
-  if (marketCode === "FR") {
-    const frenchPoint = FRENCH_MAJOR_CITIES[normalized];
-    return frenchPoint
-      ? { latitude: frenchPoint.lat, longitude: frenchPoint.lng }
-      : null;
-  }
-  return NON_FRENCH_CITY_POINTS[marketCode]?.[normalized] || null;
+  return CITY_POINTS_BY_MARKET[marketCode]?.[normalized] || null;
 };
 
 const isInsideMarket = (

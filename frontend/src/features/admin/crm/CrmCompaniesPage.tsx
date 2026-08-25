@@ -16,9 +16,11 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { Skeleton } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export const CrmCompaniesPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   usePageMeta({
     title: t("meta.crmCompanies.title"),
     description: t("meta.crmCompanies.description"),
@@ -68,9 +70,12 @@ export const CrmCompaniesPage: React.FC = () => {
         website: website.trim() || undefined,
         domain: website ? crmService.normalizeDomain(website) : undefined,
         industry: industry.trim() || "Commerce & Distribution",
-        location: { country: "FR", city: city.trim() || "France" },
+        location: {
+          country: activeMarket.countryCode,
+          city: city.trim() || activeMarket.name,
+        },
         lifecycle: "prospect",
-        marketCode: "FR",
+        marketCode: activeMarket.code,
         source: "manual",
       });
 

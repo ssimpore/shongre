@@ -15,7 +15,9 @@ import {
   CapabilityHealthResult,
   ProviderImpactAnalysis,
   ProviderCapability,
+  PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../domains/providers/provider.types";
+import { deterministicRuntimeId } from "../utilities/deterministic-id";
 import {
   CANONICAL_PROVIDER_REGISTRY,
   getProviderById,
@@ -24,6 +26,7 @@ import { providerResolver } from "../domains/providers/provider.resolver";
 import { providerValidator } from "../domains/providers/provider-validation";
 import { storageService } from "../services/storage.service";
 import { auditService } from "../security/audit.service";
+import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 export interface IProviderRepository {
   getProviders(): Provider[];
@@ -91,7 +94,7 @@ export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
         providerId: provider.id,
         enabled: !isNotNeeded,
         environment: "demo" as const,
-        priority: index + 1,
+        priority: index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
         credentialStatus: "not_required" as const,
         health: "unknown" as const,
         healthMessage:
@@ -168,7 +171,7 @@ export class DemoProviderRepository implements IProviderRepository {
       providerId,
       enabled: false,
       environment: "demo",
-      priority: 1,
+      priority: PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
       credentialStatus: "not_configured",
       health: "unknown",
       settings: {},
@@ -378,7 +381,7 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public resolveEffectiveProviders(
     capability: ProviderCapability,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): EffectiveProviderResolution {
     const configs = this.getConfigurations();
     return providerResolver.resolveEffectiveProviders({
@@ -390,7 +393,7 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public resolveCapabilityHealth(
     capability: ProviderCapability,
-    marketCode = "FR",
+    marketCode = DEFAULT_MARKET_CODE,
   ): CapabilityHealthResult {
     const configs = this.getConfigurations();
     return providerResolver.resolveCapabilityHealth({
@@ -402,7 +405,7 @@ export class DemoProviderRepository implements IProviderRepository {
 
   public analyzeImpact(
     providerId: string,
-    targetMarketCode = "FR",
+    targetMarketCode = DEFAULT_MARKET_CODE,
   ): ProviderImpactAnalysis {
     const configs = this.getConfigurations();
     return providerResolver.analyzeProviderImpact({
@@ -429,7 +432,7 @@ export class DemoProviderRepository implements IProviderRepository {
   ): void {
     const newEvent: ProviderAuditEvent = {
       ...event,
-      id: `p-aud-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: deterministicRuntimeId("p-aud", [event]),
       timestamp: new Date().toISOString(),
     };
     this.auditEvents.unshift(newEvent);

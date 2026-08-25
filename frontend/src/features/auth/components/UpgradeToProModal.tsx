@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Briefcase, ShieldCheck, AlertCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "../../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
 import {
@@ -22,6 +23,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentUser, upgradeToPro } = useAuth();
+  const { activeMarket } = useMarketLocation();
   const [companyName, setCompanyName] = useState("");
   const [sirenSiret, setSirenSiret] = useState("");
   const [legalForm, setLegalForm] = useState(
@@ -35,8 +37,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
   if (!isOpen || !currentUser) return null;
 
-  const currentMarket =
-    SUPPORTED_MARKETS[currentUser.country || "FR"] || SUPPORTED_MARKETS["FR"];
+  const jurisdiction = currentUser.country || activeMarket.code;
+  const currentMarket = SUPPORTED_MARKETS[jurisdiction];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +49,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
       return;
     }
 
-    if (!validateBusinessIdentifier(sirenSiret, currentUser.country || "FR")) {
+    if (!validateBusinessIdentifier(sirenSiret, jurisdiction)) {
       setError(
         `Identifiant légal invalide. ${currentMarket.businessIdentifierHelper}`,
       );

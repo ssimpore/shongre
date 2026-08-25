@@ -51,6 +51,8 @@ export const themeColors = {
   "success-surface": "#F0FDF4",
   "success-border": "#BBF7D0",
   warning: "#B45309",
+  "warning-hover": "#92400E",
+  "warning-active": "#78350F",
   "warning-surface": "#FFFBEB",
   "warning-border": "#FDE68A",
   danger: "#B91C1C",
@@ -234,6 +236,46 @@ export const themeSpacing = {
   "recent-search-card": "17rem",
   "recent-search-card-wide": "19rem",
   "recent-search-card-min": "6.5rem",
+  /* Messaging is a viewport-owned workspace rather than an ordinary document
+     page. The shell offset accounts for the application/header/account chrome;
+     the mobile navigation clearance is added by the consuming layout so the
+     composer never paints under the raised publication action. */
+  "messaging-shell-offset-mobile": "17rem",
+  "messaging-shell-offset-desktop": "8.75rem",
+  "messaging-shell-min": "37.5rem",
+  "messaging-shell-max": "53.125rem",
+  "messaging-shell-height-mobile":
+    "calc(100dvh - var(--spacing-messaging-shell-offset-mobile) - var(--mobile-nav-total-h))",
+  "messaging-shell-height-desktop":
+    "calc(100dvh - var(--spacing-messaging-shell-offset-desktop))",
+  "auth-shell-min": "calc(100vh - 3.5rem)",
+  "search-map": "42.5rem",
+  "search-map-tall": "45rem",
+  "search-map-panel": "calc(100vh - 9rem)",
+  "search-results-panel": "calc(100vh - 13rem)",
+  "page-loading-min": "70vh",
+  "dialog-viewport-max-height": "90vh",
+  "dialog-viewport-max-width": "90vw",
+  "media-preview-max-height": "80vh",
+  "side-sheet-height": "100dvh",
+  "safe-area-bottom": "env(safe-area-inset-bottom)",
+  "mobile-nav-bar": "var(--mobile-nav-h)",
+  "mobile-nav-clearance": "var(--mobile-nav-total-h)",
+  "mobile-nav-clearance-gutter":
+    "calc(var(--mobile-nav-total-h) + var(--spacing-semantic-md))",
+  "page-bottom-inset": "var(--page-bottom-inset, 0px)",
+  "page-viewport-min": "100vh",
+  "focus-ring-offset": "0.125rem",
+  scrollbar: "0.375rem",
+  "mobile-nav-height": "3.75rem",
+  "mobile-nav-fab-rise": "1.25rem",
+  "viewport-popover-max": "calc(100vw - 1.5rem)",
+  "search-submit-height": "calc(100% + 2px)",
+  "message-bubble": "85%",
+  "message-bubble-wide": "70%",
+  "side-sheet-width": "85vw",
+  "admin-menu-max": "60vh",
+  "pipeline-column-max": "70vh",
   /* Shared vertical ceiling for menus and popovers. The viewport expression
      keeps long option sets operable on short mobile screens; the fixed ceiling
      preserves the compact desktop composition. */
@@ -249,6 +291,59 @@ export const themeSpacing = {
   "avatar-lg": "3rem",
   "avatar-xl": "4rem",
   "avatar-2xl": "8rem",
+} as const;
+
+/**
+ * Reusable application layouts. Their names describe structural roles so
+ * feature modules never encode sidebar or aside measurements independently.
+ */
+export const themeGridTemplates = {
+  "sidebar-compact": "14rem minmax(0, 1fr)",
+  sidebar: "16rem minmax(0, 1fr)",
+  "sidebar-wide": "19rem minmax(0, 1fr)",
+  "content-aside-xs": "minmax(0, 1fr) 18rem",
+  "content-aside-sm": "minmax(0, 1fr) 19rem",
+  "content-aside": "minmax(0, 1fr) 20rem",
+  "content-aside-md": "minmax(0, 1fr) 21rem",
+  "content-aside-lg": "minmax(0, 1fr) 22rem",
+  "aside-content-lg": "22rem minmax(0, 1fr)",
+  "content-compact-aside": "minmax(0, 1fr) 9rem",
+  "media-content-xs": "9rem minmax(0, 1fr)",
+  "media-content-sm": "10rem minmax(0, 1fr)",
+  "media-content": "11rem minmax(0, 1fr)",
+  "media-content-md": "12rem minmax(0, 1fr)",
+  "media-content-lg": "15rem minmax(0, 1fr)",
+  "media-content-xl": "17rem minmax(0, 1fr)",
+  "content-stat": "minmax(0, 1fr) 10rem",
+  "content-action": "minmax(0, 1fr) auto",
+  "action-content": "auto minmax(0, 1fr)",
+  "filter-action": "minmax(0, 1fr) 6rem",
+  "filter-row": "minmax(0, 1fr) 11rem 8rem",
+  "search-fields": "minmax(0, 1.4fr) minmax(0, 1fr) auto",
+  "search-compare-auto": "16rem minmax(0, 1fr) 17rem",
+  "search-compare-balanced": "16rem minmax(0, 1fr) 16rem",
+  "search-properties": "16rem minmax(30rem, 0.9fr) minmax(24rem, 1.1fr)",
+  "workspace-metrics":
+    "auto minmax(0, 1fr) minmax(12rem, 0.7fr) minmax(12rem, 0.7fr)",
+  "course-card": "9rem minmax(0, 1fr) 10rem",
+  "audit-row": "9rem minmax(0, 1fr)",
+  "label-value": "7rem 1fr",
+  "admin-verification": "1fr 1.2fr auto",
+  "admin-monetization": "minmax(13.75rem, 1fr) 8.125rem 6.875rem 6.875rem 2rem",
+  "agency-fields": "minmax(0, 1fr) 10rem 10rem",
+  "listing-grid-fixed": "repeat(auto-fill, var(--spacing-listing-card))",
+  "listing-grid-fluid":
+    "repeat(auto-fill, minmax(var(--spacing-listing-card-grid-min), 1fr))",
+  "description-list": "auto 1fr",
+  "plans-tiers": "1fr 1.4fr 1fr",
+  "admin-content-aside": "minmax(0, 1fr) 21.25rem",
+  "finance-content-aside": "minmax(0, 1.65fr) minmax(20rem, 0.85fr)",
+  "commission-content-aside": "minmax(0, 1.1fr) minmax(20rem, 0.9fr)",
+  "moderation-content-aside": "minmax(0, 1.25fr) minmax(20rem, 0.75fr)",
+  "trending-columns": "minmax(0, 0.8fr) minmax(0, 1.2fr)",
+  "agency-content-aside": "minmax(0, 1.35fr) minmax(18rem, 0.65fr)",
+  "agency-content-aside-secondary": "minmax(0, 1fr) minmax(18rem, 0.7fr)",
+  footer: "repeat(3, minmax(0, 1fr)) minmax(16rem, 1.25fr)",
 } as const;
 
 /** Semantic 4px spacing scale shared by CSS utilities and React Native. */
@@ -321,13 +416,27 @@ export const themeMotion = {
   "duration-fast": "150ms",
   "duration-normal": "250ms",
   "duration-slow": "350ms",
+  /** Time a transient copied/saved acknowledgement remains readable. */
+  "duration-feedback": "2000ms",
+  "duration-reduced": "0.01ms",
+  "duration-marquee-fast": "24s",
+  "duration-marquee-normal": "28s",
+  "duration-marquee-reverse": "32s",
+  "duration-marquee-slow": "38s",
+  "motion-enter-shift": "0.5rem",
+  "motion-enter-scale": "0.95",
+  "motion-marquee-travel": "-50%",
+  "motion-iteration-once": "1",
 } as const;
 
 export const themeOpacity = {
+  hidden: 0,
+  visible: 1,
   disabled: 0.45,
   pressed: 0.78,
   muted: 0.7,
   scrim: 0.6,
+  "category-tone": "8%",
 } as const;
 
 export const themeBorders = {
@@ -340,6 +449,13 @@ export const themeInteraction = {
   focusRingOffset: "2px",
   pressScale: 0.95,
   minimumTouchTarget: themeSpacing["control-touch"],
+  /** Pixel tolerance used when deciding whether a rail is at an edge. */
+  scrollBoundaryTolerancePx: 2,
+  /** A rail arrow advances far enough to reveal a meaningful next item. */
+  railNudgeMinimumPx: 160,
+  railNudgeViewportRatio: 0.7,
+  /** Category labels are shorter, so their dedicated rail uses a fixed nudge. */
+  categoryRailNudgePx: 280,
 } as const;
 
 export const theme = {
@@ -352,6 +468,7 @@ export const theme = {
   lineHeights: themeLineHeights,
   letterSpacing: themeLetterSpacing,
   spacing: themeSpacing,
+  gridTemplates: themeGridTemplates,
   space: themeSpaceScale,
   controlSizes: themeControlSizes,
   containers: themeContainers,

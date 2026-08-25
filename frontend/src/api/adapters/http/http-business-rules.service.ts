@@ -26,9 +26,10 @@ import type {
   InvoiceDocument,
 } from "../../contracts/business-rules.contract";
 import { httpClient } from "./http-client";
+import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 
 export class HttpBusinessRulesService implements BusinessRulesServiceContract {
-  getCatalog(marketCode = "FR") {
+  getCatalog(marketCode = DEFAULT_MARKET_CODE) {
     return httpClient.get<MonetizationCatalog>("/business-rules/catalog", {
       params: { marketCode },
     });
@@ -100,7 +101,7 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
     );
   }
 
-  getAdminOverview(marketCode = "FR") {
+  getAdminOverview(marketCode = DEFAULT_MARKET_CODE) {
     return httpClient.get<MonetizationAdminOverview>("/admin/business-rules", {
       params: { marketCode },
     });

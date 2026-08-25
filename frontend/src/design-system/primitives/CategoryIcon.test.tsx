@@ -92,6 +92,9 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
     }) as React.ReactElement<any>;
     expect(element).toBeDefined();
     expect(element.props.className).toContain("custom-class");
-    expect(element.props.style.backgroundColor).toBeDefined();
+    expect(element.props.className).toContain(
+      "category-icon-tone-with-background",
+    );
+    expect(element.props.style["--category-accent"]).toBeDefined();
   });
 });

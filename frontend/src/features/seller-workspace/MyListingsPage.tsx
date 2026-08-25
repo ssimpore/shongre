@@ -14,6 +14,7 @@ import { listingRepository } from "../../repositories/listing.repository";
 import { Listing } from "../../types";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { marketService } from "../../domains/market/market.service";
 import { formatPrice, formatRelativeDate } from "../../utilities/formatters";
 import { Button } from "../../design-system/primitives/Button";
@@ -83,6 +84,7 @@ export const MyListingsPage: React.FC = () => {
 
   const { currentUser } = useAuth();
   const toast = useToast();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const publishCta = usePublishCta();
 
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -216,7 +218,7 @@ export const MyListingsPage: React.FC = () => {
       l.price,
       l.status,
       l.viewsCount ?? l.viewCount ?? 0,
-      new Date(l.createdAt).toLocaleDateString("fr-FR"),
+      new Date(l.createdAt).toLocaleDateString(currentLocale),
     ]);
 
     const csvContent = [
@@ -426,7 +428,7 @@ export const MyListingsPage: React.FC = () => {
                     const markets =
                       listing.marketCodes && listing.marketCodes.length > 0
                         ? listing.marketCodes
-                        : [listing.marketCode || "FR"];
+                        : [listing.marketCode || activeMarket.code];
 
                     return (
                       <button
@@ -572,7 +574,7 @@ export const MyListingsPage: React.FC = () => {
                       handleApplyBoost(boostModalListing.id, offer)
                     }
                     disabled={Boolean(activatingBoostId)}
-                    className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 ${style.hoverClass} ${style.spanClass}`}
+                    className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 ${style.hoverClass} ${style.spanClass}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span

@@ -7,6 +7,7 @@ import {
   ProspectResearchCandidate,
 } from "../../../../domains/crm/crm.types";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 
 interface DuplicateConflictModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
   onCreateSeparate,
 }) => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   if (!candidate) return null;
 
   return (
@@ -67,7 +69,7 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
                 </span>
                 <span className="text-stone-500 text-micro">
                   {matchedCompany.industry} •{" "}
-                  {matchedCompany.location?.city || "France"}
+                  {matchedCompany.location?.city || activeMarket.name}
                 </span>
               </div>
               <span className="font-bold text-primary font-mono text-micro">

@@ -22,3 +22,6 @@ export * from "./business-rules.contract";
 export * from "./finance.contract";
 export * from "./commission.contract";
 export * from "./provider-control-plane.contract";
+export * from "./support.contract";
+export * from "./feature-flags.contract";
+export * from "./moderation.contract";

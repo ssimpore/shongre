@@ -13,17 +13,17 @@ import {
   Compass,
 } from "lucide-react";
 import { Listing } from "../../types";
-import { formatPrice, plural } from "../../utilities/formatters";
+import { plural } from "../../utilities/formatters";
 import {
   getListingCoordinates,
-  FRENCH_MAJOR_CITIES,
-  FRANCE_CENTER,
+  getMarketMapConfiguration,
 } from "../../configuration/geoCoordinates";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
 import { showsVerifiedBadge } from "../../domains/user/user.domain";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -37,6 +37,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   onSelectCity,
 }) => {
   const { t } = useTranslation();
+  const { activeMarket, formatPrice, popularCities } = useMarketLocation();
+  const marketMap = getMarketMapConfiguration(activeMarket.code);
   const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -61,7 +63,10 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     const map = L.map(mapContainerRef.current, {
       zoomControl: false,
       attributionControl: false,
-    }).setView([FRANCE_CENTER.lat, FRANCE_CENTER.lng], 6);
+    }).setView(
+      [marketMap.center.lat, marketMap.center.lng],
+      marketMap.center.zoom,
+    );
 
     // Default tile layer - CartoDB Positron for a warm, clean aesthetic matching Shongre
     const positronLayer = L.tileLayer(
@@ -82,7 +87,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       map.remove();
       mapInstanceRef.current = null;
     };
-  }, []);
+  }, [activeMarket.code, marketMap.center]);
 
   /* Toggling the listing panel changes the map container's width, and Leaflet
      only recomputes its tile grid when told to. Without this, hiding the panel
@@ -139,7 +144,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       const isSelected = activeListing?.id === listing.id;
       const isHovered = hoveredListingId === listing.id;
-      const priceText = listing.isFreeDonation ? "Don" : `${listing.price} €`;
+      const priceText = formatPrice(listing.price, {
+        isFreeDonation: listing.isFreeDonation,
+      });
 
       // Custom HTML Marker Pill
       const customHtml = `
@@ -199,7 +206,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     }
-  }, [listings, activeListing?.id, hoveredListingId]);
+  }, [listings, activeListing?.id, hoveredListingId, formatPrice]);
 
   // Pan to selected city if updated from parent or shortcut
   const handleFlyToCity = (cityName: string) => {
@@ -207,13 +214,17 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    if (cityName === "Toute la France") {
-      map.setView([FRANCE_CENTER.lat, FRANCE_CENTER.lng], 6, { animate: true });
+    if (cityName === "all") {
+      map.setView(
+        [marketMap.center.lat, marketMap.center.lng],
+        marketMap.center.zoom,
+        { animate: true },
+      );
       return;
     }
 
     const key = cityName.toLowerCase().trim();
-    const cityData = FRENCH_MAJOR_CITIES[key];
+    const cityData = marketMap.cities[key];
     if (cityData) {
       map.setView([cityData.lat, cityData.lng], cityData.zoom || 12, {
         animate: true,
@@ -246,22 +257,13 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
           <button
             type="button"
-            onClick={() => handleFlyToCity("Toute la France")}
+            onClick={() => handleFlyToCity("all")}
             className="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors shrink-0"
           >
-            {t("search.exploreMapView.touteLaFrance")}
+            {activeMarket.name}
           </button>
 
-          {[
-            "Paris",
-            "Lyon",
-            "Marseille",
-            "Bordeaux",
-            "Toulouse",
-            "Nantes",
-            "Lille",
-            "Nice",
-          ].map((city) => (
+          {popularCities.slice(0, 8).map(({ name: city }) => (
             <button
               key={city}
               type="button"
@@ -316,7 +318,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       </div>
 
       {/* Main Map Stage & Floating Sidepanel */}
-      <div className="relative flex h-[680px] min-h-0 w-full overflow-hidden sm:h-[720px]">
+      <div className="relative flex h-search-map min-h-0 w-full overflow-hidden sm:h-search-map-tall">
         {/* Collapsible left sidebar with matching listings.
             Placed before the map in the DOM as well as visually, so tab order
             follows what is on screen rather than jumping the map first. */}

@@ -9,6 +9,7 @@ import { Drawer } from "../../../../design-system/primitives/Modal";
 import { Badge } from "../../../../design-system/primitives/Badge";
 import { ProspectResearchCandidate } from "../../../../domains/crm/crm.types";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { ProgressBar } from "../../../../design-system/primitives/ProgressBar";
 
 interface EvidenceDrawerProps {
   isOpen: boolean;
@@ -44,12 +45,10 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
             </span>
           </div>
 
-          <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-primary h-full rounded-full transition-all"
-              style={{ width: `${candidate.fit.score}%` }}
-            />
-          </div>
+          <ProgressBar
+            value={candidate.fit.score}
+            label="Score de compatibilité Shongre"
+          />
         </div>
 
         {/* Reasons & Signals */}

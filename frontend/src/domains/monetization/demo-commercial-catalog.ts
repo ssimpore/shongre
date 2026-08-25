@@ -5,6 +5,7 @@ import {
 } from "@shongre/contracts/monetization";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import { calculateCommission } from "@shongre/shared";
+import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 export type DemoCommercialCategory =
   | typeof CANONICAL_TAXONOMY_IDS.vehicles
@@ -19,7 +20,7 @@ const PLAN_PRODUCT_IDS: Record<string, string> = {
   pro_enterprise: "plan.pro.business",
 };
 
-function rule(key: string, marketCode = "FR") {
+function rule(key: string, marketCode = DEFAULT_MARKET_CODE) {
   return BASELINE_MONETIZATION_CATALOG.rules.find(
     (candidate) =>
       candidate.key === key &&

@@ -9,6 +9,7 @@ import React, {
 import { LoaderCircle, RotateCw } from "lucide-react";
 
 import type { DataMode } from "../../api/client/api-client.config";
+import { apiClientConfig } from "../../api/client/api-client.config";
 import {
   DATA_MODE_STORAGE_KEY,
   dataModeService,
@@ -47,11 +48,11 @@ function liveErrorMessage(error: unknown): string {
 export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [mode, setMode] = useState<DataMode>(() =>
-    dataModeService.getActiveMode(),
-  );
-  const [availability, setAvailability] = useState<LiveAvailability>(() =>
-    mode === "api" ? "checking" : "ready",
+  // Runtime preferences live in browser storage. Boot from the build-time
+  // configuration so server and client markup agree, then restore below.
+  const [mode, setMode] = useState<DataMode>(apiClientConfig.dataMode);
+  const [availability, setAvailability] = useState<LiveAvailability>(
+    apiClientConfig.dataMode === "api" ? "checking" : "ready",
   );
   const [availabilityError, setAvailabilityError] = useState<string>("");
   const [isSwitching, setIsSwitching] = useState(false);
@@ -73,6 +74,12 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
       setAvailabilityError(liveErrorMessage(error));
     }
   }, [mode]);
+
+  useEffect(() => {
+    const storedMode = dataModeService.getActiveMode();
+    activateServiceRegistry(storedMode);
+    setMode(storedMode);
+  }, []);
 
   useEffect(() => {
     void checkActiveMode();

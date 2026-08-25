@@ -15,6 +15,8 @@ import type {
   AuthSecurityOverview,
   ConnectedAccountView,
   SocialAuthProvider,
+  MfaSetupView,
+  MfaStatusView,
 } from "../../api/contracts/auth.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -22,6 +24,7 @@ import { Badge, Button } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { PasswordField } from "./components/PasswordField";
+import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
 
 function providerLabel(
   provider: ConnectedAccountView["provider"],
@@ -54,6 +57,9 @@ export function AccountSecurityPage() {
   const [reauthPassword, setReauthPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [mfaStatus, setMfaStatus] = useState<MfaStatusView | null>(null);
+  const [mfaSetup, setMfaSetup] = useState<MfaSetupView | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
 
   usePageMeta({
     title: t("auth.security.title"),
@@ -66,12 +72,14 @@ export function AccountSecurityPage() {
     setLoading(true);
     setError("");
     try {
-      const [security, providers] = await Promise.all([
+      const [security, providers, mfa] = await Promise.all([
         services.auth.getSecurityOverview(),
         services.auth.getSocialAuthAvailability(),
+        services.auth.getMfaStatus(),
       ]);
       setOverview(security);
       setAvailability(providers);
+      setMfaStatus(mfa);
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -222,6 +230,55 @@ export function AccountSecurityPage() {
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Déconnexion impossible.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const beginMfa = async () => {
+    setBusy("mfa-setup");
+    setError("");
+    try {
+      setMfaSetup(await services.auth.beginMfaEnrollment());
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Activation MFA impossible.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const confirmMfa = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy("mfa-confirm");
+    setError("");
+    try {
+      await services.auth.confirmMfaEnrollment(mfaCode);
+      setMfaSetup(null);
+      setMfaCode("");
+      await load();
+      toast.success("Double authentification activée.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Code MFA invalide.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const disableMfa = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setBusy("mfa-disable");
+    setError("");
+    try {
+      await services.auth.disableMfa(mfaCode);
+      setMfaCode("");
+      await load();
+      toast.success("Double authentification désactivée.");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Désactivation impossible.",
       );
     } finally {
       setBusy(null);
@@ -428,6 +485,120 @@ export function AccountSecurityPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section
+        className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
+        aria-labelledby="mfa-title"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 id="mfa-title" className="text-base font-black text-stone-950">
+              Double authentification
+            </h2>
+            <p className="mt-1 text-xs text-stone-500">
+              Protégez les connexions avec une application TOTP et des codes de
+              secours à usage unique.
+            </p>
+          </div>
+          <Badge variant={mfaStatus?.enabled ? "success" : "neutral"} size="sm">
+            {mfaStatus?.enabled ? "Activée" : "Désactivée"}
+          </Badge>
+        </div>
+
+        {mfaStatus?.enabled ? (
+          <form onSubmit={disableMfa} className="mt-4 space-y-3">
+            <p className="text-xs text-stone-600">
+              {mfaStatus.backupCodesRemaining} code(s) de secours restant(s).
+              Une confirmation récente et un code valide sont nécessaires pour
+              désactiver cette protection.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                value={mfaCode}
+                onChange={(event) => setMfaCode(event.target.value)}
+                aria-label="Code MFA pour désactiver"
+                placeholder="Code TOTP ou code de secours"
+                className="h-control-touch min-w-0 flex-1 rounded-control border border-stone-300 px-3 text-sm"
+              />
+              <Button
+                type="submit"
+                variant="danger"
+                isLoading={busy === "mfa-disable"}
+                disabled={mfaCode.trim().length < 6}
+              >
+                Désactiver
+              </Button>
+            </div>
+          </form>
+        ) : mfaSetup ? (
+          <div className="mt-4 space-y-4">
+            <div className="rounded-xl border border-border-base bg-stone-50 p-4">
+              <p className="text-xs font-bold text-stone-900">
+                Clé à saisir dans votre application d’authentification
+              </p>
+              <code className="mt-2 block break-all rounded-lg bg-white p-2 text-xs font-bold">
+                {mfaSetup.secret}
+              </code>
+              <a
+                href={mfaSetup.otpauthUri}
+                className="mt-2 inline-block text-xs font-bold text-primary hover:underline"
+              >
+                Ouvrir dans une application compatible
+              </a>
+            </div>
+            <div className="rounded-xl border border-warning-border bg-warning-surface p-4">
+              <p className="text-xs font-bold text-stone-900">
+                Codes de secours — copiez-les maintenant
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-1 sm:grid-cols-4">
+                {mfaSetup.backupCodes.map((backupCode) => (
+                  <code
+                    key={backupCode}
+                    className="rounded bg-white px-2 py-1 text-center text-micro font-bold"
+                  >
+                    {backupCode}
+                  </code>
+                ))}
+              </div>
+            </div>
+            <form
+              onSubmit={confirmMfa}
+              className="flex flex-col gap-2 sm:flex-row"
+            >
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={AUTH_CONSTRAINTS.verificationCodeLength}
+                value={mfaCode}
+                onChange={(event) =>
+                  setMfaCode(event.target.value.replace(/\D/g, ""))
+                }
+                aria-label="Code MFA de confirmation"
+                placeholder="000000"
+                className="h-control-touch min-w-0 flex-1 rounded-control border border-stone-300 px-3 text-sm"
+              />
+              <Button
+                type="submit"
+                isLoading={busy === "mfa-confirm"}
+                disabled={
+                  mfaCode.length !== AUTH_CONSTRAINTS.verificationCodeLength
+                }
+              >
+                Vérifier et activer
+              </Button>
+            </form>
+          </div>
+        ) : (
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => void beginMfa()}
+            isLoading={busy === "mfa-setup"}
+          >
+            Activer la double authentification
+          </Button>
+        )}
       </section>
 
       <section

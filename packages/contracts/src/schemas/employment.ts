@@ -6,6 +6,26 @@ import {
   verticalOfferSchema,
 } from "./vertical";
 
+export const EMPLOYMENT_TEXT_LIMITS = {
+  applicationCoverMessage: 4_000,
+  recruiterMessage: 4_000,
+  reportDetails: 2_000,
+} as const;
+
+export const EMPLOYMENT_ADMIN_CONSTRAINTS = {
+  durationDays: { min: 1, step: 1 },
+  cooldownDays: { min: 0, step: 1 },
+} as const;
+
+export const EMPLOYMENT_PUBLICATION_CONSTRAINTS = {
+  firstStep: 1,
+  stepCount: 13,
+  titleMinLength: 5,
+  responsibilitiesMinLength: 20,
+  cityMinLength: 2,
+  positionsCountMin: 1,
+} as const;
+
 /** Public, versioned contracts for the employment vertical. */
 export const employmentVerticalSchema = z.literal("employment");
 
@@ -96,11 +116,26 @@ export const employmentMarketConfigSchema = z.object({
   currency: z.string().length(3),
   timezone: z.string().min(1),
   isEnabled: z.boolean(),
-  defaultPublicationDurationDays: z.number().int().positive(),
-  draftRetentionDays: z.number().int().positive(),
-  applicationRetentionDays: z.number().int().positive(),
-  talentPoolRetentionDays: z.number().int().positive(),
-  applicationResubmissionCooldownDays: z.number().int().nonnegative(),
+  defaultPublicationDurationDays: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min),
+  draftRetentionDays: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min),
+  applicationRetentionDays: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min),
+  talentPoolRetentionDays: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min),
+  applicationResubmissionCooldownDays: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_ADMIN_CONSTRAINTS.cooldownDays.min),
   regulatoryContentVersion: z.string().min(1),
   prohibitedLanguagePolicyVersion: z.string().min(1),
   prohibitedLanguageRules: z.array(
@@ -321,7 +356,11 @@ export const jobDraftSchema = z.object({
   privateEmployer: z.boolean(),
   marketCode: marketCodeSchema,
   schemaVersion: z.number().int().positive(),
-  currentStep: z.number().int().min(1).max(13),
+  currentStep: z
+    .number()
+    .int()
+    .min(EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep)
+    .max(EMPLOYMENT_PUBLICATION_CONSTRAINTS.stepCount),
   completedSteps: z.array(z.number().int()).default([]),
   data: z.record(z.string(), z.unknown()),
   screeningQuestions: z.array(screeningQuestionSchema).default([]),
@@ -401,7 +440,10 @@ export const applicationSchema = z.object({
   jobId: z.string().min(1),
   candidateId: z.string().min(1),
   cvId: z.string().min(1),
-  coverMessage: z.string().max(4000).optional(),
+  coverMessage: z
+    .string()
+    .max(EMPLOYMENT_TEXT_LIMITS.applicationCoverMessage)
+    .optional(),
   screeningAnswers: z.array(
     z.object({ questionId: z.string(), answer: z.unknown() }),
   ),
@@ -423,7 +465,7 @@ export const recruiterNoteSchema = z.object({
   id: z.string().min(1),
   applicationId: z.string().min(1),
   authorUserId: z.string().min(1),
-  body: z.string().min(1).max(4000),
+  body: z.string().min(1).max(EMPLOYMENT_TEXT_LIMITS.recruiterMessage),
   visibility: z.literal("recruiters_only"),
   createdAt: z.string(),
 });
@@ -513,7 +555,7 @@ export const employmentJobReportSchema = z.object({
     "malicious_link",
     "other",
   ]),
-  details: z.string().max(2000).optional(),
+  details: z.string().max(EMPLOYMENT_TEXT_LIMITS.reportDetails).optional(),
   status: z.enum(["submitted", "reviewing", "resolved", "dismissed"]),
   createdAt: z.string(),
 });

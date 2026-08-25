@@ -11,10 +11,15 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { listingRepository } from "../../../repositories/listing.repository";
-import { formatPrice } from "../../../utilities/formatters";
+import { formatMoney } from "../../../utilities/formatters";
 import { UserProfile } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { services } from "../../../api/client/service-registry";
+import type {
+  BulkImportValidationCode,
+  BulkListingImportRow,
+} from "../../../api/contracts/listings.contract";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -23,105 +28,52 @@ interface BulkImportModalProps {
   onImportCompleted: () => void;
 }
 
-interface ParsedListingItem {
-  id: string;
-  title: string;
-  categorySlug: string;
-  subCategorySlug: string;
-  price: number;
-  condition: string;
-  stock: number;
-  city: string;
-  postalCode: string;
-  isValid: boolean;
-  validationError?: string;
-}
-
-const SAMPLE_CSV_DATA = `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description
-Table basse chêne massif;home_garden;furniture;180;very_good;2;Lyon;69002;Superbe table basse en chêne massif huilé, pieds métal noir.
-Lot 4 chaises scandinaves;home_garden;furniture;120;new_without_tag;4;Lyon;69002;Chaises design scandinave tissu gris chiné neuves.
-Lampadaire trépied vintage;home_garden;furniture;65;very_good;1;Lyon;69002;Lampadaire esprit projecteur de cinéma avec variateur.
-Miroir mural doré baroque;home_garden;furniture;95;good;1;Lyon;69002;Grand miroir moulure dorée 120x80cm.`;
-
 export const BulkImportModal: React.FC<BulkImportModalProps> = ({
   isOpen,
   onClose,
   currentUser,
   onImportCompleted,
 }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const { activeMarket, location, currentLocale } = useMarketLocation();
   const toast = useToast();
-  const [, setCsvContent] = useState<string>("");
-  const [parsedItems, setParsedItems] = useState<ParsedListingItem[]>([]);
+  const [parsedItems, setParsedItems] = useState<BulkListingImportRow[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 
-  const handleDownloadSample = () => {
-    const blob = new Blob([SAMPLE_CSV_DATA], {
+  const handleDownloadSample = async () => {
+    const template = await services.listings.getBulkImportTemplate(locale);
+    const blob = new Blob([template.content], {
       type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "modele_import_annonces_shongre.csv");
+    link.setAttribute("download", template.fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("Le modèle CSV a été téléchargé.");
+    URL.revokeObjectURL(url);
+    toast.success(t("sellerworkspace.bulkImportModal.csvDownloaded"));
   };
 
-  const handleLoadSample = () => {
-    setCsvContent(SAMPLE_CSV_DATA);
-    parseCsv(SAMPLE_CSV_DATA);
-  };
-
-  const parseCsv = (text: string) => {
-    const lines = text.trim().split("\n");
-    if (lines.length <= 1) {
-      setParsedItems([]);
-      return;
-    }
-
-    const items: ParsedListingItem[] = [];
-    // Skip header line
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      const cols = line.split(";").map((c) => c.trim());
-      const title = cols[0] || "";
-      const categorySlug = cols[1] || "home_garden";
-      const subCategorySlug = cols[2] || "furniture";
-      const price = parseFloat(cols[3]) || 0;
-      const condition = cols[4] || "very_good";
-      const stock = parseInt(cols[5], 10) || 1;
-      const city = cols[6] || currentUser.city || "Paris";
-      const postalCode = cols[7] || currentUser.postalCode || "75000";
-
-      const isValid = title.length >= 5 && price > 0;
-      const validationError = !title
-        ? "Titre obligatoire"
-        : title.length < 5
-          ? "Titre trop court (< 5 car.)"
-          : price <= 0
-            ? "Prix invalide"
-            : undefined;
-
-      items.push({
-        id: `parsed-${i}`,
-        title,
-        categorySlug,
-        subCategorySlug,
-        price,
-        condition,
-        stock,
-        city,
-        postalCode,
-        isValid,
-        validationError,
+  const parseCsv = async (content: string) => {
+    try {
+      const rows = await services.listings.parseBulkImportCsv({
+        content,
+        marketCode: activeMarket.code,
+        defaultCity: location.city || currentUser.city,
+        defaultPostalCode: location.postalCode || currentUser.postalCode,
       });
+      setParsedItems(rows);
+    } catch {
+      setParsedItems([]);
+      toast.error(t("sellerworkspace.bulkImportModal.csvParseError"));
     }
+  };
 
-    setParsedItems(items);
+  const handleLoadSample = async () => {
+    const template = await services.listings.getBulkImportTemplate(locale);
+    await parseCsv(template.content);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,10 +81,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const text = event.target?.result as string;
-      setCsvContent(text);
-      parseCsv(text);
+      await parseCsv(text);
     };
     reader.readAsText(file);
   };
@@ -143,72 +94,43 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
 
     setIsImporting(true);
     try {
-      for (const item of validItems) {
-        await listingRepository.createListing({
-          title: item.title,
-          description: `Article importé depuis le catalogue professionnel de ${currentUser.companyName || currentUser.name}.`,
-          price: item.price,
-          isNegotiable: false,
-          isFreeDonation: false,
-          categorySlug: item.categorySlug,
-          subCategorySlug: item.subCategorySlug,
-          categoryLabel: "Maison & Jardin",
-          subCategoryLabel: "Mobilier",
-          condition: item.condition as any,
-          sellerId: currentUser.id,
-          sellerName: currentUser.companyName || currentUser.name,
-          sellerType: "pro",
-          sellerAvatarUrl: currentUser.avatarUrl,
-          sellerRating: currentUser.rating || 5,
-          sellerReviewCount: currentUser.reviewCount || 0,
-          sellerIsVerified: true,
-          sellerCity: item.city,
-          sellerPostalCode: item.postalCode,
-          city: item.city,
-          postalCode: item.postalCode,
-          department: "Rhône",
-          region: "Auvergne-Rhône-Alpes",
-          photos: [
-            {
-              id: `p-${Date.now()}-${Math.random()}`,
-              url: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80",
-              isCover: true,
-            },
-          ],
-          coverImageUrl:
-            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80",
-          deliveryOptions: [
-            { type: "hand_delivery", available: true, price: 0 },
-            {
-              type: "home_delivery",
-              available: true,
-              price: 14.9,
-              courierName: "Colissimo",
-            },
-          ],
-          isOnlinePaymentAvailable: true,
-          isReservable: true,
-          attributes: { stock_quantity: item.stock },
-          status: "active",
-          expiresAt: new Date(
-            Date.now() + 60 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        });
-      }
+      const published = await services.listings.publishBulkListings({
+        sellerId: currentUser.id,
+        marketCode: activeMarket.code,
+        rows: validItems,
+      });
 
       toast.success(
-        `${validItems.length} annonces importées et publiées en ligne avec succès !`,
+        t("sellerworkspace.bulkImportModal.importSuccess", {
+          count: published.length,
+        }),
       );
       onImportCompleted();
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de l'import des annonces");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("sellerworkspace.bulkImportModal.importError"),
+      );
     } finally {
       setIsImporting(false);
     }
   };
 
   const validCount = parsedItems.filter((i) => i.isValid).length;
+  const validationLabel = (code?: BulkImportValidationCode) => {
+    switch (code) {
+      case "TITLE_REQUIRED":
+        return t("sellerworkspace.bulkImportModal.validationTitleRequired");
+      case "TITLE_TOO_SHORT":
+        return t("sellerworkspace.bulkImportModal.validationTitleTooShort");
+      case "PRICE_INVALID":
+        return t("sellerworkspace.bulkImportModal.validationPriceInvalid");
+      default:
+        return "";
+    }
+  };
 
   return (
     <Modal
@@ -261,12 +183,17 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-stone-600 font-bold">
               <span>
-                {parsedItems.length} lignes détectées ({validCount} valides) :
+                {t("sellerworkspace.bulkImportModal.rowsDetected", {
+                  total: parsedItems.length,
+                  valid: validCount,
+                })}
               </span>
               {validCount < parsedItems.length && (
                 <span className="text-warning flex items-center gap-1">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  {parsedItems.length - validCount} ligne(s) invalide(s)
+                  {t("sellerworkspace.bulkImportModal.invalidRows", {
+                    count: parsedItems.length - validCount,
+                  })}
                 </span>
               )}
             </div>
@@ -287,21 +214,23 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                       {item.title}
                     </span>
                     <Badge variant="neutral" size="sm">
-                      Qté: {item.stock}
+                      {t("sellerworkspace.bulkImportModal.quantity", {
+                        count: item.stock,
+                      })}
                     </Badge>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="font-black text-stone-900">
-                      {formatPrice(item.price)}
+                      {formatMoney(item.price, { locale: currentLocale })}
                     </span>
                     {item.isValid ? (
                       <Badge variant="verified" size="sm">
-                        Valide
+                        {t("sellerworkspace.bulkImportModal.valid")}
                       </Badge>
                     ) : (
                       <Badge variant="urgent" size="sm">
-                        {item.validationError}
+                        {validationLabel(item.validationErrorCode)}
                       </Badge>
                     )}
                   </div>
@@ -326,7 +255,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         {/* Modal actions */}
         <div className="flex justify-between items-center gap-2 pt-2 border-t border-border-subtle">
           <Button variant="outline" size="sm" onClick={onClose} type="button">
-            Annuler
+            {t("sellerworkspace.bulkImportModal.cancel")}
           </Button>
 
           <Button
@@ -337,7 +266,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
             onClick={handleExecuteImport}
             leftIcon={<CheckCircle2 className="w-4 h-4" />}
           >
-            Importer et publier {validCount} annonce{validCount > 1 ? "s" : ""}
+            {t("sellerworkspace.bulkImportModal.importAndPublish", {
+              count: validCount,
+            })}
           </Button>
         </div>
       </div>

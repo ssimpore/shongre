@@ -44,6 +44,8 @@ import { DeleteNodeModal } from "./modals/DeleteNodeModal";
 import { plural } from "../../../../utilities/formatters";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { themeColors } from "@shongre/design-tokens";
+import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
+import { TAXONOMY_PUBLICATION_CONSTRAINTS } from "@shongre/contracts/taxonomy";
 
 export interface TaxonomyNodeEditorProps {
   nodeId: string;
@@ -71,6 +73,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
+  const { activeMarket, availableMarkets } = useMarketLocation();
+  const defaultMarket =
+    availableMarkets.find((market) => market.isDefault) || activeMarket;
+  const nonDefaultMarkets = availableMarkets.filter(
+    (market) => market.code !== defaultMarket.code,
+  );
   const node = taxonomyAdminRepository.getNode(nodeId);
 
   const [activeTab, setActiveTab] = useState<EditorTab>("general");
@@ -118,7 +126,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   >("standard");
 
   // Market Overrides State
-  const [selectedMarketCode, setSelectedMarketCode] = useState("BE");
+  const [selectedMarketCode, setSelectedMarketCode] = useState(
+    nonDefaultMarkets[0]?.code || activeMarket.code,
+  );
   const [marketOverrideEnabled, setMarketOverrideEnabled] = useState(false);
   const [marketDirectPurchase, setMarketDirectPurchase] = useState(true);
 
@@ -126,7 +136,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   const [previewUserType, setPreviewUserType] = useState<"individual" | "pro">(
     "individual",
   );
-  const [previewMarket, setPreviewMarket] = useState("FR");
+  const [previewMarket, setPreviewMarket] = useState(activeMarket.code);
 
   // Modals
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
@@ -173,10 +183,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
       setIndexable(node.seo?.indexable ?? true);
       setPrimaryCta(node.publication?.primaryCta || "contact_seller");
       setStandardDurationDays(
-        node.publication?.standardPolicy.durationDays || 60,
+        node.publication?.standardPolicy.durationDays ||
+          TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.default,
       );
       setStandardMediaAllowance(
-        node.publication?.standardPolicy.mediaAllowance || 12,
+        node.publication?.standardPolicy.mediaAllowance ||
+          TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.default,
       );
       setModerationReviewMode(node.moderation?.reviewMode || "standard");
 
@@ -401,7 +413,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           actor,
         );
         toast.success(
-          `Surcharge supprimée pour ${selectedMarketCode} (Héritage France restauré).`,
+          `Surcharge supprimée pour ${selectedMarketCode} (héritage ${defaultMarket.name} restauré).`,
         );
       }
       onNodeUpdated();
@@ -1075,8 +1087,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               >
                 <Input
                   type="number"
-                  min={1}
-                  max={365}
+                  min={TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.min}
+                  max={TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.max}
+                  step={TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.step}
                   value={standardDurationDays}
                   onChange={(event) =>
                     setStandardDurationDays(Number(event.target.value))
@@ -1088,8 +1101,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               >
                 <Input
                   type="number"
-                  min={1}
-                  max={50}
+                  min={TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.min}
+                  max={TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.max}
+                  step={TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.step}
                   value={standardMediaAllowance}
                   onChange={(event) =>
                     setStandardMediaAllowance(Number(event.target.value))
@@ -1363,23 +1377,20 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="p-3.5 bg-bg-subtle rounded-xl border border-border-subtle text-xs space-y-1">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
                 <Globe className="w-4 h-4 text-primary" />
-                <span>
-                  {t(
-                    "admin.taxonomyNodeEditor.architectureMultiMarchesHeritageFrance",
-                  )}
-                </span>
+                <span>Architecture multi-marchés et héritage canonique</span>
               </div>
               <p className="text-stone-600">
-                {t("admin.taxonomyNodeEditor.laFrance")}
-                <strong>FR</strong>) constitue la référence canonique. Les
-                autres marchés héritent automatiquement de tous les paramètres
-                non surchargés.
+                <strong>
+                  {defaultMarket.name} ({defaultMarket.code})
+                </strong>{" "}
+                constitue la référence canonique. Les autres marchés héritent
+                automatiquement de tous les paramètres non surchargés.
               </p>
             </div>
 
             {/* Country Selector Tabs */}
             <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
-              {["BE", "CH", "LU", "DE", "ES"].map((code) => {
+              {nonDefaultMarkets.map(({ code }) => {
                 const isSelected = selectedMarketCode === code;
                 const hasOverride = Boolean(node.marketOverrides?.[code]);
                 return (
@@ -1415,7 +1426,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <p className="text-xs text-stone-500">
                     {marketOverrideEnabled
                       ? "Ce marché possède une configuration personnalisée."
-                      : "Hérite automatiquement de tous les paramètres de France."}
+                      : `Hérite automatiquement de tous les paramètres de ${defaultMarket.name}.`}
                   </p>
                 </div>
 
@@ -1557,10 +1568,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   onChange={(e) => setPreviewMarket(e.target.value)}
                   className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
-                  <option value="FR">France (FR)</option>
-                  <option value="BE">Belgique (BE)</option>
-                  <option value="CH">Suisse (CH)</option>
-                  <option value="ES">Espagne (ES)</option>
+                  {availableMarkets.map((market) => (
+                    <option key={market.code} value={market.code}>
+                      {market.name} ({market.code})
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
