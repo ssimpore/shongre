@@ -115,21 +115,14 @@ function resolveEntityMetadata(
     const listingMarkets = listing.marketCodes?.length
       ? listing.marketCodes
       : [listing.marketCode];
-    if (
-      options.countryCode &&
-      !listingMarkets.includes(options.countryCode)
-    ) {
+    if (options.countryCode && !listingMarkets.includes(options.countryCode)) {
       return {
         title: "Annonce indisponible dans ce pays",
         description: DEFAULT_DESCRIPTION,
         noIndex: true,
       };
     }
-    const price = formatPriceLabel(
-      listing,
-      options.locale,
-      options.currency,
-    );
+    const price = formatPriceLabel(listing, options.locale, options.currency);
     return {
       title: `${listing.title} - ${price} à ${listing.city}`,
       description: `${listing.title} en vente à ${listing.city} (${listing.postalCode}) pour ${price}. Retrouvez toutes les annonces ${listing.categoryLabel} sur Shongre.`,

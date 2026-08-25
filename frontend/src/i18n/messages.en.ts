@@ -1328,6 +1328,7 @@ export const messagesEn: MessageCatalogue = {
     "Supported capabilities",
   "admin.providerCatalogTable.statutSante": "Status & health",
   "admin.providerCatalogTable.marchesSupportes": "Supported markets",
+  "admin.providerCapabilityLabel.codeCapacite": "Capability code:",
   "admin.providerConfigurationForm.etatDActivation": "Activation state",
   "admin.providerConfigurationForm.sandboxEnvironnementDeTestPartenaire":
     "Sandbox (partner test environment)",
@@ -2113,10 +2114,21 @@ export const messagesEn: MessageCatalogue = {
   "auth.upgradeToProModal.confirmerLaMiseANiveau": "Confirm the upgrade",
   "categories.categoriesPage.toutesNosCategories": "All our categories",
   "categories.categoriesPage.explorezLEnsembleDesCategories":
-    "Explore every Shongre category and subcategory. Find verified listings near you, or anywhere in France, in seconds.",
+    "Explore every Shongre category and subcategory. Find relevant listings near you or elsewhere in your market.",
   "categories.categoriesPage.affichageDe": "Showing",
   "categories.categoriesPage.afficherToutesLesCategories":
     "Show all categories",
+  "categories.categoriesPage.univers": "{count} categories",
+  "categories.categoriesPage.univers_one": "{count} category",
+  "categories.categoriesPage.univers_other": "{count} categories",
+  "categories.categoriesPage.rubriques": "{count} sections",
+  "categories.categoriesPage.rubriques_one": "{count} section",
+  "categories.categoriesPage.rubriques_other": "{count} sections",
+  "categories.categoriesPage.rubriquesSupplementaires": "+{count}",
+  "categories.categoriesPage.explorerLaCategorie": "Explore {category}",
+  "categories.categoriesPage.pourLaRecherche": "for “{query}”",
+  "categories.categoriesPage.aucuneCategorieNeCorrespond":
+    "No category matches “{query}”.",
   "collections.collectionsPage.toutesNosCollections": "All our collections",
   "collections.collectionsPage.decouvrezDesUniversThematiquesPenses":
     "Discover themed worlds put together to inspire you: deals, vintage furniture, refurbished tech, light mobility, back-to-school and makers from across the regions.",

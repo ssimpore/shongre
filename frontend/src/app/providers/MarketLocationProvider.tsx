@@ -27,10 +27,7 @@ import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data"
 import { resolveShippedLocale } from "../../i18n/locale";
 import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
 import { marketResolver } from "../../domains/market/market.resolver";
-import {
-  getCountryConfig,
-  type MarketContext,
-} from "@shongre/contracts";
+import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import { buildRuntimeMarketUrl } from "../../domains/market/market-routing";
 import {
   currentRuntimeInternalPath,
@@ -128,7 +125,12 @@ export const MarketLocationProvider: React.FC<{
       return requestMarket;
     }
     return marketService.getMarket(activeMarketCode);
-  }, [activeMarketCode, hasRestoredPreferences, marketDataVersion, requestMarket]);
+  }, [
+    activeMarketCode,
+    hasRestoredPreferences,
+    marketDataVersion,
+    requestMarket,
+  ]);
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
     if (!hasRestoredPreferences) return requestConfig;
@@ -142,8 +144,7 @@ export const MarketLocationProvider: React.FC<{
         return (
           (["active", "beta", "coming_soon"] as Market["status"][]).includes(
             market.status,
-          ) &&
-          Boolean(country?.gatewayVisible || country?.marketplace.enabled)
+          ) && Boolean(country?.gatewayVisible || country?.marketplace.enabled)
         );
       });
     }
@@ -152,8 +153,7 @@ export const MarketLocationProvider: React.FC<{
       return (
         (["active", "beta", "coming_soon"] as Market["status"][]).includes(
           market.status,
-        ) &&
-        Boolean(country?.gatewayVisible || country?.marketplace.enabled)
+        ) && Boolean(country?.gatewayVisible || country?.marketplace.enabled)
       );
     });
   }, [hasRestoredPreferences, marketDataVersion]);
@@ -205,9 +205,7 @@ export const MarketLocationProvider: React.FC<{
 
     setActiveMarketCode(restoredMarket.code);
     setLocationState(
-      restoredLocation?.city
-        ? restoredLocation
-        : defaultLocation,
+      restoredLocation?.city ? restoredLocation : defaultLocation,
     );
     const shippedLocale = resolveShippedLocale(
       storedLocale || restoredConfig.localization.defaultLocale,
@@ -274,22 +272,25 @@ export const MarketLocationProvider: React.FC<{
     }
   }, [effectiveConfig, hasRestoredPreferences]);
 
-  const setLocale = useCallback((locale: string) => {
-    const shippedLocale = resolveShippedLocale(locale);
-    const marketLocale = effectiveConfig.localization.defaultLocale;
-    const regionalLocale =
-      shippedLocale.split("-")[0] === marketLocale.split("-")[0]
-        ? marketLocale
-        : shippedLocale;
-    setCurrentLocaleState(regionalLocale);
-    storageService.saveUserLocale(regionalLocale);
-    /* Taxonomy labels are resolved into the index when it is built, so the tree
+  const setLocale = useCallback(
+    (locale: string) => {
+      const shippedLocale = resolveShippedLocale(locale);
+      const marketLocale = effectiveConfig.localization.defaultLocale;
+      const regionalLocale =
+        shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+          ? marketLocale
+          : shippedLocale;
+      setCurrentLocaleState(regionalLocale);
+      storageService.saveUserLocale(regionalLocale);
+      /* Taxonomy labels are resolved into the index when it is built, so the tree
        has to be rebuilt for a language change to reach category names. Without
        this, switching language re-rendered the chrome in English and left every
        category in the language the app happened to boot in. */
-    taxonomyService.reload();
-    refreshTaxonomyProjection(shippedLocale);
-  }, [effectiveConfig.localization.defaultLocale]);
+      taxonomyService.reload();
+      refreshTaxonomyProjection(shippedLocale);
+    },
+    [effectiveConfig.localization.defaultLocale],
+  );
 
   // Keep the document language in sync with the active locale. Screen readers
   // pick pronunciation from `<html lang>`, and it was pinned to the `fr` in
@@ -320,52 +321,57 @@ export const MarketLocationProvider: React.FC<{
     storageService.saveUserCurrency(clean);
   }, []);
 
-  const setMarket = useCallback((newMarketCode: string) => {
-    const market = marketService.getMarketByCode(newMarketCode);
-    if (!market) return;
-    setActiveMarketCode(market.code);
-    storageService.saveActiveMarketCode(market.code);
+  const setMarket = useCallback(
+    (newMarketCode: string) => {
+      const market = marketService.getMarketByCode(newMarketCode);
+      if (!market) return;
+      setActiveMarketCode(market.code);
+      storageService.saveActiveMarketCode(market.code);
 
-    const defaultLoc: LocationSelection = {
-      city: `Toute la ${market.name}`,
-      postalCode: "",
-      radiusKm: 0,
-      label: `Toute la ${market.name}`,
-    };
-    setLocationState(defaultLoc);
-    storageService.saveLocationPreference(defaultLoc);
-    if (initialMarketContext && typeof window !== "undefined") {
-      const directDestination = buildRuntimeMarketUrl({
-        targetCountry: market.code,
-        context: initialMarketContext,
-      });
-      const sourceCountry = getCountryConfig(
-        initialMarketContext.countryCode || activeMarketCode,
-      );
-      const targetCountry = getCountryConfig(market.code);
-      const crossesRegistrableDomain =
-        sourceCountry &&
-        targetCountry &&
-        sourceCountry.primaryDomain !== targetCountry.primaryDomain;
-      const canHandoff =
-        isAuthenticated &&
-        crossesRegistrableDomain &&
-        !isDevelopmentMarketHost(window.location.hostname);
+      const defaultLoc: LocationSelection = {
+        city: `Toute la ${market.name}`,
+        postalCode: "",
+        radiusKm: 0,
+        label: `Toute la ${market.name}`,
+      };
+      setLocationState(defaultLoc);
+      storageService.saveLocationPreference(defaultLoc);
+      if (initialMarketContext && typeof window !== "undefined") {
+        const directDestination = buildRuntimeMarketUrl({
+          targetCountry: market.code,
+          context: initialMarketContext,
+        });
+        const sourceCountry = getCountryConfig(
+          initialMarketContext.countryCode || activeMarketCode,
+        );
+        const targetCountry = getCountryConfig(market.code);
+        const crossesRegistrableDomain =
+          sourceCountry &&
+          targetCountry &&
+          sourceCountry.primaryDomain !== targetCountry.primaryDomain;
+        const canHandoff =
+          isAuthenticated &&
+          crossesRegistrableDomain &&
+          !isDevelopmentMarketHost(window.location.hostname);
 
-      if (canHandoff) {
-        void services.auth
-          .beginDomainHandoff({
-            sourceCountry: sourceCountry.code,
-            targetCountry: targetCountry.code,
-            returnTo: currentRuntimeInternalPath(initialMarketContext),
-          })
-          .then(({ authorizationUrl }) => window.location.assign(authorizationUrl))
-          .catch(() => window.location.assign(directDestination));
-        return;
+        if (canHandoff) {
+          void services.auth
+            .beginDomainHandoff({
+              sourceCountry: sourceCountry.code,
+              targetCountry: targetCountry.code,
+              returnTo: currentRuntimeInternalPath(initialMarketContext),
+            })
+            .then(({ authorizationUrl }) =>
+              window.location.assign(authorizationUrl),
+            )
+            .catch(() => window.location.assign(directDestination));
+          return;
+        }
+        window.location.assign(directDestination);
       }
-      window.location.assign(directDestination);
-    }
-  }, [activeMarketCode, initialMarketContext, isAuthenticated]);
+    },
+    [activeMarketCode, initialMarketContext, isAuthenticated],
+  );
 
   const setLocation = useCallback((loc: LocationSelection) => {
     setLocationState(loc);

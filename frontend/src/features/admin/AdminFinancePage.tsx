@@ -40,6 +40,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useAuthorization } from "../../security/useAuthorization";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { FinanceRevenueTrendChart } from "./FinanceRevenueTrendChart";
 
 type FinanceTab =
   "overview" | "transactions" | "reconciliation" | "subscriptions";
@@ -154,102 +155,6 @@ function MetricCard({
         {metric.definition}
       </p>
     </article>
-  );
-}
-
-function TrendChart({ dashboard }: { dashboard: PlatformFinanceDashboard }) {
-  const { formatDate } = useRegionalFormatters();
-  const values = dashboard.timeSeries.flatMap((point) => [
-    point.platformRevenue.amountMinor,
-    point.netRevenue.amountMinor,
-  ]);
-  const maximum = Math.max(...values, 1);
-  const points = (key: "platformRevenue" | "netRevenue") =>
-    dashboard.timeSeries
-      .map((point, index) => {
-        const x =
-          dashboard.timeSeries.length === 1
-            ? 0
-            : (index / (dashboard.timeSeries.length - 1)) * 100;
-        const y = 84 - (point[key].amountMinor / maximum) * 68;
-        return `${x},${y}`;
-      })
-      .join(" ");
-  return (
-    <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs lg:col-span-2">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-bold text-text-main">
-            Évolution des revenus
-          </h2>
-          <p className="text-micro text-text-muted">
-            Revenus reconnus, hors TVA et fonds vendeurs.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 text-micro text-text-secondary">
-          <span className="flex items-center gap-1.5">
-            <i className="h-0.5 w-4 bg-primary" />
-            Revenus plateforme
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i className="h-0.5 w-4 border-t border-dashed border-stone-500" />
-            Revenus nets
-          </span>
-        </div>
-      </div>
-      <svg
-        className="mt-4 h-44 w-full overflow-visible"
-        viewBox="0 0 100 90"
-        preserveAspectRatio="none"
-        role="img"
-        aria-label="Courbe des revenus plateforme et revenus nets sur la période"
-      >
-        {[20, 40, 60, 80].map((y) => (
-          <line
-            key={y}
-            x1="0"
-            y1={y}
-            x2="100"
-            y2={y}
-            stroke="currentColor"
-            className="text-stone-200"
-            strokeWidth="0.35"
-            strokeDasharray="2 2"
-          />
-        ))}
-        <polyline
-          fill="none"
-          stroke="currentColor"
-          className="text-primary"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          points={points("platformRevenue")}
-        />
-        <polyline
-          fill="none"
-          stroke="currentColor"
-          className="text-stone-500"
-          strokeWidth="1.2"
-          strokeDasharray="2 1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          points={points("netRevenue")}
-        />
-      </svg>
-      <div className="flex justify-between text-micro text-text-muted">
-        {dashboard.timeSeries
-          .filter((_, index) => index % 2 === 0)
-          .map((point) => (
-            <span key={point.date}>
-              {formatDate(point.date, {
-                day: "numeric",
-                month: "short",
-              })}
-            </span>
-          ))}
-      </div>
-    </section>
   );
 }
 
@@ -471,7 +376,10 @@ function OverviewTab({
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
-        <TrendChart dashboard={dashboard} />
+        <FinanceRevenueTrendChart
+          currency={dashboard.scope.currency}
+          timeSeries={dashboard.timeSeries}
+        />
         <RevenueSources dashboard={dashboard} />
       </div>
       <CommissionAnalytics

@@ -23,6 +23,8 @@ describe("permission presentation metadata", () => {
     ],
     ["commercial_rules.publish", "Publier les règles commerciales"],
     ["courses.manage.own", "Gérer ses cours"],
+    ["crm.dashboard.read", "Consulter le tableau de bord CRM"],
+    ["marketing.campaigns.approve", "Approuver les campagnes Marketing"],
   ])("renders %s as product copy", (permission, expected) => {
     expect(getPermissionDisplayName(permission)).toBe(expected);
   });

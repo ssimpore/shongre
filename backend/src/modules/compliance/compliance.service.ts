@@ -23,6 +23,7 @@ import {
 } from "../../integrations/providers/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import type { UserProfile } from "../../shared/types/index.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 import { BASELINE_COMPLIANCE_RULES } from "./compliance-rule.registry.js";
 import {
   CompliancePolicyEngine,
@@ -175,7 +176,7 @@ export class ComplianceService {
             ? "registered"
             : "declared"
           : "none",
-      country: user.country || "FR",
+      country: requireMarketCode(user.country),
       accountAgeDays: accountAgeDays(user.createdAt),
       verification: mergeRecords(legacyProjection(user), canonical),
     };

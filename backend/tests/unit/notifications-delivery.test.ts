@@ -37,6 +37,8 @@ describe("notification delivery outbox", () => {
       "Nouveau message",
       "Vous avez reçu une réponse.",
       "/compte/messages",
+      undefined,
+      "FR",
     );
     expect(saved).toMatchObject({
       category: "messages",
@@ -79,6 +81,7 @@ describe("notification delivery outbox", () => {
       "Nouveautés de la semaine.",
       undefined,
       "marketing",
+      "FR",
     );
     expect(marketing.inAppVisible).toBe(false);
     const worker = new NotificationsWorker(
@@ -97,6 +100,9 @@ describe("notification delivery outbox", () => {
       "message.received",
       "Nouveau message",
       "Une réponse est disponible.",
+      undefined,
+      undefined,
+      "FR",
     );
     const permanentPush: NotificationDeliveryProvider = {
       id: "broken_push",

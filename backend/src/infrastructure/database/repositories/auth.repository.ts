@@ -1193,7 +1193,8 @@ export class PostgresAuthRepository implements IAuthRepository {
       return_to: input.returnTo,
       expires_at: input.expiresAt,
     });
-    if (error) throw new Error(`domain handoff creation failed: ${error.message}`);
+    if (error)
+      throw new Error(`domain handoff creation failed: ${error.message}`);
   }
 
   async consumeDomainHandoff(
@@ -1203,7 +1204,8 @@ export class PostgresAuthRepository implements IAuthRepository {
       "consume_auth_domain_handoff",
       { p_code_hash: codeHash },
     );
-    if (error) throw new Error(`domain handoff exchange failed: ${error.message}`);
+    if (error)
+      throw new Error(`domain handoff exchange failed: ${error.message}`);
     return data?.[0] ? mapDomainHandoff(data[0]) : null;
   }
 

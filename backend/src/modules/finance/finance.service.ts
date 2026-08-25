@@ -10,6 +10,7 @@ import {
   type FinanceRepository,
 } from "../../infrastructure/database/repositories/finance.repository.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 function periodBounds(period: FinanceScope["period"]) {
   const end = new Date();
@@ -42,12 +43,18 @@ export class FinanceService {
     );
   }
 
-  getAccountDashboard(accountId: string) {
-    return this.repository.getAccountDashboard(accountId);
+  getAccountDashboard(accountId: string, marketCode: string) {
+    return this.repository.getAccountDashboard(
+      accountId,
+      requireMarketCode(marketCode),
+    );
   }
 
-  async getOrganizationDashboard(accountId: string) {
-    const dashboard = await this.repository.getOrganizationDashboard(accountId);
+  async getOrganizationDashboard(accountId: string, marketCode: string) {
+    const dashboard = await this.repository.getOrganizationDashboard(
+      accountId,
+      requireMarketCode(marketCode),
+    );
     if (!dashboard) {
       throw new AppError({
         code: "FORBIDDEN",

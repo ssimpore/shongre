@@ -369,9 +369,11 @@ const NewsletterPreferencesPage = lazy(() =>
   })),
 );
 const NewsletterPublicPreferencesPage = lazy(() =>
-  import("../../features/newsletter/NewsletterPublicPreferencesPage").then((m) => ({
-    default: m.NewsletterPublicPreferencesPage,
-  })),
+  import("../../features/newsletter/NewsletterPublicPreferencesPage").then(
+    (m) => ({
+      default: m.NewsletterPublicPreferencesPage,
+    }),
+  ),
 );
 const NewsletterConfirmPage = lazy(() =>
   import("../../features/newsletter/NewsletterConfirmPage").then((m) => ({
@@ -523,25 +525,39 @@ const CrmTasksPage = lazy(() =>
   })),
 );
 const CrmProductsPage = lazy(() =>
-  import("../../features/admin/crm/CrmProductsPage").then((m) => ({ default: m.CrmProductsPage })),
+  import("../../features/admin/crm/CrmProductsPage").then((m) => ({
+    default: m.CrmProductsPage,
+  })),
 );
 const CrmReportsPage = lazy(() =>
-  import("../../features/admin/crm/CrmReportsPage").then((m) => ({ default: m.CrmReportsPage })),
+  import("../../features/admin/crm/CrmReportsPage").then((m) => ({
+    default: m.CrmReportsPage,
+  })),
 );
 const CrmConfigurationPage = lazy(() =>
-  import("../../features/admin/crm/CrmConfigurationPage").then((m) => ({ default: m.CrmConfigurationPage })),
+  import("../../features/admin/crm/CrmConfigurationPage").then((m) => ({
+    default: m.CrmConfigurationPage,
+  })),
 );
 const CrmCustomFieldsPage = lazy(() =>
-  import("../../features/admin/crm/CrmCustomFieldsPage").then((m) => ({ default: m.CrmCustomFieldsPage })),
+  import("../../features/admin/crm/CrmCustomFieldsPage").then((m) => ({
+    default: m.CrmCustomFieldsPage,
+  })),
 );
 const CrmPipelineSettingsPage = lazy(() =>
-  import("../../features/admin/crm/CrmPipelineSettingsPage").then((m) => ({ default: m.CrmPipelineSettingsPage })),
+  import("../../features/admin/crm/CrmPipelineSettingsPage").then((m) => ({
+    default: m.CrmPipelineSettingsPage,
+  })),
 );
 const CrmProviderSettingsPage = lazy(() =>
-  import("../../features/admin/crm/CrmProviderSettingsPage").then((m) => ({ default: m.CrmProviderSettingsPage })),
+  import("../../features/admin/crm/CrmProviderSettingsPage").then((m) => ({
+    default: m.CrmProviderSettingsPage,
+  })),
 );
 const CrmAutomationsPage = lazy(() =>
-  import("../../features/admin/crm/CrmAutomationsPage").then((m) => ({ default: m.CrmAutomationsPage })),
+  import("../../features/admin/crm/CrmAutomationsPage").then((m) => ({
+    default: m.CrmAutomationsPage,
+  })),
 );
 const EmploymentAdminPage = lazy(() =>
   import("../../features/admin/EmploymentAdminPage").then((m) => ({
@@ -1267,35 +1283,67 @@ export const APP_ROUTES: RouteObject[] = [
       },
       {
         path: "crm/produits",
-        element: <RequireRoutePolicy policyId="adminCrmProducts">{withSuspense(CrmProductsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmProducts">
+            {withSuspense(CrmProductsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/automations",
-        element: <RequireRoutePolicy policyId="adminCrmAutomations">{withSuspense(CrmAutomationsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmAutomations">
+            {withSuspense(CrmAutomationsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/rapports",
-        element: <RequireRoutePolicy policyId="adminCrmReports">{withSuspense(CrmReportsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmReports">
+            {withSuspense(CrmReportsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/configuration",
-        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmConfigurationPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmConfiguration">
+            {withSuspense(CrmConfigurationPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/configuration/pipelines",
-        element: <RequireRoutePolicy policyId="adminCrmPipelineSettings">{withSuspense(CrmPipelineSettingsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmPipelineSettings">
+            {withSuspense(CrmPipelineSettingsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/configuration/champs",
-        element: <RequireRoutePolicy policyId="adminCrmCustomFields">{withSuspense(CrmCustomFieldsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmCustomFields">
+            {withSuspense(CrmCustomFieldsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/configuration/providers",
-        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmProviderSettingsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmConfiguration">
+            {withSuspense(CrmProviderSettingsPage)}
+          </RequireRoutePolicy>
+        ),
       },
       {
         path: "crm/configuration/ai",
-        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmProviderSettingsPage)}</RequireRoutePolicy>,
+        element: (
+          <RequireRoutePolicy policyId="adminCrmConfiguration">
+            {withSuspense(CrmProviderSettingsPage)}
+          </RequireRoutePolicy>
+        ),
       },
     ],
   },

@@ -173,9 +173,18 @@ export const ROUTE_POLICIES = {
   adminCrmProducts: staff("/admin/crm/produits", "crm.products.read"),
   adminCrmAutomations: staff("/admin/crm/automations", "crm.automation.manage"),
   adminCrmReports: staff("/admin/crm/rapports", "crm.analytics.read"),
-  adminCrmConfiguration: staff("/admin/crm/configuration", "crm.configuration.manage"),
-  adminCrmPipelineSettings: staff("/admin/crm/configuration/pipelines", "crm.pipelines.read"),
-  adminCrmCustomFields: staff("/admin/crm/configuration/champs", "crm.custom_fields.read"),
+  adminCrmConfiguration: staff(
+    "/admin/crm/configuration",
+    "crm.configuration.manage",
+  ),
+  adminCrmPipelineSettings: staff(
+    "/admin/crm/configuration/pipelines",
+    "crm.pipelines.read",
+  ),
+  adminCrmCustomFields: staff(
+    "/admin/crm/configuration/champs",
+    "crm.custom_fields.read",
+  ),
 } as const satisfies Record<string, RoutePolicy>;
 
 export type RoutePolicyId = keyof typeof ROUTE_POLICIES;

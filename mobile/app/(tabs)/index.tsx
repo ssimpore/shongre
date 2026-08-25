@@ -10,8 +10,10 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { listingsService } from "@/features/listings/listings.service";
+import { useMarket } from "@/features/market/MarketProvider";
 
 export default function HomeScreen() {
+  const { activeMarket } = useMarket();
   const [items, setItems] = useState<ListingCardView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,7 +22,7 @@ export default function HomeScreen() {
     setError("");
     setLoading(true);
     try {
-      setItems(await listingsService.list());
+      setItems(await listingsService.list(activeMarket.code));
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : "Chargement impossible.",
@@ -28,12 +30,12 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [activeMarket.code]);
 
   useEffect(() => {
     let active = true;
     listingsService
-      .list()
+      .list(activeMarket.code)
       .then((results) => {
         if (active) setItems(results);
       })
@@ -49,7 +51,7 @@ export default function HomeScreen() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [activeMarket.code]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -67,7 +69,9 @@ export default function HomeScreen() {
         }
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.eyebrow}>Shongre · France</Text>
+            <Text style={styles.eyebrow}>
+              Shongre · {activeMarket.flag} {activeMarket.name}
+            </Text>
             <Text accessibilityRole="header" style={styles.heading}>
               Trouvez ce qui mérite une seconde vie.
             </Text>

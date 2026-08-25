@@ -33,6 +33,7 @@ import {
   businessRulesService,
   BusinessRulesService,
 } from "../business-rules/business-rules.service.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 export class AutoService {
   constructor(
@@ -40,8 +41,8 @@ export class AutoService {
     private readonly commercialRules: BusinessRulesService = businessRulesService,
   ) {}
 
-  private async resolveCatalog(marketCode = "FR", includeInactive = false) {
-    const normalized = marketCode.toUpperCase();
+  private async resolveCatalog(marketCode: string, includeInactive = false) {
+    const normalized = requireMarketCode(marketCode);
     const [catalog, commercial] = await Promise.all([
       this.repo.getCatalog(normalized, includeInactive),
       this.commercialRules.getCatalog(normalized),
@@ -49,7 +50,7 @@ export class AutoService {
     return applyMonetizationToAutoCatalog(catalog, commercial);
   }
 
-  getCatalog(marketCode = "FR", includeInactive = false) {
+  getCatalog(marketCode: string, includeInactive = false) {
     return this.resolveCatalog(marketCode, includeInactive);
   }
 
@@ -105,8 +106,8 @@ export class AutoService {
     return this.repo.toggleFavoriteVehicle(userId, vehicleId);
   }
 
-  async getOrCreateOwnDraft(userId: string, marketCode = "FR") {
-    const normalizedMarket = marketCode.toUpperCase();
+  async getOrCreateOwnDraft(userId: string, marketCode: string) {
+    const normalizedMarket = requireMarketCode(marketCode);
     const existing = await this.repo.getLatestDraft(userId, normalizedMarket);
     if (existing) return existing;
     return this.saveOwnDraft(userId, randomUUID(), {
@@ -162,7 +163,7 @@ export class AutoService {
       id: draftId,
       ownerUserId: userId,
       schemaVersion: 1,
-      marketCode: body.marketCode || existing?.marketCode || "FR",
+      marketCode: requireMarketCode(body.marketCode || existing?.marketCode),
       currentStep: body.currentStep || existing?.currentStep || 1,
       completedSteps: body.completedSteps || existing?.completedSteps || [],
       data: safeData,
@@ -416,7 +417,7 @@ export class AutoService {
           message: "Le site sélectionné n’appartient pas à cette concession.",
         });
     }
-    const marketCode = body.marketCodes?.[0] || "FR";
+    const marketCode = requireMarketCode(body.marketCodes?.[0]);
     const catalog = await this.resolveCatalog(marketCode);
     const plan =
       catalog.plans.find((row) => row.id === body.planId) ||
@@ -597,9 +598,8 @@ export class AutoService {
     clientIdempotencyKey?: string,
   ): Promise<InventoryImport> {
     const workspace = await this.getOwnDealerWorkspace(userId, organizationId);
-    const catalog = await this.resolveCatalog(
-      workspace.locations[0]?.marketCode || "FR",
-    );
+    const marketCode = requireMarketCode(workspace.locations[0]?.marketCode);
+    const catalog = await this.resolveCatalog(marketCode);
     const plan = catalog.plans.find(
       (row) => row.id === workspace.organization.planId,
     );
@@ -643,7 +643,7 @@ export class AutoService {
     return this.repo.createInventoryImport(
       job,
       userId,
-      workspace.locations[0]?.marketCode || "FR",
+      marketCode,
       idempotencyKey,
     );
   }
@@ -742,7 +742,7 @@ export class AutoService {
     }
   }
 
-  getAdminOverview(marketCode = "FR") {
+  getAdminOverview(marketCode: string) {
     return this.repo.getAdminOverview(marketCode.toUpperCase());
   }
 

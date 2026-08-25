@@ -18,6 +18,8 @@ export interface PermissionDefinition {
     | "Auto & Véhicules"
     | "Immobilier"
     | "Emploi & Recrutement"
+    | "CRM & Ventes"
+    | "Marketing & Communication"
     | "Administration Système";
   description: string;
   isSensitive?: boolean;
@@ -1165,13 +1167,84 @@ const describedById = new Map(
 function fallbackCategory(
   capability: Permission,
 ): PermissionDefinition["category"] {
-  if (capability.startsWith("crm.")) return "Boutique & Vitrine";
+  if (capability.startsWith("crm.")) return "CRM & Ventes";
+  if (capability.startsWith("marketing.")) return "Marketing & Communication";
   if (capability.startsWith("provider.")) return "Administration Système";
   if (capability.startsWith("support.")) return "Utilisateurs & Équipe";
   if (capability.startsWith("compliance.")) return "Modération & Signalements";
   if (capability.startsWith("commercial_rules."))
     return "Marchés & Configuration";
   return "Administration Système";
+}
+
+const INTERNAL_RESOURCE_LABELS: Record<string, string> = {
+  "crm.dashboard": "le tableau de bord CRM",
+  "crm.accounts": "les comptes CRM",
+  "crm.contacts": "les contacts CRM",
+  "crm.pipelines": "les pipelines CRM",
+  "crm.opportunities": "les opportunités CRM",
+  "crm.tasks": "les tâches CRM",
+  "crm.activities": "les activités CRM",
+  "crm.analytics": "les analyses CRM",
+  "crm.automation": "les automatisations CRM",
+  "crm.email": "les e-mails CRM",
+  "crm.email.templates": "les modèles d’e-mails CRM",
+  "crm.ai": "les outils IA du CRM",
+  "crm.configuration": "la configuration CRM",
+  "crm.products": "les produits CRM",
+  "crm.quotes": "les devis CRM",
+  "crm.custom_fields": "les champs personnalisés CRM",
+  "marketing.dashboard": "le tableau de bord Marketing",
+  "marketing.profiles": "les profils Marketing",
+  "marketing.lists": "les listes Marketing",
+  "marketing.segments": "les segments Marketing",
+  "marketing.campaigns": "les campagnes Marketing",
+  "marketing.templates": "les modèles Marketing",
+  "marketing.automation": "les parcours automatisés Marketing",
+  "marketing.analytics": "les analyses Marketing",
+  "marketing.senders": "les identités d’expédition Marketing",
+  "marketing.domains": "les domaines d’envoi Marketing",
+  "marketing.compliance": "la conformité Marketing",
+  "marketing.settings": "les paramètres Marketing",
+};
+
+const INTERNAL_ACTION_LABELS: Record<string, string> = {
+  read: "Consulter",
+  create: "Créer",
+  update: "Modifier",
+  delete: "Supprimer",
+  export: "Exporter",
+  manage: "Gérer",
+  transition: "Faire progresser",
+  complete: "Terminer",
+  send: "Envoyer",
+  use: "Utiliser",
+  approve: "Approuver",
+  pause: "Suspendre",
+  cancel: "Annuler",
+};
+
+function internalPlatformPermission(
+  capability: Permission,
+): PermissionDefinition | null {
+  if (!capability.startsWith("crm.") && !capability.startsWith("marketing.")) {
+    return null;
+  }
+
+  const segments = capability.split(".");
+  const action = segments.at(-1) ?? "manage";
+  const resourceKey = segments.slice(0, -1).join(".");
+  const resource = INTERNAL_RESOURCE_LABELS[resourceKey];
+  const actionLabel = INTERNAL_ACTION_LABELS[action];
+  if (!resource || !actionLabel) return null;
+
+  return {
+    id: capability,
+    name: `${actionLabel} ${resource}`,
+    category: fallbackCategory(capability),
+    description: `${actionLabel} ${resource} dans le périmètre explicitement accordé.`,
+    isSensitive: true,
+  };
 }
 
 /**
@@ -1181,7 +1254,8 @@ function fallbackCategory(
  */
 export const ALL_PERMISSIONS: PermissionDefinition[] = CAPABILITIES.map(
   (capability) =>
-    describedById.get(capability) ?? {
+    describedById.get(capability) ??
+    internalPlatformPermission(capability) ?? {
       id: capability,
       name: labelIdentifier(capability),
       category: fallbackCategory(capability),

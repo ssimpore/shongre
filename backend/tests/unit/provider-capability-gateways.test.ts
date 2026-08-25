@@ -6,7 +6,10 @@ import {
 } from "../../src/integrations/providers/gateways/capability-gateways.js";
 import { isConnectionVisibleToPrincipal } from "../../src/modules/providers/provider-connection.service.js";
 import { SHONGRE_PROVIDER_REGISTRY } from "@shongre/contracts/provider-platform";
-import { RemoteEmailDeliveryGateway, RemoteGenerativeAiGateway } from "../../src/integrations/providers/gateways/remote-capability-gateways.js";
+import {
+  RemoteEmailDeliveryGateway,
+  RemoteGenerativeAiGateway,
+} from "../../src/integrations/providers/gateways/remote-capability-gateways.js";
 
 const context = {
   tenantId: "10000000-0000-4000-8000-000000000001",
@@ -26,7 +29,9 @@ describe("shared provider capability gateways", () => {
     expect(isConnectionVisibleToPrincipal(personal, "user-a")).toBe(true);
     expect(isConnectionVisibleToPrincipal(personal, "user-b")).toBe(false);
     expect(isConnectionVisibleToPrincipal(personal)).toBe(false);
-    expect(isConnectionVisibleToPrincipal({ owner_type: "TENANT" }, "user-b")).toBe(true);
+    expect(
+      isConnectionVisibleToPrincipal({ owner_type: "TENANT" }, "user-b"),
+    ).toBe(true);
   });
 
   it("returns deterministic demo AI output without usage cost", async () => {
@@ -36,7 +41,10 @@ describe("shared provider capability gateways", () => {
       {
         task: "crm.follow_up_draft",
         instructions: "Draft a concise follow-up",
-        safeContext: { accountName: "Atelier Nordique", nextStep: "planifier une démo" },
+        safeContext: {
+          accountName: "Atelier Nordique",
+          nextStep: "planifier une démo",
+        },
         outputSchema: { type: "object" },
         maxOutputTokens: 300,
       },
@@ -46,7 +54,10 @@ describe("shared provider capability gateways", () => {
       {
         task: "crm.follow_up_draft",
         instructions: "Draft a concise follow-up",
-        safeContext: { accountName: "Atelier Nordique", nextStep: "planifier une démo" },
+        safeContext: {
+          accountName: "Atelier Nordique",
+          nextStep: "planifier une démo",
+        },
         outputSchema: { type: "object" },
         maxOutputTokens: 300,
       },
@@ -82,15 +93,35 @@ describe("shared provider capability gateways", () => {
   });
 
   it("uses one shared production gateway for every certified Marketing provider", () => {
-    expect(new RemoteEmailDeliveryGateway()).toBeInstanceOf(RemoteEmailDeliveryGateway);
-    expect(new RemoteGenerativeAiGateway()).toBeInstanceOf(RemoteGenerativeAiGateway);
-    for (const providerId of ["resend", "brevo", "sendgrid", "mailjet", "mailgun", "postmark", "openai", "anthropic", "openai_compatible"]) {
-      const provider = SHONGRE_PROVIDER_REGISTRY.find((candidate) => candidate.id === providerId);
+    expect(new RemoteEmailDeliveryGateway()).toBeInstanceOf(
+      RemoteEmailDeliveryGateway,
+    );
+    expect(new RemoteGenerativeAiGateway()).toBeInstanceOf(
+      RemoteGenerativeAiGateway,
+    );
+    for (const providerId of [
+      "resend",
+      "brevo",
+      "sendgrid",
+      "mailjet",
+      "mailgun",
+      "postmark",
+      "openai",
+      "anthropic",
+      "openai_compatible",
+    ]) {
+      const provider = SHONGRE_PROVIDER_REGISTRY.find(
+        (candidate) => candidate.id === providerId,
+      );
       expect(provider, providerId).toBeDefined();
       expect(provider?.lifecycle).toBe("IMPLEMENTED");
     }
     for (const providerId of ["smtp", "amazon_ses"]) {
-      expect(SHONGRE_PROVIDER_REGISTRY.find((candidate) => candidate.id === providerId)?.lifecycle).toBe("PLANNED");
+      expect(
+        SHONGRE_PROVIDER_REGISTRY.find(
+          (candidate) => candidate.id === providerId,
+        )?.lifecycle,
+      ).toBe("PLANNED");
     }
   });
 });

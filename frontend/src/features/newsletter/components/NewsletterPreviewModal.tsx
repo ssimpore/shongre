@@ -71,8 +71,8 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
 
         <div className="flex justify-center overflow-x-auto rounded-2xl bg-stone-200 p-4">
           <article
-            className={`overflow-hidden rounded-2xl border border-stone-300 bg-white text-stone-800 shadow-sm transition-[width] ${
-              viewMode === "mobile" ? "w-[360px]" : "w-[600px]"
+            className={`overflow-hidden rounded-2xl border border-stone-300 bg-white text-stone-800 shadow-sm transition-all ${
+              viewMode === "mobile" ? "w-full max-w-sm" : "w-full max-w-2xl"
             }`}
           >
             <header className="flex items-center justify-between bg-stone-950 px-6 py-5 text-white">
@@ -124,9 +124,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                     </div>
                   );
                 if (block.type === "DIVIDER")
-                  return (
-                    <hr key={block.id} className="border-border-subtle" />
-                  );
+                  return <hr key={block.id} className="border-border-subtle" />;
                 if (block.type === "SPACER")
                   return (
                     <div

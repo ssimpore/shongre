@@ -56,6 +56,7 @@ import { stripeCheckoutAdapter } from "../../infrastructure/payments/stripe-chec
 import { getSupabaseAdminClient } from "../../infrastructure/supabase/supabase-client.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 import { validateCommercialConfiguration } from "./configuration-validator.js";
 import { evaluateCommercialRules } from "./rule-evaluator.js";
 
@@ -192,9 +193,10 @@ export class BusinessRulesService {
   }
 
   async getCatalog(
-    marketCode = "FR",
+    marketCode: string,
     options: { includeDrafts?: boolean } = {},
   ) {
+    marketCode = requireMarketCode(marketCode);
     const cached = this.cache.get(marketCode);
     if (!options.includeDrafts && cached && cached.expiresAt > Date.now())
       return cached.catalog;
@@ -232,7 +234,7 @@ export class BusinessRulesService {
     }
   }
 
-  async getProfessionalPlanCatalog(marketCode = "FR") {
+  async getProfessionalPlanCatalog(marketCode: string) {
     const catalog = await this.getCatalog(marketCode);
     return {
       configurationVersionId: catalog.configurationVersionId,
@@ -1009,8 +1011,9 @@ export class BusinessRulesService {
   }
 
   async getAdminOverview(
-    marketCode = "FR",
+    marketCode: string,
   ): Promise<MonetizationAdminOverview> {
+    marketCode = requireMarketCode(marketCode);
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     const [

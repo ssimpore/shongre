@@ -18,6 +18,7 @@ import {
 } from "@shongre/contracts/provider-platform";
 import {
   Provider,
+  ProviderCapability,
   ProviderConfiguration,
 } from "../../../../domains/providers/provider.types";
 import { providerService } from "../../../../domains/providers/provider.service";
@@ -25,6 +26,45 @@ import { PROVIDER_CATEGORIES } from "../../../../domains/providers/provider-capa
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useRegionalFormatters } from "../../../../hooks/useRegionalFormatters";
+import { ProviderCapabilityLabel } from "./ProviderCapabilityLabel";
+
+const CRITICAL_CAPABILITIES: ReadonlyArray<{
+  capability: ProviderCapability;
+  description: string;
+}> = [
+  {
+    capability: "payment.card",
+    description: "Checkout Stripe ; hors flux marketplace/payout",
+  },
+  {
+    capability: "delivery.relay_point",
+    description: "Adaptateur transporteur requis",
+  },
+  {
+    capability: "delivery.home_delivery",
+    description: "Adaptateur transporteur requis",
+  },
+  {
+    capability: "auth.oauth_google",
+    description: "Adaptateur présent, preuve E2E requise",
+  },
+  {
+    capability: "email.transactional",
+    description: "Point de livraison générique à configurer",
+  },
+  {
+    capability: "ai.listing_assistance",
+    description: "Simulation uniquement ; mode manuel disponible",
+  },
+  {
+    capability: "verification.business",
+    description: "Simulation uniquement ; revue manuelle requise",
+  },
+  {
+    capability: "maps.display",
+    description: "Tuiles présentes ; géocodage non implémenté",
+  },
+];
 
 interface ProviderOverviewDashboardProps {
   providers: Provider[];
@@ -87,54 +127,6 @@ export const ProviderOverviewDashboard: React.FC<
           : null,
     };
   }, [providers, configurations]);
-
-  // Core Platform Capabilities to monitor in overview
-  const criticalCapabilities: Array<{
-    capability: any;
-    label: string;
-    description: string;
-  }> = [
-    {
-      capability: "payment.card",
-      label: "Paiement par carte",
-      description: "Checkout Stripe ; hors flux marketplace/payout",
-    },
-    {
-      capability: "delivery.relay_point",
-      label: "Livraison Point Relais",
-      description: "Adaptateur transporteur requis",
-    },
-    {
-      capability: "delivery.home_delivery",
-      label: "Livraison Domicile",
-      description: "Adaptateur transporteur requis",
-    },
-    {
-      capability: "auth.oauth_google",
-      label: "Connexion Google SSO",
-      description: "Adaptateur présent, preuve E2E requise",
-    },
-    {
-      capability: "email.transactional",
-      label: "Emails Transactionnels",
-      description: "Point de livraison générique à configurer",
-    },
-    {
-      capability: "ai.listing_assistance",
-      label: "Assistant IA Vendeurs",
-      description: "Simulation uniquement ; mode manuel disponible",
-    },
-    {
-      capability: "verification.business",
-      label: "Contrôle SIRET Entreprises",
-      description: "Simulation uniquement ; revue manuelle requise",
-    },
-    {
-      capability: "maps.display",
-      label: "Cartographie & BAN",
-      description: "Tuiles présentes ; géocodage non implémenté",
-    },
-  ];
 
   // Audit history
   const recentAudit = useMemo(() => {
@@ -281,7 +273,7 @@ export const ProviderOverviewDashboard: React.FC<
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {criticalCapabilities.map((item) => {
+          {CRITICAL_CAPABILITIES.map((item) => {
             const requirement = SHONGRE_CAPABILITY_REQUIREMENTS.find(
               ({ capability }) => capability === item.capability,
             );
@@ -320,10 +312,12 @@ export const ProviderOverviewDashboard: React.FC<
                 className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 hover:bg-stone-50 transition-colors flex flex-col justify-between"
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-stone-900 truncate">
-                      {item.label}
-                    </span>
+                  <div className="mb-1.5 flex items-start justify-between gap-2">
+                    <ProviderCapabilityLabel
+                      capability={item.capability}
+                      compact
+                      className="text-stone-900"
+                    />
                     {status === "operational" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded-sm">
                         <CheckCircle2 className="w-3 h-3" />

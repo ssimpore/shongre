@@ -33,10 +33,18 @@ describe("CRM platform migration", () => {
   });
 
   it("forces tenant RLS and does not grant blanket access to pre-existing tables", () => {
-    expect(migration).toContain("ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY");
-    expect(migration).toContain("ALTER TABLE public.%I FORCE ROW LEVEL SECURITY");
-    expect(migration).toContain("(SELECT public.is_crm_tenant_member(tenant_id))");
-    expect(migration).not.toContain("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public");
+    expect(migration).toContain(
+      "ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY",
+    );
+    expect(migration).toContain(
+      "ALTER TABLE public.%I FORCE ROW LEVEL SECURITY",
+    );
+    expect(migration).toContain(
+      "(SELECT public.is_crm_tenant_member(tenant_id))",
+    );
+    expect(migration).not.toContain(
+      "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public",
+    );
   });
 
   it("protects lifecycle, financial and immutable history invariants", () => {
@@ -44,6 +52,8 @@ describe("CRM platform migration", () => {
     expect(migration).toContain("currency CHAR(3)");
     expect(migration).toContain("validate_crm_opportunity_stage");
     expect(migration).toContain("CRM activity and audit history is immutable");
-    expect(migration).toContain("version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0)");
+    expect(migration).toContain(
+      "version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0)",
+    );
   });
 });

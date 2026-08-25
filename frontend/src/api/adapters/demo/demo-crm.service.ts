@@ -540,6 +540,7 @@ export class DemoCrmService implements CrmServiceContract {
       items.reduce((sum, item) => sum + item.amount.amountMinor, 0);
     const current = "2026-08-25T12:00:00.000Z";
     return {
+      marketCode: "FR",
       currency: "EUR",
       activeProspects: new Set(
         open.flatMap((item) => (item.accountId ? [item.accountId] : [])),

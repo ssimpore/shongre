@@ -13,7 +13,10 @@ export function MarketLaunchPage({
     <div className="flex min-h-screen flex-col bg-white font-sans text-stone-950">
       <header className="border-b border-border-base">
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
-          <a href={gatewayHref} className="text-xl font-extrabold uppercase tracking-tight">
+          <a
+            href={gatewayHref}
+            className="text-xl font-extrabold uppercase tracking-tight"
+          >
             Shongre<span className="text-primary">.</span>
           </a>
           <span className="text-2xl" aria-hidden="true">
@@ -31,10 +34,22 @@ export function MarketLaunchPage({
             {country.launchContent.description}
           </p>
           <dl className="mx-auto mt-8 grid max-w-xl grid-cols-2 border-y border-border-base py-5 text-left text-xs sm:grid-cols-4">
-            <div><dt className="text-stone-500">Pays</dt><dd className="mt-1 font-bold">{country.name}</dd></div>
-            <div><dt className="text-stone-500">Langue</dt><dd className="mt-1 font-bold">{country.defaultLocale}</dd></div>
-            <div><dt className="text-stone-500">Devise</dt><dd className="mt-1 font-bold">{country.currency}</dd></div>
-            <div><dt className="text-stone-500">Fuseau</dt><dd className="mt-1 font-bold">{country.timezone}</dd></div>
+            <div>
+              <dt className="text-stone-500">Pays</dt>
+              <dd className="mt-1 font-bold">{country.name}</dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Langue</dt>
+              <dd className="mt-1 font-bold">{country.defaultLocale}</dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Devise</dt>
+              <dd className="mt-1 font-bold">{country.currency}</dd>
+            </div>
+            <div>
+              <dt className="text-stone-500">Fuseau</dt>
+              <dd className="mt-1 font-bold">{country.timezone}</dd>
+            </div>
           </dl>
           {country.launchContent.earlyAccessEnabled && (
             <EarlyAccessSignup

@@ -11,10 +11,26 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { mobileEnvironment } from "@/config/environment";
 import { notificationsService } from "@/services/notifications/notifications.service";
+import { useMarket } from "@/features/market/MarketProvider";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { activeMarket, countries, isSelectable, selectMarket } = useMarket();
+  const marketLinks = mobileEnvironment.linksFor(activeMarket);
+
+  const changeMarket = async (code: string) => {
+    try {
+      await selectMarket(code);
+    } catch (reason) {
+      Alert.alert(
+        "Marché indisponible",
+        reason instanceof Error
+          ? reason.message
+          : "Ce pays n’est pas encore accessible.",
+      );
+    }
+  };
 
   const enableNotifications = async () => {
     const outcome = await notificationsService.enable();
@@ -42,6 +58,29 @@ export default function SettingsScreen() {
         Réglages
       </Text>
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Pays et marché</Text>
+        <Text style={styles.muted}>
+          Marché actuel : {activeMarket.flag} {activeMarket.name} ·{" "}
+          {activeMarket.currency} · {activeMarket.timezone}
+        </Text>
+        <View accessibilityRole="radiogroup" style={styles.marketList}>
+          {countries.map((country) => {
+            const available = isSelectable(country);
+            const selected = country.code === activeMarket.code;
+            return (
+              <Button
+                key={country.code}
+                label={`${country.flag} ${country.name}${available ? "" : " · À venir"}`}
+                accessibilityLabel={`${country.name}${selected ? ", marché sélectionné" : ""}${available ? "" : ", ouverture prochaine"}`}
+                onPress={() => void changeMarket(country.code)}
+                variant={selected ? "primary" : "secondary"}
+                disabled={!available}
+              />
+            );
+          })}
+        </View>
+      </View>
+      <View style={styles.section}>
         <Text style={styles.sectionTitle}>Notifications</Text>
         <Text style={styles.muted}>
           L’autorisation est demandée ici, jamais automatiquement pendant
@@ -57,17 +96,17 @@ export default function SettingsScreen() {
         <Text style={styles.sectionTitle}>Informations et assistance</Text>
         <Button
           label="Confidentialité"
-          onPress={() => void open(mobileEnvironment.privacyUrl)}
+          onPress={() => void open(marketLinks.privacyUrl)}
           variant="ghost"
         />
         <Button
           label="Conditions d’utilisation"
-          onPress={() => void open(mobileEnvironment.termsUrl)}
+          onPress={() => void open(marketLinks.termsUrl)}
           variant="ghost"
         />
         <Button
           label="Aide et support"
-          onPress={() => void open(mobileEnvironment.supportUrl)}
+          onPress={() => void open(marketLinks.supportUrl)}
           variant="ghost"
         />
       </View>
@@ -82,7 +121,7 @@ export default function SettingsScreen() {
         ) : (
           <Button
             label="Demander une suppression sur le web"
-            onPress={() => void open(mobileEnvironment.accountDeletionUrl)}
+            onPress={() => void open(marketLinks.accountDeletionUrl)}
             variant="secondary"
           />
         )}
@@ -114,4 +153,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     lineHeight: nativeTypography.lineHeight.bodySm,
   },
+  marketList: { gap: spacing.sm },
 });

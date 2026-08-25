@@ -38,7 +38,7 @@ export const DEFAULT_MARKET_RULES: Record<string, MarketPricingRule> =
 export function calculateOrderTotal(params: {
   itemAmount: number;
   shippingFee?: number;
-  marketCode?: string;
+  marketCode: string;
   ruleOverride?: Partial<MarketPricingRule>;
 }): EscrowOrderBreakdown {
   const itemAmountMinor = Math.max(
@@ -51,8 +51,9 @@ export function calculateOrderTotal(params: {
   );
   const itemAmount = itemAmountMinor / 100;
   const shippingFee = shippingFeeMinor / 100;
-  const baseRule =
-    DEFAULT_MARKET_RULES[params.marketCode || "FR"] || DEFAULT_MARKET_RULES.FR;
+  const baseRule = DEFAULT_MARKET_RULES[params.marketCode.toUpperCase()];
+  if (!baseRule)
+    throw new Error(`No escrow pricing rule for market ${params.marketCode}`);
 
   const rate =
     params.ruleOverride?.protectionFeeRate ?? baseRule.protectionFeeRate;

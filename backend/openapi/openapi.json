@@ -4379,7 +4379,11 @@
         "responses": {
           "200": {
             "description": "A host-local HttpOnly session was created.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DomainHandoffResult" } } }
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DomainHandoffResult" }
+              }
+            }
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
@@ -4392,7 +4396,11 @@
         "x-shongre-source": "backend/src/api/v1/router.ts",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DomainHandoffExchange" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DomainHandoffExchange" }
+            }
+          }
         }
       }
     },
@@ -4408,7 +4416,13 @@
         "responses": {
           "200": {
             "description": "Short-lived destination authorization URL.",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DomainHandoffStartResult" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomainHandoffStartResult"
+                }
+              }
+            }
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
@@ -4422,7 +4436,11 @@
         "x-shongre-source": "backend/src/api/v1/router.ts",
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DomainHandoffStart" } } }
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DomainHandoffStart" }
+            }
+          }
         }
       }
     },
@@ -10076,410 +10094,1925 @@
     },
     "/marketing/public/subscriptions": {
       "post": {
-        "operationId": "createPublicMarketingSubscription", "tags": ["marketing"], "summary": "Request a consent-based newsletter subscription",
+        "operationId": "createPublicMarketingSubscription",
+        "tags": ["marketing"],
+        "summary": "Request a consent-based newsletter subscription",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingPublicSubscriptionInput" } } } },
-        "responses": { "202": { "description": "Subscription request accepted without account enumeration.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionReceipt" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingPublicSubscriptionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Subscription request accepted without account enumeration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionReceipt"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/public/confirm": {
       "post": {
-        "operationId": "confirmPublicMarketingSubscription", "tags": ["marketing"], "summary": "Confirm a double opt-in token",
+        "operationId": "confirmPublicMarketingSubscription",
+        "tags": ["marketing"],
+        "summary": "Confirm a double opt-in token",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingPublicAction" } } } },
-        "responses": { "200": { "description": "Subscription confirmed.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingPublicAction" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription confirmed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/public/preferences": {
       "get": {
-        "operationId": "getPublicMarketingPreferences", "tags": ["marketing"], "summary": "Read newsletter preferences through a scoped token",
-        "parameters": [{ "name": "token", "in": "query", "required": true, "schema": { "type": "string", "minLength": 32, "maxLength": 512 } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Current preferences.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "getPublicMarketingPreferences",
+        "tags": ["marketing"],
+        "summary": "Read newsletter preferences through a scoped token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 32, "maxLength": 512 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current preferences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "put": {
-        "operationId": "updatePublicMarketingPreferences", "tags": ["marketing"], "summary": "Update newsletter topics through a scoped token",
+        "operationId": "updatePublicMarketingPreferences",
+        "tags": ["marketing"],
+        "summary": "Update newsletter topics through a scoped token",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingPublicPreferencesUpdate" } } } },
-        "responses": { "200": { "description": "Preferences updated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingPublicPreferencesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preferences updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/public/unsubscribe": {
       "post": {
-        "operationId": "unsubscribePublicMarketingProfile", "tags": ["marketing"], "summary": "Globally unsubscribe marketing through a scoped token",
+        "operationId": "unsubscribePublicMarketingProfile",
+        "tags": ["marketing"],
+        "summary": "Globally unsubscribe marketing through a scoped token",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingPublicAction" } } } },
-        "responses": { "200": { "description": "Unsubscribe processed idempotently.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionReceipt" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingPublicAction" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsubscribe processed idempotently.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionReceipt"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/account/subscription": {
       "get": {
-        "operationId": "getAccountMarketingSubscription", "tags": ["marketing"], "summary": "Get the signed-in account newsletter subscription",
-        "parameters": [{ "name": "marketCode", "in": "query", "schema": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "FR" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Subscription or null.", "content": { "application/json": { "schema": { "oneOf": [{ "$ref": "#/components/schemas/MarketingSubscriptionView" }, { "type": "null" }] } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "authenticated", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "getAccountMarketingSubscription",
+        "tags": ["marketing"],
+        "summary": "Get the signed-in account newsletter subscription",
+        "parameters": [
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "default": "FR"
+            }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MarketingSubscriptionView"
+                    },
+                    { "type": "null" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "subscribeAccountToMarketing", "tags": ["marketing"], "summary": "Subscribe or explicitly resubscribe the signed-in account",
+        "operationId": "subscribeAccountToMarketing",
+        "tags": ["marketing"],
+        "summary": "Subscribe or explicitly resubscribe the signed-in account",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAccountSubscriptionInput" } } } },
-        "responses": { "200": { "description": "Account subscription state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "authenticated", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingAccountSubscriptionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account subscription state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/account/preferences": {
       "put": {
-        "operationId": "updateAccountMarketingPreferences", "tags": ["marketing"], "summary": "Update the signed-in account newsletter topics",
+        "operationId": "updateAccountMarketingPreferences",
+        "tags": ["marketing"],
+        "summary": "Update the signed-in account newsletter topics",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAccountPreferencesInput" } } } },
-        "responses": { "200": { "description": "Updated account preferences.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "authenticated", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingAccountPreferencesInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated account preferences.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/account/unsubscribe": {
       "post": {
-        "operationId": "unsubscribeAccountFromMarketing", "tags": ["marketing"], "summary": "Globally unsubscribe the signed-in account from marketing",
+        "operationId": "unsubscribeAccountFromMarketing",
+        "tags": ["marketing"],
+        "summary": "Globally unsubscribe the signed-in account from marketing",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": false, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "properties": { "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "FR" } } } } } },
-        "responses": { "200": { "description": "Unsubscribed account state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSubscriptionView" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "authenticated", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "marketCode": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{2}$",
+                    "default": "FR"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsubscribed account state.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingSubscriptionView"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "authenticated",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/dashboard": {
       "get": {
-        "operationId": "getMarketingDashboard", "tags": ["marketing"], "summary": "Get the tenant marketing dashboard",
+        "operationId": "getMarketingDashboard",
+        "tags": ["marketing"],
+        "summary": "Get the tenant marketing dashboard",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingDashboard" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.dashboard.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingDashboard" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.dashboard.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/profiles": {
       "get": {
-        "operationId": "listMarketingProfiles", "tags": ["marketing"], "summary": "List tenant marketing profiles",
+        "operationId": "listMarketingProfiles",
+        "tags": ["marketing"],
+        "summary": "List tenant marketing profiles",
         "parameters": [
-          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 } },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
           { "name": "cursor", "in": "query", "schema": { "type": "string" } },
-          { "name": "query", "in": "query", "schema": { "type": "string", "maxLength": 255 } },
-          { "name": "status", "in": "query", "schema": { "$ref": "#/components/schemas/MarketingProfileStatus" } },
+          {
+            "name": "query",
+            "in": "query",
+            "schema": { "type": "string", "maxLength": 255 }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/MarketingProfileStatus" }
+          },
           { "$ref": "#/components/parameters/RequestId" }
         ],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items", "pageInfo"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingProfile" } }, "pageInfo": { "type": "object", "required": ["hasNextPage"], "properties": { "hasNextPage": { "type": "boolean" }, "nextCursor": { "type": "string" } } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.profiles.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items", "pageInfo"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingProfile"
+                      }
+                    },
+                    "pageInfo": {
+                      "type": "object",
+                      "required": ["hasNextPage"],
+                      "properties": {
+                        "hasNextPage": { "type": "boolean" },
+                        "nextCursor": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.profiles.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingProfile", "tags": ["marketing"], "summary": "Create or link a marketing profile",
-        "parameters": [{ "$ref": "#/components/parameters/RequestId" }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingProfileInput" } } } },
-        "responses": { "201": { "description": "Resource created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingProfile" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.profiles.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingProfile",
+        "tags": ["marketing"],
+        "summary": "Create or link a marketing profile",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingProfileInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingProfile" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.profiles.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/profiles/{profileId}/confirm": {
       "post": {
-        "operationId": "confirmMarketingProfile", "tags": ["marketing"], "summary": "Confirm a pending marketing profile",
-        "parameters": [{ "name": "profileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingProfile" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.profiles.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "confirmMarketingProfile",
+        "tags": ["marketing"],
+        "summary": "Confirm a pending marketing profile",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingProfile" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.profiles.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/profiles/{profileId}/unsubscribe": {
       "post": {
-        "operationId": "unsubscribeMarketingProfile", "tags": ["marketing"], "summary": "Unsubscribe and suppress a marketing profile",
-        "parameters": [{ "name": "profileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingProfile" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.profiles.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "unsubscribeMarketingProfile",
+        "tags": ["marketing"],
+        "summary": "Unsubscribe and suppress a marketing profile",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingProfile" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.profiles.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/lists": {
       "get": {
-        "operationId": "listMarketingLists", "tags": ["marketing"], "summary": "List static marketing lists", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingList" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.lists.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingLists",
+        "tags": ["marketing"],
+        "summary": "List static marketing lists",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/MarketingList" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.lists.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingList", "tags": ["marketing"], "summary": "Create a static marketing list", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingListInput" } } } },
-        "responses": { "201": { "description": "Resource created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingList" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.lists.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingList",
+        "tags": ["marketing"],
+        "summary": "Create a static marketing list",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingListInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingList" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.lists.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/lists/{listId}/members/{profileId}": {
       "post": {
-        "operationId": "addMarketingListMember", "tags": ["marketing"], "summary": "Add a profile to a static list",
-        "parameters": [{ "name": "listId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "name": "profileId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["success"], "properties": { "success": { "type": "boolean" } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.lists.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "addMarketingListMember",
+        "tags": ["marketing"],
+        "summary": "Add a profile to a static list",
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "profileId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["success"],
+                  "properties": { "success": { "type": "boolean" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.lists.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/segments": {
       "get": {
-        "operationId": "listMarketingSegments", "tags": ["marketing"], "summary": "List dynamic marketing segments", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingSegment" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.segments.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingSegments",
+        "tags": ["marketing"],
+        "summary": "List dynamic marketing segments",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingSegment"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.segments.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingSegment", "tags": ["marketing"], "summary": "Create a typed dynamic segment", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSegmentInput" } } } },
-        "responses": { "201": { "description": "Resource created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingSegment" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.segments.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingSegment",
+        "tags": ["marketing"],
+        "summary": "Create a typed dynamic segment",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingSegmentInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingSegment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.segments.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/templates": {
       "get": {
-        "operationId": "listMarketingTemplates", "tags": ["marketing"], "summary": "List immutable-version marketing templates", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingTemplate" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.templates.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingTemplates",
+        "tags": ["marketing"],
+        "summary": "List immutable-version marketing templates",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingTemplate"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.templates.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingTemplate", "tags": ["marketing"], "summary": "Create a versioned marketing template", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingTemplateInput" } } } },
-        "responses": { "201": { "description": "Resource created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingTemplate" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.templates.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingTemplate",
+        "tags": ["marketing"],
+        "summary": "Create a versioned marketing template",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingTemplateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingTemplate" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.templates.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns": {
       "get": {
-        "operationId": "listMarketingCampaigns", "tags": ["marketing"], "summary": "List tenant marketing campaigns", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingCampaign" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingCampaigns",
+        "tags": ["marketing"],
+        "summary": "List tenant marketing campaigns",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingCampaign"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingCampaign", "tags": ["marketing"], "summary": "Create a versioned marketing campaign draft", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaignInput" } } } },
-        "responses": { "201": { "description": "Resource created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "409": { "$ref": "#/components/responses/Conflict" }, "500": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.create", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Create a versioned marketing campaign draft",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingCampaignInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Resource created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.create",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/audience-estimate": {
       "post": {
-        "operationId": "estimateMarketingAudience", "tags": ["marketing"], "summary": "Estimate eligible and excluded campaign recipients", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAudienceDefinition" } } } },
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAudienceEstimate" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "estimateMarketingAudience",
+        "tags": ["marketing"],
+        "summary": "Estimate eligible and excluded campaign recipients",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingAudienceDefinition"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketingAudienceEstimate"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/ai/campaign-draft": {
       "post": {
-        "operationId": "generateMarketingCampaignDraft", "tags": ["marketing"], "summary": "Generate an advisory campaign draft through the shared AI Gateway", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "required": ["instructions"], "properties": { "instructions": { "type": "string", "minLength": 10, "maxLength": 5000 }, "locale": { "type": "string", "minLength": 2, "maxLength": 16 } } } } } },
-        "responses": { "200": { "description": "Advisory AI result that never sends automatically.", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "503": { "$ref": "#/components/responses/InternalError" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.create", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "generateMarketingCampaignDraft",
+        "tags": ["marketing"],
+        "summary": "Generate an advisory campaign draft through the shared AI Gateway",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["instructions"],
+                "properties": {
+                  "instructions": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 5000
+                  },
+                  "locale": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 16
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Advisory AI result that never sends automatically.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "additionalProperties": true }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "503": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.create",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}": {
       "get": {
-        "operationId": "getMarketingCampaign", "tags": ["marketing"], "summary": "Get a tenant marketing campaign",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "getMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Get a tenant marketing campaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/preflight": {
       "post": {
-        "operationId": "preflightMarketingCampaign", "tags": ["marketing"], "summary": "Run authoritative campaign pre-flight validation",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingPreflight" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "preflightMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Run authoritative campaign pre-flight validation",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingPreflight" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/test-send": {
       "post": {
-        "operationId": "testSendMarketingCampaign", "tags": ["marketing"], "summary": "Send a marked test without creating campaign recipients",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "required": ["recipient"], "properties": { "recipient": { "type": "string", "format": "email" }, "personalization": { "type": "object", "additionalProperties": { "type": ["string", "number", "boolean"] } } } } } } },
-        "responses": { "200": { "description": "Provider acceptance result.", "content": { "application/json": { "schema": { "type": "object", "required": ["externalMessageId", "acceptedAt"], "properties": { "externalMessageId": { "type": "string" }, "acceptedAt": { "type": "string", "format": "date-time" } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.send", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "testSendMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Send a marked test without creating campaign recipients",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["recipient"],
+                "properties": {
+                  "recipient": { "type": "string", "format": "email" },
+                  "personalization": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": ["string", "number", "boolean"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Provider acceptance result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["externalMessageId", "acceptedAt"],
+                  "properties": {
+                    "externalMessageId": { "type": "string" },
+                    "acceptedAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.send",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/send": {
       "post": {
-        "operationId": "sendMarketingCampaign", "tags": ["marketing"], "summary": "Snapshot and enqueue an eligible campaign audience",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "202": { "description": "Campaign queued for background delivery.", "content": { "application/json": { "schema": { "type": "object", "required": ["campaign", "queuedRecipients", "excludedRecipients"], "properties": { "campaign": { "$ref": "#/components/schemas/MarketingCampaign" }, "queuedRecipients": { "type": "integer", "minimum": 0 }, "excludedRecipients": { "type": "integer", "minimum": 0 } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.send", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "sendMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Snapshot and enqueue an eligible campaign audience",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "202": {
+            "description": "Campaign queued for background delivery.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "campaign",
+                    "queuedRecipients",
+                    "excludedRecipients"
+                  ],
+                  "properties": {
+                    "campaign": {
+                      "$ref": "#/components/schemas/MarketingCampaign"
+                    },
+                    "queuedRecipients": { "type": "integer", "minimum": 0 },
+                    "excludedRecipients": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.send",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/schedule": {
       "post": {
-        "operationId": "scheduleMarketingCampaign", "tags": ["marketing"], "summary": "Schedule a validated campaign using backend time",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "required": ["scheduledAt"], "properties": { "scheduledAt": { "type": "string", "format": "date-time" } } } } } },
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.send", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "scheduleMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Schedule a validated campaign using backend time",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["scheduledAt"],
+                "properties": {
+                  "scheduledAt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.send",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/pause": {
       "post": {
-        "operationId": "pauseMarketingCampaign", "tags": ["marketing"], "summary": "Pause not-yet-accepted campaign recipients",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.pause", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "pauseMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Pause not-yet-accepted campaign recipients",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.pause",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/cancel": {
       "post": {
-        "operationId": "cancelMarketingCampaign", "tags": ["marketing"], "summary": "Cancel not-yet-accepted campaign recipients",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.cancel", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "cancelMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Cancel not-yet-accepted campaign recipients",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.cancel",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/suppressions": {
       "get": {
-        "operationId": "listMarketingSuppressions", "tags": ["marketing"], "summary": "List active canonical marketing suppressions", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Successful response.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingSuppression" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.compliance.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingSuppressions",
+        "tags": ["marketing"],
+        "summary": "List active canonical marketing suppressions",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingSuppression"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.compliance.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/track/open": {
       "get": {
-        "operationId": "recordMarketingOpen", "tags": ["marketing"], "summary": "Record an opaque first-party open token",
-        "parameters": [{ "name": "token", "in": "query", "required": true, "schema": { "type": "string", "minLength": 32, "maxLength": 512 } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "One pixel GIF.", "content": { "image/gif": { "schema": { "type": "string", "format": "binary" } } } }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "recordMarketingOpen",
+        "tags": ["marketing"],
+        "summary": "Record an opaque first-party open token",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 32, "maxLength": 512 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "One pixel GIF.",
+            "content": {
+              "image/gif": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/track/click": {
       "get": {
-        "operationId": "recordMarketingClick", "tags": ["marketing"], "summary": "Record an opaque first-party click token and redirect to its stored HTTPS target",
-        "parameters": [{ "name": "token", "in": "query", "required": true, "schema": { "type": "string", "minLength": 32, "maxLength": 512 } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "302": { "description": "Redirect to the server-stored HTTPS target.", "headers": { "Location": { "schema": { "type": "string", "format": "uri" } } } }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "recordMarketingClick",
+        "tags": ["marketing"],
+        "summary": "Record an opaque first-party click token and redirect to its stored HTTPS target",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 32, "maxLength": 512 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to the server-stored HTTPS target.",
+            "headers": {
+              "Location": { "schema": { "type": "string", "format": "uri" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/provider-webhooks/{connectionId}": {
       "post": {
-        "operationId": "receiveMarketingProviderWebhook", "tags": ["marketing"], "summary": "Verify and normalize a provider delivery webhook",
-        "parameters": [{ "name": "connectionId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } },
-        "responses": { "200": { "description": "Signed webhook accepted idempotently.", "content": { "application/json": { "schema": { "type": "object", "required": ["accepted", "duplicate", "eventCount"], "properties": { "accepted": { "type": "boolean" }, "duplicate": { "type": "boolean" }, "eventCount": { "type": "integer", "minimum": 0 } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "404": { "$ref": "#/components/responses/NotFound" }, "413": { "description": "Payload too large." } },
-        "security": [], "x-shongre-access": "public", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "receiveMarketingProviderWebhook",
+        "tags": ["marketing"],
+        "summary": "Verify and normalize a provider delivery webhook",
+        "parameters": [
+          {
+            "name": "connectionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed webhook accepted idempotently.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["accepted", "duplicate", "eventCount"],
+                  "properties": {
+                    "accepted": { "type": "boolean" },
+                    "duplicate": { "type": "boolean" },
+                    "eventCount": { "type": "integer", "minimum": 0 }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "413": { "description": "Payload too large." }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/resume": {
       "post": {
-        "operationId": "resumeMarketingCampaign", "tags": ["marketing"], "summary": "Resume queued recipients of a paused campaign",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Campaign resumed.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.pause", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "resumeMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Resume queued recipients of a paused campaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign resumed.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.pause",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/review": {
       "post": {
-        "operationId": "reviewMarketingCampaign", "tags": ["marketing"], "summary": "Submit a campaign for approval",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Campaign submitted.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.update", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "reviewMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Submit a campaign for approval",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign submitted.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.update",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/approve": {
       "post": {
-        "operationId": "approveMarketingCampaign", "tags": ["marketing"], "summary": "Approve a campaign with a distinct permission",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Campaign approved.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.approve", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "approveMarketingCampaign",
+        "tags": ["marketing"],
+        "summary": "Approve a campaign with a distinct permission",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Campaign approved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.approve",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/campaigns/{campaignId}/select-winner": {
       "post": {
-        "operationId": "selectMarketingCampaignWinner", "tags": ["marketing"], "summary": "Select or calculate the winning A/B variant",
-        "parameters": [{ "name": "campaignId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": false, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "properties": { "variantId": { "type": "string", "maxLength": 80 } } } } } },
-        "responses": { "200": { "description": "Winning variant persisted idempotently.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingCampaign" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.update", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "selectMarketingCampaignWinner",
+        "tags": ["marketing"],
+        "summary": "Select or calculate the winning A/B variant",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "variantId": { "type": "string", "maxLength": 80 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Winning variant persisted idempotently.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingCampaign" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.update",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/analytics": {
       "get": {
-        "operationId": "getMarketingAnalytics", "tags": ["marketing"], "summary": "Get canonical tenant or campaign marketing metrics",
-        "parameters": [{ "name": "campaignId", "in": "query", "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Canonical metrics.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAnalytics" } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.analytics.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "getMarketingAnalytics",
+        "tags": ["marketing"],
+        "summary": "Get canonical tenant or campaign marketing metrics",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical metrics.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingAnalytics" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.analytics.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/conversions": {
       "post": {
-        "operationId": "recordMarketingConversion", "tags": ["marketing"], "summary": "Record an idempotent attributed marketing conversion",
+        "operationId": "recordMarketingConversion",
+        "tags": ["marketing"],
+        "summary": "Record an idempotent attributed marketing conversion",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingConversionInput" } } } },
-        "responses": { "202": { "description": "Conversion accepted idempotently.", "content": { "application/json": { "schema": { "type": "object", "required": ["accepted", "duplicate"], "properties": { "accepted": { "type": "boolean", "enum": [true] }, "duplicate": { "type": "boolean" } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.update", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingConversionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Conversion accepted idempotently.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["accepted", "duplicate"],
+                  "properties": {
+                    "accepted": { "type": "boolean", "enum": [true] },
+                    "duplicate": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.update",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/usage": {
       "get": {
-        "operationId": "getMarketingUsage", "tags": ["marketing"], "summary": "Get Marketing usage and resolved shared entitlements",
+        "operationId": "getMarketingUsage",
+        "tags": ["marketing"],
+        "summary": "Get Marketing usage and resolved shared entitlements",
         "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Current period usage.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingUsage" } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.dashboard.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "responses": {
+          "200": {
+            "description": "Current period usage.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingUsage" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.dashboard.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/journeys": {
       "get": {
-        "operationId": "listMarketingJourneys", "tags": ["marketing"], "summary": "List versioned Marketing journeys", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Journey list.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingJourney" } } } } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingJourneys",
+        "tags": ["marketing"],
+        "summary": "List versioned Marketing journeys",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Journey list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingJourney"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingJourney", "tags": ["marketing"], "summary": "Create a validated journey draft", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingJourneyInput" } } } },
-        "responses": { "201": { "description": "Journey created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingJourney" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingJourney",
+        "tags": ["marketing"],
+        "summary": "Create a validated journey draft",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingJourneyInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Journey created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingJourney" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/journeys/{journeyId}/activate": {
       "post": {
-        "operationId": "activateMarketingJourney", "tags": ["marketing"], "summary": "Activate a loop-free journey version",
-        "parameters": [{ "name": "journeyId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Journey activated.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingJourney" } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "activateMarketingJourney",
+        "tags": ["marketing"],
+        "summary": "Activate a loop-free journey version",
+        "parameters": [
+          {
+            "name": "journeyId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journey activated.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingJourney" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/journeys/{journeyId}/pause": {
       "post": {
-        "operationId": "pauseMarketingJourney", "tags": ["marketing"], "summary": "Pause new and queued journey execution", "parameters": [{ "name": "journeyId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Journey paused.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingJourney" } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "pauseMarketingJourney",
+        "tags": ["marketing"],
+        "summary": "Pause new and queued journey execution",
+        "parameters": [
+          {
+            "name": "journeyId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journey paused.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketingJourney" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/journeys/events": {
       "post": {
-        "operationId": "emitMarketingJourneyEvent", "tags": ["marketing"], "summary": "Idempotently enqueue matching journeys", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingJourneyEvent" } } } },
-        "responses": { "202": { "description": "Event accepted.", "content": { "application/json": { "schema": { "type": "object", "required": ["accepted", "executionIds"], "properties": { "accepted": { "type": "boolean" }, "executionIds": { "type": "array", "items": { "type": "string", "format": "uuid" } } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "emitMarketingJourneyEvent",
+        "tags": ["marketing"],
+        "summary": "Idempotently enqueue matching journeys",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MarketingJourneyEvent" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Event accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["accepted", "executionIds"],
+                  "properties": {
+                    "accepted": { "type": "boolean" },
+                    "executionIds": {
+                      "type": "array",
+                      "items": { "type": "string", "format": "uuid" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/journey-executions": {
       "get": {
-        "operationId": "listMarketingJourneyExecutions", "tags": ["marketing"], "summary": "List durable journey execution history",
-        "parameters": [{ "name": "journeyId", "in": "query", "schema": { "type": "string", "format": "uuid" } }, { "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Execution history.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingJourneyExecution" } } } } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.automation.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingJourneyExecutions",
+        "tags": ["marketing"],
+        "summary": "List durable journey execution history",
+        "parameters": [
+          {
+            "name": "journeyId",
+            "in": "query",
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Execution history.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingJourneyExecution"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.automation.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/webhooks": {
       "get": {
-        "operationId": "listMarketingWebhooks", "tags": ["marketing"], "summary": "List outgoing webhook subscriptions", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "responses": { "200": { "description": "Webhook subscriptions.", "content": { "application/json": { "schema": { "type": "object", "required": ["items"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingWebhookSubscription" } } } } } } }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.settings.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "listMarketingWebhooks",
+        "tags": ["marketing"],
+        "summary": "List outgoing webhook subscriptions",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Webhook subscriptions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MarketingWebhookSubscription"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.settings.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
-        "operationId": "createMarketingWebhook", "tags": ["marketing"], "summary": "Create an SSRF-checked signed outgoing webhook", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingWebhookSubscriptionInput" } } } },
-        "responses": { "201": { "description": "Webhook and one-time signing secret.", "content": { "application/json": { "schema": { "type": "object", "required": ["subscription", "signingSecret"], "properties": { "subscription": { "$ref": "#/components/schemas/MarketingWebhookSubscription" }, "signingSecret": { "type": "string" } } } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.settings.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "createMarketingWebhook",
+        "tags": ["marketing"],
+        "summary": "Create an SSRF-checked signed outgoing webhook",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingWebhookSubscriptionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Webhook and one-time signing secret.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["subscription", "signingSecret"],
+                  "properties": {
+                    "subscription": {
+                      "$ref": "#/components/schemas/MarketingWebhookSubscription"
+                    },
+                    "signingSecret": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.settings.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/marketing/ai/assist": {
       "post": {
-        "operationId": "assistMarketingWithAi", "tags": ["marketing"], "summary": "Generate an advisory draft through the shared AI Gateway", "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
-        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MarketingAiAssistInput" } } } },
-        "responses": { "200": { "description": "Draft-only AI result.", "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } } }, "400": { "$ref": "#/components/responses/BadRequest" }, "403": { "$ref": "#/components/responses/Forbidden" } },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }], "x-shongre-access": "permission", "x-shongre-permission": "marketing.campaigns.create", "x-shongre-source": "backend/src/api/v1/router.ts"
+        "operationId": "assistMarketingWithAi",
+        "tags": ["marketing"],
+        "summary": "Generate an advisory draft through the shared AI Gateway",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarketingAiAssistInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draft-only AI result.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "additionalProperties": true }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketing.campaigns.create",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/crm/dashboard": {
@@ -27396,10 +28929,26 @@
         "type": "object",
         "additionalProperties": true,
         "required": [
-          "code", "slug", "name", "nativeName", "enabled", "launchStatus",
-          "primaryDomain", "basePath", "defaultLocale", "supportedLocales",
-          "currency", "timezone", "phoneCountryCode", "seo", "marketplace",
-          "payments", "taxes", "monetization", "compliance", "launchContent"
+          "code",
+          "slug",
+          "name",
+          "nativeName",
+          "enabled",
+          "launchStatus",
+          "primaryDomain",
+          "basePath",
+          "defaultLocale",
+          "supportedLocales",
+          "currency",
+          "timezone",
+          "phoneCountryCode",
+          "seo",
+          "marketplace",
+          "payments",
+          "taxes",
+          "monetization",
+          "compliance",
+          "launchContent"
         ],
         "properties": {
           "code": { "$ref": "#/components/schemas/MarketCode" },
@@ -27409,16 +28958,30 @@
           "enabled": { "type": "boolean" },
           "launchStatus": {
             "type": "string",
-            "enum": ["disabled", "coming_soon", "private_beta", "beta", "active", "paused"]
+            "enum": [
+              "disabled",
+              "coming_soon",
+              "private_beta",
+              "beta",
+              "active",
+              "paused"
+            ]
           },
           "primaryDomain": { "type": "string", "format": "hostname" },
           "basePath": { "type": "string", "pattern": "^/$|^/[a-z0-9-]+$" },
           "defaultLocale": { "type": "string" },
-          "supportedLocales": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "supportedLocales": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
           "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
           "currencySymbol": { "type": "string" },
           "timezone": { "type": "string" },
-          "phoneCountryCode": { "type": "string", "pattern": "^\\+[1-9][0-9]{0,3}$" },
+          "phoneCountryCode": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{0,3}$"
+          },
           "addressFormat": { "type": "string" },
           "legalEntity": { "type": "string" },
           "seo": { "$ref": "#/components/schemas/JsonValue" },
@@ -27441,11 +29004,25 @@
           "name": { "type": "string", "minLength": 2, "maxLength": 100 },
           "nativeName": { "type": "string", "minLength": 2, "maxLength": 120 },
           "enabled": { "type": "boolean" },
-          "launchStatus": { "type": "string", "enum": ["disabled", "coming_soon", "private_beta", "beta", "active", "paused"] },
+          "launchStatus": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "coming_soon",
+              "private_beta",
+              "beta",
+              "active",
+              "paused"
+            ]
+          },
           "primaryDomain": { "type": "string", "format": "hostname" },
           "basePath": { "type": "string", "pattern": "^/$|^/[a-z0-9-]+$" },
           "defaultLocale": { "type": "string" },
-          "supportedLocales": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "supportedLocales": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
           "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
           "currencySymbol": { "type": "string" },
           "timezone": { "type": "string" },
@@ -28745,6 +30322,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "marketCode",
           "currency",
           "activeProspects",
           "openOpportunities",
@@ -28760,6 +30338,10 @@
           "stages"
         ],
         "properties": {
+          "marketCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
           "currency": {
             "type": "string",
             "pattern": "^[A-Z]{3}$"
@@ -29188,56 +30770,153 @@
         ]
       },
       "MarketingAccountSubscriptionInput": {
-        "type": "object", "additionalProperties": false, "required": ["consentGiven"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["consentGiven"],
         "properties": {
-          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "FR" },
-          "locale": { "type": "string", "minLength": 2, "maxLength": 16, "default": "fr-FR" },
-          "topics": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 80 }, "default": [] },
+          "marketCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "default": "FR"
+          },
+          "locale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 16,
+            "default": "fr-FR"
+          },
+          "topics": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "maxLength": 80 },
+            "default": []
+          },
           "consentGiven": { "type": "boolean", "enum": [true] }
         }
       },
       "MarketingAccountPreferencesInput": {
-        "type": "object", "additionalProperties": false, "required": ["topics"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topics"],
         "properties": {
-          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "FR" },
-          "topics": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 80 } }
+          "marketCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "default": "FR"
+          },
+          "topics": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "maxLength": 80 }
+          }
         }
       },
       "MarketingPublicSubscriptionInput": {
-        "type": "object", "additionalProperties": false, "required": ["email", "consentGiven"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "consentGiven"],
         "properties": {
           "email": { "type": "string", "format": "email" },
-          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$", "default": "FR" },
-          "locale": { "type": "string", "minLength": 2, "maxLength": 16, "default": "fr-FR" },
-          "topics": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 80 }, "default": [] },
-          "source": { "type": "string", "enum": ["HOMEPAGE", "FOOTER", "REGISTRATION", "NEWSLETTER_PAGE", "FORM"], "default": "NEWSLETTER_PAGE" },
+          "marketCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "default": "FR"
+          },
+          "locale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 16,
+            "default": "fr-FR"
+          },
+          "topics": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "maxLength": 80 },
+            "default": []
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "HOMEPAGE",
+              "FOOTER",
+              "REGISTRATION",
+              "NEWSLETTER_PAGE",
+              "FORM"
+            ],
+            "default": "NEWSLETTER_PAGE"
+          },
           "consentGiven": { "type": "boolean", "enum": [true] }
         }
       },
       "MarketingPublicAction": {
-        "type": "object", "additionalProperties": false, "required": ["token"],
-        "properties": { "token": { "type": "string", "minLength": 32, "maxLength": 512 } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["token"],
+        "properties": {
+          "token": { "type": "string", "minLength": 32, "maxLength": 512 }
+        }
       },
       "MarketingPublicPreferencesUpdate": {
         "allOf": [
           { "$ref": "#/components/schemas/MarketingPublicAction" },
-          { "type": "object", "required": ["topics"], "properties": { "topics": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 80 } } } }
+          {
+            "type": "object",
+            "required": ["topics"],
+            "properties": {
+              "topics": {
+                "type": "array",
+                "maxItems": 100,
+                "items": { "type": "string", "maxLength": 80 }
+              }
+            }
+          }
         ]
       },
       "MarketingSubscriptionReceipt": {
-        "type": "object", "additionalProperties": false, "required": ["accepted", "status", "message"],
-        "properties": { "accepted": { "type": "boolean", "enum": [true] }, "status": { "type": "string", "enum": ["PENDING_CONFIRMATION", "SUBSCRIBED", "UNCHANGED"] }, "message": { "type": "string", "minLength": 1, "maxLength": 500 } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["accepted", "status", "message"],
+        "properties": {
+          "accepted": { "type": "boolean", "enum": [true] },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING_CONFIRMATION", "SUBSCRIBED", "UNCHANGED"]
+          },
+          "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+        }
       },
       "MarketingSubscriptionView": {
-        "type": "object", "additionalProperties": false, "required": ["id", "email", "marketCode", "locale", "status", "topics"],
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "email", "marketCode", "locale", "status", "topics"],
         "properties": {
-          "id": { "type": "string", "format": "uuid" }, "email": { "type": "string", "format": "email" }, "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$" }, "locale": { "type": "string" }, "status": { "$ref": "#/components/schemas/MarketingProfileStatus" }, "topics": { "type": "array", "items": { "type": "string" } }, "subscribedAt": { "type": "string", "format": "date-time" }, "confirmedAt": { "type": "string", "format": "date-time" }, "unsubscribedAt": { "type": "string", "format": "date-time" }
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email" },
+          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "locale": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/MarketingProfileStatus" },
+          "topics": { "type": "array", "items": { "type": "string" } },
+          "subscribedAt": { "type": "string", "format": "date-time" },
+          "confirmedAt": { "type": "string", "format": "date-time" },
+          "unsubscribedAt": { "type": "string", "format": "date-time" }
         }
       },
       "MarketingDashboard": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["activeProfiles", "pendingProfiles", "suppressedProfiles", "campaignsSent", "scheduledCampaigns", "delivered", "deliveryRate", "uniqueClicks", "clickThroughRate", "unsubscribes", "providerConfigured"],
+        "required": [
+          "activeProfiles",
+          "pendingProfiles",
+          "suppressedProfiles",
+          "campaignsSent",
+          "scheduledCampaigns",
+          "delivered",
+          "deliveryRate",
+          "uniqueClicks",
+          "clickThroughRate",
+          "unsubscribes",
+          "providerConfigured"
+        ],
         "properties": {
           "activeProfiles": { "type": "integer", "minimum": 0 },
           "pendingProfiles": { "type": "integer", "minimum": 0 },
@@ -29254,7 +30933,15 @@
       },
       "MarketingProfileStatus": {
         "type": "string",
-        "enum": ["PENDING", "SUBSCRIBED", "UNSUBSCRIBED", "SUPPRESSED", "BOUNCED", "COMPLAINED", "INVALID"]
+        "enum": [
+          "PENDING",
+          "SUBSCRIBED",
+          "UNSUBSCRIBED",
+          "SUPPRESSED",
+          "BOUNCED",
+          "COMPLAINED",
+          "INVALID"
+        ]
       },
       "MarketingProfileInput": {
         "type": "object",
@@ -29269,9 +30956,28 @@
           "locale": { "type": "string", "minLength": 2, "maxLength": 16 },
           "timezone": { "type": "string", "maxLength": 80 },
           "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
-          "source": { "type": "string", "enum": ["HOMEPAGE", "FOOTER", "REGISTRATION", "ACCOUNT", "PRO_WORKSPACE", "NEWSLETTER_PAGE", "CRM", "IMPORT", "FORM", "API", "AUTOMATION"] },
+          "source": {
+            "type": "string",
+            "enum": [
+              "HOMEPAGE",
+              "FOOTER",
+              "REGISTRATION",
+              "ACCOUNT",
+              "PRO_WORKSPACE",
+              "NEWSLETTER_PAGE",
+              "CRM",
+              "IMPORT",
+              "FORM",
+              "API",
+              "AUTOMATION"
+            ]
+          },
           "sourceDetail": { "type": "string", "maxLength": 500 },
-          "topics": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 80 } },
+          "topics": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "maxLength": 80 }
+          },
           "customValues": { "type": "object", "additionalProperties": true }
         }
       },
@@ -29280,13 +30986,30 @@
           { "$ref": "#/components/schemas/MarketingProfileInput" },
           {
             "type": "object",
-            "required": ["id", "tenantId", "workspaceId", "normalizedEmail", "status", "locale", "timezone", "country", "source", "topics", "customValues", "version", "createdAt", "updatedAt"],
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "normalizedEmail",
+              "status",
+              "locale",
+              "timezone",
+              "country",
+              "source",
+              "topics",
+              "customValues",
+              "version",
+              "createdAt",
+              "updatedAt"
+            ],
             "properties": {
               "id": { "type": "string", "format": "uuid" },
               "tenantId": { "type": "string", "format": "uuid" },
               "workspaceId": { "type": "string", "format": "uuid" },
               "normalizedEmail": { "type": "string", "format": "email" },
-              "status": { "$ref": "#/components/schemas/MarketingProfileStatus" },
+              "status": {
+                "$ref": "#/components/schemas/MarketingProfileStatus"
+              },
               "subscribedAt": { "type": "string", "format": "date-time" },
               "confirmedAt": { "type": "string", "format": "date-time" },
               "unsubscribedAt": { "type": "string", "format": "date-time" },
@@ -29305,15 +31028,38 @@
         "properties": {
           "name": { "type": "string", "minLength": 1, "maxLength": 160 },
           "description": { "type": "string", "maxLength": 2000 },
-          "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"], "default": "ACTIVE" }
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "ARCHIVED"],
+            "default": "ACTIVE"
+          }
         }
       },
       "MarketingList": {
         "allOf": [
           { "$ref": "#/components/schemas/MarketingListInput" },
-          { "type": "object", "required": ["id", "tenantId", "workspaceId", "status", "memberCount", "version", "createdAt", "updatedAt"], "properties": {
-            "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" }, "memberCount": { "type": "integer", "minimum": 0 }, "version": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }
-          } }
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "status",
+              "memberCount",
+              "version",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "memberCount": { "type": "integer", "minimum": 0 },
+              "version": { "type": "integer", "minimum": 1 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
         ]
       },
       "MarketingSegmentDefinition": {
@@ -29322,12 +31068,44 @@
         "required": ["combinator", "conditions"],
         "properties": {
           "combinator": { "type": "string", "enum": ["AND", "OR"] },
-          "conditions": { "type": "array", "maxItems": 50, "items": { "type": "object", "additionalProperties": false, "required": ["field", "operator"], "properties": {
-            "field": { "type": "string", "pattern": "^[a-z][a-z0-9_.]{1,119}$" },
-            "operator": { "type": "string", "enum": ["EQUALS", "NOT_EQUALS", "CONTAINS", "IN", "NOT_IN", "EXISTS", "GREATER_THAN", "LESS_THAN", "BEFORE", "AFTER"] },
-            "value": {}
-          } } },
-          "groups": { "type": "array", "maxItems": 8, "items": { "$ref": "#/components/schemas/MarketingSegmentDefinition" } }
+          "conditions": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["field", "operator"],
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_.]{1,119}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": [
+                    "EQUALS",
+                    "NOT_EQUALS",
+                    "CONTAINS",
+                    "IN",
+                    "NOT_IN",
+                    "EXISTS",
+                    "GREATER_THAN",
+                    "LESS_THAN",
+                    "BEFORE",
+                    "AFTER"
+                  ]
+                },
+                "value": {}
+              }
+            }
+          },
+          "groups": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/components/schemas/MarketingSegmentDefinition"
+            }
+          }
         }
       },
       "MarketingSegmentInput": {
@@ -29337,16 +31115,42 @@
         "properties": {
           "name": { "type": "string", "minLength": 1, "maxLength": 160 },
           "description": { "type": "string", "maxLength": 2000 },
-          "definition": { "$ref": "#/components/schemas/MarketingSegmentDefinition" },
-          "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"], "default": "ACTIVE" }
+          "definition": {
+            "$ref": "#/components/schemas/MarketingSegmentDefinition"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "ARCHIVED"],
+            "default": "ACTIVE"
+          }
         }
       },
       "MarketingSegment": {
         "allOf": [
           { "$ref": "#/components/schemas/MarketingSegmentInput" },
-          { "type": "object", "required": ["id", "tenantId", "workspaceId", "status", "estimatedCount", "version", "createdAt", "updatedAt"], "properties": {
-            "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" }, "estimatedCount": { "type": "integer", "minimum": 0 }, "lastEstimatedAt": { "type": "string", "format": "date-time" }, "version": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }
-          } }
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "status",
+              "estimatedCount",
+              "version",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "estimatedCount": { "type": "integer", "minimum": 0 },
+              "lastEstimatedAt": { "type": "string", "format": "date-time" },
+              "version": { "type": "integer", "minimum": 1 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
         ]
       },
       "MarketingContent": {
@@ -29354,7 +31158,33 @@
         "additionalProperties": false,
         "required": ["blocks"],
         "properties": {
-          "blocks": { "type": "array", "minItems": 1, "maxItems": 200, "items": { "type": "object", "required": ["id", "type"], "properties": { "id": { "type": "string" }, "type": { "type": "string", "enum": ["HEADING", "PARAGRAPH", "IMAGE", "BUTTON", "DIVIDER", "SPACER", "UNSUBSCRIBE", "PREFERENCE_CENTER", "FOOTER"] } }, "additionalProperties": true } },
+          "blocks": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "required": ["id", "type"],
+              "properties": {
+                "id": { "type": "string" },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "HEADING",
+                    "PARAGRAPH",
+                    "IMAGE",
+                    "BUTTON",
+                    "DIVIDER",
+                    "SPACER",
+                    "UNSUBSCRIBE",
+                    "PREFERENCE_CENTER",
+                    "FOOTER"
+                  ]
+                }
+              },
+              "additionalProperties": true
+            }
+          },
           "plainText": { "type": "string", "maxLength": 100000 }
         }
       },
@@ -29362,41 +31192,123 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "includeListIds": { "type": "array", "maxItems": 100, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "includeSegmentIds": { "type": "array", "maxItems": 100, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "includeProfileIds": { "type": "array", "maxItems": 1000, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "excludeListIds": { "type": "array", "maxItems": 100, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "excludeSegmentIds": { "type": "array", "maxItems": 100, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "excludeProfileIds": { "type": "array", "maxItems": 1000, "items": { "type": "string", "format": "uuid" }, "default": [] },
-          "recentRecipientDays": { "type": "integer", "minimum": 1, "maximum": 365 }
+          "includeListIds": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "includeSegmentIds": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "includeProfileIds": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "excludeListIds": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "excludeSegmentIds": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "excludeProfileIds": {
+            "type": "array",
+            "maxItems": 1000,
+            "items": { "type": "string", "format": "uuid" },
+            "default": []
+          },
+          "recentRecipientDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 365
+          }
         }
       },
       "MarketingTemplateInput": {
-        "type": "object", "additionalProperties": false, "required": ["name", "category", "locale", "subject", "content"], "properties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "category", "locale", "subject", "content"],
+        "properties": {
           "name": { "type": "string", "minLength": 1, "maxLength": 160 },
-          "category": { "type": "string", "enum": ["NEWSLETTER", "PROMOTION", "ANNOUNCEMENT", "PRODUCT_UPDATE", "WELCOME", "EVENT", "RE_ENGAGEMENT", "PROFESSIONAL_INSIGHTS", "CUSTOM"] },
+          "category": {
+            "type": "string",
+            "enum": [
+              "NEWSLETTER",
+              "PROMOTION",
+              "ANNOUNCEMENT",
+              "PRODUCT_UPDATE",
+              "WELCOME",
+              "EVENT",
+              "RE_ENGAGEMENT",
+              "PROFESSIONAL_INSIGHTS",
+              "CUSTOM"
+            ]
+          },
           "locale": { "type": "string", "minLength": 2, "maxLength": 16 },
-          "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"], "default": "ACTIVE" },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "ARCHIVED"],
+            "default": "ACTIVE"
+          },
           "subject": { "type": "string", "minLength": 1, "maxLength": 998 },
           "previewText": { "type": "string", "maxLength": 500 },
           "content": { "$ref": "#/components/schemas/MarketingContent" }
         }
       },
       "MarketingTemplate": {
-        "allOf": [{ "$ref": "#/components/schemas/MarketingTemplateInput" }, { "type": "object", "required": ["id", "tenantId", "workspaceId", "status", "currentVersion", "createdAt", "updatedAt"], "properties": {
-          "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" }, "currentVersion": { "type": "integer", "minimum": 1 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }
-        } }]
+        "allOf": [
+          { "$ref": "#/components/schemas/MarketingTemplateInput" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "status",
+              "currentVersion",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "currentVersion": { "type": "integer", "minimum": 1 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
       },
       "MarketingCampaignInput": {
-        "type": "object", "additionalProperties": false, "required": ["name", "subject", "content", "audience"], "properties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "subject", "content", "audience"],
+        "properties": {
           "name": { "type": "string", "minLength": 1, "maxLength": 255 },
-          "campaignType": { "type": "string", "enum": ["NEWSLETTER", "PROMOTION", "LIFECYCLE", "ANNOUNCEMENT"] },
+          "campaignType": {
+            "type": "string",
+            "enum": ["NEWSLETTER", "PROMOTION", "LIFECYCLE", "ANNOUNCEMENT"]
+          },
           "locale": { "type": "string", "minLength": 2, "maxLength": 16 },
           "timezone": { "type": "string", "maxLength": 80 },
           "subject": { "type": "string", "minLength": 1, "maxLength": 998 },
           "previewText": { "type": "string", "maxLength": 500 },
           "content": { "$ref": "#/components/schemas/MarketingContent" },
-          "audience": { "$ref": "#/components/schemas/MarketingAudienceDefinition" },
+          "audience": {
+            "$ref": "#/components/schemas/MarketingAudienceDefinition"
+          },
           "templateId": { "type": "string", "format": "uuid" },
           "templateVersion": { "type": "integer", "minimum": 1 },
           "senderIdentityId": { "type": "string", "format": "uuid" },
@@ -29406,91 +31318,613 @@
         }
       },
       "MarketingCampaign": {
-        "allOf": [{ "$ref": "#/components/schemas/MarketingCampaignInput" }, { "type": "object", "required": ["id", "tenantId", "workspaceId", "campaignType", "status", "locale", "timezone", "currentVersion", "createdBy", "createdAt", "updatedAt"], "properties": {
-          "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" },
-          "status": { "type": "string", "enum": ["DRAFT", "REVIEW", "APPROVED", "SCHEDULED", "QUEUED", "SENDING", "PAUSED", "COMPLETED", "CANCELLED", "FAILED"] },
-          "scheduledAt": { "type": "string", "format": "date-time" }, "startedAt": { "type": "string", "format": "date-time" }, "completedAt": { "type": "string", "format": "date-time" },
-          "currentVersion": { "type": "integer", "minimum": 1 }, "createdBy": { "type": "string", "format": "uuid" }, "approvedBy": { "type": "string", "format": "uuid" }, "winningVariantId": { "type": "string", "maxLength": 80 }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }
-        } }]
+        "allOf": [
+          { "$ref": "#/components/schemas/MarketingCampaignInput" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "campaignType",
+              "status",
+              "locale",
+              "timezone",
+              "currentVersion",
+              "createdBy",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "DRAFT",
+                  "REVIEW",
+                  "APPROVED",
+                  "SCHEDULED",
+                  "QUEUED",
+                  "SENDING",
+                  "PAUSED",
+                  "COMPLETED",
+                  "CANCELLED",
+                  "FAILED"
+                ]
+              },
+              "scheduledAt": { "type": "string", "format": "date-time" },
+              "startedAt": { "type": "string", "format": "date-time" },
+              "completedAt": { "type": "string", "format": "date-time" },
+              "currentVersion": { "type": "integer", "minimum": 1 },
+              "createdBy": { "type": "string", "format": "uuid" },
+              "approvedBy": { "type": "string", "format": "uuid" },
+              "winningVariantId": { "type": "string", "maxLength": 80 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
       },
       "MarketingAudienceEstimate": {
-        "type": "object", "additionalProperties": false, "required": ["selected", "eligible", "excluded", "unsubscribed", "suppressed", "invalid", "doNotContact", "duplicate", "frequencyCapped", "calculatedAt"], "properties": {
-          "selected": { "type": "integer", "minimum": 0 }, "eligible": { "type": "integer", "minimum": 0 }, "excluded": { "type": "integer", "minimum": 0 }, "unsubscribed": { "type": "integer", "minimum": 0 }, "suppressed": { "type": "integer", "minimum": 0 }, "invalid": { "type": "integer", "minimum": 0 }, "doNotContact": { "type": "integer", "minimum": 0 }, "duplicate": { "type": "integer", "minimum": 0 }, "frequencyCapped": { "type": "integer", "minimum": 0 }, "calculatedAt": { "type": "string", "format": "date-time" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "selected",
+          "eligible",
+          "excluded",
+          "unsubscribed",
+          "suppressed",
+          "invalid",
+          "doNotContact",
+          "duplicate",
+          "frequencyCapped",
+          "calculatedAt"
+        ],
+        "properties": {
+          "selected": { "type": "integer", "minimum": 0 },
+          "eligible": { "type": "integer", "minimum": 0 },
+          "excluded": { "type": "integer", "minimum": 0 },
+          "unsubscribed": { "type": "integer", "minimum": 0 },
+          "suppressed": { "type": "integer", "minimum": 0 },
+          "invalid": { "type": "integer", "minimum": 0 },
+          "doNotContact": { "type": "integer", "minimum": 0 },
+          "duplicate": { "type": "integer", "minimum": 0 },
+          "frequencyCapped": { "type": "integer", "minimum": 0 },
+          "calculatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "MarketingPreflight": {
-        "type": "object", "additionalProperties": false, "required": ["campaignId", "blockers", "warnings", "info", "audience", "checkedAt", "canSend"], "properties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "campaignId",
+          "blockers",
+          "warnings",
+          "info",
+          "audience",
+          "checkedAt",
+          "canSend"
+        ],
+        "properties": {
           "campaignId": { "type": "string", "format": "uuid" },
-          "blockers": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" } },
-          "warnings": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" } },
-          "info": { "type": "array", "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" } },
-          "audience": { "$ref": "#/components/schemas/MarketingAudienceEstimate" },
-          "checkedAt": { "type": "string", "format": "date-time" }, "canSend": { "type": "boolean" }
+          "blockers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" }
+          },
+          "warnings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" }
+          },
+          "info": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MarketingPreflightIssue" }
+          },
+          "audience": {
+            "$ref": "#/components/schemas/MarketingAudienceEstimate"
+          },
+          "checkedAt": { "type": "string", "format": "date-time" },
+          "canSend": { "type": "boolean" }
         }
       },
       "MarketingPreflightIssue": {
-        "type": "object", "additionalProperties": false, "required": ["code", "message"], "properties": {
-          "code": { "type": "string" }, "message": { "type": "string" }, "field": { "type": "string" }, "actionHref": { "type": "string" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string" },
+          "message": { "type": "string" },
+          "field": { "type": "string" },
+          "actionHref": { "type": "string" }
         }
       },
       "MarketingExperiment": {
-        "type": "object", "additionalProperties": false, "required": ["enabled", "testPercentage", "durationMinutes", "winnerMetric", "winnerMode", "variants"], "properties": {
-          "enabled": { "type": "boolean" }, "testPercentage": { "type": "integer", "minimum": 1, "maximum": 100 }, "durationMinutes": { "type": "integer", "minimum": 15, "maximum": 10080 }, "winnerMetric": { "type": "string", "enum": ["CLICK_RATE", "CONVERSION_RATE", "OPEN_RATE"] }, "winnerMode": { "type": "string", "enum": ["AUTOMATIC", "MANUAL"] },
-          "variants": { "type": "array", "minItems": 2, "maxItems": 8, "items": { "type": "object", "additionalProperties": false, "required": ["id", "name", "weight"], "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,79}$" }, "name": { "type": "string", "maxLength": 120 }, "weight": { "type": "integer", "minimum": 1, "maximum": 100 }, "subject": { "type": "string", "maxLength": 998 }, "previewText": { "type": "string", "maxLength": 500 }, "content": { "$ref": "#/components/schemas/MarketingContent" } } } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enabled",
+          "testPercentage",
+          "durationMinutes",
+          "winnerMetric",
+          "winnerMode",
+          "variants"
+        ],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "testPercentage": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 15,
+            "maximum": 10080
+          },
+          "winnerMetric": {
+            "type": "string",
+            "enum": ["CLICK_RATE", "CONVERSION_RATE", "OPEN_RATE"]
+          },
+          "winnerMode": { "type": "string", "enum": ["AUTOMATIC", "MANUAL"] },
+          "variants": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "name", "weight"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,79}$"
+                },
+                "name": { "type": "string", "maxLength": 120 },
+                "weight": { "type": "integer", "minimum": 1, "maximum": 100 },
+                "subject": { "type": "string", "maxLength": 998 },
+                "previewText": { "type": "string", "maxLength": 500 },
+                "content": { "$ref": "#/components/schemas/MarketingContent" }
+              }
+            }
+          }
         }
       },
       "MarketingAnalytics": {
-        "type": "object", "additionalProperties": false, "required": ["audienceSize", "eligibleRecipients", "attempted", "accepted", "delivered", "deliveryRate", "softBounces", "hardBounces", "complaints", "unsubscribes", "uniqueOpens", "uniqueClicks", "clickThroughRate", "conversions", "conversionRate", "openMetricCaveat", "variants", "calculatedAt"], "properties": {
-          "audienceSize": { "type": "integer", "minimum": 0 }, "eligibleRecipients": { "type": "integer", "minimum": 0 }, "attempted": { "type": "integer", "minimum": 0 }, "accepted": { "type": "integer", "minimum": 0 }, "delivered": { "type": "integer", "minimum": 0 }, "deliveryRate": { "type": "number", "minimum": 0, "maximum": 1 }, "softBounces": { "type": "integer", "minimum": 0 }, "hardBounces": { "type": "integer", "minimum": 0 }, "complaints": { "type": "integer", "minimum": 0 }, "unsubscribes": { "type": "integer", "minimum": 0 }, "uniqueOpens": { "type": "integer", "minimum": 0 }, "uniqueClicks": { "type": "integer", "minimum": 0 }, "clickThroughRate": { "type": "number", "minimum": 0, "maximum": 1 }, "conversions": { "type": "integer", "minimum": 0 }, "conversionRate": { "type": "number", "minimum": 0, "maximum": 1 }, "openMetricCaveat": { "type": "string" }, "variants": { "type": "array", "items": { "type": "object", "additionalProperties": true } }, "calculatedAt": { "type": "string", "format": "date-time" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "audienceSize",
+          "eligibleRecipients",
+          "attempted",
+          "accepted",
+          "delivered",
+          "deliveryRate",
+          "softBounces",
+          "hardBounces",
+          "complaints",
+          "unsubscribes",
+          "uniqueOpens",
+          "uniqueClicks",
+          "clickThroughRate",
+          "conversions",
+          "conversionRate",
+          "openMetricCaveat",
+          "variants",
+          "calculatedAt"
+        ],
+        "properties": {
+          "audienceSize": { "type": "integer", "minimum": 0 },
+          "eligibleRecipients": { "type": "integer", "minimum": 0 },
+          "attempted": { "type": "integer", "minimum": 0 },
+          "accepted": { "type": "integer", "minimum": 0 },
+          "delivered": { "type": "integer", "minimum": 0 },
+          "deliveryRate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "softBounces": { "type": "integer", "minimum": 0 },
+          "hardBounces": { "type": "integer", "minimum": 0 },
+          "complaints": { "type": "integer", "minimum": 0 },
+          "unsubscribes": { "type": "integer", "minimum": 0 },
+          "uniqueOpens": { "type": "integer", "minimum": 0 },
+          "uniqueClicks": { "type": "integer", "minimum": 0 },
+          "clickThroughRate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "conversions": { "type": "integer", "minimum": 0 },
+          "conversionRate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "openMetricCaveat": { "type": "string" },
+          "variants": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "calculatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "MarketingEntitlements": {
-        "type": "object", "additionalProperties": false, "required": ["enabled", "maxContacts", "maxMonthlySends", "maxLists", "maxSegments", "maxUsers", "templates", "automation", "abTesting", "advancedAnalytics", "byoEmail", "platformEmail", "customDomain", "api", "webhooks", "ai"], "properties": {
-          "enabled": { "type": "boolean" }, "maxContacts": { "type": "integer", "minimum": 1 }, "maxMonthlySends": { "type": "integer", "minimum": 1 }, "maxLists": { "type": "integer", "minimum": 1 }, "maxSegments": { "type": "integer", "minimum": 1 }, "maxUsers": { "type": "integer", "minimum": 1 }, "templates": { "type": "boolean" }, "automation": { "type": "boolean" }, "abTesting": { "type": "boolean" }, "advancedAnalytics": { "type": "boolean" }, "byoEmail": { "type": "boolean" }, "platformEmail": { "type": "boolean" }, "customDomain": { "type": "boolean" }, "api": { "type": "boolean" }, "webhooks": { "type": "boolean" }, "ai": { "type": "boolean" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enabled",
+          "maxContacts",
+          "maxMonthlySends",
+          "maxLists",
+          "maxSegments",
+          "maxUsers",
+          "templates",
+          "automation",
+          "abTesting",
+          "advancedAnalytics",
+          "byoEmail",
+          "platformEmail",
+          "customDomain",
+          "api",
+          "webhooks",
+          "ai"
+        ],
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "maxContacts": { "type": "integer", "minimum": 1 },
+          "maxMonthlySends": { "type": "integer", "minimum": 1 },
+          "maxLists": { "type": "integer", "minimum": 1 },
+          "maxSegments": { "type": "integer", "minimum": 1 },
+          "maxUsers": { "type": "integer", "minimum": 1 },
+          "templates": { "type": "boolean" },
+          "automation": { "type": "boolean" },
+          "abTesting": { "type": "boolean" },
+          "advancedAnalytics": { "type": "boolean" },
+          "byoEmail": { "type": "boolean" },
+          "platformEmail": { "type": "boolean" },
+          "customDomain": { "type": "boolean" },
+          "api": { "type": "boolean" },
+          "webhooks": { "type": "boolean" },
+          "ai": { "type": "boolean" }
         }
       },
       "MarketingUsage": {
-        "type": "object", "additionalProperties": false, "required": ["period", "activeProfiles", "attemptedSends", "campaignCount", "automationExecutions", "apiRequests", "entitlements"], "properties": {
-          "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" }, "activeProfiles": { "type": "integer", "minimum": 0 }, "attemptedSends": { "type": "integer", "minimum": 0 }, "campaignCount": { "type": "integer", "minimum": 0 }, "automationExecutions": { "type": "integer", "minimum": 0 }, "apiRequests": { "type": "integer", "minimum": 0 }, "entitlements": { "$ref": "#/components/schemas/MarketingEntitlements" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "period",
+          "activeProfiles",
+          "attemptedSends",
+          "campaignCount",
+          "automationExecutions",
+          "apiRequests",
+          "entitlements"
+        ],
+        "properties": {
+          "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+          "activeProfiles": { "type": "integer", "minimum": 0 },
+          "attemptedSends": { "type": "integer", "minimum": 0 },
+          "campaignCount": { "type": "integer", "minimum": 0 },
+          "automationExecutions": { "type": "integer", "minimum": 0 },
+          "apiRequests": { "type": "integer", "minimum": 0 },
+          "entitlements": {
+            "$ref": "#/components/schemas/MarketingEntitlements"
+          }
         }
       },
       "MarketingJourneyDefinition": {
-        "type": "object", "additionalProperties": false, "required": ["trigger", "entryNodeId", "nodes", "maxExecutionDepth"], "properties": {
-          "trigger": { "type": "object", "additionalProperties": false, "required": ["type", "configuration"], "properties": { "type": { "type": "string", "enum": ["SUBSCRIBER_CREATED", "SUBSCRIBER_CONFIRMED", "LIST_JOINED", "FORM_SUBMITTED", "TAG_ADDED", "CRM_CONTACT_CREATED", "CRM_STAGE_CHANGED", "CAMPAIGN_CLICKED", "SUBSCRIPTION_STARTED", "SUBSCRIPTION_CANCELLED", "SCHEDULED_DATE", "EXTERNAL_EVENT"] }, "configuration": { "type": "object", "additionalProperties": true } } },
-          "entryNodeId": { "type": "string", "maxLength": 80 }, "maxExecutionDepth": { "type": "integer", "minimum": 1, "maximum": 100 },
-          "nodes": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "type": "object", "additionalProperties": false, "required": ["id", "type", "configuration"], "properties": { "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,79}$" }, "type": { "type": "string", "enum": ["CONDITION", "WAIT", "SEND_EMAIL", "BRANCH", "ADD_TO_LIST", "REMOVE_FROM_LIST", "ADD_TAG", "REMOVE_TAG", "UPDATE_FIELD", "CREATE_CRM_TASK", "RECORD_CRM_ACTIVITY", "CALL_WEBHOOK", "RUN_AI", "END"] }, "nextNodeId": { "type": "string", "maxLength": 80 }, "alternateNodeId": { "type": "string", "maxLength": 80 }, "configuration": { "type": "object", "additionalProperties": true } } } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["trigger", "entryNodeId", "nodes", "maxExecutionDepth"],
+        "properties": {
+          "trigger": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "configuration"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "SUBSCRIBER_CREATED",
+                  "SUBSCRIBER_CONFIRMED",
+                  "LIST_JOINED",
+                  "FORM_SUBMITTED",
+                  "TAG_ADDED",
+                  "CRM_CONTACT_CREATED",
+                  "CRM_STAGE_CHANGED",
+                  "CAMPAIGN_CLICKED",
+                  "SUBSCRIPTION_STARTED",
+                  "SUBSCRIPTION_CANCELLED",
+                  "SCHEDULED_DATE",
+                  "EXTERNAL_EVENT"
+                ]
+              },
+              "configuration": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "entryNodeId": { "type": "string", "maxLength": 80 },
+          "maxExecutionDepth": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "nodes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "type", "configuration"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_-]{0,79}$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "CONDITION",
+                    "WAIT",
+                    "SEND_EMAIL",
+                    "BRANCH",
+                    "ADD_TO_LIST",
+                    "REMOVE_FROM_LIST",
+                    "ADD_TAG",
+                    "REMOVE_TAG",
+                    "UPDATE_FIELD",
+                    "CREATE_CRM_TASK",
+                    "RECORD_CRM_ACTIVITY",
+                    "CALL_WEBHOOK",
+                    "RUN_AI",
+                    "END"
+                  ]
+                },
+                "nextNodeId": { "type": "string", "maxLength": 80 },
+                "alternateNodeId": { "type": "string", "maxLength": 80 },
+                "configuration": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
         }
       },
       "MarketingJourneyInput": {
-        "type": "object", "additionalProperties": false, "required": ["name", "definition"], "properties": { "name": { "type": "string", "minLength": 1, "maxLength": 160 }, "description": { "type": "string", "maxLength": 2000 }, "definition": { "$ref": "#/components/schemas/MarketingJourneyDefinition" } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "definition"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "description": { "type": "string", "maxLength": 2000 },
+          "definition": {
+            "$ref": "#/components/schemas/MarketingJourneyDefinition"
+          }
+        }
       },
       "MarketingJourney": {
-        "allOf": [{ "$ref": "#/components/schemas/MarketingJourneyInput" }, { "type": "object", "required": ["id", "tenantId", "workspaceId", "status", "currentVersion", "createdBy", "createdAt", "updatedAt"], "properties": { "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" }, "status": { "type": "string", "enum": ["DRAFT", "ACTIVE", "PAUSED", "ARCHIVED"] }, "currentVersion": { "type": "integer", "minimum": 1 }, "createdBy": { "type": "string", "format": "uuid" }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" } } }]
+        "allOf": [
+          { "$ref": "#/components/schemas/MarketingJourneyInput" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "status",
+              "currentVersion",
+              "createdBy",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "status": {
+                "type": "string",
+                "enum": ["DRAFT", "ACTIVE", "PAUSED", "ARCHIVED"]
+              },
+              "currentVersion": { "type": "integer", "minimum": 1 },
+              "createdBy": { "type": "string", "format": "uuid" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
       },
       "MarketingJourneyEvent": {
-        "type": "object", "additionalProperties": false, "required": ["type", "eventId"], "properties": { "type": { "type": "string", "enum": ["SUBSCRIBER_CREATED", "SUBSCRIBER_CONFIRMED", "LIST_JOINED", "FORM_SUBMITTED", "TAG_ADDED", "CRM_CONTACT_CREATED", "CRM_STAGE_CHANGED", "CAMPAIGN_CLICKED", "SUBSCRIPTION_STARTED", "SUBSCRIPTION_CANCELLED", "SCHEDULED_DATE", "EXTERNAL_EVENT"] }, "eventId": { "type": "string", "minLength": 1, "maxLength": 255 }, "profileId": { "type": "string", "format": "uuid" }, "safeContext": { "type": "object", "additionalProperties": true } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "eventId"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "SUBSCRIBER_CREATED",
+              "SUBSCRIBER_CONFIRMED",
+              "LIST_JOINED",
+              "FORM_SUBMITTED",
+              "TAG_ADDED",
+              "CRM_CONTACT_CREATED",
+              "CRM_STAGE_CHANGED",
+              "CAMPAIGN_CLICKED",
+              "SUBSCRIPTION_STARTED",
+              "SUBSCRIPTION_CANCELLED",
+              "SCHEDULED_DATE",
+              "EXTERNAL_EVENT"
+            ]
+          },
+          "eventId": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "profileId": { "type": "string", "format": "uuid" },
+          "safeContext": { "type": "object", "additionalProperties": true }
+        }
       },
       "MarketingJourneyExecution": {
-        "type": "object", "additionalProperties": false, "required": ["id", "tenantId", "journeyId", "journeyVersion", "eventId", "status", "depth", "availableAt", "createdAt", "updatedAt"], "properties": { "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "journeyId": { "type": "string", "format": "uuid" }, "journeyVersion": { "type": "integer", "minimum": 1 }, "profileId": { "type": "string", "format": "uuid" }, "eventId": { "type": "string" }, "status": { "type": "string", "enum": ["QUEUED", "RUNNING", "WAITING", "COMPLETED", "FAILED", "STOPPED"] }, "currentNodeId": { "type": "string" }, "depth": { "type": "integer", "minimum": 0 }, "availableAt": { "type": "string", "format": "date-time" }, "lastErrorCode": { "type": "string" }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "journeyId",
+          "journeyVersion",
+          "eventId",
+          "status",
+          "depth",
+          "availableAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "tenantId": { "type": "string", "format": "uuid" },
+          "journeyId": { "type": "string", "format": "uuid" },
+          "journeyVersion": { "type": "integer", "minimum": 1 },
+          "profileId": { "type": "string", "format": "uuid" },
+          "eventId": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "RUNNING",
+              "WAITING",
+              "COMPLETED",
+              "FAILED",
+              "STOPPED"
+            ]
+          },
+          "currentNodeId": { "type": "string" },
+          "depth": { "type": "integer", "minimum": 0 },
+          "availableAt": { "type": "string", "format": "date-time" },
+          "lastErrorCode": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
       },
       "MarketingWebhookSubscriptionInput": {
-        "type": "object", "additionalProperties": false, "required": ["url", "eventTypes"], "properties": { "url": { "type": "string", "format": "uri", "pattern": "^https://" }, "eventTypes": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]{1,119}$" } } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "eventTypes"],
+        "properties": {
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "eventTypes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_.-]{1,119}$"
+            }
+          }
+        }
       },
       "MarketingWebhookSubscription": {
-        "allOf": [{ "$ref": "#/components/schemas/MarketingWebhookSubscriptionInput" }, { "type": "object", "required": ["id", "tenantId", "workspaceId", "status", "signingSecretHint", "createdAt", "updatedAt"], "properties": { "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "workspaceId": { "type": "string", "format": "uuid" }, "status": { "type": "string", "enum": ["ACTIVE", "PAUSED", "DISABLED"] }, "signingSecretHint": { "type": "string" }, "lastDeliveredAt": { "type": "string", "format": "date-time" }, "lastFailureAt": { "type": "string", "format": "date-time" }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" } } }]
+        "allOf": [
+          { "$ref": "#/components/schemas/MarketingWebhookSubscriptionInput" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "tenantId",
+              "workspaceId",
+              "status",
+              "signingSecretHint",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "tenantId": { "type": "string", "format": "uuid" },
+              "workspaceId": { "type": "string", "format": "uuid" },
+              "status": {
+                "type": "string",
+                "enum": ["ACTIVE", "PAUSED", "DISABLED"]
+              },
+              "signingSecretHint": { "type": "string" },
+              "lastDeliveredAt": { "type": "string", "format": "date-time" },
+              "lastFailureAt": { "type": "string", "format": "date-time" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
       },
       "MarketingAiAssistInput": {
-        "type": "object", "additionalProperties": false, "required": ["task", "instructions"], "properties": { "task": { "type": "string", "enum": ["marketing.campaign_draft", "marketing.subject_generation", "marketing.preview_generation", "marketing.content_rewrite", "marketing.ab_generation", "marketing.translation", "marketing.performance_analysis", "marketing.segment_suggestion"] }, "instructions": { "type": "string", "minLength": 3, "maxLength": 5000 }, "locale": { "type": "string", "minLength": 2, "maxLength": 16 }, "safeContext": { "type": "object", "additionalProperties": true } }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task", "instructions"],
+        "properties": {
+          "task": {
+            "type": "string",
+            "enum": [
+              "marketing.campaign_draft",
+              "marketing.subject_generation",
+              "marketing.preview_generation",
+              "marketing.content_rewrite",
+              "marketing.ab_generation",
+              "marketing.translation",
+              "marketing.performance_analysis",
+              "marketing.segment_suggestion"
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 5000
+          },
+          "locale": { "type": "string", "minLength": 2, "maxLength": 16 },
+          "safeContext": { "type": "object", "additionalProperties": true }
+        }
       },
       "MarketingConversionInput": {
-        "type": "object", "additionalProperties": false, "required": ["idempotencyKey", "conversionType", "occurredAt"], "properties": {
-          "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 255 }, "campaignRecipientId": { "type": "string", "format": "uuid" }, "profileId": { "type": "string", "format": "uuid" }, "conversionType": { "type": "string", "minLength": 2, "maxLength": 120 }, "externalSubjectId": { "type": "string", "maxLength": 255 }, "amountMinor": { "type": "integer", "minimum": 0 }, "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }, "occurredAt": { "type": "string", "format": "date-time" }, "safeMetadata": { "type": "object", "additionalProperties": true }
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["idempotencyKey", "conversionType", "occurredAt"],
+        "properties": {
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "campaignRecipientId": { "type": "string", "format": "uuid" },
+          "profileId": { "type": "string", "format": "uuid" },
+          "conversionType": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "externalSubjectId": { "type": "string", "maxLength": 255 },
+          "amountMinor": { "type": "integer", "minimum": 0 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "occurredAt": { "type": "string", "format": "date-time" },
+          "safeMetadata": { "type": "object", "additionalProperties": true }
         }
       },
       "MarketingSuppression": {
-        "type": "object", "additionalProperties": false, "required": ["id", "tenantId", "normalizedEmail", "reason", "source", "occurredAt", "createdAt", "updatedAt"], "properties": {
-          "id": { "type": "string", "format": "uuid" }, "tenantId": { "type": "string", "format": "uuid" }, "normalizedEmail": { "type": "string", "format": "email" }, "profileId": { "type": "string", "format": "uuid" },
-          "reason": { "type": "string", "enum": ["UNSUBSCRIBED", "HARD_BOUNCE", "COMPLAINT", "INVALID", "MANUAL", "LEGAL", "PROVIDER_SUPPRESSION"] }, "source": { "type": "string" }, "providerConnectionId": { "type": "string", "format": "uuid" }, "occurredAt": { "type": "string", "format": "date-time" }, "releasedAt": { "type": "string", "format": "date-time" }, "createdAt": { "type": "string", "format": "date-time" }, "updatedAt": { "type": "string", "format": "date-time" }
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "normalizedEmail",
+          "reason",
+          "source",
+          "occurredAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "tenantId": { "type": "string", "format": "uuid" },
+          "normalizedEmail": { "type": "string", "format": "email" },
+          "profileId": { "type": "string", "format": "uuid" },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "UNSUBSCRIBED",
+              "HARD_BOUNCE",
+              "COMPLAINT",
+              "INVALID",
+              "MANUAL",
+              "LEGAL",
+              "PROVIDER_SUPPRESSION"
+            ]
+          },
+          "source": { "type": "string" },
+          "providerConnectionId": { "type": "string", "format": "uuid" },
+          "occurredAt": { "type": "string", "format": "date-time" },
+          "releasedAt": { "type": "string", "format": "date-time" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
       "CrmSavedViewInput": {

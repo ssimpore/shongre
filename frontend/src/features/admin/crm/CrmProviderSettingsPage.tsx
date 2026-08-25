@@ -12,7 +12,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ProviderControlPlaneSnapshot } from "@shongre/contracts/provider-platform";
-import type { ProviderConnection } from "@shongre/contracts/provider-connections";
+import {
+  PROVIDER_CREDENTIAL_CONSTRAINTS,
+  type ProviderConnection,
+} from "@shongre/contracts/provider-connections";
 import { useLocation } from "react-router-dom";
 import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
@@ -162,7 +165,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <Icon className="h-5 w-5 text-violet-300" />
             </span>
             <div>
-              <p className="text-micro font-bold uppercase tracking-[0.2em] text-violet-300">
+              <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
                 CRM · Provider Platform
               </p>
               <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
@@ -226,7 +229,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <span className="text-micro font-bold uppercase text-stone-500">
                 Opérationnels
               </span>
-              <strong className="mt-1 block text-2xl font-black text-emerald-700">
+              <strong className="mt-1 block text-2xl font-black text-success">
                 {
                   providers.filter(
                     ({ runtime }) => runtime.health === "HEALTHY",
@@ -261,7 +264,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                 .map((connection) => (
                   <article
                     key={connection.id}
-                    className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_100px_120px_auto] sm:items-center"
+                    className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                   >
                     <div>
                       <strong className="text-xs font-black">
@@ -272,7 +275,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                         {connection.capabilities.join(", ")}
                       </p>
                       {connection.credentialConfigured && (
-                        <p className="mt-1 inline-flex items-center gap-1 text-micro font-bold text-emerald-700">
+                        <p className="mt-1 inline-flex items-center gap-1 text-micro font-bold text-success">
                           <KeyRound className="h-3 w-3" /> Credential configuré{" "}
                           {connection.credentialHint}
                         </p>
@@ -282,7 +285,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       {connection.ownerType}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-bold ${connection.status === "ACTIVE" ? "text-emerald-700" : "text-stone-500"}`}
+                      className={`inline-flex items-center gap-1 text-xs font-bold ${connection.status === "ACTIVE" ? "text-success" : "text-stone-500"}`}
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" />{" "}
                       {connection.status}
@@ -312,7 +315,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               {providers.map(({ definition, runtime, readiness }) => (
                 <article
                   key={definition.id}
-                  className="grid gap-3 px-5 py-4 lg:grid-cols-[minmax(0,1fr)_170px_170px]"
+                  className="grid gap-3 px-5 py-4 lg:grid-cols-3"
                 >
                   <div className="flex gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100">
@@ -335,7 +338,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                           .map((capability) => (
                             <code
                               key={capability}
-                              className="rounded bg-stone-100 px-1.5 py-0.5 text-[9px] text-stone-600"
+                              className="rounded bg-stone-100 px-1.5 py-0.5 text-micro text-stone-600"
                             >
                               {capability}
                             </code>
@@ -348,7 +351,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       Santé runtime
                     </span>
                     <span
-                      className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-emerald-700" : "text-stone-500"}`}
+                      className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-success" : "text-stone-500"}`}
                     >
                       {runtime.health === "HEALTHY" ? (
                         <CheckCircle2 className="h-3.5 w-3.5" />
@@ -372,7 +375,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               ))}
             </div>
           </section>
-          <div className="flex items-start gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-900">
+          <div className="flex items-start gap-2 rounded-2xl border border-success-border bg-success-surface p-4 text-xs text-success">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
               <strong>Résolution fail-closed.</strong> En mode API, une capacité
@@ -443,7 +446,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               autoComplete="new-password"
               value={credential}
               onChange={(event) => setCredential(event.target.value)}
-              minLength={8}
+              minLength={PROVIDER_CREDENTIAL_CONSTRAINTS.minLength}
             />
           </FormField>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
@@ -484,7 +487,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               autoComplete="new-password"
               value={credential}
               onChange={(event) => setCredential(event.target.value)}
-              minLength={8}
+              minLength={PROVIDER_CREDENTIAL_CONSTRAINTS.minLength}
               required
             />
           </FormField>

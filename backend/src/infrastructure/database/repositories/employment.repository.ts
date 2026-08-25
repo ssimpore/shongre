@@ -38,6 +38,7 @@ import {
   jobPostingDetailSchema,
   recruiterNoteSchema,
 } from "@shongre/contracts/employment";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
 import { DEFAULT_EMPLOYMENT_CATALOG } from "@shongre/contracts/employment-catalog";
 import {
   EMPLOYMENT_DEMO_APPLICATIONS,
@@ -2957,7 +2958,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       throw new Error(
         "Un administrateur est requis pour modifier une offre Emploi.",
       );
-    const catalog = await this.getCatalog(patch.marketCode || "FR", true);
+    const catalog = await this.getCatalog(
+      requireMarketCode(patch.marketCode),
+      true,
+    );
     const before = catalog.offers.find((offer) => offer.id === offerId);
     if (!before) throw new Error("Offre Emploi introuvable.");
     const marketCode = patch.marketCode || before.marketCode;

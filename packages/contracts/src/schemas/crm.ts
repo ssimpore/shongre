@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const CRM_FIELD_CONSTRAINTS = {
+  savedViewNameMaxLength: 120,
+  quoteQuantityMin: 0.01,
+  quoteQuantityStep: 0.01,
+  opportunityAmountMin: 0,
+  opportunityAmountStep: 1,
+  stageProbabilityMin: 0,
+  stageProbabilityMax: 100,
+} as const;
+
 export const crmLifecycleSchema = z.enum([
   "lead",
   "prospect",
@@ -485,6 +495,7 @@ export const crmActivitySchema = z.object({
 });
 
 export const crmDashboardSchema = z.object({
+  marketCode: z.string().regex(/^[A-Z]{2}$/),
   currency: z.string().regex(/^[A-Z]{3}$/),
   activeProspects: z.number().int().nonnegative(),
   openOpportunities: z.number().int().nonnegative(),

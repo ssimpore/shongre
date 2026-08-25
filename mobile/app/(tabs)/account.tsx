@@ -19,6 +19,11 @@ export default function AccountScreen() {
       <Text accessibilityRole="header" style={styles.heading}>
         Compte
       </Text>
+      <Button
+        label="Pays et réglages"
+        onPress={() => router.push("/settings")}
+        variant="secondary"
+      />
       {loading ? (
         <Text style={styles.muted}>Chargement sécurisé de votre session…</Text>
       ) : user ? (
@@ -32,11 +37,6 @@ export default function AccountScreen() {
                 : "Particulier"}
             </Text>
           </View>
-          <Button
-            label="Mes réglages"
-            onPress={() => router.push("/settings")}
-            variant="secondary"
-          />
           <Button
             label="Se déconnecter"
             onPress={() => void logout()}

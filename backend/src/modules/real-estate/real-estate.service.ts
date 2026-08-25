@@ -36,6 +36,7 @@ import {
   businessRulesService,
   BusinessRulesService,
 } from "../business-rules/business-rules.service.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 const currentIso = () => new Date().toISOString();
 const hash = (value: string) =>
@@ -88,8 +89,8 @@ export class RealEstateService {
     private readonly commercialRules: BusinessRulesService = businessRulesService,
   ) {}
 
-  private async resolveCatalog(marketCode = "FR", includeInactive = false) {
-    const normalized = marketCode.toUpperCase();
+  private async resolveCatalog(marketCode: string, includeInactive = false) {
+    const normalized = requireMarketCode(marketCode);
     const [catalog, commercial] = await Promise.all([
       this.repo.getCatalog(normalized, includeInactive),
       this.commercialRules.getCatalog(normalized),
@@ -97,7 +98,7 @@ export class RealEstateService {
     return applyMonetizationToRealEstateCatalog(catalog, commercial);
   }
 
-  getCatalog(marketCode = "FR", includeInactive = false) {
+  getCatalog(marketCode: string, includeInactive = false) {
     return this.resolveCatalog(marketCode, includeInactive);
   }
 
@@ -186,8 +187,8 @@ export class RealEstateService {
     return { success: true };
   }
 
-  async getOrCreateOwnDraft(userId: string, marketCode = "FR") {
-    const normalizedMarket = marketCode.toUpperCase();
+  async getOrCreateOwnDraft(userId: string, marketCode: string) {
+    const normalizedMarket = requireMarketCode(marketCode);
     const existing = await this.repo.getLatestDraft(userId, normalizedMarket);
     if (existing) return existing;
     return this.saveOwnDraft(userId, randomUUID(), {
@@ -280,7 +281,7 @@ export class RealEstateService {
       ownerUserId: existing?.ownerUserId || userId,
       organizationId,
       schemaVersion: body.schemaVersion || existing?.schemaVersion || 1,
-      marketCode: body.marketCode || existing?.marketCode || "FR",
+      marketCode: requireMarketCode(body.marketCode || existing?.marketCode),
       currentStep: body.currentStep || existing?.currentStep || 1,
       completedSteps: body.completedSteps || existing?.completedSteps || [],
       data: safeData,
@@ -637,12 +638,13 @@ export class RealEstateService {
       status: "requested",
     });
     const property = await this.repo.getProperty(lead.propertyId);
-    await this.repo.trackAnalyticsEvent({
-      eventName: "visit_requested",
-      marketCode: property?.marketCodes[0] || "FR",
-      propertyId: lead.propertyId,
-      organizationId: lead.organizationId,
-    });
+    if (property?.marketCodes[0])
+      await this.repo.trackAnalyticsEvent({
+        eventName: "visit_requested",
+        marketCode: requireMarketCode(property.marketCodes[0]),
+        propertyId: lead.propertyId,
+        organizationId: lead.organizationId,
+      });
     return appointment;
   }
 
@@ -667,11 +669,13 @@ export class RealEstateService {
 
   async getOwnAgencyWorkspace(userId: string, organizationId: string) {
     const workspace = await this.loadOwnAgencyWorkspace(userId, organizationId);
-    await this.repo.trackAnalyticsEvent({
-      eventName: "agency_workspace_opened",
-      marketCode: workspace.properties[0]?.marketCodes[0] || "FR",
-      organizationId,
-    });
+    const workspaceMarketCode = workspace.properties[0]?.marketCodes[0];
+    if (workspaceMarketCode)
+      await this.repo.trackAnalyticsEvent({
+        eventName: "agency_workspace_opened",
+        marketCode: requireMarketCode(workspaceMarketCode),
+        organizationId,
+      });
     return workspace;
   }
 
@@ -703,22 +707,23 @@ export class RealEstateService {
     });
     if (firstResponse) {
       const property = await this.repo.getProperty(lead.propertyId);
-      await this.repo.trackAnalyticsEvent({
-        eventName: "lead_responded",
-        marketCode: property?.marketCodes[0] || "FR",
-        propertyId: lead.propertyId,
-        organizationId,
-        dimensions: {
-          responseMinutes: Math.max(
-            0,
-            Math.round(
-              (new Date(updated.firstRespondedAt!).getTime() -
-                new Date(lead.createdAt).getTime()) /
-                60_000,
+      if (property?.marketCodes[0])
+        await this.repo.trackAnalyticsEvent({
+          eventName: "lead_responded",
+          marketCode: requireMarketCode(property.marketCodes[0]),
+          propertyId: lead.propertyId,
+          organizationId,
+          dimensions: {
+            responseMinutes: Math.max(
+              0,
+              Math.round(
+                (new Date(updated.firstRespondedAt!).getTime() -
+                  new Date(lead.createdAt).getTime()) /
+                  60_000,
+              ),
             ),
-          ),
-        },
-      });
+          },
+        });
     }
     return updated;
   }
@@ -832,7 +837,9 @@ export class RealEstateService {
       body.idempotencyKey,
     );
     if (existing) return existing;
-    const catalog = await this.resolveCatalog(body.marketCode || "FR");
+    const catalog = await this.resolveCatalog(
+      requireMarketCode(body.marketCode),
+    );
     const offer = body.offerId
       ? catalog.offers.find(
           (candidate) => candidate.id === body.offerId && candidate.isActive,
@@ -1101,7 +1108,7 @@ export class RealEstateService {
     });
   }
 
-  getAdminOverview(marketCode = "FR") {
+  getAdminOverview(marketCode: string) {
     return this.repo.getAdminOverview(marketCode.toUpperCase());
   }
   updateMarketConfig(

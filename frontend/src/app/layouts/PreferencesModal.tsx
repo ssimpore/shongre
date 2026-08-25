@@ -51,7 +51,7 @@ export const PreferencesModal: React.FC = () => {
       description={t(
         "shell.preferencesModal.personnalisezVotrePaysDeNavigation",
       )}
-      maxWidth="md"
+      maxWidth="2xl"
     >
       <div className="space-y-4">
         {/* Country / Market Selection */}
@@ -60,32 +60,38 @@ export const PreferencesModal: React.FC = () => {
             <Building2 className="w-3.5 h-3.5 text-primary" />
             <span>{t("shell.preferencesModal.marchePays")}</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div
+            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            role="radiogroup"
+            aria-label={t("shell.preferencesModal.marchePays")}
+          >
             {availableMarkets.map((m) => {
               const isSelected = activeMarket.code === m.code;
               return (
                 <button
                   key={m.code}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => handleMarketChange(m.code)}
-                  className={`min-h-control-touch p-2.5 rounded-control border text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary flex items-center justify-between ${
+                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
-                  <div className="flex items-center gap-2 truncate">
-                    <span className="text-lg leading-none">{m.flag}</span>
-                    <div className="truncate">
-                      <div className="text-xs truncate">{m.name}</div>
-                      <div className="text-micro text-stone-500 font-normal">
-                        {m.code}
-                      </div>
-                    </div>
-                  </div>
-                  {isSelected && (
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
+                    <span className="shrink-0 text-lg leading-none">
+                      {m.flag}
+                    </span>
+                    <span className="truncate text-xs">{m.name}</span>
+                    <span className="shrink-0 text-micro font-normal text-stone-500">
+                      {m.code}
+                    </span>
+                  </span>
+                  {isSelected ? (
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -98,26 +104,37 @@ export const PreferencesModal: React.FC = () => {
             <Coins className="w-3.5 h-3.5 text-primary" />
             <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div
+            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            role="radiogroup"
+            aria-label={t("shell.preferencesModal.deviseAffichage")}
+          >
             {currencies.map((c) => {
               const isSelected = currentCurrency === c.code;
               return (
                 <button
                   key={c.code}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => setCurrency(c.code)}
-                  className={`min-h-control-touch p-2 rounded-control border text-center motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
-                  <div className="text-xs font-bold">
-                    {c.symbol} {c.code}
-                  </div>
-                  <div className="text-micro text-stone-500 font-normal truncate">
-                    {c.label}
-                  </div>
+                  <span className="flex min-w-0 flex-1 items-baseline gap-1.5 whitespace-nowrap">
+                    <span className="shrink-0 text-xs font-bold">
+                      {c.symbol === c.code ? c.code : c.symbol + " " + c.code}
+                    </span>
+                    <span className="truncate text-micro font-normal text-stone-500">
+                      {c.label}
+                    </span>
+                  </span>
+                  {isSelected ? (
+                    <Check className="h-4 w-4 shrink-0 text-primary" />
+                  ) : null}
                 </button>
               );
             })}
@@ -130,7 +147,11 @@ export const PreferencesModal: React.FC = () => {
             <Languages className="w-3.5 h-3.5 text-primary" />
             <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div
+            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            role="radiogroup"
+            aria-label={t("shell.preferencesModal.langueDeLInterface")}
+          >
             {SUPPORTED_LANGUAGES.map((lang) => {
               const isSelected =
                 currentLocale === lang.code ||
@@ -139,10 +160,12 @@ export const PreferencesModal: React.FC = () => {
                 <button
                   key={lang.code}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   disabled={!lang.isAvailable}
                   aria-disabled={!lang.isAvailable}
                   onClick={() => lang.isAvailable && setLocale(lang.code)}
-                  className={`min-h-control-touch p-2 rounded-control border text-left motion-interactive flex items-center justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     !lang.isAvailable
                       ? "border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed"
                       : isSelected
@@ -150,24 +173,22 @@ export const PreferencesModal: React.FC = () => {
                         : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium cursor-pointer"
                   }`}
                 >
-                  <div className="flex items-center gap-2 truncate">
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
                     <span
-                      className={`text-base leading-none ${lang.isAvailable ? "" : "grayscale opacity-60"}`}
+                      className={`shrink-0 text-base leading-none ${lang.isAvailable ? "" : "grayscale opacity-60"}`}
                     >
                       {lang.flag}
                     </span>
-                    <div className="truncate">
-                      <div className="text-xs truncate">{lang.nativeName}</div>
-                      <div className="text-micro text-stone-500 font-normal uppercase">
-                        {lang.isAvailable
-                          ? lang.code.slice(0, 2)
-                          : t("shell.preferencesModal.bientot")}
-                      </div>
-                    </div>
-                  </div>
-                  {isSelected && lang.isAvailable && (
+                    <span className="truncate text-xs">{lang.nativeName}</span>
+                    <span className="shrink-0 text-micro font-normal uppercase text-stone-500">
+                      {lang.isAvailable
+                        ? lang.code.slice(0, 2)
+                        : t("shell.preferencesModal.bientot")}
+                    </span>
+                  </span>
+                  {isSelected && lang.isAvailable ? (
                     <Check className="w-4 h-4 text-primary shrink-0" />
-                  )}
+                  ) : null}
                 </button>
               );
             })}

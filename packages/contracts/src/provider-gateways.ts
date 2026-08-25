@@ -98,7 +98,12 @@ export interface EmailDeliveryRequest {
   templateId?: string;
   templateVariables?: Record<string, string | number | boolean>;
   headers?: Record<string, string>;
-  purpose: "MARKETING" | "TRANSACTIONAL" | "CRM_CORRESPONDENCE" | "SECURITY" | "SYSTEM";
+  purpose:
+    | "MARKETING"
+    | "TRANSACTIONAL"
+    | "CRM_CORRESPONDENCE"
+    | "SECURITY"
+    | "SYSTEM";
   idempotencyKey: string;
 }
 
@@ -135,8 +140,12 @@ export interface NormalizedEmailDeliveryEvent {
 }
 
 export interface EmailDeliveryGateway {
-  testConnection(context: ProviderInvocationContext): Promise<EmailDeliveryHealth>;
-  getCapabilities(context: ProviderInvocationContext): Promise<EmailDeliveryCapabilities>;
+  testConnection(
+    context: ProviderInvocationContext,
+  ): Promise<EmailDeliveryHealth>;
+  getCapabilities(
+    context: ProviderInvocationContext,
+  ): Promise<EmailDeliveryCapabilities>;
   send(
     context: ProviderInvocationContext,
     request: EmailDeliveryRequest,

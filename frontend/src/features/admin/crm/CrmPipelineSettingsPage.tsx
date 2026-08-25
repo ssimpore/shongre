@@ -10,7 +10,11 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import type { CrmPipeline, CrmPipelineInput } from "@shongre/contracts/crm";
+import {
+  CRM_FIELD_CONSTRAINTS,
+  type CrmPipeline,
+  type CrmPipelineInput,
+} from "@shongre/contracts/crm";
 import { services } from "../../../api/client/service-registry";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { Skeleton } from "../../../design-system";
@@ -249,7 +253,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
               <GitBranch className="h-5 w-5 text-violet-300" />
             </span>
             <div>
-              <p className="text-micro font-bold uppercase tracking-[0.2em] text-violet-300">
+              <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
                 CRM · Configuration
               </p>
               <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
@@ -291,7 +295,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-micro font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Actif
                 </span>
                 <Button
@@ -307,7 +311,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
               {pipeline.stages.map((stage, index) => (
                 <article
                   key={stage.id}
-                  className="grid gap-3 px-5 py-4 sm:grid-cols-[40px_minmax(0,1fr)_130px_120px] sm:items-center"
+                  className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                 >
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">
                     {index + 1}
@@ -318,12 +322,12 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                         {stage.name}
                       </strong>
                       {stage.isWon && (
-                        <span className="inline-flex items-center gap-1 text-micro font-bold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 text-micro font-bold text-success">
                           <CheckCircle2 className="h-3 w-3" /> Gagné
                         </span>
                       )}
                       {stage.isLost && (
-                        <span className="inline-flex items-center gap-1 text-micro font-bold text-red-700">
+                        <span className="inline-flex items-center gap-1 text-micro font-bold text-danger">
                           <XCircle className="h-3 w-3" /> Perdu
                         </span>
                       )}
@@ -423,7 +427,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             {draft.stages.map((stage, index) => (
               <div
                 key={stage.id ?? `new-${index}`}
-                className="grid gap-2 rounded-xl border border-border-subtle p-3 sm:grid-cols-[32px_minmax(0,1fr)_100px_120px_auto] sm:items-end"
+                className="grid gap-2 rounded-xl border border-border-subtle p-3 sm:grid-cols-5 sm:items-end"
               >
                 <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-black text-white">
                   {index + 1}
@@ -440,8 +444,8 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 <FormField label="Probabilité" required>
                   <Input
                     type="number"
-                    min={0}
-                    max={100}
+                    min={CRM_FIELD_CONSTRAINTS.stageProbabilityMin}
+                    max={CRM_FIELD_CONSTRAINTS.stageProbabilityMax}
                     value={stage.defaultProbability}
                     disabled={!stage.isOpen}
                     onChange={(event) =>
@@ -472,7 +476,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, -1)}
                     disabled={index === 0}
                     aria-label={`Remonter l’étape ${stage.name}`}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
                     <ArrowUp className="h-3.5 w-3.5" />
                   </button>
@@ -481,7 +485,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, 1)}
                     disabled={index === draft.stages.length - 1}
                     aria-label={`Descendre l’étape ${stage.name}`}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
                     <ArrowDown className="h-3.5 w-3.5" />
                   </button>
@@ -490,7 +494,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => removeStage(index)}
                     disabled={draft.stages.length <= 3}
                     aria-label={`Supprimer l’étape ${stage.name}`}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 enabled:hover:bg-red-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-danger-border text-danger enabled:hover:bg-danger-surface disabled:opacity-30"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>

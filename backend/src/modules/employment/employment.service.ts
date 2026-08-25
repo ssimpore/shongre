@@ -38,6 +38,7 @@ import {
   NotificationsService,
   notificationsService,
 } from "../notifications/notifications.service.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 const currentIso = () => new Date().toISOString();
 const addDays = (iso: string, days: number) =>
@@ -97,6 +98,7 @@ export class EmploymentService {
     type: string,
     title: string,
     body: string,
+    marketCode: string,
     linkUrl?: string,
   ) {
     try {
@@ -106,6 +108,8 @@ export class EmploymentService {
         title,
         body,
         linkUrl,
+        undefined,
+        requireMarketCode(marketCode),
       );
     } catch {
       // The domain mutation and its audit event remain authoritative. Delivery
@@ -114,8 +118,8 @@ export class EmploymentService {
     }
   }
 
-  private async resolveCatalog(marketCode = "FR", includeInactive = false) {
-    const code = marketCode.toUpperCase();
+  private async resolveCatalog(marketCode: string, includeInactive = false) {
+    const code = requireMarketCode(marketCode);
     const [catalog, commercial] = await Promise.all([
       this.repo.getCatalog(code, includeInactive),
       this.commercialRules.getCatalog(code),
@@ -123,7 +127,7 @@ export class EmploymentService {
     return applyMonetizationToEmploymentCatalog(catalog, commercial);
   }
 
-  getCatalog(marketCode = "FR", includeInactive = false) {
+  getCatalog(marketCode: string, includeInactive = false) {
     return this.resolveCatalog(marketCode, includeInactive);
   }
 
@@ -196,10 +200,10 @@ export class EmploymentService {
 
   async getOrCreateOwnDraft(
     userId: string,
-    marketCode = "FR",
+    marketCode: string,
     preferredDraftId?: string,
   ) {
-    const normalizedMarket = marketCode.toUpperCase();
+    const normalizedMarket = requireMarketCode(marketCode);
     if (preferredDraftId) {
       const preferred = await this.repo.getDraft(preferredDraftId);
       if (preferred) {
@@ -267,7 +271,7 @@ export class EmploymentService {
       branchId: body.branchId || existing?.branchId,
       privateEmployer:
         body.privateEmployer ?? existing?.privateEmployer ?? false,
-      marketCode: body.marketCode || existing?.marketCode || "FR",
+      marketCode: requireMarketCode(body.marketCode || existing?.marketCode),
       schemaVersion: body.schemaVersion || existing?.schemaVersion || 1,
       currentStep: body.currentStep || existing?.currentStep || 1,
       completedSteps: body.completedSteps || existing?.completedSteps || [],
@@ -330,7 +334,7 @@ export class EmploymentService {
       duplicateCandidateIds?: string[];
       markAllPreviousStepsComplete?: boolean;
     };
-    const marketCode = (body.marketCode || "FR").toUpperCase();
+    const marketCode = requireMarketCode(body.marketCode);
     const catalog = await this.resolveCatalog(marketCode);
     const raw = { ...(body.data || {}) };
     const privateEmployer = Boolean(body.privateEmployer);
@@ -534,10 +538,10 @@ export class EmploymentService {
     return { duplicateCandidateIds: updated.duplicateCandidateIds };
   }
 
-  async flagProhibitedLanguage(input: unknown, marketCode = "FR") {
+  async flagProhibitedLanguage(input: unknown, marketCode: string) {
     const content = String(input || "");
     const normalized = content.toLocaleLowerCase("fr");
-    const catalog = await this.resolveCatalog(marketCode);
+    const catalog = await this.resolveCatalog(requireMarketCode(marketCode));
     return catalog.config.prohibitedLanguageRules.flatMap((rule) =>
       rule.terms.flatMap((term, index) =>
         normalized.includes(term.toLocaleLowerCase("fr"))
@@ -841,7 +845,7 @@ export class EmploymentService {
       ...body,
       id: existing?.id || body.id || randomUUID(),
       userId,
-      marketCode: body.marketCode || existing?.marketCode || "FR",
+      marketCode: requireMarketCode(body.marketCode || existing?.marketCode),
       visibility: body.visibility || existing?.visibility || "private",
       recruiterSearchConsentId,
       updatedAt: currentIso(),
@@ -982,6 +986,7 @@ export class EmploymentService {
       "employment_application_submitted",
       "Candidature envoyée",
       `Votre candidature pour « ${job.title} » a été transmise.`,
+      job.marketCode,
       "/compte/emploi",
     );
     return application;
@@ -1020,11 +1025,18 @@ export class EmploymentService {
       candidateNotified: false,
       occurredAt: now,
     });
+    const job = await this.repo.getJob(application.jobId);
+    if (!job)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Offre d’emploi introuvable.",
+      });
     await this.notify(
       userId,
       "employment_application_withdrawn",
       "Candidature retirée",
       "Votre candidature a été retirée. Son historique reste disponible selon la durée de conservation applicable.",
+      job.marketCode,
       "/compte/emploi",
     );
     return saved;
@@ -1183,6 +1195,12 @@ export class EmploymentService {
       { ...interview, status, updatedAt: currentIso() },
       userId,
     );
+    const job = await this.repo.getJob(application.jobId);
+    if (!job)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Offre d’emploi introuvable.",
+      });
     await Promise.all(
       saved.participantUserIds
         .filter((participantId) => participantId !== userId)
@@ -1194,6 +1212,7 @@ export class EmploymentService {
             status === "confirmed"
               ? "Le candidat a confirmé l’entretien."
               : "Le candidat a annulé l’entretien.",
+            job.marketCode,
             "/compte/emploi/recruteur",
           ),
         ),
@@ -1386,6 +1405,7 @@ export class EmploymentService {
           "employment_application_status_changed",
           "Votre candidature évolue",
           stage.candidateVisibleLabel,
+          job.marketCode,
           "/compte/emploi",
         );
       }
@@ -1509,6 +1529,7 @@ export class EmploymentService {
                 timeZone: saved.timezone,
               },
             ).format(new Date(saved.startsAt))}.`,
+            job.marketCode,
             "/compte/emploi",
           ),
         ),
@@ -1637,7 +1658,9 @@ export class EmploymentService {
         code: "VALIDATION_ERROR",
         message: "Une clé d’idempotence est requise.",
       });
-    const catalog = await this.resolveCatalog(body.marketCode || "FR");
+    const catalog = await this.resolveCatalog(
+      requireMarketCode(body.marketCode),
+    );
     const offer = body.offerId
       ? catalog.offers.find(
           (candidate) => candidate.id === body.offerId && candidate.isActive,
@@ -1718,7 +1741,7 @@ export class EmploymentService {
     });
   }
 
-  getAdminOverview(marketCode = "FR") {
+  getAdminOverview(marketCode: string) {
     return this.repo.getAdminOverview(marketCode.toUpperCase());
   }
 

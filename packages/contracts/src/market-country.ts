@@ -300,58 +300,92 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     displayOrder: 50,
   }),
   ...[
-    ["LU", "lu", "Luxembourg", "🇱🇺", "fr-LU", "EUR", "€", "Europe/Luxembourg", "+352"],
+    [
+      "LU",
+      "lu",
+      "Luxembourg",
+      "🇱🇺",
+      "fr-LU",
+      "EUR",
+      "€",
+      "Europe/Luxembourg",
+      "+352",
+    ],
     ["ES", "es", "Espagne", "🇪🇸", "es-ES", "EUR", "€", "Europe/Madrid", "+34"],
-    ["DE", "de", "Allemagne", "🇩🇪", "de-DE", "EUR", "€", "Europe/Berlin", "+49"],
-  ].map(([code, slug, name, flag, locale, currency, currencySymbol, timezone, phoneCountryCode], index) =>
-    country({
-      code,
-      slug,
-      name,
-      nativeName: name,
-      flag,
-      enabled: true,
-      launchStatus: code === "LU" ? "active" : "coming_soon",
-      primaryDomain: "shongre.com",
-      basePath: `/${slug}`,
-      defaultLocale: locale,
-      supportedLocales: [locale],
-      currency,
-      currencySymbol,
-      timezone,
-      phoneCountryCode,
-      seo: { indexable: false, hreflang: locale },
-      marketplace: {
-        enabled: code === "LU",
-        crossBorderSearch: false,
-      },
-      payments: {
-        enabled: code === "LU",
-        providerIds: code === "LU" ? ["stripe"] : [],
-      },
-      taxes: {
-        mode: "legal_review_required",
-        pricingIncludesTax: true,
-        defaultVatRateBps: null,
-      },
-      monetization: {
-        enabled: code === "LU",
-        catalogMarketCode: code,
-      },
-      compliance: {
-        legalReviewRequired: true,
-        legalReviewStatus: code === "LU" ? "approved" : "pending",
-        minimumAge: 18,
-        kycPolicy: "restricted",
-      },
-      launchContent: {
-        title: `Shongre arrive bientôt en ${name}`,
-        description: "Ce marché est en cours de préparation.",
-        earlyAccessEnabled: false,
-      },
-      gatewayVisible: false,
-      displayOrder: 100 + index,
-    }),
+    [
+      "DE",
+      "de",
+      "Allemagne",
+      "🇩🇪",
+      "de-DE",
+      "EUR",
+      "€",
+      "Europe/Berlin",
+      "+49",
+    ],
+  ].map(
+    (
+      [
+        code,
+        slug,
+        name,
+        flag,
+        locale,
+        currency,
+        currencySymbol,
+        timezone,
+        phoneCountryCode,
+      ],
+      index,
+    ) =>
+      country({
+        code,
+        slug,
+        name,
+        nativeName: name,
+        flag,
+        enabled: true,
+        launchStatus: code === "LU" ? "active" : "coming_soon",
+        primaryDomain: "shongre.com",
+        basePath: `/${slug}`,
+        defaultLocale: locale,
+        supportedLocales: [locale],
+        currency,
+        currencySymbol,
+        timezone,
+        phoneCountryCode,
+        seo: { indexable: false, hreflang: locale },
+        marketplace: {
+          enabled: code === "LU",
+          crossBorderSearch: false,
+        },
+        payments: {
+          enabled: code === "LU",
+          providerIds: code === "LU" ? ["stripe"] : [],
+        },
+        taxes: {
+          mode: "legal_review_required",
+          pricingIncludesTax: true,
+          defaultVatRateBps: null,
+        },
+        monetization: {
+          enabled: code === "LU",
+          catalogMarketCode: code,
+        },
+        compliance: {
+          legalReviewRequired: true,
+          legalReviewStatus: code === "LU" ? "approved" : "pending",
+          minimumAge: 18,
+          kycPolicy: "restricted",
+        },
+        launchContent: {
+          title: `Shongre arrive bientôt en ${name}`,
+          description: "Ce marché est en cours de préparation.",
+          earlyAccessEnabled: false,
+        },
+        gatewayVisible: false,
+        displayOrder: 100 + index,
+      }),
   ),
 ]);
 
@@ -363,11 +397,21 @@ const COUNTRY_BY_SLUG = new Map(
 );
 
 export function getCountryConfig(code: string): CountryConfig | undefined {
-  return COUNTRY_BY_CODE.get(String(code || "").trim().toUpperCase());
+  return COUNTRY_BY_CODE.get(
+    String(code || "")
+      .trim()
+      .toUpperCase(),
+  );
 }
 
-export function getCountryConfigBySlug(slug: string): CountryConfig | undefined {
-  return COUNTRY_BY_SLUG.get(String(slug || "").trim().toLowerCase());
+export function getCountryConfigBySlug(
+  slug: string,
+): CountryConfig | undefined {
+  return COUNTRY_BY_SLUG.get(
+    String(slug || "")
+      .trim()
+      .toLowerCase(),
+  );
 }
 
 export function listGatewayCountries(): CountryConfig[] {
@@ -421,7 +465,9 @@ export interface ResolveMarketContextInput {
 }
 
 function normalizeHostname(value: string): string {
-  const clean = String(value || "").trim().toLowerCase();
+  const clean = String(value || "")
+    .trim()
+    .toLowerCase();
   if (clean.startsWith("[")) return clean.replace(/^\[|\](?::\d+)?$/g, "");
   return clean.replace(/:\d+$/, "").replace(/\.$/, "");
 }
@@ -558,7 +604,11 @@ export function resolveMarketContext(
   const isGlobalHost = hostname === globalHost;
   const isLocalPathHost =
     isLocal && (hostname === "localhost" || hostname === "127.0.0.1");
-  if (!isGlobalHost && !isLocalPathHost && !(isLocal && hostname === "global.localhost")) {
+  if (
+    !isGlobalHost &&
+    !isLocalPathHost &&
+    !(isLocal && hostname === "global.localhost")
+  ) {
     return invalid();
   }
 
@@ -647,14 +697,16 @@ export function resolveMarketContext(
 export interface BuildPublicUrlInput {
   country: string;
   route?: string;
-  query?: URLSearchParams | Record<string, string | number | boolean | undefined>;
+  query?:
+    URLSearchParams | Record<string, string | number | boolean | undefined>;
   hash?: string;
   infrastructure?: Partial<MarketInfrastructureConfig>;
 }
 
 export function buildPublicUrl(input: BuildPublicUrlInput): string {
   const countryConfig = getCountryConfig(input.country);
-  if (!countryConfig) throw new Error(`Unknown Shongre country: ${input.country}`);
+  if (!countryConfig)
+    throw new Error(`Unknown Shongre country: ${input.country}`);
   const infrastructure = {
     ...DEFAULT_MARKET_INFRASTRUCTURE,
     ...input.infrastructure,
@@ -670,7 +722,8 @@ export function buildPublicUrl(input: BuildPublicUrlInput): string {
       if (value !== undefined) url.searchParams.set(key, String(value));
     }
   }
-  if (input.hash) url.hash = input.hash.startsWith("#") ? input.hash : `#${input.hash}`;
+  if (input.hash)
+    url.hash = input.hash.startsWith("#") ? input.hash : `#${input.hash}`;
   return url.toString();
 }
 

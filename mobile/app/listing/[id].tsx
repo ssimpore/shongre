@@ -15,11 +15,13 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { listingsService } from "@/features/listings/listings.service";
 import { moderationService } from "@/features/moderation/moderation.service";
 import { formatMoney } from "@/utils/format";
+import { useMarket } from "@/features/market/MarketProvider";
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { activeMarket } = useMarket();
   const [listing, setListing] = useState<ListingCardView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +29,7 @@ export default function ListingDetailScreen() {
   useEffect(() => {
     let active = true;
     listingsService
-      .get(id)
+      .get(id, activeMarket.code)
       .then((item) => active && setListing(item))
       .catch(
         (reason) =>
@@ -40,7 +42,7 @@ export default function ListingDetailScreen() {
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [activeMarket.code, id]);
 
   const requireLogin = (): boolean => {
     if (user) return true;

@@ -23,6 +23,7 @@ import {
 } from "../../../../domains/providers/provider-capabilities";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { ProviderCapabilityLabel } from "./ProviderCapabilityLabel";
 
 interface ProviderCatalogTableProps {
   providers: Provider[];
@@ -331,10 +332,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             const demoOnly =
                               p.operational.demoOnlyCapabilities?.includes(cap);
                             return (
-                              <span
+                              <div
                                 key={cap}
                                 title={`${cap} — ${implemented ? "implémentée" : demoOnly ? "démo uniquement" : "non implémentée"}`}
-                                className={`max-w-56 whitespace-normal break-words text-micro leading-tight px-1.5 py-0.5 rounded border ${
+                                className={`max-w-64 whitespace-normal break-words px-2 py-1 rounded border ${
                                   implemented
                                     ? "bg-success-surface text-success border-success-border"
                                     : demoOnly
@@ -342,8 +343,11 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                       : "bg-stone-100 text-stone-700 border-stone-200"
                                 }`}
                               >
-                                {getCapabilityMetadata(cap).name}
-                              </span>
+                                <ProviderCapabilityLabel
+                                  capability={cap}
+                                  compact
+                                />
+                              </div>
                             );
                           })}
                           {p.capabilities.length > 3 && (

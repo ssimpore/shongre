@@ -4,13 +4,13 @@ export interface BackendListing {
   id: string;
   title: string;
   price: number;
-  currency?: string;
+  currency: string;
   images?: string[];
-  city?: string;
-  marketCode?: string;
-  condition?: string;
+  city: string;
+  marketCode: string;
+  condition: string;
   categoryLabel?: string;
-  createdAt?: string;
+  createdAt: string;
   deliveryAvailable?: boolean;
   onlinePaymentAvailable?: boolean;
   isUrgent?: boolean;
@@ -36,15 +36,15 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
     title: item.title,
     price: {
       amountMinor: Math.round(Number(item.price) * 100),
-      currency: item.currency || "EUR",
+      currency: item.currency,
     },
     imageUrl: item.images?.[0],
     photoCount: item.images?.length ?? 0,
-    city: item.city || "France",
-    marketCode: item.marketCode || "FR",
+    city: item.city,
+    marketCode: item.marketCode,
     categoryLabel: item.categoryLabel,
-    conditionLabel: item.condition || "Bon état",
-    publishedAt: item.createdAt || "2026-08-01T10:00:00.000Z",
+    conditionLabel: item.condition,
+    publishedAt: item.createdAt,
     deliveryAvailable: Boolean(item.deliveryAvailable),
     onlinePaymentAvailable: Boolean(item.onlinePaymentAvailable),
     seller: item.seller

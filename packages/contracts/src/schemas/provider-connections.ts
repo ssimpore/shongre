@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const PROVIDER_CREDENTIAL_CONSTRAINTS = {
+  minLength: 8,
+} as const;
+
 export const providerOwnerTypeSchema = z.enum(["PLATFORM", "TENANT", "USER"]);
 export const providerFamilySchema = z.enum([
   "AI",

@@ -236,16 +236,17 @@ export class PostgresMarketRepository implements IMarketRepository {
       launchStatus: row.launch_status || bootstrap.launchStatus,
       primaryDomain: row.primary_domain || bootstrap.primaryDomain,
       basePath: row.base_path || bootstrap.basePath,
-      defaultLocale: row.default_locale || row.locale || bootstrap.defaultLocale,
-      supportedLocales:
-        row.supported_locales || [...bootstrap.supportedLocales],
+      defaultLocale:
+        row.default_locale || row.locale || bootstrap.defaultLocale,
+      supportedLocales: row.supported_locales || [
+        ...bootstrap.supportedLocales,
+      ],
       currency: row.currency || bootstrap.currency,
       currencySymbol:
         row.currency_symbol || bootstrap.currencySymbol || bootstrap.currency,
       locale: row.default_locale || row.locale || bootstrap.defaultLocale,
       timezone: row.timezone || bootstrap.timezone,
-      phoneCountryCode:
-        row.phone_country_code || bootstrap.phoneCountryCode,
+      phoneCountryCode: row.phone_country_code || bootstrap.phoneCountryCode,
       addressFormat: row.address_format || bootstrap.addressFormat,
       legalEntity: row.legal_entity || bootstrap.legalEntity,
       seo: row.seo_policy || bootstrap.seo,
@@ -280,8 +281,8 @@ export class PostgresMarketRepository implements IMarketRepository {
         row.enabled !== undefined
           ? Boolean(
               row.enabled &&
-                row.launch_status === "active" &&
-                (row.marketplace_policy?.enabled ?? row.is_active),
+              row.launch_status === "active" &&
+              (row.marketplace_policy?.enabled ?? row.is_active),
             )
           : Boolean(row.is_active),
       version: Number(row.version || 1),

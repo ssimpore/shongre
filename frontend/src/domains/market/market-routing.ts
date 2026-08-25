@@ -52,13 +52,17 @@ export function buildRuntimeMarketUrl(input: {
       ? "/"
       : currentRuntimeInternalPath(input.context);
 
-  if (typeof window !== "undefined" && isDevelopmentMarketHost(window.location.hostname)) {
+  if (
+    typeof window !== "undefined" &&
+    isDevelopmentMarketHost(window.location.hostname)
+  ) {
     const country = getCountryConfig(input.targetCountry);
     if (!country) return "/";
     const query = window.location.search;
     const hash = window.location.hash;
     const route = internalPath === "/" ? "" : internalPath;
-    if (country.code === "FR") return `${window.location.origin}${route || "/"}${query}${hash}`;
+    if (country.code === "FR")
+      return `${window.location.origin}${route || "/"}${query}${hash}`;
     return `${window.location.origin}${country.basePath}${route || "/"}${query}${hash}`;
   }
 

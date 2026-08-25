@@ -29,6 +29,8 @@ import {
 } from "@shongre/contracts/courses";
 import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
+import { getCountryConfig } from "@shongre/contracts";
 
 const NOW = "2026-08-22T10:00:00.000Z";
 
@@ -1504,7 +1506,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     const parsed = tutorProfileSchema.parse(profile);
     const supabase = getSupabaseAdminClient() as any;
     const publicProfile = toPublicTutor(parsed);
-    const marketCode = parsed.serviceArea?.marketCode || "FR";
+    const marketCode = requireMarketCode(parsed.serviceArea?.marketCode);
     const { error } = await supabase.from("course_tutor_profiles").upsert({
       id: parsed.id,
       user_id: parsed.userId,
@@ -1625,7 +1627,10 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     const parsed = courseOfferSchema.parse(offer);
     const hourly = parsed.pricingOptions.find((item) => item.type === "hourly");
     const supabase = getSupabaseAdminClient() as any;
-    const marketCode = parsed.marketCodes[0];
+    const marketCode = requireMarketCode(parsed.marketCodes[0]);
+    const marketCurrency = getCountryConfig(marketCode)!.currency;
+    if (hourly && hourly.price.currency !== marketCurrency)
+      throw new Error("Course offer currency does not match its market");
     const { error } = await supabase.from("course_offers").upsert({
       id: parsed.id,
       listing_id: parsed.listingId || null,
@@ -1641,7 +1646,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       capacity_status: parsed.capacityStatus,
       trial_lesson_available: parsed.trialLessonAvailable,
       from_price_minor: hourly?.price.amountMinor || 0,
-      currency: hourly?.price.currency || "EUR",
+      currency: hourly?.price.currency || marketCurrency,
       public_payload: toPublicOffer(parsed),
       private_payload: parsed,
       published_at: parsed.publishedAt,
@@ -1796,7 +1801,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     const tutor = await this.getTutorProfile(tutorProfileId);
     if (!tutor) return null;
     const [catalog, offers, leads] = await Promise.all([
-      this.getCatalog(tutor.serviceArea?.marketCode || "FR"),
+      this.getCatalog(requireMarketCode(tutor.serviceArea?.marketCode)),
       this.getCourseOffers(tutor.id),
       this.getTutorLeads(tutor.id),
     ]);

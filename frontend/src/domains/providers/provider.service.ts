@@ -30,7 +30,6 @@ import {
 
 export interface MarketCoverageRow {
   capability: ProviderCapability;
-  capabilityName: string;
   category: ProviderCategory;
   markets: Record<
     string,
@@ -199,7 +198,6 @@ export class ProviderService {
 
       return {
         capability: cap,
-        capabilityName: capMeta.name,
         category: capMeta.category,
         markets: rowMarkets,
       };

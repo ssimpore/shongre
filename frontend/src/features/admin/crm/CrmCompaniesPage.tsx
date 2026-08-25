@@ -18,6 +18,7 @@ import type {
   CrmSavedView,
   CrmSavedViewVisibility,
 } from "@shongre/contracts/crm";
+import { CRM_FIELD_CONSTRAINTS } from "@shongre/contracts/crm";
 import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
@@ -45,12 +46,12 @@ const lifecycleLabel: Record<CrmAccount["lifecycle"], string> = {
 };
 
 const lifecycleTone: Record<CrmAccount["lifecycle"], string> = {
-  lead: "bg-sky-50 text-sky-700",
-  prospect: "bg-amber-50 text-amber-700",
+  lead: "bg-info-surface text-info",
+  prospect: "bg-warning-surface text-warning",
   qualified: "bg-primary-light text-primary",
-  customer: "bg-emerald-50 text-emerald-700",
+  customer: "bg-success-surface text-success",
   partner: "bg-violet-50 text-violet-700",
-  do_not_contact: "bg-rose-50 text-rose-700",
+  do_not_contact: "bg-danger-surface text-danger",
   archived: "bg-stone-100 text-stone-600",
 };
 
@@ -282,7 +283,7 @@ export const CrmCompaniesPage: React.FC = () => {
               setSelectedViewId("");
             }}
             placeholder="Nom, domaine ou secteur…"
-            className="h-9 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
@@ -322,7 +323,7 @@ export const CrmCompaniesPage: React.FC = () => {
             id="crm-account-saved-view"
             value={selectedViewId}
             onChange={(event) => applySavedView(event.target.value)}
-            className="h-9 min-w-0 flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 text-xs font-bold text-stone-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-56"
+            className="h-control-md min-w-0 flex-1 rounded-control border border-stone-200 bg-stone-50 px-3 text-xs font-bold text-stone-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-56"
           >
             <option value="">Vue standard</option>
             {savedViews.map((view) => (
@@ -346,7 +347,7 @@ export const CrmCompaniesPage: React.FC = () => {
                       null,
                   )
                 }
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-stone-400 transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Supprimer la vue sélectionnée"
               >
                 <Trash2 className="h-4 w-4" />
@@ -382,7 +383,7 @@ export const CrmCompaniesPage: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] text-left text-xs">
+            <table className="w-full min-w-4xl text-left text-xs">
               <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
                 <tr>
                   <th className="px-5 py-3">Entreprise</th>
@@ -557,7 +558,7 @@ export const CrmCompaniesPage: React.FC = () => {
             <Input
               value={viewName}
               onChange={(event) => setViewName(event.target.value)}
-              maxLength={120}
+              maxLength={CRM_FIELD_CONSTRAINTS.savedViewNameMaxLength}
               required
             />
           </FormField>

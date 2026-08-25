@@ -21,6 +21,7 @@ import { ProviderMarketOverridesTab } from "./components/ProviderMarketOverrides
 import { ProviderHealthSimulator } from "./components/ProviderHealthSimulator";
 import { ProviderAuditLogsTab } from "./components/ProviderAuditLogsTab";
 import { ProviderImpactModal } from "./components/ProviderImpactModal";
+import { ProviderCapabilityLabel } from "./components/ProviderCapabilityLabel";
 import { Button } from "../../../design-system/primitives/Button";
 import { StatePanel } from "../../../design-system/primitives/StatePanel";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -222,10 +223,10 @@ export const AdminProviderDetailPage: React.FC = () => {
             const demoOnly =
               provider.operational.demoOnlyCapabilities?.includes(cap);
             return (
-              <span
+              <div
                 key={cap}
                 title={`${cap} — ${implemented ? "implémentée" : demoOnly ? "démo uniquement" : "non implémentée"}`}
-                className={`text-xs px-2 py-0.5 rounded border font-medium ${
+                className={`max-w-72 rounded border px-2 py-1 ${
                   implemented
                     ? "bg-success-surface text-success border-success-border"
                     : demoOnly
@@ -233,8 +234,8 @@ export const AdminProviderDetailPage: React.FC = () => {
                       : "bg-stone-100 text-stone-700 border-stone-200"
                 }`}
               >
-                {getCapabilityMetadata(cap).name}
-              </span>
+                <ProviderCapabilityLabel capability={cap} compact />
+              </div>
             );
           })}
         </div>
@@ -354,14 +355,11 @@ export const AdminProviderDetailPage: React.FC = () => {
                   key={cap}
                   className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60 space-y-2"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-stone-900">
-                      {meta.name}
-                    </span>
-                    <span className="text-micro font-mono text-stone-500">
-                      {cap}
-                    </span>
-                  </div>
+                  <ProviderCapabilityLabel
+                    capability={cap}
+                    showCategory
+                    className="text-stone-900"
+                  />
                   <p className="text-xs text-stone-500">{meta.description}</p>
                   <div className="pt-2 border-t border-stone-200/60">
                     <span className="text-micro font-semibold text-stone-600 block mb-1">

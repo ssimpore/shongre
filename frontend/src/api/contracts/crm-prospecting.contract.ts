@@ -59,6 +59,8 @@ export interface CompanyEnrichmentDiff {
 }
 
 export interface CrmProspectingServiceContract {
-  searchProspects(query: ProspectResearchQuery): Promise<ProspectResearchResult>;
+  searchProspects(
+    query: ProspectResearchQuery,
+  ): Promise<ProspectResearchResult>;
   enrichCompany(companyId: string): Promise<CompanyEnrichmentDiff>;
 }

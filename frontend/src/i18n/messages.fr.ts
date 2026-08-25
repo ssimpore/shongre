@@ -98,7 +98,7 @@ export const messagesFr = {
   "footer.findTutor": "Trouver un professeur",
   "footer.offerCourses": "Proposer des cours",
   "footer.legalHeading": "Informations légales",
-  "footer.terms": "Conditions générales d’utilisation",
+  "footer.terms": "CGU",
   "footer.privacy": "Politique de confidentialité",
   "footer.cookies": "Gestion des cookies",
   "footer.legalNotices": "Mentions légales",
@@ -1613,6 +1613,9 @@ export const messagesFr = {
   "admin.providerCatalogTable.statutSante": "Statut & Santé",
   "admin.providerCatalogTable.marchesSupportes": "Marchés Supportés",
 
+  // --- admin.providerCapabilityLabel ---
+  "admin.providerCapabilityLabel.codeCapacite": "Code capacité :",
+
   // --- admin.providerConfigurationForm ---
   "admin.providerConfigurationForm.etatDActivation": "État d'activation",
   "admin.providerConfigurationForm.sandboxEnvironnementDeTestPartenaire":
@@ -2611,10 +2614,21 @@ export const messagesFr = {
   // --- categories.categoriesPage ---
   "categories.categoriesPage.toutesNosCategories": "Toutes nos catégories",
   "categories.categoriesPage.explorezLEnsembleDesCategories":
-    "Explorez l’ensemble des catégories et sous-catégories de Shongre. Trouvez instantanément les annonces vérifiées près de chez vous ou partout en France.",
+    "Explorez l’ensemble des catégories et sous-catégories de Shongre. Trouvez les annonces qui vous intéressent près de chez vous ou dans votre marché.",
   "categories.categoriesPage.affichageDe": "Affichage de",
   "categories.categoriesPage.afficherToutesLesCategories":
     "Afficher toutes les catégories",
+  "categories.categoriesPage.univers": "{count} univers",
+  "categories.categoriesPage.univers_one": "{count} univers",
+  "categories.categoriesPage.univers_other": "{count} univers",
+  "categories.categoriesPage.rubriques": "{count} rubriques",
+  "categories.categoriesPage.rubriques_one": "{count} rubrique",
+  "categories.categoriesPage.rubriques_other": "{count} rubriques",
+  "categories.categoriesPage.rubriquesSupplementaires": "+{count}",
+  "categories.categoriesPage.explorerLaCategorie": "Explorer {category}",
+  "categories.categoriesPage.pourLaRecherche": "pour « {query} »",
+  "categories.categoriesPage.aucuneCategorieNeCorrespond":
+    "Aucune catégorie ne correspond à « {query} ».",
 
   // --- collections.collectionsPage ---
   "collections.collectionsPage.toutesNosCollections": "Toutes nos collections",

@@ -35,14 +35,14 @@ export function GlobalGatewayPage({
       </header>
 
       <main id="main-content">
-        <section className="mx-auto grid w-full max-w-page gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_minmax(28rem,1fr)] lg:items-center lg:gap-16 lg:px-8 lg:py-24">
+        <section className="mx-auto grid w-full max-w-page gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-24">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-black leading-tight tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
               Shongre, le marché local à l’échelle du monde
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-stone-600 sm:text-lg">
-              Choisissez votre pays pour retrouver les annonces, les services
-              et les professionnels près de chez vous.
+              Choisissez votre pays pour retrouver les annonces, les services et
+              les professionnels près de chez vous.
             </p>
           </div>
 
@@ -113,7 +113,10 @@ export function GlobalGatewayPage({
                 Icon: Search,
               },
             ].map(({ title, description, Icon }) => (
-              <article key={title} className="flex gap-4 py-8 md:px-7 md:first:pl-0 md:last:pr-0">
+              <article
+                key={title}
+                className="flex gap-4 py-8 md:px-7 md:first:pl-0 md:last:pr-0"
+              >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-base bg-white text-primary">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
@@ -134,14 +137,26 @@ export function GlobalGatewayPage({
           <p className="font-bold text-stone-950">
             Shongre<span className="text-primary">.</span>
           </p>
-          <nav aria-label="Liens légaux" className="flex flex-wrap gap-x-5 gap-y-2">
-            <a href={`${franceOrigin}/securite`} className="hover:text-stone-950">
+          <nav
+            aria-label="Liens légaux"
+            className="flex flex-wrap gap-x-5 gap-y-2"
+          >
+            <a
+              href={`${franceOrigin}/securite`}
+              className="hover:text-stone-950"
+            >
               Sécurité
             </a>
-            <a href={`${franceOrigin}/confidentialite`} className="hover:text-stone-950">
+            <a
+              href={`${franceOrigin}/confidentialite`}
+              className="hover:text-stone-950"
+            >
               Confidentialité
             </a>
-            <a href={`${franceOrigin}/conditions-utilisation`} className="hover:text-stone-950">
+            <a
+              href={`${franceOrigin}/conditions-utilisation`}
+              className="hover:text-stone-950"
+            >
               Conditions d’utilisation
             </a>
           </nav>

@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import {
-  buildPublicUrl,
-  listGatewayCountries,
-} from "@shongre/contracts";
+import { buildPublicUrl, listGatewayCountries } from "@shongre/contracts";
 import {
   metadataForRoute,
   structuredDataForRoute,
@@ -131,10 +128,7 @@ export default async function Page({ params }: PageProps) {
   /* Rendered on the server so a crawler sees the Product/ProfilePage schema in
      the initial HTML. The SPA emits the same shape after hydration, which is
      too late for anything that never runs the bundle. */
-  const structuredData = structuredDataForRoute(
-    context.internalPath,
-    context,
-  );
+  const structuredData = structuredDataForRoute(context.internalPath, context);
 
   return (
     <>

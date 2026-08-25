@@ -47,18 +47,18 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
     expect(validation.marketResults["BE"].isValid).toBe(true);
     expect(validation.marketResults["LU"].isValid).toBe(true);
 
-    // Testing a paused or non-active market correctly flags ineligibility
+    // Testing a coming-soon market correctly flags ineligibility.
     const pausedValidation = marketService.validateListingForMarkets({
       draft: {
         taxonomyNodeId: "home_garden.furniture.sofas",
         title: "Canapé scandinave",
         marketCode: "FR",
-        selectedMarkets: ["CH"],
+        selectedMarkets: ["SN"],
       },
-      marketCodes: ["CH"],
+      marketCodes: ["SN"],
     });
     expect(pausedValidation.isValid).toBe(false);
-    expect(pausedValidation.marketResults["CH"].isValid).toBe(false);
+    expect(pausedValidation.marketResults["SN"].isValid).toBe(false);
   });
 
   it("should create listings with multi-market publications and verify persistence", async () => {

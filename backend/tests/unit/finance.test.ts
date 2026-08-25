@@ -43,7 +43,7 @@ describe("FinanceService", () => {
       new DeniedOrganizationRepository(),
     );
     await expect(
-      deniedService.getOrganizationDashboard("employee_without_finance"),
+      deniedService.getOrganizationDashboard("employee_without_finance", "FR"),
     ).rejects.toMatchObject({ code: "FORBIDDEN", statusCode: 403 });
   });
 });

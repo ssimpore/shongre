@@ -6,6 +6,7 @@ import {
 import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
 
 /**
  * Credentials are stored separately from UserProfile on purpose.
@@ -359,7 +360,7 @@ export class PostgresUserRepository implements IUserRepository {
       postalCode: row.postal_code || undefined,
       department: row.department || undefined,
       region: row.region || undefined,
-      country: row.country || "FR",
+      country: requireMarketCode(row.country),
       bio: row.bio || undefined,
       isVerified: Boolean(row.is_verified),
       isIdentityVerified: Boolean(row.is_identity_verified),
@@ -413,7 +414,7 @@ export class PostgresUserRepository implements IUserRepository {
         sellerType: accountType === "professional" ? "pro" : "individual",
         avatarUrl: data.avatar_url || undefined,
         city: data.city || undefined,
-        country: data.country || "FR",
+        country: requireMarketCode(data.country),
         bio: data.bio || undefined,
         isVerified: Boolean(data.is_verified),
         isBusinessVerified: Boolean(data.is_business_verified),

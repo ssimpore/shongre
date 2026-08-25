@@ -2,6 +2,7 @@ import type { IncomingMessage } from "node:http";
 import { describe, expect, it } from "vitest";
 import { AppError } from "../../src/shared/errors/app-error.js";
 import {
+  requireApiRequestMarket,
   requireOpenMarketplace,
   resolveApiRequestMarket,
 } from "../../src/modules/markets/request-market-context.js";
@@ -36,6 +37,26 @@ describe("API market-context consistency", () => {
         body: null,
       }),
     ).toThrow(AppError);
+  });
+
+  it("rejects country and jurisdiction fields that conflict with the market", () => {
+    for (const body of [
+      { country: "FR" },
+      { jurisdiction: "FR" },
+      { draft: { country: "FR" } },
+    ]) {
+      expect(() =>
+        resolveApiRequestMarket({
+          req: request({ "x-shongre-market": "BE" }),
+          query: new URLSearchParams(),
+          body,
+        }),
+      ).toThrow("ne correspond pas");
+    }
+  });
+
+  it("does not infer France when a market-sensitive route omits context", () => {
+    expect(() => requireApiRequestMarket(null)).toThrow("explicite");
   });
 
   it("rejects a spoofed market header against the France referrer", () => {

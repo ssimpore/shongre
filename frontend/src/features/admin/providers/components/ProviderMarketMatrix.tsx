@@ -3,12 +3,10 @@ import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { ProviderCategory } from "../../../../domains/providers/provider.types";
 import { providerService } from "../../../../domains/providers/provider.service";
-import {
-  PROVIDER_CATEGORIES,
-  getCategoryMetadata,
-} from "../../../../domains/providers/provider-capabilities";
+import { PROVIDER_CATEGORIES } from "../../../../domains/providers/provider-capabilities";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
+import { ProviderCapabilityLabel } from "./ProviderCapabilityLabel";
 
 interface ProviderMarketMatrixProps {
   onSelectProvider?: (providerId: string) => void;
@@ -128,7 +126,6 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
             </thead>
             <tbody className="divide-y divide-stone-100 font-medium">
               {matrixRows.map((row) => {
-                const catMeta = getCategoryMetadata(row.category);
                 return (
                   <tr
                     key={row.capability}
@@ -136,21 +133,11 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                   >
                     {/* Capability column */}
                     <td className="py-3 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-stone-900">
-                          {row.capabilityName}
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-micro text-stone-500 font-mono">
-                            {row.capability}
-                          </span>
-                          <span
-                            className={`text-micro font-bold px-1.5 py-0.2 rounded border ${catMeta.badgeClass}`}
-                          >
-                            {catMeta.shortLabel}
-                          </span>
-                        </div>
-                      </div>
+                      <ProviderCapabilityLabel
+                        capability={row.capability}
+                        showCategory
+                        className="text-stone-900"
+                      />
                     </td>
 
                     {/* Market columns */}

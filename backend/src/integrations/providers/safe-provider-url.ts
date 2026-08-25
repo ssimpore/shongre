@@ -23,11 +23,20 @@ export function isPublicProviderAddress(address: string): boolean {
   const version = isIP(address);
   if (version === 4) {
     const blocked: Array<[string, number]> = [
-      ["0.0.0.0", 8], ["10.0.0.0", 8], ["100.64.0.0", 10],
-      ["127.0.0.0", 8], ["169.254.0.0", 16], ["172.16.0.0", 12],
-      ["192.0.0.0", 24], ["192.0.2.0", 24], ["192.168.0.0", 16],
-      ["198.18.0.0", 15], ["198.51.100.0", 24], ["203.0.113.0", 24],
-      ["224.0.0.0", 4], ["240.0.0.0", 4],
+      ["0.0.0.0", 8],
+      ["10.0.0.0", 8],
+      ["100.64.0.0", 10],
+      ["127.0.0.0", 8],
+      ["169.254.0.0", 16],
+      ["172.16.0.0", 12],
+      ["192.0.0.0", 24],
+      ["192.0.2.0", 24],
+      ["192.168.0.0", 16],
+      ["198.18.0.0", 15],
+      ["198.51.100.0", 24],
+      ["203.0.113.0", 24],
+      ["224.0.0.0", 4],
+      ["240.0.0.0", 4],
     ];
     return !blocked.some(([base, prefix]) => ipv4InCidr(address, base, prefix));
   }
@@ -77,7 +86,8 @@ export async function assertSafeProviderUrl(
   if (url.username || url.password) {
     return unsafe("Les identifiants ne doivent pas apparaître dans l’URL.");
   }
-  if (url.hash) return unsafe("Les fragments d’URL fournisseur sont interdits.");
+  if (url.hash)
+    return unsafe("Les fragments d’URL fournisseur sont interdits.");
   const allowedPorts = policy.allowedPorts ?? ["", "443"];
   if (!allowedPorts.includes(url.port)) {
     return unsafe("Le port du fournisseur n’est pas autorisé.");
@@ -92,7 +102,11 @@ export async function assertSafeProviderUrl(
   ) {
     return unsafe("L’hôte du fournisseur n’est pas autorisé.");
   }
-  if (!policy.allowPrivateNetwork && isIP(hostname) && !isPublicProviderAddress(hostname)) {
+  if (
+    !policy.allowPrivateNetwork &&
+    isIP(hostname) &&
+    !isPublicProviderAddress(hostname)
+  ) {
     return unsafe("L’adresse réseau du fournisseur n’est pas publique.");
   }
   if (!isIP(hostname)) {
@@ -102,7 +116,8 @@ export async function assertSafeProviderUrl(
     } catch {
       return unsafe("Le nom d’hôte du fournisseur ne peut pas être résolu.");
     }
-    if (!addresses.length) return unsafe("Le fournisseur ne résout aucune adresse.");
+    if (!addresses.length)
+      return unsafe("Le fournisseur ne résout aucune adresse.");
     if (
       !policy.allowPrivateNetwork &&
       addresses.some(({ address }) => !isPublicProviderAddress(address))
@@ -123,13 +138,26 @@ export async function safeProviderFetch(
   const response = await fetch(safeUrl, { ...init, redirect: "manual" });
   if (response.status >= 300 && response.status < 400) {
     if (remainingRedirects <= 0) {
-      throw new AppError({ code: "NETWORK_ERROR", statusCode: 502, message: "Trop de redirections fournisseur." });
+      throw new AppError({
+        code: "NETWORK_ERROR",
+        statusCode: 502,
+        message: "Trop de redirections fournisseur.",
+      });
     }
     const location = response.headers.get("location");
     if (!location) {
-      throw new AppError({ code: "NETWORK_ERROR", statusCode: 502, message: "Redirection fournisseur invalide." });
+      throw new AppError({
+        code: "NETWORK_ERROR",
+        statusCode: 502,
+        message: "Redirection fournisseur invalide.",
+      });
     }
-    return safeProviderFetch(new URL(location, safeUrl).toString(), init, policy, remainingRedirects - 1);
+    return safeProviderFetch(
+      new URL(location, safeUrl).toString(),
+      init,
+      policy,
+      remainingRedirects - 1,
+    );
   }
   return response;
 }

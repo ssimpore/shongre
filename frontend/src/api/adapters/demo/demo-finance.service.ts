@@ -21,15 +21,85 @@ import type {
 } from "../../contracts/finance.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
+import { convertDemoReportingMoney } from "./demo-reporting-currency";
+
+function convertDashboardReportingCurrency(
+  dashboard: PlatformFinanceDashboard,
+  currency: string,
+): PlatformFinanceDashboard {
+  Object.values(dashboard.metrics).forEach((metric) => {
+    metric.amount = convertDemoReportingMoney(metric.amount, currency);
+  });
+  dashboard.revenueSources = dashboard.revenueSources.map((source) => ({
+    ...source,
+    amount: convertDemoReportingMoney(source.amount, currency),
+  }));
+  dashboard.timeSeries = dashboard.timeSeries.map((point) => ({
+    ...point,
+    platformRevenue: convertDemoReportingMoney(point.platformRevenue, currency),
+    netRevenue: convertDemoReportingMoney(point.netRevenue, currency),
+  }));
+  dashboard.subscriptionHealth.arppu = convertDemoReportingMoney(
+    dashboard.subscriptionHealth.arppu,
+    currency,
+  );
+  dashboard.exceptions = dashboard.exceptions.map((item) => ({
+    ...item,
+    amountImpact: item.amountImpact
+      ? convertDemoReportingMoney(item.amountImpact, currency)
+      : undefined,
+  }));
+  dashboard.markets = dashboard.markets.map((market) => ({
+    ...market,
+    platformRevenue: convertDemoReportingMoney(
+      market.platformRevenue,
+      currency,
+    ),
+    netRevenue: convertDemoReportingMoney(market.netRevenue, currency),
+    gmv: convertDemoReportingMoney(market.gmv, currency),
+  }));
+  dashboard.verticals = dashboard.verticals.map((vertical) => ({
+    ...vertical,
+    revenue: convertDemoReportingMoney(vertical.revenue, currency),
+    mrr: convertDemoReportingMoney(vertical.mrr, currency),
+  }));
+
+  // Independent rounding can introduce a one-unit drift. Reconcile the two
+  // explicit finance identities after conversion so demo reports stay exact.
+  dashboard.metrics.providerFees.amount.amountMinor =
+    dashboard.metrics.platformRevenue.amount.amountMinor -
+    dashboard.metrics.netRevenue.amount.amountMinor -
+    dashboard.metrics.refunds.amount.amountMinor;
+  dashboard.metrics.arr.amount.amountMinor =
+    dashboard.metrics.mrr.amount.amountMinor * 12;
+  const sourceDifference =
+    dashboard.metrics.platformRevenue.amount.amountMinor -
+    dashboard.revenueSources.reduce(
+      (sum, source) => sum + source.amount.amountMinor,
+      0,
+    );
+  if (dashboard.revenueSources[0]) {
+    dashboard.revenueSources[0].amount.amountMinor += sourceDifference;
+  }
+
+  return dashboard;
+}
 
 function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
   const dashboard = structuredClone(DEMO_PLATFORM_FINANCE_DASHBOARD);
   dashboard.scope = scope;
-  if (scope.marketCode === "ALL") return dashboard;
+  if (scope.marketCode === "ALL") {
+    return convertDashboardReportingCurrency(dashboard, scope.currency);
+  }
   const market = dashboard.markets.find(
     (item) => item.marketCode === scope.marketCode,
   );
-  if (!market) return { ...dashboard, revenueSources: [], markets: [] };
+  if (!market) {
+    return convertDashboardReportingCurrency(
+      { ...dashboard, revenueSources: [], markets: [] },
+      scope.currency,
+    );
+  }
   const ratio =
     market.platformRevenue.amountMinor /
     dashboard.metrics.platformRevenue.amount.amountMinor;
@@ -97,7 +167,7 @@ function scaledDashboard(scope: FinanceScope): PlatformFinanceDashboard {
     },
   }));
   dashboard.markets = [market];
-  return dashboard;
+  return convertDashboardReportingCurrency(dashboard, scope.currency);
 }
 
 function matchingTransactions(

@@ -5,14 +5,14 @@
 Shongre is one platform and one deployment with country-aware presentation and
 policy. It is not a collection of cloned country applications.
 
-| Public entry | Meaning | Canonical behavior |
-| --- | --- | --- |
-| `shongre.fr/*` | France marketplace | root path, EUR, `fr-FR` |
-| `shongre.com/` | global gateway | country choice only |
-| `shongre.com/be/*` | Belgium marketplace | EUR, `fr-BE` default |
-| `shongre.com/ch/*` | Switzerland marketplace | CHF, `fr-CH` default |
-| `shongre.com/sn/*` | Senegal | launch page, no marketplace traffic yet |
-| `shongre.com/bf/*` | Burkina Faso | launch page, no marketplace traffic yet |
+| Public entry       | Meaning                 | Canonical behavior                      |
+| ------------------ | ----------------------- | --------------------------------------- |
+| `shongre.fr/*`     | France marketplace      | root path, EUR, `fr-FR`                 |
+| `shongre.com/`     | global gateway          | country choice only                     |
+| `shongre.com/be/*` | Belgium marketplace     | EUR, `fr-BE` default                    |
+| `shongre.com/ch/*` | Switzerland marketplace | CHF, `fr-CH` default                    |
+| `shongre.com/sn/*` | Senegal                 | launch page, no marketplace traffic yet |
+| `shongre.com/bf/*` | Burkina Faso            | launch page, no marketplace traffic yet |
 
 France is never canonical under `/fr`. `www.shongre.fr`, `www.shongre.com` and
 `shongre.com/fr/*` receive 308 redirects. Unknown domains and unknown two-letter
@@ -100,13 +100,13 @@ actions use the same canonical builder.
 
 ## Public URL migration map
 
-| Legacy or ambiguous source | Canonical target |
-| --- | --- |
-| `https://shongre.com/fr/<route>` | `https://shongre.fr/<route>` |
-| `https://www.shongre.fr/<route>` | `https://shongre.fr/<route>` |
-| `https://www.shongre.com/<route>` | `https://shongre.com/<route>` |
-| hardcoded `shongre.com/annonce/<id>` for France | `buildPublicUrl({ country: "FR", route })` |
-| relative link in an email/notification | store `{ marketCode, linkRoute }`, resolve at delivery |
+| Legacy or ambiguous source                      | Canonical target                                       |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| `https://shongre.com/fr/<route>`                | `https://shongre.fr/<route>`                           |
+| `https://www.shongre.fr/<route>`                | `https://shongre.fr/<route>`                           |
+| `https://www.shongre.com/<route>`               | `https://shongre.com/<route>`                          |
+| hardcoded `shongre.com/annonce/<id>` for France | `buildPublicUrl({ country: "FR", route })`             |
+| relative link in an email/notification          | store `{ marketCode, linkRoute }`, resolve at delivery |
 
 Redirects are permanent only when the mapping is unambiguous. No country is
 guessed from language, IP or currency.

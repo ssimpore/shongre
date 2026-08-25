@@ -6,19 +6,19 @@ import {
 } from "../src/platform/market/server-market-context";
 
 const INDEXABLE_PATHS = [
-    "/",
-    "/categories",
-    "/collections",
-    "/education",
-    "/professionnels",
-    "/solutions-pro",
-    "/aide",
-    "/securite",
-    "/conditions-utilisation",
-    "/confidentialite",
-    "/mentions-legales",
-    "/accessibilite",
-  ] as const;
+  "/",
+  "/categories",
+  "/collections",
+  "/education",
+  "/professionnels",
+  "/solutions-pro",
+  "/aide",
+  "/securite",
+  "/conditions-utilisation",
+  "/confidentialite",
+  "/mentions-legales",
+  "/accessibilite",
+] as const;
 
 function entriesForCountry(countryCode: string): MetadataRoute.Sitemap {
   const infrastructure = marketInfrastructureFromEnvironment();

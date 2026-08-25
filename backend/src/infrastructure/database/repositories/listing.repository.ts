@@ -5,6 +5,7 @@ import {
 } from "../../../shared/types/index.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { AppError } from "../../../shared/errors/app-error.js";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
 import { databaseFailure } from "./repository-error.js";
 
 export interface IListingRepository {
@@ -276,7 +277,7 @@ export class PostgresListingRepository implements IListingRepository {
             avatarUrl: profile.avatar_url || undefined,
             city: profile.city || undefined,
             postalCode: profile.postal_code || undefined,
-            country: profile.country || "FR",
+            country: requireMarketCode(profile.country),
             isVerified: Boolean(profile.is_verified),
             isIdentityVerified: Boolean(profile.is_identity_verified),
             isPhoneVerified: Boolean(profile.is_phone_verified),
@@ -296,17 +297,17 @@ export class PostgresListingRepository implements IListingRepository {
       originalPrice: row.original_price
         ? Number(row.original_price)
         : undefined,
-      currency: row.currency || "EUR",
+      currency: row.currency,
       status: row.status,
       condition: row.condition || "bon-etat",
       brand: row.brand || undefined,
       model: row.model || undefined,
-      marketCode: row.market_code || "FR",
+      marketCode: requireMarketCode(row.market_code),
       city: row.city,
       postalCode: row.postal_code,
       department: row.department || undefined,
       region: row.region || undefined,
-      country: row.country || "FR",
+      country: requireMarketCode(row.country),
       latitude: row.latitude ? Number(row.latitude) : undefined,
       longitude: row.longitude ? Number(row.longitude) : undefined,
       allowedDelivery: (row.allowed_delivery as DeliveryType[]) || [

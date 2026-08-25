@@ -6,10 +6,7 @@ import {
 import { marketService } from "../../../domains/market/market.service";
 import { storageService } from "../../../services/storage.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
-import {
-  getCountryConfig,
-  type CountryConfig,
-} from "@shongre/contracts";
+import { getCountryConfig, type CountryConfig } from "@shongre/contracts";
 
 export class DemoMarketsService implements MarketsServiceContract {
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
@@ -48,10 +45,19 @@ export class DemoMarketsService implements MarketsServiceContract {
     if (!country) throw new Error("Marché introuvable.");
     const current = marketService.getMarket(code);
     marketService.updateMarketRouting(code, {
-      primaryDomain: patch.primaryDomain || current.routing?.primaryDomain || country.primaryDomain,
+      primaryDomain:
+        patch.primaryDomain ||
+        current.routing?.primaryDomain ||
+        country.primaryDomain,
       basePath: patch.basePath || current.routing?.basePath || country.basePath,
-      gatewayVisible: patch.gatewayVisible ?? current.routing?.gatewayVisible ?? country.gatewayVisible,
-      seoIndexable: patch.seo?.indexable ?? current.routing?.seoIndexable ?? country.seo.indexable,
+      gatewayVisible:
+        patch.gatewayVisible ??
+        current.routing?.gatewayVisible ??
+        country.gatewayVisible,
+      seoIndexable:
+        patch.seo?.indexable ??
+        current.routing?.seoIndexable ??
+        country.seo.indexable,
     });
     return {
       ...country,

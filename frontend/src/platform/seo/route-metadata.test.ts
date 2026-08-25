@@ -20,9 +20,11 @@ describe("country-aware route metadata", () => {
     expect(String(metadata.alternates?.canonical)).toBe(
       "https://shongre.fr/categories",
     );
-    expect(metadata.openGraph && "locale" in metadata.openGraph
-      ? metadata.openGraph.locale
-      : undefined).toBe("fr_FR");
+    expect(
+      metadata.openGraph && "locale" in metadata.openGraph
+        ? metadata.openGraph.locale
+        : undefined,
+    ).toBe("fr_FR");
   });
 
   it("keeps Belgium and Switzerland under their .com country paths", () => {
@@ -49,8 +51,7 @@ describe("country-aware route metadata", () => {
       marketContext: contextFor("shongre.com", "/be/categories"),
     });
     const languages = metadata.alternates?.languages as
-      | Record<string, string>
-      | undefined;
+      Record<string, string> | undefined;
 
     expect(languages).toMatchObject({
       "fr-FR": "https://shongre.fr/categories",

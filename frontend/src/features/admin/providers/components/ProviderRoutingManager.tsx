@@ -6,12 +6,10 @@ import {
   ProviderConfiguration,
   PROVIDER_CONFIGURATION_CONSTRAINTS,
 } from "../../../../domains/providers/provider.types";
-import {
-  getAllCapabilities,
-  getCategoryMetadata,
-} from "../../../../domains/providers/provider-capabilities";
+import { getAllCapabilities } from "../../../../domains/providers/provider-capabilities";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
+import { ProviderCapabilityLabel } from "./ProviderCapabilityLabel";
 
 interface ProviderRoutingManagerProps {
   providers: Provider[];
@@ -102,8 +100,6 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
       <div className="space-y-3">
         {capabilitiesWithMultipleProviders.map(
           ({ capability, primary, fallback, hasRedundancy }) => {
-            const catMeta = getCategoryMetadata(capability.category);
-
             return (
               <div
                 key={capability.id}
@@ -111,22 +107,14 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
               >
                 {/* Capability description */}
                 <div className="max-w-md">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`text-micro font-bold px-1.5 py-0.2 rounded border ${catMeta.badgeClass}`}
-                    >
-                      {catMeta.shortLabel}
-                    </span>
-                    <span className="font-bold text-xs text-stone-900">
-                      {capability.name}
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500">
+                  <ProviderCapabilityLabel
+                    capability={capability.id}
+                    showCategory
+                    className="text-stone-900"
+                  />
+                  <p className="mt-2 text-xs text-stone-500">
                     {capability.description}
                   </p>
-                  <div className="text-micro text-stone-500 font-mono mt-1">
-                    {capability.id}
-                  </div>
                 </div>
 
                 {/* Routing Chain (Primary -> Fallback) */}

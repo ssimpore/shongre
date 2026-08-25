@@ -42,6 +42,20 @@ const pageFiles = walk(FEATURES)
   // `components/` holds pieces a page composes, never a route target.
   .filter((f) => !f.includes("/components/"));
 
+const SERVER_METADATA_PAGES = new Set([
+  "global/GlobalGatewayPage.tsx",
+  "global/MarketLaunchPage.tsx",
+]);
+
+const clientMetadataPages = pageFiles.filter(
+  (file) => !SERVER_METADATA_PAGES.has(relative(FEATURES, file)),
+);
+
+const SERVER_ROUTE = new URL(
+  "../../../app/[[...segments]]/page.tsx",
+  import.meta.url,
+).pathname;
+
 describe("page metadata coverage", () => {
   it("finds the routed page modules", () => {
     // A guard on the guard: a rename that breaks the glob would otherwise turn
@@ -49,7 +63,14 @@ describe("page metadata coverage", () => {
     expect(pageFiles.length).toBeGreaterThan(40);
   });
 
-  it.each(pageFiles.map((f) => [relative(FEATURES, f), f]))(
+  it("keeps gateway and launch metadata in the server route", () => {
+    const source = readFileSync(SERVER_ROUTE, "utf8");
+    expect(source).toContain("export async function generateMetadata");
+    expect(source).toContain('context.kind === "global_gateway"');
+    expect(source).toContain('context.kind === "coming_soon"');
+  });
+
+  it.each(clientMetadataPages.map((f) => [relative(FEATURES, f), f]))(
     "%s declares usePageMeta",
     (_name, file) => {
       expect(readFileSync(file as string, "utf8")).toContain("usePageMeta(");

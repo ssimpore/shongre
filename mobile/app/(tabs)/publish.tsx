@@ -15,6 +15,7 @@ import {
 } from "@shongre/design-tokens/native";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { listingsService } from "@/features/listings/listings.service";
+import { useMarket } from "@/features/market/MarketProvider";
 import { permissionsService } from "@/services/permissions/permissions.service";
 
 const categories = [
@@ -26,6 +27,7 @@ const categories = [
 export default function PublishScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { activeMarket } = useMarket();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -63,9 +65,9 @@ export default function PublishScreen() {
       title,
       description,
       amountMinor: Math.round(numericPrice * 100),
-      currency: "EUR",
+      currency: activeMarket.currency,
       categoryId,
-      marketCode: "FR",
+      marketCode: activeMarket.code,
       city,
       postalCode,
       condition: "Bon état",
@@ -143,7 +145,7 @@ export default function PublishScreen() {
         placeholder="État, dimensions, accessoires, défauts…"
       />
       <FormField
-        label="Prix en euros"
+        label={`Prix en ${activeMarket.currencySymbol ?? activeMarket.currency}`}
         value={price}
         onChangeText={setPrice}
         keyboardType="decimal-pad"

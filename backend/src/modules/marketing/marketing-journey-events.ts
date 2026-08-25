@@ -5,7 +5,10 @@ import { PostgresMarketingOperationsRepository } from "../../infrastructure/data
 const repository = new PostgresMarketingOperationsRepository();
 
 /** Internal domain-event bridge for sources that do not have a user principal. */
-export async function emitMarketingJourneyEvent(tenantId: string, event: MarketingJourneyEvent) {
+export async function emitMarketingJourneyEvent(
+  tenantId: string,
+  event: MarketingJourneyEvent,
+) {
   if (config.dataMode !== "database") return [];
   return repository.enqueueJourneyEvent(tenantId, event);
 }

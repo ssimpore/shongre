@@ -24,6 +24,8 @@ import {
 } from "@shongre/shared";
 import { normalizeBusinessVerticalCode } from "@shongre/contracts/business-verticals";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { getCountryConfig } from "@shongre/contracts";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
 
 export interface FinanceTransactionFilters extends FinanceScope {
   periodStart: string;
@@ -41,9 +43,13 @@ export interface FinanceRepository {
     periodStart: string,
     periodEnd: string,
   ): Promise<PlatformFinanceDashboard>;
-  getAccountDashboard(accountId: string): Promise<AccountFinanceDashboard>;
+  getAccountDashboard(
+    accountId: string,
+    marketCode: string,
+  ): Promise<AccountFinanceDashboard>;
   getOrganizationDashboard(
     accountId: string,
+    marketCode: string,
   ): Promise<AccountFinanceDashboard | null>;
   listTransactions(
     filters: FinanceTransactionFilters,
@@ -78,7 +84,7 @@ export class DemoFinanceRepository implements FinanceRepository {
     return dashboard;
   }
 
-  async getAccountDashboard(accountId: string) {
+  async getAccountDashboard(accountId: string, _marketCode: string) {
     return createDemoAccountFinanceDashboard(
       accountId,
       "Compte de démonstration",
@@ -86,7 +92,7 @@ export class DemoFinanceRepository implements FinanceRepository {
     );
   }
 
-  async getOrganizationDashboard(accountId: string) {
+  async getOrganizationDashboard(accountId: string, _marketCode: string) {
     return createDemoAccountFinanceDashboard(
       accountId,
       "Organisation de démonstration",
@@ -491,12 +497,16 @@ export class PostgresFinanceRepository implements FinanceRepository {
     kind: "individual" | "professional";
     accountId?: string;
     organizationId?: string;
+    marketCode: string;
   }) {
+    const marketCode = requireMarketCode(input.marketCode);
+    const currency = getCountryConfig(marketCode)!.currency;
     let transactionRequest = this.client
       .from("finance_transactions")
       .select(transactionSelect())
       .order("occurred_at", { ascending: false })
       .order("id", { ascending: false })
+      .eq("market_code", marketCode)
       .limit(100);
     transactionRequest = input.organizationId
       ? transactionRequest.eq("organization_id", input.organizationId)
@@ -504,7 +514,8 @@ export class PostgresFinanceRepository implements FinanceRepository {
 
     let payoutRequest = this.client
       .from("finance_payouts")
-      .select("amount_minor,status,currency");
+      .select("amount_minor,status,currency")
+      .eq("market_code", marketCode);
     payoutRequest = input.organizationId
       ? payoutRequest.eq("organization_id", input.organizationId)
       : payoutRequest.eq("seller_account_id", input.accountId);
@@ -519,7 +530,12 @@ export class PostgresFinanceRepository implements FinanceRepository {
       (row: FinanceRow) => mapTransaction(row),
     );
     transactions.forEach(assertBalancedTransaction);
-    const currency = transactions[0]?.grossAmount.currency ?? "EUR";
+    if (
+      transactions.some(
+        (transaction) => transaction.grossAmount.currency !== currency,
+      )
+    )
+      throw new Error("Finance transaction currency does not match its market");
     const spending = transactions
       .filter((item) =>
         ["subscription", "promotion", "advertising", "service_fee"].includes(
@@ -588,7 +604,7 @@ export class PostgresFinanceRepository implements FinanceRepository {
     });
   }
 
-  async getAccountDashboard(accountId: string) {
+  async getAccountDashboard(accountId: string, marketCode: string) {
     const { data: profile, error: profileError } = await this.client
       .from("profiles")
       .select("name,account_family")
@@ -603,10 +619,11 @@ export class PostgresFinanceRepository implements FinanceRepository {
         profile.account_family === "professional"
           ? "professional"
           : "individual",
+      marketCode,
     });
   }
 
-  async getOrganizationDashboard(accountId: string) {
+  async getOrganizationDashboard(accountId: string, marketCode: string) {
     const { data, error } = await this.client
       .from("organization_members")
       .select(
@@ -635,6 +652,7 @@ export class PostgresFinanceRepository implements FinanceRepository {
       organizationId: organization.id,
       label: organization.trade_name ?? organization.legal_name,
       kind: "professional",
+      marketCode,
     });
   }
 

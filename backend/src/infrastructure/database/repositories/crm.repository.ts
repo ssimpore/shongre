@@ -23,6 +23,7 @@ import type {
   CrmTaskInput,
 } from "@shongre/contracts/crm";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
 import { databaseFailure } from "./repository-error.js";
 
 export interface CrmTenantContext {
@@ -1628,7 +1629,7 @@ export class PostgresCrmRepository implements ICrmRepository {
         .eq("id", tenantId)
         .single(),
     );
-    const marketCode = org.country ?? "FR";
+    const marketCode = requireMarketCode(org.country);
     const market: any = await this.query(
       "crm.getTenantMarket",
       this.client

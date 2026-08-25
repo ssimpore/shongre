@@ -274,7 +274,10 @@ export function applyPageMeta(
   const origin = window.location.origin;
   const title = resolveTitle(meta.title);
   const description = meta.description?.trim() || DEFAULT_DESCRIPTION;
-  const canonicalPath = meta.canonicalPath ?? marketContext?.internalPath ?? window.location.pathname;
+  const canonicalPath =
+    meta.canonicalPath ??
+    marketContext?.internalPath ??
+    window.location.pathname;
   const canonical = marketContext?.countryCode
     ? buildPublicUrl({
         country: marketContext.countryCode,

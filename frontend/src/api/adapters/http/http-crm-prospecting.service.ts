@@ -11,12 +11,18 @@ import type {
  * browser-side provider calls or silently substitute demo research.
  */
 export class HttpCrmProspectingService implements CrmProspectingServiceContract {
-  async searchProspects(_query: ProspectResearchQuery): Promise<ProspectResearchResult> {
-    throw new Error("La prospection IA doit être configurée côté serveur avant utilisation.");
+  async searchProspects(
+    _query: ProspectResearchQuery,
+  ): Promise<ProspectResearchResult> {
+    throw new Error(
+      "La prospection IA doit être configurée côté serveur avant utilisation.",
+    );
   }
 
   async enrichCompany(_companyId: string): Promise<CompanyEnrichmentDiff> {
-    throw new Error("L’enrichissement IA doit être configuré côté serveur avant utilisation.");
+    throw new Error(
+      "L’enrichissement IA doit être configuré côté serveur avant utilisation.",
+    );
   }
 }
 

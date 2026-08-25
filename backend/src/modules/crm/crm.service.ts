@@ -157,6 +157,7 @@ export class CrmService {
       items.reduce((sum, item) => sum + item.amount.amountMinor, 0);
 
     return {
+      marketCode: context.marketCode,
       currency: context.currency,
       activeProspects: new Set(
         open.flatMap((item) => (item.accountId ? [item.accountId] : [])),

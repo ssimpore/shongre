@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, CheckCircle2, LoaderCircle, ShieldAlert } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  LoaderCircle,
+  ShieldAlert,
+} from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";

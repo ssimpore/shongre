@@ -112,6 +112,7 @@ describe("RealEstateService", () => {
   it("keeps drafts account-private and removes internal fields", async () => {
     const { service } = setup();
     const draft = await service.saveOwnDraft("owner_a", "draft-private", {
+      marketCode: "FR",
       data: {
         ...completeData,
         riskScore: 99,
@@ -130,6 +131,7 @@ describe("RealEstateService", () => {
   it("enforces France energy requirements and publishes complete drafts to moderation", async () => {
     const { repository, service } = setup();
     await service.saveOwnDraft("owner_new", "draft-invalid-energy", {
+      marketCode: "FR",
       currentStep: 10,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       data: { ...completeData, energy: {} },
@@ -138,6 +140,7 @@ describe("RealEstateService", () => {
       service.submitOwnDraft("owner_new", "draft-invalid-energy"),
     ).rejects.toThrow(/DPE|GES/i);
     await service.saveOwnDraft("owner_new", "draft-valid", {
+      marketCode: "FR",
       currentStep: 10,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       data: completeData,
@@ -152,6 +155,7 @@ describe("RealEstateService", () => {
   it("enforces configured photo, video and virtual-tour entitlements", async () => {
     const { service } = setup();
     await service.saveOwnDraft("owner_media_limit", "draft-media-limit", {
+      marketCode: "FR",
       currentStep: 10,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
       data: {
@@ -231,6 +235,7 @@ describe("RealEstateService", () => {
       "member_clara",
       "draft-agency-shared",
       {
+        marketCode: "FR",
         organizationId: "agency_canopee",
         currentStep: 4,
         completedSteps: [1, 2, 3],

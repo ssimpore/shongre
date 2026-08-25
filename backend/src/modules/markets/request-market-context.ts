@@ -1,8 +1,5 @@
 import type { IncomingMessage } from "node:http";
-import {
-  getCountryConfig,
-  resolveMarketContext,
-} from "@shongre/contracts";
+import { getCountryConfig, resolveMarketContext } from "@shongre/contracts";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 
@@ -17,10 +14,7 @@ function normalizeMarket(value: unknown): string | null {
   return value.trim().toUpperCase();
 }
 
-function referencedMarkets(
-  query: URLSearchParams,
-  body: unknown,
-): string[] {
+function referencedMarkets(query: URLSearchParams, body: unknown): string[] {
   const values: unknown[] = [
     query.get("market"),
     query.get("country"),
@@ -30,9 +24,12 @@ function referencedMarkets(
     const record = body as Record<string, any>;
     values.push(
       record.marketCode,
+      record.country,
       record.countryCode,
+      record.jurisdiction,
       record.query?.marketCode,
       record.draft?.marketCode,
+      record.draft?.country,
       record.input?.marketCode,
     );
   }
@@ -143,4 +140,21 @@ export function requireOpenMarketplace(marketCode: string): void {
       message: "Ce marché n’est pas encore ouvert.",
     });
   }
+}
+
+export function requireApiRequestMarket(marketCode: string | null): string {
+  if (!marketCode) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message:
+        "Un marché explicite est requis dans X-Shongre-Market ou dans la requête.",
+    });
+  }
+  return marketCode;
+}
+
+export function requireOpenApiRequestMarket(marketCode: string | null): string {
+  const resolved = requireApiRequestMarket(marketCode);
+  requireOpenMarketplace(resolved);
+  return resolved;
 }

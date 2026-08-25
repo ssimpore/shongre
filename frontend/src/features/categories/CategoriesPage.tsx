@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
-import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import type { Category } from "../../types";
 import {
   Breadcrumbs,
   Button,
@@ -15,138 +15,128 @@ import {
   Input,
 } from "../../design-system";
 
-interface CategoryMeta {
-  itemCountLabel: string;
-  badge?: {
-    label: string;
-    variant:
-      | "terracotta"
-      | "emerald"
-      | "sky"
-      | "amber"
-      | "purple"
-      | "rose"
-      | "indigo"
-      | "success"
-      | "info"
-      | "warning"
-      | "danger";
-  };
-  accentBg: string;
-  accentBorder: string;
-}
-
-const CATEGORY_META: Record<string, CategoryMeta> = {
-  vehicules: {
-    itemCountLabel: "18 400+ annonces",
-    badge: { label: "🛡️ Contrôle vérifié", variant: "terracotta" },
-    accentBg: "from-orange-50/60 to-stone-50",
-    accentBorder: "border-primary-border",
-  },
-  immobilier: {
-    itemCountLabel: "12 800+ biens",
-    badge: { label: "📍 Villes & Régions", variant: "sky" },
-    accentBg: "from-sky-50/60 to-stone-50",
-    accentBorder: "border-info-border",
-  },
-  "maison-deco": {
-    itemCountLabel: "24 500+ pépites",
-    badge: { label: "🛋️ Mobilier & Déco", variant: "amber" },
-    accentBg: "from-amber-50/60 to-stone-50",
-    accentBorder: "border-warning-border",
-  },
-  "mode-beaute": {
-    itemCountLabel: "31 000+ articles",
-    badge: { label: "✨ Seconde main chic", variant: "rose" },
-    accentBg: "from-rose-50/60 to-stone-50",
-    accentBorder: "border-danger-border",
-  },
-  multimedia: {
-    itemCountLabel: "16 200+ appareils",
-    badge: { label: "⚡ Reconditionné & Testé", variant: "indigo" },
-    accentBg: "from-indigo-50/60 to-stone-50",
-    accentBorder: "border-indigo-200/80",
-  },
-  "sports-loisirs": {
-    itemCountLabel: "14 100+ équipements",
-    badge: { label: "🚴 Plein air & Cycles", variant: "emerald" },
-    accentBg: "from-emerald-50/60 to-stone-50",
-    accentBorder: "border-success-border",
-  },
-  "famille-enfants": {
-    itemCountLabel: "11 500+ articles",
-    badge: { label: "👶 Puériculture & Jouets", variant: "rose" },
-    accentBg: "from-pink-50/60 to-stone-50",
-    accentBorder: "border-pink-200/80",
-  },
-  "bricolage-jardin": {
-    itemCountLabel: "9 800+ outils",
-    badge: { label: "🔧 Outillage Pro", variant: "amber" },
-    accentBg: "from-yellow-50/60 to-stone-50",
-    accentBorder: "border-warning-border",
-  },
-  "materiel-professionnel": {
-    itemCountLabel: "6 400+ équipements",
-    badge: { label: "🏢 Pour les Pros", variant: "indigo" },
-    accentBg: "from-slate-50/80 to-stone-50",
-    accentBorder: "border-slate-200/80",
-  },
-  services: {
-    itemCountLabel: "4 500+ prestataires",
-    badge: { label: "🤝 Services de proximité", variant: "sky" },
-    accentBg: "from-cyan-50/60 to-stone-50",
-    accentBorder: "border-info-border",
-  },
-  emploi: {
-    itemCountLabel: "3 200+ offres",
-    badge: { label: "💼 Recrutements actifs", variant: "indigo" },
-    accentBg: "from-blue-50/60 to-stone-50",
-    accentBorder: "border-info-border",
-  },
-  "locations-vacances": {
-    itemCountLabel: "5 800+ séjours",
-    badge: { label: "☀️ Évasion & Gîtes", variant: "emerald" },
-    accentBg: "from-teal-50/60 to-stone-50",
-    accentBorder: "border-success-border",
-  },
-  animaux: {
-    itemCountLabel: "3 900+ annonces",
-    badge: { label: "🐾 Accessoires & Soins", variant: "amber" },
-    accentBg: "from-amber-50/60 to-stone-50",
-    accentBorder: "border-warning-border",
-  },
-  "art-artisanat": {
-    itemCountLabel: "4 100+ créations",
-    badge: { label: "🎨 Fait main & Collections", variant: "purple" },
-    accentBg: "from-purple-50/60 to-stone-50",
-    accentBorder: "border-purple-200/80",
-  },
-  "musique-instruments": {
-    itemCountLabel: "3 400+ instruments",
-    badge: { label: "🎸 Studio & Scène", variant: "terracotta" },
-    accentBg: "from-red-50/60 to-stone-50",
-    accentBorder: "border-danger-border",
-  },
-  "dons-echanges": {
-    itemCountLabel: "1 200+ dons gratuits",
-    badge: { label: "🎁 100% Gratuit", variant: "emerald" },
-    accentBg: "from-emerald-50/60 to-stone-50",
-    accentBorder: "border-success-border",
-  },
+const CATEGORY_VISUALS: Record<string, string> = {
+  vehicules: "/images/categories/vehicules.jpg",
+  immobilier: "/images/categories/immobilier.jpg",
+  emploi: "/images/categories/emploi.jpg",
+  services: "/images/categories/services.jpg",
+  "maison-jardin": "/images/categories/maison-jardin.jpg",
+  "multimedia-electronique": "/images/categories/multimedia-electronique.jpg",
+  "mode-accessoires": "/images/categories/mode-accessoires.jpg",
+  "bebe-puericulture-enfants":
+    "/images/categories/bebe-puericulture-enfants.jpg",
+  "loisirs-culture": "/images/categories/loisirs-culture.jpg",
+  "sports-plein-air": "/images/categories/sports-plein-air.jpg",
+  "animaux-accessoires": "/images/categories/animaux-accessoires.jpg",
+  "materiel-professionnel": "/images/categories/materiel-professionnel.jpg",
+  "materiel-agricole-espaces-verts":
+    "/images/categories/materiel-agricole-espaces-verts.jpg",
+  "energie-solaire-transition":
+    "/images/categories/energie-solaire-transition.jpg",
+  "informatique-pro-serveurs":
+    "/images/categories/informatique-pro-serveurs.jpg",
+  "dons-solidarite-bons-plans":
+    "/images/categories/dons-solidarite-bons-plans.jpg",
 };
 
-const BADGE_PILL_STYLES: Record<string, string> = {
-  terracotta: "bg-primary-light text-primary border-primary-border",
-  emerald: "bg-success-surface text-success border-success-border",
-  sky: "bg-info-surface text-info border-info-border",
-  amber: "bg-warning-surface text-warning border-warning-border",
-  purple: "bg-purple-50 text-purple-700 border-purple-200",
-  rose: "bg-danger-surface text-danger border-danger-border",
-  indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  success: "bg-success-surface text-success border-success-border",
-  info: "bg-info-surface text-info border-info-border",
-  warning: "bg-warning-surface text-warning border-warning-border",
-  danger: "bg-danger-surface text-danger border-danger-border",
+interface CategoryCardProps {
+  category: Category;
+  priority: boolean;
+}
+
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
+  const { t } = useTranslation();
+  const categoryLabel = getTaxonomyLabel(category, "compact");
+  const subCategories = category.subCategories ?? [];
+  const visibleSubCategories = subCategories.slice(0, 3);
+  const hiddenSubCategoryCount = Math.max(
+    subCategories.length - visibleSubCategories.length,
+    0,
+  );
+  const visualSrc =
+    CATEGORY_VISUALS[category.slug] ??
+    CATEGORY_VISUALS["dons-solidarite-bons-plans"];
+
+  return (
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary/15 motion-reduce:transform-none">
+      <Link
+        to={`/categorie/${category.slug}`}
+        className="relative block aspect-16/10 overflow-hidden bg-bg-subtle focus-visible:outline-none"
+        aria-label={t("categories.categoriesPage.explorerLaCategorie", {
+          category: categoryLabel,
+        })}
+      >
+        <img
+          src={visualSrc}
+          alt=""
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          className="h-full w-full object-cover transition duration-slow group-hover:scale-105 motion-reduce:transform-none"
+        />
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent" />
+      </Link>
+
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <div>
+          <Link
+            to={`/categorie/${category.slug}`}
+            className="inline-flex rounded-sm text-lg font-black leading-tight text-stone-950 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            {categoryLabel}
+          </Link>
+          <p className="mt-1 text-xs font-semibold text-stone-500">
+            {t("categories.categoriesPage.rubriques", {
+              count: subCategories.length,
+            })}
+          </p>
+        </div>
+
+        {visibleSubCategories.length > 0 && (
+          <div
+            className="mt-4 flex flex-wrap gap-1.5"
+            aria-label={categoryLabel}
+          >
+            {visibleSubCategories.map((subCategory) => (
+              <Link
+                key={subCategory.id}
+                to={`/categorie/${category.slug}?subCategory=${subCategory.slug}`}
+                className="inline-flex min-h-7 max-w-full items-center rounded-control border border-border-base bg-bg-base px-2.5 py-1 text-micro font-semibold text-stone-600 transition-colors hover:border-primary-border hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                title={getTaxonomyLabel(subCategory, "compact")}
+              >
+                <span className="truncate">
+                  {getTaxonomyLabel(subCategory, "compact")}
+                </span>
+              </Link>
+            ))}
+            {hiddenSubCategoryCount > 0 && (
+              <span className="inline-flex min-h-7 items-center px-1 text-micro font-bold text-stone-500">
+                {t("categories.categoriesPage.rubriquesSupplementaires", {
+                  count: hiddenSubCategoryCount,
+                })}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="mt-auto pt-5">
+          <Link
+            to={`/categorie/${category.slug}`}
+            className="flex min-h-9 items-center justify-between border-t border-border-subtle pt-3 text-xs font-bold text-stone-800 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <span>
+              {t("categories.categoriesPage.explorerLaCategorie", {
+                category: categoryLabel,
+              })}
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none"
+            />
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
 };
 
 export const CategoriesPage: React.FC = () => {
@@ -154,7 +144,7 @@ export const CategoriesPage: React.FC = () => {
   usePageMeta({
     title: "Toutes les catégories d'annonces",
     description:
-      "Parcourez toutes les catégories d'annonces Shongre : véhicules, immobilier, mode, maison, multimédia, loisirs, emploi et services.",
+      "Parcourez toutes les catégories d'annonces Shongre dans votre marché : véhicules, immobilier, mode, maison, multimédia, loisirs, emploi et services.",
     canonicalPath: "/categories",
   });
 
@@ -162,60 +152,60 @@ export const CategoriesPage: React.FC = () => {
 
   const filteredCategories = useMemo(() => {
     if (!searchQuery.trim()) return TAXONOMY;
-    const q = searchQuery.toLowerCase().trim();
+    const normalizedQuery = searchQuery.toLocaleLowerCase().trim();
 
-    return TAXONOMY.filter((cat) => {
-      const matchCat =
-        cat.name.toLowerCase().includes(q) ||
-        getTaxonomyLabel(cat, "compact").toLowerCase().includes(q) ||
-        cat.slug.toLowerCase().includes(q) ||
-        cat.description?.toLowerCase().includes(q);
+    return TAXONOMY.filter((category) => {
+      const matchesCategory =
+        category.name.toLocaleLowerCase().includes(normalizedQuery) ||
+        getTaxonomyLabel(category, "compact")
+          .toLocaleLowerCase()
+          .includes(normalizedQuery) ||
+        category.slug.toLocaleLowerCase().includes(normalizedQuery) ||
+        category.description?.toLocaleLowerCase().includes(normalizedQuery);
 
-      const matchSub = cat.subCategories?.some(
-        (sub) =>
-          sub.name.toLowerCase().includes(q) ||
-          getTaxonomyLabel(sub, "compact").toLowerCase().includes(q) ||
-          sub.slug.toLowerCase().includes(q),
+      const matchesSubCategory = category.subCategories?.some(
+        (subCategory) =>
+          subCategory.name.toLocaleLowerCase().includes(normalizedQuery) ||
+          getTaxonomyLabel(subCategory, "compact")
+            .toLocaleLowerCase()
+            .includes(normalizedQuery) ||
+          subCategory.slug.toLocaleLowerCase().includes(normalizedQuery),
       );
 
-      return matchCat || matchSub;
+      return matchesCategory || matchesSubCategory;
     });
   }, [searchQuery]);
 
   return (
     <div className="min-h-screen bg-bg-base pb-20">
-      {/* 1. Breadcrumbs */}
       <div className="border-b border-border-base bg-bg-surface">
         <Container className="py-3">
           <Breadcrumbs
             items={[
-              { label: "Accueil", href: "/" },
+              { label: t("nav.home"), href: "/" },
               { label: t("categories.categoriesPage.toutesLesCategories") },
             ]}
           />
         </Container>
       </div>
 
-      {/* 2. Hero Header */}
-      <section className="relative bg-bg-base pt-8 pb-10 sm:py-14 border-b border-border-base">
+      <section className="border-b border-border-base bg-bg-surface py-8 sm:py-10">
         <Container>
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="max-w-3xl space-y-3">
-              <Heading as="h1" size="display-md" family="display">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl space-y-2.5">
+              <Heading as="h1" size="display-sm" family="display">
                 {t("categories.categoriesPage.toutesNosCategories")}
               </Heading>
-
-              <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">
+              <p className="max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
                 {t("categories.categoriesPage.explorezLEnsembleDesCategories")}
               </p>
             </div>
 
-            {/* In-page Category Search */}
-            <div className="relative w-full sm:w-80 shrink-0">
+            <div className="w-full shrink-0 sm:w-96">
               <Input
-                type="text"
+                type="search"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t(
                   "categories.categoriesPage.filtrerUneCategorieSousCategorie",
                 )}
@@ -225,25 +215,37 @@ export const CategoriesPage: React.FC = () => {
                 leftIcon={
                   <Search aria-hidden="true" className="h-icon-md w-icon-md" />
                 }
-                className="h-control-touch bg-white shadow-2xs"
+                className="h-control-touch bg-bg-base shadow-2xs"
               />
             </div>
           </div>
         </Container>
       </section>
 
-      {/* 3. Categories Grid */}
-      <Container className="mt-8 sm:mt-12">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <span className="text-xs sm:text-sm text-stone-500 font-medium">
-            {t("categories.categoriesPage.affichageDe")}
-            <strong>{filteredCategories.length} univers</strong>
-            {searchQuery && ` pour "${searchQuery}"`}
-          </span>
+      <Container className="mt-7 sm:mt-9">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <p
+            className="text-xs font-medium text-stone-500 sm:text-sm"
+            aria-live="polite"
+          >
+            <strong className="font-bold text-stone-700">
+              {t("categories.categoriesPage.univers", {
+                count: filteredCategories.length,
+              })}
+            </strong>
+            {searchQuery.trim() && (
+              <span>
+                {" "}
+                {t("categories.categoriesPage.pourLaRecherche", {
+                  query: searchQuery.trim(),
+                })}
+              </span>
+            )}
+          </p>
 
           <Link
             to="/recherche"
-            className="text-xs sm:text-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0 whitespace-nowrap min-h-6"
+            className="inline-flex min-h-7 shrink-0 items-center gap-1 whitespace-nowrap text-xs font-bold text-primary transition-colors hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-sm"
           >
             <span className="hidden sm:inline">
               {t("categories.categoriesPage.voirToutesLesAnnonces")}
@@ -251,102 +253,28 @@ export const CategoriesPage: React.FC = () => {
             <span className="sm:hidden">
               {t("categories.categoriesPage.voirTout")}
             </span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight aria-hidden="true" className="h-4 w-4" />
           </Link>
         </div>
 
         {filteredCategories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
-            {filteredCategories.map((cat) => {
-              const meta = CATEGORY_META[cat.slug] || {
-                itemCountLabel: "Annonces disponibles",
-                accentBg: "from-stone-50 to-white",
-                accentBorder: "border-stone-200",
-              };
-
-              const subCategories = cat.subCategories || [];
-
-              return (
-                <div
-                  key={cat.id}
-                  className={`group relative flex flex-col justify-between bg-gradient-to-b ${meta.accentBg} rounded-3xl border ${meta.accentBorder} hover:border-primary shadow-2xs hover:shadow-xl transition-all duration-normal p-5`}
-                >
-                  <div>
-                    {/* Top Row: Icon + Badge */}
-                    <div className="flex items-start justify-between gap-2 mb-3.5">
-                      <div className="w-13 h-13 rounded-2xl bg-white border border-stone-200/90 shadow-2xs group-hover:scale-105 flex items-center justify-center transition-transform shrink-0">
-                        <CategoryIcon
-                          category={cat}
-                          size="lg"
-                          className="w-7 h-7 text-stone-800 group-hover:text-primary transition-colors"
-                        />
-                      </div>
-
-                      {meta.badge && (
-                        <span
-                          className={`text-micro font-bold px-2.5 py-0.5 rounded-full border shadow-2xs ${
-                            BADGE_PILL_STYLES[meta.badge.variant] ||
-                            BADGE_PILL_STYLES.terracotta
-                          }`}
-                        >
-                          {meta.badge.label}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Title & Count */}
-                    <div className="space-y-1 mb-4">
-                      <Link
-                        to={`/categorie/${cat.slug}`}
-                        className="text-lg font-black text-stone-900 group-hover:text-primary transition-colors block"
-                      >
-                        {getTaxonomyLabel(cat, "compact")}
-                      </Link>
-                      {/* stone-400 measured 2.44:1 on the `bg-base` cream surface — an AA
-                        failure (WCAG 1.4.3) on text that carries the category
-                        inventory count. stone-500 is the next step of the same
-                        ramp and clears 4.5:1. */}
-                      <p className="text-xs font-semibold text-stone-500">
-                        {meta.itemCountLabel}
-                      </p>
-                    </div>
-
-                    {/* Subcategories list */}
-                    <div className="pt-3 border-t border-stone-200/60 space-y-1.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {subCategories.map((sub) => (
-                          <Link
-                            key={sub.id}
-                            to={`/categorie/${cat.slug}?subCategory=${sub.slug}`}
-                            className="inline-flex items-center min-h-6 text-micro font-medium text-stone-600 bg-white/95 hover:bg-white hover:text-primary hover:border-primary/40 border border-stone-200/80 px-2 py-1 rounded-lg shadow-2xs transition-all active:scale-95 truncate max-w-42.5"
-                            title={getTaxonomyLabel(sub, "compact")}
-                          >
-                            {getTaxonomyLabel(sub, "compact")}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Direct Link Footer */}
-                  <div className="pt-4 mt-4 border-t border-stone-200/60">
-                    <Link
-                      to={`/categorie/${cat.slug}`}
-                      className="inline-flex items-center justify-between w-full min-h-6 text-xs font-bold text-stone-800 group-hover:text-primary transition-colors"
-                    >
-                      <span>Explorer {getTaxonomyLabel(cat, "compact")}</span>
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredCategories.map((category, index) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                priority={index < 4}
+              />
+            ))}
           </div>
         ) : (
           <EmptyState
             icon={<Search aria-hidden="true" className="h-icon-xl w-icon-xl" />}
             title={t("categories.categoriesPage.aucuneCategorieTrouvee")}
-            description={`Aucune catégorie ne correspond à votre recherche "${searchQuery}".`}
+            description={t(
+              "categories.categoriesPage.aucuneCategorieNeCorrespond",
+              { query: searchQuery.trim() },
+            )}
             action={
               <Button
                 variant="pro"

@@ -207,7 +207,7 @@ export class PostgresOrderRepository implements IOrderRepository {
         row.escrow_secured_amount_minor ??
           Math.round(Number(row.escrow_secured_amount) * 100),
       ),
-      currency: String(row.currency || "EUR").toUpperCase(),
+      currency: String(row.currency).toUpperCase(),
       commissionCalculationId: row.commission_calculation_id || undefined,
       platformCommissionMinor:
         row.platform_commission_minor === null ||

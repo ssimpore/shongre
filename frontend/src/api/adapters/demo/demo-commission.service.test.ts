@@ -46,4 +46,29 @@ describe("DemoCommissionService", () => {
       reasonCode: "NO_ACTIVE_ELIGIBLE_POLICY",
     });
   });
+
+  it.each([
+    ["CHF", 4_568_400],
+    ["XOF", 3_187_951_020],
+  ])(
+    "returns deterministic %s reporting analytics instead of an empty result",
+    async (currency, expectedGmvMinor) => {
+      const rows = await new DemoCommissionService().getAnalytics({
+        from: "2026-08-01",
+        to: "2026-08-31",
+        marketCode: "ALL",
+        currency,
+      });
+
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        currency,
+        gmvMinor: expectedGmvMinor,
+        transactionCount: 184,
+      });
+      expect(rows[0].commissionRevenueMinor).toBeGreaterThan(
+        rows[0].commissionRefundMinor,
+      );
+    },
+  );
 });

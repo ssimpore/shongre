@@ -19,14 +19,20 @@ describe("provider endpoint SSRF guard", () => {
   });
 
   it("allows a public literal only over the permitted protocol and port", async () => {
-    await expect(assertSafeProviderUrl("https://8.8.8.8/v1")).resolves.toMatchObject({
+    await expect(
+      assertSafeProviderUrl("https://8.8.8.8/v1"),
+    ).resolves.toMatchObject({
       protocol: "https:",
       hostname: "8.8.8.8",
     });
-    await expect(assertSafeProviderUrl("http://8.8.8.8/v1")).rejects.toMatchObject({
+    await expect(
+      assertSafeProviderUrl("http://8.8.8.8/v1"),
+    ).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
     });
-    await expect(assertSafeProviderUrl("https://8.8.8.8:8443/v1")).rejects.toMatchObject({
+    await expect(
+      assertSafeProviderUrl("https://8.8.8.8:8443/v1"),
+    ).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
     });
   });

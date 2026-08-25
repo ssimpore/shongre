@@ -49,6 +49,7 @@ describe("Escrow & Order Calculation Engine", () => {
     const res = calculateOrderTotal({
       itemAmount: 1000,
       shippingFee: 0,
+      marketCode: "FR",
       ruleOverride: { protectionFeeRate: 0.02, protectionFixedFee: 0.0 },
     });
     expect(res.protectionFee).toBe(20.0);

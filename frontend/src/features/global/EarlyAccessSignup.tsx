@@ -22,7 +22,9 @@ export function EarlyAccessSignup({
     event.preventDefault();
     setError(null);
     if (!consent) {
-      setError("Confirmez que vous souhaitez recevoir l’actualité du lancement.");
+      setError(
+        "Confirmez que vous souhaitez recevoir l’actualité du lancement.",
+      );
       return;
     }
     setIsSubmitting(true);
@@ -53,7 +55,10 @@ export function EarlyAccessSignup({
         className="mx-auto mt-8 flex max-w-xl items-start gap-3 border-y border-success-border bg-success-surface px-4 py-4 text-left"
         role="status"
       >
-        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden="true" />
+        <CheckCircle2
+          className="mt-0.5 h-5 w-5 shrink-0 text-success"
+          aria-hidden="true"
+        />
         <div>
           <p className="text-sm font-black text-success">Demande enregistrée</p>
           <p className="mt-1 text-xs leading-relaxed text-success">
@@ -91,7 +96,12 @@ export function EarlyAccessSignup({
             className="h-control-touch w-full rounded-control border border-border-base bg-white pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
         </label>
-        <Button type="submit" variant="primary" size="md" isLoading={isSubmitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          isLoading={isSubmitting}
+        >
           Me prévenir
         </Button>
       </div>

@@ -108,6 +108,7 @@ describe("EmploymentService", () => {
     expect(catalog.config.featureFlags.privateEmployersEnabled).toBe(true);
 
     await service.saveOwnDraft("user-private-employer", "draft-private", {
+      marketCode: "FR",
       privateEmployer: true,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       selectedOfferId: "employment.employer.free",
@@ -245,6 +246,7 @@ describe("EmploymentService", () => {
   it("flags potentially discriminatory wording as advisory, not a legal decision", async () => {
     const flags = await createService().flagProhibitedLanguage(
       "Nous recherchons un jeune homme. Aucun frais de recrutement ne sera remboursé.",
+      "FR",
     );
     expect(flags.length).toBeGreaterThan(0);
     expect(
@@ -257,6 +259,7 @@ describe("EmploymentService", () => {
     repository.clearEmployerJobs("employer-technova");
     const service = new EmploymentService(repository);
     await service.saveOwnDraft("user_pro_atelier", "draft-company-free", {
+      marketCode: "FR",
       employerId: "employer-technova",
       privateEmployer: false,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -337,6 +340,7 @@ describe("EmploymentService", () => {
   it("blocks publication for suspended employers", async () => {
     const service = createService();
     await service.saveOwnDraft("user_pro_atelier", "draft-suspended", {
+      marketCode: "FR",
       employerId: "employer-suspended-test",
       privateEmployer: false,
       completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],

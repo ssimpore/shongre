@@ -5,7 +5,7 @@
 - Contract version: `1.0.0`
 - API base path: `http://127.0.0.1:4000/api/v1`
 - Operations: **404**
-- Specification SHA-256: `e399d05f166c6e97`
+- Specification SHA-256: `c8cdf4bfe5562e11`
 
 ## account
 

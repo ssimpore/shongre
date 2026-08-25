@@ -77,6 +77,58 @@ describe("DemoFinanceService", () => {
     );
   });
 
+  it.each([
+    ["CHF", 4_028_840],
+    ["XOF", 2_811_431_702],
+  ])(
+    "converts every dashboard series to deterministic %s reporting money",
+    async (currency, expectedPlatformRevenueMinor) => {
+      const dashboard = await new DemoFinanceService().getPlatformDashboard({
+        period: "30d",
+        marketCode: "ALL",
+        currency,
+      });
+
+      expect(dashboard.metrics.platformRevenue.amount).toEqual({
+        amountMinor: expectedPlatformRevenueMinor,
+        currency,
+      });
+      expect(
+        Object.values(dashboard.metrics).every(
+          (metric) => metric.amount.currency === currency,
+        ),
+      ).toBe(true);
+      expect(
+        dashboard.timeSeries.every(
+          (point) =>
+            point.platformRevenue.currency === currency &&
+            point.netRevenue.currency === currency,
+        ),
+      ).toBe(true);
+      expect(
+        dashboard.revenueSources.reduce(
+          (sum, source) => sum + source.amount.amountMinor,
+          0,
+        ),
+      ).toBe(dashboard.metrics.platformRevenue.amount.amountMinor);
+      expect(dashboard.metrics.netRevenue.amount.amountMinor).toBe(
+        dashboard.metrics.platformRevenue.amount.amountMinor -
+          dashboard.metrics.providerFees.amount.amountMinor -
+          dashboard.metrics.refunds.amount.amountMinor,
+      );
+    },
+  );
+
+  it("rejects unsupported demo reporting currencies instead of silently relabelling money", async () => {
+    await expect(
+      new DemoFinanceService().getPlatformDashboard({
+        period: "30d",
+        marketCode: "ALL",
+        currency: "GBP",
+      }),
+    ).rejects.toThrow("Unsupported demo reporting currency: GBP");
+  });
+
   it("exports integer minor units instead of formatted floating point", async () => {
     const service = new DemoFinanceService();
     const exported = await service.exportTransactions({

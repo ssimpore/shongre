@@ -340,14 +340,20 @@ export class MarketService {
     if (targetIdx < 0) throw new Error(`Market [${marketCode}] not found.`);
     const primaryDomain = routing.primaryDomain.trim().toLowerCase();
     const basePath = routing.basePath.trim() || "/";
-    if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(primaryDomain)) {
+    if (
+      !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(
+        primaryDomain,
+      )
+    ) {
       throw new Error("Le domaine public n’est pas valide.");
     }
     if (!/^\/$|^\/[a-z0-9-]+$/.test(basePath)) {
       throw new Error("Le préfixe doit être / ou /code-pays.");
     }
     if (marketCode === "FR" && basePath !== "/") {
-      throw new Error("La France doit rester publiée à la racine de shongre.fr.");
+      throw new Error(
+        "La France doit rester publiée à la racine de shongre.fr.",
+      );
     }
     if (marketCode !== "FR" && basePath === "/") {
       throw new Error("La racine shongre.com est réservée au portail global.");

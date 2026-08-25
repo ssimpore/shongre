@@ -1,9 +1,6 @@
 import { cache } from "react";
 import { headers } from "next/headers";
-import {
-  resolveMarketContext,
-  type MarketContext,
-} from "@shongre/contracts";
+import { resolveMarketContext, type MarketContext } from "@shongre/contracts";
 import { marketInfrastructureFromEnvironment } from "./market-infrastructure";
 
 export { marketInfrastructureFromEnvironment } from "./market-infrastructure";

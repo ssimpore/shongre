@@ -175,7 +175,7 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   it("GET /api/v1/listings returns paginated listings", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/listings`);
+    const res = await fetch(`${baseUrl}/api/v1/listings?marketCode=FR`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.listings).toBeDefined();
@@ -184,7 +184,9 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   it("GET /api/v1/listings/list_1 returns listing detail", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/listings/list_1`);
+    const res = await fetch(`${baseUrl}/api/v1/listings/list_1`, {
+      headers: { "X-Shongre-Market": "FR" },
+    });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.id).toBe("list_1");
@@ -213,7 +215,7 @@ describe("API v1 Endpoints Integration", () => {
     const res = await fetch(`${baseUrl}/api/v1/listings/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: "Vélo" }),
+      body: JSON.stringify({ query: "Vélo", marketCode: "FR" }),
     });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -274,6 +276,7 @@ describe("API v1 Endpoints Integration", () => {
 
     const propertyResponse = await fetch(
       `${baseUrl}/api/v1/real-estate/properties/property_apartment_lyon`,
+      { headers: { "X-Shongre-Market": "FR" } },
     );
     expect(propertyResponse.status).toBe(200);
     const property = await propertyResponse.json();
@@ -316,6 +319,7 @@ describe("API v1 Endpoints Integration", () => {
 
     const jobResponse = await fetch(
       `${baseUrl}/api/v1/employment/jobs/job-seasonal-nice`,
+      { headers: { "X-Shongre-Market": "FR" } },
     );
     expect(jobResponse.status).toBe(200);
     const job = await jobResponse.json();
@@ -644,7 +648,7 @@ describe("API v1 Endpoints Integration", () => {
     const ownAccount = await fetch(
       `${baseUrl}/api/v1/finance/account/overview`,
       {
-        headers: auth(buyerToken),
+        headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
       },
     );
     expect(ownAccount.status).toBe(200);
@@ -669,7 +673,7 @@ describe("API v1 Endpoints Integration", () => {
     const proOrganization = await fetch(
       `${baseUrl}/api/v1/finance/organization/overview`,
       {
-        headers: auth(proToken),
+        headers: { ...auth(proToken), "X-Shongre-Market": "FR" },
       },
     );
     expect(proOrganization.status).toBe(200);

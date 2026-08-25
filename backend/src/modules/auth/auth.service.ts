@@ -214,7 +214,9 @@ export class AuthService {
         message: "Ce changement de marché n’est pas disponible.",
       });
     }
-    if (!(await this.sessions.isActive(principal.sessionId, principal.userId))) {
+    if (
+      !(await this.sessions.isActive(principal.sessionId, principal.userId))
+    ) {
       throw invalidCredentials();
     }
 
@@ -237,7 +239,9 @@ export class AuthService {
           globalDomain: process.env.SHONGRE_GLOBAL_DOMAIN || "shongre.com",
           franceDomain: process.env.SHONGRE_FR_DOMAIN || "shongre.fr",
           canonicalProtocol:
-            process.env.SHONGRE_CANONICAL_PROTOCOL === "http" ? "http" : "https",
+            process.env.SHONGRE_CANONICAL_PROTOCOL === "http"
+              ? "http"
+              : "https",
         },
       }),
     );
@@ -248,7 +252,11 @@ export class AuthService {
   async exchangeDomainHandoff(
     input: { code?: string; targetCountry?: string },
     metadata: AuthRequestMetadata = {},
-  ): Promise<{ user: UserProfile; tokens: import("./session.service.js").SessionTokens; returnTo: string }> {
+  ): Promise<{
+    user: UserProfile;
+    tokens: import("./session.service.js").SessionTokens;
+    returnTo: string;
+  }> {
     const code = String(input?.code || "");
     const targetCountry = countryCodeSchema.parse(
       String(input?.targetCountry || "").toUpperCase(),
@@ -267,10 +275,7 @@ export class AuthService {
       throw invalidCredentials();
     }
     if (
-      !(await this.sessions.isActive(
-        handoff.sourceSessionId,
-        handoff.userId,
-      ))
+      !(await this.sessions.isActive(handoff.sourceSessionId, handoff.userId))
     ) {
       throw invalidCredentials();
     }

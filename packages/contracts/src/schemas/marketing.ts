@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 const dateTimeSchema = z.string().datetime({ offset: true });
-const httpsUrlSchema = z.string().url().refine((value) => new URL(value).protocol === "https:", "Une URL HTTPS est requise.");
+const httpsUrlSchema = z
+  .string()
+  .url()
+  .refine(
+    (value) => new URL(value).protocol === "https:",
+    "Une URL HTTPS est requise.",
+  );
 const tenantResourceSchema = z.object({
   id: z.string().uuid(),
   tenantId: z.string().uuid(),
@@ -146,12 +152,14 @@ export const marketingSegmentOperatorSchema = z.enum([
 export const marketingSegmentConditionSchema = z.object({
   field: z.string().regex(/^[a-z][a-z0-9_.]{1,119}$/),
   operator: marketingSegmentOperatorSchema,
-  value: z.union([
-    z.string(),
-    z.number(),
-    z.boolean(),
-    z.array(z.union([z.string(), z.number(), z.boolean()])),
-  ]).optional(),
+  value: z
+    .union([
+      z.string(),
+      z.number(),
+      z.boolean(),
+      z.array(z.union([z.string(), z.number(), z.boolean()])),
+    ])
+    .optional(),
 });
 
 export type MarketingSegmentGroup = {
@@ -160,14 +168,14 @@ export type MarketingSegmentGroup = {
   groups?: MarketingSegmentGroup[];
 };
 
-export const marketingSegmentGroupSchema: z.ZodType<MarketingSegmentGroup> = z.lazy(
-  () =>
+export const marketingSegmentGroupSchema: z.ZodType<MarketingSegmentGroup> =
+  z.lazy(() =>
     z.object({
       combinator: z.enum(["AND", "OR"]),
       conditions: z.array(marketingSegmentConditionSchema).max(50),
       groups: z.array(marketingSegmentGroupSchema).max(8).optional(),
     }),
-);
+  );
 
 export const marketingSegmentSchema = tenantResourceSchema.extend({
   name: z.string().trim().min(1).max(160),
@@ -269,7 +277,14 @@ export const marketingTemplateSchema = tenantResourceSchema.extend({
 });
 
 export const marketingTemplateInputSchema = marketingTemplateSchema
-  .pick({ name: true, category: true, locale: true, subject: true, previewText: true, content: true })
+  .pick({
+    name: true,
+    category: true,
+    locale: true,
+    subject: true,
+    previewText: true,
+    content: true,
+  })
   .extend({ status: z.enum(["ACTIVE", "ARCHIVED"]).default("ACTIVE") });
 
 export const marketingSenderIdentitySchema = tenantResourceSchema.extend({
@@ -300,22 +315,38 @@ export const marketingVariantSchema = z.object({
   content: marketingContentSchema.optional(),
 });
 
-export const marketingExperimentSchema = z.object({
-  enabled: z.boolean().default(false),
-  testPercentage: z.number().int().min(1).max(100).default(20),
-  durationMinutes: z.number().int().min(15).max(10_080).default(240),
-  winnerMetric: z.enum(["CLICK_RATE", "CONVERSION_RATE", "OPEN_RATE"]).default("CLICK_RATE"),
-  winnerMode: z.enum(["AUTOMATIC", "MANUAL"]).default("AUTOMATIC"),
-  variants: z.array(marketingVariantSchema).min(2).max(8),
-}).superRefine((experiment, context) => {
-  if (experiment.variants.reduce((sum, variant) => sum + variant.weight, 0) !== 100) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ["variants"], message: "La distribution des variantes doit totaliser 100 %." });
-  }
-});
+export const marketingExperimentSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    testPercentage: z.number().int().min(1).max(100).default(20),
+    durationMinutes: z.number().int().min(15).max(10_080).default(240),
+    winnerMetric: z
+      .enum(["CLICK_RATE", "CONVERSION_RATE", "OPEN_RATE"])
+      .default("CLICK_RATE"),
+    winnerMode: z.enum(["AUTOMATIC", "MANUAL"]).default("AUTOMATIC"),
+    variants: z.array(marketingVariantSchema).min(2).max(8),
+  })
+  .superRefine((experiment, context) => {
+    if (
+      experiment.variants.reduce((sum, variant) => sum + variant.weight, 0) !==
+      100
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["variants"],
+        message: "La distribution des variantes doit totaliser 100 %.",
+      });
+    }
+  });
 
 export const marketingCampaignSchema = tenantResourceSchema.extend({
   name: z.string().trim().min(1).max(255),
-  campaignType: z.enum(["NEWSLETTER", "PROMOTION", "LIFECYCLE", "ANNOUNCEMENT"]),
+  campaignType: z.enum([
+    "NEWSLETTER",
+    "PROMOTION",
+    "LIFECYCLE",
+    "ANNOUNCEMENT",
+  ]),
   status: marketingCampaignStatusSchema,
   locale: z.string().trim().min(2).max(16),
   timezone: z.string().trim().min(1).max(80),
@@ -451,15 +482,35 @@ export const marketingAnalyticsSchema = z.object({
 });
 
 export const marketingJourneyTriggerTypeSchema = z.enum([
-  "SUBSCRIBER_CREATED", "SUBSCRIBER_CONFIRMED", "LIST_JOINED", "FORM_SUBMITTED",
-  "TAG_ADDED", "CRM_CONTACT_CREATED", "CRM_STAGE_CHANGED", "CAMPAIGN_CLICKED",
-  "SUBSCRIPTION_STARTED", "SUBSCRIPTION_CANCELLED", "SCHEDULED_DATE", "EXTERNAL_EVENT",
+  "SUBSCRIBER_CREATED",
+  "SUBSCRIBER_CONFIRMED",
+  "LIST_JOINED",
+  "FORM_SUBMITTED",
+  "TAG_ADDED",
+  "CRM_CONTACT_CREATED",
+  "CRM_STAGE_CHANGED",
+  "CAMPAIGN_CLICKED",
+  "SUBSCRIPTION_STARTED",
+  "SUBSCRIPTION_CANCELLED",
+  "SCHEDULED_DATE",
+  "EXTERNAL_EVENT",
 ]);
 
 export const marketingJourneyNodeTypeSchema = z.enum([
-  "CONDITION", "WAIT", "SEND_EMAIL", "BRANCH", "ADD_TO_LIST", "REMOVE_FROM_LIST",
-  "ADD_TAG", "REMOVE_TAG", "UPDATE_FIELD", "CREATE_CRM_TASK", "RECORD_CRM_ACTIVITY",
-  "CALL_WEBHOOK", "RUN_AI", "END",
+  "CONDITION",
+  "WAIT",
+  "SEND_EMAIL",
+  "BRANCH",
+  "ADD_TO_LIST",
+  "REMOVE_FROM_LIST",
+  "ADD_TAG",
+  "REMOVE_TAG",
+  "UPDATE_FIELD",
+  "CREATE_CRM_TASK",
+  "RECORD_CRM_ACTIVITY",
+  "CALL_WEBHOOK",
+  "RUN_AI",
+  "END",
 ]);
 
 export const marketingJourneyNodeSchema = z.object({
@@ -489,8 +540,11 @@ export const marketingJourneySchema = tenantResourceSchema.extend({
   createdBy: z.string().uuid(),
 });
 
-export const marketingJourneyInputSchema = marketingJourneySchema
-  .pick({ name: true, description: true, definition: true });
+export const marketingJourneyInputSchema = marketingJourneySchema.pick({
+  name: true,
+  description: true,
+  definition: true,
+});
 
 export const marketingJourneyEventSchema = z.object({
   type: marketingJourneyTriggerTypeSchema,
@@ -504,7 +558,14 @@ export const marketingJourneyExecutionSchema = tenantResourceSchema.extend({
   journeyVersion: z.number().int().positive(),
   profileId: z.string().uuid().optional(),
   eventId: z.string().min(1).max(255),
-  status: z.enum(["QUEUED", "RUNNING", "WAITING", "COMPLETED", "FAILED", "STOPPED"]),
+  status: z.enum([
+    "QUEUED",
+    "RUNNING",
+    "WAITING",
+    "COMPLETED",
+    "FAILED",
+    "STOPPED",
+  ]),
   currentNodeId: z.string().max(80).optional(),
   depth: z.number().int().nonnegative(),
   availableAt: dateTimeSchema,
@@ -542,7 +603,10 @@ export const marketingUsageSchema = z.object({
 
 export const marketingWebhookSubscriptionSchema = tenantResourceSchema.extend({
   url: z.string().url(),
-  eventTypes: z.array(z.string().regex(/^[a-z][a-z0-9_.-]{1,119}$/)).min(1).max(100),
+  eventTypes: z
+    .array(z.string().regex(/^[a-z][a-z0-9_.-]{1,119}$/))
+    .min(1)
+    .max(100),
   status: z.enum(["ACTIVE", "PAUSED", "DISABLED"]),
   signingSecretHint: z.string().max(32),
   lastDeliveredAt: dateTimeSchema.optional(),
@@ -551,35 +615,52 @@ export const marketingWebhookSubscriptionSchema = tenantResourceSchema.extend({
 
 export const marketingWebhookSubscriptionInputSchema = z.object({
   url: z.string().url(),
-  eventTypes: z.array(z.string().regex(/^[a-z][a-z0-9_.-]{1,119}$/)).min(1).max(100),
+  eventTypes: z
+    .array(z.string().regex(/^[a-z][a-z0-9_.-]{1,119}$/))
+    .min(1)
+    .max(100),
 });
 
 export const marketingAiAssistInputSchema = z.object({
   task: z.enum([
-    "marketing.campaign_draft", "marketing.subject_generation", "marketing.preview_generation",
-    "marketing.content_rewrite", "marketing.ab_generation", "marketing.translation",
-    "marketing.performance_analysis", "marketing.segment_suggestion",
+    "marketing.campaign_draft",
+    "marketing.subject_generation",
+    "marketing.preview_generation",
+    "marketing.content_rewrite",
+    "marketing.ab_generation",
+    "marketing.translation",
+    "marketing.performance_analysis",
+    "marketing.segment_suggestion",
   ]),
   instructions: z.string().trim().min(3).max(5_000),
   locale: z.string().trim().min(2).max(16).default("fr-FR"),
   safeContext: z.record(z.string(), z.unknown()).default({}),
 });
 
-export const marketingConversionInputSchema = z.object({
-  idempotencyKey: z.string().trim().min(1).max(255),
-  campaignRecipientId: z.string().uuid().optional(),
-  profileId: z.string().uuid().optional(),
-  conversionType: z.string().trim().min(2).max(120),
-  externalSubjectId: z.string().trim().max(255).optional(),
-  amountMinor: z.number().int().nonnegative().safe().optional(),
-  currency: z.string().regex(/^[A-Z]{3}$/).optional(),
-  occurredAt: dateTimeSchema,
-  safeMetadata: z.record(z.string(), z.unknown()).default({}),
-}).superRefine((value, context) => {
-  if ((value.amountMinor === undefined) !== (value.currency === undefined)) {
-    context.addIssue({ code: z.ZodIssueCode.custom, path: ["amountMinor"], message: "Le montant et la devise doivent être fournis ensemble." });
-  }
-});
+export const marketingConversionInputSchema = z
+  .object({
+    idempotencyKey: z.string().trim().min(1).max(255),
+    campaignRecipientId: z.string().uuid().optional(),
+    profileId: z.string().uuid().optional(),
+    conversionType: z.string().trim().min(2).max(120),
+    externalSubjectId: z.string().trim().max(255).optional(),
+    amountMinor: z.number().int().nonnegative().safe().optional(),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional(),
+    occurredAt: dateTimeSchema,
+    safeMetadata: z.record(z.string(), z.unknown()).default({}),
+  })
+  .superRefine((value, context) => {
+    if ((value.amountMinor === undefined) !== (value.currency === undefined)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["amountMinor"],
+        message: "Le montant et la devise doivent être fournis ensemble.",
+      });
+    }
+  });
 
 export const marketingPageInfoSchema = z.object({
   hasNextPage: z.boolean(),
@@ -588,7 +669,10 @@ export const marketingPageInfoSchema = z.object({
 
 export const marketingPublicSubscriptionInputSchema = z.object({
   email: z.string().trim().email(),
-  marketCode: z.string().regex(/^[A-Z]{2}$/).default("FR"),
+  marketCode: z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .default("FR"),
   locale: z.string().trim().min(2).max(16).default("fr-FR"),
   topics: z.array(z.string().trim().min(1).max(80)).max(100).default([]),
   source: z
@@ -613,9 +697,10 @@ export const marketingPublicActionSchema = z.object({
   token: z.string().trim().min(32).max(512),
 });
 
-export const marketingPublicPreferencesUpdateSchema = marketingPublicActionSchema.extend({
-  topics: z.array(z.string().trim().min(1).max(80)).max(100),
-});
+export const marketingPublicPreferencesUpdateSchema =
+  marketingPublicActionSchema.extend({
+    topics: z.array(z.string().trim().min(1).max(80)).max(100),
+  });
 
 export const marketingSubscriptionReceiptSchema = z.object({
   accepted: z.literal(true),
@@ -623,53 +708,105 @@ export const marketingSubscriptionReceiptSchema = z.object({
   message: z.string().min(1).max(500),
 });
 
-export type MarketingProfileStatus = z.infer<typeof marketingProfileStatusSchema>;
-export type MarketingProfileSource = z.infer<typeof marketingProfileSourceSchema>;
+export type MarketingProfileStatus = z.infer<
+  typeof marketingProfileStatusSchema
+>;
+export type MarketingProfileSource = z.infer<
+  typeof marketingProfileSourceSchema
+>;
 export type MarketingProfile = z.infer<typeof marketingProfileSchema>;
 export type MarketingProfileInput = z.infer<typeof marketingProfileInputSchema>;
 export type MarketingList = z.infer<typeof marketingListSchema>;
 export type MarketingListInput = z.infer<typeof marketingListInputSchema>;
-export type MarketingSegmentCondition = z.infer<typeof marketingSegmentConditionSchema>;
+export type MarketingSegmentCondition = z.infer<
+  typeof marketingSegmentConditionSchema
+>;
 export type MarketingSegment = z.infer<typeof marketingSegmentSchema>;
 export type MarketingSegmentInput = z.infer<typeof marketingSegmentInputSchema>;
-export type MarketingAudienceDefinition = z.infer<typeof marketingAudienceDefinitionSchema>;
+export type MarketingAudienceDefinition = z.infer<
+  typeof marketingAudienceDefinitionSchema
+>;
 export type MarketingContentBlock = z.infer<typeof marketingContentBlockSchema>;
 export type MarketingContent = z.infer<typeof marketingContentSchema>;
 export type MarketingTemplate = z.infer<typeof marketingTemplateSchema>;
-export type MarketingTemplateInput = z.infer<typeof marketingTemplateInputSchema>;
-export type MarketingSenderIdentity = z.infer<typeof marketingSenderIdentitySchema>;
-export type MarketingSendingDomain = z.infer<typeof marketingSendingDomainSchema>;
-export type MarketingCampaignStatus = z.infer<typeof marketingCampaignStatusSchema>;
+export type MarketingTemplateInput = z.infer<
+  typeof marketingTemplateInputSchema
+>;
+export type MarketingSenderIdentity = z.infer<
+  typeof marketingSenderIdentitySchema
+>;
+export type MarketingSendingDomain = z.infer<
+  typeof marketingSendingDomainSchema
+>;
+export type MarketingCampaignStatus = z.infer<
+  typeof marketingCampaignStatusSchema
+>;
 export type MarketingCampaign = z.infer<typeof marketingCampaignSchema>;
-export type MarketingCampaignInput = z.infer<typeof marketingCampaignInputSchema>;
-export type MarketingAudienceEstimate = z.infer<typeof marketingAudienceEstimateSchema>;
-export type MarketingPreflightIssue = z.infer<typeof marketingPreflightIssueSchema>;
+export type MarketingCampaignInput = z.infer<
+  typeof marketingCampaignInputSchema
+>;
+export type MarketingAudienceEstimate = z.infer<
+  typeof marketingAudienceEstimateSchema
+>;
+export type MarketingPreflightIssue = z.infer<
+  typeof marketingPreflightIssueSchema
+>;
 export type MarketingPreflight = z.infer<typeof marketingPreflightSchema>;
-export type MarketingSuppressionReason = z.infer<typeof marketingSuppressionReasonSchema>;
+export type MarketingSuppressionReason = z.infer<
+  typeof marketingSuppressionReasonSchema
+>;
 export type MarketingSuppression = z.infer<typeof marketingSuppressionSchema>;
 export type MarketingDashboard = z.infer<typeof marketingDashboardSchema>;
 export type MarketingVariant = z.infer<typeof marketingVariantSchema>;
 export type MarketingExperiment = z.infer<typeof marketingExperimentSchema>;
-export type MarketingVariantMetrics = z.infer<typeof marketingVariantMetricsSchema>;
+export type MarketingVariantMetrics = z.infer<
+  typeof marketingVariantMetricsSchema
+>;
 export type MarketingAnalytics = z.infer<typeof marketingAnalyticsSchema>;
-export type MarketingJourneyTriggerType = z.infer<typeof marketingJourneyTriggerTypeSchema>;
-export type MarketingJourneyNodeType = z.infer<typeof marketingJourneyNodeTypeSchema>;
+export type MarketingJourneyTriggerType = z.infer<
+  typeof marketingJourneyTriggerTypeSchema
+>;
+export type MarketingJourneyNodeType = z.infer<
+  typeof marketingJourneyNodeTypeSchema
+>;
 export type MarketingJourneyNode = z.infer<typeof marketingJourneyNodeSchema>;
-export type MarketingJourneyDefinition = z.infer<typeof marketingJourneyDefinitionSchema>;
+export type MarketingJourneyDefinition = z.infer<
+  typeof marketingJourneyDefinitionSchema
+>;
 export type MarketingJourney = z.infer<typeof marketingJourneySchema>;
 export type MarketingJourneyInput = z.infer<typeof marketingJourneyInputSchema>;
 export type MarketingJourneyEvent = z.infer<typeof marketingJourneyEventSchema>;
-export type MarketingJourneyExecution = z.infer<typeof marketingJourneyExecutionSchema>;
+export type MarketingJourneyExecution = z.infer<
+  typeof marketingJourneyExecutionSchema
+>;
 export type MarketingEntitlements = z.infer<typeof marketingEntitlementsSchema>;
 export type MarketingUsage = z.infer<typeof marketingUsageSchema>;
-export type MarketingWebhookSubscription = z.infer<typeof marketingWebhookSubscriptionSchema>;
-export type MarketingWebhookSubscriptionInput = z.infer<typeof marketingWebhookSubscriptionInputSchema>;
-export type MarketingAiAssistInput = z.infer<typeof marketingAiAssistInputSchema>;
-export type MarketingConversionInput = z.infer<typeof marketingConversionInputSchema>;
+export type MarketingWebhookSubscription = z.infer<
+  typeof marketingWebhookSubscriptionSchema
+>;
+export type MarketingWebhookSubscriptionInput = z.infer<
+  typeof marketingWebhookSubscriptionInputSchema
+>;
+export type MarketingAiAssistInput = z.infer<
+  typeof marketingAiAssistInputSchema
+>;
+export type MarketingConversionInput = z.infer<
+  typeof marketingConversionInputSchema
+>;
 export type CommunicationPurpose = z.infer<typeof communicationPurposeSchema>;
-export type MarketingDeliveryEventType = z.infer<typeof marketingDeliveryEventTypeSchema>;
-export type MarketingPublicSubscriptionInput = z.infer<typeof marketingPublicSubscriptionInputSchema>;
-export type MarketingSubscriptionView = z.infer<typeof marketingSubscriptionViewSchema>;
+export type MarketingDeliveryEventType = z.infer<
+  typeof marketingDeliveryEventTypeSchema
+>;
+export type MarketingPublicSubscriptionInput = z.infer<
+  typeof marketingPublicSubscriptionInputSchema
+>;
+export type MarketingSubscriptionView = z.infer<
+  typeof marketingSubscriptionViewSchema
+>;
 export type MarketingPublicAction = z.infer<typeof marketingPublicActionSchema>;
-export type MarketingPublicPreferencesUpdate = z.infer<typeof marketingPublicPreferencesUpdateSchema>;
-export type MarketingSubscriptionReceipt = z.infer<typeof marketingSubscriptionReceiptSchema>;
+export type MarketingPublicPreferencesUpdate = z.infer<
+  typeof marketingPublicPreferencesUpdateSchema
+>;
+export type MarketingSubscriptionReceipt = z.infer<
+  typeof marketingSubscriptionReceiptSchema
+>;

@@ -1,6 +1,7 @@
 import { mobileEnvironment } from "@/config/environment";
 import { secureStorage } from "@/services/secure-storage/secure-storage";
 import type { ApiPath } from "@shongre/contracts/openapi";
+import { mobileMarketStore } from "@/features/market/market.store";
 
 const SESSION_KEY = "shongre.mobile.session.v1";
 
@@ -34,9 +35,26 @@ async function readToken(): Promise<string | null> {
   }
 }
 
+function buildRequestHeaders(
+  input: HeadersInit | undefined,
+  token: string | null,
+  marketCode: string,
+  hasBody: boolean,
+): Headers {
+  const headers = new Headers(input);
+  headers.set("Accept", "application/json");
+  headers.set("X-Shongre-Client", "native");
+  headers.set("X-Shongre-Market", marketCode);
+  if (hasBody && !headers.has("Content-Type"))
+    headers.set("Content-Type", "application/json");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return headers;
+}
+
 export async function apiRequest<T>(
   path: ApiPath,
   init: RequestInit = {},
+  requestedMarketCode?: string,
 ): Promise<T> {
   if (!mobileEnvironment.apiUrl) {
     throw new MobileApiError(
@@ -46,12 +64,13 @@ export async function apiRequest<T>(
     );
   }
   const token = await readToken();
-  const headers = new Headers(init.headers);
-  headers.set("Accept", "application/json");
-  headers.set("X-Shongre-Client", "native");
-  if (init.body && !headers.has("Content-Type"))
-    headers.set("Content-Type", "application/json");
-  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const marketCode = requestedMarketCode ?? mobileMarketStore.getActive().code;
+  const headers = buildRequestHeaders(
+    init.headers,
+    token,
+    marketCode,
+    Boolean(init.body),
+  );
 
   let response: Response;
   try {
@@ -80,11 +99,7 @@ export async function apiRequest<T>(
         `${mobileEnvironment.apiUrl}/auth/refresh`,
         {
           method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Shongre-Client": "native",
-          },
+          headers: buildRequestHeaders(undefined, null, marketCode, true),
           body: JSON.stringify({ refreshToken: stored.refreshToken }),
         },
       );
@@ -94,12 +109,12 @@ export async function apiRequest<T>(
         : null;
       if (refreshResponse.ok && refreshed?.token && refreshed.user) {
         await sessionStorage.write(refreshed);
-        const retryHeaders = new Headers(init.headers);
-        retryHeaders.set("Accept", "application/json");
-        retryHeaders.set("X-Shongre-Client", "native");
-        if (init.body && !retryHeaders.has("Content-Type"))
-          retryHeaders.set("Content-Type", "application/json");
-        retryHeaders.set("Authorization", `Bearer ${refreshed.token}`);
+        const retryHeaders = buildRequestHeaders(
+          init.headers,
+          refreshed.token,
+          marketCode,
+          Boolean(init.body),
+        );
         const retry = await fetch(`${mobileEnvironment.apiUrl}${path}`, {
           ...init,
           headers: retryHeaders,

@@ -30,16 +30,25 @@ const countryConfigurationPatchSchema = z
       .string()
       .regex(/^\/$|^\/[a-z0-9-]+$/)
       .optional(),
-    defaultLocale: z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/).optional(),
+    defaultLocale: z
+      .string()
+      .regex(/^[a-z]{2}(?:-[A-Z]{2})?$/)
+      .optional(),
     supportedLocales: z
       .array(z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/))
       .min(1)
       .max(12)
       .optional(),
-    currency: z.string().regex(/^[A-Z]{3}$/).optional(),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .optional(),
     currencySymbol: z.string().trim().min(1).max(10).optional(),
     timezone: z.string().trim().min(3).max(80).optional(),
-    phoneCountryCode: z.string().regex(/^\+[1-9]\d{0,3}$/).optional(),
+    phoneCountryCode: z
+      .string()
+      .regex(/^\+[1-9]\d{0,3}$/)
+      .optional(),
     addressFormat: z.string().trim().min(3).max(200).optional(),
     legalEntity: z.string().trim().min(2).max(160).optional(),
     seo: z
@@ -182,10 +191,14 @@ export class MarketsService {
         message: "La revue juridique doit être approuvée avant l’activation.",
       });
     }
-    if (candidate.payments.enabled && candidate.payments.providerIds.length === 0) {
+    if (
+      candidate.payments.enabled &&
+      candidate.payments.providerIds.length === 0
+    ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Un marché avec paiements actifs doit déclarer un fournisseur.",
+        message:
+          "Un marché avec paiements actifs doit déclarer un fournisseur.",
       });
     }
     if (

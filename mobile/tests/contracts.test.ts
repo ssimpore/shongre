@@ -8,6 +8,7 @@ describe("mobile public contracts", () => {
       id: "listing-1",
       title: "Objet test",
       price: 2.99,
+      currency: "EUR",
       city: "Paris",
       marketCode: "FR",
       condition: "Bon état",

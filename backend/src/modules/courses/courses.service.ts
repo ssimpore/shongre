@@ -40,6 +40,7 @@ import {
   businessRulesService,
   BusinessRulesService,
 } from "../business-rules/business-rules.service.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 type TutorProfileInput = Omit<
   TutorProfile,
@@ -125,10 +126,10 @@ export class CoursesService {
   ) {}
 
   private async resolveCatalog(
-    marketCode = "FR",
+    marketCode: string,
     includeInactive = false,
   ): Promise<CourseCatalog> {
-    const normalized = marketCode.toUpperCase();
+    const normalized = requireMarketCode(marketCode);
     const [catalog, commercial] = await Promise.all([
       this.courseRepo.getCatalog(normalized, includeInactive),
       this.commercialRules.getCatalog(normalized),
@@ -136,16 +137,16 @@ export class CoursesService {
     return applyMonetizationToCourseCatalog(catalog, commercial);
   }
 
-  getCatalog(marketCode = "FR"): Promise<CourseCatalog> {
+  getCatalog(marketCode: string): Promise<CourseCatalog> {
     return this.resolveCatalog(marketCode);
   }
 
-  getAdminCatalog(marketCode = "FR"): Promise<CourseCatalog> {
+  getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
     return this.resolveCatalog(marketCode, true);
   }
 
-  async getTutorOnboardingDraft(userId: string, marketCode = "FR") {
-    const normalized = marketCode.toUpperCase();
+  async getTutorOnboardingDraft(userId: string, marketCode: string) {
+    const normalized = requireMarketCode(marketCode);
     const [catalog, stored, user] = await Promise.all([
       this.resolveCatalog(normalized),
       this.courseRepo.getWorkflowDraft(userId, normalized, "tutor_onboarding"),
@@ -206,10 +207,10 @@ export class CoursesService {
 
   async getLearnerRequestDraft(
     userId: string,
-    marketCode = "FR",
+    marketCode: string,
     subjectId = "",
   ) {
-    const normalized = marketCode.toUpperCase();
+    const normalized = requireMarketCode(marketCode);
     const stored = await this.courseRepo.getWorkflowDraft(
       userId,
       normalized,
@@ -450,7 +451,7 @@ export class CoursesService {
       });
     }
     const [catalog, currentOffers] = await Promise.all([
-      this.resolveCatalog(input.marketCodes[0] || "FR"),
+      this.resolveCatalog(requireMarketCode(input.marketCodes[0])),
       this.courseRepo.getCourseOffers(tutor.id),
     ]);
     const plan =

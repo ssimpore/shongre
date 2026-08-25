@@ -202,7 +202,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
     return (
       <div className="space-y-4">
         <Skeleton className="h-48 rounded-2xl" />
-        <Skeleton className="h-[450px] rounded-2xl" />
+        <Skeleton className="h-96 rounded-2xl" />
       </div>
     );
   if (!account)
@@ -259,7 +259,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   <a
                     href={account.website}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 hover:text-white"
                   >
                     {account.domain ?? account.website}
@@ -375,7 +375,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </span>
               <h2 className="text-sm font-black">Intelligence Shongre</h2>
               {shongre?.organization?.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-micro font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
                   <BadgeCheck className="h-3 w-3" /> Professionnel vérifié
                 </span>
               )}
@@ -504,7 +504,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         )}
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+      <div className="grid gap-4 xl:grid-cols-2">
         <div className="space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">

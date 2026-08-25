@@ -12,7 +12,10 @@ import type {
 } from "@shongre/contracts/provider-gateways";
 import { config } from "../../../app/config/index.js";
 import { AppError } from "../../../shared/errors/app-error.js";
-import { RemoteEmailDeliveryGateway, RemoteGenerativeAiGateway } from "./remote-capability-gateways.js";
+import {
+  RemoteEmailDeliveryGateway,
+  RemoteGenerativeAiGateway,
+} from "./remote-capability-gateways.js";
 
 function deterministicExternalId(prefix: string, values: unknown[]) {
   return `${prefix}_${createHash("sha256")
@@ -36,7 +39,9 @@ export class DemoGenerativeAiGateway implements AiGateway {
     context: ProviderInvocationContext,
     request: AiGenerationRequest,
   ): Promise<AiGenerationResult> {
-    const accountName = String(request.safeContext.accountName || "ce prospect");
+    const accountName = String(
+      request.safeContext.accountName || "ce prospect",
+    );
     const nextStep = String(request.safeContext.nextStep || "faire le point");
     const textByTask: Record<AiGenerationRequest["task"], string> = {
       "crm.follow_up_draft": `Bonjour, je reviens vers vous au sujet de ${accountName}. Nous vous proposons de ${nextStep}. Bien cordialement,`,
@@ -44,14 +49,22 @@ export class DemoGenerativeAiGateway implements AiGateway {
       "crm.account_enrichment": `Aucune source externe n’a été consultée en mode démonstration pour ${accountName}.`,
       "crm.next_action": `Prochaine action : ${nextStep}.`,
       "crm.duplicate_assistance": `Vérifiez le domaine, l’email et le téléphone avant de fusionner ${accountName}.`,
-      "marketing.campaign_draft": "Proposition déterministe : une introduction concise, une preuve concrète et un appel à l’action unique.",
-      "marketing.subject_generation": "Les nouveautés Shongre choisies pour vous",
-      "marketing.preview_generation": "Découvrez cette semaine nos sélections, conseils et nouveautés.",
-      "marketing.content_rewrite": "Contenu reformulé en mode démonstration, sans donnée externe.",
-      "marketing.ab_generation": "Variante B : Découvrez les nouveautés Shongre dès aujourd’hui",
-      "marketing.translation": "Translation demo output — no external provider was called.",
-      "marketing.performance_analysis": "Analyse déterministe : privilégier les clics et conversions plutôt que les ouvertures seules.",
-      "marketing.segment_suggestion": "Segment suggéré : profils abonnés et engagés au cours des 90 derniers jours.",
+      "marketing.campaign_draft":
+        "Proposition déterministe : une introduction concise, une preuve concrète et un appel à l’action unique.",
+      "marketing.subject_generation":
+        "Les nouveautés Shongre choisies pour vous",
+      "marketing.preview_generation":
+        "Découvrez cette semaine nos sélections, conseils et nouveautés.",
+      "marketing.content_rewrite":
+        "Contenu reformulé en mode démonstration, sans donnée externe.",
+      "marketing.ab_generation":
+        "Variante B : Découvrez les nouveautés Shongre dès aujourd’hui",
+      "marketing.translation":
+        "Translation demo output — no external provider was called.",
+      "marketing.performance_analysis":
+        "Analyse déterministe : privilégier les clics et conversions plutôt que les ouvertures seules.",
+      "marketing.segment_suggestion":
+        "Segment suggéré : profils abonnés et engagés au cours des 90 derniers jours.",
     };
     return {
       text: textByTask[request.task],
@@ -114,14 +127,20 @@ export class UnavailableMailboxGateway implements MailboxGateway {
   async sendMessage(): Promise<MailboxMessageResult> {
     return unavailable("mailbox.send");
   }
-  async syncThread(): Promise<{ items: MailboxThreadMessage[]; nextCursor?: string }> {
+  async syncThread(): Promise<{
+    items: MailboxThreadMessage[];
+    nextCursor?: string;
+  }> {
     return unavailable("mailbox.read");
   }
 }
 
 export class DemoEmailDeliveryGateway implements EmailDeliveryGateway {
   async testConnection() {
-    return { status: "HEALTHY" as const, checkedAt: "2026-08-25T12:00:00.000Z" };
+    return {
+      status: "HEALTHY" as const,
+      checkedAt: "2026-08-25T12:00:00.000Z",
+    };
   }
 
   async getCapabilities() {
@@ -134,7 +153,10 @@ export class DemoEmailDeliveryGateway implements EmailDeliveryGateway {
     };
   }
 
-  async send(context: ProviderInvocationContext, request: Parameters<EmailDeliveryGateway["send"]>[1]) {
+  async send(
+    context: ProviderInvocationContext,
+    request: Parameters<EmailDeliveryGateway["send"]>[1],
+  ) {
     return {
       externalMessageId: deterministicExternalId("demo_delivery", [
         context.connectionId,

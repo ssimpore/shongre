@@ -11,8 +11,10 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { listingsService } from "@/features/listings/listings.service";
+import { useMarket } from "@/features/market/MarketProvider";
 
 export default function SearchScreen() {
+  const { activeMarket } = useMarket();
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<ListingCardView[]>([]);
   const [error, setError] = useState("");
@@ -21,7 +23,7 @@ export default function SearchScreen() {
     let active = true;
     const timer = setTimeout(() => {
       listingsService
-        .list(query)
+        .list(activeMarket.code, query)
         .then((results) => active && setItems(results))
         .catch(
           (reason) =>
@@ -37,7 +39,7 @@ export default function SearchScreen() {
       active = false;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [activeMarket.code, query]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -59,7 +61,7 @@ export default function SearchScreen() {
                 setQuery(value);
                 setError("");
               }}
-              placeholder="Vélo, meuble, appareil photo…"
+              placeholder={`Rechercher en ${activeMarket.name}…`}
               returnKeyType="search"
             />
           </>

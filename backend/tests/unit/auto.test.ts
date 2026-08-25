@@ -117,6 +117,7 @@ describe("Shongre Auto domain service", () => {
   it("keeps a draft private and strips raw vehicle identity fields", async () => {
     const { service } = createService();
     const draft = await service.saveOwnDraft("seller_a", "draft_private", {
+      marketCode: "FR",
       data: {
         ...completeDraftData,
         vin: "VF3SECRET12345678",

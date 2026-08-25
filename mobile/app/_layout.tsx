@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/features/auth/AuthProvider";
+import { MarketProvider } from "@/features/market/MarketProvider";
 import { mobileColors as colors } from "@shongre/design-tokens/native";
 
 void SplashScreen.preventAutoHideAsync();
@@ -33,33 +34,38 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: colors.surface },
-              headerTintColor: colors.text,
-              headerBackTitle: "Retour",
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="auth/login"
-              options={{ title: "Connexion", presentation: "modal" }}
-            />
-            <Stack.Screen name="listing/[id]" options={{ title: "Annonce" }} />
-            <Stack.Screen
-              name="settings/index"
-              options={{ title: "Réglages" }}
-            />
-            <Stack.Screen
-              name="settings/delete-account"
-              options={{ title: "Supprimer mon compte" }}
-            />
-          </Stack>
-        </AuthProvider>
+        <MarketProvider>
+          <AuthProvider>
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: colors.surface },
+                headerTintColor: colors.text,
+                headerBackTitle: "Retour",
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="auth/login"
+                options={{ title: "Connexion", presentation: "modal" }}
+              />
+              <Stack.Screen
+                name="listing/[id]"
+                options={{ title: "Annonce" }}
+              />
+              <Stack.Screen
+                name="settings/index"
+                options={{ title: "Réglages" }}
+              />
+              <Stack.Screen
+                name="settings/delete-account"
+                options={{ title: "Supprimer mon compte" }}
+              />
+            </Stack>
+          </AuthProvider>
+        </MarketProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

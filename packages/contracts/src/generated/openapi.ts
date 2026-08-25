@@ -7341,6 +7341,7 @@ export interface components {
             readonly currency: string;
             readonly forecastMinor: number;
             readonly lostValueMinor: number;
+            readonly marketCode: string;
             readonly openOpportunities: number;
             readonly openPipelineMinor: number;
             readonly opportunities: readonly components["schemas"]["CrmOpportunity"][];
@@ -17136,6 +17137,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingAnalytics"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };
@@ -17249,6 +17251,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingCampaign"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
@@ -17363,6 +17366,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingCampaign"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
@@ -17391,6 +17395,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingCampaign"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
@@ -17656,6 +17661,7 @@ export interface operations {
                     };
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };
@@ -17682,6 +17688,7 @@ export interface operations {
                     };
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };
@@ -17764,6 +17771,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingJourney"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };
@@ -18368,6 +18376,7 @@ export interface operations {
                 };
                 content?: never;
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 404: components["responses"]["NotFound"];
             readonly 429: components["responses"]["TooManyRequests"];
         };
@@ -18395,6 +18404,7 @@ export interface operations {
                     readonly "image/gif": string;
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 404: components["responses"]["NotFound"];
             readonly 429: components["responses"]["TooManyRequests"];
         };
@@ -18420,6 +18430,7 @@ export interface operations {
                     readonly "application/json": components["schemas"]["MarketingUsage"];
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };
@@ -18446,6 +18457,7 @@ export interface operations {
                     };
                 };
             };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 403: components["responses"]["Forbidden"];
         };
     };

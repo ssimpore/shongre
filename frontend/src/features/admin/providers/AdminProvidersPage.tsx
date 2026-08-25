@@ -23,13 +23,13 @@ import { Button } from "../../../design-system/primitives/Button";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
-import { getCapabilityMetadata } from "../../../domains/providers/provider-capabilities";
 import { services } from "../../../api/client/service-registry";
 import type {
   ProviderConfiguration,
   ProviderHealthStatus,
 } from "../../../domains/providers/provider.types";
 import { PROVIDER_CONFIGURATION_CONSTRAINTS } from "../../../domains/providers/provider.types";
+import { ProviderCapabilityLabel } from "./components/ProviderCapabilityLabel";
 
 type MainTab = "overview" | "catalog" | "matrix" | "routing" | "audit";
 
@@ -336,12 +336,17 @@ export const AdminProvidersPage: React.FC = () => {
                 </strong>
               </div>
               <div>
-                <span className="text-stone-500">Capacités annoncées : </span>
-                <strong className="text-stone-800">
-                  {activeTestProvider.capabilities
-                    .map((capability) => getCapabilityMetadata(capability).name)
-                    .join(", ")}
-                </strong>
+                <span className="text-stone-500">Capacités annoncées :</span>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {activeTestProvider.capabilities.map((capability) => (
+                    <ProviderCapabilityLabel
+                      key={capability}
+                      capability={capability}
+                      compact
+                      className="max-w-64 rounded border border-stone-200 bg-white px-2 py-1 text-stone-800"
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 

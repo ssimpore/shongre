@@ -120,7 +120,7 @@ export class NotificationsService {
     body: string,
     linkUrl?: string,
     requestedCategory?: NotificationCategory,
-    marketCode = "FR",
+    marketCode?: string,
   ): Promise<NotificationItem> {
     if (
       !userId ||
@@ -142,7 +142,7 @@ export class NotificationsService {
         message: "Le lien de notification doit rester interne à Shongre.",
       });
     }
-    const country = getCountryConfig(marketCode);
+    const country = getCountryConfig(marketCode || "");
     if (!country?.enabled) {
       throw new AppError({
         code: "VALIDATION_ERROR",

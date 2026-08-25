@@ -1,4 +1,5 @@
 import {
+  getCountryConfig,
   publicationInputSchema,
   type ListingCardView,
   type PublicationInput,
@@ -66,25 +67,71 @@ const demoListings: ListingCardView[] = [
     isUrgent: false,
     isFeatured: false,
   },
+  {
+    id: "list_be_1",
+    title: "Vélo urbain léger avec garde-boue",
+    price: { amountMinor: 78000, currency: "EUR" },
+    city: "Bruxelles",
+    marketCode: "BE",
+    conditionLabel: "Très bon état",
+    characteristics: ["Cadre aluminium", "Éclairage inclus"],
+    publishedAt: "2026-08-19T08:15:00.000Z",
+    isUrgent: false,
+    isFeatured: true,
+  },
+  {
+    id: "list_ch_1",
+    title: "Appareil photo compact expert",
+    price: { amountMinor: 64000, currency: "CHF" },
+    city: "Genève",
+    marketCode: "CH",
+    conditionLabel: "Comme neuf",
+    characteristics: ["Capteur 1 pouce", "Garantie restante"],
+    publishedAt: "2026-08-20T10:30:00.000Z",
+    isUrgent: true,
+    isFeatured: false,
+  },
+  {
+    id: "list_lu_1",
+    title: "Bureau en bois massif",
+    price: { amountMinor: 29000, currency: "EUR" },
+    city: "Luxembourg",
+    marketCode: "LU",
+    conditionLabel: "Bon état",
+    characteristics: ["Bois massif", "Trois tiroirs"],
+    publishedAt: "2026-08-20T12:00:00.000Z",
+    isUrgent: false,
+    isFeatured: false,
+  },
 ];
 
 export interface ListingsService {
-  list(query?: string): Promise<ListingCardView[]>;
-  get(id: string): Promise<ListingCardView | null>;
+  list(marketCode: string, query?: string): Promise<ListingCardView[]>;
+  get(id: string, marketCode: string): Promise<ListingCardView | null>;
   publish(input: PublicationInput): Promise<ListingCardView>;
 }
 
 export class DemoListingsService implements ListingsService {
-  async list(query = ""): Promise<ListingCardView[]> {
-    const normalized = query.trim().toLocaleLowerCase("fr-FR");
+  async list(marketCode: string, query = ""): Promise<ListingCardView[]> {
+    const market = getCountryConfig(marketCode);
+    if (!market?.marketplace.enabled)
+      throw new Error("Ce marché Shongre n’est pas encore accessible.");
+    const normalized = query.trim().toLocaleLowerCase(market.defaultLocale);
     return demoListings.filter(
       (item) =>
-        !normalized ||
-        item.title.toLocaleLowerCase("fr-FR").includes(normalized),
+        item.marketCode === market.code &&
+        (!normalized ||
+          item.title
+            .toLocaleLowerCase(market.defaultLocale)
+            .includes(normalized)),
     );
   }
-  async get(id: string): Promise<ListingCardView | null> {
-    return demoListings.find((item) => item.id === id) || null;
+  async get(id: string, marketCode: string): Promise<ListingCardView | null> {
+    return (
+      demoListings.find(
+        (item) => item.id === id && item.marketCode === marketCode,
+      ) || null
+    );
   }
   async publish(input: PublicationInput): Promise<ListingCardView> {
     const draft = publicationInputSchema.parse(input);
@@ -105,42 +152,56 @@ export class DemoListingsService implements ListingsService {
 }
 
 export class HttpListingsService implements ListingsService {
-  async list(query = ""): Promise<ListingCardView[]> {
+  async list(marketCode: string, query = ""): Promise<ListingCardView[]> {
     const response = query
-      ? await apiRequest<{ items: BackendListing[] }>("/listings/search", {
-          method: "POST",
-          body: JSON.stringify({ query }),
-        })
-      : await apiRequest<{ listings: BackendListing[] }>("/listings");
+      ? await apiRequest<{ items: BackendListing[] }>(
+          "/listings/search",
+          {
+            method: "POST",
+            body: JSON.stringify({ query, marketCode }),
+          },
+          marketCode,
+        )
+      : await apiRequest<{ listings: BackendListing[] }>(
+          "/listings",
+          {},
+          marketCode,
+        );
     const items = "items" in response ? response.items : response.listings;
     return items.map(mapBackendListing);
   }
 
-  async get(id: string): Promise<ListingCardView | null> {
+  async get(id: string, marketCode: string): Promise<ListingCardView | null> {
     const item = await apiRequest<BackendListing | null>(
       `/listings/${encodeURIComponent(id)}`,
+      {},
+      marketCode,
     );
     return item ? mapBackendListing(item) : null;
   }
 
   async publish(input: PublicationInput): Promise<ListingCardView> {
     const draft = publicationInputSchema.parse(input);
-    const item = await apiRequest<BackendListing>("/listings/publish", {
-      method: "POST",
-      body: JSON.stringify({
-        draft: {
-          title: draft.title,
-          description: draft.description,
-          price: draft.amountMinor / 100,
-          categoryId: draft.categoryId,
-          marketCode: draft.marketCode,
-          city: draft.city,
-          postalCode: draft.postalCode,
-          condition: draft.condition,
-          images: draft.images,
-        },
-      }),
-    });
+    const item = await apiRequest<BackendListing>(
+      "/listings/publish",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          draft: {
+            title: draft.title,
+            description: draft.description,
+            price: draft.amountMinor / 100,
+            categoryId: draft.categoryId,
+            marketCode: draft.marketCode,
+            city: draft.city,
+            postalCode: draft.postalCode,
+            condition: draft.condition,
+            images: draft.images,
+          },
+        }),
+      },
+      draft.marketCode,
+    );
     return mapBackendListing(item);
   }
 }

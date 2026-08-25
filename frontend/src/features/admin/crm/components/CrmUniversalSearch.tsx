@@ -72,7 +72,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
             title: account.name,
             subtitle: `${account.industry ?? "Entreprise"} • ${account.city ?? account.marketCode}`,
             badgeText: account.lifecycle,
-            badgeVariant: account.lifecycle === "customer" ? "success" as const : "primary" as const,
+            badgeVariant:
+              account.lifecycle === "customer"
+                ? ("success" as const)
+                : ("primary" as const),
             linkTo: `/admin/crm/entreprises/${account.id}`,
           })),
           ...contactPage.items.map((contact) => ({
@@ -81,7 +84,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
             title: contact.fullName,
             subtitle: `${contact.email ?? "Sans email"} • ${contact.jobTitle ?? "Contact"}`,
             badgeText: contact.lifecycle,
-            badgeVariant: contact.lifecycle === "customer" ? "success" as const : "deal" as const,
+            badgeVariant:
+              contact.lifecycle === "customer"
+                ? ("success" as const)
+                : ("deal" as const),
             linkTo: `/admin/crm/contacts/${contact.id}`,
           })),
           ...opportunityPage.items.map((opportunity) => ({
@@ -90,7 +96,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
             title: opportunity.name,
             subtitle: `${opportunity.accountName ?? "Sans compte"} • ${opportunity.stageName}`,
             badgeText: opportunity.status,
-            badgeVariant: opportunity.status === "won" ? "success" as const : "warning" as const,
+            badgeVariant:
+              opportunity.status === "won"
+                ? ("success" as const)
+                : ("warning" as const),
             linkTo: `/admin/crm/opportunites/${opportunity.id}`,
           })),
         ];

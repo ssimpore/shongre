@@ -846,7 +846,10 @@ export const AdminMarketsPage: React.FC = () => {
                       selectedMarket.routing?.basePath ||
                         selectedCountryConfig.basePath,
                     ],
-                    ["Devise / locale", `${selectedMarket.currency} · ${selectedMarket.defaultLocale}`],
+                    [
+                      "Devise / locale",
+                      `${selectedMarket.currency} · ${selectedMarket.defaultLocale}`,
+                    ],
                     ["Fuseau horaire", selectedMarket.timezone],
                   ].map(([label, value]) => (
                     <div
@@ -865,17 +868,25 @@ export const AdminMarketsPage: React.FC = () => {
                 <div className="flex flex-col gap-3 rounded-2xl border border-info-border bg-info-surface p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1 text-xs text-info">
                     <p className="font-bold">
-                      État {selectedMarket.status} · SEO {(
-                        selectedMarket.routing?.seoIndexable ??
-                        selectedCountryConfig.seo.indexable
-                      ) ? "indexable" : "non indexable"}
+                      État {selectedMarket.status} · SEO{" "}
+                      {(selectedMarket.routing?.seoIndexable ??
+                      selectedCountryConfig.seo.indexable)
+                        ? "indexable"
+                        : "non indexable"}
                     </p>
                     <p>
-                      Revue juridique : {selectedCountryConfig.compliance.legalReviewStatus}. Les domaines et chemins sont validés sans collision avant publication.
+                      Revue juridique :{" "}
+                      {selectedCountryConfig.compliance.legalReviewStatus}. Les
+                      domaines et chemins sont validés sans collision avant
+                      publication.
                     </p>
                   </div>
                   {canManageMarkets ? (
-                    <Button variant="outline" size="sm" onClick={openRoutingEditor}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={openRoutingEditor}
+                    >
                       Modifier le routage
                     </Button>
                   ) : null}
@@ -1689,7 +1700,9 @@ export const AdminMarketsPage: React.FC = () => {
             <input
               type="checkbox"
               checked={routingGatewayVisible}
-              onChange={(event) => setRoutingGatewayVisible(event.target.checked)}
+              onChange={(event) =>
+                setRoutingGatewayVisible(event.target.checked)
+              }
               className="h-4 w-4 accent-primary"
             />
           </label>
@@ -1703,10 +1716,19 @@ export const AdminMarketsPage: React.FC = () => {
             />
           </label>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-3">
-            <Button variant="ghost" size="sm" onClick={() => setIsRoutingModalOpen(false)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsRoutingModalOpen(false)}
+            >
               Annuler
             </Button>
-            <Button variant="primary" size="sm" isLoading={isSavingRouting} onClick={() => void saveRouting()}>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={isSavingRouting}
+              onClick={() => void saveRouting()}
+            >
               Enregistrer
             </Button>
           </div>

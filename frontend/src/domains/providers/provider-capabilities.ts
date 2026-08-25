@@ -790,14 +790,5 @@ export function getCategoryMetadata(
 export function getCapabilityMetadata(
   capability: ProviderCapability,
 ): CapabilityMetadata {
-  return (
-    PROVIDER_CAPABILITIES[capability] || {
-      id: capability,
-      category: "PAYMENT",
-      name: capability,
-      description: "",
-      usedByFeatures: [],
-      isRedundancyRecommended: false,
-    }
-  );
+  return PROVIDER_CAPABILITIES[capability];
 }

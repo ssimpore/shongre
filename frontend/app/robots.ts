@@ -21,26 +21,29 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         disallow: ["/admin/", "/compte/", "/messages", "/deposer"],
       },
     ],
-    sitemap:
-      marketOrigin ?? [
-        `${globalOrigin}/sitemap.xml`,
-        ...COUNTRY_REGISTRY.filter(
-          (country) =>
-            country.primaryDomain === infrastructure.globalDomain &&
-            country.basePath !== "/" &&
-            country.launchStatus === "active" &&
-            country.marketplace.enabled &&
-            country.seo.indexable,
-        ).map((country) => `${globalOrigin}${country.basePath}/sitemap.xml`),
-      ],
+    sitemap: marketOrigin ?? [
+      `${globalOrigin}/sitemap.xml`,
+      ...COUNTRY_REGISTRY.filter(
+        (country) =>
+          country.primaryDomain === infrastructure.globalDomain &&
+          country.basePath !== "/" &&
+          country.launchStatus === "active" &&
+          country.marketplace.enabled &&
+          country.seo.indexable,
+      ).map((country) => `${globalOrigin}${country.basePath}/sitemap.xml`),
+    ],
   };
 }
 
 function buildMarketSitemapUrl(countryCode: string): string {
   const infrastructure = marketInfrastructureFromEnvironment();
   const country = COUNTRY_REGISTRY.find((entry) => entry.code === countryCode);
-  if (!country) return `${infrastructure.canonicalProtocol}://${infrastructure.globalDomain}/sitemap.xml`;
-  const domain = country.code === "FR" ? infrastructure.franceDomain : infrastructure.globalDomain;
+  if (!country)
+    return `${infrastructure.canonicalProtocol}://${infrastructure.globalDomain}/sitemap.xml`;
+  const domain =
+    country.code === "FR"
+      ? infrastructure.franceDomain
+      : infrastructure.globalDomain;
   const basePath = country.code === "FR" ? "" : country.basePath;
   return `${infrastructure.canonicalProtocol}://${domain}${basePath}/sitemap.xml`;
 }

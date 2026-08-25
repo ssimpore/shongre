@@ -11,6 +11,7 @@ import {
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type { CommissionServiceContract } from "../../contracts/commission.contract";
 import { demoBusinessRulesService } from "./demo-business-rules.service";
+import { convertDemoReportingMinorUnits } from "./demo-reporting-currency";
 
 export class DemoCommissionService implements CommissionServiceContract {
   private readonly calculations = new Map(
@@ -92,7 +93,8 @@ export class DemoCommissionService implements CommissionServiceContract {
 
   async getAnalytics(query: CommissionAnalyticsQuery) {
     await simulateNetworkDelay(60);
-    if (query.currency !== "EUR") return [];
+    const convert = (amountMinor: number) =>
+      convertDemoReportingMinorUnits(amountMinor, query.currency);
     return [
       {
         date: query.to,
@@ -102,11 +104,11 @@ export class DemoCommissionService implements CommissionServiceContract {
         planId: query.planId,
         currency: query.currency,
         transactionCount: 184,
-        gmvMinor: 4_860_000,
-        grossCommissionMinor: 145_800,
-        commissionDiscountMinor: 12_400,
-        commissionRevenueMinor: 111_167,
-        commissionRefundMinor: 3_250,
+        gmvMinor: convert(4_860_000),
+        grossCommissionMinor: convert(145_800),
+        commissionDiscountMinor: convert(12_400),
+        commissionRevenueMinor: convert(111_167),
+        commissionRefundMinor: convert(3_250),
         effectiveTakeRateBps: 222,
       },
     ];

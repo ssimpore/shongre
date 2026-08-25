@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { ZodError } from "zod";
+import { getCountryConfig } from "@shongre/contracts";
 import {
   authService,
   usersService,
@@ -72,6 +73,8 @@ import type {
 } from "../../modules/trending/trending.types.js";
 import { OPENAPI_OPERATIONS } from "../../generated/openapi-manifest.js";
 import {
+  requireApiRequestMarket,
+  requireOpenApiRequestMarket,
   requireOpenMarketplace,
   resolveApiRequestMarket,
 } from "../../modules/markets/request-market-context.js";
@@ -245,10 +248,14 @@ export class ApiV1Router {
       "/auth/domain-handoff/start",
       AUTHENTICATED,
       async ({ principal, body, marketCode }) => {
-        if (!marketCode || marketCode !== String(body?.sourceCountry || "").toUpperCase()) {
+        if (
+          !marketCode ||
+          marketCode !== String(body?.sourceCountry || "").toUpperCase()
+        ) {
           throw new AppError({
             code: "CONFLICT",
-            message: "Le marché source ne correspond pas à la session courante.",
+            message:
+              "Le marché source ne correspond pas à la session courante.",
           });
         }
         return authService.beginDomainHandoff(principal, body || {});
@@ -704,8 +711,7 @@ export class ApiV1Router {
     // LISTINGS & SEARCH ROUTES
     // --------------------------------------------------------------------------
     this.addRoute("GET", "/listings", PUBLIC, async ({ query, marketCode }) => {
-      const resolved =
-        marketCode || query.get("marketCode") || query.get("country") || "FR";
+      const resolved = requireApiRequestMarket(marketCode);
       requireOpenMarketplace(resolved);
       const params = {
         ...Object.fromEntries(query.entries()),
@@ -718,8 +724,9 @@ export class ApiV1Router {
       "/listings/:id",
       PUBLIC,
       async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
         const listing = await listingsService.getListingById(params.id);
-        return !listing || (marketCode && listing.marketCode !== marketCode)
+        return !listing || listing.marketCode !== resolvedMarketCode
           ? null
           : listing;
       },
@@ -729,7 +736,7 @@ export class ApiV1Router {
       "/listings/search",
       PUBLIC,
       async ({ body, marketCode }) => {
-        const resolved = marketCode || body?.marketCode || "FR";
+        const resolved = requireApiRequestMarket(marketCode);
         requireOpenMarketplace(resolved);
         return listingsService.searchListings({
           ...(body || {}),
@@ -737,14 +744,17 @@ export class ApiV1Router {
         });
       },
     );
-    this.addRoute("GET", "/home/trending", PUBLIC, async ({ query, marketCode }) =>
-      trendingService.getSection({
-        marketCode:
-          marketCode || query.get("market") || query.get("country") || "FR",
-        region: query.get("region") || undefined,
-        city: query.get("city") || undefined,
-        limit: query.get("limit") ? Number(query.get("limit")) : undefined,
-      }),
+    this.addRoute(
+      "GET",
+      "/home/trending",
+      PUBLIC,
+      async ({ query, marketCode }) =>
+        trendingService.getSection({
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          region: query.get("region") || undefined,
+          city: query.get("city") || undefined,
+          limit: query.get("limit") ? Number(query.get("limit")) : undefined,
+        }),
     );
     this.addRoute(
       "GET",
@@ -773,21 +783,32 @@ export class ApiV1Router {
       "GET",
       "/listings/bulk-import/template",
       permission("listing.create"),
-      async ({ query }) =>
-        listingsService.getBulkImportTemplate(query.get("locale") || "fr-FR"),
+      async ({ query, marketCode }) => {
+        const country = getCountryConfig(requireApiRequestMarket(marketCode))!;
+        return listingsService.getBulkImportTemplate(
+          query.get("locale") || country.defaultLocale,
+        );
+      },
     );
     this.addRoute(
       "POST",
       "/listings/bulk-import/parse",
       permission("listing.create"),
-      async ({ body }) => listingsService.parseBulkImportCsv(body),
+      async ({ body, marketCode }) =>
+        listingsService.parseBulkImportCsv({
+          ...(body || {}),
+          marketCode: requireApiRequestMarket(marketCode),
+        }),
     );
     this.addRoute(
       "POST",
       "/listings/bulk-import/publish",
       permission("listing.publish"),
-      async ({ principal, body }) =>
-        listingsService.publishBulkListings(principal.userId, body),
+      async ({ principal, body, marketCode }) =>
+        listingsService.publishBulkListings(principal.userId, {
+          ...(body || {}),
+          marketCode: requireOpenApiRequestMarket(marketCode),
+        }),
     );
     this.addRoute(
       "POST",
@@ -827,15 +848,16 @@ export class ApiV1Router {
       "POST",
       "/listings/publish",
       permission("listing.publish"),
-      async ({ principal, body }) => {
+      async ({ principal, body, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
         const subject = await complianceService.getSubject(principal.userId);
         await complianceService.requireForUser(principal.userId, {
           requestedAction:
             subject.accountType === "professional"
               ? "publish_professional_listing"
               : "publish_listing",
-          jurisdiction: body?.draft?.country || subject.country || "FR",
-          marketCode: body?.draft?.marketCode || "FR",
+          jurisdiction: resolvedMarketCode,
+          marketCode: resolvedMarketCode,
           categoryId: body?.draft?.categoryId,
           transactionContext: {
             transactionType: "classified",
@@ -852,12 +874,12 @@ export class ApiV1Router {
       "POST",
       "/publication/entitlements",
       permission("listing.create"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         publisherEntitlementsService.getPublicationEntitlements({
           actorUserId: principal.userId,
           organizationId: body?.organizationId,
           branchId: body?.branchId,
-          marketCode: body?.marketCode || "FR",
+          marketCode: requireApiRequestMarket(marketCode),
           categoryId: body?.categoryId,
         }),
     );
@@ -937,14 +959,38 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // SHONGRE EDUCATION (versioned course/tutoring vertical)
     // --------------------------------------------------------------------------
-    this.addEducationRoute("GET", "/catalog", PUBLIC, async ({ query }) =>
-      coursesService.getCatalog(query.get("market") || "FR"),
+    this.addEducationRoute("GET", "/catalog", PUBLIC, async ({ marketCode }) =>
+      coursesService.getCatalog(requireOpenApiRequestMarket(marketCode)),
     );
-    this.addEducationRoute("POST", "/search", PUBLIC, async ({ body }) =>
-      coursesService.searchTutors(body || { marketCode: "FR" }),
+    this.addEducationRoute(
+      "POST",
+      "/search",
+      PUBLIC,
+      async ({ body, marketCode }) =>
+        coursesService.searchTutors({
+          ...(body || {}),
+          marketCode: requireOpenApiRequestMarket(marketCode),
+        }),
     );
-    this.addEducationRoute("GET", "/tutors/:id", PUBLIC, async ({ params }) =>
-      coursesService.getTutorPublicProfile(params.id),
+    this.addEducationRoute(
+      "GET",
+      "/tutors/:id",
+      PUBLIC,
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const profile = await coursesService.getTutorPublicProfile(params.id);
+        if (
+          profile.tutor.serviceArea?.marketCode !== resolvedMarketCode &&
+          !profile.offers.some((offer) =>
+            offer.marketCodes.includes(resolvedMarketCode),
+          )
+        )
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Profil professeur introuvable sur ce marché.",
+          });
+        return profile;
+      },
     );
     this.addEducationRoute(
       "GET",
@@ -971,20 +1017,20 @@ export class ApiV1Router {
       "GET",
       "/workflow-drafts/tutor-onboarding",
       permission("course.profile.manage.own"),
-      async ({ principal, query }) =>
+      async ({ principal, marketCode }) =>
         coursesService.getTutorOnboardingDraft(
           principal.userId,
-          query.get("market") || "FR",
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addEducationRoute(
       "PUT",
       "/workflow-drafts/tutor-onboarding",
       permission("course.profile.manage.own"),
-      async ({ principal, body }) => {
+      async ({ principal, body, marketCode }) => {
         await coursesService.saveWorkflowDraft(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
           "tutor_onboarding",
           body?.draft,
         );
@@ -995,10 +1041,10 @@ export class ApiV1Router {
       "DELETE",
       "/workflow-drafts/tutor-onboarding",
       permission("course.profile.manage.own"),
-      async ({ principal, query }) => {
+      async ({ principal, marketCode }) => {
         await coursesService.deleteWorkflowDraft(
           principal.userId,
-          query.get("market") || "FR",
+          requireApiRequestMarket(marketCode),
           "tutor_onboarding",
         );
         return { success: true };
@@ -1008,10 +1054,10 @@ export class ApiV1Router {
       "POST",
       "/onboarding/submit",
       permission("course.profile.manage.own"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         coursesService.submitTutorOnboarding(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
           body?.draft,
         ),
     );
@@ -1019,10 +1065,10 @@ export class ApiV1Router {
       "GET",
       "/workflow-drafts/learner-request",
       permission("course.request.create"),
-      async ({ principal, query }) =>
+      async ({ principal, query, marketCode }) =>
         coursesService.getLearnerRequestDraft(
           principal.userId,
-          query.get("market") || "FR",
+          requireApiRequestMarket(marketCode),
           query.get("subject") || "",
         ),
     );
@@ -1030,10 +1076,10 @@ export class ApiV1Router {
       "PUT",
       "/workflow-drafts/learner-request",
       permission("course.request.create"),
-      async ({ principal, body }) => {
+      async ({ principal, body, marketCode }) => {
         await coursesService.saveWorkflowDraft(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
           "learner_request",
           body?.draft,
         );
@@ -1044,10 +1090,10 @@ export class ApiV1Router {
       "DELETE",
       "/workflow-drafts/learner-request",
       permission("course.request.create"),
-      async ({ principal, query }) => {
+      async ({ principal, marketCode }) => {
         await coursesService.deleteWorkflowDraft(
           principal.userId,
-          query.get("market") || "FR",
+          requireApiRequestMarket(marketCode),
           "learner_request",
         );
         return { success: true };
@@ -1158,10 +1204,10 @@ export class ApiV1Router {
       "POST",
       "/bookings",
       permission("course.booking.create"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         coursesService.createBooking(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
           body?.booking,
         ),
     );
@@ -1169,8 +1215,8 @@ export class ApiV1Router {
       "GET",
       "/admin/catalog",
       permission("course.admin.manage"),
-      async ({ query }) =>
-        coursesService.getAdminCatalog(query.get("market") || "FR"),
+      async ({ marketCode }) =>
+        coursesService.getAdminCatalog(requireApiRequestMarket(marketCode)),
     );
     this.addEducationRoute(
       "PUT",
@@ -1197,14 +1243,33 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // SHONGRE AUTO (versioned automotive vertical)
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/auto/catalog", PUBLIC, async ({ query }) =>
-      autoService.getCatalog(query.get("market") || "FR"),
+    this.addRoute("GET", "/auto/catalog", PUBLIC, async ({ marketCode }) =>
+      autoService.getCatalog(requireOpenApiRequestMarket(marketCode)),
     );
-    this.addRoute("POST", "/auto/search", PUBLIC, async ({ body }) =>
-      autoService.search(body || { marketCode: "FR" }),
+    this.addRoute(
+      "POST",
+      "/auto/search",
+      PUBLIC,
+      async ({ body, marketCode }) =>
+        autoService.search({
+          ...(body || {}),
+          marketCode: requireOpenApiRequestMarket(marketCode),
+        }),
     );
-    this.addRoute("GET", "/auto/vehicles/:id", PUBLIC, async ({ params }) =>
-      autoService.getPublicVehicle(params.id),
+    this.addRoute(
+      "GET",
+      "/auto/vehicles/:id",
+      PUBLIC,
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const vehicle = await autoService.getPublicVehicle(params.id);
+        if (!vehicle.marketCodes.includes(resolvedMarketCode))
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Véhicule introuvable sur ce marché.",
+          });
+        return vehicle;
+      },
     );
     this.addRoute(
       "GET",
@@ -1229,10 +1294,10 @@ export class ApiV1Router {
       "POST",
       "/auto/drafts",
       permission("auto.vehicle.manage.own"),
-      async ({ principal, body }) =>
+      async ({ principal, marketCode }) =>
         autoService.getOrCreateOwnDraft(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
@@ -1320,8 +1385,8 @@ export class ApiV1Router {
       "GET",
       "/auto/admin/overview",
       permission("auto.admin.manage"),
-      async ({ query }) =>
-        autoService.getAdminOverview(query.get("market") || "FR"),
+      async ({ marketCode }) =>
+        autoService.getAdminOverview(requireApiRequestMarket(marketCode)),
     );
     this.addRoute(
       "PUT",
@@ -1355,31 +1420,66 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // SHONGRE IMMO (reusable real_estate vertical)
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/real-estate/catalog", PUBLIC, async ({ query }) =>
-      realEstateService.getCatalog(query.get("market") || "FR"),
+    this.addRoute(
+      "GET",
+      "/real-estate/catalog",
+      PUBLIC,
+      async ({ marketCode }) =>
+        realEstateService.getCatalog(requireOpenApiRequestMarket(marketCode)),
     );
-    this.addRoute("POST", "/real-estate/search", PUBLIC, async ({ body }) =>
-      realEstateService.search(body || { marketCode: "FR", sort: "relevance" }),
+    this.addRoute(
+      "POST",
+      "/real-estate/search",
+      PUBLIC,
+      async ({ body, marketCode }) =>
+        realEstateService.search({
+          ...(body || {}),
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          sort: body?.sort || "relevance",
+        }),
     );
     this.addRoute(
       "GET",
       "/real-estate/properties/:id",
       PUBLIC,
-      async ({ params }) => realEstateService.getPublicProperty(params.id),
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const property = await realEstateService.getPublicProperty(params.id);
+        if (!property.marketCodes.includes(resolvedMarketCode))
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Bien immobilier introuvable sur ce marché.",
+          });
+        return property;
+      },
     );
     this.addRoute(
       "GET",
       "/real-estate/properties/:id/comparables",
       PUBLIC,
-      async ({ params }) =>
-        realEstateService.getComparableProperties(params.id),
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const property = await realEstateService.getPublicProperty(params.id);
+        if (!property.marketCodes.includes(resolvedMarketCode))
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Bien immobilier introuvable sur ce marché.",
+          });
+        return realEstateService.getComparableProperties(property.id);
+      },
     );
     this.addRoute(
       "GET",
       "/real-estate/recently-viewed",
       AUTHENTICATED,
-      async ({ principal }) =>
-        realEstateService.getRecentlyViewed(principal.userId),
+      async ({ principal, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        return (
+          await realEstateService.getRecentlyViewed(principal.userId)
+        ).filter((property) =>
+          property.marketCodes.includes(resolvedMarketCode),
+        );
+      },
     );
     this.addRoute(
       "POST",
@@ -1395,10 +1495,10 @@ export class ApiV1Router {
       "POST",
       "/real-estate/drafts",
       permission("immo.property.manage.own"),
-      async ({ principal, body }) =>
+      async ({ principal, marketCode }) =>
         realEstateService.getOrCreateOwnDraft(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
@@ -1507,8 +1607,8 @@ export class ApiV1Router {
       "GET",
       "/real-estate/admin/overview",
       permission("immo.admin.manage"),
-      async ({ query }) =>
-        realEstateService.getAdminOverview(query.get("market") || "FR"),
+      async ({ marketCode }) =>
+        realEstateService.getAdminOverview(requireApiRequestMarket(marketCode)),
     );
     this.addRoute(
       "PUT",
@@ -1557,29 +1657,61 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // SHONGRE EMPLOI (specialized employment vertical on canonical jobs branch)
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/employment/catalog", PUBLIC, async ({ query }) =>
-      employmentService.getCatalog(query.get("market") || "FR"),
+    this.addRoute(
+      "GET",
+      "/employment/catalog",
+      PUBLIC,
+      async ({ marketCode }) =>
+        employmentService.getCatalog(requireOpenApiRequestMarket(marketCode)),
     );
-    this.addRoute("POST", "/employment/search", PUBLIC, async ({ body }) =>
-      employmentService.search(body || { marketCode: "FR" }),
+    this.addRoute(
+      "POST",
+      "/employment/search",
+      PUBLIC,
+      async ({ body, marketCode }) =>
+        employmentService.search({
+          ...(body || {}),
+          marketCode: requireOpenApiRequestMarket(marketCode),
+        }),
     );
-    this.addRoute("GET", "/employment/jobs/:id", PUBLIC, async ({ params }) =>
-      employmentService.getPublicJob(params.id),
+    this.addRoute(
+      "GET",
+      "/employment/jobs/:id",
+      PUBLIC,
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const job = await employmentService.getPublicJob(params.id);
+        if (job.marketCode !== resolvedMarketCode)
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Offre d’emploi introuvable sur ce marché.",
+          });
+        return job;
+      },
     );
     this.addRoute(
       "GET",
       "/employment/jobs/:id/similar",
       PUBLIC,
-      async ({ params }) => employmentService.getSimilarJobs(params.id),
+      async ({ params, marketCode }) => {
+        const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
+        const job = await employmentService.getPublicJob(params.id);
+        if (job.marketCode !== resolvedMarketCode)
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Offre d’emploi introuvable sur ce marché.",
+          });
+        return employmentService.getSimilarJobs(job.id);
+      },
     );
     this.addRoute(
       "POST",
       "/employment/drafts",
       permission("employment.job.manage.own"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         employmentService.getOrCreateOwnDraft(
           principal.userId,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
           body?.preferredDraftId,
         ),
     );
@@ -1626,10 +1758,10 @@ export class ApiV1Router {
       "POST",
       "/employment/compliance/prohibited-language",
       permission("employment.job.manage.own"),
-      async ({ body }) => ({
+      async ({ body, marketCode }) => ({
         flags: await employmentService.flagProhibitedLanguage(
           body?.content,
-          body?.marketCode || "FR",
+          requireApiRequestMarket(marketCode),
         ),
       }),
     );
@@ -1811,8 +1943,8 @@ export class ApiV1Router {
       "GET",
       "/employment/admin/overview",
       permission("employment.admin.manage"),
-      async ({ query }) =>
-        employmentService.getAdminOverview(query.get("market") || "FR"),
+      async ({ marketCode }) =>
+        employmentService.getAdminOverview(requireApiRequestMarket(marketCode)),
     );
     this.addRoute(
       "PUT",
@@ -2002,28 +2134,34 @@ export class ApiV1Router {
       "POST",
       "/payments/payout",
       permission("order.manage.seller"),
-      async ({ principal, body }) =>
-        complianceService
-          .requireForUser(principal.userId, {
-            requestedAction: "receive_payout",
-            jurisdiction: body?.jurisdiction || "FR",
-            marketCode: body?.marketCode || "FR",
-            transactionContext: {
-              transactionType: "direct_purchase",
-              contractConclusionMode: "platform",
-              paymentFlow: "psp_marketplace",
-              amountMinor: body?.amountMinor,
-              currency: body?.currency || "EUR",
-            },
-          })
-          .then(() =>
-            paymentsService.requestSellerPayout(
-              principal.userId,
-              body?.amountMinor,
-              String(body?.currency || "EUR").toUpperCase(),
-              body?.idempotencyKey,
-            ),
-          ),
+      async ({ principal, body, marketCode }) => {
+        const resolvedMarketCode = requireApiRequestMarket(marketCode);
+        const country = getCountryConfig(resolvedMarketCode)!;
+        const currency = String(body?.currency || "").toUpperCase();
+        if (currency !== country.currency)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "La devise ne correspond pas au marché sélectionné.",
+          });
+        await complianceService.requireForUser(principal.userId, {
+          requestedAction: "receive_payout",
+          jurisdiction: resolvedMarketCode,
+          marketCode: resolvedMarketCode,
+          transactionContext: {
+            transactionType: "direct_purchase",
+            contractConclusionMode: "platform",
+            paymentFlow: "psp_marketplace",
+            amountMinor: body?.amountMinor,
+            currency,
+          },
+        });
+        return paymentsService.requestSellerPayout(
+          principal.userId,
+          body?.amountMinor,
+          currency,
+          body?.idempotencyKey,
+        );
+      },
     );
     this.addRoute(
       "GET",
@@ -2038,16 +2176,22 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // PROMOTIONS & MONETIZATION ROUTES
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/business-rules/catalog", PUBLIC, async ({ query }) =>
-      businessRulesService.getCatalog(query.get("marketCode") || "FR"),
+    this.addRoute(
+      "GET",
+      "/business-rules/catalog",
+      PUBLIC,
+      async ({ marketCode }) =>
+        businessRulesService.getCatalog(
+          requireOpenApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",
       "/monetization/professional-plans",
       PUBLIC,
-      async ({ query }) =>
+      async ({ marketCode }) =>
         businessRulesService.getProfessionalPlanCatalog(
-          query.get("marketCode") || "FR",
+          requireOpenApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
@@ -2121,15 +2265,21 @@ export class ApiV1Router {
       "GET",
       "/finance/account/overview",
       permission("finance.account.read.own"),
-      async ({ principal }) =>
-        financeService.getAccountDashboard(principal.userId),
+      async ({ principal, marketCode }) =>
+        financeService.getAccountDashboard(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",
       "/finance/organization/overview",
       permission("finance.organization.read.own"),
-      async ({ principal }) =>
-        financeService.getOrganizationDashboard(principal.userId),
+      async ({ principal, marketCode }) =>
+        financeService.getOrganizationDashboard(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",
@@ -2225,8 +2375,10 @@ export class ApiV1Router {
       "GET",
       "/admin/business-rules",
       permission("commercial_rules.read"),
-      async ({ query }) =>
-        businessRulesService.getAdminOverview(query.get("marketCode") || "FR"),
+      async ({ marketCode }) =>
+        businessRulesService.getAdminOverview(
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "POST",
@@ -2326,9 +2478,9 @@ export class ApiV1Router {
       "GET",
       "/admin/discovery/configuration",
       permission("commercial_rules.read"),
-      async ({ query }) =>
+      async ({ query, marketCode }) =>
         unifiedDiscoveryService.getEffectiveConfiguration(
-          query.get("marketCode") || "FR",
+          requireApiRequestMarket(marketCode),
           query.get("categoryId") || undefined,
           (query.get("context") || "search") as any,
         ),
@@ -2347,9 +2499,9 @@ export class ApiV1Router {
       "GET",
       "/admin/discovery/metrics",
       permission("commercial_rules.read"),
-      async ({ query }) =>
+      async ({ query, marketCode }) =>
         unifiedDiscoveryService.getMetrics(
-          query.get("marketCode") || "FR",
+          requireApiRequestMarket(marketCode),
           query.get("since") || undefined,
         ),
     );
@@ -2490,11 +2642,11 @@ export class ApiV1Router {
       "POST",
       "/compliance/identity/session",
       AUTHENTICATED,
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         complianceService.startIdentitySession({
           userId: principal.userId,
           dimension: body?.dimension || "identity",
-          jurisdiction: body?.jurisdiction || "FR",
+          jurisdiction: requireApiRequestMarket(marketCode),
           returnUrl: complianceReturnUrl(body?.returnTo),
         }),
     );
@@ -2502,10 +2654,10 @@ export class ApiV1Router {
       "POST",
       "/compliance/payment/onboarding",
       AUTHENTICATED,
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         complianceService.startPaymentOnboarding({
           userId: principal.userId,
-          jurisdiction: body?.jurisdiction || "FR",
+          jurisdiction: requireApiRequestMarket(marketCode),
           returnUrl: complianceReturnUrl(body?.returnTo),
           accountToken: body?.accountToken,
         }),
@@ -2958,7 +3110,8 @@ export class ApiV1Router {
       "GET",
       "/marketing/public/preferences",
       PUBLIC,
-      async ({ query }) => marketingService.getPublicPreferences(query.get("token") ?? ""),
+      async ({ query }) =>
+        marketingService.getPublicPreferences(query.get("token") ?? ""),
     );
     this.addRoute(
       "PUT",
@@ -2978,8 +3131,15 @@ export class ApiV1Router {
       PUBLIC,
       async ({ query, res }) => {
         await marketingTrackingService.record(query.get("token") ?? "", "OPEN");
-        const pixel = Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64");
-        res.writeHead(200, { "Content-Type": "image/gif", "Content-Length": pixel.length, "Cache-Control": "no-store, private" });
+        const pixel = Buffer.from(
+          "R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==",
+          "base64",
+        );
+        res.writeHead(200, {
+          "Content-Type": "image/gif",
+          "Content-Length": pixel.length,
+          "Cache-Control": "no-store, private",
+        });
         res.end(pixel);
       },
     );
@@ -2988,9 +3148,20 @@ export class ApiV1Router {
       "/marketing/track/click",
       PUBLIC,
       async ({ query, res }) => {
-        const result = await marketingTrackingService.record(query.get("token") ?? "", "CLICK");
-        if (!result.targetUrl) throw new AppError({ code: "NOT_FOUND", message: "Lien de suivi introuvable." });
-        res.writeHead(302, { Location: result.targetUrl, "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer" });
+        const result = await marketingTrackingService.record(
+          query.get("token") ?? "",
+          "CLICK",
+        );
+        if (!result.targetUrl)
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Lien de suivi introuvable.",
+          });
+        res.writeHead(302, {
+          Location: result.targetUrl,
+          "Cache-Control": "no-store, private",
+          "Referrer-Policy": "no-referrer",
+        });
         res.end();
       },
     );
@@ -2998,36 +3169,44 @@ export class ApiV1Router {
       "POST",
       "/marketing/provider-webhooks/:connectionId",
       PUBLIC,
-      async ({ req, params, body }) => marketingProviderWebhookService.receive(
-        params.connectionId,
-        body,
-        String((req as any).rawBody || ""),
-        req.headers,
-      ),
+      async ({ req, params, body }) =>
+        marketingProviderWebhookService.receive(
+          params.connectionId,
+          body,
+          String((req as any).rawBody || ""),
+          req.headers,
+        ),
     );
     this.addRoute(
       "GET",
       "/marketing/account/subscription",
       AUTHENTICATED,
-      async ({ principal, query }) => marketingService.getAccountSubscription(principal, query.get("marketCode") ?? undefined),
+      async ({ principal, query }) =>
+        marketingService.getAccountSubscription(
+          principal,
+          query.get("marketCode") ?? undefined,
+        ),
     );
     this.addRoute(
       "POST",
       "/marketing/account/subscription",
       AUTHENTICATED,
-      async ({ principal, body }) => marketingService.subscribeAccount(principal, body),
+      async ({ principal, body }) =>
+        marketingService.subscribeAccount(principal, body),
     );
     this.addRoute(
       "PUT",
       "/marketing/account/preferences",
       AUTHENTICATED,
-      async ({ principal, body }) => marketingService.updateAccountPreferences(principal, body),
+      async ({ principal, body }) =>
+        marketingService.updateAccountPreferences(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/account/unsubscribe",
       AUTHENTICATED,
-      async ({ principal, body }) => marketingService.unsubscribeAccount(principal, body?.marketCode),
+      async ({ principal, body }) =>
+        marketingService.unsubscribeAccount(principal, body?.marketCode),
     );
     this.addRoute(
       "GET",
@@ -3051,19 +3230,22 @@ export class ApiV1Router {
       "POST",
       "/marketing/profiles",
       permission("marketing.profiles.manage"),
-      async ({ principal, body }) => marketingService.createProfile(principal, body),
+      async ({ principal, body }) =>
+        marketingService.createProfile(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/profiles/:profileId/confirm",
       permission("marketing.profiles.manage"),
-      async ({ principal, params }) => marketingService.confirmProfile(principal, params.profileId),
+      async ({ principal, params }) =>
+        marketingService.confirmProfile(principal, params.profileId),
     );
     this.addRoute(
       "POST",
       "/marketing/profiles/:profileId/unsubscribe",
       permission("marketing.profiles.manage"),
-      async ({ principal, params }) => marketingService.unsubscribeProfile(principal, params.profileId),
+      async ({ principal, params }) =>
+        marketingService.unsubscribeProfile(principal, params.profileId),
     );
     this.addRoute(
       "GET",
@@ -3075,13 +3257,19 @@ export class ApiV1Router {
       "POST",
       "/marketing/lists",
       permission("marketing.lists.manage"),
-      async ({ principal, body }) => marketingService.createList(principal, body),
+      async ({ principal, body }) =>
+        marketingService.createList(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/lists/:listId/members/:profileId",
       permission("marketing.lists.manage"),
-      async ({ principal, params }) => marketingService.addListMember(principal, params.listId, params.profileId),
+      async ({ principal, params }) =>
+        marketingService.addListMember(
+          principal,
+          params.listId,
+          params.profileId,
+        ),
     );
     this.addRoute(
       "GET",
@@ -3093,7 +3281,8 @@ export class ApiV1Router {
       "POST",
       "/marketing/segments",
       permission("marketing.segments.manage"),
-      async ({ principal, body }) => marketingService.createSegment(principal, body),
+      async ({ principal, body }) =>
+        marketingService.createSegment(principal, body),
     );
     this.addRoute(
       "GET",
@@ -3105,7 +3294,8 @@ export class ApiV1Router {
       "POST",
       "/marketing/templates",
       permission("marketing.templates.manage"),
-      async ({ principal, body }) => marketingService.createTemplate(principal, body),
+      async ({ principal, body }) =>
+        marketingService.createTemplate(principal, body),
     );
     this.addRoute(
       "GET",
@@ -3117,85 +3307,103 @@ export class ApiV1Router {
       "POST",
       "/marketing/campaigns/audience-estimate",
       permission("marketing.campaigns.read"),
-      async ({ principal, body }) => marketingService.estimateAudience(principal, body),
+      async ({ principal, body }) =>
+        marketingService.estimateAudience(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/ai/campaign-draft",
       permission("marketing.campaigns.create"),
-      async ({ principal, body }) => marketingService.generateCampaignDraft(principal, body),
+      async ({ principal, body }) =>
+        marketingService.generateCampaignDraft(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns",
       permission("marketing.campaigns.create"),
-      async ({ principal, body }) => marketingService.createCampaign(principal, body),
+      async ({ principal, body }) =>
+        marketingService.createCampaign(principal, body),
     );
     this.addRoute(
       "GET",
       "/marketing/campaigns/:campaignId",
       permission("marketing.campaigns.read"),
-      async ({ principal, params }) => marketingService.getCampaign(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.getCampaign(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/preflight",
       permission("marketing.campaigns.read"),
-      async ({ principal, params }) => marketingService.preflight(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.preflight(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/test-send",
       permission("marketing.campaigns.send"),
-      async ({ principal, params, body }) => marketingService.testSend(principal, params.campaignId, body),
+      async ({ principal, params, body }) =>
+        marketingService.testSend(principal, params.campaignId, body),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/send",
       permission("marketing.campaigns.send"),
-      async ({ principal, params }) => marketingService.send(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.send(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/schedule",
       permission("marketing.campaigns.send"),
-      async ({ principal, params, body }) => marketingService.schedule(principal, params.campaignId, body),
+      async ({ principal, params, body }) =>
+        marketingService.schedule(principal, params.campaignId, body),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/pause",
       permission("marketing.campaigns.pause"),
-      async ({ principal, params }) => marketingService.pause(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.pause(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/resume",
       permission("marketing.campaigns.pause"),
-      async ({ principal, params }) => marketingService.resume(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.resume(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/review",
       permission("marketing.campaigns.update"),
-      async ({ principal, params }) => marketingService.submitForReview(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.submitForReview(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/approve",
       permission("marketing.campaigns.approve"),
-      async ({ principal, params }) => marketingService.approve(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.approve(principal, params.campaignId),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/select-winner",
       permission("marketing.campaigns.update"),
-      async ({ principal, params, body }) => marketingService.selectExperimentWinner(principal, params.campaignId, body),
+      async ({ principal, params, body }) =>
+        marketingService.selectExperimentWinner(
+          principal,
+          params.campaignId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
       "/marketing/campaigns/:campaignId/cancel",
       permission("marketing.campaigns.cancel"),
-      async ({ principal, params }) => marketingService.cancel(principal, params.campaignId),
+      async ({ principal, params }) =>
+        marketingService.cancel(principal, params.campaignId),
     );
     this.addRoute(
       "GET",
@@ -3207,13 +3415,18 @@ export class ApiV1Router {
       "GET",
       "/marketing/analytics",
       permission("marketing.analytics.read"),
-      async ({ principal, query }) => marketingOperationsService.analytics(principal, query.get("campaignId") ?? undefined),
+      async ({ principal, query }) =>
+        marketingOperationsService.analytics(
+          principal,
+          query.get("campaignId") ?? undefined,
+        ),
     );
     this.addRoute(
       "POST",
       "/marketing/conversions",
       permission("marketing.campaigns.update"),
-      async ({ principal, body }) => marketingOperationsService.recordConversion(principal, body),
+      async ({ principal, body }) =>
+        marketingOperationsService.recordConversion(principal, body),
     );
     this.addRoute(
       "GET",
@@ -3225,55 +3438,75 @@ export class ApiV1Router {
       "GET",
       "/marketing/journeys",
       permission("marketing.automation.read"),
-      async ({ principal }) => marketingOperationsService.listJourneys(principal),
+      async ({ principal }) =>
+        marketingOperationsService.listJourneys(principal),
     );
     this.addRoute(
       "POST",
       "/marketing/journeys",
       permission("marketing.automation.manage"),
-      async ({ principal, body }) => marketingOperationsService.createJourney(principal, body),
+      async ({ principal, body }) =>
+        marketingOperationsService.createJourney(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/journeys/:journeyId/activate",
       permission("marketing.automation.manage"),
-      async ({ principal, params }) => marketingOperationsService.setJourneyStatus(principal, params.journeyId, "ACTIVE"),
+      async ({ principal, params }) =>
+        marketingOperationsService.setJourneyStatus(
+          principal,
+          params.journeyId,
+          "ACTIVE",
+        ),
     );
     this.addRoute(
       "POST",
       "/marketing/journeys/:journeyId/pause",
       permission("marketing.automation.manage"),
-      async ({ principal, params }) => marketingOperationsService.setJourneyStatus(principal, params.journeyId, "PAUSED"),
+      async ({ principal, params }) =>
+        marketingOperationsService.setJourneyStatus(
+          principal,
+          params.journeyId,
+          "PAUSED",
+        ),
     );
     this.addRoute(
       "POST",
       "/marketing/journeys/events",
       permission("marketing.automation.manage"),
-      async ({ principal, body }) => marketingOperationsService.emitJourneyEvent(principal, body),
+      async ({ principal, body }) =>
+        marketingOperationsService.emitJourneyEvent(principal, body),
     );
     this.addRoute(
       "GET",
       "/marketing/journey-executions",
       permission("marketing.automation.read"),
-      async ({ principal, query }) => marketingOperationsService.listJourneyExecutions(principal, query.get("journeyId") ?? undefined),
+      async ({ principal, query }) =>
+        marketingOperationsService.listJourneyExecutions(
+          principal,
+          query.get("journeyId") ?? undefined,
+        ),
     );
     this.addRoute(
       "GET",
       "/marketing/webhooks",
       permission("marketing.settings.manage"),
-      async ({ principal }) => marketingOperationsService.listWebhookSubscriptions(principal),
+      async ({ principal }) =>
+        marketingOperationsService.listWebhookSubscriptions(principal),
     );
     this.addRoute(
       "POST",
       "/marketing/webhooks",
       permission("marketing.settings.manage"),
-      async ({ principal, body }) => marketingOperationsService.createWebhookSubscription(principal, body),
+      async ({ principal, body }) =>
+        marketingOperationsService.createWebhookSubscription(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/ai/assist",
       permission("marketing.campaigns.create"),
-      async ({ principal, body }) => marketingOperationsService.aiAssist(principal, body),
+      async ({ principal, body }) =>
+        marketingOperationsService.aiAssist(principal, body),
     );
 
     // --------------------------------------------------------------------------
@@ -3802,19 +4035,17 @@ export class ApiV1Router {
       "GET",
       "/admin/trending/config",
       permission("admin.configuration.manage"),
-      async ({ query }) =>
-        trendingService.getConfig(
-          query.get("market") || query.get("country") || "FR",
-        ),
+      async ({ marketCode }) =>
+        trendingService.getConfig(requireApiRequestMarket(marketCode)),
     );
     this.addRoute(
       "PUT",
       "/admin/trending/config",
       permission("admin.configuration.manage"),
-      async ({ body, query }) => {
-        const marketCode = query.get("market") || body?.marketCode || "FR";
+      async ({ body, marketCode }) => {
+        const resolvedMarketCode = requireApiRequestMarket(marketCode);
         return trendingService.saveConfig(
-          marketCode,
+          resolvedMarketCode,
           sanitizeTrendingConfigPatch(body),
         );
       },
@@ -3823,14 +4054,11 @@ export class ApiV1Router {
       "PUT",
       "/admin/trending/overrides/:topicKey",
       permission("admin.configuration.manage"),
-      async ({ params, body, query }) =>
-        trendingService.upsertOverride(
-          query.get("market") || body?.marketCode || "FR",
-          {
-            ...sanitizeTrendingOverride(body),
-            topicKey: params.topicKey,
-          },
-        ),
+      async ({ params, body, marketCode }) =>
+        trendingService.upsertOverride(requireApiRequestMarket(marketCode), {
+          ...sanitizeTrendingOverride(body),
+          topicKey: params.topicKey,
+        }),
     );
 
     // --------------------------------------------------------------------------

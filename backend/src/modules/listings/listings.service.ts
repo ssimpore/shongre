@@ -31,6 +31,7 @@ import {
   unifiedDiscoveryService,
   UnifiedDiscoveryService,
 } from "../discovery/discovery.service.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -224,7 +225,7 @@ export class ListingsService {
         message: "Utilisez le modèle CSV Shongre sans modifier ses colonnes.",
       });
     const market = await this.markets.getEffective(
-      (body.marketCode || "FR").toUpperCase(),
+      requireMarketCode(body.marketCode),
     );
     return lines.slice(1).flatMap((line, index) => {
       if (!line.trim()) return [];
@@ -270,7 +271,7 @@ export class ListingsService {
       marketCode?: string;
       rows?: BulkListingImportRow[];
     };
-    const marketCode = (body.marketCode || "FR").toUpperCase();
+    const marketCode = requireMarketCode(body.marketCode);
     const rows = Array.isArray(body.rows) ? body.rows : [];
     if (!rows.length || rows.length > 500 || rows.some((row) => !row.isValid))
       throw new AppError({
@@ -378,7 +379,7 @@ export class ListingsService {
       });
     }
 
-    const marketCode = (draft.marketCode || "FR").toUpperCase();
+    const marketCode = requireMarketCode(draft.marketCode);
     const market = await this.markets.getEffective(marketCode);
     if (!market.isActive || market.code !== marketCode) {
       throw new AppError({

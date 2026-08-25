@@ -238,9 +238,7 @@ export const AdminNewsletterPage: React.FC = () => {
       );
       await load();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Envoi impossible.",
-      );
+      toast.error(error instanceof Error ? error.message : "Envoi impossible.");
     } finally {
       setSubmitting(false);
     }
@@ -264,8 +262,7 @@ export const AdminNewsletterPage: React.FC = () => {
         timezone: "Europe/Paris",
         audience: {
           includeListIds: audienceType === "list" ? [audienceId] : [],
-          includeSegmentIds:
-            audienceType === "segment" ? [audienceId] : [],
+          includeSegmentIds: audienceType === "segment" ? [audienceId] : [],
           includeProfileIds: [],
           excludeListIds: [],
           excludeSegmentIds: [],
@@ -539,14 +536,18 @@ export const AdminNewsletterPage: React.FC = () => {
               </div>
               <p className="mt-2 text-stone-700">
                 {preflight.audience.eligible.toLocaleString("fr-FR")} éligibles
-                · {preflight.audience.excluded.toLocaleString("fr-FR")} exclus
-                · {preflight.audience.selected.toLocaleString("fr-FR")}{" "}
+                · {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
+                {preflight.audience.selected.toLocaleString("fr-FR")}{" "}
                 sélectionnés
               </p>
             </div>
             {[
               ["Blocages", preflight.blockers, "text-danger bg-danger-surface"],
-              ["Avertissements", preflight.warnings, "text-warning bg-warning-surface"],
+              [
+                "Avertissements",
+                preflight.warnings,
+                "text-warning bg-warning-surface",
+              ],
               ["Informations", preflight.info, "text-info bg-info-surface"],
             ].map(([label, issues, tone]) => {
               const values = issues as MarketingPreflight["blockers"];
@@ -1047,27 +1048,43 @@ const Automation: React.FC<{
         <div>
           <h2 className="text-sm font-black">Parcours marketing</h2>
           <p className="mt-1 text-xs text-stone-500">
-            Runtime partagé, versions immuables, attentes persistées et reprise idempotente.
+            Runtime partagé, versions immuables, attentes persistées et reprise
+            idempotente.
           </p>
         </div>
-        <Badge variant={usage?.entitlements.automation ? "success" : "warning"} size="sm">
+        <Badge
+          variant={usage?.entitlements.automation ? "success" : "warning"}
+          size="sm"
+        >
           {usage?.entitlements.automation ? "Droit actif" : "Non inclus"}
         </Badge>
       </div>
       <div className="mt-4 space-y-3">
         {journeys.map((journey) => (
-          <article key={journey.id} className="rounded-xl border border-border-subtle p-4">
+          <article
+            key={journey.id}
+            className="rounded-xl border border-border-subtle p-4"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-black text-stone-950">{journey.name}</h3>
-                <p className="mt-1 text-xs text-stone-500">{journey.description}</p>
+                <h3 className="text-sm font-black text-stone-950">
+                  {journey.name}
+                </h3>
+                <p className="mt-1 text-xs text-stone-500">
+                  {journey.description}
+                </p>
               </div>
-              <Badge variant={journey.status === "ACTIVE" ? "success" : "neutral"} size="sm">
+              <Badge
+                variant={journey.status === "ACTIVE" ? "success" : "neutral"}
+                size="sm"
+              >
                 {journey.status} · v{journey.currentVersion}
               </Badge>
             </div>
             <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-600">
-              {journey.definition.trigger.type} · {journey.definition.nodes.length} étapes · profondeur max. {journey.definition.maxExecutionDepth}
+              {journey.definition.trigger.type} ·{" "}
+              {journey.definition.nodes.length} étapes · profondeur max.{" "}
+              {journey.definition.maxExecutionDepth}
             </p>
           </article>
         ))}
@@ -1076,8 +1093,16 @@ const Automation: React.FC<{
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
       <h2 className="text-sm font-black">Sécurité d’exécution</h2>
       <ul className="mt-4 space-y-3 text-xs text-stone-600">
-        {["Boucles rejetées à l’activation", "Clé idempotente par événement et version", "Attentes et reprises côté worker", "Consentement et fréquence revérifiés avant envoi"].map((item) => (
-          <li key={item} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />{item}</li>
+        {[
+          "Boucles rejetées à l’activation",
+          "Clé idempotente par événement et version",
+          "Attentes et reprises côté worker",
+          "Consentement et fréquence revérifiés avant envoi",
+        ].map((item) => (
+          <li key={item} className="flex gap-2">
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+            {item}
+          </li>
         ))}
       </ul>
     </section>
@@ -1090,20 +1115,54 @@ const Analytics: React.FC<{
 }> = ({ analytics, usage }) => (
   <div className="space-y-5">
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <MetricCard label="Délivrés" value={analytics.delivered.toLocaleString("fr-FR")} detail={`${(analytics.deliveryRate * 100).toFixed(1)} % des acceptés`} icon={CheckCircle2} />
-      <MetricCard label="Clics uniques" value={analytics.uniqueClicks.toLocaleString("fr-FR")} detail={`${(analytics.clickThroughRate * 100).toFixed(1)} % de CTR`} icon={BarChart3} />
-      <MetricCard label="Conversions" value={analytics.conversions.toLocaleString("fr-FR")} detail={`${(analytics.conversionRate * 100).toFixed(1)} % des délivrés`} icon={Sparkles} />
-      <MetricCard label="Envois du mois" value={(usage?.attemptedSends ?? 0).toLocaleString("fr-FR")} detail={`Quota ${(usage?.entitlements.maxMonthlySends ?? 0).toLocaleString("fr-FR")}`} icon={Send} />
+      <MetricCard
+        label="Délivrés"
+        value={analytics.delivered.toLocaleString("fr-FR")}
+        detail={`${(analytics.deliveryRate * 100).toFixed(1)} % des acceptés`}
+        icon={CheckCircle2}
+      />
+      <MetricCard
+        label="Clics uniques"
+        value={analytics.uniqueClicks.toLocaleString("fr-FR")}
+        detail={`${(analytics.clickThroughRate * 100).toFixed(1)} % de CTR`}
+        icon={BarChart3}
+      />
+      <MetricCard
+        label="Conversions"
+        value={analytics.conversions.toLocaleString("fr-FR")}
+        detail={`${(analytics.conversionRate * 100).toFixed(1)} % des délivrés`}
+        icon={Sparkles}
+      />
+      <MetricCard
+        label="Envois du mois"
+        value={(usage?.attemptedSends ?? 0).toLocaleString("fr-FR")}
+        detail={`Quota ${(usage?.entitlements.maxMonthlySends ?? 0).toLocaleString("fr-FR")}`}
+        icon={Send}
+      />
     </section>
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
       <h2 className="text-sm font-black">Qualité et délivrabilité</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-xs">
-        <div className="rounded-xl bg-stone-100 p-3"><strong className="block text-lg">{analytics.softBounces}</strong>Bounces temporaires</div>
-        <div className="rounded-xl bg-stone-100 p-3"><strong className="block text-lg">{analytics.hardBounces}</strong>Bounces durs</div>
-        <div className="rounded-xl bg-stone-100 p-3"><strong className="block text-lg">{analytics.complaints}</strong>Plaintes</div>
-        <div className="rounded-xl bg-stone-100 p-3"><strong className="block text-lg">{analytics.unsubscribes}</strong>Désabonnements</div>
+        <div className="rounded-xl bg-stone-100 p-3">
+          <strong className="block text-lg">{analytics.softBounces}</strong>
+          Bounces temporaires
+        </div>
+        <div className="rounded-xl bg-stone-100 p-3">
+          <strong className="block text-lg">{analytics.hardBounces}</strong>
+          Bounces durs
+        </div>
+        <div className="rounded-xl bg-stone-100 p-3">
+          <strong className="block text-lg">{analytics.complaints}</strong>
+          Plaintes
+        </div>
+        <div className="rounded-xl bg-stone-100 p-3">
+          <strong className="block text-lg">{analytics.unsubscribes}</strong>
+          Désabonnements
+        </div>
       </div>
-      <p className="mt-4 text-micro text-stone-500">{analytics.openMetricCaveat}</p>
+      <p className="mt-4 text-micro text-stone-500">
+        {analytics.openMetricCaveat}
+      </p>
     </section>
   </div>
 );
@@ -1135,8 +1194,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
                   {suppression.normalizedEmail}
                 </strong>
                 <p className="mt-1 text-micro text-stone-500">
-                  {suppression.source} ·{" "}
-                  {formatDate(suppression.occurredAt)}
+                  {suppression.source} · {formatDate(suppression.occurredAt)}
                 </p>
               </div>
               <Badge variant="warning" size="sm">
@@ -1147,8 +1205,8 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
         </div>
       ) : (
         <div className="mt-5 rounded-xl border border-success-border bg-success-surface p-4 text-xs text-success">
-          Aucune suppression ajoutée pendant cette session de démonstration.
-          Les profils non éligibles restent exclus par leur statut.
+          Aucune suppression ajoutée pendant cette session de démonstration. Les
+          profils non éligibles restent exclus par leur statut.
         </div>
       )}
     </section>

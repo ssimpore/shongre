@@ -23,6 +23,7 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { requireMarketCode } from "../../shared/market/market-code.js";
 
 export interface DiscoverySearchResult {
   items: Listing[];
@@ -205,16 +206,22 @@ export class UnifiedDiscoveryService {
   ) {}
 
   async getEffectiveConfiguration(
-    marketCode = "FR",
+    marketCode: string,
     categoryId?: string,
     context: DiscoveryConfiguration["context"] = "search",
   ): Promise<DiscoveryConfiguration> {
+    const resolvedMarketCode = requireMarketCode(marketCode);
     return (
       (await this.configurationRepository.getActive(
-        marketCode,
+        resolvedMarketCode,
         categoryId,
         context,
-      )) || { ...this.fallbackConfiguration, marketCode, categoryId, context }
+      )) || {
+        ...this.fallbackConfiguration,
+        marketCode: resolvedMarketCode,
+        categoryId,
+        context,
+      }
     );
   }
 
@@ -270,8 +277,11 @@ export class UnifiedDiscoveryService {
     });
   }
 
-  async getMetrics(marketCode = "FR", since?: string) {
-    return this.configurationRepository.getMetrics(marketCode, since);
+  async getMetrics(marketCode: string, since?: string) {
+    return this.configurationRepository.getMetrics(
+      requireMarketCode(marketCode),
+      since,
+    );
   }
 
   async search(filters: SearchFilters = {}): Promise<DiscoverySearchResult> {
@@ -290,7 +300,7 @@ export class UnifiedDiscoveryService {
     });
     const request: DiscoveryRequest = {
       requestId,
-      marketCode: filters.marketCode || "FR",
+      marketCode: requireMarketCode(filters.marketCode),
       query: filters.query,
       categoryId: filters.categoryId || filters.categorySlug,
       city: filters.city,

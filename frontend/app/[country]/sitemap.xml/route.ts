@@ -1,7 +1,4 @@
-import {
-  buildPublicUrl,
-  getCountryConfigBySlug,
-} from "@shongre/contracts";
+import { buildPublicUrl, getCountryConfigBySlug } from "@shongre/contracts";
 import { marketInfrastructureFromEnvironment } from "../../../src/platform/market/server-market-context";
 
 const INDEXABLE_PATHS = [
@@ -60,7 +57,8 @@ export async function GET(
 
   return new Response(body, {
     headers: {
-      "Cache-Control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+      "Cache-Control":
+        "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
       "Content-Type": "application/xml; charset=utf-8",
     },
   });
