@@ -26,3 +26,6 @@ export * from "./http-provider-control-plane.service";
 export * from "./http-support.service";
 export * from "./http-feature-flag.service";
 export * from "./http-moderation.service";
+export * from "./http-crm.service";
+export * from "./http-crm-prospecting.service";
+export * from "./http-marketing.service";

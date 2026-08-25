@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `http://127.0.0.1:4000/api/v1`
-- Operations: **312**
-- Specification SHA-256: `6f83b87fc987eafd`
+- Operations: **404**
+- Specification SHA-256: `e399d05f166c6e97`
 
 ## account
 
@@ -56,6 +56,12 @@
 | `GET` | `/admin/compliance/rules` | `getAdminComplianceRules` | `permission` | `compliance.policy.read` | `200` |
 | `POST` | `/admin/compliance/users/{userId}/requirements` | `postAdminComplianceUsersByUserIdRequirements` | `permission` | `compliance.review` | `200` |
 | `GET` | `/admin/compliance/users/{userId}/status` | `getAdminComplianceUsersByUserIdStatus` | `permission` | `compliance.sensitive.read` | `200` |
+
+## admin-countries
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `PATCH` | `/admin/countries/{code}` | `patchAdminCountriesByCode` | `permission` | `market.manage` | `200` |
 
 ## admin-discovery
 
@@ -129,6 +135,8 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `POST` | `/auth/domain-handoff/exchange` | `postAuthDomainHandoffExchange` | `public` | — | `200` |
+| `POST` | `/auth/domain-handoff/start` | `postAuthDomainHandoffStart` | `authenticated` | — | `200` |
 | `DELETE` | `/auth/identities/{provider}` | `deleteAuthIdentitiesByProvider` | `authenticated` | — | `200` |
 | `POST` | `/auth/login` | `postAuthLogin` | `public` | — | `200` |
 | `POST` | `/auth/logout-all` | `postAuthLogoutAll` | `authenticated` | — | `200` |
@@ -204,6 +212,46 @@
 | `POST` | `/compliance/payment/onboarding` | `postCompliancePaymentOnboarding` | `authenticated` | — | `200` |
 | `POST` | `/compliance/requirements` | `postComplianceRequirements` | `authenticated` | — | `200` |
 | `GET` | `/compliance/status` | `getComplianceStatus` | `authenticated` | — | `200` |
+
+## crm
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/crm/account-duplicates/check` | `checkCrmAccountDuplicates` | `permission` | `crm.accounts.read` | `200` |
+| `GET` | `/crm/accounts/{accountId}/shongre` | `getCrmAccountShongreIntelligence` | `permission` | `crm.accounts.read` | `200` |
+| `GET` | `/crm/accounts/{accountId}` | `getCrmAccount` | `permission` | `crm.accounts.read` | `200` |
+| `PATCH` | `/crm/accounts/{accountId}` | `updateCrmAccount` | `permission` | `crm.accounts.update` | `200` |
+| `GET` | `/crm/accounts` | `listCrmAccounts` | `permission` | `crm.accounts.read` | `200` |
+| `POST` | `/crm/accounts` | `createCrmAccount` | `permission` | `crm.accounts.create` | `201` |
+| `GET` | `/crm/activities` | `listCrmActivities` | `permission` | `crm.activities.read` | `200` |
+| `POST` | `/crm/activities` | `createCrmActivity` | `permission` | `crm.activities.create` | `201` |
+| `GET` | `/crm/contacts/{contactId}` | `getCrmContact` | `permission` | `crm.contacts.read` | `200` |
+| `PATCH` | `/crm/contacts/{contactId}` | `updateCrmContact` | `permission` | `crm.contacts.update` | `200` |
+| `GET` | `/crm/contacts` | `listCrmContacts` | `permission` | `crm.contacts.read` | `200` |
+| `POST` | `/crm/contacts` | `createCrmContact` | `permission` | `crm.contacts.create` | `201` |
+| `GET` | `/crm/custom-fields` | `listCrmCustomFields` | `permission` | `crm.custom_fields.read` | `200` |
+| `POST` | `/crm/custom-fields` | `createCrmCustomField` | `permission` | `crm.custom_fields.manage` | `201` |
+| `GET` | `/crm/dashboard` | `getCrmDashboard` | `permission` | `crm.dashboard.read` | `200` |
+| `POST` | `/crm/opportunities/{opportunityId}/transition` | `transitionCrmOpportunity` | `permission` | `crm.opportunities.transition` | `200` |
+| `GET` | `/crm/opportunities/{opportunityId}` | `getCrmOpportunity` | `permission` | `crm.opportunities.read` | `200` |
+| `GET` | `/crm/opportunities` | `listCrmOpportunities` | `permission` | `crm.opportunities.read` | `200` |
+| `POST` | `/crm/opportunities` | `createCrmOpportunity` | `permission` | `crm.opportunities.create` | `201` |
+| `PATCH` | `/crm/pipelines/{pipelineId}` | `updateCrmPipeline` | `permission` | `crm.pipelines.manage` | `200` |
+| `GET` | `/crm/pipelines` | `listCrmPipelines` | `permission` | `crm.pipelines.read` | `200` |
+| `POST` | `/crm/pipelines` | `createCrmPipeline` | `permission` | `crm.pipelines.manage` | `200` |
+| `PATCH` | `/crm/products/{productId}` | `updateCrmProduct` | `permission` | `crm.products.manage` | `200` |
+| `GET` | `/crm/products` | `listCrmProducts` | `permission` | `crm.products.read` | `200` |
+| `POST` | `/crm/products` | `createCrmProduct` | `permission` | `crm.products.manage` | `201` |
+| `GET` | `/crm/quotes` | `listCrmQuotes` | `permission` | `crm.quotes.read` | `200` |
+| `POST` | `/crm/quotes` | `createCrmQuote` | `permission` | `crm.quotes.create` | `201` |
+| `DELETE` | `/crm/saved-views/{savedViewId}` | `deleteCrmSavedView` | `permission` | `crm.access` | `200` |
+| `PUT` | `/crm/saved-views/{savedViewId}` | `updateCrmSavedView` | `permission` | `crm.access` | `200` |
+| `GET` | `/crm/saved-views` | `listCrmSavedViews` | `permission` | `crm.access` | `200` |
+| `POST` | `/crm/saved-views` | `createCrmSavedView` | `permission` | `crm.access` | `201` |
+| `POST` | `/crm/tasks/{taskId}/complete` | `completeCrmTask` | `permission` | `crm.tasks.complete` | `200` |
+| `GET` | `/crm/tasks` | `listCrmTasks` | `permission` | `crm.tasks.read` | `200` |
+| `POST` | `/crm/tasks` | `createCrmTask` | `permission` | `crm.tasks.create` | `201` |
+| `GET` | `/provider-connections` | `listProviderConnections` | `permission` | `provider.configuration.read` | `200` |
 
 ## education
 
@@ -327,6 +375,63 @@
 | `POST` | `/listings/search` | `postListingsSearch` | `public` | — | `200` |
 | `GET` | `/listings` | `getListings` | `public` | — | `200` |
 
+## marketing
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `PUT` | `/marketing/account/preferences` | `updateAccountMarketingPreferences` | `authenticated` | — | `200` |
+| `GET` | `/marketing/account/subscription` | `getAccountMarketingSubscription` | `authenticated` | — | `200` |
+| `POST` | `/marketing/account/subscription` | `subscribeAccountToMarketing` | `authenticated` | — | `200` |
+| `POST` | `/marketing/account/unsubscribe` | `unsubscribeAccountFromMarketing` | `authenticated` | — | `200` |
+| `POST` | `/marketing/ai/assist` | `assistMarketingWithAi` | `permission` | `marketing.campaigns.create` | `200` |
+| `POST` | `/marketing/ai/campaign-draft` | `generateMarketingCampaignDraft` | `permission` | `marketing.campaigns.create` | `200` |
+| `GET` | `/marketing/analytics` | `getMarketingAnalytics` | `permission` | `marketing.analytics.read` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/approve` | `approveMarketingCampaign` | `permission` | `marketing.campaigns.approve` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/cancel` | `cancelMarketingCampaign` | `permission` | `marketing.campaigns.cancel` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/pause` | `pauseMarketingCampaign` | `permission` | `marketing.campaigns.pause` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/preflight` | `preflightMarketingCampaign` | `permission` | `marketing.campaigns.read` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/resume` | `resumeMarketingCampaign` | `permission` | `marketing.campaigns.pause` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/review` | `reviewMarketingCampaign` | `permission` | `marketing.campaigns.update` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/schedule` | `scheduleMarketingCampaign` | `permission` | `marketing.campaigns.send` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/select-winner` | `selectMarketingCampaignWinner` | `permission` | `marketing.campaigns.update` | `200` |
+| `POST` | `/marketing/campaigns/{campaignId}/send` | `sendMarketingCampaign` | `permission` | `marketing.campaigns.send` | `202` |
+| `POST` | `/marketing/campaigns/{campaignId}/test-send` | `testSendMarketingCampaign` | `permission` | `marketing.campaigns.send` | `200` |
+| `GET` | `/marketing/campaigns/{campaignId}` | `getMarketingCampaign` | `permission` | `marketing.campaigns.read` | `200` |
+| `POST` | `/marketing/campaigns/audience-estimate` | `estimateMarketingAudience` | `permission` | `marketing.campaigns.read` | `200` |
+| `GET` | `/marketing/campaigns` | `listMarketingCampaigns` | `permission` | `marketing.campaigns.read` | `200` |
+| `POST` | `/marketing/campaigns` | `createMarketingCampaign` | `permission` | `marketing.campaigns.create` | `201` |
+| `POST` | `/marketing/conversions` | `recordMarketingConversion` | `permission` | `marketing.campaigns.update` | `202` |
+| `GET` | `/marketing/dashboard` | `getMarketingDashboard` | `permission` | `marketing.dashboard.read` | `200` |
+| `GET` | `/marketing/journey-executions` | `listMarketingJourneyExecutions` | `permission` | `marketing.automation.read` | `200` |
+| `POST` | `/marketing/journeys/{journeyId}/activate` | `activateMarketingJourney` | `permission` | `marketing.automation.manage` | `200` |
+| `POST` | `/marketing/journeys/{journeyId}/pause` | `pauseMarketingJourney` | `permission` | `marketing.automation.manage` | `200` |
+| `POST` | `/marketing/journeys/events` | `emitMarketingJourneyEvent` | `permission` | `marketing.automation.manage` | `202` |
+| `GET` | `/marketing/journeys` | `listMarketingJourneys` | `permission` | `marketing.automation.read` | `200` |
+| `POST` | `/marketing/journeys` | `createMarketingJourney` | `permission` | `marketing.automation.manage` | `201` |
+| `POST` | `/marketing/lists/{listId}/members/{profileId}` | `addMarketingListMember` | `permission` | `marketing.lists.manage` | `200` |
+| `GET` | `/marketing/lists` | `listMarketingLists` | `permission` | `marketing.lists.read` | `200` |
+| `POST` | `/marketing/lists` | `createMarketingList` | `permission` | `marketing.lists.manage` | `201` |
+| `POST` | `/marketing/profiles/{profileId}/confirm` | `confirmMarketingProfile` | `permission` | `marketing.profiles.manage` | `200` |
+| `POST` | `/marketing/profiles/{profileId}/unsubscribe` | `unsubscribeMarketingProfile` | `permission` | `marketing.profiles.manage` | `200` |
+| `GET` | `/marketing/profiles` | `listMarketingProfiles` | `permission` | `marketing.profiles.read` | `200` |
+| `POST` | `/marketing/profiles` | `createMarketingProfile` | `permission` | `marketing.profiles.manage` | `201` |
+| `POST` | `/marketing/provider-webhooks/{connectionId}` | `receiveMarketingProviderWebhook` | `public` | — | `200` |
+| `POST` | `/marketing/public/confirm` | `confirmPublicMarketingSubscription` | `public` | — | `200` |
+| `GET` | `/marketing/public/preferences` | `getPublicMarketingPreferences` | `public` | — | `200` |
+| `PUT` | `/marketing/public/preferences` | `updatePublicMarketingPreferences` | `public` | — | `200` |
+| `POST` | `/marketing/public/subscriptions` | `createPublicMarketingSubscription` | `public` | — | `202` |
+| `POST` | `/marketing/public/unsubscribe` | `unsubscribePublicMarketingProfile` | `public` | — | `200` |
+| `GET` | `/marketing/segments` | `listMarketingSegments` | `permission` | `marketing.segments.read` | `200` |
+| `POST` | `/marketing/segments` | `createMarketingSegment` | `permission` | `marketing.segments.manage` | `201` |
+| `GET` | `/marketing/suppressions` | `listMarketingSuppressions` | `permission` | `marketing.compliance.read` | `200` |
+| `GET` | `/marketing/templates` | `listMarketingTemplates` | `permission` | `marketing.templates.read` | `200` |
+| `POST` | `/marketing/templates` | `createMarketingTemplate` | `permission` | `marketing.templates.manage` | `201` |
+| `GET` | `/marketing/track/click` | `recordMarketingClick` | `public` | — | `302` |
+| `GET` | `/marketing/track/open` | `recordMarketingOpen` | `public` | — | `200` |
+| `GET` | `/marketing/usage` | `getMarketingUsage` | `permission` | `marketing.dashboard.read` | `200` |
+| `GET` | `/marketing/webhooks` | `listMarketingWebhooks` | `permission` | `marketing.settings.manage` | `200` |
+| `POST` | `/marketing/webhooks` | `createMarketingWebhook` | `permission` | `marketing.settings.manage` | `201` |
+
 ## markets
 
 | Method | Path | Operation ID | Access | Permission | Success |
@@ -440,6 +545,13 @@
 | `GET` | `/payments/balance/{sellerId}` | `getPaymentsBalanceBySellerId` | `permission` | `order.manage.seller` | `200` |
 | `POST` | `/payments/intent` | `postPaymentsIntent` | `permission` | `payment.initiate` | `200` |
 | `POST` | `/payments/payout` | `postPaymentsPayout` | `permission` | `order.manage.seller` | `200` |
+
+## providers
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `PUT` | `/provider-connections/{connectionId}/credential` | `rotateProviderConnectionCredential` | `permission` | `provider.credentials.manage` | `200` |
+| `POST` | `/provider-connections` | `createProviderConnection` | `permission` | `provider.configuration.manage` | `200` |
 
 ## publication
 

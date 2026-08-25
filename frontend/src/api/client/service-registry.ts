@@ -28,6 +28,9 @@ import {
   demoSupportService,
   demoFeatureFlagService,
   demoModerationService,
+  demoCrmService,
+  demoCrmProspectingService,
+  demoMarketingService,
 } from "../adapters/demo";
 
 import {
@@ -58,6 +61,9 @@ import {
   httpSupportService,
   httpFeatureFlagService,
   httpModerationService,
+  httpCrmService,
+  httpCrmProspectingService,
+  httpMarketingService,
 } from "../adapters/http";
 
 import {
@@ -88,6 +94,9 @@ import {
   SupportServiceContract,
   FeatureFlagServiceContract,
   ModerationServiceContract,
+  CrmServiceContract,
+  CrmProspectingServiceContract,
+  MarketingServiceContract,
 } from "../contracts";
 
 export interface ServiceRegistry {
@@ -118,6 +127,9 @@ export interface ServiceRegistry {
   support: SupportServiceContract;
   featureFlags: FeatureFlagServiceContract;
   moderation: ModerationServiceContract;
+  crm: CrmServiceContract;
+  crmProspecting: CrmProspectingServiceContract;
+  marketing: MarketingServiceContract;
 }
 
 export function createServiceRegistry(
@@ -159,6 +171,9 @@ export function createServiceRegistry(
     support: useDemo ? demoSupportService : httpSupportService,
     featureFlags: useDemo ? demoFeatureFlagService : httpFeatureFlagService,
     moderation: useDemo ? demoModerationService : httpModerationService,
+    crm: useDemo ? demoCrmService : httpCrmService,
+    crmProspecting: useDemo ? demoCrmProspectingService : httpCrmProspectingService,
+    marketing: useDemo ? demoMarketingService : httpMarketingService,
   };
 }
 

@@ -488,10 +488,32 @@ export interface Database {
       markets: {
         Row: {
           code: string;
+          slug: string;
           name: string;
+          native_name: string;
           currency: string;
           currency_symbol: string;
           locale: string;
+          default_locale: string;
+          supported_locales: string[];
+          timezone: string;
+          phone_country_code: string;
+          address_format: string | null;
+          legal_entity: string | null;
+          enabled: boolean;
+          launch_status: string;
+          primary_domain: string;
+          base_path: string;
+          seo_policy: Json;
+          marketplace_policy: Json;
+          payment_policy: Json;
+          tax_policy: Json;
+          monetization_policy: Json;
+          compliance_policy: Json;
+          launch_content: Json;
+          gateway_visible: boolean;
+          display_order: number;
+          version: number;
           is_active: boolean;
           is_base_market: boolean;
           protection_fee_rate: number;
@@ -506,10 +528,32 @@ export interface Database {
         };
         Insert: {
           code: string;
+          slug?: string;
           name: string;
+          native_name?: string;
           currency?: string;
           currency_symbol?: string;
           locale?: string;
+          default_locale?: string;
+          supported_locales?: string[];
+          timezone?: string;
+          phone_country_code?: string;
+          address_format?: string | null;
+          legal_entity?: string | null;
+          enabled?: boolean;
+          launch_status?: string;
+          primary_domain?: string;
+          base_path?: string;
+          seo_policy?: Json;
+          marketplace_policy?: Json;
+          payment_policy?: Json;
+          tax_policy?: Json;
+          monetization_policy?: Json;
+          compliance_policy?: Json;
+          launch_content?: Json;
+          gateway_visible?: boolean;
+          display_order?: number;
+          version?: number;
           is_active?: boolean;
           is_base_market?: boolean;
           protection_fee_rate?: number;
@@ -523,6 +567,30 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["markets"]["Insert"]>;
+        Relationships: [];
+      };
+      market_configuration_audit: {
+        Row: {
+          id: string;
+          market_code: string;
+          actor_id: string | null;
+          changed_fields: string[];
+          previous_version: number | null;
+          new_version: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          market_code: string;
+          actor_id?: string | null;
+          changed_fields?: string[];
+          previous_version?: number | null;
+          new_version: number;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["market_configuration_audit"]["Insert"]
+        >;
         Relationships: [];
       };
       categories: {

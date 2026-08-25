@@ -110,6 +110,21 @@ import {
   DemoModerationRepository,
   PostgresModerationRepository,
 } from "./moderation.repository.js";
+import {
+  ICrmRepository,
+  DemoCrmRepository,
+  PostgresCrmRepository,
+} from "./crm.repository.js";
+import {
+  ICrmShongreIntegrationRepository,
+  DemoCrmShongreIntegrationRepository,
+  PostgresCrmShongreIntegrationRepository,
+} from "./crm-shongre-integration.repository.js";
+import {
+  IMarketingRepository,
+  DemoMarketingRepository,
+  PostgresMarketingRepository,
+} from "./marketing.repository.js";
 
 export interface RepositoryContainer {
   users: IUserRepository;
@@ -134,6 +149,9 @@ export interface RepositoryContainer {
   support: ISupportRepository;
   featureFlags: IFeatureFlagRepository;
   moderation: IModerationRepository;
+  crm: ICrmRepository;
+  crmShongre: ICrmShongreIntegrationRepository;
+  marketing: IMarketingRepository;
 }
 
 export function createRepositoryContainer(
@@ -168,6 +186,9 @@ export function createRepositoryContainer(
       support: new PostgresSupportRepository(),
       featureFlags: new PostgresFeatureFlagRepository(),
       moderation: new PostgresModerationRepository(),
+      crm: new PostgresCrmRepository(),
+      crmShongre: new PostgresCrmShongreIntegrationRepository(),
+      marketing: new PostgresMarketingRepository(),
     };
   }
 
@@ -195,6 +216,9 @@ export function createRepositoryContainer(
     support: new DemoSupportRepository(),
     featureFlags: new DemoFeatureFlagRepository(),
     moderation: new DemoModerationRepository(),
+    crm: new DemoCrmRepository(),
+    crmShongre: new DemoCrmShongreIntegrationRepository(),
+    marketing: new DemoMarketingRepository(),
   };
 }
 

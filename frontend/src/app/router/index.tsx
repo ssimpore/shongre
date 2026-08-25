@@ -273,6 +273,11 @@ const OAuthCallbackPage = lazy(() =>
     default: m.OAuthCallbackPage,
   })),
 );
+const DomainHandoffPage = lazy(() =>
+  import("../../features/auth/DomainHandoffPage").then((m) => ({
+    default: m.DomainHandoffPage,
+  })),
+);
 const AccountSecurityPage = lazy(() =>
   import("../../features/auth/AccountSecurityPage").then((m) => ({
     default: m.AccountSecurityPage,
@@ -361,6 +366,11 @@ const NewsletterLandingPage = lazy(() =>
 const NewsletterPreferencesPage = lazy(() =>
   import("../../features/newsletter/NewsletterPreferencesPage").then((m) => ({
     default: m.NewsletterPreferencesPage,
+  })),
+);
+const NewsletterPublicPreferencesPage = lazy(() =>
+  import("../../features/newsletter/NewsletterPublicPreferencesPage").then((m) => ({
+    default: m.NewsletterPublicPreferencesPage,
   })),
 );
 const NewsletterConfirmPage = lazy(() =>
@@ -497,6 +507,11 @@ const CrmPipelinePage = lazy(() =>
     default: m.CrmPipelinePage,
   })),
 );
+const CrmOpportunityDetailPage = lazy(() =>
+  import("../../features/admin/crm/CrmOpportunityDetailPage").then((m) => ({
+    default: m.CrmOpportunityDetailPage,
+  })),
+);
 const CrmAiProspectingPage = lazy(() =>
   import("../../features/admin/crm/CrmAiProspectingPage").then((m) => ({
     default: m.CrmAiProspectingPage,
@@ -506,6 +521,27 @@ const CrmTasksPage = lazy(() =>
   import("../../features/admin/crm/CrmTasksPage").then((m) => ({
     default: m.CrmTasksPage,
   })),
+);
+const CrmProductsPage = lazy(() =>
+  import("../../features/admin/crm/CrmProductsPage").then((m) => ({ default: m.CrmProductsPage })),
+);
+const CrmReportsPage = lazy(() =>
+  import("../../features/admin/crm/CrmReportsPage").then((m) => ({ default: m.CrmReportsPage })),
+);
+const CrmConfigurationPage = lazy(() =>
+  import("../../features/admin/crm/CrmConfigurationPage").then((m) => ({ default: m.CrmConfigurationPage })),
+);
+const CrmCustomFieldsPage = lazy(() =>
+  import("../../features/admin/crm/CrmCustomFieldsPage").then((m) => ({ default: m.CrmCustomFieldsPage })),
+);
+const CrmPipelineSettingsPage = lazy(() =>
+  import("../../features/admin/crm/CrmPipelineSettingsPage").then((m) => ({ default: m.CrmPipelineSettingsPage })),
+);
+const CrmProviderSettingsPage = lazy(() =>
+  import("../../features/admin/crm/CrmProviderSettingsPage").then((m) => ({ default: m.CrmProviderSettingsPage })),
+);
+const CrmAutomationsPage = lazy(() =>
+  import("../../features/admin/crm/CrmAutomationsPage").then((m) => ({ default: m.CrmAutomationsPage })),
 );
 const EmploymentAdminPage = lazy(() =>
   import("../../features/admin/EmploymentAdminPage").then((m) => ({
@@ -621,6 +657,10 @@ export const APP_ROUTES: RouteObject[] = [
       },
       { path: "verification-email", element: withSuspense(VerifyEmailPage) },
       { path: "auth/callback", element: withSuspense(OAuthCallbackPage) },
+      {
+        path: "auth/domain-handoff",
+        element: withSuspense(DomainHandoffPage),
+      },
     ],
   },
   {
@@ -734,6 +774,10 @@ export const APP_ROUTES: RouteObject[] = [
       {
         path: "newsletter/desabonnement",
         element: withSuspense(NewsletterUnsubscribePage),
+      },
+      {
+        path: "newsletter/preferences",
+        element: withSuspense(NewsletterPublicPreferencesPage),
       },
       { path: "account/delete", element: withSuspense(AccountDeletionPage) },
 
@@ -1100,10 +1144,18 @@ export const APP_ROUTES: RouteObject[] = [
         ),
       },
       {
+        path: "marketing",
+        element: (
+          <RequireRoutePolicy policyId="adminMarketing">
+            {withSuspense(AdminNewsletterPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
         path: "newsletter",
         element: (
           <RequireRoutePolicy policyId="adminNewsletter">
-            {withSuspense(AdminNewsletterPage)}
+            <Navigate to="/admin/marketing" replace />
           </RequireRoutePolicy>
         ),
       },
@@ -1190,6 +1242,14 @@ export const APP_ROUTES: RouteObject[] = [
         ),
       },
       {
+        path: "crm/opportunites/:id",
+        element: (
+          <RequireRoutePolicy policyId="adminCrmOpportunityDetail">
+            {withSuspense(CrmOpportunityDetailPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
         path: "crm/prospection",
         element: (
           <RequireRoutePolicy policyId="adminCrmProspecting">
@@ -1205,25 +1265,59 @@ export const APP_ROUTES: RouteObject[] = [
           </RequireRoutePolicy>
         ),
       },
+      {
+        path: "crm/produits",
+        element: <RequireRoutePolicy policyId="adminCrmProducts">{withSuspense(CrmProductsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/automations",
+        element: <RequireRoutePolicy policyId="adminCrmAutomations">{withSuspense(CrmAutomationsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/rapports",
+        element: <RequireRoutePolicy policyId="adminCrmReports">{withSuspense(CrmReportsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/configuration",
+        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmConfigurationPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/configuration/pipelines",
+        element: <RequireRoutePolicy policyId="adminCrmPipelineSettings">{withSuspense(CrmPipelineSettingsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/configuration/champs",
+        element: <RequireRoutePolicy policyId="adminCrmCustomFields">{withSuspense(CrmCustomFieldsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/configuration/providers",
+        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmProviderSettingsPage)}</RequireRoutePolicy>,
+      },
+      {
+        path: "crm/configuration/ai",
+        element: <RequireRoutePolicy policyId="adminCrmConfiguration">{withSuspense(CrmProviderSettingsPage)}</RequireRoutePolicy>,
+      },
     ],
   },
 ];
 
-const browserRouter =
-  typeof window === "undefined" ? null : createBrowserRouter(APP_ROUTES);
-
-export const AppRouter: React.FC<{ initialPath?: string }> = ({
-  initialPath = "/",
-}) => {
-  const memoryRouter = useRef<ReturnType<typeof createMemoryRouter> | null>(
-    null,
-  );
-  if (!browserRouter && !memoryRouter.current) {
-    memoryRouter.current = createMemoryRouter(APP_ROUTES, {
-      initialEntries: [initialPath],
-    });
+export const AppRouter: React.FC<{
+  initialPath?: string;
+  basename?: string;
+}> = ({ initialPath = "/", basename = "/" }) => {
+  const router = useRef<
+    | ReturnType<typeof createBrowserRouter>
+    | ReturnType<typeof createMemoryRouter>
+    | null
+  >(null);
+  if (!router.current) {
+    router.current =
+      typeof window === "undefined"
+        ? createMemoryRouter(APP_ROUTES, {
+            basename,
+            initialEntries: [initialPath],
+          })
+        : createBrowserRouter(APP_ROUTES, { basename });
   }
-  const activeRouter = browserRouter || memoryRouter.current;
-  if (!activeRouter) return null;
-  return <RouterProvider router={activeRouter} />;
+  return <RouterProvider router={router.current} />;
 };

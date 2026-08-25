@@ -5,3 +5,6 @@ export * from "./kyc.provider.js";
 export * from "./business-registry.provider.js";
 export * from "./ai.provider.js";
 export * from "./provider-container.js";
+export * from "./safe-provider-url.js";
+export * from "./credential-envelope.js";
+export * from "./gateways/index.js";

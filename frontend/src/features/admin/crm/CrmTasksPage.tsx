@@ -1,339 +1,129 @@
-import React, { useState, useEffect } from "react";
-import { PlusCircle, CheckSquare, Square } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { CalendarClock, CheckCircle2, CheckSquare, Circle, Filter, Plus } from "lucide-react";
+import type { CrmAccount, CrmContact, CrmOpportunity, CrmTask, CrmTaskInput } from "@shongre/contracts/crm";
+import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
-import { Badge } from "../../../design-system/primitives/Badge";
 import { Modal } from "../../../design-system/primitives/Modal";
-import {
-  FormField,
-  Input,
-  Select,
-} from "../../../design-system/primitives/FormField";
-import { crmRepository } from "../../../repositories/crm.repository";
-import { CrmTask, TaskPriority } from "../../../domains/crm/crm.types";
+import { FormField, Input, Select, Textarea } from "../../../design-system/primitives/FormField";
+import { EmptyState, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { Skeleton, EmptyState } from "../../../design-system";
-import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 
+type TaskFilter = "pending" | "completed" | "all";
+type RelatedType = "none" | "account" | "contact" | "opportunity";
+
+const priorityLabels: Record<CrmTask["priority"], string> = {
+  low: "Basse", medium: "Moyenne", high: "Haute", urgent: "Urgente",
+};
+const priorityClasses: Record<CrmTask["priority"], string> = {
+  low: "bg-stone-100 text-stone-600",
+  medium: "bg-blue-50 text-blue-700",
+  high: "bg-amber-50 text-amber-800",
+  urgent: "bg-red-50 text-red-700",
+};
+
+function defaultDueDate() {
+  const date = new Date(Date.now() + 24 * 60 * 60 * 1_000);
+  date.setMinutes(0, 0, 0);
+  return date.toISOString().slice(0, 16);
+}
+
 export const CrmTasksPage: React.FC = () => {
-  const { t } = useTranslation();
-  usePageMeta({
-    title: t("meta.crmTasks.title"),
-    description: t("meta.crmTasks.description"),
-    canonicalPath: "/admin/crm/taches",
-    noIndex: true,
-  });
-
+  usePageMeta({ title: "Tâches CRM | Shongre", description: "Planification et suivi des relances commerciales.", canonicalPath: "/admin/crm/taches", noIndex: true });
   const toast = useToast();
+  const { currentLocale } = useMarketLocation();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
+  const [accounts, setAccounts] = useState<CrmAccount[]>([]);
+  const [contacts, setContacts] = useState<CrmContact[]>([]);
+  const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
+  const [filter, setFilter] = useState<TaskFilter>("pending");
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"pending" | "completed" | "all">(
-    "pending",
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // New Task Form
+  const [modalOpen, setModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [title, setTitle] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [relatedTitle, setRelatedTitle] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("medium");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [description, setDescription] = useState("");
+  const [dueAt, setDueAt] = useState(defaultDueDate);
+  const [priority, setPriority] = useState<CrmTask["priority"]>("medium");
+  const [relatedType, setRelatedType] = useState<RelatedType>("none");
+  const [relatedId, setRelatedId] = useState("");
 
-  const fetchTasks = async () => {
+  const load = async () => {
     setLoading(true);
     try {
-      const list = await crmRepository.listTasks();
-      setTasks(list);
-    } finally {
-      setLoading(false);
-    }
+      const [taskPage, accountPage, contactPage, opportunityPage] = await Promise.all([
+        services.crm.listTasks({ limit: 100 }),
+        services.crm.listAccounts({ limit: 100 }),
+        services.crm.listContacts({ limit: 100 }),
+        services.crm.listOpportunities({ limit: 100 }),
+      ]);
+      setTasks(taskPage.items); setAccounts(accountPage.items); setContacts(contactPage.items); setOpportunities(opportunityPage.items);
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Tâches indisponibles.");
+    } finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  useEffect(() => { void load(); }, []);
 
-  const handleToggleStatus = async (id: string) => {
-    try {
-      await crmRepository.toggleTaskStatus(id);
-      fetchTasks();
-      toast.success("Statut de la tâche mis à jour.");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur.");
-    }
+  const entityLabels = useMemo(() => {
+    const values = new Map<string, string>();
+    accounts.forEach((item) => values.set(item.id, item.name));
+    contacts.forEach((item) => values.set(item.id, item.fullName));
+    opportunities.forEach((item) => values.set(item.id, item.name));
+    return values;
+  }, [accounts, contacts, opportunities]);
+
+  const relatedOptions = useMemo(() => {
+    if (relatedType === "account") return accounts.map((item) => ({ value: item.id, label: item.name }));
+    if (relatedType === "contact") return contacts.map((item) => ({ value: item.id, label: item.fullName }));
+    if (relatedType === "opportunity") return opportunities.map((item) => ({ value: item.id, label: item.name }));
+    return [];
+  }, [accounts, contacts, opportunities, relatedType]);
+
+  const visibleTasks = tasks.filter((task) => filter === "pending" ? task.status === "pending" || task.status === "in_progress" : filter === "completed" ? task.status === "completed" : true);
+  const counts = {
+    pending: tasks.filter((task) => task.status === "pending" || task.status === "in_progress").length,
+    completed: tasks.filter((task) => task.status === "completed").length,
+    overdue: tasks.filter((task) => task.status !== "completed" && new Date(task.dueAt).getTime() < Date.now()).length,
   };
 
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Le titre de la tâche est obligatoire.");
-      return;
-    }
-
-    setIsSubmitting(true);
+  const complete = async (task: CrmTask) => {
+    if (task.status === "completed") return;
     try {
-      await crmRepository.createTask({
-        title: title.trim(),
-        dueDate: dueDate || new Date().toISOString().split("T")[0],
-        relatedType: "company",
-        relatedId: "crm-comp-1",
-        relatedTitle: relatedTitle.trim() || "Compte client",
-        priority,
-      });
+      const updated = await services.crm.completeTask(task.id, task.version);
+      setTasks((items) => items.map((item) => item.id === updated.id ? updated : item));
+      toast.success("Tâche terminée.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Mise à jour impossible."); }
+  };
 
-      setIsModalOpen(false);
-      setTitle("");
-      setDueDate("");
-      setRelatedTitle("");
-      fetchTasks();
+  const createTask = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!title.trim()) return;
+    const relation = relatedType !== "none" && relatedId ? { [`${relatedType}Id`]: relatedId } : {};
+    const input: CrmTaskInput = { type: "follow_up", title: title.trim(), description: description.trim() || undefined, dueAt: new Date(dueAt).toISOString(), priority, ...relation };
+    setSubmitting(true);
+    try {
+      const created = await services.crm.createTask(input);
+      setTasks((items) => [created, ...items]);
+      setModalOpen(false); setTitle(""); setDescription(""); setDueAt(defaultDueDate()); setPriority("medium"); setRelatedType("none"); setRelatedId("");
       toast.success("Tâche créée.");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Création impossible."); }
+    finally { setSubmitting(false); }
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === "pending") return task.status === "pending";
-    if (filter === "completed") return task.status === "completed";
-    return true;
-  });
+  const relationName = (task: CrmTask) => entityLabels.get(task.opportunityId ?? task.contactId ?? task.accountId ?? "") ?? "Sans relation";
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            {t("admin.crmTasksPage.tachesRelancesCommerciales")}
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            {t("admin.crmTasksPage.suiviDesActionsAppelsDemos")}
-          </p>
-        </div>
-
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setIsModalOpen(true)}
-          className="font-bold flex items-center gap-1.5 shrink-0"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>{t("admin.crmTasksPage.nouvelleTache")}</span>
-        </Button>
-      </div>
-
-      {/* 2. Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-border-subtle pb-3">
-        <button
-          type="button"
-          onClick={() => setFilter("pending")}
-          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
-            filter === "pending"
-              ? "bg-stone-900 text-white shadow-xs"
-              : "text-stone-600 hover:bg-stone-100"
-          }`}
-        >
-          À faire ({tasks.filter((task) => task.status === "pending").length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter("completed")}
-          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
-            filter === "completed"
-              ? "bg-stone-900 text-white shadow-xs"
-              : "text-stone-600 hover:bg-stone-100"
-          }`}
-        >
-          Terminées (
-          {tasks.filter((task) => task.status === "completed").length})
-        </button>
-        <button
-          type="button"
-          onClick={() => setFilter("all")}
-          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer ${
-            filter === "all"
-              ? "bg-stone-900 text-white shadow-xs"
-              : "text-stone-600 hover:bg-stone-100"
-          }`}
-        >
-          Toutes ({tasks.length})
-        </button>
-      </div>
-
-      {/* 3. Tasks Stream */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs overflow-hidden">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14 rounded-2xl" />
-            ))}
-          </div>
-        ) : filteredTasks.length === 0 ? (
-          <EmptyState
-            icon={<CheckSquare className="w-8 h-8 text-stone-500" />}
-            title={t("admin.crmTasksPage.aucuneTacheDansCetteVue")}
-            description={t(
-              "admin.crmTasksPage.lesRelancesPlanifieesApparaitrontIci",
-            )}
-            className="border-0 shadow-none"
-            action={
-              filter === "all" ? (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  {t("admin.crmTasksPage.creerUneTache2")}
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFilter("all")}
-                >
-                  {t("admin.crmTasksPage.voirToutesLesTaches")}
-                </Button>
-              )
-            }
-          />
-        ) : (
-          <div className="divide-y divide-border-subtle">
-            {filteredTasks.map((task) => {
-              const isCompleted = task.status === "completed";
-
-              return (
-                <div
-                  key={task.id}
-                  className="py-4 flex items-center justify-between gap-4 hover:bg-stone-50 -mx-4 px-4 rounded-xl transition-colors"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(task.id)}
-                      role="checkbox"
-                      aria-checked={isCompleted}
-                      aria-label={
-                        isCompleted
-                          ? `Marquer « ${task.title} » comme à faire`
-                          : `Marquer « ${task.title} » comme terminée`
-                      }
-                      className="text-stone-500 hover:text-stone-800 cursor-pointer shrink-0"
-                    >
-                      {isCompleted ? (
-                        <CheckSquare className="w-5 h-5 text-success" />
-                      ) : (
-                        <Square className="w-5 h-5" />
-                      )}
-                    </button>
-
-                    <div className="min-w-0 space-y-0.5">
-                      <span
-                        className={`font-bold text-xs block ${
-                          isCompleted
-                            ? "text-stone-500 line-through"
-                            : "text-stone-900"
-                        }`}
-                      >
-                        {task.title}
-                      </span>
-                      <span className="text-micro text-stone-500 block truncate">
-                        {t("admin.crmTasksPage.lieA")}
-                        <strong>{task.relatedTitle}</strong> • Échéance :{" "}
-                        {task.dueDate}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <Badge
-                      variant={
-                        task.priority === "high" || task.priority === "urgent"
-                          ? "urgent"
-                          : "neutral"
-                      }
-                      size="sm"
-                    >
-                      {task.priority}
-                    </Badge>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Create Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={t("admin.crmTasksPage.creerUneTache")}
-        description={t("admin.crmTasksPage.ajoutezUnRappelOuUne")}
-      >
-        <form onSubmit={handleCreateTask} className="space-y-3.5 text-xs">
-          <FormField label={t("admin.crmTasksPage.titreDeLaTache")} required>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("admin.crmTasksPage.exRelancerMarcPourSignature")}
-            />
-          </FormField>
-
-          <FormField label={t("admin.crmTasksPage.compteOuContactAssocie")}>
-            <Input
-              value={relatedTitle}
-              onChange={(e) => setRelatedTitle(e.target.value)}
-              placeholder="ex: L'Atelier Nordique"
-            />
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label={t("admin.crmTasksPage.dateDEcheance")}>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-              />
-            </FormField>
-
-            <FormField label={t("admin.crmTasksPage.priorite")}>
-              <Select
-                aria-label={t("admin.crmTasksPage.prioriteDeLaTache")}
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                options={[
-                  { value: "low", label: "Basse" },
-                  { value: "medium", label: "Moyenne" },
-                  { value: "high", label: "Haute" },
-                  { value: "urgent", label: "Urgente" },
-                ]}
-              />
-            </FormField>
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModalOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isSubmitting}
-              className="font-bold"
-            >
-              {isSubmitting ? "Création..." : "Créer la tâche"}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+    <div className="space-y-4 pb-8">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-micro font-bold uppercase tracking-[0.2em] text-violet-300">CRM · Exécution</p><h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">Tâches & relances</h1><p className="mt-1 text-xs text-stone-400">Une file d’action partagée, reliée aux comptes et opportunités.</p></div><Button size="sm" onClick={() => setModalOpen(true)}><Plus className="h-4 w-4" /> Nouvelle tâche</Button></div>
+        <div className="mt-5 grid grid-cols-3 gap-2"><div className="rounded-xl bg-stone-900 p-3"><span className="text-micro text-stone-400">À faire</span><strong className="block text-xl font-black">{counts.pending}</strong></div><div className="rounded-xl bg-stone-900 p-3"><span className="text-micro text-stone-400">En retard</span><strong className="block text-xl font-black text-red-300">{counts.overdue}</strong></div><div className="rounded-xl bg-stone-900 p-3"><span className="text-micro text-stone-400">Terminées</span><strong className="block text-xl font-black text-emerald-300">{counts.completed}</strong></div></div>
+      </section>
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3"><div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500"><Filter className="h-3.5 w-3.5" /> Vue</div><div className="flex rounded-lg bg-stone-100 p-1" role="tablist" aria-label="Filtrer les tâches">{(["pending", "completed", "all"] as const).map((value) => <button key={value} type="button" role="tab" aria-selected={filter === value} onClick={() => setFilter(value)} className={`rounded-md px-3 py-1.5 text-micro font-black ${filter === value ? "bg-white text-stone-950 shadow-xs" : "text-stone-500"}`}>{value === "pending" ? `À faire (${counts.pending})` : value === "completed" ? `Terminées (${counts.completed})` : `Toutes (${tasks.length})`}</button>)}</div></div>
+        {loading ? <div className="space-y-3 p-5">{[1, 2, 3].map((item) => <Skeleton key={item} className="h-16 rounded-xl" />)}</div> : visibleTasks.length === 0 ? <EmptyState icon={<CheckSquare className="h-8 w-8" />} title="Aucune tâche dans cette vue" description="Les prochaines actions commerciales apparaîtront ici." className="border-0 shadow-none" action={<Button size="sm" onClick={() => setModalOpen(true)}>Créer une tâche</Button>} /> : <div className="divide-y divide-border-subtle">{visibleTasks.map((task) => { const done = task.status === "completed"; const overdue = !done && new Date(task.dueAt).getTime() < Date.now(); return <article key={task.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-50"><button type="button" disabled={done} onClick={() => void complete(task)} aria-label={done ? `${task.title}, terminée` : `Marquer ${task.title} comme terminée`} className="shrink-0 text-stone-400 enabled:hover:text-emerald-600 disabled:text-emerald-600">{done ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}</button><div className="min-w-0 flex-1"><strong className={`block truncate text-xs ${done ? "text-stone-400 line-through" : "text-stone-900"}`}>{task.title}</strong><p className="mt-0.5 truncate text-micro text-stone-500">{relationName(task)} · {task.ownerName ?? "Non assignée"}</p></div><div className="hidden items-center gap-1.5 text-micro font-bold sm:flex"><CalendarClock className="h-3.5 w-3.5" /><time className={overdue ? "text-red-600" : "text-stone-500"}>{new Intl.DateTimeFormat(currentLocale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(task.dueAt))}</time></div><span className={`rounded-full px-2 py-1 text-micro font-bold ${priorityClasses[task.priority]}`}>{priorityLabels[task.priority]}</span></article>; })}</div>}
+      </section>
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Créer une tâche" description="Planifiez une action et rattachez-la au bon contexte CRM."><form onSubmit={createTask} className="space-y-3.5 text-xs"><FormField label="Titre" required><Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Relancer après la démonstration" required /></FormField><FormField label="Description"><Textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={3} /></FormField><div className="grid gap-3 sm:grid-cols-2"><FormField label="Échéance" required><Input type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} required /></FormField><FormField label="Priorité"><Select aria-label="Priorité" value={priority} onChange={(event) => setPriority(event.target.value as CrmTask["priority"])} options={Object.entries(priorityLabels).map(([value, label]) => ({ value, label }))} /></FormField></div><div className="grid gap-3 sm:grid-cols-2"><FormField label="Type de relation"><Select aria-label="Type de relation" value={relatedType} onChange={(event) => { setRelatedType(event.target.value as RelatedType); setRelatedId(""); }} options={[{ value: "none", label: "Aucune" }, { value: "account", label: "Entreprise" }, { value: "contact", label: "Contact" }, { value: "opportunity", label: "Opportunité" }]} /></FormField>{relatedType !== "none" && <FormField label="Élément lié" required><Select aria-label="Élément lié" value={relatedId} onChange={(event) => setRelatedId(event.target.value)} options={[{ value: "", label: "Sélectionner…" }, ...relatedOptions]} required /></FormField>}</div><div className="flex justify-end gap-2 border-t border-border-subtle pt-4"><Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>Annuler</Button><Button type="submit" size="sm" disabled={submitting}>{submitting ? "Création…" : "Créer"}</Button></div></form></Modal>
     </div>
   );
 };

@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
 import {
+  buildPublicUrl,
+  COUNTRY_REGISTRY,
+  type MarketContext,
+} from "@shongre/contracts";
+import {
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
   resolveCanonical,
@@ -14,7 +19,8 @@ import { MARKET_CONFIG } from "../../configuration/market.config";
 interface RouteMetadataInput {
   pathname: string;
   query?: Record<string, string | string[] | undefined>;
-  origin: string;
+  origin?: string;
+  marketContext?: MarketContext;
 }
 
 const staticPages: Record<
@@ -71,11 +77,15 @@ function absoluteUrl(url: string, origin: string): string {
   return `${origin.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`;
 }
 
-function formatPriceLabel(listing: Listing): string {
+function formatPriceLabel(
+  listing: Listing,
+  locale = MARKET_CONFIG.defaultLocale,
+  currency = MARKET_CONFIG.defaultCurrency,
+): string {
   if (listing.isFreeDonation) return "Don gratuit";
-  return new Intl.NumberFormat(MARKET_CONFIG.defaultLocale, {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: listing.currency || MARKET_CONFIG.defaultCurrency,
+    currency: listing.currency || currency,
     maximumFractionDigits: Number.isInteger(listing.price) ? 0 : 2,
   }).format(listing.price);
 }
@@ -91,7 +101,10 @@ function findSellerBySlug(slug: string) {
  *
  * Returns `undefined` for anything else so the static table stays in charge.
  */
-function resolveEntityMetadata(pathname: string): EntityMetadata | undefined {
+function resolveEntityMetadata(
+  pathname: string,
+  options: { locale?: string; currency?: string; countryCode?: string } = {},
+): EntityMetadata | undefined {
   const [, segment, rawSlug] = pathname.split("/");
   if (!rawSlug) return undefined;
   const slug = decodeURIComponent(rawSlug);
@@ -99,7 +112,24 @@ function resolveEntityMetadata(pathname: string): EntityMetadata | undefined {
   if (segment === "annonce") {
     const listing = INITIAL_LISTINGS.find((l) => l.id === slug);
     if (!listing) return undefined;
-    const price = formatPriceLabel(listing);
+    const listingMarkets = listing.marketCodes?.length
+      ? listing.marketCodes
+      : [listing.marketCode];
+    if (
+      options.countryCode &&
+      !listingMarkets.includes(options.countryCode)
+    ) {
+      return {
+        title: "Annonce indisponible dans ce pays",
+        description: DEFAULT_DESCRIPTION,
+        noIndex: true,
+      };
+    }
+    const price = formatPriceLabel(
+      listing,
+      options.locale,
+      options.currency,
+    );
     return {
       title: `${listing.title} - ${price} à ${listing.city}`,
       description: `${listing.title} en vente à ${listing.city} (${listing.postalCode}) pour ${price}. Retrouvez toutes les annonces ${listing.categoryLabel} sur Shongre.`,
@@ -141,6 +171,7 @@ export function metadataForRoute({
   pathname,
   query,
   origin,
+  marketContext,
 }: RouteMetadataInput): Metadata {
   const route = staticPages[pathname];
   const isSearch = pathname === "/recherche";
@@ -159,7 +190,11 @@ export function metadataForRoute({
      "Petites annonces | Shongre" with the generic site blurb and no image —
      invisible from inside the browser, because the SPA patches the title after
      hydration and the server copy is what gets indexed and shared. */
-  const entity = resolveEntityMetadata(pathname);
+  const entity = resolveEntityMetadata(pathname, {
+    countryCode: marketContext?.countryCode || undefined,
+    locale: marketContext?.locale || undefined,
+    currency: marketContext?.currency || undefined,
+  });
 
   const title =
     entity?.title ??
@@ -176,17 +211,62 @@ export function metadataForRoute({
     isPrivate ||
     entity?.noIndex ||
     (isSearch && Boolean(query?.query));
-  const canonical = resolveCanonical(
-    category ? `/categorie/${encodeURIComponent(category)}` : pathname,
-    origin,
-  );
+  const canonicalPath = category
+    ? `/categorie/${encodeURIComponent(category)}`
+    : pathname;
+  const canonical = marketContext?.countryCode
+    ? buildPublicUrl({
+        country: marketContext.countryCode,
+        route: canonicalPath,
+      })
+    : resolveCanonical(canonicalPath, origin || "https://shongre.fr");
   const resolvedTitle = resolveTitle(title);
-  const image = entity?.image ? absoluteUrl(entity.image, origin) : undefined;
+  const canonicalOrigin = new URL(canonical).origin;
+  const image = entity?.image
+    ? absoluteUrl(entity.image, canonicalOrigin)
+    : undefined;
+  const alternateCountries =
+    !noIndex && marketContext
+      ? COUNTRY_REGISTRY.filter(
+          (country) =>
+            country.enabled &&
+            country.seo.indexable &&
+            country.marketplace.enabled &&
+            ["active", "beta"].includes(country.launchStatus),
+        )
+      : [];
+  const listingId = pathname.startsWith("/annonce/")
+    ? decodeURIComponent(pathname.split("/")[2] || "")
+    : null;
+  const listing = listingId
+    ? INITIAL_LISTINGS.find((entry) => entry.id === listingId)
+    : undefined;
+  const listingMarkets = listing
+    ? listing.marketCodes?.length
+      ? listing.marketCodes
+      : [listing.marketCode]
+    : null;
+  const languages = Object.fromEntries(
+    alternateCountries
+      .filter(
+        (country) => !listingMarkets || listingMarkets.includes(country.code),
+      )
+      .map((country) => [
+        country.seo.hreflang,
+        buildPublicUrl({ country: country.code, route: canonicalPath }),
+      ]),
+  );
+  if (Object.keys(languages).length > 0) {
+    languages["x-default"] = "https://shongre.com/";
+  }
 
   return {
     title: resolvedTitle,
     description,
-    alternates: { canonical },
+    alternates: {
+      canonical,
+      ...(Object.keys(languages).length > 0 ? { languages } : {}),
+    },
     robots: noIndex
       ? { index: false, follow: false }
       : { index: true, follow: true },
@@ -199,7 +279,12 @@ export function metadataForRoute({
          `website` is correct and understood everywhere; product semantics are
          carried by the Product JSON-LD this route also renders. */
       type: entity?.ogType === "profile" ? "profile" : "website",
-      locale: resolveOpenGraphLocale(MARKET_CONFIG.defaultLocale),
+      locale: resolveOpenGraphLocale(
+        marketContext?.locale || MARKET_CONFIG.defaultLocale,
+      ),
+      alternateLocale: alternateCountries
+        .filter((country) => country.code !== marketContext?.countryCode)
+        .map((country) => resolveOpenGraphLocale(country.defaultLocale)),
       siteName: "Shongre",
       url: canonical,
       ...(image ? { images: [{ url: image }] } : {}),
@@ -222,12 +307,20 @@ export function metadataForRoute({
  */
 export function structuredDataForRoute(
   pathname: string,
-  origin: string,
+  originOrContext: string | MarketContext,
 ): string | null {
   const [, segment, rawSlug] = pathname.split("/");
   if (!rawSlug) return null;
   const slug = decodeURIComponent(rawSlug);
-  const canonical = resolveCanonical(pathname, origin);
+  const marketContext =
+    typeof originOrContext === "string" ? undefined : originOrContext;
+  const origin =
+    typeof originOrContext === "string"
+      ? originOrContext
+      : new URL(originOrContext.canonicalUrl).origin;
+  const canonical = marketContext?.countryCode
+    ? buildPublicUrl({ country: marketContext.countryCode, route: pathname })
+    : resolveCanonical(pathname, origin);
 
   let payload: Record<string, unknown> | null = null;
 
@@ -245,7 +338,10 @@ export function structuredDataForRoute(
       offers: {
         "@type": "Offer",
         price: listing.isFreeDonation ? 0 : listing.price,
-        priceCurrency: listing.currency || MARKET_CONFIG.defaultCurrency,
+        priceCurrency:
+          listing.currency ||
+          marketContext?.currency ||
+          MARKET_CONFIG.defaultCurrency,
         availability:
           listing.status === "active"
             ? "https://schema.org/InStock"

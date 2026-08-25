@@ -24,6 +24,11 @@ import {
   DEFAULT_MARKET_LOCALE,
   DEFAULT_MARKET_REGION,
 } from "../configuration/market-baseline";
+import {
+  buildPublicUrl,
+  COUNTRY_REGISTRY,
+  type MarketContext,
+} from "@shongre/contracts";
 
 export const SITE_NAME = "Shongre";
 
@@ -54,6 +59,8 @@ export interface PageMeta {
   noIndex?: boolean;
   /** BCP 47 locale from the active market, e.g. `fr-FR` or `en-US`. */
   locale?: string;
+  /** Restricts reciprocal alternates when an equivalent page is not global. */
+  alternateCountries?: string[];
   structuredData?: StructuredData[];
 }
 
@@ -203,6 +210,46 @@ function upsertCanonical(url: string) {
   link.setAttribute("href", url);
 }
 
+function applyAlternateLinks(
+  meta: PageMeta,
+  canonicalPath: string,
+  marketContext?: MarketContext | null,
+) {
+  if (typeof document === "undefined") return;
+  document.head
+    .querySelectorAll('link[rel="alternate"][hreflang]')
+    .forEach((node) => node.remove());
+  if (meta.noIndex || !marketContext?.countryCode) return;
+
+  const allowed = meta.alternateCountries
+    ? new Set(meta.alternateCountries.map((code) => code.toUpperCase()))
+    : null;
+  const countries = COUNTRY_REGISTRY.filter(
+    (country) =>
+      country.enabled &&
+      country.seo.indexable &&
+      country.marketplace.enabled &&
+      ["active", "beta"].includes(country.launchStatus) &&
+      (!allowed || allowed.has(country.code)),
+  );
+  for (const country of countries) {
+    const link = document.createElement("link");
+    link.rel = "alternate";
+    link.hreflang = country.seo.hreflang;
+    link.href = buildPublicUrl({ country: country.code, route: canonicalPath });
+    link.setAttribute(MANAGED, "");
+    document.head.appendChild(link);
+  }
+  if (countries.length > 0) {
+    const fallback = document.createElement("link");
+    fallback.rel = "alternate";
+    fallback.hreflang = "x-default";
+    fallback.href = "https://shongre.com/";
+    fallback.setAttribute(MANAGED, "");
+    document.head.appendChild(fallback);
+  }
+}
+
 function applyStructuredData(entries: StructuredData[]) {
   if (typeof document === "undefined") return;
   document.head
@@ -218,21 +265,28 @@ function applyStructuredData(entries: StructuredData[]) {
 }
 
 /** Writes one page's metadata over whatever the previous route left behind. */
-export function applyPageMeta(meta: PageMeta): void {
+export function applyPageMeta(
+  meta: PageMeta,
+  marketContext?: MarketContext | null,
+): void {
   if (typeof document === "undefined") return;
 
   const origin = window.location.origin;
   const title = resolveTitle(meta.title);
   const description = meta.description?.trim() || DEFAULT_DESCRIPTION;
-  const canonical = resolveCanonical(
-    meta.canonicalPath ?? window.location.pathname,
-    origin,
-  );
+  const canonicalPath = meta.canonicalPath ?? marketContext?.internalPath ?? window.location.pathname;
+  const canonical = marketContext?.countryCode
+    ? buildPublicUrl({
+        country: marketContext.countryCode,
+        route: canonicalPath,
+      })
+    : resolveCanonical(canonicalPath, origin);
 
   document.title = title;
 
   upsertMeta('meta[name="description"]', "name", "description", description);
   upsertCanonical(canonical);
+  applyAlternateLinks(meta, canonicalPath, marketContext);
 
   upsertMeta('meta[property="og:title"]', "property", "og:title", title);
   upsertMeta(

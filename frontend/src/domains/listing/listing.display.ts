@@ -13,6 +13,10 @@ import { CONDITION_SCHEMES } from "../taxonomy/condition.schemes";
 import { CONDITION_OPTIONS } from "../../configuration/market.config";
 import { MarketConfiguration } from "../market/market.types";
 import { activeDataLocale } from "../../i18n/localized";
+import {
+  currentBrowserMarketCode,
+  publicListingUrl,
+} from "../market/market-routing";
 
 /**
  * Demo and imported listings can contain attributes that are not yet present
@@ -550,10 +554,10 @@ export class ListingDisplayResolver {
     const photos = listing.photos
       .map((p) => (typeof p === "string" ? p : p.url))
       .filter(Boolean);
-    const listingUrl =
-      typeof window !== "undefined"
-        ? window.location.href
-        : `https://shongre.fr/annonce/${listing.id}`;
+    const listingUrl = publicListingUrl({
+      listingId: listing.id,
+      countryCode: listing.marketCode || currentBrowserMarketCode() || "FR",
+    });
 
     return {
       "@context": "https://schema.org",
@@ -599,10 +603,10 @@ export class ListingDisplayResolver {
       ? "Don gratuit"
       : `${listing.price} ${currency === "EUR" ? "€" : currency}`;
     const categoryName = node?.name || listing.categoryLabel;
-    const listingUrl =
-      typeof window !== "undefined"
-        ? window.location.href
-        : `https://shongre.fr/annonce/${listing.id}`;
+    const listingUrl = publicListingUrl({
+      listingId: listing.id,
+      countryCode: listing.marketCode || currentBrowserMarketCode() || "FR",
+    });
 
     const title = `${listing.title} - ${priceStr} à ${listing.city} | Shongre`;
     const description = `${listing.title} en vente à ${listing.city} (${listing.postalCode}) pour ${priceStr}. Retrouvez toutes les annonces ${categoryName} sur Shongre.`;

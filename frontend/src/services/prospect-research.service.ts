@@ -4,20 +4,14 @@
  * public web research, prospect fit scoring, and public source provenance.
  */
 
-import {
+import type {
   ProspectResearchQuery,
   ProspectResearchResult,
   ProspectResearchCandidate,
   CompanyEnrichmentDiff,
-} from "../domains/crm/crm.types";
+  CrmProspectingServiceContract,
+} from "../api/contracts/crm-prospecting.contract";
 import { providerService } from "../domains/providers/provider.service";
-
-export interface IProspectResearchService {
-  searchProspects(
-    query: ProspectResearchQuery,
-  ): Promise<ProspectResearchResult>;
-  enrichCompany(companyId: string): Promise<CompanyEnrichmentDiff>;
-}
 
 const DEMO_FURNITURE_PROSPECTS: ProspectResearchCandidate[] = [
   {
@@ -209,7 +203,7 @@ const DEMO_EV_PROSPECTS: ProspectResearchCandidate[] = [
   },
 ];
 
-export class DemoProspectResearchService implements IProspectResearchService {
+export class DemoProspectResearchService implements CrmProspectingServiceContract {
   async searchProspects(
     query: ProspectResearchQuery,
   ): Promise<ProspectResearchResult> {
@@ -278,5 +272,5 @@ export class DemoProspectResearchService implements IProspectResearchService {
   }
 }
 
-export const prospectResearchService: IProspectResearchService =
+export const demoCrmProspectingService: CrmProspectingServiceContract =
   new DemoProspectResearchService();

@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Mail, CheckCircle2, ShieldCheck } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { AlertCircle, CheckCircle2, Mail, ShieldCheck } from "lucide-react";
+import { services } from "../../api/client/service-registry";
 import { Button } from "../../design-system/primitives/Button";
-import { FormField, Input } from "../../design-system/primitives/FormField";
-import { newsletterRepository } from "../../repositories/newsletter.repository";
-import { newsletterService } from "../../domains/newsletter/newsletter.service";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -17,153 +15,57 @@ export const NewsletterUnsubscribePage: React.FC = () => {
     canonicalPath: "/newsletter/desabonnement",
     noIndex: true,
   });
-
   const [searchParams] = useSearchParams();
+  const token = searchParams.get("token") ?? "";
   const navigate = useNavigate();
   const toast = useToast();
+  const [state, setState] = useState<"ready" | "submitting" | "done" | "error">(token ? "ready" : "error");
 
-  const [email, setEmail] = useState(searchParams.get("email") || "");
-  const [isUnsubscribed, setIsUnsubscribed] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleUnsubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    const validation = newsletterService.validateEmail(email);
-    if (!validation.isValid) {
-      setError(validation.error || "Email invalide.");
-      return;
-    }
-
-    setIsSubmitting(true);
+  const unsubscribe = async () => {
+    setState("submitting");
     try {
-      await newsletterRepository.unsubscribe(email.trim());
-      setIsUnsubscribed(true);
-      toast.info(
-        "Vous êtes désabonné de la newsletter.",
-        "Désinscription confirmée",
-      );
-    } catch (err: any) {
-      // In demo mode or if email wasn't found, still show confirmation to prevent enumeration
-      setIsUnsubscribed(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleResubscribe = async () => {
-    setIsSubmitting(true);
-    try {
-      await newsletterRepository.subscribe({ email: email.trim() });
-      setIsUnsubscribed(false);
-      toast.success(
-        "Votre réabonnement a bien été pris en compte.",
-        "Réabonné",
-      );
-    } catch (err: any) {
-      setError(err.message || "Erreur lors du réabonnement.");
-    } finally {
-      setIsSubmitting(false);
+      await services.marketing.unsubscribePublic(token);
+      setState("done");
+      toast.info("Vous êtes désabonné des communications marketing.", "Désinscription confirmée");
+    } catch {
+      setState("error");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16 text-center">
-      <div className="bg-white border border-border-base rounded-3xl p-8 sm:p-10 shadow-xs space-y-6">
-        <div className="w-14 h-14 rounded-2xl bg-stone-100 text-stone-600 flex items-center justify-center mx-auto">
-          <Mail className="w-7 h-7" />
+    <div className="mx-auto max-w-md px-4 py-16 text-center">
+      <div className="space-y-6 rounded-3xl border border-border-base bg-white p-8 shadow-xs sm:p-10">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-600">
+          <Mail className="h-7 w-7" aria-hidden="true" />
         </div>
-
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">
-            {t("newsletter.newsletterUnsubscribePage.desabonnementNewsletter")}
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500">
-            {t(
-              "newsletter.newsletterUnsubscribePage.vousPouvezVousDesabonnerEn",
-            )}
-          </p>
+          <h1 className="text-2xl font-black text-stone-900">Désabonnement newsletter</h1>
+          <p className="text-xs text-stone-500 sm:text-sm">Le lien sécurisé ne modifie que vos communications marketing.</p>
         </div>
 
-        {isUnsubscribed ? (
-          <div className="space-y-5 animate-fadeIn">
-            <div className="p-4 bg-success-surface border border-success-border rounded-2xl text-success text-xs space-y-1 text-left">
-              <span className="font-bold block flex items-center gap-1.5 text-success">
-                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                {t(
-                  "newsletter.newsletterUnsubscribePage.desabonnementPrisEnCompte",
-                )}
-              </span>
-              <p className="text-success leading-relaxed">
-                L'adresse <strong>{email}</strong> ne recevra plus nos
-                communications promotionnelles.
-              </p>
+        {state === "done" ? (
+          <div className="space-y-5" role="status">
+            <div className="rounded-2xl border border-success-border bg-success-surface p-4 text-left text-xs text-success">
+              <span className="flex items-center gap-2 font-bold"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />Désabonnement pris en compte</span>
+              <p className="mt-1 leading-relaxed">Vous ne recevrez plus nos campagnes promotionnelles.</p>
             </div>
-
-            <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-micro text-stone-500 text-left flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
-              <span>
-                {t(
-                  "newsletter.newsletterUnsubscribePage.vousContinuerezARecevoirLes",
-                )}
-              </span>
-            </div>
-
-            <div className="space-y-2 pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                fullWidth
-                onClick={handleResubscribe}
-                disabled={isSubmitting}
-              >
-                {t("newsletter.newsletterUnsubscribePage.jeMeSuisTrompeMe")}
-              </Button>
-              <Button
-                variant="primary"
-                fullWidth
-                onClick={() => navigate("/")}
-                className="font-bold"
-              >
-                {t("newsletter.newsletterUnsubscribePage.retourALAccueil")}
-              </Button>
+            <div className="flex items-start gap-2.5 rounded-2xl border border-border-base bg-stone-50 p-4 text-left text-micro text-stone-500">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
+              <span>Les emails de sécurité, de transaction et de service indispensables restent séparés.</span>
             </div>
           </div>
+        ) : state === "error" ? (
+          <div className="rounded-2xl border border-danger-border bg-danger-surface p-4 text-left text-xs text-danger" role="alert">
+            <span className="flex items-center gap-2 font-bold"><AlertCircle className="h-4 w-4" aria-hidden="true" />Lien invalide ou expiré</span>
+            <p className="mt-1">Aucune préférence n’a été modifiée. Utilisez le lien du dernier email reçu.</p>
+          </div>
         ) : (
-          <form onSubmit={handleUnsubscribe} className="space-y-4 text-left">
-            <FormField
-              label={t(
-                "newsletter.newsletterUnsubscribePage.votreAdresseEmail",
-              )}
-              required
-              error={error || undefined}
-            >
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t(
-                  "newsletter.newsletterUnsubscribePage.votreEmailExempleFr",
-                )}
-              />
-            </FormField>
-
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              size="lg"
-              disabled={isSubmitting}
-              className="font-bold"
-            >
-              {isSubmitting
-                ? "Désinscription..."
-                : "Confirmer le désabonnement"}
-            </Button>
-          </form>
+          <Button variant="primary" fullWidth size="lg" onClick={unsubscribe} disabled={state === "submitting"}>
+            {state === "submitting" ? "Désinscription…" : "Confirmer le désabonnement"}
+          </Button>
         )}
+
+        <Button variant="outline" fullWidth onClick={() => navigate("/")}>Retour à l’accueil</Button>
       </div>
     </div>
   );

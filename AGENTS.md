@@ -6,45 +6,45 @@ This file defines the mandatory engineering rules for **Shongre**.
 
 Shongre is a multi-country classifieds marketplace for:
 
-* **Particuliers**
-* **Professionnels**
-* buyers
-* sellers
-* professional organizations
-* professional team members
-* moderators
-* Trust & Safety
-* support
-* finance
-* administrators
+- **Particuliers**
+- **Professionnels**
+- buyers
+- sellers
+- professional organizations
+- professional team members
+- moderators
+- Trust & Safety
+- support
+- finance
+- administrators
 
 The platform includes or will include:
 
-* listings
-* hierarchical taxonomy
-* multi-market publication
-* geographic search
-* seller profiles
-* professional stores
-* messaging
-* favorites
-* saved searches
-* notifications
-* reservations
-* local pickup
-* orders
-* payments
-* payouts
-* reviews
-* moderation
-* fraud prevention
-* progressive KYC/KYB
-* subscriptions
-* entitlements
-* paid listing visibility
-* administration
-* analytics
-* future AI capabilities
+- listings
+- hierarchical taxonomy
+- multi-market publication
+- geographic search
+- seller profiles
+- professional stores
+- messaging
+- favorites
+- saved searches
+- notifications
+- reservations
+- local pickup
+- orders
+- payments
+- payouts
+- reviews
+- moderation
+- fraud prevention
+- progressive KYC/KYB
+- subscriptions
+- entitlements
+- paid listing visibility
+- administration
+- analytics
+- future AI capabilities
 
 All coding agents must follow this file before modifying the repository.
 
@@ -99,26 +99,26 @@ frontend/
 
 This includes:
 
-* application routes
-* pages
-* layouts
-* components
-* modules
-* styles
-* design system
-* hooks
-* contexts
-* frontend utilities
-* API contracts
-* demo adapters
-* HTTP adapters
-* frontend fixtures
-* frontend tests
-* frontend E2E tests
-* public frontend assets
-* frontend scripts
-* frontend documentation
-* frontend configuration
+- application routes
+- pages
+- layouts
+- components
+- modules
+- styles
+- design system
+- hooks
+- contexts
+- frontend utilities
+- API contracts
+- demo adapters
+- HTTP adapters
+- frontend fixtures
+- frontend tests
+- frontend E2E tests
+- public frontend assets
+- frontend scripts
+- frontend documentation
+- frontend configuration
 
 Do not create frontend implementation at root under:
 
@@ -156,31 +156,31 @@ backend/
 
 This includes:
 
-* API code
-* domain services
-* repositories
-* authorization
-* validation
-* Supabase infrastructure
-* PostgreSQL migrations
-* database functions
-* RLS policies
-* Supabase Edge Functions
-* Supabase Queues
-* cron jobs
-* workers
-* payment integrations
-* Stripe integrations
-* KYC/KYB integrations
-* fraud logic
-* search implementation
-* storage administration
-* webhooks
-* backend tests
-* backend scripts
-* generated DB types
-* backend documentation
-* backend environment configuration
+- API code
+- domain services
+- repositories
+- authorization
+- validation
+- Supabase infrastructure
+- PostgreSQL migrations
+- database functions
+- RLS policies
+- Supabase Edge Functions
+- Supabase Queues
+- cron jobs
+- workers
+- payment integrations
+- Stripe integrations
+- KYC/KYB integrations
+- fraud logic
+- search implementation
+- storage administration
+- webhooks
+- backend tests
+- backend scripts
+- generated DB types
+- backend documentation
+- backend environment configuration
 
 Do not create backend logic under:
 
@@ -499,7 +499,7 @@ DemoAdminService
 Methods should return:
 
 ```ts
-Promise<T>
+Promise<T>;
 ```
 
 even if the underlying data is local.
@@ -559,7 +559,7 @@ Demo behavior belongs in demo adapters.
 Do not use uncontrolled:
 
 ```ts
-Math.random()
+Math.random();
 ```
 
 for important demo behavior.
@@ -652,7 +652,7 @@ Do not let individual React components mutate independent fixture arrays.
 Avoid making UI components depend directly on:
 
 ```ts
-Database["public"]["Tables"]["listings"]["Row"]
+Database["public"]["Tables"]["listings"]["Row"];
 ```
 
 Use public API/view models.
@@ -731,10 +731,10 @@ backend/
 
 If existing frontend functionality already relies on Supabase Auth and removing it would create unnecessary breakage:
 
-* isolate it behind `AuthService`;
-* do not spread Supabase calls through UI components;
-* provide a complete demo auth adapter;
-* standalone demo mode must not require Supabase.
+- isolate it behind `AuthService`;
+- do not spread Supabase calls through UI components;
+- provide a complete demo auth adapter;
+- standalone demo mode must not require Supabase.
 
 Do not use this exception to access business tables directly.
 
@@ -858,14 +858,14 @@ Prefer relational PostgreSQL modeling for important data.
 
 Use:
 
-* primary keys
-* foreign keys
-* unique constraints
-* check constraints
-* proper defaults
-* explicit timestamps
-* appropriate indexes
-* explicit cascading rules
+- primary keys
+- foreign keys
+- unique constraints
+- check constraints
+- proper defaults
+- explicit timestamps
+- appropriate indexes
+- explicit cascading rules
 
 Use JSONB only when the data is genuinely dynamic or sparse.
 
@@ -914,11 +914,11 @@ Never treat frontend filtering as authorization.
 
 The Supabase service-role key must:
 
-* only exist server-side;
-* never enter browser bundles;
-* never be logged;
-* never be committed;
-* never be stored in public runtime configuration.
+- only exist server-side;
+- never enter browser bundles;
+- never be logged;
+- never be committed;
+- never be stored in public runtime configuration.
 
 Audit changes for accidental leakage.
 
@@ -929,6 +929,10 @@ Audit changes for accidental leakage.
 Shongre is multi-market from the start.
 
 France is the first/default market, but do not hardcode France throughout the platform.
+Every new feature and every change to an existing feature must satisfy
+the mandatory country-awareness rules in section 159. Country awareness is a
+cross-cutting definition-of-done requirement, not an optional enhancement to be
+added after a France-only implementation.
 
 Core market-aware context includes:
 
@@ -943,15 +947,15 @@ location
 
 Different markets may have different:
 
-* taxonomy
-* available categories
-* publication rules
-* pricing
-* monetization
-* legal content
-* KYC/KYB requirements
-* currencies
-* languages
+- taxonomy
+- available categories
+- publication rules
+- pricing
+- monetization
+- legal content
+- KYC/KYB requirements
+- currencies
+- languages
 
 ---
 
@@ -1016,11 +1020,11 @@ Do not assume every branch has identical depth.
 
 Taxonomy must support:
 
-* dynamic publication forms
-* category-specific filters
-* listing details
-* cards where useful
-* market-specific availability
+- dynamic publication forms
+- category-specific filters
+- listing details
+- cards where useful
+- market-specific availability
 
 ---
 
@@ -1189,15 +1193,15 @@ temporary network issues
 
 Do not lose:
 
-* photos
-* title
-* description
-* category
-* attributes
-* price
-* location
-* market selection
-* delivery settings
+- photos
+- title
+- description
+- category
+- attributes
+- price
+- location
+- market selection
+- delivery settings
 
 Do not store sensitive KYC/payment information in localStorage.
 
@@ -1397,12 +1401,12 @@ Paid prominence should be identifiable and non-deceptive.
 
 Do not use dark patterns:
 
-* fake countdowns;
-* false scarcity;
-* preselected paid purchases;
-* misleading performance claims;
-* hidden prices;
-* accidental subscriptions.
+- fake countdowns;
+- false scarcity;
+- preselected paid purchases;
+- misleading performance claims;
+- hidden prices;
+- accidental subscriptions.
 
 Do not promise specific uplift without validated data.
 
@@ -1445,16 +1449,16 @@ without duplicating the entire application.
 
 Differences should emerge where relevant:
 
-* onboarding
-* publication limits
-* organization/business data
-* store
-* team
-* billing
-* analytics
-* KYB
-* subscriptions
-* bulk tools
+- onboarding
+- publication limits
+- organization/business data
+- store
+- team
+- billing
+- analytics
+- KYB
+- subscriptions
+- bulk tools
 
 ---
 
@@ -1635,15 +1639,15 @@ rather than dozens of nearly identical cards.
 
 Audit all screens for oversized:
 
-* typography
-* buttons
-* inputs
-* cards
-* banners
-* radius
-* icons
-* whitespace
-* modals
+- typography
+- buttons
+- inputs
+- cards
+- banners
+- radius
+- icons
+- whitespace
+- modals
 
 especially on:
 
@@ -1710,23 +1714,23 @@ Target **WCAG 2.2 AA**.
 
 Check:
 
-* semantic landmarks
-* heading hierarchy
-* labels
-* descriptions
-* field errors
-* keyboard navigation
-* focus visibility
-* focus traps
-* focus restoration
-* modals
-* menus
-* tabs
-* carousels
-* tables
-* contrast
-* reduced motion
-* screen-reader announcements
+- semantic landmarks
+- heading hierarchy
+- labels
+- descriptions
+- field errors
+- keyboard navigation
+- focus visibility
+- focus traps
+- focus restoration
+- modals
+- menus
+- tabs
+- carousels
+- tables
+- contrast
+- reduced motion
+- screen-reader announcements
 
 Never use color as the only status indicator.
 
@@ -1823,16 +1827,16 @@ rendered once by `CookieConsent` in the app shell.
 Non-negotiable properties, each of them a legal requirement rather than a design
 preference:
 
-* **Opt-in.** Optional categories default to `false`. "Not asked yet" and
+- **Opt-in.** Optional categories default to `false`. "Not asked yet" and
   "refused" must be indistinguishable downstream, or the gap between them becomes
   a tracking window.
-* **Refusing is a first-layer button** with the same weight as accepting. An
+- **Refusing is a first-layer button** with the same weight as accepting. An
   "Accept / Settings" pair is the pattern the CNIL sanctions.
-* **No dismiss affordance** — no cross, no Escape, no click-away. Dismissing
+- **No dismiss affordance** — no cross, no Escape, no click-away. Dismissing
   without choosing would have to be read as consent, and silence is not consent.
-* **Reopening never re-consents.** The panel opens pre-filled with what is
+- **Reopening never re-consents.** The panel opens pre-filled with what is
   currently permitted.
-* **Consent expires** (`CONSENT_LIFETIME_DAYS`) and a `CONSENT_VERSION` bump
+- **Consent expires** (`CONSENT_LIFETIME_DAYS`) and a `CONSENT_VERSION` bump
   re-prompts everyone, because consent is given for a stated purpose.
 
 The banner is a `role="region"` landmark, not a `role="dialog"`: it has no focus
@@ -1864,10 +1868,10 @@ may be used if consistent with existing product behavior.
 
 Ensure mobile bottom navigation does not cover:
 
-* forms
-* checkout controls
-* message composer
-* modal content
+- forms
+- checkout controls
+- message composer
+- modal content
 
 Respect safe areas.
 
@@ -1928,9 +1932,9 @@ Frontend must not implement authoritative marketplace ranking.
 
 Do not manually reorder production-like results to simulate:
 
-* Featured
-* Urgent
-* Bumps
+- Featured
+- Urgent
+- Bumps
 
 outside the adapter layer.
 
@@ -2218,7 +2222,6 @@ Do not concatenate translated strings.
 
 ---
 
-
 ## The translation layer
 
 Messages live in `src/i18n/`. `messages.fr.ts` is the source catalogue and
@@ -2227,15 +2230,15 @@ a string that renders as itself. Components call `const { t } = useTranslation()
 
 Rules that are not negotiable:
 
-* **Never pluralise by hand.** `t('common.listingCount', { count })` resolves
+- **Never pluralise by hand.** `t('common.listingCount', { count })` resolves
   through `Intl.PluralRules`. French puts 0 in the singular ("0 annonce") and
   English puts it in the plural ("0 listings"); the existing `plural()` helper in
   `utilities/formatters.ts` hard-codes `>= 2`, which is the French rule and will
   be wrong in every other language.
-* **A missing translation falls back to French, never to the raw key.** An
+- **A missing translation falls back to French, never to the raw key.** An
   incomplete locale degrades to readable text instead of `nav.sell` appearing in
   the navigation.
-* **Locale is not owned here.** `MarketLocationProvider` holds it, persists it
+- **Locale is not owned here.** `MarketLocationProvider` holds it, persists it
   and syncs `<html lang>`; `I18nProvider` reads it. Do not add a second source of
   truth for what language the page is in.
 
@@ -2287,7 +2290,7 @@ name: 'Véhicules'   // flat mirror of labels['fr-FR']
 
 Read them through `getTaxonomyLabel` / `localize`, never by reaching for the flat
 field. The flat `name` / `label` / `shortLabel` are French mirrors kept for
-compatibility, and for a long time they were the *only* thing anything read —
+compatibility, and for a long time they were the _only_ thing anything read —
 `getTaxonomyLabel` even defaulted its locale to a hard-coded `'fr-FR'`. Every
 English label in the taxonomy existed and was unreachable. The service now
 resolves the flat fields from the maps when it builds its index, so whichever
@@ -2427,10 +2430,10 @@ Do not create one giant store for the entire application.
 
 Use the URL for state that users should be able to:
 
-* refresh;
-* share;
-* bookmark;
-* navigate with back/forward.
+- refresh;
+- share;
+- bookmark;
+- navigate with back/forward.
 
 Typical examples:
 
@@ -3287,19 +3290,19 @@ ComponentFinal
 
 Once the replacement is proven:
 
-* migrate all consumers;
-* run tests;
-* remove obsolete versions.
+- migrate all consumers;
+- run tests;
+- remove obsolete versions.
 
 The same applies to:
 
-* CSS
-* hooks
-* routes
-* mocks
-* APIs
-* schemas
-* feature flags
+- CSS
+- hooks
+- routes
+- mocks
+- APIs
+- schemas
+- feature flags
 
 ---
 
@@ -3465,13 +3468,13 @@ Demo fixtures must not accidentally imply that fabricated performance claims are
 
 Do not use:
 
-* preselected paid options;
-* hidden charges;
-* fake urgency;
-* forced subscription;
-* misleading cancellation UX;
-* deceptive premium placement;
-* inaccessible opt-outs.
+- preselected paid options;
+- hidden charges;
+- fake urgency;
+- forced subscription;
+- misleading cancellation UX;
+- deceptive premium placement;
+- inaccessible opt-outs.
 
 Shongre monetization should be transparent and trust-building.
 
@@ -3509,11 +3512,11 @@ Desktop interfaces should use available space efficiently without becoming overs
 
 Avoid:
 
-* huge cards
-* huge font sizes
-* excessive padding
-* stretched controls
-* overly wide text blocks
+- huge cards
+- huge font sizes
+- excessive padding
+- stretched controls
+- overly wide text blocks
 
 Use centered content containers and consistent side gutters.
 
@@ -3672,21 +3675,21 @@ The root README should explain the high-level repository layout.
 
 `frontend/README.md` should explain:
 
-* frontend architecture;
-* demo mode;
-* service contracts;
-* adapters;
-* testing;
-* future backend connection.
+- frontend architecture;
+- demo mode;
+- service contracts;
+- adapters;
+- testing;
+- future backend connection.
 
 `backend/README.md` should explain:
 
-* backend architecture;
-* Supabase;
-* migrations;
-* local development;
-* testing;
-* environment configuration.
+- backend architecture;
+- Supabase;
+- migrations;
+- local development;
+- testing;
+- environment configuration.
 
 Do not duplicate extensive content unnecessarily.
 
@@ -3696,18 +3699,18 @@ Do not duplicate extensive content unnecessarily.
 
 A frontend change is not complete until, where relevant:
 
-* existing working behavior remains intact;
-* the feature works in demo mode;
-* no backend is required;
-* loading state exists;
-* empty state exists;
-* error state exists;
-* mobile works;
-* desktop works;
-* accessibility is checked;
-* TypeScript passes;
-* tests pass;
-* production build passes.
+- existing working behavior remains intact;
+- the feature works in demo mode;
+- no backend is required;
+- loading state exists;
+- empty state exists;
+- error state exists;
+- mobile works;
+- desktop works;
+- accessibility is checked;
+- TypeScript passes;
+- tests pass;
+- production build passes.
 
 ---
 
@@ -3715,16 +3718,16 @@ A frontend change is not complete until, where relevant:
 
 A backend change is not complete until, where relevant:
 
-* migration exists;
-* constraints are correct;
-* RLS is correct;
-* authorization is correct;
-* input validation exists;
-* concurrency/idempotency is considered;
-* tests exist;
-* no secrets leak;
-* performance implications are considered;
-* integration contracts are documented/generated.
+- migration exists;
+- constraints are correct;
+- RLS is correct;
+- authorization is correct;
+- input validation exists;
+- concurrency/idempotency is considered;
+- tests exist;
+- no secrets leak;
+- performance implications are considered;
+- integration contracts are documented/generated.
 
 ---
 
@@ -3765,11 +3768,11 @@ When the repository provides enough context, inspect the code and make the best 
 
 Do not repeatedly ask the user questions that can be resolved by:
 
-* repository inspection;
-* current design patterns;
-* existing tests;
-* current project conventions;
-* this `AGENTS.md`.
+- repository inspection;
+- current design patterns;
+- existing tests;
+- current project conventions;
+- this `AGENTS.md`.
 
 For ambiguous but non-critical details, preserve existing behavior.
 
@@ -3844,9 +3847,9 @@ If a test/build fails because of the change, fix it.
 
 If a pre-existing unrelated failure prevents full validation:
 
-* verify that it is pre-existing;
-* document it concisely;
-* still run all other applicable checks.
+- verify that it is pre-existing;
+- document it concisely;
+- still run all other applicable checks.
 
 Do not hide failures.
 
@@ -3932,18 +3935,18 @@ Do not prematurely couple the two while both architectures are still being compl
 
 Every modification should move Shongre toward a platform that is:
 
-* coherent
-* maintainable
-* secure
-* fast
-* scalable
-* accessible
-* market-aware
-* privacy-conscious
-* testable
-* operationally understandable
-* commercially flexible
-* pleasant to use
+- coherent
+- maintainable
+- secure
+- fast
+- scalable
+- accessible
+- market-aware
+- privacy-conscious
+- testable
+- operationally understandable
+- commercially flexible
+- pleasant to use
 
 The platform should behave like **one integrated marketplace product**, not a collection of independently developed screens and features.
 
@@ -3963,34 +3966,34 @@ is per-request state and must be threaded as such.
 
 ## Where the pieces live
 
-| Concern | Module |
-| :--- | :--- |
-| Password hashing (scrypt) | `backend/src/shared/auth/password.ts` |
-| Token signing/verification (HS256) | `backend/src/shared/auth/tokens.ts` |
-| Cookie, CSRF and request metadata | `backend/src/shared/auth/http-session.ts` |
-| Identities, sessions and OAuth persistence | `backend/src/infrastructure/database/repositories/auth.repository.ts` |
-| Session rotation/revocation | `backend/src/modules/auth/session.service.ts` |
-| OAuth/OIDC validation and identity resolution | `backend/src/modules/auth/oauth-provider.client.ts`, `social-auth.service.ts` |
-| Principal + ownership guards | `backend/src/shared/auth/principal.ts` |
-| Role → permission matrix | `backend/src/shared/auth/rbac.ts` |
-| Route access declarations | `backend/src/api/v1/router.ts` |
-| Credential/identity/session storage | `user_credentials`, `user_identities`, `auth_sessions`; migrations `00006`, `00012` |
+| Concern                                       | Module                                                                              |
+| :-------------------------------------------- | :---------------------------------------------------------------------------------- |
+| Password hashing (scrypt)                     | `backend/src/shared/auth/password.ts`                                               |
+| Token signing/verification (HS256)            | `backend/src/shared/auth/tokens.ts`                                                 |
+| Cookie, CSRF and request metadata             | `backend/src/shared/auth/http-session.ts`                                           |
+| Identities, sessions and OAuth persistence    | `backend/src/infrastructure/database/repositories/auth.repository.ts`               |
+| Session rotation/revocation                   | `backend/src/modules/auth/session.service.ts`                                       |
+| OAuth/OIDC validation and identity resolution | `backend/src/modules/auth/oauth-provider.client.ts`, `social-auth.service.ts`       |
+| Principal + ownership guards                  | `backend/src/shared/auth/principal.ts`                                              |
+| Role → permission matrix                      | `backend/src/shared/auth/rbac.ts`                                                   |
+| Route access declarations                     | `backend/src/api/v1/router.ts`                                                      |
+| Credential/identity/session storage           | `user_credentials`, `user_identities`, `auth_sessions`; migrations `00006`, `00012` |
 
 ## Identity and session invariants
 
-* Social identity matching uses `(provider, provider_subject)`, never email.
-* A matching verified email never silently merges profiles. The user signs in,
+- Social identity matching uses `(provider, provider_subject)`, never email.
+- A matching verified email never silently merges profiles. The user signs in,
   recently reauthenticates, and explicitly links the provider.
-* Unlinking the last usable method is rejected by both service logic and a
+- Unlinking the last usable method is rejected by both service logic and a
   database trigger.
-* Provider authorization codes, access tokens and refresh tokens are exchanged
+- Provider authorization codes, access tokens and refresh tokens are exchanged
   only by the backend and are never persisted in web or mobile clients.
-* Web refresh tokens are HttpOnly and cookie-authenticated mutations require a
+- Web refresh tokens are HttpOnly and cookie-authenticated mutations require a
   double-submit CSRF token. Native refresh tokens live only in SecureStore.
-* Refresh tokens rotate on every use. Reuse revokes the entire token family.
-* Link, unlink, password changes, deletion and other sensitive operations
+- Refresh tokens rotate on every use. Reuse revokes the entire token family.
+- Link, unlink, password changes, deletion and other sensitive operations
   require recent authentication.
-* OAuth `state`, nonce and PKCE are mandatory. State and one-time native
+- OAuth `state`, nonce and PKCE are mandatory. State and one-time native
   exchange handles are consumed atomically and expire quickly.
 
 The complete flow, callback registry and rollout procedure live in
@@ -4003,9 +4006,14 @@ registered without stating one. Adding a route without thinking about auth is a
 type error, not a silent default.
 
 ```ts
-this.addRoute('GET',  '/listings/:id', PUBLIC,                        handler);
-this.addRoute('POST', '/messaging/conversations/:id/messages', permission('message.send'), handler);
-this.addRoute('GET',  '/admin/users',  permission('user.read'),       handler);
+this.addRoute("GET", "/listings/:id", PUBLIC, handler);
+this.addRoute(
+  "POST",
+  "/messaging/conversations/:id/messages",
+  permission("message.send"),
+  handler,
+);
+this.addRoute("GET", "/admin/users", permission("user.read"), handler);
 ```
 
 Use `PUBLIC` only for genuinely public marketplace surface (listings, taxonomy,
@@ -4084,20 +4092,20 @@ counted. Two scripts clear them, and both take their orders from
 `tsc --noEmit --noUnusedLocals` rather than from a regex deciding what looks
 dead:
 
-* `scripts/prune-unused-imports.mjs` — imports only. Loops, because removals
+- `scripts/prune-unused-imports.mjs` — imports only. Loops, because removals
   cascade: dropping the last named binding turns the statement into TS6192.
-* `scripts/prune-unused-locals.mjs` — destructured bindings and single-line
+- `scripts/prune-unused-locals.mjs` — destructured bindings and single-line
   `const`s. Prints everything it declines, so what is left is a short list a
   human reads rather than a silent gap.
 
 **A rewriter must match a whole binding, never half of one.** Three shapes look
 alike and are not:
 
-| Shape | Reported name | Wrong edit leaves |
-|---|---|---|
-| `{ location: userLocation }` | the *alias* | `{ location: }` |
-| `{ marketCode = 'FR' }` | the property | `{ , = 'FR' }` |
-| `[value, setValue]` | the element | `[setValue]` — **still compiles** |
+| Shape                        | Reported name | Wrong edit leaves                 |
+| ---------------------------- | ------------- | --------------------------------- |
+| `{ location: userLocation }` | the _alias_   | `{ location: }`                   |
+| `{ marketCode = 'FR' }`      | the property  | `{ , = 'FR' }`                    |
+| `[value, setValue]`          | the element   | `[setValue]` — **still compiles** |
 
 The array case is the dangerous one: destructuring is positional, so deleting a
 slot silently rebinds every name after it. `const [value, setValue] = useState(false)`
@@ -4381,14 +4389,14 @@ single Expo application that targets iOS and Android.
 
 ## Canonical ownership
 
-* `packages/design-tokens/` is the only authoritative design-token source.
+- `packages/design-tokens/` is the only authoritative design-token source.
   Frontend, mobile, iOS, and Android must not maintain independent colour,
   typography, spacing, radius, shadow, motion, breakpoint, or z-index scales.
   Platform adapters must be generated from or directly derive from this package.
-* `packages/ui/` is the canonical shared component library. Web and mobile must
+- `packages/ui/` is the canonical shared component library. Web and mobile must
   consume its primitives and patterns when the component is technically and
   semantically shared.
-* `packages/features/` owns reusable feature presentation and interaction rules;
+- `packages/features/` owns reusable feature presentation and interaction rules;
   `packages/contracts/` publishes generated OpenAPI types and stable domain
   schemas. `backend/openapi/openapi.json` remains authoritative for HTTP paths,
   wire requests, wire responses, and security; package exports must not become
@@ -4396,34 +4404,34 @@ single Expo application that targets iOS and Android.
   owns framework-independent formatting, validation, and business utilities;
   `packages/brand/` owns canonical brand assets and their deterministic platform
   generation.
-* Do not recreate shared components or token sources under `frontend/` or
+- Do not recreate shared components or token sources under `frontend/` or
   `mobile/`. A local compatibility file may only be a thin adapter to a shared
   package and must not become a second implementation.
 
 ## Platform boundaries
 
-* `mobile/app/` and `mobile/src/` remain the one mobile application source for
+- `mobile/app/` and `mobile/src/` remain the one mobile application source for
   both iOS and Android. Never maintain separate iOS and Android business UIs.
-* Use `.web`, `.native`, `.ios`, and `.android` adapters only for genuine
+- Use `.web`, `.native`, `.ios`, and `.android` adapters only for genuine
   platform differences. Keep their public component contract aligned.
-* Shared visual, validation, contract, and presentation changes must propagate
+- Shared visual, validation, contract, and presentation changes must propagate
   to every supported consumer without manual parallel edits.
-* Consolidation must preserve existing product behavior and accessible
+- Consolidation must preserve existing product behavior and accessible
   metadata. Moving a component into a shared package is not permission to drop
   seller trust, photo counts, delivery, dates, pricing states, focus behavior,
   or actions that the existing component exposed.
-* A shared listing-card `list` variant remains a genuinely compact horizontal
+- A shared listing-card `list` variant remains a genuinely compact horizontal
   row at 320px. Do not reuse grid media geometry or grid density without
   validating the row's own content box at the minimum supported width.
-* Do not use a WebView as a source-sharing shortcut. Web remains real Next.js;
+- Do not use a WebView as a source-sharing shortcut. Web remains real Next.js;
   iOS and Android remain real Expo/React Native applications.
-* Preserve Next.js server rendering, metadata, structured data, semantic HTML,
+- Preserve Next.js server rendering, metadata, structured data, semantic HTML,
   accessibility, route optimization, and SEO. Do not widen the existing client
   boundary when a Server Component or Web adapter is appropriate.
-* Shared image and avatar APIs must still allow Web adapters to provide
+- Shared image and avatar APIs must still allow Web adapters to provide
   responsive `srcset`/`sizes`, priority hints, and optimized loading while
   native adapters retain React Native image behavior.
-* Preserve native navigation, safe areas, keyboard behavior, permissions,
+- Preserve native navigation, safe areas, keyboard behavior, permissions,
   haptics, system sheets, VoiceOver, TalkBack, and store compatibility. Shared
   styling never justifies degrading native UX.
 
@@ -4589,19 +4597,359 @@ undocumented alias "just in case."
 
 ## Transport conventions
 
-* Use the shared `ErrorResponse`, request ID, cookie/bearer security schemes,
+- Use the shared `ErrorResponse`, request ID, cookie/bearer security schemes,
   pagination parameters, and idempotency header components.
-* Identity comes from the authenticated principal. Account-owned collections
+- Identity comes from the authenticated principal. Account-owned collections
   such as notifications, conversations, purchases, and sales do not accept a
   caller-selected user ID in their canonical URL.
-* Money uses integer minor units and an ISO currency. Timestamps have explicit
+- Money uses integer minor units and an ISO currency. Timestamps have explicit
   semantics and timezone-aware representations.
-* Public media and private verification documents use their separate,
+- Public media and private verification documents use their separate,
   documented two-phase upload operations. Never place private material in a
   public bucket or accept an arbitrary storage key as proof of ownership.
-* API reference documentation is generated with `make openapi-docs`. Markdown
+- API reference documentation is generated with `make openapi-docs`. Markdown
   may explain workflows, but must link the generated endpoint inventory rather
   than maintain another endpoint list.
 
 The full contributor workflow is in `backend/docs/api.md`; the system diagram
 and enforcement boundaries are in `docs/architecture/openapi.md`.
+
+---
+
+# 156. CRM and shared Provider Platform boundaries
+
+Shongre backend is a TypeScript/Node modular-monolith architecture. Do not
+introduce Django, a second backend framework, or a separate CRM service unless a
+future, evidence-based extraction is explicitly approved.
+
+PostgreSQL/Supabase is the canonical persistence layer. Production schema
+changes belong only in ordered `backend/supabase/migrations/`. Tenant-owned CRM
+and provider data must carry tenant identity and use deny-by-default RLS. Backend
+authorization remains authoritative even when RLS and frontend route guards are
+also present.
+
+`backend/openapi/openapi.json` is the only frontend/backend HTTP contract.
+Shared/generated schemas belong in `@shongre/contracts`; database rows, router
+internals, and handwritten client wire DTOs are not public contracts.
+
+## CRM Core
+
+CRM Core owns generic relationship-management concepts such as accounts,
+contacts, opportunities, pipelines, tasks, activities, products, quotes, custom
+fields and automation definitions. It must not depend directly on Marketplace,
+Immo, Auto, Education, Newsletter, billing, payment, or another vertical's
+business models or repositories.
+
+Shongre-to-CRM integration uses explicit adapters, stable external references,
+and durable/idempotent domain events. Verticals do not write CRM tables, and CRM
+does not import vertical repositories. A future SaaS extraction must use these
+OpenAPI/event seams rather than fork shared platform infrastructure.
+
+Pipeline stages are tenant configuration, not hardcoded labels or IDs. Stage
+transitions validate pipeline membership, required fields, status semantics,
+authorization, optimistic version and audit evidence. Authoritative money uses
+integer minor units plus ISO currency everywhere.
+
+Production CRM persistence uses the backend repository and PostgreSQL. Demo CRM
+adapters are deterministic, asynchronous, isolated and clearly marked. Neither
+the frontend nor backend may silently fall back to Demo Mode in production.
+
+## One shared Provider Platform
+
+Shongre has one Provider Platform for CRM, Newsletter, Notifications and all
+other consumers. CRM may not create duplicate provider catalogues, credential
+stores, health systems, usage ledgers, webhook handlers, AI integrations,
+mailbox integrations, or delivery integrations. Newsletter must reuse the same
+provider adapters.
+
+Provider credentials are server-side encrypted secrets or opaque secret-manager
+references. Raw tenant/user keys, OAuth refresh tokens, SMTP passwords and other
+credentials never enter public environment variables, frontend bundles,
+connection configuration, logs, audit payloads, error details, or API responses.
+Only safe status and hint metadata may leave the credential boundary.
+
+All provider calls occur through capability gateways and provider adapters after
+deterministic resolution of ownership, tenant policy, feature, capability,
+connection status and credential availability. `USER` connections are visible
+only to their owner. `PLATFORM` fallback is opt-in and never a silent
+cost-generating fallback. Provider consumption is customer-funded by default.
+
+AI features use the shared `AiGateway`. Email delivery uses the shared
+`EmailDeliveryGateway`. User mailbox send/sync uses the shared `MailboxGateway`.
+Do not call OpenAI, Anthropic, an OpenAI-compatible endpoint, Brevo, Mailjet,
+SendGrid, SES, Mailgun, Postmark, Resend, Gmail or Microsoft APIs from CRM domain
+code.
+
+AI and email require both the feature-specific CRM capability and Provider
+Platform policy. They cannot bypass actor capabilities, do-not-contact,
+communication-purpose, data-classification, tenant, or audit controls. AI output
+is advisory and must re-enter normal application commands before any mutation or
+external action.
+
+The implementation status and provider/CRM contributor guide are in
+`backend/docs/crm-platform.md` and `backend/docs/provider-platform.md`. Reserved
+tables or configuration screens are not proof that a worker or live provider is
+implemented; keep release-gated capabilities visibly fail-closed.
+
+---
+
+# 157. Newsletter and Marketing boundaries
+
+Marketing is a bounded domain in the existing TypeScript modular monolith. Its
+canonical persistence is migration-driven under `backend/supabase/`; the
+frontend consumes `MarketingServiceContract` and must not store authoritative
+subscriptions, campaigns, consent, suppression, or delivery state in browser
+storage.
+
+Newsletter and CRM share the Provider Platform. Never introduce a second email
+provider catalogue, credential store, health system, webhook implementation, AI
+client, or delivery gateway. Marketing campaigns use `EmailDeliveryGateway`;
+drafting uses `AiGateway`; all live calls fail closed when a tenant capability is
+not configured.
+
+Marketing consent is purpose-specific and append-only. Global marketing
+unsubscribe must suppress marketing delivery without blocking transactional or
+security email. Public confirmation, preference, and unsubscribe actions use
+hashed, expiring, non-guessable tokens. Double opt-in profiles remain pending
+until confirmation. Campaign dispatch requires backend preflight, a snapshotted
+eligible audience, deterministic recipient idempotency, bounded worker retries,
+and auditable provider-neutral delivery events.
+
+The implementation and contributor workflow are documented in
+`backend/docs/marketing-platform.md`. Campaign sends and journey emails must
+recheck consent, suppression, do-not-contact, frequency caps, and resolved
+entitlements immediately before external delivery. Automation waits/retries and
+outgoing webhook delivery must remain persisted, idempotent, and claim work with
+skip-locked database queues; never hold those workflows only in process memory.
+Run `make marketing-check` after changing
+marketing contracts, consent, segmentation, campaigns, workers, Provider
+Platform integration, OpenAPI, or the demo adapter.
+
+---
+
+# 158. Canonical multi-country routing
+
+All public country identity and URL construction uses the shared
+`CountryConfig` contract and `COUNTRY_REGISTRY` from
+`packages/contracts/src/market-country.ts`. Do not concatenate domains or
+country path prefixes in pages, emails, notifications, share actions, workers,
+or provider callbacks.
+
+Canonical topology is:
+
+```text
+shongre.fr/*       France
+shongre.com/       global country gateway only
+shongre.com/be/*   Belgium
+shongre.com/ch/*   Switzerland
+shongre.com/sn/*   Senegal launch surface until enabled
+shongre.com/bf/*   Burkina Faso launch surface until enabled
+```
+
+`resolveMarketContext()` is the only host/path resolver. France on `/fr/*`,
+`www` hosts, and other aliases must permanently redirect to one canonical URL
+while preserving the route and query. Unknown hosts and country slugs fail
+closed. API requests must validate header, referrer and body/query market
+consistency; a market header is never proof of permission.
+
+Frontend country changes go through `MarketLocationProvider` and service
+contracts. Cross-domain authenticated moves use the short-lived, single-use
+`AuthService` domain handoff; never share cookies across `.fr` and `.com`, put
+tokens in query strings, or duplicate identities. The frontend remains in demo
+mode until a real backend connection is explicitly requested.
+
+SEO canonicals, `hreflang`, sitemaps, structured data, share URLs, email links
+and notification routes must derive from the same builder. Only active,
+marketplace-enabled, indexable markets may emit reciprocal alternates or public
+sitemap entries. New markets remain `coming_soon` and non-indexable until
+provider, compliance and legal-review gates are explicitly approved.
+
+---
+
+# 159. Mandatory country awareness for every implementation
+
+Country awareness is required across the entire Shongre platform. This applies
+to frontend, backend, mobile, administration, OpenAPI, database design, workers,
+queues, caches, integrations, analytics, tests, documentation and operations.
+No feature may be implemented as implicitly France-only or implicitly global.
+
+## Every feature must declare its scope
+
+Before implementing or changing a feature, explicitly classify its domain data
+and behavior as one of:
+
+```text
+PLATFORM_GLOBAL
+MARKET_SCOPED
+MULTI_MARKET_SHARED
+```
+
+- `PLATFORM_GLOBAL` is valid only when the concept is genuinely shared, such as
+  a user identity or a stable taxonomy definition. The implementation must still
+  consider market-specific availability, policy and presentation at its
+  boundaries.
+- `MARKET_SCOPED` data and behavior belong to exactly one market and must carry
+  an explicit `marketCode` or market identifier.
+- `MULTI_MARKET_SHARED` entities are stored once and use explicit availability,
+  publication or policy associations for each eligible market. Do not clone the
+  whole entity per country merely to localize availability.
+
+If scope is not stated and justified, the implementation is incomplete. Never
+add a country column mechanically to a genuinely global entity; model the
+market-specific association instead. Conversely, never call data global merely
+to avoid adding correct market isolation.
+
+## One authoritative market context
+
+All request-driven behavior must use the `MarketContext` resolved by the shared
+host/path resolver. The required context includes, where applicable:
+
+```text
+countryCode
+marketCode
+locale
+currency
+timezone
+location
+canonical domain and base path
+launch status
+market policies and capabilities
+```
+
+Do not infer authoritative market identity from UI text, browser language,
+currency, local storage, a caller-controlled header, or a fallback constant.
+Persisted user preference may suggest a destination, but the canonical URL wins
+for the current request. API headers are scope hints and must be cross-validated
+against the canonical host/referrer and explicit request fields.
+
+Background work has no ambient HTTP request. Events, queue messages, scheduled
+jobs, notifications, webhooks and outbox records must therefore carry the
+relevant market identity explicitly. Missing, unknown, disabled or inconsistent
+market context must fail closed instead of silently falling back to France.
+
+## Frontend requirements
+
+- Pages and components consume the existing market provider, hooks and service
+  contracts; they do not parse domains or country prefixes themselves.
+- Service operations include market context whenever behavior, availability or
+  returned data can vary by market. Demo adapters must enforce the same boundary
+  as future HTTP adapters.
+- Browser state, caches, optimistic state and temporary persistence that vary by
+  market must be keyed by both account/persona and market. A country switch must
+  invalidate or reload incompatible state.
+- All user-visible money, dates, times, addresses, phone numbers, measurement
+  units and translations use the resolved locale, currency and timezone.
+- Do not hardcode France, French geography, `fr-FR`, `EUR`, `Europe/Paris`, `+33`,
+  French postal rules, VAT, legal copy, publication limits or provider support
+  inside components.
+- A route unavailable in the destination market must use a deliberate fallback
+  or availability state; it must not render another market's data.
+- The global gateway is not a marketplace context. It must not execute market
+  business operations until a country has been selected.
+
+## API and backend requirements
+
+- OpenAPI operations whose behavior or data can vary by market must declare the
+  market-context contract and document mismatch/error behavior.
+- Domain services receive resolved market context explicitly. Repositories must
+  scope reads, writes, aggregates and uniqueness rules by the correct market or
+  multi-market association.
+- Authorization and RLS must prevent cross-market access where market isolation
+  is a domain rule. Frontend filtering is never isolation.
+- Database constraints, indexes, idempotency keys, deduplication keys, cache
+  keys, rate-limit keys, job locks and search indexes must include market scope
+  when omitting it could cause collision, leakage or incorrect reuse.
+- Search, recommendations, trending, analytics summaries, entitlements,
+  promotions, subscriptions, prices, payments, taxes, delivery, verification,
+  moderation and fraud decisions are market-policy driven.
+- Shared entities such as listings, organizations, stores and taxonomy nodes use
+  explicit market publication/availability records. Fetching the shared record
+  alone does not prove availability in the active market.
+- Provider selection must validate country support, currency support, legal
+  approval, capability, credentials and release status before any external call.
+
+## URLs, communications and integrations
+
+Every URL visible outside an internal process must use the shared public URL
+builder with explicit country context. This includes:
+
+```text
+canonicals and hreflang
+shares and deep links
+emails and newsletters
+notifications
+CRM activities
+provider return/callback URLs
+receipts and invoices
+support and moderation links
+sitemaps and structured data
+```
+
+Communications must carry the market, locale and canonical internal route as
+data. Workers build the final public URL from that context. Never concatenate a
+domain or assume `.fr` at the delivery boundary.
+
+Analytics, audit logs, operational logs and business events must include the
+resolved country/market and relevant locale/currency/domain dimensions. Internal
+risk information remains private, but its market scope must still be retained.
+
+## Configuration and launch safety
+
+Market-specific behavior must come from typed configuration or authoritative
+admin-managed policy, not scattered country conditionals. Country overrides may
+specialize the shared baseline without forking the application.
+
+Admin changes to routing, availability, pricing, taxes, legal requirements,
+providers, entitlements or launch status require explicit permission, validation,
+versioning and audit evidence. A new market starts disabled or `coming_soon` and
+non-indexable. Activation must remain blocked until its legal, compliance,
+provider, payment, localization and operational readiness gates pass.
+
+Unknown legal, tax, payment or provider facts remain unknown and fail closed.
+Never invent a value by copying France's configuration.
+
+## Required country-aware tests
+
+Every affected feature must test the markets and boundaries relevant to it. The
+minimum representative matrix for cross-cutting behavior is:
+
+```text
+FR  active, root domain, EUR, fr-FR
+BE  active, .com path, EUR, fr-BE
+CH  active, .com path, CHF, fr-CH
+SN or BF  coming soon, non-indexable, marketplace denied
+unknown/disabled/mismatched market  rejected
+```
+
+Tests must cover, as applicable:
+
+- no cross-market data leakage;
+- canonical route and query preservation;
+- locale, currency, timezone and formatting;
+- market-specific availability and policy;
+- account plus market cache/state separation;
+- jobs, events, notifications and idempotency retaining market identity;
+- API header/referrer/body mismatch rejection;
+- country switching and unavailable-route behavior;
+- launch gating, SEO indexing and sitemap exclusion.
+
+A France-only happy-path test is insufficient for a market-sensitive change.
+When a feature is genuinely `PLATFORM_GLOBAL`, add evidence that its market
+boundaries remain correct rather than omitting country-aware tests.
+
+## Country-aware definition of done
+
+A change is not complete until reviewers can answer all of these:
+
+1. What is global, market-scoped or multi-market shared?
+2. Where does authoritative market context enter the flow?
+3. How is the scope preserved through storage, async work and integrations?
+4. Which values come from market policy instead of hardcoding?
+5. How are URLs, locale, currency and timezone resolved?
+6. What prevents cross-market leakage and unsafe fallback?
+7. Which tests prove behavior in multiple active markets and an unavailable one?
+8. What launch, rollback, audit and observability behavior applies?
+
+Any intentional exception must be documented beside the relevant contract or
+architecture decision with an owner and rationale. "France is the current
+default" is never sufficient justification for omitting country awareness.

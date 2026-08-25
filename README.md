@@ -25,6 +25,11 @@ The web and mobile clients are adapter-based. Their default `demo` mode is deter
 
 Specialized verticals reuse that platform boundary. Shongre Immo is documented in [`docs/architecture/shongre-immo.md`](docs/architecture/shongre-immo.md); its current standalone routes are `/immo`, `/deposer/immo`, `/compte/immo`, and `/admin/immo`.
 
+The tenant-scoped CRM follows the same boundary. Its system overview is in
+[`docs/architecture/crm.md`](docs/architecture/crm.md), with domain model,
+tenancy, permissions, provider reuse, compliance, demo behavior and extraction
+guidance in [`backend/docs/crm-platform.md`](backend/docs/crm-platform.md).
+
 Supabase remains canonical under `backend/supabase/`; `infrastructure/` owns cross-cutting templates and operations rather than a duplicate database stack.
 
 The single HTTP contract is the OpenAPI 3.1 document at
@@ -150,6 +155,7 @@ make cross-platform-check
 
 make openapi-check       # contract lint, generated-artifact and route parity
 make openapi-docs        # build the standalone Redoc API reference
+make crm-check           # focused CRM contracts, services, RLS and provider boundaries
 ```
 
 `make check` validates the environment and migrations, formatting, all workspaces, tests, Web/backend builds, infrastructure configuration, tracked-secret scanning, and frontend/backend boundaries. `make test-critical` is a focused gate for authentication/RBAC, listing lifecycle and ownership, messaging, payments/escrow/finance, monetization/entitlements, verification/compliance, provider safety, and public data boundaries. `make check-all` adds the focused critical gate, cross-platform propagation, browser E2E, and the high-severity dependency audit. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
@@ -252,3 +258,36 @@ AGENTS.md                 mandatory engineering rules and durable lessons
 ```
 
 Run `make help` for the canonical command list.
+
+## Multi-country Web routing
+
+One Next.js deployment serves the two canonical domains. France stays at
+`https://shongre.fr/*`; the international gateway is
+`https://shongre.com/`; Belgium and Switzerland use `/be/*` and `/ch/*`.
+Sénégal and Burkina Faso currently resolve to fail-closed launch pages at
+`/sn/*` and `/bf/*`.
+
+Local development keeps the historic France root and exposes every market as a
+path:
+
+```bash
+cd frontend
+npm install
+npm run dev
+
+# France
+open http://127.0.0.1:3000/
+# Global gateway (the .localhost name resolves to loopback on modern browsers)
+open http://global.localhost:3000/
+# Country paths
+open http://127.0.0.1:3000/be/
+open http://127.0.0.1:3000/ch/
+open http://127.0.0.1:3000/sn/
+open http://127.0.0.1:3000/bf/
+```
+
+The frontend remains fully standalone in `NEXT_PUBLIC_DATA_MODE=demo`; these
+routes do not require the backend, Supabase, Stripe, or an identity provider.
+Architecture, deployment, redirects, auth handoff, SEO and the public URL
+migration map are documented in
+[`docs/architecture/multi-country.md`](docs/architecture/multi-country.md).

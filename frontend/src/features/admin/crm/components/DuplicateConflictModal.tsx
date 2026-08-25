@@ -2,10 +2,8 @@ import React from "react";
 import { AlertCircle } from "lucide-react";
 import { Modal } from "../../../../design-system/primitives/Modal";
 import { Button } from "../../../../design-system/primitives/Button";
-import {
-  CrmCompany,
-  ProspectResearchCandidate,
-} from "../../../../domains/crm/crm.types";
+import type { CrmAccount } from "@shongre/contracts/crm";
+import type { ProspectResearchCandidate } from "../../../../api/contracts/crm-prospecting.contract";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 
@@ -13,7 +11,7 @@ interface DuplicateConflictModalProps {
   isOpen: boolean;
   onClose: () => void;
   candidate: ProspectResearchCandidate | null;
-  matchedCompany?: CrmCompany | null;
+  matchedCompany?: CrmAccount | null;
   onAssociate: () => void;
   onCreateSeparate: () => void;
 }
@@ -69,7 +67,7 @@ export const DuplicateConflictModal: React.FC<DuplicateConflictModalProps> = ({
                 </span>
                 <span className="text-stone-500 text-micro">
                   {matchedCompany.industry} •{" "}
-                  {matchedCompany.location?.city || activeMarket.name}
+                  {matchedCompany.city || activeMarket.name}
                 </span>
               </div>
               <span className="font-bold text-primary font-mono text-micro">

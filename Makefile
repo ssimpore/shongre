@@ -11,7 +11,7 @@ SHELL := /bin/bash
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate migrations-check db-seed db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
-	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check contracts generate check check-all ci build \
+	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check crm-check marketing-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
@@ -347,6 +347,13 @@ taxonomy-check: ## Validate canonical taxonomy coverage and publication schemas
 	@npm run check:taxonomy --workspace=frontend
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
 	@npm run test:providers --workspace=backend
+crm-check: ## Run focused CRM contracts, services, RLS, SSRF, and demo-adapter tests
+	@npm run test:crm --workspace=backend
+	@npm run test:crm --workspace=frontend
+marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, provider, and demo tests
+	@npm run test:marketing --workspace=backend
+	@npm run test:marketing --workspace=frontend
+	@npm run openapi:check
 contracts: contracts-check ## Validate stable public client/backend contracts
 generate: tokens-build db-types openapi-generate ## Regenerate deterministic tokens, database types, and API clients
 check: env env-check migrations-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan ## Run the deterministic pre-commit and pre-PR gate

@@ -43,6 +43,23 @@ URLs, and repository/database models are never exported as the wire contract.
 See [`../docs/api.md`](api.md) and
 [`../../docs/architecture/openapi.md`](../../docs/architecture/openapi.md).
 
+### 2.0.2 Country and domain boundary
+
+The API resolves a market from `X-Shongre-Market`, the full referrer URL and
+explicit request fields, then rejects any mismatch. The header selects data
+scope; it never grants authorization. Country routing, canonical public URLs,
+cross-domain session handoff, shared taxonomy and per-market availability are
+defined in
+[`../../docs/architecture/multi-country.md`](../../docs/architecture/multi-country.md).
+
+### 2.0.1 CRM bounded domain
+
+CRM reuses the repository, OpenAPI, authorization and shared Provider Platform
+boundaries described here. It never imports vertical business models or vendor
+SDKs into CRM Core. The domain model, tenant/RLS rules, current implementation
+status and release gates are documented in
+[`crm-platform.md`](crm-platform.md).
+
 ### 2.1 Central Configuration (`BACKEND_DATA_MODE`)
 
 - `BACKEND_DATA_MODE=demo` (Default): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.

@@ -24,4 +24,8 @@ export * from "./support.repository.js";
 export * from "./feature-flag.repository.js";
 export * from "./moderation.repository.js";
 export * from "./repository-container.js";
+export * from "./crm.repository.js";
+export * from "./crm-shongre-integration.repository.js";
+export * from "./marketing.repository.js";
+export * from "./marketing-operations.repository.js";
 export * from "./repository-error.js";

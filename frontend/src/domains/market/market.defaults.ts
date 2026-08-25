@@ -13,6 +13,7 @@ import {
   getDemoTaxRateBps,
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
+import { COUNTRY_REGISTRY, getCountryConfig } from "@shongre/contracts";
 
 const commercialProduct = (id: string) =>
   BASELINE_MONETIZATION_CATALOG.products.find((product) => product.id === id)!;
@@ -290,7 +291,7 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
 /**
  * Initial Seed Markets Setup
  */
-export const INITIAL_MARKETS: Market[] = [
+const CONFIGURED_MARKETS: Market[] = [
   // 1. FRANCE (Reference Market - Exactly one default)
   {
     id: "market-fr",
@@ -1043,4 +1044,88 @@ export const INITIAL_MARKETS: Market[] = [
     updatedAt: "2026-08-16T22:00:00Z",
     version: 1,
   },
+];
+
+const statusFromRegistry = (
+  status: (typeof COUNTRY_REGISTRY)[number]["launchStatus"],
+): Market["status"] => {
+  return status;
+};
+
+const marketFromCountryRegistry = (
+  country: (typeof COUNTRY_REGISTRY)[number],
+): Market => ({
+  id: `market-${country.slug}`,
+  code: country.code,
+  countryCode: country.code,
+  name: country.name,
+  flag: country.flag,
+  status: statusFromRegistry(country.launchStatus),
+  isDefault: country.code === "FR",
+  defaultLocale: country.defaultLocale,
+  supportedLocales: [...country.supportedLocales],
+  currency: country.currency,
+  currencySymbol: country.currencySymbol || country.currency,
+  timezone: country.timezone,
+  routing: {
+    primaryDomain: country.primaryDomain,
+    basePath: country.basePath,
+    gatewayVisible: country.gatewayVisible,
+    seoIndexable: country.seo.indexable,
+  },
+  geography: {
+    allCountryEnabled: true,
+    regions: [],
+    popularCities: [],
+  },
+  overrides: {
+    general: {
+      name: country.name,
+      supportEmail: `support@${country.primaryDomain}`,
+      launchState: "full",
+      tagline: country.launchContent.description,
+    },
+    localization: {
+      defaultLocale: country.defaultLocale,
+      supportedLocales: [...country.supportedLocales],
+      defaultCurrency: country.currency,
+      currencySymbol: country.currencySymbol || country.currency,
+      timezone: country.timezone,
+      phonePrefix: country.phoneCountryCode,
+    },
+    payments: { enabled: country.payments.enabled },
+    legal: { requiresLocalReview: country.compliance.legalReviewRequired },
+  },
+  createdAt: "2026-08-25T00:00:00Z",
+  updatedAt: "2026-08-25T00:00:00Z",
+  version: 1,
+});
+
+/**
+ * The detailed market policies remain local overrides, while stable identity,
+ * launch state, locale, currency and routing always come from the shared
+ * country registry. This keeps the existing rich fixtures without allowing
+ * them to become a second country registry.
+ */
+export const INITIAL_MARKETS: Market[] = [
+  ...CONFIGURED_MARKETS.map((market) => {
+    const country = getCountryConfig(market.code);
+    if (!country) return market;
+    return {
+      ...market,
+      name: country.name,
+      flag: country.flag,
+      status: statusFromRegistry(country.launchStatus),
+      defaultLocale: country.defaultLocale,
+      supportedLocales: [...country.supportedLocales],
+      currency: country.currency,
+      currencySymbol: country.currencySymbol || country.currency,
+      timezone: country.timezone,
+    };
+  }),
+  ...COUNTRY_REGISTRY.filter(
+    (country) =>
+      country.enabled &&
+      !CONFIGURED_MARKETS.some((market) => market.code === country.code),
+  ).map(marketFromCountryRegistry),
 ];

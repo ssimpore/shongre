@@ -146,7 +146,8 @@ export const ROUTE_POLICIES = {
     alternativeCapabilities: ["permission.manage"],
   },
   adminAudit: staff("/admin/audit", "audit.read"),
-  adminNewsletter: staff("/admin/newsletter", "market.manage"),
+  adminMarketing: staff("/admin/marketing", "marketing.dashboard.read"),
+  adminNewsletter: staff("/admin/newsletter", "marketing.dashboard.read"),
   adminCourse: staff("/admin/education", "course.admin.manage"),
   adminAuto: staff("/admin/auto", "auto.admin.manage"),
   adminRealEstate: staff("/admin/immo", "immo.admin.manage"),
@@ -160,11 +161,21 @@ export const ROUTE_POLICIES = {
     "crm.company.read",
   ),
   adminCrmPipeline: staff("/admin/crm/pipeline", "crm.opportunity.read"),
+  adminCrmOpportunityDetail: staff(
+    "/admin/crm/opportunites/:id",
+    "crm.opportunities.read",
+  ),
   adminCrmProspecting: staff(
     "/admin/crm/prospection",
     "crm.ai_prospecting.use",
   ),
   adminCrmTasks: staff("/admin/crm/taches", "crm.access"),
+  adminCrmProducts: staff("/admin/crm/produits", "crm.products.read"),
+  adminCrmAutomations: staff("/admin/crm/automations", "crm.automation.manage"),
+  adminCrmReports: staff("/admin/crm/rapports", "crm.analytics.read"),
+  adminCrmConfiguration: staff("/admin/crm/configuration", "crm.configuration.manage"),
+  adminCrmPipelineSettings: staff("/admin/crm/configuration/pipelines", "crm.pipelines.read"),
+  adminCrmCustomFields: staff("/admin/crm/configuration/champs", "crm.custom_fields.read"),
 } as const satisfies Record<string, RoutePolicy>;
 
 export type RoutePolicyId = keyof typeof ROUTE_POLICIES;

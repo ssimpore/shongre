@@ -219,6 +219,22 @@ describe("other formatters", () => {
     expect(getCurrencyDisplayName("EUR", "en-US")).toBe("Euro");
   });
 
+  it.each([
+    ["fr-FR", "EUR", /€/],
+    ["fr-BE", "EUR", /€/],
+    ["fr-CH", "CHF", /CHF/],
+    ["fr-SN", "XOF", /(F\s*CFA|XOF)/],
+    ["fr-BF", "XOF", /(F\s*CFA|XOF)/],
+  ])("formats authoritative minor units for %s/%s", (locale, currency, unit) => {
+    const formatted = formatMoney(
+      { amountMinor: 150_000, currency },
+      { locale },
+    ).replace(/\u202f|\u00a0/g, " ");
+    expect(formatted).toContain("1");
+    expect(formatted).toContain("500");
+    expect(formatted).toMatch(unit);
+  });
+
   it("formats dates properly", () => {
     expect(formatDate("2026-08-17T10:00:00Z")).toBeDefined();
   });

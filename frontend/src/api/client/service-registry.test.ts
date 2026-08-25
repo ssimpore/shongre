@@ -22,6 +22,8 @@ import {
   HttpReviewsService,
   HttpBusinessRulesService,
   HttpCommissionService,
+  HttpCrmService,
+  HttpCrmProspectingService,
 } from "../adapters/http";
 import {
   DemoListingsService,
@@ -40,6 +42,8 @@ import {
   DemoReviewsService,
   DemoBusinessRulesService,
   DemoCommissionService,
+  DemoCrmService,
+  DemoProspectResearchService,
 } from "../adapters/demo";
 
 describe("Service Registry & API Adapter Boundary", () => {
@@ -71,6 +75,8 @@ describe("Service Registry & API Adapter Boundary", () => {
       true,
     );
     expect(registry.commissions instanceof DemoCommissionService).toBe(true);
+    expect(registry.crm instanceof DemoCrmService).toBe(true);
+    expect(registry.crmProspecting instanceof DemoProspectResearchService).toBe(true);
   });
 
   it("instantiates the service registry in api mode when configured", () => {
@@ -98,6 +104,8 @@ describe("Service Registry & API Adapter Boundary", () => {
       true,
     );
     expect(apiRegistry.commissions instanceof HttpCommissionService).toBe(true);
+    expect(apiRegistry.crm instanceof HttpCrmService).toBe(true);
+    expect(apiRegistry.crmProspecting instanceof HttpCrmProspectingService).toBe(true);
   });
 
   it("rebinds the stable registry object when the central mode changes", () => {
@@ -107,11 +115,15 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(services).toBe(stableRegistry);
     expect(services.auth instanceof HttpAuthService).toBe(true);
     expect(services.listings instanceof HttpListingsService).toBe(true);
+    expect(services.crm instanceof HttpCrmService).toBe(true);
+    expect(services.crmProspecting instanceof HttpCrmProspectingService).toBe(true);
 
     activateServiceRegistry("demo");
     expect(services).toBe(stableRegistry);
     expect(services.auth instanceof DemoAuthService).toBe(true);
     expect(services.listings instanceof DemoListingsService).toBe(true);
+    expect(services.crm instanceof DemoCrmService).toBe(true);
+    expect(services.crmProspecting instanceof DemoProspectResearchService).toBe(true);
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {

@@ -27,15 +27,23 @@ import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data"
 import { resolveShippedLocale } from "../../i18n/locale";
 import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
 import { marketResolver } from "../../domains/market/market.resolver";
+import {
+  getCountryConfig,
+  type MarketContext,
+} from "@shongre/contracts";
+import { buildRuntimeMarketUrl } from "../../domains/market/market-routing";
+import {
+  currentRuntimeInternalPath,
+  isDevelopmentMarketHost,
+} from "../../domains/market/market-routing";
+import { useAuth } from "./AuthProvider";
+import { services } from "../../api/client/service-registry";
+import { analyticsService } from "../../services/analytics.service";
 
 const INITIAL_DEFAULT_MARKET =
   INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
-const INITIAL_DEFAULT_CONFIG = marketResolver.resolveEffectiveConfig(
-  INITIAL_DEFAULT_MARKET,
-  INITIAL_DEFAULT_MARKET,
-);
-
 interface MarketContextType {
+  marketContext: MarketContext | null;
   activeMarket: Market;
   effectiveConfig: MarketConfiguration;
   availableMarkets: Market[];
@@ -67,11 +75,28 @@ const MarketLocationContext = createContext<MarketContextType | undefined>(
 
 export const MarketLocationProvider: React.FC<{
   children: React.ReactNode;
-}> = ({ children }) => {
+  initialMarketContext?: MarketContext;
+}> = ({ children, initialMarketContext }) => {
+  const { isAuthenticated } = useAuth();
+  const requestMarket = useMemo(
+    () =>
+      INITIAL_MARKETS.find(
+        (market) => market.code === initialMarketContext?.countryCode,
+      ) || INITIAL_DEFAULT_MARKET,
+    [initialMarketContext?.countryCode],
+  );
+  const requestConfig = useMemo(
+    () =>
+      marketResolver.resolveEffectiveConfig(
+        requestMarket,
+        INITIAL_DEFAULT_MARKET,
+      ),
+    [requestMarket],
+  );
   // Browser preferences cannot participate in the initial render: doing so
   // makes hydrated markup depend on localStorage. Restore them after mount.
   const [activeMarketCode, setActiveMarketCode] = useState<string>(
-    INITIAL_DEFAULT_MARKET.code,
+    initialMarketContext?.countryCode || INITIAL_DEFAULT_MARKET.code,
   );
   const [marketDataVersion, setMarketDataVersion] = useState(0);
   const [hasRestoredPreferences, setHasRestoredPreferences] = useState(false);
@@ -99,77 +124,117 @@ export const MarketLocationProvider: React.FC<{
   }, []);
 
   const activeMarket = useMemo<Market>(() => {
-    if (!hasRestoredPreferences) return INITIAL_DEFAULT_MARKET;
+    if (!hasRestoredPreferences) {
+      return requestMarket;
+    }
     return marketService.getMarket(activeMarketCode);
-  }, [activeMarketCode, hasRestoredPreferences, marketDataVersion]);
+  }, [activeMarketCode, hasRestoredPreferences, marketDataVersion, requestMarket]);
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
-    if (!hasRestoredPreferences) return INITIAL_DEFAULT_CONFIG;
+    if (!hasRestoredPreferences) return requestConfig;
     return marketService.getEffectiveConfig(activeMarket.code);
-  }, [activeMarket, hasRestoredPreferences, marketDataVersion]);
+  }, [activeMarket, hasRestoredPreferences, marketDataVersion, requestConfig]);
 
   const availableMarkets = useMemo<Market[]>(() => {
     if (!hasRestoredPreferences) {
-      return INITIAL_MARKETS.filter(
-        (market) =>
-          market.status === "active" || market.status === "coming_soon",
-      );
+      return INITIAL_MARKETS.filter((market) => {
+        const country = getCountryConfig(market.code);
+        return (
+          (["active", "beta", "coming_soon"] as Market["status"][]).includes(
+            market.status,
+          ) &&
+          Boolean(country?.gatewayVisible || country?.marketplace.enabled)
+        );
+      });
     }
-    return marketService
-      .getMarkets()
-      .filter((m) => m.status === "active" || m.status === "coming_soon");
+    return marketService.getMarkets().filter((market) => {
+      const country = getCountryConfig(market.code);
+      return (
+        (["active", "beta", "coming_soon"] as Market["status"][]).includes(
+          market.status,
+        ) &&
+        Boolean(country?.gatewayVisible || country?.marketplace.enabled)
+      );
+    });
   }, [hasRestoredPreferences, marketDataVersion]);
 
   const [location, setLocationState] = useState<LocationSelection>({
-    city: `Toute la ${INITIAL_DEFAULT_MARKET.name}`,
+    city: `Toute la ${requestMarket.name}`,
     postalCode: "",
     radiusKm: 0,
-    label: `Toute la ${INITIAL_DEFAULT_MARKET.name}`,
+    label: `Toute la ${requestMarket.name}`,
   });
 
   const [currentLocale, setCurrentLocaleState] = useState<string>(
-    resolveShippedLocale(INITIAL_DEFAULT_CONFIG.localization.defaultLocale),
+    requestConfig.localization.defaultLocale,
   );
 
   const [currentCurrency, setCurrentCurrencyState] = useState<string>(
-    INITIAL_DEFAULT_CONFIG.localization.defaultCurrency,
+    requestConfig.localization.defaultCurrency,
   );
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
 
   useEffect(() => {
-    const restoredMarket = marketService.getMarket(
-      storageService.getActiveMarketCode() || INITIAL_DEFAULT_MARKET.code,
-    );
+    const storedMarketCode = storageService.getActiveMarketCode();
+    const resolvedMarketCode =
+      initialMarketContext?.countryCode ||
+      storedMarketCode ||
+      INITIAL_DEFAULT_MARKET.code;
+    const restoredMarket = marketService.getMarket(resolvedMarketCode);
     const restoredConfig = marketService.getEffectiveConfig(
       restoredMarket.code,
     );
-    const restoredLocation = storageService.getLocationPreference();
+    const isSameStoredMarket = storedMarketCode === restoredMarket.code;
+    const restoredLocation = isSameStoredMarket
+      ? storageService.getLocationPreference()
+      : null;
+    const storedLocale = isSameStoredMarket
+      ? storageService.getUserLocale()
+      : null;
+    const storedCurrency = isSameStoredMarket
+      ? storageService.getUserCurrency()
+      : null;
+    const defaultLocation: LocationSelection = {
+      city: `Toute la ${restoredMarket.name}`,
+      postalCode: "",
+      radiusKm: 0,
+      label: `Toute la ${restoredMarket.name}`,
+    };
 
     setActiveMarketCode(restoredMarket.code);
     setLocationState(
       restoredLocation?.city
         ? restoredLocation
-        : {
-            city: `Toute la ${restoredMarket.name}`,
-            postalCode: "",
-            radiusKm: 0,
-            label: `Toute la ${restoredMarket.name}`,
-          },
+        : defaultLocation,
     );
+    const shippedLocale = resolveShippedLocale(
+      storedLocale || restoredConfig.localization.defaultLocale,
+    );
+    const marketLocale = restoredConfig.localization.defaultLocale;
     setCurrentLocaleState(
-      resolveShippedLocale(
-        storageService.getUserLocale() ||
-          restoredConfig.localization.defaultLocale,
-      ),
+      shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+        ? marketLocale
+        : shippedLocale,
     );
     setCurrentCurrencyState(
-      storageService.getUserCurrency() ||
-        restoredConfig.localization.defaultCurrency,
+      storedCurrency || restoredConfig.localization.defaultCurrency,
     );
+    if (!isSameStoredMarket) {
+      storageService.saveLocationPreference(defaultLocation);
+      storageService.saveUserLocale(
+        shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+          ? marketLocale
+          : shippedLocale,
+      );
+      storageService.saveUserCurrency(
+        restoredConfig.localization.defaultCurrency,
+      );
+    }
+    storageService.saveActiveMarketCode(restoredMarket.code);
     setHasRestoredPreferences(true);
-  }, []);
+  }, [initialMarketContext]);
 
   const openLocationModal = useCallback(() => {
     setIsLocationModalOpen(true);
@@ -191,9 +256,14 @@ export const MarketLocationProvider: React.FC<{
   useEffect(() => {
     if (!hasRestoredPreferences) return;
     const userLocale = storageService.getUserLocale();
-    const nextLocale = resolveShippedLocale(
+    const shippedLocale = resolveShippedLocale(
       userLocale || effectiveConfig.localization.defaultLocale,
     );
+    const marketLocale = effectiveConfig.localization.defaultLocale;
+    const nextLocale =
+      shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+        ? marketLocale
+        : shippedLocale;
     setCurrentLocaleState(nextLocale);
     if (userLocale && userLocale !== nextLocale) {
       storageService.saveUserLocale(nextLocale);
@@ -206,15 +276,20 @@ export const MarketLocationProvider: React.FC<{
 
   const setLocale = useCallback((locale: string) => {
     const shippedLocale = resolveShippedLocale(locale);
-    setCurrentLocaleState(shippedLocale);
-    storageService.saveUserLocale(shippedLocale);
+    const marketLocale = effectiveConfig.localization.defaultLocale;
+    const regionalLocale =
+      shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+        ? marketLocale
+        : shippedLocale;
+    setCurrentLocaleState(regionalLocale);
+    storageService.saveUserLocale(regionalLocale);
     /* Taxonomy labels are resolved into the index when it is built, so the tree
        has to be rebuilt for a language change to reach category names. Without
        this, switching language re-rendered the chrome in English and left every
        category in the language the app happened to boot in. */
     taxonomyService.reload();
     refreshTaxonomyProjection(shippedLocale);
-  }, []);
+  }, [effectiveConfig.localization.defaultLocale]);
 
   // Keep the document language in sync with the active locale. Screen readers
   // pick pronunciation from `<html lang>`, and it was pinned to the `fr` in
@@ -224,6 +299,21 @@ export const MarketLocationProvider: React.FC<{
     document.documentElement.lang = currentLocale;
   }, [currentLocale]);
 
+  useEffect(() => {
+    const country = getCountryConfig(activeMarket.code);
+    if (!country) return;
+    analyticsService.setMarketContext({
+      country: country.code,
+      locale: currentLocale,
+      domain:
+        typeof window === "undefined"
+          ? country.primaryDomain
+          : window.location.hostname,
+      market: country.code,
+      currency: currentCurrency,
+    });
+  }, [activeMarket.code, currentCurrency, currentLocale]);
+
   const setCurrency = useCallback((currency: string) => {
     const clean = currency.toUpperCase();
     setCurrentCurrencyState(clean);
@@ -231,7 +321,8 @@ export const MarketLocationProvider: React.FC<{
   }, []);
 
   const setMarket = useCallback((newMarketCode: string) => {
-    const market = marketService.getMarket(newMarketCode);
+    const market = marketService.getMarketByCode(newMarketCode);
+    if (!market) return;
     setActiveMarketCode(market.code);
     storageService.saveActiveMarketCode(market.code);
 
@@ -243,7 +334,38 @@ export const MarketLocationProvider: React.FC<{
     };
     setLocationState(defaultLoc);
     storageService.saveLocationPreference(defaultLoc);
-  }, []);
+    if (initialMarketContext && typeof window !== "undefined") {
+      const directDestination = buildRuntimeMarketUrl({
+        targetCountry: market.code,
+        context: initialMarketContext,
+      });
+      const sourceCountry = getCountryConfig(
+        initialMarketContext.countryCode || activeMarketCode,
+      );
+      const targetCountry = getCountryConfig(market.code);
+      const crossesRegistrableDomain =
+        sourceCountry &&
+        targetCountry &&
+        sourceCountry.primaryDomain !== targetCountry.primaryDomain;
+      const canHandoff =
+        isAuthenticated &&
+        crossesRegistrableDomain &&
+        !isDevelopmentMarketHost(window.location.hostname);
+
+      if (canHandoff) {
+        void services.auth
+          .beginDomainHandoff({
+            sourceCountry: sourceCountry.code,
+            targetCountry: targetCountry.code,
+            returnTo: currentRuntimeInternalPath(initialMarketContext),
+          })
+          .then(({ authorizationUrl }) => window.location.assign(authorizationUrl))
+          .catch(() => window.location.assign(directDestination));
+        return;
+      }
+      window.location.assign(directDestination);
+    }
+  }, [activeMarketCode, initialMarketContext, isAuthenticated]);
 
   const setLocation = useCallback((loc: LocationSelection) => {
     setLocationState(loc);
@@ -285,6 +407,7 @@ export const MarketLocationProvider: React.FC<{
   return (
     <MarketLocationContext.Provider
       value={{
+        marketContext: initialMarketContext || null,
         activeMarket,
         effectiveConfig,
         availableMarkets,

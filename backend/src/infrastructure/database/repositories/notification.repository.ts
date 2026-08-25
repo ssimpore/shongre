@@ -1,6 +1,7 @@
 import { NotificationItem } from "../../../shared/types/index.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
+import { buildPublicUrl, getCountryConfig } from "@shongre/contracts";
 
 export type NotificationCategory =
   | "messages"
@@ -34,6 +35,7 @@ export interface ClaimedNotificationDelivery {
   attemptNumber: number;
   title: string;
   body: string;
+  marketCode: string;
   linkUrl?: string;
   category: NotificationCategory;
   type: string;
@@ -200,6 +202,7 @@ export class DemoNotificationRepository implements INotificationRepository {
         attemptNumber: 0,
         title: notification.title,
         body: notification.body,
+        marketCode: notification.marketCode || "FR",
         linkUrl: notification.linkUrl,
         category,
         type: notification.type,
@@ -331,6 +334,9 @@ export class DemoNotificationRepository implements INotificationRepository {
 
 export class PostgresNotificationRepository implements INotificationRepository {
   private mapRowToNotification(row: any): NotificationItem {
+    const marketCode = row.market_code || "FR";
+    const linkRoute = row.link_route || row.link_url;
+    const country = getCountryConfig(marketCode);
     return {
       id: row.id,
       userId: row.user_id,
@@ -338,7 +344,11 @@ export class PostgresNotificationRepository implements INotificationRepository {
       category: row.category || undefined,
       title: row.title,
       body: row.body,
-      linkUrl: row.link_url || undefined,
+      marketCode,
+      linkUrl:
+        linkRoute && country
+          ? buildPublicUrl({ country: country.code, route: linkRoute })
+          : undefined,
       isRead: Boolean(row.is_read),
       inAppVisible: row.in_app_visible !== false,
       createdAt: row.created_at,
@@ -403,6 +413,8 @@ export class PostgresNotificationRepository implements INotificationRepository {
       type: notification.type,
       title: notification.title,
       body: notification.body,
+      market_code: notification.marketCode || "FR",
+      link_route: notification.linkUrl || null,
       link_url: notification.linkUrl || null,
       is_read: notification.isRead,
       created_at: notification.createdAt,
@@ -435,7 +447,9 @@ export class PostgresNotificationRepository implements INotificationRepository {
         p_category: category,
         p_title: notification.title,
         p_body: notification.body,
-        p_link_url: notification.linkUrl || "",
+        p_link_url: "",
+        p_market_code: notification.marketCode || "FR",
+        p_link_route: notification.linkUrl || "",
         p_in_app_visible: inAppVisible,
         p_channels: Array.from(new Set(channels)),
         p_created_at: notification.createdAt,
@@ -582,7 +596,14 @@ export class PostgresNotificationRepository implements INotificationRepository {
       attemptNumber: Number(row.attempt_number),
       title: row.title,
       body: row.body,
-      linkUrl: row.link_url || undefined,
+      marketCode: row.market_code || "FR",
+      linkUrl: (() => {
+        const route = row.link_route || row.link_url;
+        const country = getCountryConfig(row.market_code || "FR");
+        return route && country
+          ? buildPublicUrl({ country: country.code, route })
+          : undefined;
+      })(),
       category: row.category,
       type: row.type,
     }));

@@ -25,3 +25,6 @@ export * from "./provider-control-plane.contract";
 export * from "./support.contract";
 export * from "./feature-flags.contract";
 export * from "./moderation.contract";
+export * from "./crm.contract";
+export * from "./crm-prospecting.contract";
+export * from "./marketing.contract";

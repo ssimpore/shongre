@@ -5,6 +5,7 @@ import type {
   ProfessionalVertical,
   StaffRole,
 } from "@shongre/contracts/access-control";
+import type { CountryConfig } from "@shongre/contracts";
 
 export type UserRole =
   | "guest"
@@ -323,6 +324,7 @@ export interface NotificationItem {
   category?: string;
   title: string;
   body: string;
+  marketCode?: string;
   linkUrl?: string;
   isRead: boolean;
   inAppVisible?: boolean;
@@ -352,12 +354,10 @@ export interface Category {
   subcategories?: Category[];
 }
 
-export interface CountryMarketDefinition {
-  code: string;
-  name: string;
-  currency: string;
-  currencySymbol: string;
+export interface CountryMarketDefinition extends CountryConfig {
+  /** Backwards-compatible alias while commercial modules migrate to defaultLocale. */
   locale: string;
+  currencySymbol: string;
   protectionFeeRate: number;
   protectionFixedFee: number;
   freeListingsLimit: number;
@@ -367,4 +367,6 @@ export interface CountryMarketDefinition {
   allowedDeliveryMethods: DeliveryType[];
   isBaseMarket?: boolean;
   isActive?: boolean;
+  version?: number;
+  updatedAt?: string;
 }

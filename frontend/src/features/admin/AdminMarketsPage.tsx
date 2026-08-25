@@ -43,11 +43,13 @@ import {
   RECENT_SEARCHES_LIMIT_MIN,
 } from "../../domains/market/market.constants";
 import { labelIdentifier } from "../../utilities/identifier-label";
-import { MARKET_CODE_LENGTH } from "@shongre/contracts";
+import { getCountryConfig, MARKET_CODE_LENGTH } from "@shongre/contracts";
+import { services } from "../../api/client/service-registry";
 
 type AdminTab = "overview" | "editor" | "matrix";
 type DomainTab =
   | "general"
+  | "routing"
   | "localization"
   | "taxonomy"
   | "listings"
@@ -77,12 +79,18 @@ export const AdminMarketsPage: React.FC = () => {
       marketService.getMarkets().find((market) => !market.isDefault)?.code ||
       baselineMarket.code,
   );
-  const [activeDomainTab, setActiveDomainTab] = useState<DomainTab>("payments");
+  const [activeDomainTab, setActiveDomainTab] = useState<DomainTab>("routing");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Modals state
   const [isAddMarketModalOpen, setIsAddMarketModalOpen] = useState(false);
   const [isEditOverrideModalOpen, setIsEditOverrideModalOpen] = useState(false);
+  const [isRoutingModalOpen, setIsRoutingModalOpen] = useState(false);
+  const [routingDomain, setRoutingDomain] = useState("");
+  const [routingBasePath, setRoutingBasePath] = useState("");
+  const [routingGatewayVisible, setRoutingGatewayVisible] = useState(false);
+  const [routingSeoIndexable, setRoutingSeoIndexable] = useState(false);
+  const [isSavingRouting, setIsSavingRouting] = useState(false);
   const [pendingResetMarketCode, setPendingResetMarketCode] = useState<
     string | null
   >(null);
@@ -119,6 +127,69 @@ export const AdminMarketsPage: React.FC = () => {
   const selectedMarket = useMemo(() => {
     return markets.find((m) => m.code === selectedMarketCode) || markets[0];
   }, [markets, selectedMarketCode]);
+
+  const selectedCountryConfig = useMemo(
+    () => getCountryConfig(selectedMarket.code),
+    [selectedMarket.code],
+  );
+
+  const openRoutingEditor = () => {
+    const routing = selectedMarket.routing;
+    setRoutingDomain(
+      routing?.primaryDomain || selectedCountryConfig?.primaryDomain || "",
+    );
+    setRoutingBasePath(
+      routing?.basePath || selectedCountryConfig?.basePath || "/",
+    );
+    setRoutingGatewayVisible(
+      routing?.gatewayVisible ?? selectedCountryConfig?.gatewayVisible ?? false,
+    );
+    setRoutingSeoIndexable(
+      routing?.seoIndexable ?? selectedCountryConfig?.seo.indexable ?? false,
+    );
+    setIsRoutingModalOpen(true);
+  };
+
+  const saveRouting = async () => {
+    if (!selectedCountryConfig) return;
+    setIsSavingRouting(true);
+    try {
+      await services.markets.updateCountryConfiguration(selectedMarket.code, {
+        primaryDomain: routingDomain,
+        basePath: routingBasePath,
+        gatewayVisible: routingGatewayVisible,
+        seo: {
+          ...selectedCountryConfig.seo,
+          indexable: routingSeoIndexable,
+        },
+      });
+      marketService.updateMarketRouting(
+        selectedMarket.code,
+        {
+          primaryDomain: routingDomain,
+          basePath: routingBasePath,
+          gatewayVisible: routingGatewayVisible,
+          seoIndexable: routingSeoIndexable,
+        },
+        currentUser
+          ? {
+              id: currentUser.id,
+              name: currentUser.name,
+              role: currentUser.role,
+            }
+          : undefined,
+      );
+      setIsRoutingModalOpen(false);
+      handleRefresh();
+      toast.success("Routage du marché enregistré.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Routage non enregistré.",
+      );
+    } finally {
+      setIsSavingRouting(false);
+    }
+  };
 
   const effectiveConfig = useMemo(() => {
     return marketService.getEffectiveConfig(selectedMarket.code);
@@ -280,6 +351,10 @@ export const AdminMarketsPage: React.FC = () => {
     switch (status) {
       case "active":
         return <Badge variant="success">Actif</Badge>;
+      case "beta":
+        return <Badge variant="success">Bêta publique</Badge>;
+      case "private_beta":
+        return <Badge variant="warning">Bêta privée</Badge>;
       case "coming_soon":
         return (
           <Badge variant="warning">
@@ -290,6 +365,8 @@ export const AdminMarketsPage: React.FC = () => {
         return <Badge variant="neutral">Brouillon</Badge>;
       case "paused":
         return <Badge variant="urgent">En pause</Badge>;
+      case "disabled":
+        return <Badge variant="urgent">Désactivé</Badge>;
       case "archived":
         return (
           <Badge variant="neutral">{t("admin.adminMarketsPage.archive")}</Badge>
@@ -616,7 +693,10 @@ export const AdminMarketsPage: React.FC = () => {
                         <option value="coming_soon">
                           {t("admin.adminMarketsPage.bientot")}
                         </option>
+                        <option value="private_beta">Bêta privée</option>
+                        <option value="beta">Bêta publique</option>
                         <option value="paused">En pause</option>
+                        <option value="disabled">Désactivé</option>
                         <option value="draft">Brouillon</option>
                         <option value="archived">
                           {t("admin.adminMarketsPage.archive")}
@@ -713,6 +793,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle">
             {[
               { id: "general", label: "Général", Icon: Tag },
+              { id: "routing", label: "Domaine & lancement", Icon: Globe },
               { id: "localization", label: "Localisation", Icon: Globe },
               {
                 id: "taxonomy",
@@ -751,6 +832,57 @@ export const AdminMarketsPage: React.FC = () => {
 
           {/* DOMAIN CONFIGURATION CONTENT */}
           <div className="space-y-3">
+            {activeDomainTab === "routing" && selectedCountryConfig && (
+              <div className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    [
+                      "Domaine canonique",
+                      selectedMarket.routing?.primaryDomain ||
+                        selectedCountryConfig.primaryDomain,
+                    ],
+                    [
+                      "Préfixe public",
+                      selectedMarket.routing?.basePath ||
+                        selectedCountryConfig.basePath,
+                    ],
+                    ["Devise / locale", `${selectedMarket.currency} · ${selectedMarket.defaultLocale}`],
+                    ["Fuseau horaire", selectedMarket.timezone],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="rounded-xl border border-border-subtle bg-white p-4"
+                    >
+                      <p className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                        {label}
+                      </p>
+                      <p className="mt-1 break-words font-mono text-xs font-extrabold text-stone-900">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-3 rounded-2xl border border-info-border bg-info-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1 text-xs text-info">
+                    <p className="font-bold">
+                      État {selectedMarket.status} · SEO {(
+                        selectedMarket.routing?.seoIndexable ??
+                        selectedCountryConfig.seo.indexable
+                      ) ? "indexable" : "non indexable"}
+                    </p>
+                    <p>
+                      Revue juridique : {selectedCountryConfig.compliance.legalReviewStatus}. Les domaines et chemins sont validés sans collision avant publication.
+                    </p>
+                  </div>
+                  {canManageMarkets ? (
+                    <Button variant="outline" size="sm" onClick={openRoutingEditor}>
+                      Modifier le routage
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+            )}
+
             {activeDomainTab === "general" && (
               <>
                 {renderSettingRow(
@@ -1237,7 +1369,7 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "taxes.vatRateStandard",
                   "Taux de TVA Standard",
-                  "Taux légal normal (20% FR, 21% BE/ES, 8.1% CH)",
+                  "Valeur validée par la configuration fiscale locale après revue juridique",
                   "number",
                   (v) => `${(v * 100).toFixed(1)} %`,
                 )}
@@ -1524,6 +1656,63 @@ export const AdminMarketsPage: React.FC = () => {
         </div>
       )}
 
+      <Modal
+        isOpen={isRoutingModalOpen}
+        onClose={() => setIsRoutingModalOpen(false)}
+        title={`Routage public — ${selectedMarket.name}`}
+        description="Le domaine et le préfixe sont uniques. Une activation reste bloquée tant que les contrôles juridiques requis ne sont pas approuvés."
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="space-y-1 text-xs font-bold text-stone-700">
+              Domaine canonique
+              <input
+                value={routingDomain}
+                onChange={(event) => setRoutingDomain(event.target.value)}
+                placeholder="shongre.com"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+            <label className="space-y-1 text-xs font-bold text-stone-700">
+              Préfixe public
+              <input
+                value={routingBasePath}
+                onChange={(event) => setRoutingBasePath(event.target.value)}
+                placeholder="/be"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+          </div>
+          <label className="flex items-center justify-between rounded-xl border border-border-subtle p-3 text-xs font-bold text-stone-700">
+            Visible sur le portail international
+            <input
+              type="checkbox"
+              checked={routingGatewayVisible}
+              onChange={(event) => setRoutingGatewayVisible(event.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+          </label>
+          <label className="flex items-center justify-between rounded-xl border border-border-subtle p-3 text-xs font-bold text-stone-700">
+            Autoriser l’indexation SEO
+            <input
+              type="checkbox"
+              checked={routingSeoIndexable}
+              onChange={(event) => setRoutingSeoIndexable(event.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+          </label>
+          <div className="flex justify-end gap-2 border-t border-border-subtle pt-3">
+            <Button variant="ghost" size="sm" onClick={() => setIsRoutingModalOpen(false)}>
+              Annuler
+            </Button>
+            <Button variant="primary" size="sm" isLoading={isSavingRouting} onClick={() => void saveRouting()}>
+              Enregistrer
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* MODAL 1: ADD NEW MARKET */}
       <Modal
         isOpen={isAddMarketModalOpen}
@@ -1624,10 +1813,13 @@ export const AdminMarketsPage: React.FC = () => {
               <option value="coming_soon">
                 {t("admin.adminMarketsPage.bientotDisponibleVitrine")}
               </option>
+              <option value="private_beta">Bêta privée</option>
+              <option value="beta">Bêta publique</option>
               <option value="active">
                 {t("admin.adminMarketsPage.actifOperationnel")}
               </option>
               <option value="paused">En pause</option>
+              <option value="disabled">Désactivé</option>
             </select>
           </div>
 

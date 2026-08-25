@@ -2,6 +2,7 @@ import { apiClientConfig } from "../../client/api-client.config";
 import { AppError, AppErrorCode } from "../../errors/app-error";
 import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
+import { currentBrowserMarketCode } from "../../../domains/market/market-routing";
 
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -31,12 +32,14 @@ export class HttpClient {
 
   private async refreshSession(): Promise<boolean> {
     if (this.refreshPromise) return this.refreshPromise;
+    const marketCode = currentBrowserMarketCode();
     this.refreshPromise = fetch(`${this.baseUrl}/auth/refresh`, {
       method: "POST",
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...(marketCode ? { "X-Shongre-Market": marketCode } : {}),
       },
       body: "{}",
     })
@@ -76,6 +79,7 @@ export class HttpClient {
 
     const method = String(customConfig.method || "GET").toUpperCase();
     const csrfToken = this.getCsrfToken();
+    const marketCode = currentBrowserMarketCode();
     const defaultHeaders: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -86,6 +90,7 @@ export class HttpClient {
       ...(csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)
         ? { "X-CSRF-Token": csrfToken }
         : {}),
+      ...(marketCode ? { "X-Shongre-Market": marketCode } : {}),
       ...(headers as Record<string, string>),
     };
 

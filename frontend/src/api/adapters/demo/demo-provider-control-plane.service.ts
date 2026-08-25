@@ -8,6 +8,11 @@ import {
   type ProviderRuntimeEvidence,
 } from "@shongre/contracts/provider-platform";
 import type { ProviderControlPlaneServiceContract } from "../../contracts/provider-control-plane.contract";
+import type {
+  ProviderConnection,
+  ProviderConnectionInput,
+  ProviderCredentialRotation,
+} from "@shongre/contracts/provider-connections";
 
 const demoEvidence = (
   adapterStatus: string,
@@ -29,6 +34,100 @@ const demoEvidence = (
 };
 
 export class DemoProviderControlPlaneService implements ProviderControlPlaneServiceContract {
+  private connections: ProviderConnection[] = [
+    {
+      id: "70000000-0000-4000-8000-000000000001",
+      tenantId: "10000000-0000-4000-8000-000000000001",
+      ownerType: "TENANT",
+      providerId: "demo_ai",
+      providerFamily: "AI",
+      displayName: "IA déterministe de démonstration",
+      status: "ACTIVE",
+      configuration: { environment: "demo", externalCalls: false },
+      capabilities: ["ai.crm_drafting", "ai.prospect_research"],
+      isDefault: true,
+      credentialConfigured: false,
+      createdAt: "2026-08-25T08:00:00.000Z",
+      updatedAt: "2026-08-25T08:00:00.000Z",
+      version: 1,
+    },
+    {
+      id: "70000000-0000-4000-8000-000000000002",
+      tenantId: "10000000-0000-4000-8000-000000000001",
+      ownerType: "USER",
+      ownerId: "10000000-0000-4000-8000-000000000004",
+      providerId: "demo_mailbox",
+      providerFamily: "MAILBOX",
+      displayName: "Messagerie personnelle de démonstration",
+      status: "ACTIVE",
+      configuration: { environment: "demo", externalCalls: false },
+      capabilities: ["mailbox.send", "mailbox.sync"],
+      isDefault: true,
+      credentialConfigured: false,
+      createdAt: "2026-08-25T08:00:00.000Z",
+      updatedAt: "2026-08-25T08:00:00.000Z",
+      version: 1,
+    },
+  ];
+
+  async listConnections(): Promise<ProviderConnection[]> {
+    return structuredClone(this.connections);
+  }
+
+  async createConnection(
+    input: ProviderConnectionInput,
+  ): Promise<ProviderConnection> {
+    const now = new Date().toISOString();
+    const connection: ProviderConnection = {
+      id: crypto.randomUUID(),
+      tenantId: "10000000-0000-4000-8000-000000000001",
+      ownerType: input.ownerType,
+      ownerId:
+        input.ownerType === "USER"
+          ? "10000000-0000-4000-8000-000000000004"
+          : undefined,
+      providerId: input.providerId,
+      providerFamily: input.providerFamily,
+      displayName: input.displayName,
+      status: "DRAFT",
+      configuration: input.configuration,
+      capabilities: input.capabilities,
+      isDefault: input.isDefault,
+      credentialConfigured: Boolean(input.credential),
+      credentialHint: input.credential
+        ? `••••${input.credential.slice(-4).toUpperCase()}`
+        : undefined,
+      createdAt: now,
+      updatedAt: now,
+      version: 1,
+    };
+    this.connections.push(connection);
+    return structuredClone(connection);
+  }
+
+  async rotateCredential(
+    connectionId: string,
+    input: ProviderCredentialRotation,
+  ): Promise<ProviderConnection> {
+    const connection = this.connections.find(
+      (item) => item.id === connectionId,
+    );
+    if (!connection) throw new Error("Connexion fournisseur introuvable.");
+    if (connection.version !== input.expectedVersion) {
+      throw new Error(
+        "Cette connexion a été modifiée. Rechargez-la avant de réessayer.",
+      );
+    }
+    Object.assign(connection, {
+      credentialConfigured: true,
+      credentialHint: `••••${input.credential.slice(-4).toUpperCase()}`,
+      status: "DRAFT",
+      version: connection.version + 1,
+      updatedAt: new Date().toISOString(),
+    });
+    return structuredClone(connection);
+  }
+
   async getSnapshot(): Promise<ProviderControlPlaneSnapshot> {
     const providers = SHONGRE_PROVIDER_REGISTRY.map((definition) => {
       const runtime = demoEvidence(definition.adapterStatus, definition.kind);

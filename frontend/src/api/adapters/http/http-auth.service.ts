@@ -8,6 +8,9 @@ import {
   type SocialAuthStartInput,
   type MfaStatusView,
   type MfaSetupView,
+  type DomainHandoffStartInput,
+  type DomainHandoffStartResult,
+  type DomainHandoffExchangeResult,
 } from "../../contracts/auth.contract";
 import { httpClient } from "./http-client";
 import {
@@ -24,6 +27,19 @@ interface BackendAuthResponse {
 }
 
 export class HttpAuthService implements AuthServiceContract {
+  beginDomainHandoff(
+    input: DomainHandoffStartInput,
+  ): Promise<DomainHandoffStartResult> {
+    return httpClient.post("/auth/domain-handoff/start", input);
+  }
+
+  exchangeDomainHandoff(input: {
+    code: string;
+    targetCountry: string;
+  }): Promise<DomainHandoffExchangeResult> {
+    return httpClient.post("/auth/domain-handoff/exchange", input);
+  }
+
   async getCurrentUser(): Promise<UserProfile | null> {
     try {
       return await httpClient.get<UserProfile | null>("/auth/me");

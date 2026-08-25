@@ -504,6 +504,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/countries/{code}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update one country configuration
+         * @description Updates launch, routing and policy configuration while preserving the stable ISO country identity.
+         */
+        readonly patch: operations["patchAdminCountriesByCode"];
+        readonly trace?: never;
+    };
     readonly "/admin/discovery/configuration": {
         readonly parameters: {
             readonly query?: never;
@@ -984,6 +1004,40 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts:503.
          */
         readonly post: operations["postAiListingSafety"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/domain-handoff/exchange": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Exchange a one-use cross-domain authorization code */
+        readonly post: operations["postAuthDomainHandoffExchange"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/auth/domain-handoff/start": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Start a secure session transition to another Shongre domain */
+        readonly post: operations["postAuthDomainHandoffStart"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -2118,6 +2172,472 @@ export interface paths {
         readonly get: operations["getComplianceStatus"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/account-duplicates/check": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Find possible duplicate CRM accounts
+         * @description Evaluates normalized duplicate signals inside the caller's tenant. It does not merge records.
+         */
+        readonly post: operations["checkCrmAccountDuplicates"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/accounts": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM accounts
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmAccounts"];
+        readonly put?: never;
+        /**
+         * Create a CRM account
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmAccount"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/accounts/{accountId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get a CRM account
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["getCrmAccount"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update a CRM account
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly patch: operations["updateCrmAccount"];
+        readonly trace?: never;
+    };
+    readonly "/crm/accounts/{accountId}/shongre": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get the canonical Shongre intelligence linked to a CRM account
+         * @description Returns tenant-scoped read models from Shongre-owned professional, listing and Billing domains. The CRM does not become their source of truth.
+         */
+        readonly get: operations["getCrmAccountShongreIntelligence"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/activities": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List immutable CRM activities for an entity
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmActivities"];
+        readonly put?: never;
+        /**
+         * Append an immutable CRM activity
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmActivity"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/contacts": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM contacts
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmContacts"];
+        readonly put?: never;
+        /**
+         * Create a CRM contact
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmContact"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/contacts/{contactId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get a CRM contact
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["getCrmContact"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update a CRM contact
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly patch: operations["updateCrmContact"];
+        readonly trace?: never;
+    };
+    readonly "/crm/custom-fields": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM custom field definitions
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmCustomFields"];
+        readonly put?: never;
+        /**
+         * Create a CRM custom field definition
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmCustomField"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/dashboard": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get the CRM commercial dashboard
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["getCrmDashboard"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/opportunities": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM opportunities
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmOpportunities"];
+        readonly put?: never;
+        /**
+         * Create a CRM opportunity
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmOpportunity"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/opportunities/{opportunityId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get a CRM opportunity
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["getCrmOpportunity"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/opportunities/{opportunityId}/transition": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Move an opportunity through a validated pipeline transition
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["transitionCrmOpportunity"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/pipelines": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM pipelines and stages
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmPipelines"];
+        readonly put?: never;
+        /**
+         * Create a tenant CRM pipeline
+         * @description Creates an ordered pipeline and all stages atomically. Backend authorization and tenant context are authoritative.
+         */
+        readonly post: operations["createCrmPipeline"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/pipelines/{pipelineId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update a tenant CRM pipeline
+         * @description Updates the pipeline and ordered stages atomically with optimistic concurrency. Referenced stages cannot be removed.
+         */
+        readonly patch: operations["updateCrmPipeline"];
+        readonly trace?: never;
+    };
+    readonly "/crm/products": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM products and prices
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmProducts"];
+        readonly put?: never;
+        /**
+         * Create a CRM product
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmProduct"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/products/{productId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /**
+         * Update a CRM product
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly patch: operations["updateCrmProduct"];
+        readonly trace?: never;
+    };
+    readonly "/crm/quotes": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM quotes
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmQuotes"];
+        readonly put?: never;
+        /**
+         * Create a calculated CRM quote
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmQuote"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/saved-views": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM saved views visible to the caller
+         * @description Returns personal views owned by the caller plus authorized team, workspace and tenant views.
+         */
+        readonly get: operations["listCrmSavedViews"];
+        readonly put?: never;
+        /**
+         * Create a CRM saved view
+         * @description Creates a tenant-scoped view. Shared visibility additionally requires CRM configuration permission.
+         */
+        readonly post: operations["createCrmSavedView"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/saved-views/{savedViewId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Update a CRM saved view */
+        readonly put: operations["updateCrmSavedView"];
+        readonly post?: never;
+        /** Delete a CRM saved view */
+        readonly delete: operations["deleteCrmSavedView"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/tasks": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List CRM tasks
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listCrmTasks"];
+        readonly put?: never;
+        /**
+         * Create a CRM task
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["createCrmTask"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/tasks/{taskId}/complete": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Complete a CRM task
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly post: operations["completeCrmTask"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -3651,6 +4171,746 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/marketing/account/preferences": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Update the signed-in account newsletter topics */
+        readonly put: operations["updateAccountMarketingPreferences"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/account/subscription": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the signed-in account newsletter subscription */
+        readonly get: operations["getAccountMarketingSubscription"];
+        readonly put?: never;
+        /** Subscribe or explicitly resubscribe the signed-in account */
+        readonly post: operations["subscribeAccountToMarketing"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/account/unsubscribe": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Globally unsubscribe the signed-in account from marketing */
+        readonly post: operations["unsubscribeAccountFromMarketing"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/ai/assist": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Generate an advisory draft through the shared AI Gateway */
+        readonly post: operations["assistMarketingWithAi"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/ai/campaign-draft": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Generate an advisory campaign draft through the shared AI Gateway */
+        readonly post: operations["generateMarketingCampaignDraft"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/analytics": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get canonical tenant or campaign marketing metrics */
+        readonly get: operations["getMarketingAnalytics"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List tenant marketing campaigns */
+        readonly get: operations["listMarketingCampaigns"];
+        readonly put?: never;
+        /** Create a versioned marketing campaign draft */
+        readonly post: operations["createMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get a tenant marketing campaign */
+        readonly get: operations["getMarketingCampaign"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/approve": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Approve a campaign with a distinct permission */
+        readonly post: operations["approveMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/cancel": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Cancel not-yet-accepted campaign recipients */
+        readonly post: operations["cancelMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/pause": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Pause not-yet-accepted campaign recipients */
+        readonly post: operations["pauseMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/preflight": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Run authoritative campaign pre-flight validation */
+        readonly post: operations["preflightMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/resume": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Resume queued recipients of a paused campaign */
+        readonly post: operations["resumeMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/review": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Submit a campaign for approval */
+        readonly post: operations["reviewMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/schedule": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Schedule a validated campaign using backend time */
+        readonly post: operations["scheduleMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/select-winner": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Select or calculate the winning A/B variant */
+        readonly post: operations["selectMarketingCampaignWinner"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/send": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Snapshot and enqueue an eligible campaign audience */
+        readonly post: operations["sendMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/{campaignId}/test-send": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Send a marked test without creating campaign recipients */
+        readonly post: operations["testSendMarketingCampaign"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/campaigns/audience-estimate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Estimate eligible and excluded campaign recipients */
+        readonly post: operations["estimateMarketingAudience"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/conversions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Record an idempotent attributed marketing conversion */
+        readonly post: operations["recordMarketingConversion"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/dashboard": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the tenant marketing dashboard */
+        readonly get: operations["getMarketingDashboard"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/journey-executions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List durable journey execution history */
+        readonly get: operations["listMarketingJourneyExecutions"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/journeys": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List versioned Marketing journeys */
+        readonly get: operations["listMarketingJourneys"];
+        readonly put?: never;
+        /** Create a validated journey draft */
+        readonly post: operations["createMarketingJourney"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/journeys/{journeyId}/activate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Activate a loop-free journey version */
+        readonly post: operations["activateMarketingJourney"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/journeys/{journeyId}/pause": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Pause new and queued journey execution */
+        readonly post: operations["pauseMarketingJourney"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/journeys/events": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Idempotently enqueue matching journeys */
+        readonly post: operations["emitMarketingJourneyEvent"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/lists": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List static marketing lists */
+        readonly get: operations["listMarketingLists"];
+        readonly put?: never;
+        /** Create a static marketing list */
+        readonly post: operations["createMarketingList"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/lists/{listId}/members/{profileId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Add a profile to a static list */
+        readonly post: operations["addMarketingListMember"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/profiles": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List tenant marketing profiles */
+        readonly get: operations["listMarketingProfiles"];
+        readonly put?: never;
+        /** Create or link a marketing profile */
+        readonly post: operations["createMarketingProfile"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/profiles/{profileId}/confirm": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Confirm a pending marketing profile */
+        readonly post: operations["confirmMarketingProfile"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/profiles/{profileId}/unsubscribe": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Unsubscribe and suppress a marketing profile */
+        readonly post: operations["unsubscribeMarketingProfile"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/provider-webhooks/{connectionId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Verify and normalize a provider delivery webhook */
+        readonly post: operations["receiveMarketingProviderWebhook"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/public/confirm": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Confirm a double opt-in token */
+        readonly post: operations["confirmPublicMarketingSubscription"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/public/preferences": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read newsletter preferences through a scoped token */
+        readonly get: operations["getPublicMarketingPreferences"];
+        /** Update newsletter topics through a scoped token */
+        readonly put: operations["updatePublicMarketingPreferences"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/public/subscriptions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Request a consent-based newsletter subscription */
+        readonly post: operations["createPublicMarketingSubscription"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/public/unsubscribe": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Globally unsubscribe marketing through a scoped token */
+        readonly post: operations["unsubscribePublicMarketingProfile"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/segments": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List dynamic marketing segments */
+        readonly get: operations["listMarketingSegments"];
+        readonly put?: never;
+        /** Create a typed dynamic segment */
+        readonly post: operations["createMarketingSegment"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/suppressions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List active canonical marketing suppressions */
+        readonly get: operations["listMarketingSuppressions"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/templates": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List immutable-version marketing templates */
+        readonly get: operations["listMarketingTemplates"];
+        readonly put?: never;
+        /** Create a versioned marketing template */
+        readonly post: operations["createMarketingTemplate"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/track/click": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Record an opaque first-party click token and redirect to its stored HTTPS target */
+        readonly get: operations["recordMarketingClick"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/track/open": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Record an opaque first-party open token */
+        readonly get: operations["recordMarketingOpen"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/usage": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get Marketing usage and resolved shared entitlements */
+        readonly get: operations["getMarketingUsage"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/marketing/webhooks": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List outgoing webhook subscriptions */
+        readonly get: operations["listMarketingWebhooks"];
+        readonly put?: never;
+        /** Create an SSRF-checked signed outgoing webhook */
+        readonly post: operations["createMarketingWebhook"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/markets": {
         readonly parameters: {
             readonly query?: never;
@@ -4826,6 +6086,50 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/provider-connections": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List provider connections visible to the current tenant and user
+         * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
+         */
+        readonly get: operations["listProviderConnections"];
+        readonly put?: never;
+        /**
+         * Create a tenant or personal provider connection
+         * @description Creates a draft connection from the shared provider registry. Optional credentials are encrypted server-side and are never returned.
+         */
+        readonly post: operations["createProviderConnection"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/provider-connections/{connectionId}/credential": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /**
+         * Install or rotate a provider credential
+         * @description Encrypts the credential with the active server-side key and atomically revokes the previous credential. The connection returns to DRAFT until validated.
+         */
+        readonly put: operations["rotateProviderConnectionCredential"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/publication/entitlements": {
         readonly parameters: {
             readonly query?: never;
@@ -5827,6 +7131,592 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        readonly CountryConfig: {
+            readonly addressFormat?: string;
+            readonly basePath: string;
+            readonly code: components["schemas"]["MarketCode"];
+            readonly compliance: components["schemas"]["JsonValue"];
+            readonly currency: string;
+            readonly currencySymbol?: string;
+            readonly defaultLocale: string;
+            readonly displayOrder?: number;
+            readonly enabled: boolean;
+            readonly gatewayVisible?: boolean;
+            readonly launchContent: components["schemas"]["JsonValue"];
+            /** @enum {string} */
+            readonly launchStatus: "disabled" | "coming_soon" | "private_beta" | "beta" | "active" | "paused";
+            readonly legalEntity?: string;
+            readonly marketplace: components["schemas"]["JsonValue"];
+            readonly monetization: components["schemas"]["JsonValue"];
+            readonly name: string;
+            readonly nativeName: string;
+            readonly payments: components["schemas"]["JsonValue"];
+            readonly phoneCountryCode: string;
+            /** Format: hostname */
+            readonly primaryDomain: string;
+            readonly seo: components["schemas"]["JsonValue"];
+            readonly slug: string;
+            readonly supportedLocales: readonly string[];
+            readonly taxes: components["schemas"]["JsonValue"];
+            readonly timezone: string;
+            readonly version?: number;
+        } & {
+            readonly [key: string]: unknown;
+        };
+        readonly CountryConfigPatch: {
+            readonly addressFormat?: string;
+            readonly basePath?: string;
+            readonly compliance?: {
+                readonly [key: string]: unknown;
+            };
+            readonly currency?: string;
+            readonly currencySymbol?: string;
+            readonly defaultLocale?: string;
+            readonly displayOrder?: number;
+            readonly enabled?: boolean;
+            readonly gatewayVisible?: boolean;
+            readonly launchContent?: {
+                readonly [key: string]: unknown;
+            };
+            /** @enum {string} */
+            readonly launchStatus?: "disabled" | "coming_soon" | "private_beta" | "beta" | "active" | "paused";
+            readonly legalEntity?: string;
+            readonly marketplace?: {
+                readonly [key: string]: unknown;
+            };
+            readonly monetization?: {
+                readonly [key: string]: unknown;
+            };
+            readonly name?: string;
+            readonly nativeName?: string;
+            readonly payments?: {
+                readonly [key: string]: unknown;
+            };
+            readonly phoneCountryCode?: string;
+            /** Format: hostname */
+            readonly primaryDomain?: string;
+            readonly seo?: {
+                readonly [key: string]: unknown;
+            };
+            readonly supportedLocales?: readonly string[];
+            readonly taxes?: {
+                readonly [key: string]: unknown;
+            };
+            readonly timezone?: string;
+        };
+        readonly CrmAccount: components["schemas"]["CrmAccountInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmAccountDuplicateCheck: {
+            readonly address?: string;
+            readonly domain?: string;
+            /** Format: email */
+            readonly email?: string;
+            readonly name?: string;
+            readonly phone?: string;
+        };
+        readonly CrmAccountInput: {
+            readonly country?: string;
+            readonly customValues?: {
+                readonly [key: string]: unknown;
+            };
+            readonly description?: string;
+            readonly domain?: string;
+            /** Format: email */
+            readonly email?: string;
+            readonly fitScore?: number;
+            readonly industry?: string;
+            readonly legalName?: string;
+            /** @enum {string} */
+            readonly lifecycle?: "lead" | "prospect" | "qualified" | "customer" | "partner" | "do_not_contact" | "archived";
+            readonly marketCode?: string;
+            readonly name: string;
+            readonly phone?: string;
+            readonly source?: string;
+            readonly tags?: readonly string[];
+            /** Format: uri */
+            readonly website?: string;
+        };
+        readonly CrmActivity: components["schemas"]["CrmActivityInput"] & {
+            readonly actorName: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly isAiGenerated: boolean;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmActivityInput: {
+            readonly activityType: string;
+            readonly description?: string;
+            /** Format: uuid */
+            readonly entityId: string;
+            /** @enum {string} */
+            readonly entityType: "account" | "contact" | "opportunity" | "task";
+            /** Format: date-time */
+            readonly occurredAt?: string;
+            readonly title: string;
+        };
+        readonly CrmContact: components["schemas"]["CrmContactInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly fullName: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly lifecycle: string;
+            readonly source: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmContactInput: {
+            readonly accountIds?: readonly string[];
+            readonly country?: string;
+            readonly customValues?: {
+                readonly [key: string]: unknown;
+            };
+            /** @default false */
+            readonly doNotContact: boolean;
+            /** Format: email */
+            readonly email?: string;
+            readonly firstName: string;
+            readonly jobTitle?: string;
+            readonly language?: string;
+            readonly lastName: string;
+            readonly phone?: string;
+            readonly tags?: readonly string[];
+            readonly timezone?: string;
+        };
+        readonly CrmCustomField: components["schemas"]["CrmCustomFieldInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly fieldType: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly key: string;
+            readonly name: string;
+            readonly required: boolean;
+            readonly status: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId?: string;
+        };
+        readonly CrmCustomFieldInput: {
+            readonly description?: string;
+            /** @enum {string} */
+            readonly entityType: "account" | "contact" | "opportunity" | "task";
+            readonly fieldType: string;
+            readonly key: string;
+            readonly name: string;
+            readonly options?: readonly components["schemas"]["JsonValue"][];
+            readonly position?: number;
+            readonly required?: boolean;
+            readonly validation?: {
+                readonly [key: string]: unknown;
+            };
+        };
+        readonly CrmDashboard: {
+            readonly activeProspects: number;
+            readonly currency: string;
+            readonly forecastMinor: number;
+            readonly lostValueMinor: number;
+            readonly openOpportunities: number;
+            readonly openPipelineMinor: number;
+            readonly opportunities: readonly components["schemas"]["CrmOpportunity"][];
+            readonly overdueTasks: number;
+            readonly priorityTasks: readonly components["schemas"]["CrmTask"][];
+            readonly stages: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly tasksDueToday: number;
+            readonly weightedPipelineMinor: number;
+            readonly wonRevenueMinor: number;
+        };
+        readonly CrmDuplicateMatch: {
+            readonly confidence: number;
+            readonly displayName: string;
+            /** Format: uuid */
+            readonly entityId: string;
+            readonly signals: readonly {
+                readonly confidence: number;
+                /** @enum {string} */
+                readonly kind: "domain" | "name" | "email" | "phone" | "address";
+                readonly value: string;
+            }[];
+        };
+        readonly CrmMoney: {
+            readonly amountMinor: number;
+            readonly currency: string;
+        };
+        readonly CrmOpportunity: components["schemas"]["CrmOpportunityInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly pipelineName: string;
+            readonly stageName: string;
+            /** @enum {string} */
+            readonly status: "open" | "won" | "lost" | "archived";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmOpportunityInput: {
+            /** Format: uuid */
+            readonly accountId?: string;
+            readonly amount: components["schemas"]["CrmMoney"];
+            readonly contactIds?: readonly string[];
+            readonly customValues?: {
+                readonly [key: string]: unknown;
+            };
+            readonly description?: string;
+            /** Format: date */
+            readonly expectedCloseDate?: string;
+            /** @enum {string} */
+            readonly forecastCategory?: "pipeline" | "best_case" | "commit" | "closed" | "omitted";
+            readonly name: string;
+            readonly nextStep?: string;
+            /** Format: uuid */
+            readonly ownerId?: string;
+            /** Format: uuid */
+            readonly pipelineId: string;
+            readonly probability?: number;
+            readonly source?: string;
+            /** Format: uuid */
+            readonly stageId: string;
+            readonly tags?: readonly string[];
+            /** Format: uuid */
+            readonly teamId?: string;
+        };
+        readonly CrmOpportunityTransition: {
+            readonly competitor?: string;
+            readonly contractValue?: components["schemas"]["CrmMoney"];
+            readonly expectedVersion: number;
+            /** Format: date */
+            readonly futureRecontactDate?: string;
+            readonly lossDetail?: string;
+            readonly lossReason?: string;
+            readonly onboardingStatus?: string;
+            readonly recurringValue?: components["schemas"]["CrmMoney"];
+            /** Format: date */
+            readonly renewalDate?: string;
+            /** Format: uuid */
+            readonly stageId: string;
+        };
+        readonly CrmPage: {
+            readonly items: readonly components["schemas"]["JsonValue"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+        };
+        readonly CrmPipeline: components["schemas"]["CrmPipelineInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly stages?: readonly (components["schemas"]["CrmPipelineStageInput"] & {
+                /** Format: uuid */
+                readonly id: string;
+                /** Format: uuid */
+                readonly pipelineId: string;
+                readonly version: number;
+            })[];
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmPipelineInput: {
+            readonly description?: string;
+            /** @default false */
+            readonly isDefault: boolean;
+            readonly name: string;
+            readonly stages: readonly components["schemas"]["CrmPipelineStageInput"][];
+        };
+        readonly CrmPipelineStageInput: {
+            /** @default neutral */
+            readonly colorToken: string;
+            readonly defaultProbability: number;
+            /** Format: uuid */
+            readonly id?: string;
+            /** @default false */
+            readonly isLost: boolean;
+            /** @default true */
+            readonly isOpen: boolean;
+            /** @default false */
+            readonly isWon: boolean;
+            readonly name: string;
+            readonly position: number;
+            /** @default [] */
+            readonly requiredFields: readonly string[];
+            readonly slaHours?: number;
+        };
+        readonly CrmPipelineUpdate: {
+            readonly expectedVersion: number;
+            readonly input: components["schemas"]["CrmPipelineInput"];
+        };
+        readonly CrmProduct: components["schemas"]["CrmProductInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly name: string;
+            readonly prices: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly productType: string;
+            readonly sku: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId?: string;
+        };
+        readonly CrmProductInput: {
+            readonly description?: string;
+            /** @default true */
+            readonly isActive: boolean;
+            readonly metadata?: {
+                readonly [key: string]: unknown;
+            };
+            readonly name: string;
+            readonly price?: {
+                readonly amount: components["schemas"]["CrmMoney"];
+                /** @enum {string} */
+                readonly billingInterval?: "one_time" | "month" | "quarter" | "year";
+                readonly marketCode?: string;
+            };
+            /** @enum {string} */
+            readonly productType: "subscription" | "advertising" | "service" | "license" | "credits" | "pack" | "one_time";
+            readonly sku: string;
+        };
+        readonly CrmQuote: components["schemas"]["CrmQuoteInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly discountMinor: number;
+            /** Format: uuid */
+            readonly id: string;
+            readonly quoteNumber: string;
+            /** @enum {string} */
+            readonly status: "draft" | "sent" | "accepted" | "rejected" | "expired" | "cancelled";
+            readonly subtotalMinor: number;
+            readonly taxMinor: number;
+            /** Format: uuid */
+            readonly tenantId: string;
+            readonly totalMinor: number;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly CrmQuoteInput: {
+            /** Format: uuid */
+            readonly accountId: string;
+            readonly currency: string;
+            readonly items: readonly components["schemas"]["CrmQuoteLineInput"][];
+            readonly notes?: string;
+            /** Format: uuid */
+            readonly opportunityId?: string;
+            /** Format: date */
+            readonly validUntil?: string;
+        };
+        readonly CrmQuoteLineInput: {
+            readonly description: string;
+            /** @default 0 */
+            readonly discountMinor: number;
+            /** Format: uuid */
+            readonly productId?: string;
+            readonly quantity: number;
+            /** @default 0 */
+            readonly taxMinor: number;
+            readonly unitAmountMinor: number;
+        };
+        readonly CrmSavedView: components["schemas"]["CrmSavedViewInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly ownerId?: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmSavedViewColumn: string;
+        readonly CrmSavedViewInput: {
+            readonly columnOrder?: readonly components["schemas"]["CrmSavedViewColumn"][];
+            /** @enum {string} */
+            readonly entityType: "account" | "contact" | "opportunity" | "task";
+            readonly filterDefinition?: {
+                readonly [key: string]: unknown;
+            };
+            readonly name: string;
+            readonly sortDefinition?: readonly components["schemas"]["CrmSavedViewSort"][];
+            /** Format: uuid */
+            readonly teamId?: string;
+            /** @enum {string} */
+            readonly visibility: "personal" | "team" | "workspace" | "tenant";
+            readonly visibleColumns?: readonly components["schemas"]["CrmSavedViewColumn"][];
+        };
+        readonly CrmSavedViewSort: {
+            /** @enum {string} */
+            readonly direction: "asc" | "desc";
+            readonly field: components["schemas"]["CrmSavedViewColumn"];
+        };
+        readonly CrmShongreIntelligence: {
+            readonly advertising: components["schemas"]["CrmShongreSection"];
+            /** Format: date-time */
+            readonly lastSynchronizedAt?: string;
+            readonly leads: components["schemas"]["CrmShongreSection"];
+            readonly linked: boolean;
+            readonly listings: components["schemas"]["CrmShongreSection"] & {
+                readonly published: number;
+                readonly recent: readonly {
+                    /** Format: uuid */
+                    readonly id: string;
+                    readonly marketCode: string;
+                    readonly status: string;
+                    readonly title: string;
+                    /** Format: date-time */
+                    readonly updatedAt: string;
+                }[];
+                readonly total: number;
+            };
+            readonly marketplaceActivity: components["schemas"]["CrmShongreSection"];
+            readonly organization?: {
+                readonly city?: string;
+                /** Format: uuid */
+                readonly id: string;
+                readonly legalName: string;
+                readonly marketCode: string;
+                readonly name: string;
+                readonly verified: boolean;
+            };
+            readonly professional: components["schemas"]["CrmShongreSection"] & {
+                readonly businessVerified?: boolean;
+                readonly emailVerified?: boolean;
+                readonly ownerName?: string;
+                /** Format: uuid */
+                readonly ownerUserId?: string;
+                readonly phoneVerified?: boolean;
+            };
+            /** @enum {string} */
+            readonly sourceSystem: "shongre";
+            readonly subscription: components["schemas"]["CrmShongreSection"] & {
+                readonly cancelAtPeriodEnd?: boolean;
+                /** Format: date-time */
+                readonly currentPeriodEndsAt?: string;
+                /** Format: uuid */
+                readonly id?: string;
+                readonly productId?: string;
+                readonly status?: string;
+            };
+        };
+        readonly CrmShongreSection: {
+            /** @enum {string} */
+            readonly availability: "available" | "not_linked" | "not_connected";
+        };
+        readonly CrmTask: components["schemas"]["CrmTaskInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** @enum {string} */
+            readonly status: "pending" | "in_progress" | "completed" | "cancelled";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly CrmTaskCompletion: {
+            readonly expectedVersion: number;
+            readonly result?: string;
+        };
+        readonly CrmTaskInput: {
+            /** Format: uuid */
+            readonly accountId?: string;
+            /** Format: uuid */
+            readonly contactId?: string;
+            readonly description?: string;
+            /** Format: date-time */
+            readonly dueAt: string;
+            /** Format: uuid */
+            readonly opportunityId?: string;
+            /** Format: uuid */
+            readonly ownerId?: string;
+            /** @enum {string} */
+            readonly priority?: "low" | "medium" | "high" | "urgent";
+            /** Format: date-time */
+            readonly startAt?: string;
+            /** Format: uuid */
+            readonly teamId?: string;
+            readonly title: string;
+            readonly type: string;
+        };
+        readonly CrmVersionedPatch: {
+            readonly changes: {
+                readonly [key: string]: unknown;
+            };
+            readonly expectedVersion: number;
+        };
+        readonly DomainHandoffExchange: {
+            readonly code: string;
+            readonly targetCountry: components["schemas"]["MarketCode"];
+        };
+        readonly DomainHandoffResult: {
+            readonly returnTo: string;
+            readonly user: components["schemas"]["JsonValue"];
+        };
+        readonly DomainHandoffStart: {
+            readonly returnTo?: string;
+            readonly sourceCountry: components["schemas"]["MarketCode"];
+            readonly targetCountry: components["schemas"]["MarketCode"];
+        };
+        readonly DomainHandoffStartResult: {
+            /** Format: uri */
+            readonly authorizationUrl: string;
+            /** Format: date-time */
+            readonly expiresAt: string;
+        };
         readonly ErrorDetail: {
             readonly code: string;
             readonly details?: components["schemas"]["JsonValue"];
@@ -5841,6 +7731,587 @@ export interface components {
         /** @description A JSON-compatible payload whose domain representation is mapped by the owning service adapter. */
         readonly JsonValue: null | boolean | number | string | readonly unknown[] | {
             readonly [key: string]: unknown;
+        };
+        /**
+         * @example FR
+         * @example BE
+         * @example CH
+         * @example SN
+         * @example BF
+         */
+        readonly MarketCode: string;
+        readonly MarketingAccountPreferencesInput: {
+            /** @default FR */
+            readonly marketCode: string;
+            readonly topics: readonly string[];
+        };
+        readonly MarketingAccountSubscriptionInput: {
+            /** @enum {boolean} */
+            readonly consentGiven: true;
+            /** @default fr-FR */
+            readonly locale: string;
+            /** @default FR */
+            readonly marketCode: string;
+            /** @default [] */
+            readonly topics: readonly string[];
+        };
+        readonly MarketingAiAssistInput: {
+            readonly instructions: string;
+            readonly locale?: string;
+            readonly safeContext?: {
+                readonly [key: string]: unknown;
+            };
+            /** @enum {string} */
+            readonly task: "marketing.campaign_draft" | "marketing.subject_generation" | "marketing.preview_generation" | "marketing.content_rewrite" | "marketing.ab_generation" | "marketing.translation" | "marketing.performance_analysis" | "marketing.segment_suggestion";
+        };
+        readonly MarketingAnalytics: {
+            readonly accepted: number;
+            readonly attempted: number;
+            readonly audienceSize: number;
+            /** Format: date-time */
+            readonly calculatedAt: string;
+            readonly clickThroughRate: number;
+            readonly complaints: number;
+            readonly conversionRate: number;
+            readonly conversions: number;
+            readonly delivered: number;
+            readonly deliveryRate: number;
+            readonly eligibleRecipients: number;
+            readonly hardBounces: number;
+            readonly openMetricCaveat: string;
+            readonly softBounces: number;
+            readonly uniqueClicks: number;
+            readonly uniqueOpens: number;
+            readonly unsubscribes: number;
+            readonly variants: readonly {
+                readonly [key: string]: unknown;
+            }[];
+        };
+        readonly MarketingAudienceDefinition: {
+            /** @default [] */
+            readonly excludeListIds: readonly string[];
+            /** @default [] */
+            readonly excludeProfileIds: readonly string[];
+            /** @default [] */
+            readonly excludeSegmentIds: readonly string[];
+            /** @default [] */
+            readonly includeListIds: readonly string[];
+            /** @default [] */
+            readonly includeProfileIds: readonly string[];
+            /** @default [] */
+            readonly includeSegmentIds: readonly string[];
+            readonly recentRecipientDays?: number;
+        };
+        readonly MarketingAudienceEstimate: {
+            /** Format: date-time */
+            readonly calculatedAt: string;
+            readonly doNotContact: number;
+            readonly duplicate: number;
+            readonly eligible: number;
+            readonly excluded: number;
+            readonly frequencyCapped: number;
+            readonly invalid: number;
+            readonly selected: number;
+            readonly suppressed: number;
+            readonly unsubscribed: number;
+        };
+        readonly MarketingCampaign: components["schemas"]["MarketingCampaignInput"] & {
+            /** Format: uuid */
+            readonly approvedBy?: string;
+            /** Format: date-time */
+            readonly completedAt?: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly createdBy: string;
+            readonly currentVersion: number;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly scheduledAt?: string;
+            /** Format: date-time */
+            readonly startedAt?: string;
+            /** @enum {string} */
+            readonly status: "DRAFT" | "REVIEW" | "APPROVED" | "SCHEDULED" | "QUEUED" | "SENDING" | "PAUSED" | "COMPLETED" | "CANCELLED" | "FAILED";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly winningVariantId?: string;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingCampaignInput: {
+            readonly audience: components["schemas"]["MarketingAudienceDefinition"];
+            /** @enum {string} */
+            readonly campaignType?: "NEWSLETTER" | "PROMOTION" | "LIFECYCLE" | "ANNOUNCEMENT";
+            readonly content: components["schemas"]["MarketingContent"];
+            readonly experiment?: components["schemas"]["MarketingExperiment"];
+            readonly locale?: string;
+            readonly name: string;
+            readonly previewText?: string;
+            /** Format: uuid */
+            readonly providerConnectionId?: string;
+            /** Format: email */
+            readonly replyTo?: string;
+            /** Format: uuid */
+            readonly senderIdentityId?: string;
+            readonly subject: string;
+            /** Format: uuid */
+            readonly templateId?: string;
+            readonly templateVersion?: number;
+            readonly timezone?: string;
+        };
+        readonly MarketingContent: {
+            readonly blocks: readonly ({
+                readonly id: string;
+                /** @enum {string} */
+                readonly type: "HEADING" | "PARAGRAPH" | "IMAGE" | "BUTTON" | "DIVIDER" | "SPACER" | "UNSUBSCRIBE" | "PREFERENCE_CENTER" | "FOOTER";
+            } & {
+                readonly [key: string]: unknown;
+            })[];
+            readonly plainText?: string;
+        };
+        readonly MarketingConversionInput: {
+            readonly amountMinor?: number;
+            /** Format: uuid */
+            readonly campaignRecipientId?: string;
+            readonly conversionType: string;
+            readonly currency?: string;
+            readonly externalSubjectId?: string;
+            readonly idempotencyKey: string;
+            /** Format: date-time */
+            readonly occurredAt: string;
+            /** Format: uuid */
+            readonly profileId?: string;
+            readonly safeMetadata?: {
+                readonly [key: string]: unknown;
+            };
+        };
+        readonly MarketingDashboard: {
+            readonly activeProfiles: number;
+            readonly campaignsSent: number;
+            readonly clickThroughRate: number;
+            readonly delivered: number;
+            readonly deliveryRate: number;
+            readonly pendingProfiles: number;
+            readonly providerConfigured: boolean;
+            readonly scheduledCampaigns: number;
+            readonly suppressedProfiles: number;
+            readonly uniqueClicks: number;
+            readonly unsubscribes: number;
+        };
+        readonly MarketingEntitlements: {
+            readonly abTesting: boolean;
+            readonly advancedAnalytics: boolean;
+            readonly ai: boolean;
+            readonly api: boolean;
+            readonly automation: boolean;
+            readonly byoEmail: boolean;
+            readonly customDomain: boolean;
+            readonly enabled: boolean;
+            readonly maxContacts: number;
+            readonly maxLists: number;
+            readonly maxMonthlySends: number;
+            readonly maxSegments: number;
+            readonly maxUsers: number;
+            readonly platformEmail: boolean;
+            readonly templates: boolean;
+            readonly webhooks: boolean;
+        };
+        readonly MarketingExperiment: {
+            readonly durationMinutes: number;
+            readonly enabled: boolean;
+            readonly testPercentage: number;
+            readonly variants: readonly {
+                readonly content?: components["schemas"]["MarketingContent"];
+                readonly id: string;
+                readonly name: string;
+                readonly previewText?: string;
+                readonly subject?: string;
+                readonly weight: number;
+            }[];
+            /** @enum {string} */
+            readonly winnerMetric: "CLICK_RATE" | "CONVERSION_RATE" | "OPEN_RATE";
+            /** @enum {string} */
+            readonly winnerMode: "AUTOMATIC" | "MANUAL";
+        };
+        readonly MarketingJourney: components["schemas"]["MarketingJourneyInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly createdBy: string;
+            readonly currentVersion: number;
+            /** Format: uuid */
+            readonly id: string;
+            /** @enum {string} */
+            readonly status: "DRAFT" | "ACTIVE" | "PAUSED" | "ARCHIVED";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingJourneyDefinition: {
+            readonly entryNodeId: string;
+            readonly maxExecutionDepth: number;
+            readonly nodes: readonly {
+                readonly alternateNodeId?: string;
+                readonly configuration: {
+                    readonly [key: string]: unknown;
+                };
+                readonly id: string;
+                readonly nextNodeId?: string;
+                /** @enum {string} */
+                readonly type: "CONDITION" | "WAIT" | "SEND_EMAIL" | "BRANCH" | "ADD_TO_LIST" | "REMOVE_FROM_LIST" | "ADD_TAG" | "REMOVE_TAG" | "UPDATE_FIELD" | "CREATE_CRM_TASK" | "RECORD_CRM_ACTIVITY" | "CALL_WEBHOOK" | "RUN_AI" | "END";
+            }[];
+            readonly trigger: {
+                readonly configuration: {
+                    readonly [key: string]: unknown;
+                };
+                /** @enum {string} */
+                readonly type: "SUBSCRIBER_CREATED" | "SUBSCRIBER_CONFIRMED" | "LIST_JOINED" | "FORM_SUBMITTED" | "TAG_ADDED" | "CRM_CONTACT_CREATED" | "CRM_STAGE_CHANGED" | "CAMPAIGN_CLICKED" | "SUBSCRIPTION_STARTED" | "SUBSCRIPTION_CANCELLED" | "SCHEDULED_DATE" | "EXTERNAL_EVENT";
+            };
+        };
+        readonly MarketingJourneyEvent: {
+            readonly eventId: string;
+            /** Format: uuid */
+            readonly profileId?: string;
+            readonly safeContext?: {
+                readonly [key: string]: unknown;
+            };
+            /** @enum {string} */
+            readonly type: "SUBSCRIBER_CREATED" | "SUBSCRIBER_CONFIRMED" | "LIST_JOINED" | "FORM_SUBMITTED" | "TAG_ADDED" | "CRM_CONTACT_CREATED" | "CRM_STAGE_CHANGED" | "CAMPAIGN_CLICKED" | "SUBSCRIPTION_STARTED" | "SUBSCRIPTION_CANCELLED" | "SCHEDULED_DATE" | "EXTERNAL_EVENT";
+        };
+        readonly MarketingJourneyExecution: {
+            /** Format: date-time */
+            readonly availableAt: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly currentNodeId?: string;
+            readonly depth: number;
+            readonly eventId: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly journeyId: string;
+            readonly journeyVersion: number;
+            readonly lastErrorCode?: string;
+            /** Format: uuid */
+            readonly profileId?: string;
+            /** @enum {string} */
+            readonly status: "QUEUED" | "RUNNING" | "WAITING" | "COMPLETED" | "FAILED" | "STOPPED";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly MarketingJourneyInput: {
+            readonly definition: components["schemas"]["MarketingJourneyDefinition"];
+            readonly description?: string;
+            readonly name: string;
+        };
+        readonly MarketingList: components["schemas"]["MarketingListInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly memberCount: number;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingListInput: {
+            readonly description?: string;
+            readonly name: string;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            readonly status: "ACTIVE" | "ARCHIVED";
+        };
+        readonly MarketingPreflight: {
+            readonly audience: components["schemas"]["MarketingAudienceEstimate"];
+            readonly blockers: readonly components["schemas"]["MarketingPreflightIssue"][];
+            /** Format: uuid */
+            readonly campaignId: string;
+            readonly canSend: boolean;
+            /** Format: date-time */
+            readonly checkedAt: string;
+            readonly info: readonly components["schemas"]["MarketingPreflightIssue"][];
+            readonly warnings: readonly components["schemas"]["MarketingPreflightIssue"][];
+        };
+        readonly MarketingPreflightIssue: {
+            readonly actionHref?: string;
+            readonly code: string;
+            readonly field?: string;
+            readonly message: string;
+        };
+        readonly MarketingProfile: components["schemas"]["MarketingProfileInput"] & {
+            /** Format: date-time */
+            readonly confirmedAt?: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly lastEngagedAt?: string;
+            /** Format: email */
+            readonly normalizedEmail: string;
+            readonly status: components["schemas"]["MarketingProfileStatus"];
+            /** Format: date-time */
+            readonly subscribedAt?: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly unsubscribedAt?: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingProfileInput: {
+            /** Format: uuid */
+            readonly accountUserId?: string;
+            readonly country?: string;
+            /** Format: uuid */
+            readonly crmContactId?: string;
+            readonly customValues?: {
+                readonly [key: string]: unknown;
+            };
+            /** Format: email */
+            readonly email: string;
+            readonly firstName?: string;
+            readonly lastName?: string;
+            readonly locale?: string;
+            /** @enum {string} */
+            readonly source?: "HOMEPAGE" | "FOOTER" | "REGISTRATION" | "ACCOUNT" | "PRO_WORKSPACE" | "NEWSLETTER_PAGE" | "CRM" | "IMPORT" | "FORM" | "API" | "AUTOMATION";
+            readonly sourceDetail?: string;
+            readonly timezone?: string;
+            readonly topics?: readonly string[];
+        };
+        /** @enum {string} */
+        readonly MarketingProfileStatus: "PENDING" | "SUBSCRIBED" | "UNSUBSCRIBED" | "SUPPRESSED" | "BOUNCED" | "COMPLAINED" | "INVALID";
+        readonly MarketingPublicAction: {
+            readonly token: string;
+        };
+        readonly MarketingPublicPreferencesUpdate: components["schemas"]["MarketingPublicAction"] & {
+            readonly topics: readonly string[];
+        };
+        readonly MarketingPublicSubscriptionInput: {
+            /** @enum {boolean} */
+            readonly consentGiven: true;
+            /** Format: email */
+            readonly email: string;
+            /** @default fr-FR */
+            readonly locale: string;
+            /** @default FR */
+            readonly marketCode: string;
+            /**
+             * @default NEWSLETTER_PAGE
+             * @enum {string}
+             */
+            readonly source: "HOMEPAGE" | "FOOTER" | "REGISTRATION" | "NEWSLETTER_PAGE" | "FORM";
+            /** @default [] */
+            readonly topics: readonly string[];
+        };
+        readonly MarketingSegment: components["schemas"]["MarketingSegmentInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly estimatedCount: number;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly lastEstimatedAt?: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingSegmentDefinition: {
+            /** @enum {string} */
+            readonly combinator: "AND" | "OR";
+            readonly conditions: readonly {
+                readonly field: string;
+                /** @enum {string} */
+                readonly operator: "EQUALS" | "NOT_EQUALS" | "CONTAINS" | "IN" | "NOT_IN" | "EXISTS" | "GREATER_THAN" | "LESS_THAN" | "BEFORE" | "AFTER";
+                readonly value?: unknown;
+            }[];
+            readonly groups?: readonly components["schemas"]["MarketingSegmentDefinition"][];
+        };
+        readonly MarketingSegmentInput: {
+            readonly definition: components["schemas"]["MarketingSegmentDefinition"];
+            readonly description?: string;
+            readonly name: string;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            readonly status: "ACTIVE" | "ARCHIVED";
+        };
+        readonly MarketingSubscriptionReceipt: {
+            /** @enum {boolean} */
+            readonly accepted: true;
+            readonly message: string;
+            /** @enum {string} */
+            readonly status: "PENDING_CONFIRMATION" | "SUBSCRIBED" | "UNCHANGED";
+        };
+        readonly MarketingSubscriptionView: {
+            /** Format: date-time */
+            readonly confirmedAt?: string;
+            /** Format: email */
+            readonly email: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly locale: string;
+            readonly marketCode: string;
+            readonly status: components["schemas"]["MarketingProfileStatus"];
+            /** Format: date-time */
+            readonly subscribedAt?: string;
+            readonly topics: readonly string[];
+            /** Format: date-time */
+            readonly unsubscribedAt?: string;
+        };
+        readonly MarketingSuppression: {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: email */
+            readonly normalizedEmail: string;
+            /** Format: date-time */
+            readonly occurredAt: string;
+            /** Format: uuid */
+            readonly profileId?: string;
+            /** Format: uuid */
+            readonly providerConnectionId?: string;
+            /** @enum {string} */
+            readonly reason: "UNSUBSCRIBED" | "HARD_BOUNCE" | "COMPLAINT" | "INVALID" | "MANUAL" | "LEGAL" | "PROVIDER_SUPPRESSION";
+            /** Format: date-time */
+            readonly releasedAt?: string;
+            readonly source: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly MarketingTemplate: components["schemas"]["MarketingTemplateInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly currentVersion: number;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingTemplateInput: {
+            /** @enum {string} */
+            readonly category: "NEWSLETTER" | "PROMOTION" | "ANNOUNCEMENT" | "PRODUCT_UPDATE" | "WELCOME" | "EVENT" | "RE_ENGAGEMENT" | "PROFESSIONAL_INSIGHTS" | "CUSTOM";
+            readonly content: components["schemas"]["MarketingContent"];
+            readonly locale: string;
+            readonly name: string;
+            readonly previewText?: string;
+            /**
+             * @default ACTIVE
+             * @enum {string}
+             */
+            readonly status: "ACTIVE" | "ARCHIVED";
+            readonly subject: string;
+        };
+        readonly MarketingUsage: {
+            readonly activeProfiles: number;
+            readonly apiRequests: number;
+            readonly attemptedSends: number;
+            readonly automationExecutions: number;
+            readonly campaignCount: number;
+            readonly entitlements: components["schemas"]["MarketingEntitlements"];
+            readonly period: string;
+        };
+        readonly MarketingWebhookSubscription: components["schemas"]["MarketingWebhookSubscriptionInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly lastDeliveredAt?: string;
+            /** Format: date-time */
+            readonly lastFailureAt?: string;
+            readonly signingSecretHint: string;
+            /** @enum {string} */
+            readonly status: "ACTIVE" | "PAUSED" | "DISABLED";
+            /** Format: uuid */
+            readonly tenantId: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** Format: uuid */
+            readonly workspaceId: string;
+        };
+        readonly MarketingWebhookSubscriptionInput: {
+            readonly eventTypes: readonly string[];
+            /** Format: uri */
+            readonly url: string;
+        };
+        readonly ProviderConnection: {
+            readonly capabilities: readonly string[];
+            readonly configuration: {
+                readonly [key: string]: unknown;
+            };
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly credentialConfigured: boolean;
+            readonly credentialHint?: string;
+            readonly displayName: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly isDefault: boolean;
+            /** Format: date-time */
+            readonly lastValidatedAt?: string;
+            /** Format: uuid */
+            readonly ownerId?: string;
+            /** @enum {string} */
+            readonly ownerType: "PLATFORM" | "TENANT" | "USER";
+            readonly providerFamily: string;
+            readonly providerId: string;
+            /** @enum {string} */
+            readonly status: "DRAFT" | "ACTIVE" | "DISABLED" | "ERROR" | "REVOKED";
+            /** Format: uuid */
+            readonly tenantId?: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly ProviderConnectionInput: {
+            readonly capabilities: readonly string[];
+            /** @default {} */
+            readonly configuration: {
+                readonly [key: string]: unknown;
+            };
+            readonly credential?: string;
+            readonly displayName: string;
+            /** @default false */
+            readonly isDefault: boolean;
+            /** @enum {string} */
+            readonly ownerType: "TENANT" | "USER";
+            /** @enum {string} */
+            readonly providerFamily: "AI" | "MAILBOX" | "EMAIL_DELIVERY" | "CALENDAR" | "SMS" | "CALLING" | "PAYMENT" | "OTHER";
+            readonly providerId: string;
+        };
+        readonly ProviderCredentialRotation: {
+            readonly credential: string;
+            readonly expectedVersion: number;
         };
     };
     responses: {
@@ -5928,6 +8399,8 @@ export interface components {
     parameters: {
         /** @description Strongly recommended for retryable financial and import mutations. Reusing a key with a different payload is a conflict. */
         readonly IdempotencyKey: string;
+        /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+        readonly MarketContext: components["schemas"]["MarketCode"];
         /** @description Caller correlation id. The server returns the accepted or generated value. */
         readonly RequestId: string;
     };
@@ -5968,7 +8441,9 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["CrmPipeline"][];
+                    };
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -6000,7 +8475,9 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["ProviderConnection"][];
+                    };
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -6898,6 +9375,42 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly patchAdminCountriesByCode: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly code: components["schemas"]["MarketCode"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CountryConfigPatch"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated country configuration. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CountryConfig"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -7856,6 +10369,75 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthDomainHandoffExchange: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DomainHandoffExchange"];
+            };
+        };
+        readonly responses: {
+            /** @description A host-local HttpOnly session was created. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DomainHandoffResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAuthDomainHandoffStart: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DomainHandoffStart"];
+            };
+        };
+        readonly responses: {
+            /** @description Short-lived destination authorization URL. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DomainHandoffStartResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -10088,6 +12670,1199 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly checkCrmAccountDuplicates: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmAccountDuplicateCheck"];
+            };
+        };
+        readonly responses: {
+            /** @description Ranked possible duplicates and their safe matching signals. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["CrmDuplicateMatch"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmAccounts: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmAccount: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmAccountInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmAccount"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getCrmAccount: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly accountId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmAccount"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateCrmAccount: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly accountId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmVersionedPatch"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmAccount"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getCrmAccountShongreIntelligence: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly accountId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Shongre intelligence projection or an explicit not-linked state. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmShongreIntelligence"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmActivities: {
+        readonly parameters: {
+            readonly query: {
+                readonly entityId: string;
+                readonly entityType: "account" | "contact" | "opportunity" | "task";
+                readonly limit?: number;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmActivity: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmActivityInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmActivity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmContacts: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmContact: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmContactInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmContact"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getCrmContact: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly contactId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmContact"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateCrmContact: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly contactId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmVersionedPatch"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmContact"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmCustomFields: {
+        readonly parameters: {
+            readonly query?: {
+                readonly entityType?: "account" | "contact" | "opportunity" | "task";
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmCustomField: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmCustomFieldInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmCustomField"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getCrmDashboard: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmDashboard"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmOpportunities: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmOpportunity: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmOpportunityInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmOpportunity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getCrmOpportunity: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly opportunityId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmOpportunity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly transitionCrmOpportunity: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly opportunityId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmOpportunityTransition"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmOpportunity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmPipelines: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmPipeline: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmPipelineInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Pipeline created. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPipeline"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateCrmPipeline: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly pipelineId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmPipelineUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Pipeline updated. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPipeline"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmProducts: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmProduct: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmProductInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmProduct"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateCrmProduct: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly productId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmVersionedPatch"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmProduct"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmQuotes: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly opportunityId?: string;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmQuote: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmQuoteInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmQuote"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmSavedViews: {
+        readonly parameters: {
+            readonly query?: {
+                readonly entityType?: "account" | "contact" | "opportunity" | "task";
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["CrmSavedView"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmSavedView: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmSavedViewInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmSavedView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateCrmSavedView: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly savedViewId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly expectedVersion: number;
+                    readonly input: components["schemas"]["CrmSavedViewInput"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmSavedView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteCrmSavedView: {
+        readonly parameters: {
+            readonly query: {
+                readonly expectedVersion: number;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly savedViewId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly deleted: boolean;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listCrmTasks: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createCrmTask: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmTaskInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmTask"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly completeCrmTask: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly taskId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CrmTaskCompletion"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CrmTask"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };
@@ -12621,9 +16396,11 @@ export interface operations {
                 readonly market?: string;
                 readonly region?: string;
             };
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -12754,10 +16531,14 @@ export interface operations {
     };
     readonly getListings: {
         readonly parameters: {
-            readonly query?: never;
-            readonly header?: {
+            readonly query?: {
+                readonly marketCode?: components["schemas"]["MarketCode"];
+            };
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -12787,9 +16568,11 @@ export interface operations {
     readonly getListingsById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -13077,9 +16860,11 @@ export interface operations {
     readonly postListingsSearch: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -13087,6 +16872,8 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
+                    readonly marketCode?: components["schemas"]["MarketCode"];
+                } & {
                     readonly [key: string]: unknown;
                 };
             };
@@ -13139,6 +16926,1561 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
         };
     };
+    readonly updateAccountMarketingPreferences: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingAccountPreferencesInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated account preferences. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getAccountMarketingSubscription: {
+        readonly parameters: {
+            readonly query?: {
+                readonly marketCode?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Subscription or null. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"] | null;
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly subscribeAccountToMarketing: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingAccountSubscriptionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Account subscription state. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly unsubscribeAccountFromMarketing: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": {
+                    /** @default FR */
+                    readonly marketCode?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Unsubscribed account state. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly assistMarketingWithAi: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingAiAssistInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Draft-only AI result. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly generateMarketingCampaignDraft: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly instructions: string;
+                    readonly locale?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Advisory AI result that never sends automatically. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly [key: string]: unknown;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 503: components["responses"]["InternalError"];
+        };
+    };
+    readonly getMarketingAnalytics: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaignId?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Canonical metrics. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingAnalytics"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingCampaigns: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingCampaign"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingCampaignInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly approveMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Campaign approved. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly cancelMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly pauseMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly preflightMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingPreflight"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly resumeMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Campaign resumed. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly reviewMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Campaign submitted. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly scheduleMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    /** Format: date-time */
+                    readonly scheduledAt: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly selectMarketingCampaignWinner: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly variantId?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Winning variant persisted idempotently. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingCampaign"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly sendMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Campaign queued for background delivery. */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly campaign: components["schemas"]["MarketingCampaign"];
+                        readonly excludedRecipients: number;
+                        readonly queuedRecipients: number;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly testSendMarketingCampaign: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly campaignId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly personalization?: {
+                        readonly [key: string]: string | number | boolean;
+                    };
+                    /** Format: email */
+                    readonly recipient: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Provider acceptance result. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        /** Format: date-time */
+                        readonly acceptedAt: string;
+                        readonly externalMessageId: string;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly estimateMarketingAudience: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingAudienceDefinition"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingAudienceEstimate"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly recordMarketingConversion: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingConversionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Conversion accepted idempotently. */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        /** @enum {boolean} */
+                        readonly accepted: true;
+                        readonly duplicate: boolean;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly getMarketingDashboard: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingDashboard"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listMarketingJourneyExecutions: {
+        readonly parameters: {
+            readonly query?: {
+                readonly journeyId?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Execution history. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingJourneyExecution"][];
+                    };
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingJourneys: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Journey list. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingJourney"][];
+                    };
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly createMarketingJourney: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingJourneyInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Journey created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingJourney"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly activateMarketingJourney: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly journeyId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Journey activated. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingJourney"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly pauseMarketingJourney: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly journeyId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Journey paused. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingJourney"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly emitMarketingJourneyEvent: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingJourneyEvent"];
+            };
+        };
+        readonly responses: {
+            /** @description Event accepted. */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly accepted: boolean;
+                        readonly executionIds: readonly string[];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingLists: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingList"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly createMarketingList: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingListInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingList"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly addMarketingListMember: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly listId: string;
+                readonly profileId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly success: boolean;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly listMarketingProfiles: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly query?: string;
+                readonly status?: components["schemas"]["MarketingProfileStatus"];
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingProfile"][];
+                        readonly pageInfo: {
+                            readonly hasNextPage: boolean;
+                            readonly nextCursor?: string;
+                        };
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createMarketingProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingProfileInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly confirmMarketingProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly profileId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+        };
+    };
+    readonly unsubscribeMarketingProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly profileId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly receiveMarketingProviderWebhook: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly connectionId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly [key: string]: unknown;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Signed webhook accepted idempotently. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly accepted: boolean;
+                        readonly duplicate: boolean;
+                        readonly eventCount: number;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            /** @description Payload too large. */
+            readonly 413: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly confirmPublicMarketingSubscription: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingPublicAction"];
+            };
+        };
+        readonly responses: {
+            /** @description Subscription confirmed. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly getPublicMarketingPreferences: {
+        readonly parameters: {
+            readonly query: {
+                readonly token: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current preferences. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly updatePublicMarketingPreferences: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingPublicPreferencesUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Preferences updated. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionView"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly createPublicMarketingSubscription: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingPublicSubscriptionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Subscription request accepted without account enumeration. */
+            readonly 202: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionReceipt"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly unsubscribePublicMarketingProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingPublicAction"];
+            };
+        };
+        readonly responses: {
+            /** @description Unsubscribe processed idempotently. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSubscriptionReceipt"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly listMarketingSegments: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingSegment"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly createMarketingSegment: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingSegmentInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingSegment"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingSuppressions: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingSuppression"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingTemplates: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingTemplate"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly createMarketingTemplate: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingTemplateInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Resource created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingTemplate"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly recordMarketingClick: {
+        readonly parameters: {
+            readonly query: {
+                readonly token: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Redirect to the server-stored HTTPS target. */
+            readonly 302: {
+                headers: {
+                    readonly Location?: string;
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly recordMarketingOpen: {
+        readonly parameters: {
+            readonly query: {
+                readonly token: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description One pixel GIF. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "image/gif": string;
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+        };
+    };
+    readonly getMarketingUsage: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current period usage. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketingUsage"];
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly listMarketingWebhooks: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Webhook subscriptions. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["MarketingWebhookSubscription"][];
+                    };
+                };
+            };
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
+    readonly createMarketingWebhook: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketingWebhookSubscriptionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Webhook and one-time signing secret. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly signingSecret: string;
+                        readonly subscription: components["schemas"]["MarketingWebhookSubscription"];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 403: components["responses"]["Forbidden"];
+        };
+    };
     readonly getMarkets: {
         readonly parameters: {
             readonly query?: never;
@@ -13158,7 +18500,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": readonly components["schemas"]["CountryConfig"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -13192,7 +18534,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["CountryConfig"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -13298,7 +18640,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["CountryConfig"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -15460,6 +20802,108 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listProviderConnections: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createProviderConnection: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProviderConnectionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Draft connection created. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProviderConnection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly rotateProviderConnectionCredential: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly connectionId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProviderCredentialRotation"];
+            };
+        };
+        readonly responses: {
+            /** @description Credential rotated; plaintext is not returned. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProviderConnection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };

@@ -28,6 +28,11 @@ import {
   staffRoleFromLegacyRole,
 } from "@shongre/contracts/access-control";
 import {
+  buildPublicUrl,
+  countryCodeSchema,
+  getCountryConfig,
+} from "@shongre/contracts";
+import {
   sessionService,
   type AuthRequestMetadata,
   type SessionService,
@@ -39,6 +44,7 @@ import {
 import { randomOAuthValue, sha256 } from "./oauth-provider.client.js";
 import { authEmailSender, type AuthEmailSender } from "./auth-email.sender.js";
 import { randomUUID } from "node:crypto";
+import { resolveSafeRedirect } from "../../shared/auth/safe-redirect.js";
 import {
   createMfaSecret,
   createMfaSetup,
@@ -168,6 +174,135 @@ export class AuthService {
   async getCurrentUser(principal: Principal): Promise<UserProfile | null> {
     if (!principal.userId) return null;
     return this.userRepo.findById(principal.userId);
+  }
+
+  /**
+   * Creates a one-use authorization code for a top-level transition between
+   * shongre.fr and shongre.com. Cookies remain host-only; the destination
+   * creates its own session only after consuming this short-lived code.
+   */
+  async beginDomainHandoff(
+    principal: Principal,
+    input: {
+      sourceCountry?: string;
+      targetCountry?: string;
+      returnTo?: string;
+    },
+  ): Promise<{ authorizationUrl: string; expiresAt: string }> {
+    if (!principal.userId || !principal.sessionId) throw invalidCredentials();
+    const sourceCountry = countryCodeSchema.parse(
+      String(input?.sourceCountry || "").toUpperCase(),
+    );
+    const targetCountry = countryCodeSchema.parse(
+      String(input?.targetCountry || "").toUpperCase(),
+    );
+    const source = getCountryConfig(sourceCountry);
+    const target = getCountryConfig(targetCountry);
+    if (
+      !source ||
+      !source.enabled ||
+      !["active", "beta"].includes(source.launchStatus) ||
+      !source.marketplace.enabled ||
+      !target ||
+      !target.enabled ||
+      !["active", "beta"].includes(target.launchStatus) ||
+      !target.marketplace.enabled ||
+      sourceCountry === targetCountry
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce changement de marché n’est pas disponible.",
+      });
+    }
+    if (!(await this.sessions.isActive(principal.sessionId, principal.userId))) {
+      throw invalidCredentials();
+    }
+
+    const code = randomOAuthValue(32);
+    const expiresAt = new Date(Date.now() + 120_000).toISOString();
+    await this.authRepo.createDomainHandoff({
+      codeHash: sha256(code),
+      userId: principal.userId,
+      sourceSessionId: principal.sessionId,
+      sourceCountry,
+      targetCountry,
+      returnTo: resolveSafeRedirect(input?.returnTo),
+      expiresAt,
+    });
+    const authorizationUrl = new URL(
+      buildPublicUrl({
+        country: targetCountry,
+        route: "/auth/domain-handoff",
+        infrastructure: {
+          globalDomain: process.env.SHONGRE_GLOBAL_DOMAIN || "shongre.com",
+          franceDomain: process.env.SHONGRE_FR_DOMAIN || "shongre.fr",
+          canonicalProtocol:
+            process.env.SHONGRE_CANONICAL_PROTOCOL === "http" ? "http" : "https",
+        },
+      }),
+    );
+    authorizationUrl.searchParams.set("code", code);
+    return { authorizationUrl: authorizationUrl.toString(), expiresAt };
+  }
+
+  async exchangeDomainHandoff(
+    input: { code?: string; targetCountry?: string },
+    metadata: AuthRequestMetadata = {},
+  ): Promise<{ user: UserProfile; tokens: import("./session.service.js").SessionTokens; returnTo: string }> {
+    const code = String(input?.code || "");
+    const targetCountry = countryCodeSchema.parse(
+      String(input?.targetCountry || "").toUpperCase(),
+    );
+    if (code.length < 32 || code.length > 256) throw invalidCredentials();
+    const handoff = await this.authRepo.consumeDomainHandoff(sha256(code));
+    if (!handoff || handoff.targetCountry !== targetCountry) {
+      throw invalidCredentials();
+    }
+    const target = getCountryConfig(targetCountry);
+    if (
+      !target?.enabled ||
+      !["active", "beta"].includes(target.launchStatus) ||
+      !target.marketplace.enabled
+    ) {
+      throw invalidCredentials();
+    }
+    if (
+      !(await this.sessions.isActive(
+        handoff.sourceSessionId,
+        handoff.userId,
+      ))
+    ) {
+      throw invalidCredentials();
+    }
+    const [user, sourceSession] = await Promise.all([
+      this.userRepo.findById(handoff.userId),
+      this.authRepo.findSessionById(handoff.sourceSessionId),
+    ]);
+    if (!user || !sourceSession || sourceSession.revokedAt) {
+      throw invalidCredentials();
+    }
+    const [recentlyAuthenticated, mfaVerified] = await Promise.all([
+      this.sessions.hasRecentAuthentication(handoff.sourceSessionId),
+      this.sessions.isMfaVerified(handoff.sourceSessionId),
+    ]);
+    const tokens = await this.sessions.create(
+      user,
+      sourceSession.provider,
+      metadata,
+      recentlyAuthenticated,
+      mfaVerified,
+    );
+    await this.authRepo.recordSecurityEvent({
+      userId: user.id,
+      eventType: "domain_handoff_completed",
+      provider: sourceSession.provider,
+      ipPrefix: metadata.ipPrefix,
+      metadata: {
+        sourceCountry: handoff.sourceCountry,
+        targetCountry: handoff.targetCountry,
+      },
+    });
+    return { user, tokens, returnTo: handoff.returnTo };
   }
 
   async login(

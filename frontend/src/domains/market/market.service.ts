@@ -48,7 +48,9 @@ export class MarketService {
    * Returns only publicly active markets
    */
   public getActiveMarkets(): Market[] {
-    return this.getMarkets().filter((m) => m.status === "active");
+    return this.getMarkets().filter(
+      (market) => market.status === "active" || market.status === "beta",
+    );
   }
 
   /**
@@ -281,7 +283,7 @@ export class MarketService {
   }
 
   /**
-   * Updates market lifecycle status (draft, configured, coming_soon, active, paused, archived)
+   * Updates the complete market lifecycle exposed by the country registry.
    */
   public updateMarketStatus(
     marketCode: string,
@@ -326,6 +328,62 @@ export class MarketService {
     return updatedMarket;
   }
 
+  public updateMarketRouting(
+    marketCode: string,
+    routing: NonNullable<Market["routing"]>,
+    actor?: { id: string; name: string; role: string },
+  ): Market {
+    const markets = this.getMarkets();
+    const targetIdx = markets.findIndex(
+      (market) => market.code === marketCode.toUpperCase(),
+    );
+    if (targetIdx < 0) throw new Error(`Market [${marketCode}] not found.`);
+    const primaryDomain = routing.primaryDomain.trim().toLowerCase();
+    const basePath = routing.basePath.trim() || "/";
+    if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(primaryDomain)) {
+      throw new Error("Le domaine public n’est pas valide.");
+    }
+    if (!/^\/$|^\/[a-z0-9-]+$/.test(basePath)) {
+      throw new Error("Le préfixe doit être / ou /code-pays.");
+    }
+    if (marketCode === "FR" && basePath !== "/") {
+      throw new Error("La France doit rester publiée à la racine de shongre.fr.");
+    }
+    if (marketCode !== "FR" && basePath === "/") {
+      throw new Error("La racine shongre.com est réservée au portail global.");
+    }
+    if (
+      markets.some(
+        (market, index) =>
+          index !== targetIdx &&
+          market.routing?.primaryDomain === primaryDomain &&
+          market.routing?.basePath === basePath,
+      )
+    ) {
+      throw new Error("Cette combinaison domaine/chemin est déjà utilisée.");
+    }
+    const current = markets[targetIdx];
+    const updated: Market = {
+      ...current,
+      routing: { ...routing, primaryDomain, basePath },
+      updatedAt: new Date().toISOString(),
+      version: current.version + 1,
+    };
+    markets[targetIdx] = updated;
+    storageService.saveMarkets(markets);
+    auditService.logEvent({
+      actorId: actor?.id || "admin-system",
+      actorName: actor?.name || "Administrateur",
+      actorRole: (actor?.role as any) || "admin",
+      action: "market_scope_updated",
+      details: `Routage canonique du marché [${current.code}] mis à jour.`,
+      previousValue: current.routing,
+      newValue: updated.routing,
+      market: current.code,
+    });
+    return updated;
+  }
+
   /**
    * Creates a new market inheriting 100% from France by default
    */
@@ -367,6 +425,12 @@ export class MarketService {
       currencySymbol:
         data.currencySymbol || (data.currency === "EUR" ? "€" : data.currency),
       timezone: data.timezone || "Europe/Paris",
+      routing: {
+        primaryDomain: "shongre.com",
+        basePath: `/${normalizedCode.toLowerCase()}`,
+        gatewayVisible: false,
+        seoIndexable: false,
+      },
       geography: data.geography || {
         allCountryEnabled: true,
         regions: [],
@@ -543,7 +607,7 @@ export class MarketService {
       let ineligibilityReason: string | undefined;
 
       // 1. Market Status Check
-      if (market.status !== "active") {
+      if (market.status !== "active" && market.status !== "beta") {
         isEligible = false;
         ineligibilityReason =
           market.status === "coming_soon"

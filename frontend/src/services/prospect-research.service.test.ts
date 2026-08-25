@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { prospectResearchService } from "./prospect-research.service";
+import { demoCrmProspectingService } from "./prospect-research.service";
 
 describe("ProspectResearchService", () => {
   it("returns relevant furniture prospects on furniture queries", async () => {
-    const result = await prospectResearchService.searchProspects({
+    const result = await demoCrmProspectingService.searchProspects({
       naturalLanguageQuery: "Boutiques de mobilier design à Paris",
     });
 
@@ -15,7 +15,7 @@ describe("ProspectResearchService", () => {
   });
 
   it("returns EV mobility prospects on vehicle/energy queries", async () => {
-    const result = await prospectResearchService.searchProspects({
+    const result = await demoCrmProspectingService.searchProspects({
       naturalLanguageQuery: "Installateurs bornes de recharge et énergie",
     });
 
@@ -26,7 +26,7 @@ describe("ProspectResearchService", () => {
   });
 
   it("enriches company data with verified source citations", async () => {
-    const diff = await prospectResearchService.enrichCompany("crm-comp-1");
+    const diff = await demoCrmProspectingService.enrichCompany("crm-comp-1");
     expect(diff.suggestedIndustry).toBeDefined();
     expect(diff.sources.length).toBeGreaterThan(0);
     expect(diff.sources[0].url).toContain("atelier-nordique");

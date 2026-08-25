@@ -1,456 +1,158 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
+  CalendarClock,
+  CheckCircle2,
   Mail,
+  MessageSquareText,
   Phone,
-  ShieldCheck,
-  Clock,
-  PlusCircle,
-  ExternalLink,
+  Plus,
+  ShieldAlert,
+  Target,
+  UserRound,
 } from "lucide-react";
+import type { CrmAccount, CrmActivity, CrmContact, CrmOpportunity, CrmTask } from "@shongre/contracts/crm";
+import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
-import { StatePanel } from "../../../design-system/primitives/StatePanel";
-import { Badge } from "../../../design-system/primitives/Badge";
 import { Modal } from "../../../design-system/primitives/Modal";
-import {
-  FormField,
-  Input,
-  Select,
-} from "../../../design-system/primitives/FormField";
-import { crmRepository } from "../../../repositories/crm.repository";
-import { userRepository } from "../../../repositories/user.repository";
-import {
-  CrmContact,
-  CrmActivity,
-  CrmTask,
-  ContactLifecycle,
-} from "../../../domains/crm/crm.types";
-import { crmService } from "../../../domains/crm/crm.service";
-import { ActivityTimeline } from "./components/ActivityTimeline";
-import { useToast } from "../../../app/providers/ToastProvider";
-import { formatDate } from "../../../utilities/formatters";
+import { FormField, Input, Select, Textarea } from "../../../design-system/primitives/FormField";
 import { Skeleton } from "../../../design-system";
-import { useTranslation } from "../../../i18n/I18nProvider";
-import { routes } from "../../../configuration/routes";
-import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
+
+const lifecycleOptions = [
+  { value: "lead", label: "Lead" },
+  { value: "prospect", label: "Prospect" },
+  { value: "qualified", label: "Qualifié" },
+  { value: "customer", label: "Client" },
+  { value: "partner", label: "Partenaire" },
+  { value: "do_not_contact", label: "Ne pas contacter" },
+  { value: "archived", label: "Archivé" },
+];
+
+function tomorrowMorning() {
+  const date = new Date(Date.now() + 24 * 60 * 60 * 1_000);
+  date.setHours(9, 0, 0, 0);
+  return date.toISOString().slice(0, 16);
+}
 
 export const CrmContactDetailPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { activeMarket } = useMarketLocation();
+  const { id = "" } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { currentLocale } = useMarketLocation();
+  const [contact, setContact] = useState<CrmContact | null>(null);
+  const [accounts, setAccounts] = useState<CrmAccount[]>([]);
+  const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
+  const [tasks, setTasks] = useState<CrmTask[]>([]);
+  const [activities, setActivities] = useState<CrmActivity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [taskOpen, setTaskOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskDueAt, setTaskDueAt] = useState(tomorrowMorning);
+  const [submitting, setSubmitting] = useState(false);
+
   usePageMeta({
-    title: t("meta.crmContactDetail.title"),
-    description: t("meta.crmContactDetail.description"),
+    title: contact ? `${contact.fullName} | CRM Shongre` : "Contact CRM | Shongre",
+    description: "Vue complète du contact CRM.",
+    canonicalPath: id ? `/admin/crm/contacts/${id}` : undefined,
     noIndex: true,
   });
 
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const toast = useToast();
-
-  const [contact, setContact] = useState<CrmContact | null>(null);
-  const [activities, setActivities] = useState<CrmActivity[]>([]);
-  const [tasks, setTasks] = useState<CrmTask[]>([]);
-  const [linkedUser, setLinkedUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // New Task Modal
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskDueDate, setTaskDueDate] = useState("");
-
-  const fetchContactData = async () => {
+  const load = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const c = await crmRepository.getContactById(id);
-      setContact(c);
-      if (c) {
-        const [acts, allTasks] = await Promise.all([
-          crmRepository.listActivities("contact", c.id),
-          crmRepository.listTasks(),
-        ]);
-        setActivities(acts);
-        setTasks(
-          allTasks.filter(
-            (t) => t.relatedType === "contact" && t.relatedId === c.id,
-          ),
-        );
-
-        if (c.linkedUserId) {
-          const u = await userRepository.getUserById(c.linkedUserId);
-          setLinkedUser(u);
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
+      const [item, accountPage, opportunityPage, taskPage, activityPage] = await Promise.all([
+        services.crm.getContact(id),
+        services.crm.listAccounts({ limit: 100 }),
+        services.crm.listOpportunities({ limit: 100 }),
+        services.crm.listTasks({ limit: 100 }),
+        services.crm.listActivities("contact", id),
+      ]);
+      setContact(item);
+      setAccounts(accountPage.items.filter((account) => item.accountIds.includes(account.id)));
+      setOpportunities(opportunityPage.items.filter((opportunity) => opportunity.contactIds.includes(item.id)));
+      setTasks(taskPage.items.filter((task) => task.contactId === item.id));
+      setActivities(activityPage);
+    } catch (reason) {
+      setContact(null);
+      toast.error(reason instanceof Error ? reason.message : "Contact indisponible.");
+    } finally { setLoading(false); }
   };
 
-  useEffect(() => {
-    fetchContactData();
-  }, [id]);
+  useEffect(() => { void load(); }, [id]);
 
-  const handleUpdateLifecycle = async (newLifecycle: ContactLifecycle) => {
+  const updateLifecycle = async (lifecycle: CrmContact["lifecycle"]) => {
     if (!contact) return;
     try {
-      const updated = await crmRepository.updateContact(contact.id, {
-        lifecycle: newLifecycle,
-        doNotContact: newLifecycle === "do_not_contact",
+      const updated = await services.crm.updateContact(contact.id, contact.version, {
+        lifecycle,
+        doNotContact: lifecycle === "do_not_contact" ? true : contact.doNotContact,
       });
       setContact(updated);
-      toast.success("Statut commercial mis à jour.", "Contact actualisé");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la mise à jour.");
-    }
+      toast.success("Cycle de vie mis à jour.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Mise à jour impossible."); }
   };
 
-  const handleAddNote = async (noteText: string) => {
-    if (!contact) return;
-    await crmRepository.addActivity({
-      entityType: "contact",
-      entityId: contact.id,
-      type: "note",
-      title: "Note commerciale",
-      description: noteText,
-      authorName: "Antoine Fabre",
-      authorRole: "Admin",
-    });
-    const updated = await crmRepository.listActivities("contact", contact.id);
-    setActivities(updated);
-    toast.success("Note enregistrée.");
-  };
-
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!contact || !taskTitle.trim()) return;
-
+  const addNote = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!contact || !note.trim()) return;
+    setSubmitting(true);
     try {
-      await crmRepository.createTask({
-        title: taskTitle.trim(),
-        dueDate: taskDueDate || new Date().toISOString().split("T")[0],
-        relatedType: "contact",
-        relatedId: contact.id,
-        relatedTitle: `${contact.identity.firstName} ${contact.identity.lastName}`,
-        priority: "medium",
-      });
-
-      setIsTaskModalOpen(false);
-      setTaskTitle("");
-      setTaskDueDate("");
-      fetchContactData();
-      toast.success("Tâche planifiée avec succès.");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création de la tâche.");
-    }
+      const activity = await services.crm.createActivity({ entityType: "contact", entityId: contact.id, activityType: "NOTE_CREATED", title: "Note contact", description: note.trim() });
+      setActivities((items) => [activity, ...items]);
+      setNote(""); setNoteOpen(false); toast.success("Note enregistrée.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Note non enregistrée."); }
+    finally { setSubmitting(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-3xl" />
-      </div>
-    );
-  }
+  const createTask = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!contact || !taskTitle.trim()) return;
+    setSubmitting(true);
+    try {
+      const task = await services.crm.createTask({ contactId: contact.id, type: "follow_up", title: taskTitle.trim(), dueAt: new Date(taskDueAt).toISOString(), priority: "medium" });
+      setTasks((items) => [task, ...items]);
+      setTaskTitle(""); setTaskDueAt(tomorrowMorning()); setTaskOpen(false); toast.success("Tâche planifiée.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Tâche non créée."); }
+    finally { setSubmitting(false); }
+  };
 
-  if (!contact) {
-    return (
-      <StatePanel
-        variant="notFound"
-        title="Contact introuvable"
-        description={t("admin.crmContactDetailPage.ceContactNExistePlus")}
-        action={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate("/admin/crm/contacts")}
-          >
-            {t("admin.crmContactDetailPage.retourAuxContacts")}
-          </Button>
-        }
-      />
-    );
-  }
+  const completeTask = async (task: CrmTask) => {
+    try {
+      const updated = await services.crm.completeTask(task.id, task.version);
+      setTasks((items) => items.map((item) => item.id === updated.id ? updated : item));
+      toast.success("Tâche terminée.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Tâche non mise à jour."); }
+  };
 
-  const lifecycleInfo = crmService.getLifecycleInfo(contact.lifecycle);
-  const qualInfo = crmService.getQualificationInfo(contact.qualification);
+  const openPipeline = useMemo(() => opportunities.filter((item) => item.status === "open").reduce((sum, item) => sum + item.amount.amountMinor, 0), [opportunities]);
+
+  if (loading) return <div className="space-y-4"><Skeleton className="h-48 rounded-2xl" /><Skeleton className="h-[430px] rounded-2xl" /></div>;
+  if (!contact) return <section className="rounded-2xl border border-border-base bg-white p-10 text-center"><UserRound className="mx-auto h-8 w-8 text-stone-400" /><h1 className="mt-3 text-lg font-black">Contact introuvable</h1><Button className="mt-4" size="sm" onClick={() => navigate("/admin/crm/contacts")}>Retour aux contacts</Button></section>;
+
+  const initials = `${contact.firstName[0] ?? ""}${contact.lastName[0] ?? ""}`.toUpperCase();
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header & Back Link */}
-      <div className="flex items-center gap-2">
-        <Link
-          to="/admin/crm/contacts"
-          className="text-xs font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{t("admin.crmContactDetailPage.tousLesContacts")}</span>
-        </Link>
-      </div>
+    <div className="space-y-4 pb-8">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+        <Link to="/admin/crm/contacts" className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Contacts</Link>
+        <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between"><div className="flex min-w-0 items-start gap-4"><span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-stone-700 bg-stone-900 text-lg font-black">{initials}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h1 className="text-2xl font-black tracking-tight sm:text-3xl">{contact.fullName}</h1>{contact.doNotContact && <span className="inline-flex items-center gap-1 rounded-full bg-red-950 px-2 py-1 text-micro font-bold text-red-300"><ShieldAlert className="h-3 w-3" /> Ne pas contacter</span>}</div><p className="mt-1 text-sm text-stone-400">{contact.jobTitle ?? "Fonction non renseignée"}{accounts[0] ? ` · ${accounts[0].name}` : ""}</p><div className="mt-2 flex flex-wrap gap-3 text-micro text-stone-400">{contact.email && <a className="inline-flex items-center gap-1 hover:text-white" href={`mailto:${contact.email}`}><Mail className="h-3 w-3" /> {contact.email}</a>}{contact.phone && <a className="inline-flex items-center gap-1 hover:text-white" href={`tel:${contact.phone}`}><Phone className="h-3 w-3" /> {contact.phone}</a>}</div></div></div><div className="flex flex-wrap gap-2"><Select aria-label="Cycle de vie du contact" value={contact.lifecycle} onChange={(event) => void updateLifecycle(event.target.value as CrmContact["lifecycle"])} options={lifecycleOptions} /><Button variant="outline" size="sm" className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800" onClick={() => setTaskOpen(true)}><CalendarClock className="h-4 w-4" /> Tâche</Button><Button size="sm" onClick={() => setNoteOpen(true)}><MessageSquareText className="h-4 w-4" /> Note</Button></div></div>
+      </section>
 
-      {/* 2. Contact 360 Card */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-stone-800 text-lg shrink-0">
-              {contact.identity.firstName[0]}
-              {contact.identity.lastName[0] || ""}
-            </div>
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4"><article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"><span className="text-micro font-bold uppercase tracking-wider text-stone-500">Entreprises</span><strong className="mt-1 block text-2xl font-black">{accounts.length}</strong></article><article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"><span className="text-micro font-bold uppercase tracking-wider text-stone-500">Opportunités</span><strong className="mt-1 block text-2xl font-black">{opportunities.length}</strong></article><article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"><span className="text-micro font-bold uppercase tracking-wider text-stone-500">Pipeline ouvert</span><strong className="mt-1 block text-2xl font-black text-primary">{new Intl.NumberFormat(currentLocale, { style: "currency", currency: opportunities[0]?.amount.currency ?? "EUR", maximumFractionDigits: 0 }).format(openPipeline / 100)}</strong></article><article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"><span className="text-micro font-bold uppercase tracking-wider text-stone-500">Tâches ouvertes</span><strong className="mt-1 block text-2xl font-black">{tasks.filter((item) => item.status !== "completed").length}</strong></article></section>
 
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-black text-stone-900">
-                  {contact.identity.firstName} {contact.identity.lastName}
-                </h1>
-                <Badge variant={lifecycleInfo.variant} size="sm">
-                  {lifecycleInfo.label}
-                </Badge>
-                <span
-                  className={`px-2 py-0.5 rounded-md text-micro font-bold ${qualInfo.badgeClass}`}
-                >
-                  {qualInfo.label}
-                </span>
-              </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]"><div className="space-y-4"><section className="rounded-2xl border border-border-base bg-white shadow-xs"><div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5"><div><h2 className="text-sm font-black">Historique</h2><p className="text-micro text-stone-500">Interactions immuables du contact</p></div><Button variant="outline" size="sm" onClick={() => setNoteOpen(true)}><Plus className="h-4 w-4" /> Note</Button></div><div className="divide-y divide-border-subtle px-5">{activities.length === 0 ? <p className="py-8 text-center text-xs text-stone-500">Aucune activité enregistrée.</p> : activities.map((activity) => <article key={activity.id} className="flex gap-3 py-3"><span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600"><MessageSquareText className="h-3.5 w-3.5" /></span><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><strong className="text-xs font-black">{activity.title}</strong><time className="text-micro text-stone-500">{new Intl.DateTimeFormat(currentLocale, { dateStyle: "medium" }).format(new Date(activity.occurredAt))}</time></div>{activity.description && <p className="mt-1 text-xs text-stone-600">{activity.description}</p>}<p className="mt-1 text-micro text-stone-400">{activity.actorName}</p></div></article>)}</div></section><section className="rounded-2xl border border-border-base bg-white shadow-xs"><div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5"><div><h2 className="text-sm font-black">Opportunités liées</h2><p className="text-micro text-stone-500">Influence et engagements en cours</p></div><Target className="h-4 w-4 text-primary" /></div><div className="divide-y divide-border-subtle px-5">{opportunities.length === 0 ? <p className="py-8 text-center text-xs text-stone-500">Aucune opportunité liée.</p> : opportunities.map((opportunity) => <Link key={opportunity.id} to={`/admin/crm/opportunites/${opportunity.id}`} className="flex items-center gap-3 py-3 hover:text-primary"><span className="min-w-0 flex-1"><strong className="block truncate text-xs">{opportunity.name}</strong><span className="text-micro text-stone-500">{opportunity.stageName} · {opportunity.probability}%</span></span><strong className="text-xs tabular-nums">{new Intl.NumberFormat(currentLocale, { style: "currency", currency: opportunity.amount.currency, maximumFractionDigits: 0 }).format(opportunity.amount.amountMinor / 100)}</strong></Link>)}</div></section></div>
+        <aside className="space-y-4"><section className="rounded-2xl border border-border-base bg-white shadow-xs"><div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5"><div><h2 className="text-sm font-black">Tâches associées</h2><p className="text-micro text-stone-500">Prochaines actions</p></div><Button variant="outline" size="sm" onClick={() => setTaskOpen(true)}><Plus className="h-4 w-4" /> Ajouter</Button></div><div className="divide-y divide-border-subtle px-4">{tasks.length === 0 ? <p className="py-7 text-center text-xs text-stone-500">Aucune tâche planifiée.</p> : tasks.map((task) => <div key={task.id} className="flex items-center gap-2 py-3"><button type="button" disabled={task.status === "completed"} onClick={() => void completeTask(task)} className="text-stone-400 enabled:hover:text-emerald-600 disabled:text-emerald-600" aria-label={task.status === "completed" ? `${task.title}, terminée` : `Terminer ${task.title}`}><CheckCircle2 className="h-4 w-4" /></button><span className="min-w-0 flex-1"><strong className={`block truncate text-xs ${task.status === "completed" ? "text-stone-400 line-through" : ""}`}>{task.title}</strong><time className="text-micro text-stone-500">{new Intl.DateTimeFormat(currentLocale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(task.dueAt))}</time></span></div>)}</div></section><section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"><h2 className="text-sm font-black">Données du contact</h2><dl className="mt-3 divide-y divide-border-subtle text-xs">{[["Département", contact.department ?? "Non renseigné"], ["Langue", contact.language ?? "Non renseignée"], ["Fuseau", contact.timezone ?? "Non renseigné"], ["Pays", contact.country], ["Canal préféré", contact.preferredContactMethod ?? "Non renseigné"], ["Source", contact.source.replace("_", " ")]].map(([label, value]) => <div key={label} className="flex justify-between gap-3 py-2.5"><dt className="text-stone-500">{label}</dt><dd className="text-right font-bold text-stone-800">{value}</dd></div>)}</dl>{accounts.map((account) => <Link key={account.id} to={`/admin/crm/entreprises/${account.id}`} className="mt-3 flex items-center gap-2 rounded-xl bg-stone-50 p-3 text-xs font-bold hover:text-primary"><Building2 className="h-4 w-4" /> {account.name}</Link>)}</section></aside></div>
 
-              <div className="flex items-center gap-3 text-xs text-stone-500 mt-1 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5" />
-                  <strong>{contact.identity.email}</strong>
-                </span>
-                {contact.identity.phone && (
-                  <span className="flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>{contact.identity.phone}</span>
-                  </span>
-                )}
-                {contact.companyName && (
-                  <span className="flex items-center gap-1 text-primary font-bold">
-                    <Building2 className="w-3.5 h-3.5" />
-                    <span>{contact.companyName}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTaskModalOpen(true)}
-              className="font-bold flex items-center gap-1.5"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>{t("admin.crmContactDetailPage.planifierUneTache")}</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Lifecycle & Status Switcher */}
-        <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-500">
-              {t("admin.crmContactDetailPage.changerDeStatut")}
-            </span>
-            <Select
-              aria-label={t("admin.crmContactDetailPage.cycleDeVieDuContact")}
-              value={contact.lifecycle}
-              onChange={(e) =>
-                handleUpdateLifecycle(e.target.value as ContactLifecycle)
-              }
-              options={[
-                { value: "prospect", label: "Prospect" },
-                { value: "qualified", label: "Qualifié" },
-                { value: "customer", label: "Client / Pro" },
-                { value: "partner", label: "Partenaire" },
-                { value: "do_not_contact", label: "Ne pas contacter" },
-              ]}
-            />
-          </div>
-
-          <span className="text-stone-500 text-micro">
-            Responsable : <strong>{contact.ownerName || "Non assigné"}</strong>{" "}
-            • Marché : {contact.marketCode}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. Linked Shongre Account (if available) */}
-      {linkedUser && (
-        <div className="bg-success-surface border border-success-border rounded-3xl p-6 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-success">
-              <ShieldCheck className="w-5 h-5 text-success" />
-              <h2 className="text-sm font-black">
-                {t(
-                  "admin.crmContactDetailPage.comptePlateformeShongreRattache",
-                )}
-              </h2>
-            </div>
-            <Link
-              to={
-                linkedUser.sellerType === "pro"
-                  ? routes.seller.storefront(linkedUser.slug || linkedUser.id)
-                  : routes.seller.profile(linkedUser.slug || linkedUser.id)
-              }
-              className="text-xs font-bold text-success hover:underline flex items-center gap-1"
-            >
-              <span>
-                {linkedUser.sellerType === "pro"
-                  ? t("admin.crmContactDetailPage.voirLaVitrinePublique")
-                  : "Voir le profil public"}
-              </span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <div>
-              <span className="text-success text-micro block">
-                {t("admin.crmContactDetailPage.typeDeCompte")}
-              </span>
-              <strong className="text-success">
-                {linkedUser.sellerType === "pro"
-                  ? "Vendeur Professionnel"
-                  : "Particulier"}
-              </strong>
-            </div>
-            <div>
-              <span className="text-success text-micro block">
-                Membre depuis
-              </span>
-              <strong className="text-success">
-                {formatDate(linkedUser.createdAt)}
-              </strong>
-            </div>
-            <div>
-              <span className="text-success text-micro block">
-                {t("admin.crmContactDetailPage.noteVendeur")}
-              </span>
-              <strong className="text-success">
-                {linkedUser.rating || 5.0} / 5.0 ({linkedUser.reviewCount || 0}{" "}
-                avis)
-              </strong>
-            </div>
-            <div>
-              <span className="text-success text-micro block">
-                Localisation
-              </span>
-              <strong className="text-success">
-                {linkedUser.city || activeMarket.name}
-              </strong>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Split: Activity Stream & Pending Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-black text-stone-900">
-            {t("admin.crmContactDetailPage.historiqueDesEchangesNotes")}
-          </h2>
-          <ActivityTimeline activities={activities} onAddNote={handleAddNote} />
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-stone-700" />
-                <h3 className="text-sm font-black text-stone-900">
-                  {t("admin.crmContactDetailPage.tachesAssociees")}
-                </h3>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsTaskModalOpen(true)}
-              >
-                {t("admin.crmContactDetailPage.tache")}
-              </Button>
-            </div>
-
-            {tasks.length === 0 ? (
-              <p className="text-xs text-stone-500 text-center py-4">
-                {t("admin.crmContactDetailPage.aucuneTachePlanifiee")}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((t) => (
-                  <div
-                    key={t.id}
-                    className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs space-y-1"
-                  >
-                    <span className="font-bold text-stone-900 block">
-                      {t.title}
-                    </span>
-                    <span className="text-micro text-stone-500">
-                      Pour le {t.dueDate}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Task Creation Modal */}
-      <Modal
-        isOpen={isTaskModalOpen}
-        onClose={() => setIsTaskModalOpen(false)}
-        title={t("admin.crmContactDetailPage.planifierUneTache")}
-        description={`Ajouter une tâche pour ${contact.identity.firstName} ${contact.identity.lastName}`}
-      >
-        <form onSubmit={handleCreateTask} className="space-y-3 text-xs">
-          <FormField
-            label={t("admin.crmContactDetailPage.titreDeLaTache")}
-            required
-          >
-            <Input
-              value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder={t(
-                "admin.crmContactDetailPage.exRappelerPourPlanifierLa",
-              )}
-            />
-          </FormField>
-
-          <FormField
-            label={t("admin.crmContactDetailPage.dateDEcheance")}
-            required
-          >
-            <Input
-              type="date"
-              value={taskDueDate}
-              onChange={(e) => setTaskDueDate(e.target.value)}
-            />
-          </FormField>
-
-          <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsTaskModalOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              className="font-bold"
-            >
-              Enregistrer
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <Modal isOpen={noteOpen} onClose={() => setNoteOpen(false)} title="Ajouter une note" description={`Historique commercial de ${contact.fullName}.`}><form onSubmit={addNote} className="space-y-4 text-xs"><FormField label="Note" required><Textarea value={note} onChange={(event) => setNote(event.target.value)} rows={5} required /></FormField><div className="flex justify-end gap-2 border-t border-border-subtle pt-4"><Button type="button" variant="outline" size="sm" onClick={() => setNoteOpen(false)}>Annuler</Button><Button type="submit" size="sm" disabled={submitting}>{submitting ? "Enregistrement…" : "Enregistrer"}</Button></div></form></Modal>
+      <Modal isOpen={taskOpen} onClose={() => setTaskOpen(false)} title="Planifier une tâche" description={`Action associée à ${contact.fullName}.`}><form onSubmit={createTask} className="space-y-4 text-xs"><FormField label="Titre" required><Input value={taskTitle} onChange={(event) => setTaskTitle(event.target.value)} placeholder="Relancer pour confirmer le rendez-vous" required /></FormField><FormField label="Échéance" required><Input type="datetime-local" value={taskDueAt} onChange={(event) => setTaskDueAt(event.target.value)} required /></FormField><div className="flex justify-end gap-2 border-t border-border-subtle pt-4"><Button type="button" variant="outline" size="sm" onClick={() => setTaskOpen(false)}>Annuler</Button><Button type="submit" size="sm" disabled={submitting}>{submitting ? "Création…" : "Créer"}</Button></div></form></Modal>
     </div>
   );
 };

@@ -83,9 +83,14 @@ import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
 } from "../../domains/taxonomy/taxonomy.display";
+import {
+  publicListingUrl,
+  publicRouteUrl,
+} from "../../domains/market/market-routing";
 
 export const ListingDetailPage: React.FC = () => {
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, marketContext } = useMarketLocation();
+  const countryCode = marketContext?.countryCode ?? activeMarket.code;
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -338,7 +343,14 @@ export const ListingDetailPage: React.FC = () => {
       taxonomyNode,
       effectiveMarket,
     );
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const canonicalUrl = publicListingUrl({
+      listingId: listing.id,
+      countryCode,
+    });
+    const marketBaseUrl = publicRouteUrl({
+      route: "/",
+      countryCode,
+    });
     const trail = [
       { name: "Accueil", path: "/" },
       ...(listing.categoryLabel
@@ -361,11 +373,18 @@ export const ListingDetailPage: React.FC = () => {
       // A sold or expired listing should stop competing in search results.
       noIndex: listing.status !== "active",
       structuredData: [
-        meta.jsonLd as unknown as StructuredData,
-        buildBreadcrumbSchema(trail, origin),
+        {
+          ...(meta.jsonLd as unknown as StructuredData),
+          offers: {
+            ...((meta.jsonLd.offers as Record<string, unknown>) ?? {}),
+            url: canonicalUrl,
+          },
+        },
+        buildBreadcrumbSchema(trail, marketBaseUrl),
       ],
+      alternateCountries: listing.marketCodes ?? [countryCode],
     };
-  }, [listing, taxonomyNode, effectiveMarket]);
+  }, [listing, taxonomyNode, effectiveMarket, countryCode]);
 
   usePageMeta(pageMeta);
 
@@ -411,10 +430,14 @@ export const ListingDetailPage: React.FC = () => {
 
   const handleShare = () => {
     if (!listing) return;
+    const shareUrl = publicListingUrl({
+      listingId: listing.id,
+      countryCode,
+    });
     if (navigator.share) {
-      navigator.share({ title: listing.title, url: window.location.href });
+      void navigator.share({ title: listing.title, url: shareUrl });
     } else {
-      navigator.clipboard.writeText(window.location.href);
+      void navigator.clipboard.writeText(shareUrl);
       toast.success(
         "Le lien de l'annonce a été copié dans votre presse-papiers.",
       );

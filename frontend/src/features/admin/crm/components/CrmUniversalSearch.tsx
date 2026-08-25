@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useId, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Building2, User, Sparkles, TrendingUp, X } from "lucide-react";
-import {
-  crmRepository,
-  UniversalSearchResult,
-} from "../../../../repositories/crm.repository";
+import { Search, Building2, User, TrendingUp, X } from "lucide-react";
+import { services } from "../../../../api/client/service-registry";
 import { Badge } from "../../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface CrmUniversalSearchProps {
   placeholder?: string;
   className?: string;
+}
+
+interface UniversalSearchResult {
+  type: "contact" | "company" | "opportunity";
+  id: string;
+  title: string;
+  subtitle: string;
+  badgeText: string;
+  badgeVariant: "primary" | "deal" | "warning" | "success";
+  linkTo: string;
 }
 
 export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
@@ -53,7 +60,40 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       setIsLoading(true);
       setHasSearched(false);
       try {
-        const hits = await crmRepository.searchUniversal(query);
+        const [accountPage, contactPage, opportunityPage] = await Promise.all([
+          services.crm.listAccounts({ query, limit: 4 }),
+          services.crm.listContacts({ query, limit: 4 }),
+          services.crm.listOpportunities({ query, limit: 4 }),
+        ]);
+        const hits: UniversalSearchResult[] = [
+          ...accountPage.items.map((account) => ({
+            type: "company" as const,
+            id: account.id,
+            title: account.name,
+            subtitle: `${account.industry ?? "Entreprise"} • ${account.city ?? account.marketCode}`,
+            badgeText: account.lifecycle,
+            badgeVariant: account.lifecycle === "customer" ? "success" as const : "primary" as const,
+            linkTo: `/admin/crm/entreprises/${account.id}`,
+          })),
+          ...contactPage.items.map((contact) => ({
+            type: "contact" as const,
+            id: contact.id,
+            title: contact.fullName,
+            subtitle: `${contact.email ?? "Sans email"} • ${contact.jobTitle ?? "Contact"}`,
+            badgeText: contact.lifecycle,
+            badgeVariant: contact.lifecycle === "customer" ? "success" as const : "deal" as const,
+            linkTo: `/admin/crm/contacts/${contact.id}`,
+          })),
+          ...opportunityPage.items.map((opportunity) => ({
+            type: "opportunity" as const,
+            id: opportunity.id,
+            title: opportunity.name,
+            subtitle: `${opportunity.accountName ?? "Sans compte"} • ${opportunity.stageName}`,
+            badgeText: opportunity.status,
+            badgeVariant: opportunity.status === "won" ? "success" as const : "warning" as const,
+            linkTo: `/admin/crm/opportunites/${opportunity.id}`,
+          })),
+        ];
         if (cancelled) return;
         setResults(hits);
         setIsOpen(true);
@@ -93,8 +133,6 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
         return <User className="w-4 h-4 text-info" />;
       case "opportunity":
         return <TrendingUp className="w-4 h-4 text-warning" />;
-      case "shongre_user":
-        return <Sparkles className="w-4 h-4 text-success" />;
     }
   };
 

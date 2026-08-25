@@ -25,3 +25,6 @@ export * from "./demo-provider-control-plane.service";
 export * from "./demo-support.service";
 export * from "./demo-feature-flag.service";
 export * from "./demo-moderation.service";
+export * from "./demo-crm.service";
+export { DemoProspectResearchService, demoCrmProspectingService } from "../../../services/prospect-research.service";
+export * from "./demo-marketing.service";

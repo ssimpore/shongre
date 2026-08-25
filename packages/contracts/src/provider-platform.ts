@@ -209,6 +209,24 @@ const planned = (
   ],
 });
 
+const implementedGateway = (
+  id: string,
+  displayName: string,
+  category: string,
+  capabilities: readonly string[],
+  criticality: ProviderCriticality,
+  documentationUrl?: string,
+): ProviderOperationalDefinition => ({
+  ...planned(id, displayName, category, capabilities, criticality, "backend/src/integrations/providers/gateways/remote-capability-gateways.ts", documentationUrl),
+  implementedCapabilities: capabilities,
+  adapterStatus: "IMPLEMENTED",
+  lifecycle: "IMPLEMENTED",
+  healthCheckKind: "SAFE_AUTHENTICATED_READ",
+  webhookSupport: category === "EMAIL" ? "IMPLEMENTED" : "NONE",
+  evidence: ["Uses the shared ProviderConnection credential vault and provider-neutral capability gateway."],
+  blockers: ["Production readiness still requires tenant credentials, provider-side webhook configuration and a live smoke test."],
+});
+
 /**
  * Code-audited provider inventory. Production configuration is intentionally
  * excluded: the backend adds environment-specific evidence at runtime.
@@ -485,24 +503,53 @@ export const SHONGRE_PROVIDER_REGISTRY: readonly ProviderOperationalDefinition[]
         "Production app-review and smoke-test evidence are environment-specific and not present in code.",
       ],
     },
-    planned(
+    implementedGateway(
       "resend",
       "Resend",
       "EMAIL",
-      ["email.transactional"],
+      ["email.transactional", "email.marketing"],
       "P0",
-      "backend/src/integrations/email",
       "https://resend.com/docs",
     ),
-    planned(
+    implementedGateway(
       "brevo",
       "Brevo",
       "EMAIL",
       ["email.transactional", "email.marketing"],
       "P2",
-      "backend/src/integrations/email",
       "https://developers.brevo.com/",
     ),
+    planned(
+      "gmail",
+      "Gmail / Google Workspace",
+      "MAILBOX",
+      ["mailbox.send", "mailbox.read", "mailbox.thread_sync"],
+      "P1",
+      "backend/src/integrations/providers/gateways",
+      "https://developers.google.com/gmail/api",
+    ),
+    planned(
+      "microsoft_365_mail",
+      "Microsoft 365 / Outlook",
+      "MAILBOX",
+      ["mailbox.send", "mailbox.read", "mailbox.thread_sync", "calendar.events"],
+      "P1",
+      "backend/src/integrations/providers/gateways",
+      "https://learn.microsoft.com/graph/api/resources/mail-api-overview",
+    ),
+    planned(
+      "smtp",
+      "SMTP",
+      "EMAIL",
+      ["email.transactional", "email.marketing", "email.crm_send"],
+      "P1",
+      "backend/src/integrations/providers/gateways",
+    ),
+    implementedGateway("mailjet", "Mailjet", "EMAIL", ["email.transactional", "email.marketing", "email.crm_send"], "P2"),
+    implementedGateway("sendgrid", "SendGrid", "EMAIL", ["email.transactional", "email.marketing", "email.crm_send"], "P2"),
+    planned("amazon_ses", "Amazon SES", "EMAIL", ["email.transactional", "email.marketing", "email.crm_send"], "P2", "backend/src/integrations/providers/gateways"),
+    implementedGateway("mailgun", "Mailgun", "EMAIL", ["email.transactional", "email.marketing", "email.crm_send"], "P2"),
+    implementedGateway("postmark", "Postmark", "EMAIL", ["email.transactional", "email.marketing", "email.crm_send"], "P2"),
     planned(
       "twilio",
       "Twilio",
@@ -538,14 +585,28 @@ export const SHONGRE_PROVIDER_REGISTRY: readonly ProviderOperationalDefinition[]
       ],
       blockers: [],
     },
-    planned(
+    implementedGateway(
       "openai",
       "OpenAI",
       "AI",
-      ["ai.listing_assistance", "ai.safety_audit", "ai.prospect_research"],
+      ["ai.listing_assistance", "ai.safety_audit", "ai.prospect_research", "ai.marketing_drafting"],
       "P3",
-      "backend/src/integrations/providers/ai.provider.ts",
       "https://platform.openai.com/docs",
+    ),
+    implementedGateway(
+      "anthropic",
+      "Anthropic Claude",
+      "AI",
+      ["ai.crm_drafting", "ai.crm_summary", "ai.crm_enrichment", "ai.marketing_drafting"],
+      "P2",
+      "https://docs.anthropic.com/",
+    ),
+    implementedGateway(
+      "openai_compatible",
+      "OpenAI-compatible endpoint",
+      "AI",
+      ["ai.crm_drafting", "ai.crm_summary", "ai.crm_enrichment", "ai.marketing_drafting"],
+      "P2",
     ),
     planned(
       "tavily",

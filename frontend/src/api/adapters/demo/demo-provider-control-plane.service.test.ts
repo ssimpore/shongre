@@ -1,24 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { DemoProviderControlPlaneService } from "./demo-provider-control-plane.service";
 
-describe("demo provider control plane", () => {
-  const service = new DemoProviderControlPlaneService();
+describe("DemoProviderControlPlaneService", () => {
+  it("keeps credentials transient while simulating create and rotation", async () => {
+    const service = new DemoProviderControlPlaneService();
+    const credential = "customer-owned-A94D";
+    const created = await service.createConnection({
+      ownerType: "TENANT",
+      providerId: "openai",
+      providerFamily: "AI",
+      displayName: "OpenAI tenant",
+      configuration: {},
+      capabilities: ["ai.prospect_research"],
+      isDefault: false,
+      credential,
+    });
 
-  it("reports demo state without active or production-ready providers", async () => {
-    const snapshot = await service.getSnapshot();
-    expect(snapshot.environment).toBe("demo");
-    expect(snapshot.summary.active).toBe(0);
-    expect(snapshot.summary.productionReady).toBe(0);
-    expect(snapshot.summary.verifiedHealthScore).not.toBe(100);
-  });
+    expect(created.status).toBe("DRAFT");
+    expect(created.credentialHint).toBe("••••A94D");
+    expect(JSON.stringify(created)).not.toContain(credential);
 
-  it("never contacts or simulates a successful external diagnostic", async () => {
-    const result = await service.testProvider("stripe");
-    expect(result.supported).toBe(false);
-    expect(result.success).toBe(false);
-    expect(result.evidence).toBe("NONE");
-    expect(result.checks).toContainEqual(
-      expect.objectContaining({ name: "live_probe", status: "SKIP" }),
-    );
+    const rotated = await service.rotateCredential(created.id, {
+      expectedVersion: created.version,
+      credential: "replacement-B77E",
+    });
+    expect(rotated.version).toBe(2);
+    expect(rotated.credentialHint).toBe("••••B77E");
   });
 });

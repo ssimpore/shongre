@@ -4,9 +4,20 @@ import { useAuth } from "../../../app/providers/AuthProvider";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { Button } from "../../../design-system/primitives/Button";
 import { newsletterService } from "../../../domains/newsletter/newsletter.service";
-import { newsletterRepository } from "../../../repositories/newsletter.repository";
 import { NewsletterSubscriptionSource } from "../../../domains/newsletter/newsletter.types";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { services } from "../../../api/client/service-registry";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+
+const publicSource = {
+  homepage: "HOMEPAGE",
+  footer: "FOOTER",
+  registration: "REGISTRATION",
+  account: "FORM",
+  pro_workspace: "FORM",
+  newsletter_page: "NEWSLETTER_PAGE",
+  direct_link: "FORM",
+} as const;
 
 interface NewsletterSignupProps {
   variant?: "band" | "footer" | "inline";
@@ -23,10 +34,11 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
 
   const [email, setEmail] = useState(currentUser?.email || "");
-  const [consent, setConsent] = useState(true);
+  const [consent, setConsent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,18 +60,21 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 
     setIsSubmitting(true);
     try {
-      await newsletterRepository.subscribe({
+      const receipt = await services.marketing.subscribePublic({
         email: email.trim(),
-        subscriberId: currentUser?.id,
-        accountType: currentUser?.sellerType === "pro" ? "pro" : "individual",
-        source,
+        marketCode: activeMarket.code,
+        locale: currentLocale,
+        topics: [],
+        source: publicSource[source],
         consentGiven: true,
       });
 
       setIsSuccess(true);
       toast.success(
-        "Votre inscription à la newsletter Shongre a bien été enregistrée.",
-        "Abonnement confirmé",
+        receipt.message,
+        receipt.status === "PENDING_CONFIRMATION"
+          ? "Confirmation requise"
+          : "Inscription enregistrée",
       );
     } catch (err: any) {
       setErrorMessage(
@@ -76,7 +91,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
       return (
         <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold py-1">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{t("newsletter.newsletterSignup.inscriptionConfirmee")}</span>
+          <span>Demande enregistrée — consultez votre messagerie</span>
         </div>
       );
     }
@@ -89,10 +104,10 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           <CheckCircle2 className="w-5 h-5" />
         </div>
         <h4 className="text-sm font-black text-success">
-          {t("newsletter.newsletterSignup.vousEtesBienInscrit")}
+          Vérifiez votre messagerie
         </h4>
         <p className="text-xs text-success max-w-sm mx-auto">
-          {t("newsletter.newsletterSignup.vousRecevrezNosSelectionsEt")}
+          Cliquez sur le lien de confirmation avant de recevoir nos sélections.
         </p>
       </div>
     );

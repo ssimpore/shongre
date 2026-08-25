@@ -1,6 +1,6 @@
 # Shongre Provider & Integration Platform
 
-Last audited: 2026-08-24
+Last audited: 2026-08-25
 
 ## Purpose and source of truth
 
@@ -71,8 +71,11 @@ Shongre auth) remain preferred until requirements justify replacement.
 
 - `GET /api/v1/admin/providers/control-plane` requires `provider.read`.
 - `POST /api/v1/admin/providers/:providerId/test` requires `provider.test`.
-- Credential values are never returned. The snapshot exposes only booleans,
-  safe status messages and expiry metadata.
+- Credential values are never returned. Draft tenant/personal connections are
+  created through `POST /api/v1/provider-connections`; credential install or
+  rotation uses `PUT /api/v1/provider-connections/:id/credential` and always
+  returns the connection to `DRAFT` pending validation.
+- The snapshot exposes only booleans, safe status messages and expiry metadata.
 - Stripe diagnostics use `GET /v1/balance`; they never create or move funds.
 - A provider without a registered non-destructive probe returns “unsupported,”
   not a simulated success.
@@ -80,7 +83,47 @@ Shongre auth) remain preferred until requirements justify replacement.
 The database migration reserves separate RLS-denied tables for configuration,
 routing, append-only health evidence, diagnostics, webhook metadata, hashed
 provider events, circuit state, reconciliation, and immutable audit events.
-Secrets are opaque secret-manager references only.
+Connection credentials are separate RLS-denied rows containing either opaque
+secret-manager references or AES-256-GCM envelopes. The active encryption key
+and key version remain server-side configuration.
+
+## Tenant and user connections
+
+Migration `00052_provider_connections.sql` extends the control plane with one
+shared connection model for CRM, Newsletter, Notifications and future
+consumers. `ProviderConnection` carries ownership (`PLATFORM`, `TENANT` or
+`USER`), family, non-secret configuration, exact capabilities, lifecycle and
+optimistic version. It never returns credential material.
+
+Credentials are separate rows. They contain either an opaque secret-manager
+reference or an authenticated encrypted envelope with IV, tag and key version.
+Normal authenticated database roles cannot read the credential table. Rotation
+creates/replaces an active credential version and preserves safe audit evidence;
+it never copies a raw secret into connection configuration, usage, logs or API
+responses.
+
+Creation and credential installation deliberately remain two fail-closed
+operations: if encryption or rotation fails, the connection is still an
+unusable `DRAFT`. Production key-version changes require rotating every active
+credential; envelopes written under an unavailable key version are rejected
+instead of being decrypted with a guessed key.
+
+Resolution is capability- and feature-driven. It checks tenant policy, personal
+connection permission, feature allow-list, owner visibility, explicit selection,
+default priority and active credential. A platform connection is considered only
+when fallback is explicitly permitted. No consumer can silently spend a
+Shongre-funded provider account.
+
+`USER` rows are never visible to another user. Calling the list service without
+a user identity excludes all personal rows. This rule must retain its regression
+test because a tenant-wide list that includes personal mailboxes or BYOK
+connections is a credential-metadata privacy breach even when secret values are
+hidden.
+
+CRM-specific integration guidance is in
+[`crm-platform.md`](crm-platform.md). CRM, Newsletter and Notifications consume
+the shared `AiGateway`, `MailboxGateway` and `EmailDeliveryGateway`; none may
+create a vendor-specific duplicate adapter.
 
 ## Routing and resilience rules
 

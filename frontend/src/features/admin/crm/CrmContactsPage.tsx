@@ -1,26 +1,57 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { User, PlusCircle, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Mail,
+  Phone,
+  Plus,
+  Search,
+  ShieldAlert,
+  UserRound,
+} from "lucide-react";
+import type { CrmAccount, CrmContact } from "@shongre/contracts/crm";
+import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
-import { Badge } from "../../../design-system/primitives/Badge";
 import { Modal } from "../../../design-system/primitives/Modal";
 import {
   FormField,
   Input,
   Select,
 } from "../../../design-system/primitives/FormField";
-import { crmRepository } from "../../../repositories/crm.repository";
-import { CrmContact } from "../../../domains/crm/crm.types";
-import { crmService } from "../../../domains/crm/crm.service";
+import { Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { Skeleton, EmptyState } from "../../../design-system";
-import { useTranslation } from "../../../i18n/I18nProvider";
-import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
+
+const lifecycleLabel: Record<CrmContact["lifecycle"], string> = {
+  lead: "Lead",
+  prospect: "Prospect",
+  qualified: "Qualifié",
+  customer: "Client",
+  partner: "Partenaire",
+  do_not_contact: "Ne pas contacter",
+  archived: "Archivé",
+};
 
 export const CrmContactsPage: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
+  const toast = useToast();
+  const [contacts, setContacts] = useState<CrmContact[]>([]);
+  const [accounts, setAccounts] = useState<CrmAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
+  const [accountId, setAccountId] = useState("");
+
   usePageMeta({
     title: t("meta.crmContacts.title"),
     description: t("meta.crmContacts.description"),
@@ -28,332 +59,102 @@ export const CrmContactsPage: React.FC = () => {
     noIndex: true,
   });
 
-  const toast = useToast();
-  const [contacts, setContacts] = useState<CrmContact[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [lifecycleFilter, setLifecycleFilter] = useState<string>("all");
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  // New Contact Form
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchContacts = async () => {
+  const load = async () => {
     setLoading(true);
     try {
-      const list = await crmRepository.listContacts();
-      setContacts(list);
+      const [contactPage, accountPage] = await Promise.all([
+        services.crm.listContacts({ limit: 100 }),
+        services.crm.listAccounts({ limit: 100 }),
+      ]);
+      setContacts(contactPage.items);
+      setAccounts(accountPage.items);
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Impossible de charger les contacts.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchContacts();
+    void load();
   }, []);
 
-  const handleCreateContact = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firstName.trim() || !email.trim()) {
-      toast.error("Le prénom et l'adresse email sont obligatoires.");
-      return;
-    }
+  const accountById = useMemo(
+    () => new Map(accounts.map((account) => [account.id, account])),
+    [accounts],
+  );
+  const filtered = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("fr");
+    return contacts.filter(
+      (contact) =>
+        !query ||
+        contact.fullName.toLocaleLowerCase("fr").includes(query) ||
+        contact.email?.toLocaleLowerCase("fr").includes(query) ||
+        contact.jobTitle?.toLocaleLowerCase("fr").includes(query) ||
+        contact.accountIds.some((id) =>
+          accountById.get(id)?.name.toLocaleLowerCase("fr").includes(query),
+        ),
+    );
+  }, [accountById, contacts, search]);
 
-    setIsSubmitting(true);
+  const createContact = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) return;
+    setSubmitting(true);
     try {
-      await crmRepository.createContact({
-        identity: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          email: email.trim(),
-          phone: phone.trim() || undefined,
-          jobTitle: jobTitle.trim() || undefined,
-        },
-        companyName: companyName.trim() || undefined,
+      const created = await services.crm.createContact({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        jobTitle: jobTitle.trim() || undefined,
+        accountIds: accountId ? [accountId] : [],
+        country: activeMarket.code,
+        language: "fr",
+        timezone: "Europe/Paris",
+        preferredContactMethod: email ? "email" : phone ? "phone" : undefined,
         lifecycle: "prospect",
-        qualification: "medium",
-        marketCode: activeMarket.code,
         source: "manual",
+        doNotContact: false,
       });
-
-      setIsCreateModalOpen(false);
+      setContacts((items) => [created, ...items]);
+      setCreateOpen(false);
       setFirstName("");
       setLastName("");
       setEmail("");
       setPhone("");
       setJobTitle("");
-      setCompanyName("");
-      fetchContacts();
-      toast.success("Contact créé avec succès.", "Contact enregistré");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création du contact.");
+      setAccountId("");
+      toast.success("Contact ajouté au CRM.");
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Création impossible.");
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  const filteredContacts = contacts.filter((c) => {
-    if (lifecycleFilter !== "all" && c.lifecycle !== lifecycleFilter)
-      return false;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const nameMatch = `${c.identity.firstName} ${c.identity.lastName}`
-        .toLowerCase()
-        .includes(q);
-      const emailMatch = c.identity.email.toLowerCase().includes(q);
-      const compMatch = c.companyName?.toLowerCase().includes(q);
-      return nameMatch || emailMatch || compMatch;
-    }
-    return true;
-  });
-
   return (
-    <div className="space-y-6">
-      {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-            Contacts & Interlocuteurs
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
-            {t("admin.crmContactsPage.baseUnifieeDesAcheteursVendeurs")}
-          </p>
-        </div>
+    <div className="space-y-4 pb-8">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+        <Link to="/admin/crm" className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Vue d’ensemble</Link>
+        <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h1 className="text-2xl font-black tracking-tight sm:text-3xl">Contacts</h1><p className="mt-1 text-sm text-stone-400">Personnes, rôles et consentements · {contacts.length} fiches</p></div><Button size="sm" onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> Nouveau contact</Button></div>
+      </section>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="font-bold flex items-center gap-1.5 shrink-0"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>Nouveau contact</span>
-        </Button>
-      </div>
+      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <label className="relative block min-w-0 flex-1 sm:max-w-md"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" /><span className="sr-only">Rechercher un contact</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nom, email, poste ou entreprise…" className="h-9 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15" /></label>
+        <span className="inline-flex items-center gap-1.5 text-micro text-stone-500"><ShieldAlert className="h-3.5 w-3.5 text-stone-400" /> Les préférences de contact sont appliquées avant tout envoi.</span>
+      </section>
 
-      {/* 2. Filter & Search Bar */}
-      <div className="bg-white border border-border-base rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t(
-              "admin.crmContactsPage.rechercherParNomEmailEntreprise",
-            )}
-            aria-label={t(
-              "admin.crmContactsPage.rechercherParNomEmailEntreprise",
-            )}
-            className="w-full h-control-md pl-9 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+        {loading ? <div className="space-y-2 p-4">{[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-16 rounded-xl" />)}</div> : filtered.length === 0 ? <div className="p-10 text-center"><UserRound className="mx-auto h-8 w-8 text-stone-400" /><h2 className="mt-3 text-sm font-black text-stone-800">Aucun contact trouvé</h2><p className="mt-1 text-xs text-stone-500">Essayez une autre recherche ou créez une fiche.</p></div> : <div className="overflow-x-auto"><table className="w-full min-w-[840px] text-left text-xs"><thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500"><tr><th className="px-5 py-3">Contact</th><th className="px-4 py-3">Entreprise</th><th className="px-4 py-3">Coordonnées</th><th className="px-4 py-3">Cycle de vie</th><th className="px-4 py-3">Prochaine action</th><th className="px-5 py-3 text-right">Responsable</th></tr></thead><tbody className="divide-y divide-border-subtle">{filtered.map((contact) => {
+          const account = contact.accountIds.map((id) => accountById.get(id)).find(Boolean);
+          return <tr key={contact.id} className="transition hover:bg-stone-50/80"><td className="px-5 py-3.5"><div className="flex items-center gap-3"><span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">{contact.firstName[0]}{contact.lastName[0]}</span><div className="min-w-0"><Link to={`/admin/crm/contacts/${contact.id}`} className="block truncate font-black text-stone-950 hover:text-primary">{contact.fullName}</Link><span className="mt-0.5 block truncate text-micro text-stone-500">{contact.jobTitle ?? "Fonction non renseignée"}</span></div></div></td><td className="px-4 py-3.5">{account ? <Link to={`/admin/crm/entreprises/${account.id}`} className="inline-flex items-center gap-1.5 font-bold text-stone-700 hover:text-primary"><Building2 className="h-3.5 w-3.5" /> {account.name}</Link> : <span className="text-stone-400">Sans entreprise</span>}</td><td className="px-4 py-3.5"><div className="space-y-1 text-micro text-stone-600">{contact.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 text-stone-400" /> {contact.email}</span>}{contact.phone && <span className="flex items-center gap-1.5"><Phone className="h-3 w-3 text-stone-400" /> {contact.phone}</span>}{!contact.email && !contact.phone && "Non renseignées"}</div></td><td className="px-4 py-3.5"><span className={`rounded-full px-2 py-1 text-micro font-bold ${contact.doNotContact ? "bg-rose-50 text-rose-700" : contact.lifecycle === "customer" ? "bg-emerald-50 text-emerald-700" : contact.lifecycle === "qualified" ? "bg-primary-light text-primary" : "bg-amber-50 text-amber-700"}`}>{contact.doNotContact ? "Ne pas contacter" : lifecycleLabel[contact.lifecycle]}</span></td><td className="px-4 py-3.5 text-micro text-stone-600">{contact.nextContactAt ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(contact.nextContactAt)) : "À planifier"}</td><td className="px-5 py-3.5 text-right text-stone-600">{contact.ownerId ? "Léa Bertin" : "Non assigné"}</td></tr>;
+        })}</tbody></table></div>}
+        <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500"><span>{filtered.length} résultat{filtered.length > 1 ? "s" : ""}</span><span>{contacts.filter((contact) => contact.doNotContact).length} exclusion{contacts.filter((contact) => contact.doNotContact).length > 1 ? "s" : ""} de contact</span></div>
+      </section>
 
-        <div className="flex items-center gap-2">
-          <Select
-            aria-label={t("admin.crmContactsPage.filtrerLesContactsParCycle")}
-            value={lifecycleFilter}
-            onChange={(e) => setLifecycleFilter(e.target.value)}
-            options={[
-              { value: "all", label: "Tous les statuts" },
-              { value: "prospect", label: "Prospects" },
-              { value: "qualified", label: "Qualifiés" },
-              { value: "customer", label: "Clients / Pro" },
-              { value: "partner", label: "Partenaires" },
-              { value: "do_not_contact", label: "Ne pas contacter" },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* 3. Contacts Table */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs overflow-hidden">
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-14 rounded-2xl" />
-            ))}
-          </div>
-        ) : filteredContacts.length === 0 ? (
-          <EmptyState
-            icon={<User className="w-8 h-8 text-stone-500" />}
-            title={t("admin.crmContactsPage.aucunContactNeCorrespondAux")}
-            description={t(
-              "admin.crmContactsPage.elargissezLaRechercheOuReinitialisez",
-            )}
-            action={
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearch("");
-                  setLifecycleFilter("all");
-                }}
-              >
-                {t("admin.crmContactsPage.reinitialiserLesFiltres")}
-              </Button>
-            }
-            className="border-0 shadow-none"
-          />
-        ) : (
-          <div className="divide-y divide-border-subtle">
-            {filteredContacts.map((c) => {
-              const lifecycleInfo = crmService.getLifecycleInfo(c.lifecycle);
-              const qualInfo = crmService.getQualificationInfo(c.qualification);
-
-              return (
-                <Link
-                  key={c.id}
-                  to={`/admin/crm/contacts/${c.id}`}
-                  className="py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-stone-50 -mx-4 px-4 rounded-xl transition-colors"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center font-bold text-stone-700 text-xs shrink-0">
-                      {c.identity.firstName[0]}
-                      {c.identity.lastName[0] || ""}
-                    </div>
-
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-stone-900">
-                          {c.identity.firstName} {c.identity.lastName}
-                        </span>
-                        {c.linkedUserId && (
-                          <Badge variant="verified" size="sm">
-                            {t("admin.crmContactsPage.compteShongreLie")}
-                          </Badge>
-                        )}
-                        {c.doNotContact && (
-                          <Badge variant="urgent" size="sm">
-                            Ne pas contacter
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 text-micro text-stone-500 truncate">
-                        <span>{c.identity.email}</span>
-                        {c.companyName && (
-                          <>
-                            <span>•</span>
-                            <span className="text-stone-700 font-medium">
-                              {c.companyName}
-                            </span>
-                          </>
-                        )}
-                        {c.identity.jobTitle && (
-                          <>
-                            <span>•</span>
-                            <span>{c.identity.jobTitle}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-                    <span
-                      className={`px-2 py-0.5 rounded-md text-micro font-bold ${qualInfo.badgeClass}`}
-                    >
-                      {qualInfo.label}
-                    </span>
-                    <Badge variant={lifecycleInfo.variant} size="sm">
-                      {lifecycleInfo.label}
-                    </Badge>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Create Modal */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title={t("admin.crmContactsPage.creerUnContactCrm")}
-        description={t(
-          "admin.crmContactsPage.ajoutezUnInterlocuteurOuProspect",
-        )}
-      >
-        <form onSubmit={handleCreateContact} className="space-y-3.5 text-xs">
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label={t("admin.crmContactsPage.prenom")} required>
-              <Input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder={t("admin.crmContactsPage.prenom")}
-              />
-            </FormField>
-            <FormField label="Nom">
-              <Input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Nom"
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Adresse email" required>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="contact@exemple.fr"
-            />
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label={t("admin.crmContactsPage.telephone")}>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+33 6..."
-              />
-            </FormField>
-            <FormField label="Fonction / Poste">
-              <Input
-                value={jobTitle}
-                onChange={(e) => setJobTitle(e.target.value)}
-                placeholder={t("admin.crmContactsPage.exGerant")}
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Entreprise">
-            <Input
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              placeholder={t("admin.crmContactsPage.exMaisonDecoParis")}
-            />
-          </FormField>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreateModalOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isSubmitting}
-              className="font-bold"
-            >
-              {isSubmitting ? "Création..." : "Créer le contact"}
-            </Button>
-          </div>
-        </form>
+      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Créer un contact" description="La fiche reste distincte d’un compte utilisateur Shongre.">
+        <form onSubmit={createContact} className="space-y-4 text-xs"><div className="grid gap-3 sm:grid-cols-2"><FormField label="Prénom" required><Input value={firstName} onChange={(event) => setFirstName(event.target.value)} required /></FormField><FormField label="Nom" required><Input value={lastName} onChange={(event) => setLastName(event.target.value)} required /></FormField></div><div className="grid gap-3 sm:grid-cols-2"><FormField label="Email"><Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></FormField><FormField label="Téléphone"><Input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} /></FormField></div><FormField label="Poste"><Input value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} /></FormField><FormField label="Entreprise"><Select aria-label="Entreprise associée" value={accountId} onChange={(event) => setAccountId(event.target.value)} options={[{ value: "", label: "Sans entreprise" }, ...accounts.map((account) => ({ value: account.id, label: account.name }))]} /></FormField><div className="flex justify-end gap-2 border-t border-border-subtle pt-4"><Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(false)}>Annuler</Button><Button type="submit" size="sm" disabled={submitting}>{submitting ? "Création…" : "Créer"}</Button></div></form>
       </Modal>
     </div>
   );

@@ -44,11 +44,12 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { JobCard } from "./components/JobCard";
 import { formatEmploymentDate, formatSalary } from "./employment-format";
+import { publicRouteUrl } from "../../domains/market/market-routing";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, marketContext, activeMarket } = useMarketLocation();
   const navigate = useNavigate();
   const toast = useToast();
   const [job, setJob] = useState<JobPostingDetail | null>(null);
@@ -176,7 +177,10 @@ export const EmploymentJobDetailPage: React.FC = () => {
   };
 
   const share = async () => {
-    const url = window.location.href;
+    const url = publicRouteUrl({
+      route: `/emploi/offre/${encodeURIComponent(job.slug)}`,
+      countryCode: marketContext?.countryCode ?? activeMarket.code,
+    });
     if (navigator.share) await navigator.share({ title: job.title, url });
     else {
       await navigator.clipboard.writeText(url);

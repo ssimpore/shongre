@@ -1,28 +1,84 @@
-import React, { useState, useEffect } from "react";
-import { PlusCircle, ChevronRight, ChevronLeft, Building2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  CircleDollarSign,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  UserRound,
+  XCircle,
+} from "lucide-react";
+import type {
+  CrmAccount,
+  CrmOpportunity,
+  CrmPipeline,
+  CrmPipelineStage,
+} from "@shongre/contracts/crm";
+import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
 import {
   FormField,
   Input,
   Select,
+  Textarea,
 } from "../../../design-system/primitives/FormField";
-import { crmRepository } from "../../../repositories/crm.repository";
-import {
-  CrmOpportunity,
-  OpportunityStage,
-  OpportunityType,
-} from "../../../domains/crm/crm.types";
-import { crmService, PIPELINE_STAGES } from "../../../domains/crm/crm.service";
+import { ScrollRail, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
-import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+
+function money(amountMinor: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amountMinor / 100);
+}
+
+const columnTone: Record<string, string> = {
+  blue: "bg-sky-500",
+  teal: "bg-cyan-500",
+  amber: "bg-amber-500",
+  orange: "bg-primary",
+  red: "bg-rose-500",
+  green: "bg-emerald-500",
+  neutral: "bg-stone-400",
+};
+
+interface ClosingState {
+  opportunity: CrmOpportunity;
+  stage: CrmPipelineStage;
+}
 
 export const CrmPipelinePage: React.FC = () => {
   const { t } = useTranslation();
-  const { activeMarket, currentLocale, currencySymbol } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
+  const toast = useToast();
+  const [pipelines, setPipelines] = useState<CrmPipeline[]>([]);
+  const [selectedPipelineId, setSelectedPipelineId] = useState("");
+  const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
+  const [accounts, setAccounts] = useState<CrmAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [closing, setClosing] = useState<ClosingState | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [amountMajor, setAmountMajor] = useState("588");
+  const [expectedCloseDate, setExpectedCloseDate] = useState("2026-09-30");
+  const [lossReason, setLossReason] = useState("");
+  const [lossDetail, setLossDetail] = useState("");
+  const [onboardingStatus, setOnboardingStatus] = useState("à_planifier");
+
   usePageMeta({
     title: t("meta.crmPipeline.title"),
     description: t("meta.crmPipeline.description"),
@@ -30,359 +86,359 @@ export const CrmPipelinePage: React.FC = () => {
     noIndex: true,
   });
 
-  const toast = useToast();
-  const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
-  const [, setLoading] = useState(true);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  // New Opportunity Form
-  const [title, setTitle] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [oppType, setOppType] = useState<OpportunityType>(
-    "pro_seller_acquisition",
-  );
-  const [amountMajor, setAmountMajor] = useState("588");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchOpportunities = async () => {
+  const load = async () => {
     setLoading(true);
     try {
-      const list = await crmRepository.listOpportunities();
-      setOpportunities(list);
+      const [pipelineList, opportunityPage, accountPage] = await Promise.all([
+        services.crm.listPipelines(),
+        services.crm.listOpportunities({ limit: 100 }),
+        services.crm.listAccounts({ limit: 100 }),
+      ]);
+      setPipelines(pipelineList);
+      setSelectedPipelineId((current) => current || pipelineList[0]?.id || "");
+      setOpportunities(opportunityPage.items);
+      setAccounts(accountPage.items);
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Impossible de charger le pipeline.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOpportunities();
+    void load();
   }, []);
 
-  const handleStageChange = async (
-    oppId: string,
-    newStage: OpportunityStage,
-  ) => {
-    try {
-      await crmRepository.updateOpportunityStage(oppId, newStage);
-      fetchOpportunities();
-      toast.success("Étape mise à jour avec succès.", "Opportunité déplacée");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors du déplacement.");
-    }
-  };
+  const pipeline = pipelines.find((item) => item.id === selectedPipelineId) ?? pipelines[0];
+  const visibleOpportunities = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase("fr");
+    return opportunities.filter(
+      (item) =>
+        item.pipelineId === pipeline?.id &&
+        (!query ||
+          item.name.toLocaleLowerCase("fr").includes(query) ||
+          item.accountName?.toLocaleLowerCase("fr").includes(query)),
+    );
+  }, [opportunities, pipeline?.id, search]);
+  const pipelineValue = visibleOpportunities
+    .filter((item) => item.status === "open")
+    .reduce((sum, item) => sum + item.amount.amountMinor, 0);
 
-  const handleCreateOpportunity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) {
-      toast.error("Le titre de l'opportunité est obligatoire.");
+  const moveToStage = async (
+    opportunity: CrmOpportunity,
+    stage: CrmPipelineStage,
+  ) => {
+    if (stage.isWon || stage.isLost) {
+      setLossReason("");
+      setLossDetail("");
+      setClosing({ opportunity, stage });
       return;
     }
-
-    const valueMinor = Math.round(parseFloat(amountMajor || "0") * 100);
-
-    setIsSubmitting(true);
     try {
-      await crmRepository.createOpportunity({
-        title: title.trim(),
-        companyName: companyName.trim() || "Entreprise Prospect",
-        primaryContactName: contactName.trim() || undefined,
-        type: oppType,
-        stage: "new",
-        estimatedValue: {
-          amountMinor: valueMinor,
-          currency: activeMarket.currency,
-        },
-        probability: 30,
-        ownerName: "Antoine Fabre",
-        marketCode: activeMarket.code,
+      const updated = await services.crm.transitionOpportunity(opportunity.id, {
+        stageId: stage.id,
+        expectedVersion: opportunity.version,
       });
-
-      setIsCreateModalOpen(false);
-      setTitle("");
-      setCompanyName("");
-      setContactName("");
-      setAmountMajor("588");
-      fetchOpportunities();
-      toast.success(
-        "Opportunité créée dans le pipeline.",
-        "Nouvelle opportunité",
+      setOpportunities((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
       );
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création.");
-    } finally {
-      setIsSubmitting(false);
+      toast.success(`« ${opportunity.name} » est maintenant à l’étape ${stage.name}.`);
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Transition impossible.");
     }
   };
 
-  // Compute total pipeline amount
-  const totalPipelineValue = opportunities
-    .filter((o) => o.stage !== "lost")
-    .reduce((sum, o) => sum + o.estimatedValue.amountMinor, 0);
+  const createOpportunity = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!pipeline || !name.trim()) return;
+    const firstStage = pipeline.stages.find((stage) => stage.isOpen);
+    if (!firstStage) return;
+    setSubmitting(true);
+    try {
+      const created = await services.crm.createOpportunity({
+        pipelineId: pipeline.id,
+        stageId: firstStage.id,
+        name: name.trim(),
+        accountId: accountId || undefined,
+        amount: {
+          amountMinor: Math.round(Number(amountMajor || 0) * 100),
+          currency: activeMarket.currency,
+        },
+        expectedCloseDate: expectedCloseDate || undefined,
+        source: "manual",
+        forecastCategory: "pipeline",
+      });
+      setOpportunities((items) => [created, ...items]);
+      setCreateOpen(false);
+      setName("");
+      setAccountId("");
+      toast.success("L’opportunité a été ajoutée au pipeline.");
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Création impossible.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const completeClosing = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!closing) return;
+    if (closing.stage.isLost && !lossReason) {
+      toast.error("Sélectionnez un motif de perte.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const updated = await services.crm.transitionOpportunity(
+        closing.opportunity.id,
+        {
+          stageId: closing.stage.id,
+          expectedVersion: closing.opportunity.version,
+          lossReason: closing.stage.isLost ? lossReason : undefined,
+          lossDetail: closing.stage.isLost ? lossDetail || undefined : undefined,
+          contractValue: closing.stage.isWon
+            ? {
+                amountMinor: closing.opportunity.amount.amountMinor,
+                currency: closing.opportunity.amount.currency,
+              }
+            : undefined,
+          onboardingStatus: closing.stage.isWon ? onboardingStatus : undefined,
+        },
+      );
+      setOpportunities((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      setClosing(null);
+      toast.success(
+        closing.stage.isWon
+          ? "Opportunité gagnée et transmise à l’onboarding."
+          : "Opportunité clôturée avec son motif de perte.",
+      );
+    } catch (reason) {
+      toast.error(reason instanceof Error ? reason.message : "Clôture impossible.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading || !pipeline) {
+    return (
+      <div className="space-y-4" aria-label="Chargement du pipeline CRM">
+        <Skeleton className="h-32 rounded-2xl" />
+        <div className="flex gap-3 overflow-hidden">
+          {[0, 1, 2].map((item) => (
+            <Skeleton key={item} className="h-[520px] w-72 shrink-0 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-xl sm:text-2xl font-black text-stone-900">
-              {t("admin.crmPipelinePage.pipelineDesVentesForfaitsPro")}
-            </h1>
-            <span className="text-xs bg-primary-light text-primary font-black px-2.5 py-0.5 rounded-full">
-              {crmService.formatCrmMoney(
-                {
-                  amountMinor: totalPipelineValue,
-                  currency: activeMarket.currency,
-                },
-                currentLocale,
-              )}
-            </span>
+    <div className="space-y-4 pb-8">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <Link to="/admin/crm" className="mb-2 inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white">
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Vue d’ensemble
+            </Link>
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">Pipeline commercial</h1>
+            <p className="mt-1 text-sm text-stone-400">
+              {visibleOpportunities.length} opportunités · {money(pipelineValue, activeMarket.currency, currentLocale)} ouverts
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500">
-            {t("admin.crmPipelinePage.suiviDesNegociationsAbonnementsPro")}
-          </p>
+          <div className="flex flex-wrap gap-2">
+            <label className="relative min-w-52 flex-1 xl:flex-none">
+              <span className="sr-only">Pipeline actif</span>
+              <select
+                value={pipeline.id}
+                onChange={(event) => setSelectedPipelineId(event.target.value)}
+                className="h-9 w-full appearance-none rounded-lg border border-stone-700 bg-stone-900 pl-3 pr-9 text-xs font-bold text-white outline-none focus:border-primary"
+              >
+                {pipelines.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+            </label>
+            <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" aria-hidden="true" /> Nouvelle opportunité
+            </Button>
+          </div>
         </div>
+      </section>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="font-bold flex items-center gap-1.5 shrink-0"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>{t("admin.crmPipelinePage.nouvelleOpportunite")}</span>
-        </Button>
-      </div>
+      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+        <label className="relative block min-w-0 flex-1 sm:max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
+          <span className="sr-only">Rechercher une opportunité</span>
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher une opportunité ou une entreprise…"
+            className="h-9 w-full rounded-lg border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+          />
+        </label>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" /> Filtres
+          </Button>
+          <span className="hidden text-micro text-stone-500 sm:inline">
+            Utilisez les flèches sur chaque carte pour déplacer sans glisser-déposer.
+          </span>
+        </div>
+      </section>
 
-      {/* 2. Kanban Columns */}
-      {/* The kanban is wider than any viewport once the pipeline has more than
-          three stages, and the bare `overflow-x-auto` gave no cue: on macOS the
-          overlay scrollbar is invisible until you already scroll, so the fourth
-          column simply looked cut off. `ScrollRail` surfaces a control on
-          whichever side has more content and makes the track keyboard-scrollable. */}
       <ScrollRail
-        label={t("admin.crmPipelinePage.colonnesDuPipeline")}
-        className="flex gap-4 pb-4 items-start min-h-150"
+        label="Colonnes du pipeline commercial"
+        className="flex min-h-[540px] items-start gap-3 pb-4"
       >
-        {PIPELINE_STAGES.map((stage, stageIndex) => {
-          const stageOpps = opportunities.filter((o) => o.stage === stage.id);
-          const stageTotal = stageOpps.reduce(
-            (sum, o) => sum + o.estimatedValue.amountMinor,
-            0,
-          );
-
+        {pipeline.stages.map((stage, stageIndex) => {
+          const stageItems = visibleOpportunities.filter((item) => item.stageId === stage.id);
+          const stageAmount = stageItems.reduce((sum, item) => sum + item.amount.amountMinor, 0);
           return (
-            <div
-              key={stage.id}
-              className="w-72 shrink-0 bg-stone-100/70 border border-stone-200 rounded-3xl p-3.5 space-y-3 flex flex-col"
-            >
-              {/* Column Header */}
-              <div className="flex items-center justify-between gap-2 px-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-xs text-stone-900">
-                    {stage.label}
-                  </span>
-                  <span className="text-micro font-bold text-stone-500 bg-stone-200 px-1.5 py-0.2 rounded-full">
-                    {stageOpps.length}
-                  </span>
-                </div>
-                <span className="text-micro font-black text-stone-700 font-mono">
-                  {crmService.formatCrmMoney(
-                    {
-                      amountMinor: stageTotal,
-                      currency: activeMarket.currency,
-                    },
-                    currentLocale,
-                  )}
-                </span>
-              </div>
-
-              {/* Cards Stream */}
-              <div className="space-y-2.5 flex-1 overflow-y-auto max-h-pipeline-column-max">
-                {stageOpps.length === 0 ? (
-                  <div className="text-center py-8 text-stone-500 text-micro border border-dashed border-stone-200 rounded-2xl">
-                    {t("admin.crmPipelinePage.aucuneOpportunite")}
+            <section key={stage.id} aria-labelledby={`stage-${stage.id}`} className="w-68 shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100/80">
+              <div className="border-b border-stone-200 bg-white px-3.5 py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className={`h-2 w-2 shrink-0 rounded-full ${columnTone[stage.colorToken] ?? "bg-stone-400"}`} aria-hidden="true" />
+                    <h2 id={`stage-${stage.id}`} className="truncate text-xs font-black text-stone-900">{stage.name}</h2>
+                    <span className="rounded-full bg-stone-100 px-1.5 py-0.5 text-micro font-bold text-stone-600">{stageItems.length}</span>
                   </div>
-                ) : (
-                  stageOpps.map((opp) => (
-                    <div
-                      key={opp.id}
-                      className="bg-white border border-stone-200 rounded-2xl p-3.5 shadow-xs space-y-2.5 hover:shadow-sm transition-shadow"
-                    >
-                      <div className="space-y-1">
-                        <span className="font-bold text-xs text-stone-900 block leading-tight">
-                          {opp.title}
-                        </span>
-                        <div className="flex items-center gap-1.5 text-micro text-stone-500">
-                          <Building2 className="w-3 h-3 text-stone-400 shrink-0" />
-                          <span className="truncate">{opp.companyName}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-100">
-                        <strong className="text-primary font-black font-mono">
-                          {crmService.formatCrmMoney(
-                            opp.estimatedValue,
-                            currentLocale,
-                          )}
-                        </strong>
-                        <span className="text-micro text-stone-500 font-medium">
-                          {opp.probability}% prob.
-                        </span>
-                      </div>
-
-                      {/* Quick Move Arrows */}
-                      <div className="flex items-center justify-between pt-1 text-micro text-stone-500">
-                        <button
-                          type="button"
-                          disabled={stageIndex === 0}
-                          onClick={() =>
-                            handleStageChange(
-                              opp.id,
-                              PIPELINE_STAGES[stageIndex - 1].id,
-                            )
-                          }
-                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          /* One pair of arrows per opportunity card, so a name
-                             that says only "Étape précédente" repeats verbatim
-                             down the column. Naming the opportunity makes each
-                             one addressable. */
-                          aria-label={t(
-                            "admin.crmPipelinePage.etapePrecedenteOpp",
-                            { name: opp.title },
-                          )}
-                        >
-                          <ChevronLeft className="w-3.5 h-3.5" />
-                        </button>
-
-                        <span className="truncate max-w-30">
-                          {opp.primaryContactName || "Contact"}
-                        </span>
-
-                        <button
-                          type="button"
-                          disabled={stageIndex === PIPELINE_STAGES.length - 1}
-                          onClick={() =>
-                            handleStageChange(
-                              opp.id,
-                              PIPELINE_STAGES[stageIndex + 1].id,
-                            )
-                          }
-                          className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 cursor-pointer min-w-6 min-h-6 inline-flex items-center justify-center"
-                          aria-label={t(
-                            "admin.crmPipelinePage.etapeSuivanteOpp",
-                            { name: opp.title },
-                          )}
-                        >
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
+                  <strong className="text-micro font-black tabular-nums text-stone-700">{money(stageAmount, activeMarket.currency, currentLocale)}</strong>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-stone-100">
+                  <div className={`h-full ${columnTone[stage.colorToken] ?? "bg-stone-400"}`} style={{ width: `${stage.defaultProbability}%` }} />
+                </div>
               </div>
-            </div>
+              <div className="max-h-[470px] space-y-2 overflow-y-auto p-2.5">
+                {stageItems.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-stone-300 bg-white/60 px-3 py-8 text-center text-micro text-stone-500">Aucune opportunité</div>
+                ) : stageItems.map((opportunity) => (
+                  <article key={opportunity.id} className="rounded-xl border border-stone-200 bg-white p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm">
+                    <Link to={`/admin/crm/opportunites/${opportunity.id}`} className="block text-xs font-black leading-snug text-stone-950 hover:text-primary">
+                      {opportunity.name}
+                    </Link>
+                    <div className="mt-1.5 flex items-center gap-1.5 text-micro text-stone-500">
+                      <Building2 className="h-3 w-3 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{opportunity.accountName ?? "Sans entreprise"}</span>
+                    </div>
+                    <div className="mt-3 flex items-end justify-between gap-2 border-t border-stone-100 pt-2.5">
+                      <div>
+                        <strong className="block text-sm font-black tabular-nums text-stone-950">{money(opportunity.amount.amountMinor, opportunity.amount.currency, currentLocale)}</strong>
+                        <span className="text-micro text-stone-500">{opportunity.probability}% · {opportunity.forecastCategory === "commit" ? "Commit" : "Pipeline"}</span>
+                      </div>
+                      {opportunity.expectedCloseDate && (
+                        <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500">
+                          <CalendarDays className="h-3 w-3" aria-hidden="true" />
+                          {new Intl.DateTimeFormat(currentLocale, { day: "numeric", month: "short" }).format(new Date(`${opportunity.expectedCloseDate}T12:00:00`))}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2.5 flex items-center justify-between rounded-lg bg-stone-50 p-1">
+                      <button
+                        type="button"
+                        disabled={stageIndex === 0}
+                        onClick={() => stageIndex > 0 && void moveToStage(opportunity, pipeline.stages[stageIndex - 1])}
+                        aria-label={`Déplacer « ${opportunity.name} » vers l’étape précédente`}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                      >
+                        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      <span className="inline-flex min-w-0 items-center gap-1 text-micro text-stone-500">
+                        <UserRound className="h-3 w-3 shrink-0" aria-hidden="true" />
+                        <span className="max-w-28 truncate">{opportunity.ownerName ?? "Non assignée"}</span>
+                      </span>
+                      <button
+                        type="button"
+                        disabled={stageIndex === pipeline.stages.length - 1}
+                        onClick={() => stageIndex < pipeline.stages.length - 1 && void moveToStage(opportunity, pipeline.stages[stageIndex + 1])}
+                        aria-label={`Déplacer « ${opportunity.name} » vers l’étape suivante`}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                      >
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
           );
         })}
       </ScrollRail>
 
-      {/* Create Opportunity Modal */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title={t("admin.crmPipelinePage.creerUneOpportuniteCommerciale")}
-        description={t("admin.crmPipelinePage.ajoutezUnDealAuPipeline")}
-      >
-        <form
-          onSubmit={handleCreateOpportunity}
-          className="space-y-3.5 text-xs"
-        >
-          <FormField
-            label={t("admin.crmPipelinePage.titreDeLOpportunite")}
-            required
-          >
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t(
-                "admin.crmPipelinePage.exAdhesionForfaitProBusiness",
-              )}
+      <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} title="Créer une opportunité" description={`Ajout dans ${pipeline.name}`}>
+        <form onSubmit={createOpportunity} className="space-y-4 text-xs">
+          <FormField label="Nom de l’opportunité" required>
+            <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ex. Abonnement Shongre Pro Business" required />
+          </FormField>
+          <FormField label="Entreprise">
+            <Select
+              aria-label="Entreprise associée"
+              value={accountId}
+              onChange={(event) => setAccountId(event.target.value)}
+              options={[{ value: "", label: "Sans entreprise" }, ...accounts.map((account) => ({ value: account.id, label: account.name }))]}
             />
           </FormField>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label={t("admin.crmPipelinePage.entrepriseConcernee")}>
-              <Input
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="ex: Atelier Nordique"
-              />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <FormField label={`Montant estimé (${activeMarket.currency})`} required>
+              <Input type="number" min="0" step="1" value={amountMajor} onChange={(event) => setAmountMajor(event.target.value)} required />
             </FormField>
-
-            <FormField label="Contact principal">
-              <Input
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="ex: Marc Dumont"
-              />
+            <FormField label="Clôture prévue">
+              <Input type="date" value={expectedCloseDate} onChange={(event) => setExpectedCloseDate(event.target.value)} />
             </FormField>
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label={t("admin.crmPipelinePage.typeDOpportunite")}>
-              <Select
-                aria-label={t("admin.crmPipelinePage.typeDOpportunite")}
-                value={oppType}
-                onChange={(e) => setOppType(e.target.value as OpportunityType)}
-                options={[
-                  {
-                    value: "pro_seller_acquisition",
-                    label: "Acquisition Vendeur Pro",
-                  },
-                  {
-                    value: "pro_subscription_upgrade",
-                    label: "Upgrade Forfait Pro",
-                  },
-                  { value: "advertising", label: "Campagne Publicitaire" },
-                  { value: "partnership", label: "Partenariat Stratégique" },
-                  { value: "enterprise_account", label: "Grands Comptes" },
-                ]}
-              />
-            </FormField>
-
-            <FormField
-              label={`${t("admin.crmPipelinePage.valeurEstimee")} (${currencySymbol})`}
-            >
-              <Input
-                type="number"
-                value={amountMajor}
-                onChange={(e) => setAmountMajor(e.target.value)}
-                placeholder="588"
-              />
-            </FormField>
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreateModalOpen(false)}
-            >
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isSubmitting}
-              className="font-bold"
-            >
-              {isSubmitting ? "Création..." : "Créer l'opportunité"}
-            </Button>
+          <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+            <Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(false)}>Annuler</Button>
+            <Button type="submit" variant="primary" size="sm" disabled={submitting}>{submitting ? "Création…" : "Créer l’opportunité"}</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(closing)}
+        onClose={() => setClosing(null)}
+        title={closing?.stage.isWon ? "Marquer comme gagnée" : "Marquer comme perdue"}
+        description={closing?.opportunity.name}
+      >
+        {closing && (
+          <form onSubmit={completeClosing} className="space-y-4 text-xs">
+            <div className={`flex items-start gap-3 rounded-xl border p-3 ${closing.stage.isWon ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"}`}>
+              {closing.stage.isWon ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" aria-hidden="true" /> : <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-700" aria-hidden="true" />}
+              <div>
+                <strong className="font-black text-stone-900">{closing.stage.isWon ? "Confirmer le contrat" : "Capitaliser sur la perte"}</strong>
+                <p className="mt-0.5 text-stone-600">Cette transition est auditée et met à jour les prévisions commerciales.</p>
+              </div>
+            </div>
+            {closing.stage.isWon ? (
+              <>
+                <FormField label="Valeur contractuelle">
+                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-black text-stone-900">
+                    <CircleDollarSign className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+                    {money(closing.opportunity.amount.amountMinor, closing.opportunity.amount.currency, currentLocale)}
+                  </div>
+                </FormField>
+                <FormField label="Statut d’onboarding">
+                  <Select aria-label="Statut d’onboarding" value={onboardingStatus} onChange={(event) => setOnboardingStatus(event.target.value)} options={[{ value: "à_planifier", label: "À planifier" }, { value: "prêt", label: "Prêt à démarrer" }, { value: "en_cours", label: "En cours" }]} />
+                </FormField>
+              </>
+            ) : (
+              <>
+                <FormField label="Motif de perte" required>
+                  <Select aria-label="Motif de perte" value={lossReason} onChange={(event) => setLossReason(event.target.value)} options={[{ value: "", label: "Sélectionner…" }, { value: "budget", label: "Budget insuffisant" }, { value: "concurrent", label: "Concurrent retenu" }, { value: "timing", label: "Calendrier reporté" }, { value: "no_need", label: "Besoin non confirmé" }, { value: "no_response", label: "Absence de réponse" }, { value: "other", label: "Autre" }]} />
+                </FormField>
+                <FormField label="Précisions">
+                  <Textarea value={lossDetail} onChange={(event) => setLossDetail(event.target.value)} placeholder="Contexte, concurrent ou prochaine fenêtre de contact…" rows={3} />
+                </FormField>
+              </>
+            )}
+            <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+              <Button type="button" variant="outline" size="sm" onClick={() => setClosing(null)}>Annuler</Button>
+              <Button type="submit" variant="primary" size="sm" disabled={submitting}>{submitting ? "Validation…" : "Confirmer la transition"}</Button>
+            </div>
+          </form>
+        )}
       </Modal>
     </div>
   );

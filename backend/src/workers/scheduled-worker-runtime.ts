@@ -8,6 +8,10 @@ import { commercialConfigurationWorker } from "./monetization/commercial-configu
 import { monetizationLifecycleWorker } from "./monetization/monetization-lifecycle-worker.js";
 import { ordersService } from "../modules/orders/orders.service.js";
 import { notificationsWorker } from "./notifications/notifications-worker.js";
+import { crmShongreSyncWorker } from "./crm/crm-shongre-sync-worker.js";
+import { marketingCampaignWorker } from "./marketing/marketing-campaign-worker.js";
+import { marketingWebhookWorker } from "./marketing/marketing-webhook-worker.js";
+import { marketingJourneyWorker } from "./marketing/marketing-journey-worker.js";
 
 interface ScheduledJob {
   name: string;
@@ -16,6 +20,26 @@ interface ScheduledJob {
 }
 
 const jobs: ScheduledJob[] = [
+  {
+    name: "marketing_outgoing_webhook",
+    intervalSeconds: 10,
+    run: () => marketingWebhookWorker.run(),
+  },
+  {
+    name: "marketing_journey_execution",
+    intervalSeconds: 10,
+    run: () => marketingJourneyWorker.run(),
+  },
+  {
+    name: "marketing_campaign_send",
+    intervalSeconds: 10,
+    run: () => marketingCampaignWorker.run(),
+  },
+  {
+    name: "crm_shongre_sync",
+    intervalSeconds: 15,
+    run: () => crmShongreSyncWorker.run(),
+  },
   {
     name: "notification_delivery",
     intervalSeconds: 15,

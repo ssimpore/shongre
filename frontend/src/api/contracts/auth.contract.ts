@@ -101,6 +101,22 @@ export interface SocialAuthStartInput {
   accountType?: "individual" | "professional";
 }
 
+export interface DomainHandoffStartInput {
+  sourceCountry: string;
+  targetCountry: string;
+  returnTo?: string;
+}
+
+export interface DomainHandoffStartResult {
+  authorizationUrl: string;
+  expiresAt: string;
+}
+
+export interface DomainHandoffExchangeResult {
+  user: UserProfile;
+  returnTo: string;
+}
+
 export interface AuthServiceContract {
   getCurrentUser(): Promise<UserProfile | null>;
   login(credentials: LoginCredentials): Promise<AuthResult>;
@@ -134,6 +150,13 @@ export interface AuthServiceContract {
   startSocialAuth(
     input: SocialAuthStartInput,
   ): Promise<{ authorizationUrl: string }>;
+  beginDomainHandoff(
+    input: DomainHandoffStartInput,
+  ): Promise<DomainHandoffStartResult>;
+  exchangeDomainHandoff(input: {
+    code: string;
+    targetCountry: string;
+  }): Promise<DomainHandoffExchangeResult>;
   /** Deterministic callback hook exposed only by the demo adapter. */
   completeDemoSocialAuth?(input: {
     provider: SocialAuthProvider;

@@ -10,14 +10,12 @@ import {
   Square,
 } from "lucide-react";
 import { Button } from "../../../design-system/primitives/Button";
-import { prospectResearchService } from "../../../services/prospect-research.service";
-import { crmRepository } from "../../../repositories/crm.repository";
-import { crmService } from "../../../domains/crm/crm.service";
-import {
+import { services } from "../../../api/client/service-registry";
+import type {
   ProspectResearchCandidate,
   ProspectResearchResult,
-  CrmCompany,
-} from "../../../domains/crm/crm.types";
+} from "../../../api/contracts/crm-prospecting.contract";
+import type { CrmAccount } from "@shongre/contracts/crm";
 import { EvidenceDrawer } from "./components/EvidenceDrawer";
 import { DuplicateConflictModal } from "./components/DuplicateConflictModal";
 import { useToast } from "../../../app/providers/ToastProvider";
@@ -61,7 +59,39 @@ export const CrmAiProspectingPage: React.FC = () => {
   // Duplicate Conflict Modal state
   const [conflictCandidate, setConflictCandidate] =
     useState<ProspectResearchCandidate | null>(null);
-  const [matchedCompany, setMatchedCompany] = useState<CrmCompany | null>(null);
+  const [matchedCompany, setMatchedCompany] = useState<CrmAccount | null>(null);
+
+  const normalizeDomain = (value?: string) =>
+    value
+      ?.trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split("/")[0] ?? "";
+
+  const importCandidate = (candidate: ProspectResearchCandidate) =>
+    services.crm.createAccount({
+      name: candidate.company.name,
+      website: candidate.company.website,
+      domain:
+        candidate.company.domain ??
+        (normalizeDomain(candidate.company.website) || undefined),
+      industry: candidate.company.industry,
+      description: candidate.company.description,
+      city: candidate.company.location?.split("•")[0]?.trim(),
+      country: activeMarket.code,
+      marketCode: activeMarket.code,
+      lifecycle: "prospect",
+      fitScore: candidate.fit.score,
+      source: "ai_research",
+      sourceDetail: `Recherche assistée · ${candidate.sources.length} source(s) publique(s)`,
+      tags: candidate.suggestedTaxonomySlugs ?? [],
+      customValues: {
+        estimatedSize: candidate.company.estimatedSize,
+        fitReasons: candidate.fit.reasons,
+        evidenceUrls: candidate.sources.map((source) => source.url),
+      },
+    });
 
   const handleRunSearch = async (queryText?: string) => {
     const activeQuery = queryText || query;
@@ -80,21 +110,25 @@ export const CrmAiProspectingPage: React.FC = () => {
     );
 
     try {
-      const res = await prospectResearchService.searchProspects({
+      const res = await services.crmProspecting.searchProspects({
         naturalLanguageQuery: activeQuery.trim(),
         marketCode: activeMarket.code,
       });
 
-      // Check for duplicates against existing CRM companies
-      const existingCompanies = await crmRepository.listCompanies();
-      const updatedCandidates = res.candidates.map((cand) => {
-        const dup = crmService.detectDuplicate(cand.company, existingCompanies);
-        return {
-          ...cand,
-          isDuplicate: dup.isDuplicate,
-          possibleExistingEntityId: dup.matchedCompany?.id,
-        };
-      });
+      const updatedCandidates = await Promise.all(
+        res.candidates.map(async (cand) => {
+          const [duplicate] = await services.crm.findAccountDuplicates({
+            name: cand.company.name,
+            domain:
+              cand.company.domain ?? normalizeDomain(cand.company.website),
+          });
+          return {
+            ...cand,
+            isDuplicate: Boolean(duplicate),
+            possibleExistingEntityId: duplicate?.entityId,
+          };
+        }),
+      );
 
       setResults({ ...res, candidates: updatedCandidates });
       setSelectedCandidateIds(
@@ -110,18 +144,16 @@ export const CrmAiProspectingPage: React.FC = () => {
 
   const handleImportSingle = async (candidate: ProspectResearchCandidate) => {
     if (candidate.isDuplicate) {
-      const existingCompanies = await crmRepository.listCompanies();
-      const dup = crmService.detectDuplicate(
-        candidate.company,
-        existingCompanies,
-      );
+      const duplicate = candidate.possibleExistingEntityId
+        ? await services.crm.getAccount(candidate.possibleExistingEntityId)
+        : null;
       setConflictCandidate(candidate);
-      setMatchedCompany(dup.matchedCompany || null);
+      setMatchedCompany(duplicate);
       return;
     }
 
     try {
-      await crmRepository.importAiCandidate(candidate);
+      await importCandidate(candidate);
       setImportedCandidateIds((prev) => [...prev, candidate.id]);
       toast.success(
         `${candidate.company.name} a été ajouté au CRM.`,
@@ -141,7 +173,7 @@ export const CrmAiProspectingPage: React.FC = () => {
     );
 
     for (const cand of candidatesToImport) {
-      await crmRepository.importAiCandidate(cand);
+      await importCandidate(cand);
     }
 
     setImportedCandidateIds((prev) => [
@@ -428,7 +460,7 @@ export const CrmAiProspectingPage: React.FC = () => {
             );
           }}
           onCreateSeparate={async () => {
-            await crmRepository.importAiCandidate(conflictCandidate);
+            await importCandidate(conflictCandidate);
             setImportedCandidateIds((prev) => [...prev, conflictCandidate.id]);
             setConflictCandidate(null);
             toast.success(

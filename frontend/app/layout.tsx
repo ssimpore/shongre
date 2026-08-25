@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { headers } from "next/headers";
 import { colors } from "@shongre/design-tokens";
 import "../src/index.css";
 import {
@@ -35,25 +36,15 @@ export const viewport: Viewport = {
   themeColor: colors.action.primary,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Shongre",
-    url: origin,
-  };
-
+  const requestHeaders = await headers();
+  const requestLocale =
+    requestHeaders.get("x-shongre-market-locale") || DEFAULT_LOCALE;
   return (
-    <html lang={DEFAULT_LOCALE.split("-")[0]} className={inter.variable}>
-      <body>
-        {children}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
-      </body>
+    <html lang={requestLocale} className={inter.variable}>
+      <body>{children}</body>
     </html>
   );
 }

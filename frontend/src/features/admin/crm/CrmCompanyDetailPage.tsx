@@ -1,438 +1,743 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Sparkles,
+  Building2,
+  BadgeCheck,
+  Boxes,
+  CreditCard,
   ExternalLink,
-  TrendingUp,
-  Users,
+  Mail,
+  MapPin,
+  MessageSquareText,
+  Phone,
+  Plus,
+  Sparkles,
+  Tags,
+  Target,
+  UsersRound,
+  Unplug,
 } from "lucide-react";
-import { Button } from "../../../design-system/primitives/Button";
-import { StatePanel } from "../../../design-system/primitives/StatePanel";
-import { Badge } from "../../../design-system/primitives/Badge";
-import { Select } from "../../../design-system/primitives/FormField";
-import { crmRepository } from "../../../repositories/crm.repository";
-import { prospectResearchService } from "../../../services/prospect-research.service";
-import {
-  CrmCompany,
+import type {
+  CrmAccount,
+  CrmActivity,
   CrmContact,
   CrmOpportunity,
-  CrmActivity,
-  CompanyLifecycle,
-  CompanyEnrichmentDiff,
-} from "../../../domains/crm/crm.types";
-import { crmService } from "../../../domains/crm/crm.service";
-import { ActivityTimeline } from "./components/ActivityTimeline";
-import { EnrichmentDiffModal } from "./components/EnrichmentDiffModal";
-import { useToast } from "../../../app/providers/ToastProvider";
+  CrmShongreIntelligence,
+} from "@shongre/contracts/crm";
+import { services } from "../../../api/client/service-registry";
+import { Button } from "../../../design-system/primitives/Button";
+import { Modal } from "../../../design-system/primitives/Modal";
+import {
+  FormField,
+  Input,
+  Select,
+  Textarea,
+} from "../../../design-system/primitives/FormField";
 import { Skeleton } from "../../../design-system";
-import { useTranslation } from "../../../i18n/I18nProvider";
-import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { usePageMeta } from "../../../hooks/usePageMeta";
+
+function money(amountMinor: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amountMinor / 100);
+}
+
+const lifecycleOptions = [
+  { value: "lead", label: "Lead" },
+  { value: "prospect", label: "Prospect" },
+  { value: "qualified", label: "Qualifié" },
+  { value: "customer", label: "Client" },
+  { value: "partner", label: "Partenaire" },
+  { value: "do_not_contact", label: "Ne pas contacter" },
+  { value: "archived", label: "Archivé" },
+];
 
 export const CrmCompanyDetailPage: React.FC = () => {
-  const { currentLocale } = useMarketLocation();
-  const { t } = useTranslation();
-  usePageMeta({
-    title: t("meta.crmCompanyDetail.title"),
-    description: t("meta.crmCompanyDetail.description"),
-    noIndex: true,
-  });
-
-  const { id } = useParams<{ id: string }>();
+  const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { currentLocale } = useMarketLocation();
   const toast = useToast();
-
-  const [company, setCompany] = useState<CrmCompany | null>(null);
+  const [account, setAccount] = useState<CrmAccount | null>(null);
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
   const [activities, setActivities] = useState<CrmActivity[]>([]);
+  const [shongre, setShongre] = useState<CrmShongreIntelligence | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [tagsOpen, setTagsOpen] = useState(false);
+  const [tagDraft, setTagDraft] = useState("");
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  // Enrichment Modal
-  const [isEnrichModalOpen, setIsEnrichModalOpen] = useState(false);
-  const [enrichDiff, setEnrichDiff] = useState<CompanyEnrichmentDiff | null>(
-    null,
-  );
-  const [isEnriching, setIsEnriching] = useState(false);
+  usePageMeta({
+    title: account
+      ? `${account.name} | CRM Shongre`
+      : "Entreprise CRM | Shongre",
+    description: "Vue complète du compte CRM.",
+    canonicalPath: id ? `/admin/crm/entreprises/${id}` : undefined,
+    noIndex: true,
+  });
 
-  const fetchCompanyData = async () => {
+  const load = async () => {
     if (!id) return;
     setLoading(true);
     try {
-      const comp = await crmRepository.getCompanyById(id);
-      setCompany(comp);
-      if (comp) {
-        const [allContacts, allOpps, acts] = await Promise.all([
-          crmRepository.listContacts(),
-          crmRepository.listOpportunities(),
-          crmRepository.listActivities("company", comp.id),
+      const [item, contactPage, opportunityPage, intelligence] =
+        await Promise.all([
+          services.crm.getAccount(id),
+          services.crm.listContacts({ limit: 100 }),
+          services.crm.listOpportunities({ limit: 100 }),
+          services.crm.getAccountShongreIntelligence(id),
         ]);
-        setContacts(
-          allContacts.filter(
-            (c) => c.companyId === comp.id || c.companyName === comp.name,
-          ),
-        );
-        setOpportunities(allOpps.filter((o) => o.companyId === comp.id));
-        setActivities(acts);
-      }
+      setAccount(item);
+      setShongre(intelligence);
+      setContacts(
+        contactPage.items.filter((contact) =>
+          contact.accountIds.includes(item.id),
+        ),
+      );
+      setOpportunities(
+        opportunityPage.items.filter(
+          (opportunity) => opportunity.accountId === item.id,
+        ),
+      );
+      setActivities(await services.crm.listActivities("account", item.id));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Entreprise introuvable.",
+      );
+      setAccount(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCompanyData();
+    void load();
   }, [id]);
 
-  const handleUpdateLifecycle = async (newLifecycle: CompanyLifecycle) => {
-    if (!company) return;
+  const updateLifecycle = async (value: CrmAccount["lifecycle"]) => {
+    if (!account) return;
     try {
-      const updated = await crmRepository.updateCompany(company.id, {
-        lifecycle: newLifecycle,
-        doNotContact: newLifecycle === "do_not_contact",
+      const updated = await services.crm.updateAccount(
+        account.id,
+        account.version,
+        {
+          lifecycle: value,
+        },
+      );
+      setAccount(updated);
+      toast.success("Cycle de vie mis à jour.");
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Mise à jour impossible.",
+      );
+    }
+  };
+
+  const addNote = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!account || !note.trim()) return;
+    setSubmitting(true);
+    try {
+      const activity = await services.crm.createActivity({
+        entityType: "account",
+        entityId: account.id,
+        activityType: "NOTE_CREATED",
+        title: "Note entreprise",
+        description: note.trim(),
       });
-      setCompany(updated);
-      toast.success("Statut mis à jour.", "Entreprise actualisée");
-    } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la mise à jour.");
-    }
-  };
-
-  const handleTriggerEnrich = async () => {
-    if (!company) return;
-    setIsEnriching(true);
-    try {
-      const diff = await prospectResearchService.enrichCompany(company.id);
-      setEnrichDiff(diff);
-      setIsEnrichModalOpen(true);
-    } catch (err: any) {
-      toast.error("Impossible d'enrichir cette entreprise.");
+      setActivities((items) => [activity, ...items]);
+      setNote("");
+      setNoteOpen(false);
+      toast.success("Note enregistrée.");
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Note non enregistrée.",
+      );
     } finally {
-      setIsEnriching(false);
+      setSubmitting(false);
     }
   };
 
-  const handleApplyEnrichment = async (updates: Partial<CrmCompany>) => {
-    if (!company) return;
-    const updated = await crmRepository.updateCompany(company.id, updates);
-    setCompany(updated);
-
-    await crmRepository.addActivity({
-      entityType: "company",
-      entityId: company.id,
-      type: "enrichment_applied",
-      title: "Données enrichies via l'IA",
-      description:
-        "Champs mis à jour à partir de l'analyse des sources web publiques officielles.",
-      authorName: "Shongre AI Intelligence",
-      isAiGenerated: true,
-    });
-
-    const acts = await crmRepository.listActivities("company", company.id);
-    setActivities(acts);
-    toast.success(
-      "Données de l'entreprise enrichies avec succès.",
-      "Enrichissement appliqué",
-    );
+  const updateTags = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!account) return;
+    const uniqueTags = new Map<string, string>();
+    for (const rawTag of tagDraft.split(",")) {
+      const tag = rawTag.trim();
+      const key = tag.toLocaleLowerCase("fr");
+      if (tag && !uniqueTags.has(key)) uniqueTags.set(key, tag);
+    }
+    const tags = [...uniqueTags.values()];
+    if (tags.length > 50) {
+      toast.error("Une fiche ne peut pas contenir plus de 50 tags.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const updated = await services.crm.updateAccount(
+        account.id,
+        account.version,
+        { tags },
+      );
+      setAccount(updated);
+      setTagsOpen(false);
+      toast.success("Tags mis à jour.");
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : "Mise à jour impossible.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleAddNote = async (noteText: string) => {
-    if (!company) return;
-    await crmRepository.addActivity({
-      entityType: "company",
-      entityId: company.id,
-      type: "note",
-      title: "Note commerciale",
-      description: noteText,
-      authorName: "Antoine Fabre",
-      authorRole: "Admin",
-    });
-    const updated = await crmRepository.listActivities("company", company.id);
-    setActivities(updated);
-    toast.success("Note enregistrée.");
-  };
-
-  if (loading) {
+  if (loading)
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48 rounded-lg" />
-        <Skeleton className="h-48 rounded-3xl" />
+        <Skeleton className="h-48 rounded-2xl" />
+        <Skeleton className="h-[450px] rounded-2xl" />
       </div>
     );
-  }
-
-  if (!company) {
+  if (!account)
     return (
-      <StatePanel
-        variant="notFound"
-        title="Entreprise introuvable"
-        description={t("admin.crmCompanyDetailPage.cetteEntrepriseNExistePlus")}
-        action={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate("/admin/crm/entreprises")}
-          >
-            {t("admin.crmCompanyDetailPage.retourAuxEntreprises")}
-          </Button>
-        }
-      />
+      <section className="rounded-2xl border border-border-base bg-white p-10 text-center">
+        <Building2 className="mx-auto h-8 w-8 text-stone-400" />
+        <h1 className="mt-3 text-lg font-black">Entreprise introuvable</h1>
+        <Button
+          className="mt-4"
+          size="sm"
+          onClick={() => navigate("/admin/crm/entreprises")}
+        >
+          Retour aux entreprises
+        </Button>
+      </section>
     );
-  }
 
-  const lifecycleInfo = crmService.getLifecycleInfo(company.lifecycle);
+  const openValue = opportunities
+    .filter((opportunity) => opportunity.status === "open")
+    .reduce((sum, opportunity) => sum + opportunity.amount.amountMinor, 0);
+  const currency = opportunities[0]?.amount.currency ?? "EUR";
 
   return (
-    <div className="space-y-6">
-      {/* 1. Back Link */}
-      <div className="flex items-center gap-2">
+    <div className="space-y-4 pb-8">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
         <Link
           to="/admin/crm/entreprises"
-          className="text-xs font-bold text-stone-500 hover:text-stone-900 flex items-center gap-1"
+          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{t("admin.crmCompanyDetailPage.toutesLesEntreprises")}</span>
+          <ArrowLeft className="h-3.5 w-3.5" /> Entreprises
         </Link>
-      </div>
-
-      {/* 2. Company 360 Header */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-stone-800 text-xl shrink-0">
-              {company.name[0]}
-            </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-black text-stone-900">
-                  {company.name}
+        <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-stone-700 bg-stone-900 text-lg font-black">
+              {account.name.slice(0, 2).toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+                  {account.name}
                 </h1>
-                <Badge variant={lifecycleInfo.variant} size="sm">
-                  {lifecycleInfo.label}
-                </Badge>
-                {company.linkedSellerId && (
-                  <Badge variant="pro" size="sm">
-                    {t("admin.crmCompanyDetailPage.vendeurProActif")}
-                  </Badge>
-                )}
-                {company.aiFitScore && (
-                  <span className="text-micro px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 font-bold flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    Fit {company.aiFitScore}%
+                {account.fitScore !== undefined && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-950 px-2 py-1 text-micro font-bold text-violet-300">
+                    <Sparkles className="h-3 w-3" /> Fit {account.fitScore}
                   </span>
                 )}
               </div>
-
-              <div className="flex items-center gap-3 text-xs text-stone-500 flex-wrap">
-                <span>{company.industry}</span>
-                {company.location?.city && (
-                  <>
-                    <span>•</span>
-                    <span>{company.location.city}</span>
-                  </>
+              <p className="mt-1 text-sm text-stone-400">
+                {account.industry ?? "Secteur non renseigné"} ·{" "}
+                {[account.city, account.country].filter(Boolean).join(", ")}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-3 text-micro text-stone-400">
+                {account.website && (
+                  <a
+                    href={account.website}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 hover:text-white"
+                  >
+                    {account.domain ?? account.website}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 )}
-                {company.website && (
-                  <>
-                    <span>•</span>
-                    <a
-                      href={company.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline font-mono flex items-center gap-1"
-                    >
-                      <span>{company.domain || company.website}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </>
+                {account.email && (
+                  <span className="inline-flex items-center gap-1">
+                    <Mail className="h-3 w-3" /> {account.email}
+                  </span>
+                )}
+                {account.phone && (
+                  <span className="inline-flex items-center gap-1">
+                    <Phone className="h-3 w-3" /> {account.phone}
+                  </span>
                 )}
               </div>
+              {account.tags.length > 0 && (
+                <div
+                  className="mt-3 flex flex-wrap gap-1.5"
+                  aria-label="Tags CRM"
+                >
+                  {account.tags.map((tag) => (
+                    <span
+                      key={tag.toLocaleLowerCase("fr")}
+                      className="rounded-full border border-stone-700 bg-stone-900 px-2 py-1 text-micro font-bold text-stone-300"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-2">
+            <label>
+              <span className="sr-only">Cycle de vie</span>
+              <Select
+                aria-label="Cycle de vie de l’entreprise"
+                value={account.lifecycle}
+                onChange={(event) =>
+                  void updateLifecycle(
+                    event.target.value as CrmAccount["lifecycle"],
+                  )
+                }
+                options={lifecycleOptions}
+              />
+            </label>
             <Button
               variant="outline"
               size="sm"
-              onClick={handleTriggerEnrich}
-              disabled={isEnriching}
-              className="font-bold"
+              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              onClick={() => setNoteOpen(true)}
             >
-              <Sparkles className="w-4 h-4 text-purple-600" />
-              <span>{isEnriching ? "Analyse..." : "Enrichir avec l'IA"}</span>
+              <MessageSquareText className="h-4 w-4" /> Note
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              onClick={() => {
+                setTagDraft(account.tags.join(", "));
+                setTagsOpen(true);
+              }}
+            >
+              <Tags className="h-4 w-4" /> Tags
             </Button>
           </div>
         </div>
+      </section>
 
-        {/* Lifecycle Switcher */}
-        <div className="pt-4 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-stone-500">
-              {t("admin.crmCompanyDetailPage.changerDeStatut")}
-            </span>
-            <Select
-              aria-label={t("admin.crmCompanyDetailPage.cycleDeVieDeL")}
-              value={company.lifecycle}
-              onChange={(e) =>
-                handleUpdateLifecycle(e.target.value as CompanyLifecycle)
-              }
-              options={[
-                { value: "prospect", label: "Prospect" },
-                { value: "qualified", label: "Qualifié" },
-                { value: "customer", label: "Client / Pro Shongre" },
-                { value: "partner", label: "Partenaire" },
-                { value: "do_not_contact", label: "Ne pas contacter" },
-              ]}
-            />
-          </div>
-
-          <span className="text-stone-500 text-micro">
-            Responsable : <strong>{company.ownerName || "Non assigné"}</strong>{" "}
-            • Marché : {company.marketCode}
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+            Contacts
           </span>
-        </div>
-      </div>
+          <strong className="mt-1 block text-2xl font-black">
+            {contacts.length}
+          </strong>
+        </article>
+        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+            Opportunités ouvertes
+          </span>
+          <strong className="mt-1 block text-2xl font-black">
+            {opportunities.filter((item) => item.status === "open").length}
+          </strong>
+        </article>
+        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+            Pipeline
+          </span>
+          <strong className="mt-1 block text-2xl font-black text-primary">
+            {money(openValue, currency, currentLocale)}
+          </strong>
+        </article>
+        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+            Marché
+          </span>
+          <strong className="mt-1 block text-2xl font-black">
+            {account.marketCode}
+          </strong>
+        </article>
+      </section>
 
-      {/* 3. AI Summary Section */}
-      {company.aiSummary && (
-        <div className="bg-purple-50/70 border border-purple-200 rounded-3xl p-5 shadow-xs flex items-start gap-3.5 text-xs text-purple-950">
-          <Sparkles className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-bold block">
-              {t("admin.crmCompanyDetailPage.syntheseCommercialeIa")}
-            </span>
-            <p className="text-purple-900 leading-relaxed text-micro">
-              {company.aiSummary}
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+        <div className="flex flex-col gap-2 border-b border-border-subtle px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
+                <Boxes className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-black">Intelligence Shongre</h2>
+              {shongre?.organization?.verified && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-micro font-bold text-emerald-700">
+                  <BadgeCheck className="h-3 w-3" /> Professionnel vérifié
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-micro text-stone-500">
+              Lecture des domaines canoniques ; le CRM ne modifie ni annonces ni
+              facturation.
             </p>
           </div>
+          {shongre?.lastSynchronizedAt && (
+            <time className="text-micro text-stone-500">
+              Synchronisé le{" "}
+              {new Intl.DateTimeFormat(currentLocale, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(shongre.lastSynchronizedAt))}
+            </time>
+          )}
         </div>
-      )}
-
-      {/* 4. Split: Opportunities & Associated Contacts */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 space-y-6">
-          {/* Opportunities Box */}
-          <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <h2 className="text-base font-black text-stone-900">
-                  {t("admin.crmCompanyDetailPage.opportunitesAssociees")}
-                </h2>
-              </div>
-              <Link
-                to="/admin/crm/pipeline"
-                className="text-xs font-bold text-primary hover:underline"
-              >
-                Pipeline
-              </Link>
+        {!shongre?.linked ? (
+          <div className="flex items-start gap-3 p-5 text-xs text-stone-600">
+            <Unplug className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+            <div>
+              <strong className="block text-stone-900">
+                Aucune organisation Shongre liée
+              </strong>
+              Cette fiche reste un compte CRM autonome. Une référence externe
+              vérifiée est requise avant d’afficher des données marketplace.
             </div>
-
-            {opportunities.length === 0 ? (
-              <p className="text-xs text-stone-500 py-4 text-center">
-                {t("admin.crmCompanyDetailPage.aucuneOpportuniteOuverte")}
+          </div>
+        ) : (
+          <div className="grid gap-0 divide-y divide-border-subtle md:grid-cols-3 md:divide-x md:divide-y-0">
+            <article className="p-5">
+              <div className="flex items-center gap-2 text-stone-500">
+                <Building2 className="h-4 w-4" />
+                <span className="text-micro font-bold uppercase tracking-wider">
+                  Profil Pro
+                </span>
+              </div>
+              <strong className="mt-2 block text-sm font-black">
+                {shongre.organization?.name}
+              </strong>
+              <p className="mt-1 text-xs text-stone-500">
+                {shongre.professional.ownerName} ·{" "}
+                {shongre.organization?.marketCode}
               </p>
-            ) : (
-              <div className="divide-y divide-border-subtle">
-                {opportunities.map((opp) => (
-                  <div
-                    key={opp.id}
-                    className="py-3 flex items-center justify-between gap-4 text-xs"
+              <p className="mt-3 text-micro text-stone-500">
+                Email{" "}
+                {shongre.professional.emailVerified ? "vérifié" : "non vérifié"}{" "}
+                · Téléphone{" "}
+                {shongre.professional.phoneVerified ? "vérifié" : "non vérifié"}
+              </p>
+            </article>
+            <article className="p-5">
+              <div className="flex items-center gap-2 text-stone-500">
+                <Boxes className="h-4 w-4" />
+                <span className="text-micro font-bold uppercase tracking-wider">
+                  Annonces
+                </span>
+              </div>
+              <strong className="mt-2 block text-2xl font-black">
+                {shongre.listings.published}
+                <span className="text-xs font-bold text-stone-400">
+                  {" "}
+                  / {shongre.listings.total} publiées
+                </span>
+              </strong>
+              <ul className="mt-2 space-y-1.5">
+                {shongre.listings.recent.slice(0, 2).map((listing) => (
+                  <li
+                    key={listing.id}
+                    className="truncate text-micro text-stone-600"
                   >
-                    <div>
-                      <span className="font-bold text-stone-900 block">
-                        {opp.title}
-                      </span>
-                      <span className="text-micro text-stone-500">
-                        {crmService.getOpportunityTypeLabel(opp.type)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <strong className="font-mono">
-                        {crmService.formatCrmMoney(
-                          opp.estimatedValue,
-                          currentLocale,
-                        )}
-                      </strong>
-                      <Badge
-                        variant={opp.stage === "won" ? "success" : "primary"}
-                        size="sm"
-                      >
-                        {opp.stage}
-                      </Badge>
-                    </div>
-                  </div>
+                    {listing.title}
+                  </li>
                 ))}
+              </ul>
+            </article>
+            <article className="p-5">
+              <div className="flex items-center gap-2 text-stone-500">
+                <CreditCard className="h-4 w-4" />
+                <span className="text-micro font-bold uppercase tracking-wider">
+                  Abonnement
+                </span>
               </div>
-            )}
+              <strong className="mt-2 block text-sm font-black capitalize">
+                {shongre.subscription.status ?? "Aucun abonnement actif"}
+              </strong>
+              {shongre.subscription.productId && (
+                <p className="mt-1 text-xs text-stone-500">
+                  {shongre.subscription.productId.replaceAll("-", " ")}
+                </p>
+              )}
+              {shongre.subscription.currentPeriodEndsAt && (
+                <p className="mt-3 text-micro text-stone-500">
+                  Période jusqu’au{" "}
+                  {new Intl.DateTimeFormat(currentLocale, {
+                    dateStyle: "medium",
+                  }).format(new Date(shongre.subscription.currentPeriodEndsAt))}
+                </p>
+              )}
+            </article>
           </div>
-
-          {/* Activity Timeline */}
-          <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-black text-stone-900">
-              Historique & Notes
-            </h2>
-            <ActivityTimeline
-              activities={activities}
-              onAddNote={handleAddNote}
-            />
+        )}
+        {shongre?.linked && (
+          <div className="flex flex-wrap gap-2 border-t border-border-subtle bg-stone-50 px-5 py-3 text-micro text-stone-500">
+            {[
+              ["Publicité", shongre.advertising.availability],
+              ["Leads", shongre.leads.availability],
+              [
+                "Activité marketplace",
+                shongre.marketplaceActivity.availability,
+              ],
+            ].map(([label, availability]) => (
+              <span
+                key={label}
+                className="rounded-full border border-stone-200 bg-white px-2 py-1"
+              >
+                {label} ·{" "}
+                {availability === "not_connected"
+                  ? "non connecté"
+                  : availability}
+              </span>
+            ))}
           </div>
-        </div>
+        )}
+      </section>
 
-        {/* Right Column: Contacts List */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-stone-700" />
-                <h3 className="text-sm font-black text-stone-900">
-                  Interlocuteurs
-                </h3>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+            <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
+              <div>
+                <h2 className="text-sm font-black">Opportunités</h2>
+                <p className="text-micro text-stone-500">
+                  Pipeline associé à ce compte
+                </p>
               </div>
+              <Button to="/admin/crm/pipeline" variant="outline" size="sm">
+                <Plus className="h-4 w-4" /> Ajouter
+              </Button>
             </div>
-
-            {contacts.length === 0 ? (
-              <p className="text-xs text-stone-500 text-center py-4">
-                {t("admin.crmCompanyDetailPage.aucunContactRattache")}
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                {contacts.map((c) => (
-                  <Link
-                    key={c.id}
-                    to={`/admin/crm/contacts/${c.id}`}
-                    className="p-3 bg-stone-50 rounded-2xl border border-stone-200 block hover:bg-stone-100 transition-colors text-xs space-y-1"
+            <div className="divide-y divide-border-subtle px-5">
+              {opportunities.length === 0 ? (
+                <p className="py-8 text-center text-xs text-stone-500">
+                  Aucune opportunité associée.
+                </p>
+              ) : (
+                opportunities.map((opportunity) => (
+                  <div
+                    key={opportunity.id}
+                    className="flex items-center gap-3 py-3"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-stone-900">
-                        {c.identity.firstName} {c.identity.lastName}
-                      </span>
-                      <Badge variant="neutral" size="sm">
-                        {c.lifecycle}
-                      </Badge>
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
+                      <Target className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to={`/admin/crm/opportunites/${opportunity.id}`}
+                        className="truncate text-xs font-black text-stone-900 hover:text-primary"
+                      >
+                        {opportunity.name}
+                      </Link>
+                      <p className="text-micro text-stone-500">
+                        {opportunity.stageName} · {opportunity.probability}%
+                      </p>
                     </div>
-                    <span className="text-micro text-stone-500 block truncate">
-                      {c.identity.jobTitle || c.identity.email}
+                    <strong className="text-xs font-black tabular-nums">
+                      {money(
+                        opportunity.amount.amountMinor,
+                        opportunity.amount.currency,
+                        currentLocale,
+                      )}
+                    </strong>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+            <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
+              <div>
+                <h2 className="text-sm font-black">Activité récente</h2>
+                <p className="text-micro text-stone-500">
+                  Notes et interactions du compte
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setNoteOpen(true)}
+              >
+                <Plus className="h-4 w-4" /> Note
+              </Button>
+            </div>
+            <div className="divide-y divide-border-subtle px-5">
+              {activities.length === 0 ? (
+                <p className="py-8 text-center text-xs text-stone-500">
+                  Aucune activité enregistrée.
+                </p>
+              ) : (
+                activities.map((activity) => (
+                  <article key={activity.id} className="flex gap-3 py-3">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600">
+                      <MessageSquareText className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <strong className="text-xs font-black">
+                          {activity.title}
+                        </strong>
+                        <time className="text-micro text-stone-500">
+                          {new Intl.DateTimeFormat(currentLocale, {
+                            dateStyle: "medium",
+                          }).format(new Date(activity.occurredAt))}
+                        </time>
+                      </div>
+                      {activity.description && (
+                        <p className="mt-1 text-xs text-stone-600">
+                          {activity.description}
+                        </p>
+                      )}
+                    </div>
+                  </article>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+        <aside className="space-y-4">
+          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+            <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
+              <div>
+                <h2 className="text-sm font-black">Contacts</h2>
+                <p className="text-micro text-stone-500">Personnes liées</p>
+              </div>
+              <UsersRound className="h-4 w-4 text-primary" />
+            </div>
+            <div className="divide-y divide-border-subtle px-4">
+              {contacts.length === 0 ? (
+                <p className="py-7 text-center text-xs text-stone-500">
+                  Aucun contact lié.
+                </p>
+              ) : (
+                contacts.map((contact) => (
+                  <Link
+                    key={contact.id}
+                    to={`/admin/crm/contacts/${contact.id}`}
+                    className="flex items-center gap-3 py-3 hover:text-primary"
+                  >
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">
+                      {contact.firstName[0]}
+                      {contact.lastName[0]}
+                    </span>
+                    <span className="min-w-0">
+                      <strong className="block truncate text-xs">
+                        {contact.fullName}
+                      </strong>
+                      <span className="block truncate text-micro text-stone-500">
+                        {contact.jobTitle ?? contact.email ?? "Contact"}
+                      </span>
                     </span>
                   </Link>
-                ))}
+                ))
+              )}
+            </div>
+          </section>
+          <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+            <h2 className="text-sm font-black">Adresse & qualification</h2>
+            <dl className="mt-3 divide-y divide-border-subtle text-xs">
+              {[
+                ["Adresse", account.address ?? "Non renseignée"],
+                [
+                  "Ville",
+                  [account.postalCode, account.city]
+                    .filter(Boolean)
+                    .join(" ") || "Non renseignée",
+                ],
+                ["Région", account.region ?? "Non renseignée"],
+                ["Pays", account.country],
+                ["Source", account.source.replace("_", " ")],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-3 py-2.5">
+                  <dt className="text-stone-500">{label}</dt>
+                  <dd className="text-right font-bold text-stone-800">
+                    {value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {account.city && (
+              <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-stone-500">
+                <MapPin className="h-3.5 w-3.5" /> Donnée déclarative · aucune
+                géolocalisation implicite
               </div>
             )}
-          </div>
-        </div>
+          </section>
+        </aside>
       </div>
 
-      {/* Enrichment Diff Modal */}
-      {enrichDiff && (
-        <EnrichmentDiffModal
-          isOpen={isEnrichModalOpen}
-          onClose={() => setIsEnrichModalOpen(false)}
-          company={company}
-          diff={enrichDiff}
-          onApply={handleApplyEnrichment}
-        />
-      )}
+      <Modal
+        isOpen={noteOpen}
+        onClose={() => setNoteOpen(false)}
+        title="Ajouter une note entreprise"
+        description="La note est ajoutée à l’historique CRM du compte."
+      >
+        <form onSubmit={addNote} className="space-y-4 text-xs">
+          <FormField label="Note" required>
+            <Textarea
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              rows={5}
+              required
+            />
+          </FormField>
+          <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setNoteOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" size="sm" disabled={submitting}>
+              {submitting ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+      <Modal
+        isOpen={tagsOpen}
+        onClose={() => setTagsOpen(false)}
+        title="Gérer les tags"
+        description="Les tags sont normalisés dans le catalogue du tenant et utilisables dans les filtres CRM."
+      >
+        <form onSubmit={updateTags} className="space-y-4 text-xs">
+          <FormField
+            label="Tags séparés par des virgules"
+            hint="50 tags maximum, 80 caractères par tag."
+          >
+            <Input
+              value={tagDraft}
+              onChange={(event) => setTagDraft(event.target.value)}
+              placeholder="Compte clé, Mobilier, Relance Q4"
+            />
+          </FormField>
+          <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setTagsOpen(false)}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" size="sm" disabled={submitting}>
+              {submitting ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

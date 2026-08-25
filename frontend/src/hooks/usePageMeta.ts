@@ -15,7 +15,7 @@ import { useMarketLocation } from "../app/providers/MarketLocationProvider";
  * (loading, 404) still call this so the previous page's title never lingers.
  */
 export function usePageMeta(meta: PageMeta): void {
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, marketContext } = useMarketLocation();
   const serialised = JSON.stringify({
     ...meta,
     locale: meta.locale || currentLocale,
@@ -23,7 +23,7 @@ export function usePageMeta(meta: PageMeta): void {
 
   useEffect(() => {
     const parsed = JSON.parse(serialised) as PageMeta;
-    applyPageMeta(parsed);
+    applyPageMeta(parsed, marketContext);
 
     const observeMetadata = () => {
       metadataObserver.observe(document.head, { childList: true });
@@ -33,7 +33,7 @@ export function usePageMeta(meta: PageMeta): void {
       // Disconnect while applying: structured data is replaced intentionally
       // and must not recursively trigger this observer.
       metadataObserver.disconnect();
-      applyPageMeta(parsed);
+      applyPageMeta(parsed, marketContext);
       observeMetadata();
     });
     observeMetadata();
@@ -43,12 +43,14 @@ export function usePageMeta(meta: PageMeta): void {
     // transient duplicate created during hydration.
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
-      secondFrame = window.requestAnimationFrame(() => applyPageMeta(parsed));
+      secondFrame = window.requestAnimationFrame(() =>
+        applyPageMeta(parsed, marketContext),
+      );
     });
     return () => {
       metadataObserver.disconnect();
       window.cancelAnimationFrame(firstFrame);
       if (secondFrame) window.cancelAnimationFrame(secondFrame);
     };
-  }, [serialised]);
+  }, [marketContext, serialised]);
 }

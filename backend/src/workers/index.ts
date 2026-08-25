@@ -6,3 +6,7 @@ export * from "./auth/provider-data-deletion-worker.js";
 export * from "./monetization/commercial-configuration-worker.js";
 export * from "./monetization/monetization-lifecycle-worker.js";
 export * from "./finance/revenue-recognition-worker.js";
+export * from "./crm/crm-shongre-sync-worker.js";
+export * from "./marketing/marketing-campaign-worker.js";
+export * from "./marketing/marketing-webhook-worker.js";
+export * from "./marketing/marketing-journey-worker.js";

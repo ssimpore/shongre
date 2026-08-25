@@ -78,6 +78,17 @@ export interface NativeExchangeRecord {
   expiresAt: string;
 }
 
+export interface DomainHandoffRecord {
+  id: string;
+  codeHash: string;
+  userId: string;
+  sourceSessionId: string;
+  sourceCountry: string;
+  targetCountry: string;
+  returnTo: string;
+  expiresAt: string;
+}
+
 export interface PendingOAuthRegistration {
   id: string;
   handleHash: string;
@@ -199,6 +210,8 @@ export interface IAuthRepository {
   consumeOAuthFlow(stateHash: string): Promise<OAuthFlowRecord | null>;
   createNativeExchange(input: Omit<NativeExchangeRecord, "id">): Promise<void>;
   consumeNativeExchange(codeHash: string): Promise<NativeExchangeRecord | null>;
+  createDomainHandoff(input: Omit<DomainHandoffRecord, "id">): Promise<void>;
+  consumeDomainHandoff(codeHash: string): Promise<DomainHandoffRecord | null>;
   createPendingRegistration(
     input: Omit<PendingOAuthRegistration, "id">,
   ): Promise<void>;
@@ -295,6 +308,19 @@ function mapExchange(row: any): NativeExchangeRecord {
   };
 }
 
+function mapDomainHandoff(row: any): DomainHandoffRecord {
+  return {
+    id: row.id,
+    codeHash: row.code_hash,
+    userId: row.user_id,
+    sourceSessionId: row.source_session_id,
+    sourceCountry: row.source_country,
+    targetCountry: row.target_country,
+    returnTo: row.return_to,
+    expiresAt: row.expires_at,
+  };
+}
+
 function mapPending(row: any): PendingOAuthRegistration {
   return {
     id: row.id,
@@ -327,6 +353,7 @@ export class DemoAuthRepository implements IAuthRepository {
   private sessions = new Map<string, AuthSessionRecord>();
   private flows = new Map<string, OAuthFlowRecord>();
   private exchanges = new Map<string, NativeExchangeRecord>();
+  private domainHandoffs = new Map<string, DomainHandoffRecord>();
   private pendingRegistrations = new Map<string, PendingOAuthRegistration>();
   private actionTokens = new Map<string, AuthActionTokenRecord>();
   private providerDeletionRequests = new Map<
@@ -581,6 +608,21 @@ export class DemoAuthRepository implements IAuthRepository {
     this.exchanges.delete(codeHash);
     if (!exchange || Date.parse(exchange.expiresAt) <= Date.now()) return null;
     return exchange;
+  }
+
+  async createDomainHandoff(
+    input: Omit<DomainHandoffRecord, "id">,
+  ): Promise<void> {
+    this.domainHandoffs.set(input.codeHash, { ...input, id: randomUUID() });
+  }
+
+  async consumeDomainHandoff(
+    codeHash: string,
+  ): Promise<DomainHandoffRecord | null> {
+    const handoff = this.domainHandoffs.get(codeHash);
+    this.domainHandoffs.delete(codeHash);
+    if (!handoff || Date.parse(handoff.expiresAt) <= Date.now()) return null;
+    return handoff;
   }
 
   async createPendingRegistration(
@@ -1137,6 +1179,32 @@ export class PostgresAuthRepository implements IAuthRepository {
     );
     if (error) throw new Error(`native exchange failed: ${error.message}`);
     return data?.[0] ? mapExchange(data[0]) : null;
+  }
+
+  async createDomainHandoff(
+    input: Omit<DomainHandoffRecord, "id">,
+  ): Promise<void> {
+    const { error } = await this.client().from("auth_domain_handoffs").insert({
+      code_hash: input.codeHash,
+      user_id: input.userId,
+      source_session_id: input.sourceSessionId,
+      source_country: input.sourceCountry,
+      target_country: input.targetCountry,
+      return_to: input.returnTo,
+      expires_at: input.expiresAt,
+    });
+    if (error) throw new Error(`domain handoff creation failed: ${error.message}`);
+  }
+
+  async consumeDomainHandoff(
+    codeHash: string,
+  ): Promise<DomainHandoffRecord | null> {
+    const { data, error } = await this.client().rpc(
+      "consume_auth_domain_handoff",
+      { p_code_hash: codeHash },
+    );
+    if (error) throw new Error(`domain handoff exchange failed: ${error.message}`);
+    return data?.[0] ? mapDomainHandoff(data[0]) : null;
   }
 
   async createPendingRegistration(

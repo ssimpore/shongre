@@ -265,7 +265,7 @@ export function createHttpServer() {
       );
       res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Request-Id",
+        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id",
       );
       res.setHeader("Referrer-Policy", "no-referrer");
       res.setHeader("X-Content-Type-Options", "nosniff");

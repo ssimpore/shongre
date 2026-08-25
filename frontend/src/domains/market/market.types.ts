@@ -3,7 +3,15 @@
  */
 
 export type MarketStatus =
-  "draft" | "configured" | "coming_soon" | "active" | "paused" | "archived";
+  | "draft"
+  | "configured"
+  | "coming_soon"
+  | "private_beta"
+  | "beta"
+  | "active"
+  | "paused"
+  | "disabled"
+  | "archived";
 
 export type SettingSource = "BASELINE" | "LOCAL" | "PLATFORM_DEFAULT";
 
@@ -235,6 +243,12 @@ export interface Market {
   currency: string;
   currencySymbol: string;
   timezone: string;
+  routing?: {
+    primaryDomain: string;
+    basePath: string;
+    gatewayVisible: boolean;
+    seoIndexable: boolean;
+  };
 
   geography: MarketGeography;
   overrides: MarketOverrides; // Delta overrides relative to France

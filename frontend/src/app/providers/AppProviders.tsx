@@ -10,6 +10,7 @@ import { I18nProvider } from "../../i18n/I18nProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { DataModeProvider } from "./DataModeProvider";
 import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
+import type { MarketContext } from "@shongre/contracts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,16 +22,17 @@ const queryClient = new QueryClient({
   },
 });
 
-export const AppProviders: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AppProviders: React.FC<{
+  children: React.ReactNode;
+  marketContext?: MarketContext;
+}> = ({ children, marketContext }) => {
   return (
     <ErrorBoundary>
       <DataModeProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ConsentProvider>
-              <MarketLocationProvider>
+              <MarketLocationProvider initialMarketContext={marketContext}>
                 <I18nProvider>
                   <ToastProvider>
                     <NotificationProvider>

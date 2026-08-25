@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Drawer } from "../../../../design-system/primitives/Modal";
 import { Badge } from "../../../../design-system/primitives/Badge";
-import { ProspectResearchCandidate } from "../../../../domains/crm/crm.types";
+import type { ProspectResearchCandidate } from "../../../../api/contracts/crm-prospecting.contract";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { ProgressBar } from "../../../../design-system/primitives/ProgressBar";
 

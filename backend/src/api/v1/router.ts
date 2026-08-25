@@ -28,10 +28,17 @@ import {
   commissionService,
   complianceService,
   providerControlPlaneService,
+  providerConnectionService,
   aiService,
   supportService,
   featureFlagService,
   moderationService,
+  crmService,
+  crmShongreService,
+  marketingService,
+  marketingOperationsService,
+  marketingTrackingService,
+  marketingProviderWebhookService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -64,6 +71,10 @@ import type {
   TrendingTopicOverride,
 } from "../../modules/trending/trending.types.js";
 import { OPENAPI_OPERATIONS } from "../../generated/openapi-manifest.js";
+import {
+  requireOpenMarketplace,
+  resolveApiRequestMarket,
+} from "../../modules/markets/request-market-context.js";
 
 /**
  * Every route declares who may call it.
@@ -93,6 +104,7 @@ export interface RouteContext {
   body: any;
   principal: Principal;
   query: URLSearchParams;
+  marketCode: string | null;
 }
 
 export type RouteHandler = (ctx: RouteContext) => Promise<any>;
@@ -227,6 +239,40 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     this.addRoute("GET", "/auth/me", PUBLIC, async ({ principal }) =>
       authService.getCurrentUser(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/auth/domain-handoff/start",
+      AUTHENTICATED,
+      async ({ principal, body, marketCode }) => {
+        if (!marketCode || marketCode !== String(body?.sourceCountry || "").toUpperCase()) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le marché source ne correspond pas à la session courante.",
+          });
+        }
+        return authService.beginDomainHandoff(principal, body || {});
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/auth/domain-handoff/exchange",
+      PUBLIC,
+      async ({ body, req, res, marketCode }) => {
+        const targetCountry = String(body?.targetCountry || "").toUpperCase();
+        if (!marketCode || marketCode !== targetCountry) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le code de transfert ne cible pas ce marché.",
+          });
+        }
+        const result = await authService.exchangeDomainHandoff(
+          body || {},
+          requestMetadata(req),
+        );
+        setSessionCookies(res, result.tokens);
+        return { user: result.user, returnTo: result.returnTo };
+      },
     );
     this.addRoute("POST", "/auth/login", PUBLIC, async ({ body, req, res }) => {
       const result = await authService.login(body, requestMetadata(req));
@@ -657,19 +703,44 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // LISTINGS & SEARCH ROUTES
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/listings", PUBLIC, async ({ query }) => {
-      const params = Object.fromEntries(query.entries());
+    this.addRoute("GET", "/listings", PUBLIC, async ({ query, marketCode }) => {
+      const resolved =
+        marketCode || query.get("marketCode") || query.get("country") || "FR";
+      requireOpenMarketplace(resolved);
+      const params = {
+        ...Object.fromEntries(query.entries()),
+        marketCode: resolved,
+      };
       return listingsService.getListings(params as any);
     });
-    this.addRoute("GET", "/listings/:id", PUBLIC, async ({ params }) =>
-      listingsService.getListingById(params.id),
+    this.addRoute(
+      "GET",
+      "/listings/:id",
+      PUBLIC,
+      async ({ params, marketCode }) => {
+        const listing = await listingsService.getListingById(params.id);
+        return !listing || (marketCode && listing.marketCode !== marketCode)
+          ? null
+          : listing;
+      },
     );
-    this.addRoute("POST", "/listings/search", PUBLIC, async ({ body }) =>
-      listingsService.searchListings(body || {}),
+    this.addRoute(
+      "POST",
+      "/listings/search",
+      PUBLIC,
+      async ({ body, marketCode }) => {
+        const resolved = marketCode || body?.marketCode || "FR";
+        requireOpenMarketplace(resolved);
+        return listingsService.searchListings({
+          ...(body || {}),
+          marketCode: resolved,
+        });
+      },
     );
-    this.addRoute("GET", "/home/trending", PUBLIC, async ({ query }) =>
+    this.addRoute("GET", "/home/trending", PUBLIC, async ({ query, marketCode }) =>
       trendingService.getSection({
-        marketCode: query.get("market") || query.get("country") || "FR",
+        marketCode:
+          marketCode || query.get("market") || query.get("country") || "FR",
         region: query.get("region") || undefined,
         city: query.get("city") || undefined,
         limit: query.get("limit") ? Number(query.get("limit")) : undefined,
@@ -1789,6 +1860,17 @@ export class ApiV1Router {
       async ({ params }) =>
         marketsService.getEffectiveMarketConfig(params.code),
     );
+    this.addRoute(
+      "PATCH",
+      "/admin/countries/:code",
+      permission("market.manage"),
+      async ({ principal, params, body }) =>
+        marketsService.updateCountryConfiguration(
+          params.code,
+          body,
+          principal.userId,
+        ),
+    );
 
     // --------------------------------------------------------------------------
     // ORDERS & PAYMENT LIFECYCLE ROUTES
@@ -2858,6 +2940,616 @@ export class ApiV1Router {
     );
 
     // --------------------------------------------------------------------------
+    // MARKETING — generic CRM-native audience and campaign bounded domain.
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "POST",
+      "/marketing/public/subscriptions",
+      PUBLIC,
+      async ({ body }) => marketingService.subscribePublic(body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/public/confirm",
+      PUBLIC,
+      async ({ body }) => marketingService.confirmPublic(body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/public/preferences",
+      PUBLIC,
+      async ({ query }) => marketingService.getPublicPreferences(query.get("token") ?? ""),
+    );
+    this.addRoute(
+      "PUT",
+      "/marketing/public/preferences",
+      PUBLIC,
+      async ({ body }) => marketingService.updatePublicPreferences(body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/public/unsubscribe",
+      PUBLIC,
+      async ({ body }) => marketingService.unsubscribePublic(body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/track/open",
+      PUBLIC,
+      async ({ query, res }) => {
+        await marketingTrackingService.record(query.get("token") ?? "", "OPEN");
+        const pixel = Buffer.from("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", "base64");
+        res.writeHead(200, { "Content-Type": "image/gif", "Content-Length": pixel.length, "Cache-Control": "no-store, private" });
+        res.end(pixel);
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/track/click",
+      PUBLIC,
+      async ({ query, res }) => {
+        const result = await marketingTrackingService.record(query.get("token") ?? "", "CLICK");
+        if (!result.targetUrl) throw new AppError({ code: "NOT_FOUND", message: "Lien de suivi introuvable." });
+        res.writeHead(302, { Location: result.targetUrl, "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer" });
+        res.end();
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/provider-webhooks/:connectionId",
+      PUBLIC,
+      async ({ req, params, body }) => marketingProviderWebhookService.receive(
+        params.connectionId,
+        body,
+        String((req as any).rawBody || ""),
+        req.headers,
+      ),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/account/subscription",
+      AUTHENTICATED,
+      async ({ principal, query }) => marketingService.getAccountSubscription(principal, query.get("marketCode") ?? undefined),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/account/subscription",
+      AUTHENTICATED,
+      async ({ principal, body }) => marketingService.subscribeAccount(principal, body),
+    );
+    this.addRoute(
+      "PUT",
+      "/marketing/account/preferences",
+      AUTHENTICATED,
+      async ({ principal, body }) => marketingService.updateAccountPreferences(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/account/unsubscribe",
+      AUTHENTICATED,
+      async ({ principal, body }) => marketingService.unsubscribeAccount(principal, body?.marketCode),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/dashboard",
+      permission("marketing.dashboard.read"),
+      async ({ principal }) => marketingService.dashboard(principal),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/profiles",
+      permission("marketing.profiles.read"),
+      async ({ principal, query }) =>
+        marketingService.listProfiles(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+          status: query.get("status") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/profiles",
+      permission("marketing.profiles.manage"),
+      async ({ principal, body }) => marketingService.createProfile(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/profiles/:profileId/confirm",
+      permission("marketing.profiles.manage"),
+      async ({ principal, params }) => marketingService.confirmProfile(principal, params.profileId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/profiles/:profileId/unsubscribe",
+      permission("marketing.profiles.manage"),
+      async ({ principal, params }) => marketingService.unsubscribeProfile(principal, params.profileId),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/lists",
+      permission("marketing.lists.read"),
+      async ({ principal }) => marketingService.listLists(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/lists",
+      permission("marketing.lists.manage"),
+      async ({ principal, body }) => marketingService.createList(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/lists/:listId/members/:profileId",
+      permission("marketing.lists.manage"),
+      async ({ principal, params }) => marketingService.addListMember(principal, params.listId, params.profileId),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/segments",
+      permission("marketing.segments.read"),
+      async ({ principal }) => marketingService.listSegments(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/segments",
+      permission("marketing.segments.manage"),
+      async ({ principal, body }) => marketingService.createSegment(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/templates",
+      permission("marketing.templates.read"),
+      async ({ principal }) => marketingService.listTemplates(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/templates",
+      permission("marketing.templates.manage"),
+      async ({ principal, body }) => marketingService.createTemplate(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/campaigns",
+      permission("marketing.campaigns.read"),
+      async ({ principal }) => marketingService.listCampaigns(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/audience-estimate",
+      permission("marketing.campaigns.read"),
+      async ({ principal, body }) => marketingService.estimateAudience(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/ai/campaign-draft",
+      permission("marketing.campaigns.create"),
+      async ({ principal, body }) => marketingService.generateCampaignDraft(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns",
+      permission("marketing.campaigns.create"),
+      async ({ principal, body }) => marketingService.createCampaign(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/campaigns/:campaignId",
+      permission("marketing.campaigns.read"),
+      async ({ principal, params }) => marketingService.getCampaign(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/preflight",
+      permission("marketing.campaigns.read"),
+      async ({ principal, params }) => marketingService.preflight(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/test-send",
+      permission("marketing.campaigns.send"),
+      async ({ principal, params, body }) => marketingService.testSend(principal, params.campaignId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/send",
+      permission("marketing.campaigns.send"),
+      async ({ principal, params }) => marketingService.send(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/schedule",
+      permission("marketing.campaigns.send"),
+      async ({ principal, params, body }) => marketingService.schedule(principal, params.campaignId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/pause",
+      permission("marketing.campaigns.pause"),
+      async ({ principal, params }) => marketingService.pause(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/resume",
+      permission("marketing.campaigns.pause"),
+      async ({ principal, params }) => marketingService.resume(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/review",
+      permission("marketing.campaigns.update"),
+      async ({ principal, params }) => marketingService.submitForReview(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/approve",
+      permission("marketing.campaigns.approve"),
+      async ({ principal, params }) => marketingService.approve(principal, params.campaignId),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/select-winner",
+      permission("marketing.campaigns.update"),
+      async ({ principal, params, body }) => marketingService.selectExperimentWinner(principal, params.campaignId, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/campaigns/:campaignId/cancel",
+      permission("marketing.campaigns.cancel"),
+      async ({ principal, params }) => marketingService.cancel(principal, params.campaignId),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/suppressions",
+      permission("marketing.compliance.read"),
+      async ({ principal }) => marketingService.listSuppressions(principal),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/analytics",
+      permission("marketing.analytics.read"),
+      async ({ principal, query }) => marketingOperationsService.analytics(principal, query.get("campaignId") ?? undefined),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/conversions",
+      permission("marketing.campaigns.update"),
+      async ({ principal, body }) => marketingOperationsService.recordConversion(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/usage",
+      permission("marketing.dashboard.read"),
+      async ({ principal }) => marketingOperationsService.usage(principal),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/journeys",
+      permission("marketing.automation.read"),
+      async ({ principal }) => marketingOperationsService.listJourneys(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/journeys",
+      permission("marketing.automation.manage"),
+      async ({ principal, body }) => marketingOperationsService.createJourney(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/journeys/:journeyId/activate",
+      permission("marketing.automation.manage"),
+      async ({ principal, params }) => marketingOperationsService.setJourneyStatus(principal, params.journeyId, "ACTIVE"),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/journeys/:journeyId/pause",
+      permission("marketing.automation.manage"),
+      async ({ principal, params }) => marketingOperationsService.setJourneyStatus(principal, params.journeyId, "PAUSED"),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/journeys/events",
+      permission("marketing.automation.manage"),
+      async ({ principal, body }) => marketingOperationsService.emitJourneyEvent(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/journey-executions",
+      permission("marketing.automation.read"),
+      async ({ principal, query }) => marketingOperationsService.listJourneyExecutions(principal, query.get("journeyId") ?? undefined),
+    );
+    this.addRoute(
+      "GET",
+      "/marketing/webhooks",
+      permission("marketing.settings.manage"),
+      async ({ principal }) => marketingOperationsService.listWebhookSubscriptions(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/webhooks",
+      permission("marketing.settings.manage"),
+      async ({ principal, body }) => marketingOperationsService.createWebhookSubscription(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/marketing/ai/assist",
+      permission("marketing.campaigns.create"),
+      async ({ principal, body }) => marketingOperationsService.aiAssist(principal, body),
+    );
+
+    // --------------------------------------------------------------------------
+    // CRM ROUTES — tenant context is derived by CrmService from the principal.
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/crm/dashboard",
+      permission("crm.dashboard.read"),
+      async ({ principal }) => crmService.dashboard(principal),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/accounts",
+      permission("crm.accounts.read"),
+      async ({ principal, query }) =>
+        crmService.listAccounts(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/accounts",
+      permission("crm.accounts.create"),
+      async ({ principal, body }) => crmService.createAccount(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/account-duplicates/check",
+      permission("crm.accounts.read"),
+      async ({ principal, body }) =>
+        crmService.findAccountDuplicates(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/accounts/:accountId",
+      permission("crm.accounts.read"),
+      async ({ principal, params }) =>
+        crmService.getAccount(principal, params.accountId),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/accounts/:accountId/shongre",
+      permission("crm.accounts.read"),
+      async ({ principal, params }) =>
+        crmShongreService.accountIntelligence(principal, params.accountId),
+    );
+    this.addRoute(
+      "PATCH",
+      "/crm/accounts/:accountId",
+      permission("crm.accounts.update"),
+      async ({ principal, params, body }) =>
+        crmService.updateAccount(principal, params.accountId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/contacts",
+      permission("crm.contacts.read"),
+      async ({ principal, query }) =>
+        crmService.listContacts(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/contacts",
+      permission("crm.contacts.create"),
+      async ({ principal, body }) => crmService.createContact(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/contacts/:contactId",
+      permission("crm.contacts.read"),
+      async ({ principal, params }) =>
+        crmService.getContact(principal, params.contactId),
+    );
+    this.addRoute(
+      "PATCH",
+      "/crm/contacts/:contactId",
+      permission("crm.contacts.update"),
+      async ({ principal, params, body }) =>
+        crmService.updateContact(principal, params.contactId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/pipelines",
+      permission("crm.pipelines.read"),
+      async ({ principal }) => crmService.listPipelines(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/pipelines",
+      permission("crm.pipelines.manage"),
+      async ({ principal, body }) => crmService.createPipeline(principal, body),
+    );
+    this.addRoute(
+      "PATCH",
+      "/crm/pipelines/:pipelineId",
+      permission("crm.pipelines.manage"),
+      async ({ principal, params, body }) =>
+        crmService.updatePipeline(principal, params.pipelineId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/opportunities",
+      permission("crm.opportunities.read"),
+      async ({ principal, query }) =>
+        crmService.listOpportunities(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/opportunities",
+      permission("crm.opportunities.create"),
+      async ({ principal, body }) =>
+        crmService.createOpportunity(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/opportunities/:opportunityId",
+      permission("crm.opportunities.read"),
+      async ({ principal, params }) =>
+        crmService.getOpportunity(principal, params.opportunityId),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/opportunities/:opportunityId/transition",
+      permission("crm.opportunities.transition"),
+      async ({ principal, params, body }) =>
+        crmService.transitionOpportunity(principal, params.opportunityId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/tasks",
+      permission("crm.tasks.read"),
+      async ({ principal, query }) =>
+        crmService.listTasks(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/tasks",
+      permission("crm.tasks.create"),
+      async ({ principal, body }) => crmService.createTask(principal, body),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/tasks/:taskId/complete",
+      permission("crm.tasks.complete"),
+      async ({ principal, params, body }) =>
+        crmService.completeTask(principal, params.taskId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/activities",
+      permission("crm.activities.read"),
+      async ({ principal, query }) =>
+        crmService.listActivities(
+          principal,
+          query.get("entityType") ?? "",
+          query.get("entityId") ?? "",
+          query.get("limit") ?? undefined,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/activities",
+      permission("crm.activities.create"),
+      async ({ principal, body }) => crmService.addActivity(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/products",
+      permission("crm.products.read"),
+      async ({ principal, query }) =>
+        crmService.listProducts(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/products",
+      permission("crm.products.manage"),
+      async ({ principal, body }) => crmService.createProduct(principal, body),
+    );
+    this.addRoute(
+      "PATCH",
+      "/crm/products/:productId",
+      permission("crm.products.manage"),
+      async ({ principal, params, body }) =>
+        crmService.updateProduct(principal, params.productId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/quotes",
+      permission("crm.quotes.read"),
+      async ({ principal, query }) =>
+        crmService.listQuotes(principal, {
+          limit: query.get("limit") ?? undefined,
+          cursor: query.get("cursor") ?? undefined,
+          query: query.get("query") ?? undefined,
+          opportunityId: query.get("opportunityId") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/quotes",
+      permission("crm.quotes.create"),
+      async ({ principal, body }) => crmService.createQuote(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/custom-fields",
+      permission("crm.custom_fields.read"),
+      async ({ principal, query }) =>
+        crmService.listCustomFields(
+          principal,
+          query.get("entityType") ?? undefined,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/custom-fields",
+      permission("crm.custom_fields.manage"),
+      async ({ principal, body }) =>
+        crmService.createCustomField(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/saved-views",
+      permission("crm.access"),
+      async ({ principal, query }) =>
+        crmService.listSavedViews(
+          principal,
+          query.get("entityType") ?? undefined,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/saved-views",
+      permission("crm.access"),
+      async ({ principal, body }) =>
+        crmService.createSavedView(principal, body),
+    );
+    this.addRoute(
+      "PUT",
+      "/crm/saved-views/:savedViewId",
+      permission("crm.access"),
+      async ({ principal, params, body }) =>
+        crmService.updateSavedView(principal, params.savedViewId, body),
+    );
+    this.addRoute(
+      "DELETE",
+      "/crm/saved-views/:savedViewId",
+      permission("crm.access"),
+      async ({ principal, params, query }) =>
+        crmService.deleteSavedView(
+          principal,
+          params.savedViewId,
+          query.get("expectedVersion"),
+        ),
+    );
+
+    // --------------------------------------------------------------------------
     // WORKSPACE & SELLER DASHBOARD ROUTES
     // --------------------------------------------------------------------------
     this.addRoute(
@@ -2887,6 +3579,31 @@ export class ApiV1Router {
       "/admin/providers/control-plane",
       permission("provider.read"),
       async () => providerControlPlaneService.getSnapshot(),
+    );
+    this.addRoute(
+      "GET",
+      "/provider-connections",
+      permission("provider.configuration.read"),
+      async ({ principal }) =>
+        providerConnectionService.listForPrincipal(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/provider-connections",
+      permission("provider.configuration.manage"),
+      async ({ principal, body }) =>
+        providerConnectionService.createForPrincipal(principal, body),
+    );
+    this.addRoute(
+      "PUT",
+      "/provider-connections/:connectionId/credential",
+      permission("provider.credentials.manage"),
+      async ({ principal, params, body }) =>
+        providerConnectionService.rotateCredentialForPrincipal(
+          principal,
+          params.connectionId,
+          body,
+        ),
     );
     this.addRoute(
       "POST",
@@ -3444,6 +4161,11 @@ export class ApiV1Router {
             });
           }
         }
+        const marketCode = resolveApiRequestMarket({
+          req,
+          query: parsedUrl.searchParams,
+          body,
+        });
         // Identity is resolved once per request, before the guard runs, so the
         // guard and the handler always agree on who the caller is.
         const principal = await this.resolvePrincipal(req);
@@ -3460,6 +4182,7 @@ export class ApiV1Router {
           pathname === "/auth/login" ||
           pathname === "/auth/register" ||
           pathname === "/auth/refresh" ||
+          pathname === "/auth/domain-handoff/exchange" ||
           pathname === "/auth/password/forgot" ||
           pathname === "/auth/password/reset" ||
           pathname === "/auth/verify-email" ||
@@ -3484,6 +4207,7 @@ export class ApiV1Router {
           body,
           principal,
           query: parsedUrl.searchParams,
+          marketCode,
         });
 
         if (res.writableEnded) return;

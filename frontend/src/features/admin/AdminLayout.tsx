@@ -172,10 +172,10 @@ export const AdminLayout: React.FC = () => {
       show: canAccessRoute("adminProviders"),
     },
     {
-      to: "/admin/newsletter",
-      label: "Newsletter & Campagnes",
+      to: "/admin/marketing",
+      label: "Marketing & Newsletter",
       icon: Mail,
-      show: canAccessRoute("adminNewsletter"),
+      show: canAccessRoute("adminMarketing"),
     },
     {
       to: "/admin/taxonomie",

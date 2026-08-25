@@ -23,6 +23,7 @@ export interface AppConfig {
   host: string;
   port: number;
   frontendUrl: string;
+  publicApiUrl: string;
   apiPrefix: typeof SHONGRE_API_PREFIX;
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
@@ -34,6 +35,8 @@ export interface AppConfig {
   databaseUrl?: string;
   jwtSecret: string;
   mfaEncryptionKey: string;
+  providerCredentialEncryptionKeyBase64: string;
+  providerCredentialKeyVersion: string;
   authTokenTtlSeconds: number;
   authRefreshTokenTtlSeconds: number;
   authRecentAuthenticationSeconds: number;
@@ -291,6 +294,7 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
   };
 
   requireHttpsUrl("FRONTEND_URL", process.env.FRONTEND_URL || "");
+  requireHttpsUrl("PUBLIC_API_URL", candidate.publicApiUrl);
   if (!candidate.corsOrigin || candidate.corsOrigin === "*")
     missing.push("CORS_ORIGIN (explicit origins)");
   else {
@@ -335,6 +339,17 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
     missing.push("HANDOVER_PIN_PEPPER (at least 32 characters)");
   if (!process.env.MFA_ENCRYPTION_KEY || candidate.mfaEncryptionKey.length < 32)
     missing.push("MFA_ENCRYPTION_KEY (at least 32 characters)");
+  if (
+    !process.env.PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 ||
+    Buffer.from(candidate.providerCredentialEncryptionKeyBase64, "base64")
+      .length !== 32
+  ) {
+    missing.push(
+      "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 (32 bytes, base64)",
+    );
+  }
+  if (!candidate.providerCredentialKeyVersion)
+    missing.push("PROVIDER_CREDENTIAL_KEY_VERSION");
 
   if (missing.length > 0) {
     throw new Error(
@@ -369,6 +384,11 @@ const candidateConfig: AppConfig = {
   host: requiredRuntimeValue("BACKEND_HOST"),
   port: requiredRuntimePort(),
   frontendUrl: process.env.FRONTEND_URL || process.env.CORS_ORIGIN || "",
+  publicApiUrl:
+    process.env.PUBLIC_API_URL ||
+    process.env.FRONTEND_URL ||
+    process.env.CORS_ORIGIN ||
+    "",
   apiPrefix: SHONGRE_API_PREFIX,
   maxRequestBodyBytes: positiveInteger("MAX_REQUEST_BODY_BYTES", 1_048_576),
   requestTimeoutMs: positiveInteger("REQUEST_TIMEOUT_MS", 30_000),
@@ -383,6 +403,11 @@ const candidateConfig: AppConfig = {
   mfaEncryptionKey:
     process.env.MFA_ENCRYPTION_KEY ||
     "shongre-development-mfa-encryption-key-not-for-production",
+  providerCredentialEncryptionKeyBase64:
+    process.env.PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 ||
+    Buffer.from("shongre-provider-dev-key-32byte!", "utf8").toString("base64"),
+  providerCredentialKeyVersion:
+    process.env.PROVIDER_CREDENTIAL_KEY_VERSION || "development-v1",
   // Access tokens are deliberately short lived. AUTH_TOKEN_TTL_SECONDS remains
   // accepted as a backwards-compatible alias for existing deployments.
   authTokenTtlSeconds: parseInt(

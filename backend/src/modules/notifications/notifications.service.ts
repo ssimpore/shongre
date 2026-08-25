@@ -9,6 +9,7 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { getCountryConfig } from "@shongre/contracts";
 
 export class NotificationsService {
   constructor(
@@ -119,6 +120,7 @@ export class NotificationsService {
     body: string,
     linkUrl?: string,
     requestedCategory?: NotificationCategory,
+    marketCode = "FR",
   ): Promise<NotificationItem> {
     if (
       !userId ||
@@ -134,10 +136,17 @@ export class NotificationsService {
         message: "Le contenu de la notification est invalide.",
       });
     }
-    if (linkUrl && !linkUrl.startsWith("/")) {
+    if (linkUrl && (!linkUrl.startsWith("/") || linkUrl.startsWith("//"))) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le lien de notification doit rester interne à Shongre.",
+      });
+    }
+    const country = getCountryConfig(marketCode);
+    if (!country?.enabled) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le marché de notification est invalide.",
       });
     }
     const category = requestedCategory || this.resolveCategory(type);
@@ -150,6 +159,7 @@ export class NotificationsService {
       category,
       title: title.trim(),
       body: body.trim(),
+      marketCode: country.code,
       linkUrl,
       isRead: false,
       inAppVisible: categoryPreference.inApp,

@@ -27,6 +27,8 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { userRepository } from "../../../repositories/user.repository";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { publicRouteUrl } from "../../../domains/market/market-routing";
 
 export interface SellerProfileHeaderProps {
   seller: UserProfile;
@@ -49,6 +51,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const { marketContext, activeMarket } = useMarketLocation();
   const toast = useToast();
 
   const [isFollowing, setIsFollowing] = useState(() =>
@@ -86,7 +89,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   };
 
   const handleShare = async () => {
-    const shareUrl = window.location.href;
+    const shareUrl = publicRouteUrl({
+      route: `/profil/${encodeURIComponent(seller.id)}`,
+      countryCode: marketContext?.countryCode ?? activeMarket.code,
+    });
     const shareData = {
       title: `${displayName} sur Shongre`,
       text: isPro

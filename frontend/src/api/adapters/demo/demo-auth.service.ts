@@ -7,6 +7,9 @@ import {
   type SocialAuthStartInput,
   type SocialAuthProvider,
   type MfaSetupView,
+  type DomainHandoffStartInput,
+  type DomainHandoffStartResult,
+  type DomainHandoffExchangeResult,
 } from "../../contracts/auth.contract";
 import { userRepository } from "../../../repositories/user.repository";
 import { storageService } from "../../../services/storage.service";
@@ -53,6 +56,26 @@ function currentUserOrThrow(): UserProfile {
 
 export class DemoAuthService implements AuthServiceContract {
   private pendingMfaSetup: MfaSetupView | null = null;
+
+  async beginDomainHandoff(
+    input: DomainHandoffStartInput,
+  ): Promise<DomainHandoffStartResult> {
+    await simulateNetworkDelay();
+    currentUserOrThrow();
+    const params = new URLSearchParams({
+      code: `demo-${input.sourceCountry}-${input.targetCountry}`,
+    });
+    return {
+      authorizationUrl: `/auth/domain-handoff?${params.toString()}`,
+      expiresAt: new Date(Date.now() + 120_000).toISOString(),
+    };
+  }
+
+  async exchangeDomainHandoff(): Promise<DomainHandoffExchangeResult> {
+    await simulateNetworkDelay();
+    return { user: currentUserOrThrow(), returnTo: "/" };
+  }
+
   async getCurrentUser(): Promise<UserProfile | null> {
     await simulateNetworkDelay();
     return storageService.getCurrentUser();

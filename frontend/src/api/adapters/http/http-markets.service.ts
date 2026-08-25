@@ -1,6 +1,7 @@
 import { MarketsServiceContract } from "../../contracts/markets.contract";
 import { httpClient } from "./http-client";
 import { CountryMarketDefinition } from "../../../configuration/market.config";
+import type { CountryConfig } from "@shongre/contracts";
 
 export class HttpMarketsService implements MarketsServiceContract {
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
@@ -26,6 +27,16 @@ export class HttpMarketsService implements MarketsServiceContract {
   ): Promise<CountryMarketDefinition> {
     return httpClient.get<CountryMarketDefinition>(
       `/markets/effective/${code}`,
+    );
+  }
+
+  updateCountryConfiguration(
+    code: string,
+    patch: Partial<CountryConfig>,
+  ): Promise<CountryConfig> {
+    return httpClient.patch(
+      `/admin/countries/${encodeURIComponent(code)}`,
+      patch,
     );
   }
 }
