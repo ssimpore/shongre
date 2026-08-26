@@ -142,4 +142,23 @@ describe("DemoSearchService unified discovery", () => {
       new DemoSearchService("search_error").search({ marketCode: "FR" }),
     ).rejects.toThrow("Deterministic demo search failure");
   });
+
+  it("returns an explicit Belgian sample without leaking France-only rows", async () => {
+    const result = await new DemoSearchService().search({
+      marketCode: "BE",
+      query: "vélo",
+      limit: 50,
+    });
+    expect(result.items.some((listing) => listing.id === "list-be-201")).toBe(
+      true,
+    );
+    expect(
+      result.items.every((listing) =>
+        listing.marketPublications?.some(
+          (publication) =>
+            publication.marketCode === "BE" && publication.status === "active",
+        ),
+      ),
+    ).toBe(true);
+  });
 });

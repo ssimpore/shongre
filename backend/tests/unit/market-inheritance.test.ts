@@ -4,8 +4,8 @@ import {
   CANONICAL_MARKETS,
 } from "../../src/modules/markets/markets.service.js";
 
-describe("Multi-Market Inheritance Engine", () => {
-  it("returns France as the base market configuration", async () => {
+describe("explicit multi-market configuration", () => {
+  it("returns France as the configured default market", async () => {
     const fr = await marketsService.getEffectiveMarketConfig("FR");
     expect(fr.code).toBe("FR");
     expect(fr.currency).toBe("EUR");
@@ -23,10 +23,10 @@ describe("Multi-Market Inheritance Engine", () => {
     expect(be.isBaseMarket).toBe(false);
   });
 
-  it("correctly falls back to France if market code is unknown", async () => {
-    const unknown = await marketsService.getEffectiveMarketConfig("XX");
-    expect(unknown.code).toBe("FR");
-    expect(unknown.currency).toBe("EUR");
+  it("fails closed if a market code is unknown", async () => {
+    await expect(marketsService.getEffectiveMarketConfig("XX")).rejects.toThrow(
+      "Marché introuvable",
+    );
   });
 
   it("handles case-insensitivity on market codes", async () => {

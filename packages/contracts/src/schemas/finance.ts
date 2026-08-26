@@ -8,7 +8,7 @@ export type FinancePeriod = z.infer<typeof financePeriodSchema>;
 export const financeScopeSchema = z.object({
   period: financePeriodSchema.default("30d"),
   marketCode: z.union([marketCodeSchema, z.literal("ALL")]).default("ALL"),
-  currency: z.string().length(3).default("EUR"),
+  currency: z.string().length(3),
 });
 export type FinanceScope = z.infer<typeof financeScopeSchema>;
 

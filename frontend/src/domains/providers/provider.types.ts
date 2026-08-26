@@ -3,7 +3,7 @@ import type { ProviderOperationalDefinition } from "@shongre/contracts/provider-
 /**
  * SHONGRE CANONICAL PROVIDER DOMAIN TYPES
  * Authoritative types for external services, integrations, routing,
- * multi-market inheritance, and credentials status representations.
+ * explicit multi-market assignments and credentials status representations.
  */
 
 export const PROVIDER_CONFIGURATION_CONSTRAINTS = {
@@ -222,11 +222,13 @@ export interface ProviderConfiguration {
  */
 export interface ProviderRoutingRule {
   capability: ProviderCapability;
-  marketCode: string; // 'FR' is canonical baseline, 'BE', 'ES', etc.
+  marketCode: string;
   primaryProviderId: string;
   fallbackProviderId?: string;
+  /** Failover is opt-in; merely having a second provider is not approval. */
+  automaticFailover: boolean;
   availableProviderIds: string[];
-  isCustomized: boolean; // false if inherited from FR
+  isCustomized: boolean;
   updatedAt: string;
 }
 
@@ -241,6 +243,7 @@ export interface EffectiveProviderResolution {
   primaryConfig: ProviderConfiguration | null;
   fallbackProvider: Provider | null;
   fallbackConfig: ProviderConfiguration | null;
+  fallbackActivationApproved: boolean;
   isInheritedFromBaseline: boolean;
   effectiveHealth: ProviderHealthStatus;
   reason?: string;
@@ -275,7 +278,7 @@ export interface ProviderImpactAnalysis {
   providerName: string;
   affectedCapabilities: ProviderCapability[];
   directlyAffectedMarkets: string[];
-  inheritedMarketsAffected: string[]; // Downstream markets inheriting FR
+  inheritedMarketsAffected: string[]; // Kept empty for compatibility.
   impactedPlatformFeatures: string[];
   isSafeToDisable: boolean;
   warningMessages: string[];

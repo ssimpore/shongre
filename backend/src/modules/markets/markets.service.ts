@@ -142,7 +142,17 @@ export class MarketsService {
   async getEffectiveMarketConfig(
     code: string,
   ): Promise<CountryMarketDefinition> {
-    return this.marketRepo.getEffective(code);
+    const normalizedCode = countryCodeSchema.parse(
+      String(code || "").trim().toUpperCase(),
+    );
+    const market = await this.marketRepo.getByCode(normalizedCode);
+    if (!market) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Marché introuvable.",
+      });
+    }
+    return this.marketRepo.getEffective(normalizedCode);
   }
 
   async updateCountryConfiguration(

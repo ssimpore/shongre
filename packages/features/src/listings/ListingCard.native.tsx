@@ -18,16 +18,20 @@ import {
 export interface ListingCardProps {
   listing: ListingCardView;
   onPress: () => void;
+  locale?: string;
   variant?: "grid" | "list" | "compact";
 }
 export function ListingCard({
   listing,
   onPress,
+  locale,
   variant = "grid",
 }: ListingCardProps) {
-  const price = listing.isFreeDonation ? "Gratuit" : formatMoney(listing.price);
+  const price = listing.isFreeDonation
+    ? "Gratuit"
+    : formatMoney(listing.price, locale);
   const originalPrice = listing.originalPrice
-    ? formatMoney(listing.originalPrice)
+    ? formatMoney(listing.originalPrice, locale)
     : undefined;
   const badges = getListingPromotionBadges(listing);
   const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
@@ -174,7 +178,10 @@ export function ListingCard({
                 />
               ) : null}
               <Text size="caption" tone="muted">
-                {formatRelativeTime(listing.publishedAt, { style: "short" })}
+                {formatRelativeTime(listing.publishedAt, {
+                  locale,
+                  style: "short",
+                })}
               </Text>
             </View>
           </View>

@@ -27,6 +27,7 @@ import { providerValidator } from "../domains/providers/provider-validation";
 import { storageService } from "../services/storage.service";
 import { auditService } from "../security/audit.service";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+import { COUNTRY_REGISTRY } from "@shongre/contracts";
 
 export interface IProviderRepository {
   getProviders(): Provider[];
@@ -104,7 +105,23 @@ export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
               ? "Simulation déterministe uniquement — aucun statut de production."
               : "Aucun adaptateur de production n'est implémenté.",
         settings: {},
-        marketOverrides: {},
+        marketOverrides: Object.fromEntries(
+          COUNTRY_REGISTRY.filter(
+            (country) =>
+              country.launchStatus === "active" &&
+              !country.isDefault &&
+              (provider.supportedMarkets.includes("*") ||
+                provider.supportedMarkets.includes(country.marketCode)),
+          ).map((country) => [
+            country.marketCode,
+            {
+              enabled: !isNotNeeded,
+              priority:
+                index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+              customNotes: "Affectation explicite du scénario démo.",
+            },
+          ]),
+        ),
         updatedAt: "2026-08-24T00:00:00.000Z",
         version: 2,
       },
@@ -316,7 +333,7 @@ export class DemoProviderRepository implements IProviderRepository {
       providerName: provider.name,
       action: "market_override_reset",
       marketCode: normMarket,
-      details: `Surcharge réinitialisée pour ${normMarket} sur ${provider.name} (hérite désormais de la France).`,
+      details: `Affectation retirée pour ${normMarket} sur ${provider.name}. Le prestataire y est désormais indisponible.`,
     });
 
     return newConfig;

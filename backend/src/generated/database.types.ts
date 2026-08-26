@@ -275,7 +275,7 @@ export interface Database {
           description: string;
           price: number;
           original_price?: number | null;
-          currency?: string;
+          currency: string;
           status?:
             | "draft"
             | "published"
@@ -287,7 +287,7 @@ export interface Database {
           condition?: string;
           brand?: string | null;
           model?: string | null;
-          market_code?: string;
+          market_code: string;
           city: string;
           postal_code: string;
           department?: string | null;
@@ -338,6 +338,56 @@ export interface Database {
           expires_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["listings"]["Insert"]>;
+        Relationships: [];
+      };
+      listing_market_publications: {
+        Row: {
+          listing_id: string;
+          market_code: string;
+          status:
+            | "draft"
+            | "pending_review"
+            | "active"
+            | "paused"
+            | "suspended"
+            | "rejected"
+            | "expired";
+          is_primary: boolean;
+          price_minor: number;
+          currency: string;
+          localized_content: Json;
+          available_services: Json;
+          compliance_state: "pending" | "approved" | "restricted" | "rejected";
+          published_at: string | null;
+          sort_date: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          listing_id: string;
+          market_code: string;
+          status?:
+            | "draft"
+            | "pending_review"
+            | "active"
+            | "paused"
+            | "suspended"
+            | "rejected"
+            | "expired";
+          is_primary?: boolean;
+          price_minor: number;
+          currency: string;
+          localized_content?: Json;
+          available_services?: Json;
+          compliance_state?: "pending" | "approved" | "restricted" | "rejected";
+          published_at?: string | null;
+          sort_date?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["listing_market_publications"]["Insert"]
+        >;
         Relationships: [];
       };
       listing_drafts: GeneratedTable<{

@@ -13,11 +13,13 @@ describe("MessagingService", () => {
 
     const first = await service.createConversationForListing({
       listingId: "list_1",
+      marketCode: "FR",
       buyerId: "user_thomas",
       initialMessage: "Bonjour, le vélo est-il disponible ?",
     });
     const second = await service.createConversationForListing({
       listingId: "list_1",
+      marketCode: "FR",
       buyerId: "user_thomas",
     });
 
@@ -35,6 +37,7 @@ describe("MessagingService", () => {
     await expect(
       service.createConversationForListing({
         listingId: "list_1",
+        marketCode: "FR",
         buyerId: "user_camille",
       }),
     ).rejects.toMatchObject({ code: "CONFLICT" });

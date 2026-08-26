@@ -13,7 +13,7 @@ export type MarketStatus =
   | "disabled"
   | "archived";
 
-export type SettingSource = "BASELINE" | "LOCAL" | "PLATFORM_DEFAULT";
+export type SettingSource = "LOCAL" | "PLATFORM_DEFAULT";
 
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
@@ -251,7 +251,8 @@ export interface Market {
   };
 
   geography: MarketGeography;
-  overrides: MarketOverrides; // Delta overrides relative to France
+  /** Complete explicit policy. Missing fields never resolve from another market. */
+  configuration: MarketConfiguration;
 
   createdAt: string;
   updatedAt: string;
@@ -271,7 +272,8 @@ export interface SettingResolution<T = any> {
 }
 
 /**
- * Summary metrics of inheritance for a given market
+ * Compatibility metrics used by the existing admin presentation. Explicit
+ * market policies always report 100% locally configured.
  */
 export interface MarketInheritanceMetrics {
   marketCode: string;

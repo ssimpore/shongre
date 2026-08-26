@@ -2,6 +2,10 @@ import { MARKET_CONFIG } from "../configuration/market.config";
 import { storageService } from "../services/storage.service";
 import { marketService } from "../domains/market/market.service";
 import type { Money } from "@shongre/contracts";
+import {
+  getCurrencyMinorUnitDigits,
+  minorToMajorAmount,
+} from "@shongre/shared";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 /**
@@ -57,15 +61,16 @@ export function formatMoney(
 ): string {
   const locale = options.locale || MARKET_CONFIG.defaultLocale;
   try {
+    const fractionDigits = getCurrencyMinorUnitDigits(money.currency, locale);
     return new Intl.NumberFormat(locale, {
       style: "currency",
       currency: money.currency,
       currencyDisplay: options.currencyDisplay || "symbol",
-      minimumFractionDigits: money.amountMinor % 100 === 0 ? 0 : 2,
-      maximumFractionDigits: 2,
-    }).format(money.amountMinor / 100);
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(minorToMajorAmount(money.amountMinor, money.currency, locale));
   } catch {
-    return `${(money.amountMinor / 100).toFixed(2)} ${money.currency}`;
+    return `${money.amountMinor} ${money.currency}`;
   }
 }
 

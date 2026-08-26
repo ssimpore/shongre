@@ -1255,22 +1255,22 @@ export const messagesFr = {
 
   // --- admin.adminMarketsPage ---
   "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver":
-    "Supprimer la surcharge et réactiver l'héritage dynamique de France",
+    "Restaurer la valeur validée propre à ce marché",
   "admin.adminMarketsPage.ajouterUnNouveauMarchePays":
     "Ajouter un nouveau Marché / Pays",
   "admin.adminMarketsPage.creezUnNouveauPaysQui":
-    "Créez un nouveau pays qui héritera automatiquement de 100% de la configuration française de référence.",
+    "Créez un marché avec une politique locale complète et sécurisée par défaut. Il restera désactivé jusqu'à la validation de ses règles, fournisseurs et contenus.",
   "admin.adminMarketsPage.exItPtDeUk": "ex: IT, PT, DE, UK",
   "admin.adminMarketsPage.exItItPtPt": "ex: it-IT, pt-PT, de-DE",
   "admin.adminMarketsPage.bientotDisponible": "Bientôt disponible",
   "admin.adminMarketsPage.archive": "Archivé",
   "admin.adminMarketsPage.franceFrEstLeMarche":
-    "France (`FR`) est le marché de référence canonique",
+    "France (`FR`) est le marché initial par défaut",
   "admin.adminMarketsPage.ajouterUnMarche": "Ajouter un marché",
   "admin.adminMarketsPage.moteurDHeritageHierarchiqueEn":
     "Moteur d'héritage hiérarchique en cascade :",
   "admin.adminMarketsPage.marcheSourceCanonique100":
-    "Marché Source Canonique (100%)",
+    "Politique du marché par défaut (100 % explicite)",
   "admin.adminMarketsPage.bientot": "Bientôt",
   "admin.adminMarketsPage.selectionnerUnMarche": "Sélectionner un marché :",
   "admin.adminMarketsPage.gestionDesCategoriesParMarche":
@@ -1590,7 +1590,8 @@ export const messagesFr = {
     "Retour au catalogue des fournisseurs",
   "admin.adminProviderDetailPage.capacitesFournies": "Capacités fournies :",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & Clés",
-  "admin.adminProviderDetailPage.marchesSurcharges": "Marchés & Surcharges",
+  "admin.adminProviderDetailPage.marchesSurcharges":
+    "Marchés & affectations",
   "admin.adminProviderDetailPage.santeTestsDemo": "Santé & Tests Démo",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Utilisation & Dépendances",
@@ -1671,7 +1672,7 @@ export const messagesFr = {
   "admin.providerMarketOverridesTab.activeDansCePays": "Activé dans ce pays",
   "admin.providerMarketOverridesTab.prioriteLocale": "Priorité locale",
   "admin.providerMarketOverridesTab.aucuneSurchargeDefinie":
-    "Aucune surcharge définie.",
+    "Aucune affectation définie : le fournisseur est indisponible sur ce marché.",
 
   // --- admin.providerOverviewDashboard ---
   "admin.providerOverviewDashboard.aucuneModificationRecenteEnregistree":
@@ -2077,7 +2078,7 @@ export const messagesFr = {
     "Gérez les pays activés, devises, passerelles, taxes, quotas et règles de conformité.",
   "admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure":
     "Chaque paramètre non explicitement configuré pour la Belgique, l'Espagne ou la Suisse hérite automatiquement et dynamiquement de la configuration de référence française. Réinitialiser un paramètre supprime sa surcharge locale pour rétablir immédiatement la liaison dynamique avec la France.",
-  "admin.adminMarketsPage.referenceCanonique": "Référence Canonique",
+  "admin.adminMarketsPage.referenceCanonique": "Marché par défaut",
   "admin.adminMarketsPage.toutReinitialiserSurFrance":
     "Tout réinitialiser sur France",
   "admin.adminMarketsPage.vousEditezActuellementLa":
@@ -2085,8 +2086,9 @@ export const messagesFr = {
   "admin.adminMarketsPage.creerAvecHeritageFrance":
     "Créer avec héritage France",
   "admin.adminMarketsPage.cetteValeurSeraEnregistreeEn":
-    "Cette valeur sera enregistrée en tant que surcharge exclusive de ce marché. Vous pourrez à tout moment revenir à la valeur dynamique de France en cliquant sur « Réinitialiser ».",
-  "admin.adminMarketsPage.enregistrerLaSurcharge": "Enregistrer la surcharge",
+    "Cette valeur sera enregistrée dans la politique explicite de ce marché. La restauration reprend uniquement la valeur validée du même marché.",
+  "admin.adminMarketsPage.enregistrerLaSurcharge":
+    "Enregistrer la valeur locale",
 
   // --- admin.adminModerationPage ---
   "admin.adminModerationPage.moderationSecurite": "Modération & Sécurité",
@@ -2336,10 +2338,10 @@ export const messagesFr = {
 
   // --- admin.providerMarketMatrix ---
   "admin.providerMarketMatrix.matriceDeCouvertureMultiMarches":
-    "Matrice de Couverture Multi-Marchés & Héritage France",
+    "Matrice de couverture multi-marchés",
   "admin.providerMarketMatrix.laFranceEstLeMarche":
     "La France (🇫🇷) est le marché de référence. Les autres pays héritent automatiquement de la configuration sauf surcharge explicite.",
-  "admin.providerMarketMatrix.ref": "RÉF",
+  "admin.providerMarketMatrix.ref": "DÉF.",
   "admin.providerMarketMatrix.referenceActive": "Référence active",
   "admin.providerMarketMatrix.nonConfigure": "Non configuré",
   "admin.providerMarketMatrix.heriteDeFr": "↳ Hérité de FR",
@@ -2348,19 +2350,20 @@ export const messagesFr = {
 
   // --- admin.providerMarketOverridesTab ---
   "admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter":
-    "Sélectionnez le marché à inspecter ou surcharger :",
-  "admin.providerMarketOverridesTab.baseDHeritage": "Base d'Héritage",
+    "Sélectionnez le marché dont vous gérez l'affectation :",
+  "admin.providerMarketOverridesTab.baseDHeritage":
+    "Comparaison uniquement",
   "admin.providerMarketOverridesTab.touteModificationApporteeALa":
     "Toute modification apportée à la France est immédiatement répercutée sur les marchés sans surcharge.",
   "admin.providerMarketOverridesTab.configurationPersonnalisee":
-    "★ Configuration Personnalisée",
+    "★ Affectation explicite",
   "admin.providerMarketOverridesTab.heriteDeFrance": "↳ Hérité de France",
   "admin.providerMarketOverridesTab.noteDeConformiteOuMotif":
-    "Note de conformité ou motif de surcharge :",
+    "Note de conformité ou motif de l'affectation :",
   "admin.providerMarketOverridesTab.reinitialiserSurFrance":
     "Réinitialiser sur France",
   "admin.providerMarketOverridesTab.appliquerLaSurcharge":
-    "Appliquer la surcharge",
+    "Enregistrer l'affectation",
 
   // --- admin.providerOverviewDashboard ---
   "admin.providerOverviewDashboard.integrationsRepertoriees":
@@ -2369,7 +2372,7 @@ export const messagesFr = {
   "admin.providerOverviewDashboard.heritageFranceActif":
     "Héritage France actif",
   "admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe":
-    "État des Fonctions Critiques de la Plateforme (France • Référence)",
+    "État des fonctions critiques du marché par défaut",
   "admin.providerOverviewDashboard.resolutionEnDirectDuPrestataire":
     "Résolution en direct du prestataire primaire et de l'état de fonctionnement effectif.",
   "admin.providerOverviewDashboard.matriceMultiMarches":
@@ -3721,10 +3724,21 @@ export const messagesFr = {
   "admin.discovery.metric.diversity": "Diversifications",
   "admin.discovery.metric.latency": "Latence moyenne (ms)",
   "admin.adminMarketsPage.resetAllTitle":
-    "Réinitialiser la configuration du marché",
+    "Restaurer la politique locale validée",
   "admin.adminMarketsPage.resetAllMessage":
-    "Toutes les surcharges de {market} seront supprimées. Sa configuration héritera de nouveau du marché de référence {baseline}.",
-  "admin.adminMarketsPage.resetAllConfirm": "Réinitialiser les surcharges",
+    "La configuration complète de {market} sera restaurée depuis son propre jeu de données validé. Aucun paramètre de {baseline} ne sera copié.",
+  "admin.adminMarketsPage.resetAllConfirm": "Restaurer",
+  "admin.adminMarketsPage.localPolicyEditor": "Politique locale ({market})",
+  "admin.adminMarketsPage.independentPolicyTitle":
+    "Configuration indépendante par marché",
+  "admin.adminMarketsPage.independentPolicyDescription":
+    "Chaque marché porte une politique complète. Le marché par défaut sert uniquement de comparaison et ses changements ne se propagent jamais aux autres pays.",
+  "admin.adminMarketsPage.restoreReviewedPolicy":
+    "Restaurer la politique validée",
+  "admin.adminMarketsPage.defaultMarketNoticeTitle":
+    "Marché initial par défaut",
+  "admin.adminMarketsPage.defaultMarketNoticeDescription":
+    "Vous éditez la politique explicite de {market}. Cette configuration ne se propage à aucun autre marché.",
   "admin.monetization.transitionTitle": "Valider une transition du catalogue",
   "admin.monetization.transitionReason": "Motif de la transition",
   "admin.monetization.transitionReasonDefault":

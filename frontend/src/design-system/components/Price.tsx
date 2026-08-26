@@ -1,6 +1,6 @@
 import React from "react";
 import { Star } from "lucide-react";
-import { formatPrice } from "../../utilities/formatters";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { cn, createVariants } from "../utils/variants";
 
@@ -35,6 +35,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
   className,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   const hasDiscount = originalPrice !== undefined && originalPrice > price;
 
   return (

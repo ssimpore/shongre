@@ -79,7 +79,9 @@ describe("provider platform registry", () => {
     const withoutApproval = resolveProviderRoute({
       policy: {
         capability: "payment.card",
+        operation: "authorize",
         marketCode: "FR",
+        currency: "EUR",
         primaryProviderId: "primary",
         fallbackProviderId: "fallback",
         automaticFailover: false,
@@ -92,7 +94,9 @@ describe("provider platform registry", () => {
     const approved = resolveProviderRoute({
       policy: {
         capability: "payment.card",
+        operation: "authorize",
         marketCode: "FR",
+        currency: "EUR",
         primaryProviderId: "primary",
         fallbackProviderId: "fallback",
         automaticFailover: true,
@@ -105,5 +109,49 @@ describe("provider platform registry", () => {
       isFallbackActive: true,
       status: "DEGRADED",
     });
+  });
+
+  it("rejects a healthy provider that cannot handle the requested currency", () => {
+    const observedAt = "2026-08-24T10:00:00.000Z";
+    const stripe = SHONGRE_PROVIDER_REGISTRY.find(
+      ({ id }) => id === "stripe",
+    )!;
+    const result = resolveProviderRoute({
+      policy: {
+        capability: "payment.card",
+        operation: "authorize",
+        marketCode: "CH",
+        currency: "CHF",
+        primaryProviderId: "stripe",
+        automaticFailover: false,
+      },
+      entries: [
+        {
+          definition: { ...stripe, supportedCurrencies: ["EUR"] },
+          runtime: {
+            configured: true,
+            enabled: true,
+            environment: "sandbox",
+            health: "HEALTHY",
+            healthEvidence: "LIVE_PROBE",
+            lastCheckedAt: observedAt,
+            message: "test",
+          },
+          readiness: {
+            score: 100,
+            productionReady: true,
+            active: true,
+            blockers: [],
+          },
+        },
+      ],
+      nowMs: Date.parse(observedAt),
+    });
+
+    expect(result.selectedProviderId).toBeNull();
+    expect(result.status).toBe("UNAVAILABLE");
+    expect(result.reasons).toContain(
+      "Primary provider does not support CHF for authorize.",
+    );
   });
 });

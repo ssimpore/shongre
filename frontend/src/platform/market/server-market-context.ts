@@ -16,7 +16,9 @@ export const resolveServerMarketContext = cache(
       hostname,
       pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
-      allowDevelopmentHosts: process.env.NODE_ENV !== "production",
+      allowDevelopmentHosts:
+        process.env.NODE_ENV !== "production" ||
+        process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1",
     });
   },
 );

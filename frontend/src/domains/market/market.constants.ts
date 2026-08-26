@@ -8,8 +8,8 @@ export const RECENT_SEARCHES_LIMIT_MIN = 1;
 export const RECENT_SEARCHES_LIMIT_MAX = 3;
 
 /**
- * Default search-price scale for the canonical market. Other markets inherit
- * or override it through `MarketConfiguration.search`.
+ * Initial search-price scale for the configured default market. Other markets
+ * materialize their own value and never inherit changes at runtime.
  */
 export const PRICE_FILTER_STOPS_MAJOR_DEFAULT = [
   0, 10, 20, 30, 40, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1_000, 1_500,

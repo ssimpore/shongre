@@ -1,12 +1,28 @@
 import { describe, expect, it } from "vitest";
 import {
+  COUNTRY_REGISTRY,
   buildMarketSwitchUrl,
   buildPublicUrl,
+  getDefaultCountryConfig,
   getCountryConfig,
   resolveMarketContext,
 } from "./market-country";
 
 describe("canonical Shongre country routing", () => {
+  it("exposes one explicit default and complete market bootstrap metadata", () => {
+    expect(COUNTRY_REGISTRY.filter((country) => country.isDefault)).toHaveLength(
+      1,
+    );
+    expect(getDefaultCountryConfig().code).toBe("FR");
+    for (const country of COUNTRY_REGISTRY) {
+      expect(country.marketCode).toMatch(/^[A-Z]{2}$/);
+      expect(country.countryCode).toMatch(/^[A-Z]{2}$/);
+      expect(country.supportedCurrencies).toContain(country.currency);
+      expect(country.locationHierarchy[0]).toBe("country");
+      expect(country.capabilities.payments).toBe(country.payments.enabled);
+    }
+  });
+
   it.each([
     ["shongre.fr", "/immobilier", "FR", "/immobilier", "EUR"],
     ["shongre.com", "/be/immobilier", "BE", "/immobilier", "EUR"],
@@ -20,6 +36,7 @@ describe("canonical Shongre country routing", () => {
       expect(context.countryCode).toBe(countryCode);
       expect(context.internalPath).toBe(internalPath);
       expect(context.currency).toBe(currency);
+      expect(context.timezone).toBeTruthy();
     },
   );
 

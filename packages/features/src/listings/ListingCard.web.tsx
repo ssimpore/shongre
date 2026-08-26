@@ -11,6 +11,7 @@ import {
 export interface ListingCardProps {
   listing: ListingCardView;
   href: string;
+  locale?: string;
   variant?: "grid" | "list" | "compact";
   image?: ReactNode;
   isFavorite?: boolean;
@@ -28,6 +29,7 @@ export interface ListingCardProps {
 export function ListingCard({
   listing,
   href,
+  locale,
   variant = "grid",
   image,
   isFavorite,
@@ -36,11 +38,16 @@ export function ListingCard({
   className,
   renderLink,
 }: ListingCardProps) {
-  const price = listing.isFreeDonation ? "Gratuit" : formatMoney(listing.price);
+  const price = listing.isFreeDonation
+    ? "Gratuit"
+    : formatMoney(listing.price, locale);
   const originalPrice = listing.originalPrice
-    ? formatMoney(listing.originalPrice)
+    ? formatMoney(listing.originalPrice, locale)
     : undefined;
-  const published = formatRelativeTime(listing.publishedAt, { style: "short" });
+  const published = formatRelativeTime(listing.publishedAt, {
+    locale,
+    style: "short",
+  });
   const badges = getListingPromotionBadges(listing);
   const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
   const horizontal = variant === "list";

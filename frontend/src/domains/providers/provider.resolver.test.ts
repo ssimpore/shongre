@@ -7,7 +7,7 @@ afterEach(() => {
   apiClientConfig.dataMode = "demo";
 });
 
-describe("Provider Resolver & Multi-Market Inheritance", () => {
+describe("Provider Resolver & explicit multi-market assignments", () => {
   const mockConfigurations: Record<string, ProviderConfiguration> = {
     mangopay: {
       providerId: "mangopay",
@@ -44,21 +44,20 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
 
     expect(resolution.isAvailable).toBe(true);
     expect(resolution.primaryProvider?.id).toBe("mangopay");
-    expect(resolution.fallbackProvider?.id).toBe("stripe");
+    expect(resolution.fallbackProvider).toBeNull();
     expect(resolution.isInheritedFromBaseline).toBe(false);
   });
 
-  it("inherits France configuration for Belgium when no override exists", () => {
+  it("fails closed for Belgium when no assignment exists", () => {
     const resolution = providerResolver.resolveEffectiveProviders({
       capability: "payment.card",
       marketCode: "BE",
       configurations: mockConfigurations,
     });
 
-    expect(resolution.isAvailable).toBe(true);
-    expect(resolution.primaryProvider?.id).toBe("mangopay");
-    expect(resolution.fallbackProvider?.id).toBe("stripe");
-    expect(resolution.isInheritedFromBaseline).toBe(true);
+    expect(resolution.isAvailable).toBe(false);
+    expect(resolution.primaryProvider).toBeNull();
+    expect(resolution.isInheritedFromBaseline).toBe(false);
   });
 
   it("respects explicit custom override for Belgium (e.g. Stripe prioritized over MangoPay)", () => {
@@ -91,7 +90,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
       configurations: configsWithOverride,
     });
     expect(beResolution.primaryProvider?.id).toBe("stripe");
-    expect(beResolution.fallbackProvider?.id).toBe("mangopay");
+    expect(beResolution.fallbackProvider).toBeNull();
     expect(beResolution.isInheritedFromBaseline).toBe(false);
 
     // France should still remain MangoPay as primary
@@ -101,7 +100,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
       configurations: configsWithOverride,
     });
     expect(frResolution.primaryProvider?.id).toBe("mangopay");
-    expect(frResolution.fallbackProvider?.id).toBe("stripe");
+    expect(frResolution.fallbackProvider).toBeNull();
   });
 
   it("respects explicit disable in Spain without falling back to France", () => {
@@ -160,7 +159,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     expect(resolution.primaryProvider).toBeNull();
   });
 
-  it("automatically propagates France configuration change to inheriting markets", () => {
+  it("does not propagate a France configuration change to another market", () => {
     // France swaps Stripe to priority 1 and MangoPay to priority 2
     const configsWithFrUpdate: Record<string, ProviderConfiguration> = {
       ...mockConfigurations,
@@ -174,15 +173,16 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
       },
     };
 
-    // Switzerland (CH) has no override -> should now receive Stripe as primary
+    // Switzerland has no explicit assignment and therefore remains unavailable.
     const chResolution = providerResolver.resolveEffectiveProviders({
       capability: "payment.card",
       marketCode: "CH",
       configurations: configsWithFrUpdate,
     });
 
-    expect(chResolution.primaryProvider?.id).toBe("stripe");
-    expect(chResolution.isInheritedFromBaseline).toBe(true);
+    expect(chResolution.primaryProvider).toBeNull();
+    expect(chResolution.isAvailable).toBe(false);
+    expect(chResolution.isInheritedFromBaseline).toBe(false);
   });
 
   it("activates fallback provider when primary provider becomes unavailable", () => {
@@ -202,6 +202,18 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
       capability: "payment.card",
       marketCode: "FR",
       configurations: configsWithDegradedPrimary,
+      routingRules: {
+        "FR:payment.card": {
+          capability: "payment.card",
+          marketCode: "FR",
+          primaryProviderId: "mangopay",
+          fallbackProviderId: "stripe",
+          availableProviderIds: ["mangopay", "stripe"],
+          automaticFailover: true,
+          isCustomized: true,
+          updatedAt: "2026-08-17T00:00:00Z",
+        },
+      },
     });
 
     expect(health.status).toBe("demo");
@@ -220,7 +232,7 @@ describe("Provider Resolver & Multi-Market Inheritance", () => {
     expect(impact.affectedCapabilities).toContain("payment.card");
     expect(impact.affectedCapabilities).toContain("payment.escrow");
     expect(impact.directlyAffectedMarkets).toContain("FR");
-    expect(impact.inheritedMarketsAffected.length).toBeGreaterThan(0);
+    expect(impact.inheritedMarketsAffected).toEqual([]);
     expect(impact.impactedPlatformFeatures.length).toBeGreaterThan(0);
   });
 });

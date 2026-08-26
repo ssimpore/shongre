@@ -1,4 +1,9 @@
-import { Market, MarketConfiguration } from "./market.types";
+import {
+  Market,
+  MarketConfiguration,
+  MarketOverrides,
+} from "./market.types";
+import { deepMergeOverrides } from "./market.resolver";
 import {
   PRICE_FILTER_STOPS_MAJOR_DEFAULT,
   RECENT_SEARCHES_LIMIT_DEFAULT,
@@ -47,9 +52,10 @@ const FR_INDIVIDUAL_COMMERCIALS = getDemoTransactionCommercials(
 const FR_PRO_COMMERCIALS = getDemoTransactionCommercials("FR", "pro");
 
 /**
- * Canonical French Baseline Configuration (The Immutable Reference Standard)
+ * Initial policy for the configured default market. France owns these values;
+ * they are not an implicit fallback for an unknown market code.
  */
-export const FR_CANONICAL_CONFIG: MarketConfiguration = {
+export const DEFAULT_MARKET_POLICY_CONFIG: MarketConfiguration = {
   general: {
     name: "France Métropolitaine",
     tagline: "La référence des annonces sécurisées et de la seconde main",
@@ -288,10 +294,163 @@ export const FR_CANONICAL_CONFIG: MarketConfiguration = {
   },
 };
 
+type SeedMarket = Omit<Market, "configuration"> & {
+  overrides: MarketOverrides;
+};
+
+const unavailableCarrier = (label: string) => ({
+  enabled: false,
+  label,
+  defaultFee: 0,
+  trackingSupported: false,
+});
+
+/** Complete fail-closed policy for a market that has not been configured. */
+export function createSafeMarketPolicy(input: {
+  name: string;
+  defaultLocale: string;
+  supportedLocales: string[];
+  currency: string;
+  currencySymbol: string;
+  timezone: string;
+  phonePrefix?: string;
+  supportEmail?: string;
+  tagline?: string;
+}): MarketConfiguration {
+  const emptyPlan = {
+    priceMonthly: 0,
+    maxActiveListings: 0,
+    photosPerListing: 0,
+    storefrontCustomization: false,
+    prioritySupport: false,
+    bulkImportExport: false,
+    automaticRelisting: false,
+  };
+  return {
+    general: {
+      name: input.name,
+      tagline: input.tagline || "Marché en cours de configuration",
+      supportEmail: input.supportEmail || "support@shongre.com",
+      launchState: "selected_cities",
+    },
+    localization: {
+      defaultLocale: input.defaultLocale,
+      supportedLocales: [...input.supportedLocales],
+      defaultCurrency: input.currency,
+      currencySymbol: input.currencySymbol,
+      timezone: input.timezone,
+      dateFormat: "yyyy-MM-dd",
+      dateTimeFormat: "yyyy-MM-dd HH:mm",
+      phonePrefix: input.phonePrefix || "",
+      phonePlaceholder: "À configurer",
+      phoneRegex: "(?!)",
+      postalCodePlaceholder: "À configurer",
+      postalCodeRegex: "(?!)",
+    },
+    listings: {
+      maxActiveListingsIndividual: 0,
+      maxActiveListingsProFree: 0,
+      maxPhotosIndividual: 0,
+      maxPhotosPro: 0,
+      expirationDays: 0,
+      allowFreeDonations: false,
+      allowPriceNegotiation: false,
+      allowInstantBuy: false,
+    },
+    search: { priceFilterStopsMajor: [] },
+    payments: {
+      enabled: false,
+      provider: "none",
+      supportedMethods: {
+        card: false,
+        applePay: false,
+        googlePay: false,
+        sepa: false,
+      },
+      buyerProtectionFeePercent: 0,
+      buyerProtectionFixedFee: 0,
+      minTransactionAmount: 0,
+      maxTransactionAmount: 0,
+    },
+    reservation: {
+      enabled: false,
+      sellerConfirmationTimeoutHours: 0,
+      buyerInspectionTimeoutHours: 0,
+      autoCompleteDays: 0,
+      requirePinForHandDelivery: false,
+    },
+    delivery: {
+      enabled: false,
+      handDeliveryEnabled: false,
+      carriers: {
+        mondialRelay: unavailableCarrier("Point relais non configuré"),
+        colissimo: unavailableCarrier("Livraison non configurée"),
+        chronopost: unavailableCarrier("Express non configuré"),
+        customCarrier: unavailableCarrier("Transporteur non configuré"),
+      },
+    },
+    monetization: {
+      payoutInstantFeePercent: 0,
+      payoutInstantFixedFee: 0,
+      boostPricing: {
+        urgent: 0,
+        highlight: 0,
+        top_of_list: 0,
+        gallery_boost: 0,
+        spotlight: 0,
+      },
+      plans: {
+        free: { ...emptyPlan },
+        starter: { ...emptyPlan },
+        business: { ...emptyPlan },
+        enterprise: { ...emptyPlan },
+      },
+    },
+    pro: {
+      businessIdentifierLabel: "Identifiant professionnel à configurer",
+      businessIdentifierHelper: "Validation locale indisponible",
+      businessIdentifierRegex: "(?!)",
+      businessIdentifierFormatPlaceholder: "À configurer",
+      vatNumberFormatPlaceholder: "À configurer",
+      vatNumberRegex: "(?!)",
+      supportedLegalForms: [],
+      requiredVerificationDocuments: [],
+      requireKbis: false,
+    },
+    taxes: {
+      taxEnabled: false,
+      vatRateStandard: 0,
+      pricesTaxInclusive: false,
+    },
+    legal: {
+      termsUrl: "",
+      privacyUrl: "",
+      cookiePolicyUrl: "",
+      buyerProtectionTermsUrl: "",
+      proTermsUrl: "",
+      requiresLocalReview: true,
+    },
+    features: {
+      reviewsEnabled: false,
+      aiAssistantEnabled: false,
+      aiSafetyAuditEnabled: false,
+      savedSearchesEnabled: false,
+      recentSearchesLimit: 0,
+      sellerFollowEnabled: false,
+      proStorefrontsEnabled: false,
+      disputeEscalationEnabled: false,
+    },
+    taxonomy: {
+      disabledCategorySlugs: [],
+      disabledSubCategorySlugs: [],
+    },
+  };
+}
+
 /**
  * Initial Seed Markets Setup
  */
-const CONFIGURED_MARKETS: Market[] = [
+const CONFIGURED_MARKETS: SeedMarket[] = [
   // 1. FRANCE (Reference Market - Exactly one default)
   {
     id: "market-fr",
@@ -518,13 +677,13 @@ const CONFIGURED_MARKETS: Market[] = [
         },
       ],
     },
-    overrides: {}, // France has 0 overrides because it is the canonical baseline itself
+    overrides: {}, // Materializes the reviewed policy for the default market.
     createdAt: "2023-01-01T00:00:00Z",
     updatedAt: "2026-08-16T22:00:00Z",
     version: 1,
   },
 
-  // 2. BELGIUM (Active - 92% Inherited from France with local BCE & VAT overrides)
+  // 2. BELGIUM (active, with a complete policy materialized at bootstrap)
   {
     id: "market-be",
     code: "BE",
@@ -1061,7 +1220,7 @@ const marketFromCountryRegistry = (
   name: country.name,
   flag: country.flag,
   status: statusFromRegistry(country.launchStatus),
-  isDefault: country.code === "FR",
+  isDefault: country.isDefault,
   defaultLocale: country.defaultLocale,
   supportedLocales: [...country.supportedLocales],
   currency: country.currency,
@@ -1078,39 +1237,38 @@ const marketFromCountryRegistry = (
     regions: [],
     popularCities: [],
   },
-  overrides: {
-    general: {
-      name: country.name,
-      supportEmail: `support@${country.primaryDomain}`,
-      launchState: "full",
-      tagline: country.launchContent.description,
-    },
-    localization: {
-      defaultLocale: country.defaultLocale,
-      supportedLocales: [...country.supportedLocales],
-      defaultCurrency: country.currency,
-      currencySymbol: country.currencySymbol || country.currency,
-      timezone: country.timezone,
-      phonePrefix: country.phoneCountryCode,
-    },
-    payments: { enabled: country.payments.enabled },
-    legal: { requiresLocalReview: country.compliance.legalReviewRequired },
-  },
+  configuration: createSafeMarketPolicy({
+    name: country.name,
+    defaultLocale: country.defaultLocale,
+    supportedLocales: [...country.supportedLocales],
+    currency: country.currency,
+    currencySymbol: country.currencySymbol || country.currency,
+    timezone: country.timezone,
+    phonePrefix: country.phoneCountryCode,
+    supportEmail: `support@${country.primaryDomain}`,
+    tagline: country.launchContent.description,
+  }),
   createdAt: "2026-08-25T00:00:00Z",
   updatedAt: "2026-08-25T00:00:00Z",
   version: 1,
 });
 
 /**
- * The detailed market policies remain local overrides, while stable identity,
+ * Detailed market policies are materialized once as complete local policies,
+ * while stable identity,
  * launch state, locale, currency and routing always come from the shared
  * country registry. This keeps the existing rich fixtures without allowing
  * them to become a second country registry.
  */
 export const INITIAL_MARKETS: Market[] = [
-  ...CONFIGURED_MARKETS.map((market) => {
+  ...CONFIGURED_MARKETS.map((seed) => {
+    const { overrides, ...market } = seed;
     const country = getCountryConfig(market.code);
-    if (!country) return market;
+    const configuration = deepMergeOverrides(
+      DEFAULT_MARKET_POLICY_CONFIG,
+      overrides,
+    );
+    if (!country) return { ...market, configuration };
     return {
       ...market,
       name: country.name,
@@ -1121,6 +1279,7 @@ export const INITIAL_MARKETS: Market[] = [
       currency: country.currency,
       currencySymbol: country.currencySymbol || country.currency,
       timezone: country.timezone,
+      configuration,
     };
   }),
   ...COUNTRY_REGISTRY.filter(

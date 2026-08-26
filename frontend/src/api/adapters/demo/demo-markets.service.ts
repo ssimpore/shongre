@@ -16,7 +16,8 @@ export class DemoMarketsService implements MarketsServiceContract {
 
   async getMarketByCode(code: string): Promise<CountryMarketDefinition | null> {
     await simulateNetworkDelay();
-    return getMarketDefinition(code);
+    const market = marketService.getMarketByCode(code);
+    return market ? getMarketDefinition(market.code) : null;
   }
 
   async getActiveMarket(): Promise<CountryMarketDefinition> {
@@ -27,11 +28,15 @@ export class DemoMarketsService implements MarketsServiceContract {
 
   async setActiveMarket(code: string): Promise<CountryMarketDefinition> {
     await simulateNetworkDelay();
+    const market = marketService.getMarketByCode(code);
+    if (!market) throw new Error("Marché inconnu ou désactivé.");
     storageService.set("shongre_active_market_v1", code);
-    return getMarketDefinition(code);
+    return getMarketDefinition(market.code);
   }
 
-  async getEffectiveMarketConfig(code: string): Promise<any> {
+  async getEffectiveMarketConfig(
+    code: string,
+  ): Promise<CountryMarketDefinition> {
     await simulateNetworkDelay();
     return getMarketDefinition(code);
   }

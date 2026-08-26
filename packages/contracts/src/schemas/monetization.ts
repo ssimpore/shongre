@@ -500,9 +500,9 @@ export type ComplimentaryGrantDecisionInput = z.infer<
 >;
 
 export const ruleEvaluationContextSchema = z.object({
-  marketCode: marketCodeSchema.default("FR"),
+  marketCode: marketCodeSchema,
   countryCode: marketCodeSchema.optional(),
-  currency: z.string().length(3).default("EUR"),
+  currency: z.string().length(3),
   categoryId: z.string().optional(),
   subcategoryId: z.string().optional(),
   typeId: z.string().optional(),
@@ -1024,7 +1024,7 @@ export type CommissionAnalyticsRow = z.infer<
 
 export const commissionAnalyticsQuerySchema = z.object({
   marketCode: z.union([marketCodeSchema, z.literal("ALL")]).default("ALL"),
-  currency: z.string().length(3).default("EUR"),
+  currency: z.string().length(3),
   from: z.string().date(),
   to: z.string().date(),
   verticalId: businessVerticalCodeSchema.optional(),

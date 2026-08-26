@@ -725,10 +725,7 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const listing = await listingsService.getListingById(params.id);
-        return !listing || listing.marketCode !== resolvedMarketCode
-          ? null
-          : listing;
+        return listingsService.getListingById(params.id, resolvedMarketCode);
       },
     );
     this.addRoute(
@@ -767,8 +764,11 @@ export class ApiV1Router {
       "POST",
       "/listing-drafts",
       permission("listing.create"),
-      async ({ principal }) =>
-        listingsService.createListingDraft(principal.userId),
+      async ({ principal, marketCode }) =>
+        listingsService.createListingDraft(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "PUT",
@@ -2167,9 +2167,10 @@ export class ApiV1Router {
       "GET",
       "/payments/balance/:sellerId",
       permission("order.manage.seller"),
-      async ({ principal, params }) =>
+      async ({ principal, params, marketCode }) =>
         paymentsService.getSellerBalance(
           resolveOwnerId(principal, params.sellerId, "payment.refund"),
+          getCountryConfig(requireApiRequestMarket(marketCode))!.currency,
         ),
     );
 
@@ -2411,7 +2412,7 @@ export class ApiV1Router {
       async ({ query }) =>
         commissionService.listAnalytics({
           marketCode: query.get("marketCode") || "ALL",
-          currency: query.get("currency") || "EUR",
+          currency: query.get("currency") || undefined,
           from: query.get("from"),
           to: query.get("to"),
           verticalId: query.get("verticalId") || undefined,
@@ -2712,9 +2713,10 @@ export class ApiV1Router {
       "POST",
       "/messaging/conversations",
       permission("message.send"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         messagingService.createConversationForListing({
           listingId: body?.listingId,
+          marketCode: requireApiRequestMarket(marketCode),
           buyerId: principal.userId,
           initialMessage: body?.initialMessage,
         }),

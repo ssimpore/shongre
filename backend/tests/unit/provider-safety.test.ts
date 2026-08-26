@@ -79,14 +79,14 @@ describe("provider safety boundaries", () => {
 
   it("keeps demo balances deterministic and rejects untrusted Stripe account references", async () => {
     await expect(
-      new DemoPaymentProvider().getBalance("seller-1"),
+      new DemoPaymentProvider().getBalance("seller-1", "CHF"),
     ).resolves.toEqual({
       availableMinor: 48_000,
       pendingMinor: 25_000,
-      currency: "EUR",
+      currency: "CHF",
     });
     await expect(
-      new StripePaymentProvider().getBalance("seller-1"),
+      new StripePaymentProvider().getBalance("seller-1", "CHF"),
     ).rejects.toMatchObject<AppError>({
       code: "VALIDATION_ERROR",
       statusCode: 400,

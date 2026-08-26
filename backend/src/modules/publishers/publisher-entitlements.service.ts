@@ -5,7 +5,10 @@ import type {
   ListingPromotionState,
   MonetizationProduct,
 } from "@shongre/contracts";
-import { isCommercialProductPurchasable } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  isCommercialProductPurchasable,
+} from "@shongre/contracts";
 import { normalizeBusinessVerticalCode } from "@shongre/contracts/business-verticals";
 import { resolveEffectiveEntitlementsForVertical } from "@shongre/shared";
 import type { Listing, UserProfile } from "../../shared/types/index.js";
@@ -252,7 +255,7 @@ export class PublisherEntitlementsService {
       {
         marketCode: input.marketCode.toUpperCase(),
         countryCode: input.marketCode.toUpperCase(),
-        currency: input.marketCode.toUpperCase() === "CH" ? "CHF" : "EUR",
+        currency: getCountryConfig(input.marketCode)!.currency,
         categoryId: input.categoryId,
         userType:
           publisher.type === "professional" ? "professional" : "individual",
@@ -388,7 +391,7 @@ export class PublisherEntitlementsService {
       {
         marketCode: input.marketCode.toUpperCase(),
         countryCode: input.marketCode.toUpperCase(),
-        currency: input.marketCode.toUpperCase() === "CH" ? "CHF" : "EUR",
+        currency: getCountryConfig(input.marketCode)!.currency,
         categoryId: input.categoryId,
         userType:
           entitlements.publisher.type === "professional"

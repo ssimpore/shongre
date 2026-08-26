@@ -1030,22 +1030,22 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminLayout.statutDeSession": "Session status",
   "admin.adminLayout.sessionAuthentifieeRbac": "RBAC authenticated session",
   "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver":
-    "Remove the override and restore dynamic inheritance from France",
+    "Restore this market's own reviewed value",
   "admin.adminMarketsPage.ajouterUnNouveauMarchePays":
     "Add a new market / country",
   "admin.adminMarketsPage.creezUnNouveauPaysQui":
-    "Create a new country that automatically inherits 100% of the reference French configuration.",
+    "Create a market with its own complete, fail-closed policy. It remains disabled until its rules, providers, and content are reviewed.",
   "admin.adminMarketsPage.exItPtDeUk": "e.g. IT, PT, DE, UK",
   "admin.adminMarketsPage.exItItPtPt": "e.g. it-IT, pt-PT, de-DE",
   "admin.adminMarketsPage.bientotDisponible": "Coming soon",
   "admin.adminMarketsPage.archive": "Archived",
   "admin.adminMarketsPage.franceFrEstLeMarche":
-    "France (`FR`) is the canonical reference market",
+    "France (`FR`) is the initial default market",
   "admin.adminMarketsPage.ajouterUnMarche": "Add a market",
   "admin.adminMarketsPage.moteurDHeritageHierarchiqueEn":
     "Cascading hierarchical inheritance engine:",
   "admin.adminMarketsPage.marcheSourceCanonique100":
-    "Canonical source market (100%)",
+    "Default-market policy (100% explicit)",
   "admin.adminMarketsPage.bientot": "Soon",
   "admin.adminMarketsPage.selectionnerUnMarche": "Select a market:",
   "admin.adminMarketsPage.gestionDesCategoriesParMarche":
@@ -1310,7 +1310,8 @@ export const messagesEn: MessageCatalogue = {
     "Back to the provider catalogue",
   "admin.adminProviderDetailPage.capacitesFournies": "Capabilities provided:",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & keys",
-  "admin.adminProviderDetailPage.marchesSurcharges": "Markets & overrides",
+  "admin.adminProviderDetailPage.marchesSurcharges":
+    "Markets & assignments",
   "admin.adminProviderDetailPage.santeTestsDemo": "Health & demo tests",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Usage & dependencies",
@@ -1374,7 +1375,7 @@ export const messagesEn: MessageCatalogue = {
     "Enabled in this country",
   "admin.providerMarketOverridesTab.prioriteLocale": "Local priority",
   "admin.providerMarketOverridesTab.aucuneSurchargeDefinie":
-    "No override defined.",
+    "No assignment defined: the provider is unavailable in this market.",
   "admin.providerOverviewDashboard.aucuneModificationRecenteEnregistree":
     "No recent changes recorded.",
   "admin.providerRoutingManager.operationnel": "Operational",
@@ -1706,7 +1707,7 @@ export const messagesEn: MessageCatalogue = {
     "Manage enabled countries, currencies, gateways, taxes, quotas and compliance rules.",
   "admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure":
     "Any setting not explicitly configured for Belgium, Spain or Switzerland inherits automatically and dynamically from the French reference configuration. Resetting a setting removes its local override and immediately restores the dynamic link to France.",
-  "admin.adminMarketsPage.referenceCanonique": "Canonical reference",
+  "admin.adminMarketsPage.referenceCanonique": "Default market",
   "admin.adminMarketsPage.toutReinitialiserSurFrance":
     "Reset everything to France",
   "admin.adminMarketsPage.vousEditezActuellementLa":
@@ -1714,8 +1715,8 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminMarketsPage.creerAvecHeritageFrance":
     "Create with French inheritance",
   "admin.adminMarketsPage.cetteValeurSeraEnregistreeEn":
-    "This value will be saved as an override specific to this market. You can return to the dynamic French value at any time by clicking “Reset”.",
-  "admin.adminMarketsPage.enregistrerLaSurcharge": "Save the override",
+    "This value will be saved in the market's explicit policy. Restoring uses only the reviewed value for the same market.",
+  "admin.adminMarketsPage.enregistrerLaSurcharge": "Save local value",
   "admin.adminModerationPage.moderationSecurite": "Moderation & security",
   "admin.adminModerationPage.fileDeModerationSignalements":
     "Moderation & report queue",
@@ -1905,34 +1906,34 @@ export const messagesEn: MessageCatalogue = {
   "admin.providerImpactModal.sansSecours": "No backup",
   "admin.providerImpactModal.confirmerLaModification": "Confirm the change",
   "admin.providerMarketMatrix.matriceDeCouvertureMultiMarches":
-    "Multi-market coverage matrix & French inheritance",
+    "Multi-market coverage matrix",
   "admin.providerMarketMatrix.laFranceEstLeMarche":
     "France (🇫🇷) is the reference market. Other countries inherit its configuration automatically unless explicitly overridden.",
-  "admin.providerMarketMatrix.ref": "REF",
+  "admin.providerMarketMatrix.ref": "DEFAULT",
   "admin.providerMarketMatrix.referenceActive": "Reference active",
   "admin.providerMarketMatrix.nonConfigure": "Not configured",
   "admin.providerMarketMatrix.heriteDeFr": "↳ Inherited from FR",
   "admin.providerMarketMatrix.personnalise": "★ Customised",
   "admin.providerMarketMatrix.desactive": "Disabled",
   "admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter":
-    "Select the market to inspect or override:",
-  "admin.providerMarketOverridesTab.baseDHeritage": "Inheritance base",
+    "Select the market whose assignment you want to manage:",
+  "admin.providerMarketOverridesTab.baseDHeritage": "Comparison only",
   "admin.providerMarketOverridesTab.touteModificationApporteeALa":
     "Any change made to France is applied immediately to markets with no override.",
   "admin.providerMarketOverridesTab.configurationPersonnalisee":
-    "★ Custom configuration",
+    "★ Explicit assignment",
   "admin.providerMarketOverridesTab.heriteDeFrance": "↳ Inherited from France",
   "admin.providerMarketOverridesTab.noteDeConformiteOuMotif":
-    "Compliance note or reason for the override:",
+    "Compliance note or assignment reason:",
   "admin.providerMarketOverridesTab.reinitialiserSurFrance": "Reset to France",
-  "admin.providerMarketOverridesTab.appliquerLaSurcharge": "Apply the override",
+  "admin.providerMarketOverridesTab.appliquerLaSurcharge": "Save assignment",
   "admin.providerOverviewDashboard.integrationsRepertoriees":
     "Integrations listed",
   "admin.providerOverviewDashboard.santeOperationnelle": "Operational health",
   "admin.providerOverviewDashboard.heritageFranceActif":
     "French inheritance active",
   "admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe":
-    "State of the platform's critical functions (France • reference)",
+    "Critical capability status for the default market",
   "admin.providerOverviewDashboard.resolutionEnDirectDuPrestataire":
     "Live resolution of the primary provider and its effective operating state.",
   "admin.providerOverviewDashboard.matriceMultiMarches": "Multi-market matrix",
@@ -3052,10 +3053,20 @@ export const messagesEn: MessageCatalogue = {
   "admin.discovery.metric.duplicates": "Duplicates suppressed",
   "admin.discovery.metric.diversity": "Diversity reranks",
   "admin.discovery.metric.latency": "Average latency (ms)",
-  "admin.adminMarketsPage.resetAllTitle": "Reset market configuration",
+  "admin.adminMarketsPage.resetAllTitle": "Restore reviewed local policy",
   "admin.adminMarketsPage.resetAllMessage":
-    "All overrides for {market} will be removed. Its configuration will inherit from the {baseline} reference market again.",
-  "admin.adminMarketsPage.resetAllConfirm": "Reset overrides",
+    "The complete {market} configuration will be restored from its own reviewed dataset. No {baseline} setting will be copied.",
+  "admin.adminMarketsPage.resetAllConfirm": "Restore",
+  "admin.adminMarketsPage.localPolicyEditor": "Local policy ({market})",
+  "admin.adminMarketsPage.independentPolicyTitle":
+    "Independent configuration per market",
+  "admin.adminMarketsPage.independentPolicyDescription":
+    "Each market carries a complete policy. The default market is shown for comparison only, and its changes never propagate to other countries.",
+  "admin.adminMarketsPage.restoreReviewedPolicy": "Restore reviewed policy",
+  "admin.adminMarketsPage.defaultMarketNoticeTitle":
+    "Initial default market",
+  "admin.adminMarketsPage.defaultMarketNoticeDescription":
+    "You are editing the explicit {market} policy. This configuration does not propagate to any other market.",
   "admin.monetization.transitionTitle": "Confirm catalogue transition",
   "admin.monetization.transitionReason": "Reason for the transition",
   "admin.monetization.transitionReasonDefault":

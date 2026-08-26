@@ -13,6 +13,7 @@ import {
 } from "../utilities/search-text";
 import { demoVerticalDiscoveryStore } from "../domains/discovery/demo-vertical-discovery.store";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+import { getCountryConfig } from "@shongre/contracts";
 
 export interface IListingRepository {
   getListings(filters?: SearchFilters): Promise<{
@@ -146,8 +147,8 @@ export class MockListingRepository implements IListingRepository {
         if (item.marketCodes && item.marketCodes.length > 0) {
           return item.marketCodes.some((code) => code.toUpperCase() === mCode);
         }
-        // 3. Fallback to primary marketCode or FR
-        return (item.marketCode || DEFAULT_MARKET_CODE).toUpperCase() === mCode;
+        // Legacy rows are usable only when they carry an explicit primary market.
+        return item.marketCode?.toUpperCase() === mCode;
       });
     }
 
@@ -632,7 +633,8 @@ export class MockListingRepository implements IListingRepository {
             status: "active" as const,
             isPrimary: mCode === primary,
             publishedAt: new Date().toISOString(),
-            currency: mCode === "CH" ? "CHF" : "EUR",
+            currency:
+              getCountryConfig(mCode)?.currency || listing.currency,
             complianceChecked: true,
           }));
 

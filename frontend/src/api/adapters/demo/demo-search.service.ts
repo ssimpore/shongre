@@ -1,24 +1,29 @@
 import {
   SearchResponse,
   SearchServiceContract,
+  MarketScopedSearchFilters,
 } from "../../contracts/search.contract";
 import { listingRepository } from "../../../repositories/listing.repository";
-import { Listing, SearchFilters } from "../../../types";
+import { Listing } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { runUnifiedDiscovery } from "@shongre/shared";
 import { toDemoDiscoveryDocument } from "../../../domains/discovery/discovery.mapper";
-import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
+import { getCountryConfig } from "@shongre/contracts";
 
-const POPULAR_KEYWORDS = [
-  "iPhone 15 Pro",
-  "Vélo gravel",
-  "Canapé convertible",
-  "Peugeot 208",
-  "PlayStation 5",
-  "Table en chêne",
-  "Appartement T3",
-  "Veste Sézane",
-];
+const POPULAR_KEYWORDS_BY_MARKET: Record<string, string[]> = {
+  FR: [
+    "iPhone 15 Pro",
+    "Vélo gravel",
+    "Canapé convertible",
+    "Peugeot 208",
+    "PlayStation 5",
+    "Table en chêne",
+    "Appartement T3",
+    "Veste Sézane",
+  ],
+  BE: ["Vélo électrique", "Appartement Bruxelles", "Canapé", "iPhone"],
+  CH: ["Vélo électrique", "Appartement Genève", "Montre", "Ski"],
+};
 
 function buildAttributeFacets(
   listings: Listing[],
@@ -59,8 +64,11 @@ export class DemoSearchService implements SearchServiceContract {
       "default" | "empty_search" | "search_error" = "default",
   ) {}
 
-  async search(params: SearchFilters): Promise<SearchResponse> {
+  async search(params: MarketScopedSearchFilters): Promise<SearchResponse> {
     await simulateNetworkDelay();
+    const marketCode = params.marketCode.trim().toUpperCase();
+    if (!getCountryConfig(marketCode))
+      throw new Error(`Unsupported market: ${params.marketCode}`);
     if (this.scenario === "search_error") {
       throw new Error("Deterministic demo search failure");
     }
@@ -86,7 +94,7 @@ export class DemoSearchService implements SearchServiceContract {
       res.listings.map(toDemoDiscoveryDocument),
       {
         requestId: `demo-search:${JSON.stringify(params)}`,
-        marketCode: params.marketCode || DEFAULT_MARKET_CODE,
+        marketCode,
         query: params.query,
         categoryId: params.subCategorySlug || params.categorySlug,
         city: params.city,
@@ -122,16 +130,23 @@ export class DemoSearchService implements SearchServiceContract {
     };
   }
 
-  async getPopularKeywords(): Promise<string[]> {
+  async getPopularKeywords(marketCode: string): Promise<string[]> {
     await simulateNetworkDelay();
-    return [...POPULAR_KEYWORDS];
+    const normalized = marketCode.trim().toUpperCase();
+    if (!getCountryConfig(normalized))
+      throw new Error(`Unsupported market: ${marketCode}`);
+    return [...(POPULAR_KEYWORDS_BY_MARKET[normalized] || [])];
   }
 
-  async getSearchSuggestions(query: string): Promise<string[]> {
+  async getSearchSuggestions(
+    query: string,
+    marketCode: string,
+  ): Promise<string[]> {
     await simulateNetworkDelay();
     if (!query || query.trim().length < 2) return [];
     const q = query.toLowerCase().trim();
-    return POPULAR_KEYWORDS.filter((kw) => kw.toLowerCase().includes(q));
+    const keywords = await this.getPopularKeywords(marketCode);
+    return keywords.filter((kw) => kw.toLowerCase().includes(q));
   }
 }
 

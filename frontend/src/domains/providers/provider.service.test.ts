@@ -92,16 +92,15 @@ describe("Provider Service High-Level Operations", () => {
     const paymentRow = matrix.find((r) => r.capability === "payment.card");
     expect(paymentRow).toBeDefined();
     expect(paymentRow?.markets.FR.activeProviderName).toBeTruthy();
-    // Switzerland inherits France
-    expect(paymentRow?.markets.CH.isInherited).toBe(true);
-    // Demo configuration contains no fake production market overrides.
-    expect(paymentRow?.markets.BE.isInherited).toBe(true);
+    // Active demo markets have explicit assignments and never inherit France.
+    expect(paymentRow?.markets.CH.isInherited).toBe(false);
+    expect(paymentRow?.markets.BE.isInherited).toBe(false);
+    expect(paymentRow?.markets.ES.mode).toBe("missing");
 
     const relayRow = matrix.find(
       (r) => r.capability === "delivery.relay_point",
     );
     expect(relayRow).toBeDefined();
-    // Mondial relay in Belgium inherits France
-    expect(relayRow?.markets.BE.isInherited).toBe(true);
+    expect(relayRow?.markets.BE.isInherited).toBe(false);
   });
 });

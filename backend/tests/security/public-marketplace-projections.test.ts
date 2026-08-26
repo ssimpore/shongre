@@ -105,7 +105,7 @@ describe("public marketplace projections", () => {
       new DemoListingRepository({ published: listing() }),
       new DemoAIProvider(),
     );
-    const result = await service.getListingById("listing-published");
+    const result = await service.getListingById("listing-published", "FR");
 
     expect(result).not.toBeNull();
     expect(result).not.toHaveProperty("safetyRiskScore");
@@ -124,7 +124,7 @@ describe("public marketplace projections", () => {
         new DemoListingRepository({ [status]: listing(status) }),
         new DemoAIProvider(),
       );
-      expect(await service.getListingById(`listing-${status}`)).toBeNull();
+      expect(await service.getListingById(`listing-${status}`, "FR")).toBeNull();
     },
   );
 

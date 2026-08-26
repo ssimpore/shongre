@@ -4,6 +4,7 @@ import { ListingCard as SharedListingCard } from "@shongre/features/listings/web
 import type { ListingCardView } from "@shongre/contracts";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Image } from "./Image";
 import { IMAGE_SIZES } from "./responsiveImage";
@@ -91,6 +92,7 @@ export function ListingCard({
   className,
 }: ListingCardProps) {
   const { t } = useTranslation();
+  const { currentLocale } = useMarketLocation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const configuredPath = listing.attributes?.canonicalPath;
   const href =
@@ -102,6 +104,7 @@ export function ListingCard({
     <SharedListingCard
       listing={toListingCardView(listing)}
       href={href}
+      locale={currentLocale}
       variant={variant}
       className={`w-full ${className ?? ""}`}
       image={

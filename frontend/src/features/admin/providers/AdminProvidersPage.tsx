@@ -305,11 +305,7 @@ export const AdminProvidersPage: React.FC = () => {
       {activeTab === "matrix" && <ProviderMarketMatrix />}
 
       {activeTab === "routing" && (
-        <ProviderRoutingManager
-          providers={providers}
-          configurations={configurations}
-          onRefresh={() => setRefreshTrigger((prev) => prev + 1)}
-        />
+        <ProviderRoutingManager />
       )}
 
       {activeTab === "audit" && <ProviderAuditLogsTab />}

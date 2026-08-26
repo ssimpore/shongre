@@ -32,6 +32,7 @@ import {
   UnifiedDiscoveryService,
 } from "../discovery/discovery.service.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
+import { getCurrencyMinorUnitDigits } from "@shongre/shared";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -48,6 +49,15 @@ export interface PublicationDraftInput {
     | "rent_plus_charges";
   categoryId?: string;
   marketCode?: string;
+  selectedMarkets?: string[];
+  marketPublications?: Record<
+    string,
+    {
+      priceMinor?: number;
+      currency?: string;
+      localizedContent?: Record<string, unknown>;
+    }
+  >;
   city?: string;
   postalCode?: string;
   images?: string[];
@@ -165,8 +175,14 @@ export class ListingsService {
     return this.listingRepo.findById(id);
   }
 
-  async getListingById(id: string): Promise<PublicListing | null> {
-    const listing = await this.listingRepo.findPublicById(id);
+  async getListingById(
+    id: string,
+    marketCode: string,
+  ): Promise<PublicListing | null> {
+    const listing = await this.listingRepo.findPublicById(
+      id,
+      requireMarketCode(marketCode),
+    );
     return listing ? toPublicListing(listing) : null;
   }
 
@@ -175,8 +191,8 @@ export class ListingsService {
     return { ...result, items: result.items.map(toPublicListing) };
   }
 
-  async createListingDraft(userId?: string): Promise<any> {
-    return this.listingRepo.createDraft(userId);
+  async createListingDraft(userId: string, marketCode: string): Promise<any> {
+    return this.listingRepo.createDraft(userId, requireMarketCode(marketCode));
   }
 
   async getListingDraft(userId: string): Promise<any | null> {
@@ -184,10 +200,20 @@ export class ListingsService {
   }
 
   async saveListingDraft(draft: any, userId?: string): Promise<void> {
-    await this.listingRepo.saveDraft(draft, userId);
+    const marketCode = requireMarketCode(draft?.marketCode);
+    const market = await this.markets.getEffective(marketCode);
+    if (!market.isActive)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce marché n’est pas disponible.",
+      });
+    await this.listingRepo.saveDraft(
+      { ...draft, marketCode },
+      userId,
+    );
   }
 
-  getBulkImportTemplate(locale = "fr-FR") {
+  getBulkImportTemplate(locale: string) {
     const language = locale.toLowerCase().startsWith("fr") ? "fr" : "fr";
     return {
       fileName: `modele_import_annonces_shongre_${language}.csv`,
@@ -300,7 +326,9 @@ export class ListingsService {
         return {
           title: row.title,
           description: row.description,
-          price: row.price.amountMinor / 100,
+          price:
+            row.price.amountMinor /
+            10 ** getCurrencyMinorUnitDigits(row.price.currency),
           categoryId: taxonomyNode.id,
           marketCode,
           city: row.city,
@@ -380,13 +408,39 @@ export class ListingsService {
     }
 
     const marketCode = requireMarketCode(draft.marketCode);
-    const market = await this.markets.getEffective(marketCode);
-    if (!market.isActive || market.code !== marketCode) {
+    const requestedMarketCodes = Array.from(
+      new Set(
+        (draft.selectedMarkets?.length
+          ? draft.selectedMarkets
+          : [marketCode]
+        ).map(requireMarketCode),
+      ),
+    );
+    if (!requestedMarketCodes.includes(marketCode))
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Ce marché n’est pas disponible à la publication.",
+        message: "Le marché principal doit faire partie des marchés publiés.",
+      });
+    const selectedMarketCodes = [
+      marketCode,
+      ...requestedMarketCodes.filter((code) => code !== marketCode),
+    ];
+    const selectedMarkets = await Promise.all(
+      selectedMarketCodes.map((code) => this.markets.getEffective(code)),
+    );
+    if (
+      selectedMarkets.some(
+        (market) => !market.isActive || market.code !== market.marketCode,
+      )
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un marché sélectionné n’est pas disponible à la publication.",
       });
     }
+    const market = selectedMarkets.find(
+      (candidate) => candidate.code === marketCode,
+    )!;
     const allowedDelivery = (draft.allowedDelivery || [
       "hand_delivery",
     ]) as DeliveryType[];
@@ -395,7 +449,10 @@ export class ListingsService {
       allowedDelivery.some(
         (method) =>
           !DELIVERY_TYPES.has(method) ||
-          !market.allowedDeliveryMethods.includes(method),
+          selectedMarkets.some(
+            (selectedMarket) =>
+              !selectedMarket.allowedDeliveryMethods.includes(method),
+          ),
       )
     ) {
       throw new AppError({
@@ -405,14 +462,18 @@ export class ListingsService {
     }
     const images = draft.images || [];
     await this.storage.assertOwnedListingMedia(sellerId, images);
-    const publicationPolicy =
-      await this.publisherEntitlements.authorizePublication({
+    const publicationPolicies = await Promise.all(
+      selectedMarketCodes.map((selectedMarketCode) =>
+        this.publisherEntitlements.authorizePublication({
         actorUserId: sellerId,
         organizationId: draft.organizationId,
         branchId: draft.branchId,
-        marketCode,
-        categoryId: draft.categoryId,
-      });
+          marketCode: selectedMarketCode,
+          categoryId: draft.categoryId!,
+        }),
+      ),
+    );
+    const publicationPolicy = publicationPolicies[0];
 
     const publisherFilter = publicationPolicy.publisher.organizationId
       ? { publisherOrganizationId: publicationPolicy.publisher.organizationId }
@@ -427,7 +488,7 @@ export class ListingsService {
       (value || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .toLocaleLowerCase("fr-FR")
+        .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
     const imageFingerprint = [...(draft.images || [])].sort().join("|");
@@ -441,7 +502,7 @@ export class ListingsService {
         normalize(candidate.title) === normalize(draft.title) &&
         normalize(candidate.description) === normalize(draft.description) &&
         candidate.price === Number(effectivePrice) &&
-        normalize(candidate.city) === normalize(draft.city || "Paris");
+        normalize(candidate.city) === normalize(draft.city);
       return sameExternalStock || sameContentAndMedia;
     });
     if (exactDuplicate) {
@@ -464,6 +525,58 @@ export class ListingsService {
     const newId = randomUUID();
 
     const createdAt = new Date().toISOString();
+    if (!draft.city?.trim() || !draft.postalCode?.trim())
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "La ville et le code postal sont obligatoires.",
+      });
+    const publicationStatus =
+      safety.riskScore >= 50 ? "pending_review" : "active";
+    const marketPublications = selectedMarkets.map((selectedMarket) => {
+      const custom = draft.marketPublications?.[selectedMarket.code];
+      const currency = (custom?.currency || selectedMarket.currency).toUpperCase();
+      if (!selectedMarket.supportedCurrencies.includes(currency))
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `La devise ${currency} n’est pas disponible sur ${selectedMarket.code}.`,
+        });
+      if (
+        selectedMarket.code !== marketCode &&
+        currency !== market.currency &&
+        custom?.priceMinor === undefined
+      )
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `Un prix explicite est requis pour publier en ${currency}.`,
+        });
+      const priceMinor =
+        custom?.priceMinor ??
+        Math.round(
+          Number(effectivePrice) *
+            10 ** getCurrencyMinorUnitDigits(currency),
+        );
+      if (!Number.isSafeInteger(priceMinor) || priceMinor < 0)
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: `Le prix configuré pour ${selectedMarket.code} est invalide.`,
+        });
+      return {
+        marketCode: selectedMarket.code,
+        status: publicationStatus,
+        isPrimary: selectedMarket.code === marketCode,
+        priceMinor,
+        currency,
+        localizedContent: custom?.localizedContent || {},
+        availableServices: Object.fromEntries(
+          allowedDelivery.map((method) => [method, true]),
+        ),
+        complianceState:
+          safety.riskScore >= 50 ? ("pending" as const) : ("approved" as const),
+        publishedAt: safety.riskScore >= 50 ? undefined : createdAt,
+        sortDate: createdAt,
+      } satisfies NonNullable<Listing["marketPublications"]>[number];
+    });
+
     const listing: Listing = {
       id: newId,
       sellerId,
@@ -488,8 +601,10 @@ export class ListingsService {
       brand: draft.brand,
       model: draft.model,
       marketCode,
-      city: draft.city || "Paris",
-      postalCode: draft.postalCode || "75000",
+      marketCodes: selectedMarketCodes,
+      marketPublications,
+      city: draft.city.trim(),
+      postalCode: draft.postalCode.trim(),
       country: market.code,
       allowedDelivery,
       shippingCost: draft.shippingCost || 0,
@@ -508,7 +623,13 @@ export class ListingsService {
       updatedAt: createdAt,
       expiresAt: new Date(
         Date.now() +
-          (publicationPolicy.durationDays || 60) * 24 * 60 * 60 * 1000,
+          Math.min(
+            ...publicationPolicies.map((policy) => policy.durationDays || 60),
+          ) *
+            24 *
+            60 *
+            60 *
+            1000,
       ).toISOString(),
     };
 

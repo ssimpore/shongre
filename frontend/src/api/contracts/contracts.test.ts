@@ -11,11 +11,14 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("performs structured search and keyword suggestions", async () => {
-    const searchRes = await services.search.search({ query: "iPhone" });
+    const searchRes = await services.search.search({
+      query: "iPhone",
+      marketCode: "FR",
+    });
     expect(searchRes).toBeDefined();
     expect(Array.isArray(searchRes.items)).toBe(true);
 
-    const suggestions = await services.search.getSearchSuggestions("iPh");
+    const suggestions = await services.search.getSearchSuggestions("iPh", "FR");
     expect(suggestions).toContain("iPhone 15 Pro");
   });
 

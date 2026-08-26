@@ -17,6 +17,7 @@ import {
   currentBrowserMarketCode,
   publicListingUrl,
 } from "../market/market-routing";
+import { getCountryConfig, getDefaultCountryConfig } from "@shongre/contracts";
 
 /**
  * Demo and imported listings can contain attributes that are not yet present
@@ -550,13 +551,21 @@ export class ListingDisplayResolver {
     const currency =
       listing.currency ||
       effectiveMarket?.localization.defaultCurrency ||
-      "EUR";
+      getCountryConfig(
+        listing.marketCode ||
+          currentBrowserMarketCode() ||
+          getDefaultCountryConfig().marketCode,
+      )?.currency ||
+      getDefaultCountryConfig().currency;
     const photos = listing.photos
       .map((p) => (typeof p === "string" ? p : p.url))
       .filter(Boolean);
     const listingUrl = publicListingUrl({
       listingId: listing.id,
-      countryCode: listing.marketCode || currentBrowserMarketCode() || "FR",
+      countryCode:
+        listing.marketCode ||
+        currentBrowserMarketCode() ||
+        getDefaultCountryConfig().marketCode,
     });
 
     return {
@@ -598,14 +607,22 @@ export class ListingDisplayResolver {
     const currency =
       listing.currency ||
       effectiveMarket?.localization.defaultCurrency ||
-      "EUR";
+      getCountryConfig(
+        listing.marketCode ||
+          currentBrowserMarketCode() ||
+          getDefaultCountryConfig().marketCode,
+      )?.currency ||
+      getDefaultCountryConfig().currency;
     const priceStr = listing.isFreeDonation
       ? "Don gratuit"
       : `${listing.price} ${currency === "EUR" ? "€" : currency}`;
     const categoryName = node?.name || listing.categoryLabel;
     const listingUrl = publicListingUrl({
       listingId: listing.id,
-      countryCode: listing.marketCode || currentBrowserMarketCode() || "FR",
+      countryCode:
+        listing.marketCode ||
+        currentBrowserMarketCode() ||
+        getDefaultCountryConfig().marketCode,
     });
 
     const title = `${listing.title} - ${priceStr} à ${listing.city} | Shongre`;

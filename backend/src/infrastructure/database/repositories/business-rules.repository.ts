@@ -120,22 +120,69 @@ const snapshotHash = (value: unknown) =>
 const deterministicMemoryId = (value: string) =>
   createHash("sha256").update(value).digest("hex").slice(0, 32);
 
-const initialVersion = (): CommercialConfigurationVersion => ({
-  id: BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+const createExplicitDemoCatalog = (
+  source: MonetizationCatalog,
+  marketCode: string,
+  versionId: string,
+): MonetizationCatalog => {
+  const localize = (value: unknown, key?: string): unknown => {
+    if (Array.isArray(value)) {
+      if (
+        [
+          "marketCodes",
+          "countryAvailability",
+          "eligibleMarketCodes",
+        ].includes(key || "")
+      )
+        return value.map((entry) => (entry === source.marketCode ? marketCode : entry));
+      return value.map((entry) => localize(entry));
+    }
+    if (value && typeof value === "object")
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(
+          ([childKey, child]) => [childKey, localize(child, childKey)],
+        ),
+      );
+    if (typeof value === "string") {
+      if (key === "marketCode" && value === source.marketCode) return marketCode;
+      return value.replaceAll(source.configurationVersionId, versionId);
+    }
+    return value;
+  };
+  const catalog = localize(source) as MonetizationCatalog;
+  return {
+    ...catalog,
+    configurationVersionId: versionId,
+    marketCode,
+    generatedAt: "2026-08-25T00:00:00.000Z",
+    stale: false,
+  };
+};
+
+const BELGIUM_DEMO_MONETIZATION_CATALOG = createExplicitDemoCatalog(
+  BASELINE_MONETIZATION_CATALOG,
+  "BE",
+  "commercial-be-demo-v1",
+);
+
+const initialVersion = (
+  catalog: MonetizationCatalog,
+): CommercialConfigurationVersion => ({
+  id: catalog.configurationVersionId,
   setId: "commercial-core",
-  versionNumber: BASELINE_MONETIZATION_CATALOG.versionNumber,
-  marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
+  versionNumber: catalog.versionNumber,
+  marketCode: catalog.marketCode,
   status: "active",
   reason: "Publication du catalogue professionnel verticalisé v2",
-  effectiveFrom: BASELINE_MONETIZATION_CATALOG.generatedAt,
+  effectiveFrom: catalog.generatedAt,
   createdBy: "system:migration",
   approvedBy: "system:migration",
-  createdAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
-  publishedAt: BASELINE_MONETIZATION_CATALOG.generatedAt,
-  productCount: BASELINE_MONETIZATION_CATALOG.products.length,
+  createdAt: catalog.generatedAt,
+  publishedAt: catalog.generatedAt,
+  productCount: catalog.products.length,
   ruleCount:
-    BASELINE_MONETIZATION_CATALOG.rules.length +
-    BASELINE_MONETIZATION_CATALOG.commissionPolicies.reduce(
+    catalog.rules.length +
+    catalog.commissionPolicies.reduce(
       (count, policy) => count + policy.rules.length,
       0,
     ),
@@ -166,9 +213,20 @@ const memory: MemoryState = {
       BASELINE_MONETIZATION_CATALOG.configurationVersionId,
       BASELINE_MONETIZATION_CATALOG,
     ],
+    [
+      BELGIUM_DEMO_MONETIZATION_CATALOG.configurationVersionId,
+      BELGIUM_DEMO_MONETIZATION_CATALOG,
+    ],
   ]),
   versions: new Map([
-    [BASELINE_MONETIZATION_CATALOG.configurationVersionId, initialVersion()],
+    [
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+      initialVersion(BASELINE_MONETIZATION_CATALOG),
+    ],
+    [
+      BELGIUM_DEMO_MONETIZATION_CATALOG.configurationVersionId,
+      initialVersion(BELGIUM_DEMO_MONETIZATION_CATALOG),
+    ],
   ]),
   quotes: new Map(),
   quoteKeys: new Map(),

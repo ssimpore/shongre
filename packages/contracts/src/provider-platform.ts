@@ -1,3 +1,5 @@
+import { getCountryConfig } from "./market-country";
+
 /**
  * Canonical provider-platform contract.
  *
@@ -143,7 +145,11 @@ export interface ProviderDiagnosticResult {
 
 export interface ProviderRoutingPolicy {
   capability: string;
+  /** Provider-neutral action within the capability (for example authorize or refund). */
+  operation: string;
   marketCode: string;
+  /** Required for money-moving routes and omitted for non-financial operations. */
+  currency?: string;
   primaryProviderId: string;
   fallbackProviderId?: string;
   automaticFailover: boolean;
@@ -151,7 +157,9 @@ export interface ProviderRoutingPolicy {
 
 export interface ProviderRouteResolution {
   capability: string;
+  operation: string;
   marketCode: string;
+  currency?: string;
   selectedProviderId: string | null;
   primaryProviderId: string;
   fallbackProviderId?: string;
@@ -1302,8 +1310,33 @@ export function resolveProviderRoute(params: {
   } = params;
   const byId = new Map(entries.map((entry) => [entry.definition.id, entry]));
   const reasons: string[] = [];
+  const normalizedMarketCode = policy.marketCode.trim().toUpperCase();
+  const normalizedCurrency = policy.currency?.trim().toUpperCase();
+  const country = getCountryConfig(normalizedMarketCode);
+
+  if (!policy.operation.trim()) {
+    reasons.push("Provider operation is missing.");
+  }
+  if (normalizedMarketCode !== policy.marketCode) {
+    reasons.push("Market code must use its canonical uppercase representation.");
+  }
+  if (normalizedCurrency && normalizedCurrency !== policy.currency) {
+    reasons.push("Currency code must use its canonical uppercase representation.");
+  }
+  if (!country || country.launchStatus !== "active") {
+    reasons.push(`Market ${normalizedMarketCode || "(missing)"} is not active.`);
+  } else if (
+    normalizedCurrency &&
+    !country.supportedCurrencies.includes(normalizedCurrency)
+  ) {
+    reasons.push(
+      `Currency ${normalizedCurrency} is not enabled for market ${normalizedMarketCode}.`,
+    );
+  }
+  const requestIsValid = reasons.length === 0;
 
   const eligible = (providerId: string | undefined, role: string) => {
+    if (!requestIsValid) return false;
     if (!providerId) return false;
     const entry = byId.get(providerId);
     if (!entry) {
@@ -1317,6 +1350,16 @@ export function resolveProviderRoute(params: {
     }
     if (!supportsMarket(definition, policy.marketCode)) {
       reasons.push(`${role} provider does not support ${policy.marketCode}.`);
+      return false;
+    }
+    if (
+      normalizedCurrency &&
+      definition.supportedCurrencies.length > 0 &&
+      !definition.supportedCurrencies.includes(normalizedCurrency)
+    ) {
+      reasons.push(
+        `${role} provider does not support ${normalizedCurrency} for ${policy.operation}.`,
+      );
       return false;
     }
     if (!runtime.enabled || !runtime.configured) {

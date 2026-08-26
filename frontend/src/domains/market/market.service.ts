@@ -6,7 +6,10 @@ import {
   SettingResolution,
   MarketInheritanceMetrics,
 } from "./market.types";
-import { INITIAL_MARKETS } from "./market.defaults";
+import {
+  createSafeMarketPolicy,
+  INITIAL_MARKETS,
+} from "./market.defaults";
 import {
   normalizePriceFilterStops,
   normalizeRecentSearchesLimit,
@@ -14,7 +17,6 @@ import {
 import {
   marketResolver,
   setNestedValue,
-  deleteNestedValue,
   getNestedValue,
 } from "./market.resolver";
 import { storageService } from "../../services/storage.service";
@@ -60,7 +62,8 @@ export class MarketService {
     const markets = this.getMarkets();
     const normalized = (code || this.getDefaultMarket().code).toUpperCase();
     const found = markets.find((m) => m.code.toUpperCase() === normalized);
-    return found || this.getDefaultMarket();
+    if (!found) throw new Error(`Unsupported market [${normalized}].`);
+    return found;
   }
 
   /**
@@ -90,11 +93,7 @@ export class MarketService {
    */
   public getEffectiveConfig(marketCode?: string): MarketConfiguration {
     const targetMarket = this.getMarket(marketCode);
-    const baselineMarket = this.getDefaultMarket();
-    const resolved = marketResolver.resolveEffectiveConfig(
-      targetMarket,
-      baselineMarket,
-    );
+    const resolved = marketResolver.resolveEffectiveConfig(targetMarket);
     return {
       ...resolved,
       search: {
@@ -119,16 +118,15 @@ export class MarketService {
   }
 
   /**
-   * Returns inheritance metrics (total, inherited, overridden, %)
+   * Returns explicit-configuration coverage metrics for the admin UI.
    */
   public getInheritanceMetrics(marketCode: string): MarketInheritanceMetrics {
     const targetMarket = this.getMarket(marketCode);
-    const baselineMarket = this.getDefaultMarket();
-    return marketResolver.getInheritanceMetrics(targetMarket, baselineMarket);
+    return marketResolver.getInheritanceMetrics(targetMarket);
   }
 
   /**
-   * Identifies which other markets inherit a specific setting
+   * Explicit market policies never propagate a change to another market.
    */
   public getImpactedMarkets(settingPath: string): string[] {
     const allMarkets = this.getMarkets();
@@ -159,13 +157,13 @@ export class MarketService {
         : path === "search.priceFilterStopsMajor"
           ? normalizePriceFilterStops(value)
           : value;
-    const prevValue = getNestedValue(market.overrides, path);
-    const updatedOverrides = { ...market.overrides };
-    setNestedValue(updatedOverrides, path, valueToPersist);
+    const prevValue = getNestedValue(market.configuration, path);
+    const updatedConfiguration = structuredClone(market.configuration);
+    setNestedValue(updatedConfiguration, path, valueToPersist);
 
     const updatedMarket: Market = {
       ...market,
-      overrides: updatedOverrides,
+      configuration: updatedConfiguration,
       updatedAt: new Date().toISOString(),
       version: market.version + 1,
     };
@@ -189,7 +187,7 @@ export class MarketService {
   }
 
   /**
-   * Resets an override so it resumes inheritance from the default market.
+   * Restores one setting from this market's reviewed seed policy.
    */
   public resetMarketOverride(
     marketCode: string,
@@ -211,13 +209,19 @@ export class MarketService {
       );
     }
 
-    const prevValue = getNestedValue(market.overrides, path);
-    const updatedOverrides = { ...market.overrides };
-    deleteNestedValue(updatedOverrides, path);
+    const seed = INITIAL_MARKETS.find((entry) => entry.code === market.code);
+    const seedValue = seed
+      ? getNestedValue(seed.configuration, path)
+      : undefined;
+    if (seedValue === undefined)
+      throw new Error(`No safe seed value exists for [${path}].`);
+    const prevValue = getNestedValue(market.configuration, path);
+    const updatedConfiguration = structuredClone(market.configuration);
+    setNestedValue(updatedConfiguration, path, structuredClone(seedValue));
 
     const updatedMarket: Market = {
       ...market,
-      overrides: updatedOverrides,
+      configuration: updatedConfiguration,
       updatedAt: new Date().toISOString(),
       version: market.version + 1,
     };
@@ -231,9 +235,9 @@ export class MarketService {
       actorName: actor?.name || "Administrateur",
       actorRole: (actor?.role as any) || "admin",
       action: "market_scope_updated",
-      details: `Réinitialisation de la surcharge sur [${path}] pour [${market.name}]. Reprise dynamique de l'héritage du marché par défaut.`,
+      details: `Réinitialisation de [${path}] sur la politique locale validée de [${market.name}].`,
       previousValue: prevValue,
-      newValue: "INHERITED_FROM_FRANCE",
+      newValue: seedValue,
       market: market.code,
     });
 
@@ -241,7 +245,7 @@ export class MarketService {
   }
 
   /**
-   * Resets all overrides for a market, restoring default-market inheritance.
+   * Restores the complete reviewed seed policy for one market.
    */
   public resetAllOverridesToBaseline(
     marketCode: string,
@@ -260,9 +264,12 @@ export class MarketService {
       throw new Error("Cannot reset the canonical default market.");
     }
 
+    const seed = INITIAL_MARKETS.find((entry) => entry.code === market.code);
+    if (!seed)
+      throw new Error(`No safe seed policy exists for [${market.code}].`);
     const updatedMarket: Market = {
       ...market,
-      overrides: {},
+      configuration: structuredClone(seed.configuration),
       updatedAt: new Date().toISOString(),
       version: market.version + 1,
     };
@@ -275,7 +282,7 @@ export class MarketService {
       actorName: actor?.name || "Administrateur",
       actorRole: (actor?.role as any) || "admin",
       action: "market_scope_updated",
-      details: `Toutes les surcharges du marché [${market.name}] ont été réinitialisées sur la France (100% hérité).`,
+      details: `La politique du marché [${market.name}] a été restaurée depuis sa configuration locale validée.`,
       market: market.code,
     });
 
@@ -301,7 +308,7 @@ export class MarketService {
     const market = markets[targetIdx];
     if (market.isDefault && status !== "active") {
       throw new Error(
-        "The default reference market (France) must always remain active.",
+        "The configured default market must always remain active.",
       );
     }
 
@@ -350,12 +357,12 @@ export class MarketService {
     if (!/^\/$|^\/[a-z0-9-]+$/.test(basePath)) {
       throw new Error("Le préfixe doit être / ou /code-pays.");
     }
-    if (marketCode === "FR" && basePath !== "/") {
+    if (markets[targetIdx].isDefault && basePath !== "/") {
       throw new Error(
-        "La France doit rester publiée à la racine de shongre.fr.",
+        "Le marché par défaut doit rester publié à la racine de son domaine.",
       );
     }
-    if (marketCode !== "FR" && basePath === "/") {
+    if (!markets[targetIdx].isDefault && basePath === "/") {
       throw new Error("La racine shongre.com est réservée au portail global.");
     }
     if (
@@ -391,7 +398,7 @@ export class MarketService {
   }
 
   /**
-   * Creates a new market inheriting 100% from France by default
+   * Creates a fail-closed draft with a complete local policy.
    */
   public createMarket(
     data: {
@@ -402,7 +409,7 @@ export class MarketService {
       supportedLocales?: string[];
       currency: string;
       currencySymbol?: string;
-      timezone?: string;
+      timezone: string;
       status?: MarketStatus;
       geography?: MarketGeography;
     },
@@ -423,14 +430,14 @@ export class MarketService {
       flag: data.flag || "🌐",
       status: data.status || "draft",
       isDefault: false,
-      defaultLocale: data.defaultLocale || "fr-FR",
+      defaultLocale: data.defaultLocale,
       supportedLocales: data.supportedLocales || [
-        data.defaultLocale || "fr-FR",
+        data.defaultLocale,
       ],
-      currency: data.currency.toUpperCase() || "EUR",
+      currency: data.currency.toUpperCase(),
       currencySymbol:
-        data.currencySymbol || (data.currency === "EUR" ? "€" : data.currency),
-      timezone: data.timezone || "Europe/Paris",
+        data.currencySymbol || data.currency.toUpperCase(),
+      timezone: data.timezone,
       routing: {
         primaryDomain: "shongre.com",
         basePath: `/${normalizedCode.toLowerCase()}`,
@@ -442,20 +449,15 @@ export class MarketService {
         regions: [],
         popularCities: [],
       },
-      overrides: {
-        general: {
-          name: data.name.trim(),
-          supportEmail: `support@shongre.${normalizedCode.toLowerCase()}`,
-        },
-        localization: {
-          defaultLocale: data.defaultLocale,
-          defaultCurrency: data.currency.toUpperCase(),
-          currencySymbol:
-            data.currencySymbol ||
-            (data.currency === "EUR" ? "€" : data.currency),
-          timezone: data.timezone || "Europe/Paris",
-        },
-      },
+      configuration: createSafeMarketPolicy({
+        name: data.name.trim(),
+        defaultLocale: data.defaultLocale,
+        supportedLocales: data.supportedLocales || [data.defaultLocale],
+        currency: data.currency.toUpperCase(),
+        currencySymbol: data.currencySymbol || data.currency.toUpperCase(),
+        timezone: data.timezone,
+        supportEmail: `support@shongre.com`,
+      }),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       version: 1,
@@ -469,7 +471,7 @@ export class MarketService {
       actorName: actor?.name || "Administrateur",
       actorRole: (actor?.role as any) || "admin",
       action: "market_scope_updated",
-      details: `Création du nouveau marché [${newMarket.name}] (${newMarket.code}) avec héritage France`,
+      details: `Création du nouveau marché [${newMarket.name}] (${newMarket.code}) avec capacités réglementées désactivées par défaut`,
       newValue: newMarket,
       market: newMarket.code,
     });
@@ -554,8 +556,7 @@ export class MarketService {
     actor?: { id: string; name: string; role: string },
   ): Market {
     const market = this.getMarket(marketCode);
-    const currentOverrides = market.overrides || {};
-    const currentTaxonomy = currentOverrides.taxonomy || {};
+    const currentTaxonomy = market.configuration.taxonomy;
     const disabledCategories = new Set(
       currentTaxonomy.disabledCategorySlugs || [],
     );
@@ -652,7 +653,11 @@ export class MarketService {
       }
 
       // 4. Currency warning if different from default EUR
-      if (config.localization.defaultCurrency !== "EUR") {
+      if (
+        config.localization.defaultCurrency !==
+        this.getEffectiveConfig(this.getDefaultMarket().code).localization
+          .defaultCurrency
+      ) {
         warnings.push(
           `Devise locale : ${config.localization.defaultCurrency} (${config.localization.currencySymbol})`,
         );
@@ -676,13 +681,13 @@ export class MarketService {
         ineligibilityReason,
         warnings,
         features: {
-          directPurchase: config.payments?.enabled ?? true,
-          reservation: config.reservation?.enabled ?? true,
-          handDelivery: config.delivery?.handDeliveryEnabled ?? true,
+          directPurchase: config.payments.enabled,
+          reservation: config.reservation.enabled,
+          handDelivery: config.delivery.handDeliveryEnabled,
           parcelShipping:
-            (config.delivery?.enabled ?? true) &&
-            ((config.delivery?.carriers?.mondialRelay?.enabled ?? false) ||
-              (config.delivery?.carriers?.colissimo?.enabled ?? false)),
+            config.delivery.enabled &&
+            (config.delivery.carriers.mondialRelay.enabled ||
+              config.delivery.carriers.colissimo.enabled),
           crossBorderDeliverySupported: true,
         },
       };

@@ -433,8 +433,8 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                 }`}
                                 title={
                                   cfg?.marketOverrides?.[m]
-                                    ? `Surchargé pour ${m}`
-                                    : `Hérite pour ${m}`
+                                    ? `Affecté explicitement à ${m}`
+                                    : `Compatible avec ${m}, sans affectation`
                                 }
                               >
                                 {m}
@@ -443,7 +443,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           )}
                           {overridesCount > 0 && (
                             <span className="text-micro text-info font-semibold ml-1">
-                              ({overridesCount} surcharge
+                              ({overridesCount} affectation
                               {overridesCount > 1 ? "s" : ""})
                             </span>
                           )}

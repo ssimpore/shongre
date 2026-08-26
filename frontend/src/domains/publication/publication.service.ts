@@ -484,7 +484,7 @@ export class PublicationService {
     const primaryMarket = (
       draft.marketCode ||
       selectedMarkets[0] ||
-      "FR"
+      marketService.getDefaultMarket().code
     ).toUpperCase();
 
     const marketPublications = selectedMarkets.map((mCode) => {
@@ -495,7 +495,8 @@ export class PublicationService {
         isPrimary: mCode === primaryMarket,
         publishedAt: now,
         customPrice: customConfig?.customPrice,
-        currency: customConfig?.currency || (mCode === "CH" ? "CHF" : "EUR"),
+        currency:
+          customConfig?.currency || marketService.getMarket(mCode).currency,
         complianceChecked: true,
       };
     });
@@ -554,7 +555,8 @@ export class PublicationService {
       marketCodes: selectedMarkets,
       marketPublications,
       currency:
-        draft.pricing.currency || (primaryMarket === "CH" ? "CHF" : "EUR"),
+        draft.pricing.currency ||
+        marketService.getMarket(primaryMarket).currency,
       // Paid prominence is activated only after the listing exists and the
       // PromotionsService confirms checkout. A stale draft choice can never
       // manufacture a paid placement.
@@ -620,7 +622,11 @@ export class PublicationService {
       pricing: updates.pricing || {
         priceModel: "fixed",
         amount: existing.price,
-        currency: existing.currency || "EUR",
+        currency:
+          existing.currency ||
+          marketService.getMarket(
+            existing.marketCode || marketService.getDefaultMarket().code,
+          ).currency,
         isNegotiable: existing.isNegotiable,
         isFreeDonation: existing.isFreeDonation,
       },
@@ -641,7 +647,8 @@ export class PublicationService {
       location: updates.location || {
         city: existing.city,
         postalCode: existing.postalCode,
-        countryCode: "FR",
+        countryCode:
+          existing.marketCode || marketService.getDefaultMarket().code,
         hideExactAddress: true,
       },
       currentStep: 1,
@@ -673,7 +680,11 @@ export class PublicationService {
       pricing: {
         priceModel: "fixed",
         amount: existing.price,
-        currency: existing.currency || "EUR",
+        currency:
+          existing.currency ||
+          marketService.getMarket(
+            existing.marketCode || marketService.getDefaultMarket().code,
+          ).currency,
         isNegotiable: existing.isNegotiable,
         isFreeDonation: existing.isFreeDonation,
       },

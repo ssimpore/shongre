@@ -18,11 +18,16 @@ import {
   DEMO_USERS,
 } from "../mocks/initialDemoData";
 import { Market } from "../domains/market/market.types";
-import { INITIAL_MARKETS } from "../domains/market/market.defaults";
+import {
+  createSafeMarketPolicy,
+  INITIAL_MARKETS,
+} from "../domains/market/market.defaults";
+import { deepMergeOverrides } from "../domains/market/market.resolver";
 import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+import { getCountryConfig } from "@shongre/contracts";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -134,7 +139,10 @@ class StorageService {
                 "active" | "draft",
               isPrimary: mCode === primaryMarket,
               publishedAt: l.createdAt,
-              currency: l.currency || (mCode === "CH" ? "CHF" : "EUR"),
+              currency:
+                l.currency ||
+                getCountryConfig(mCode)?.currency ||
+                getCountryConfig(primaryMarket)?.currency,
               complianceChecked: true,
             }));
 
@@ -755,7 +763,31 @@ class StorageService {
 
   // Multi-Market Configuration & Active Market Store
   getMarkets(): Market[] {
-    return this.get<Market[]>(KEYS.MARKETS, INITIAL_MARKETS);
+    const stored = this.get<Array<Market & { overrides?: Record<string, any> }>>(
+      KEYS.MARKETS,
+      INITIAL_MARKETS,
+    );
+    return stored.map((rawMarket) => {
+      if (rawMarket.configuration) return rawMarket;
+      const seed = INITIAL_MARKETS.find(
+        (market) => market.code === rawMarket.code,
+      );
+      const safeBase =
+        seed?.configuration ||
+        createSafeMarketPolicy({
+          name: rawMarket.name,
+          defaultLocale: rawMarket.defaultLocale,
+          supportedLocales: rawMarket.supportedLocales,
+          currency: rawMarket.currency,
+          currencySymbol: rawMarket.currencySymbol,
+          timezone: rawMarket.timezone,
+        });
+      const { overrides, ...market } = rawMarket;
+      return {
+        ...market,
+        configuration: deepMergeOverrides(safeBase, overrides || {}),
+      } as Market;
+    });
   }
 
   saveMarkets(markets: Market[]): void {
@@ -766,7 +798,7 @@ class StorageService {
   }
 
   getActiveMarketCode(): string {
-    return this.get<string>(KEYS.ACTIVE_MARKET, "FR");
+    return this.get<string>(KEYS.ACTIVE_MARKET, DEFAULT_MARKET_CODE);
   }
 
   saveActiveMarketCode(code: string): void {

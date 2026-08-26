@@ -81,22 +81,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
                   {m} (Direct)
                 </span>
               ))}
-              {impact.inheritedMarketsAffected.map((m) => (
-                <span
-                  key={m}
-                  className="px-2 py-0.5 rounded bg-stone-200 text-stone-800 font-medium"
-                >
-                  {m} (Hérité de {defaultMarket.code})
-                </span>
-              ))}
             </div>
-            {impact.inheritedMarketsAffected.length > 0 && (
-              <p className="text-micro text-stone-500 italic">
-                {t(
-                  "admin.providerImpactModal.cesMarchesHeritentActuellementDe",
-                )}
-              </p>
-            )}
           </div>
 
           {/* Impacted Features */}
@@ -127,7 +112,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
               </span>
               <span className="text-micro text-stone-500">
                 {impact.hasAlternativeFallback
-                  ? "Un prestataire secondaire prendra automatiquement le relais sans coupure de service."
+                  ? "Un prestataire secondaire explicite existe. La règle de routage indique séparément si sa bascule automatique est autorisée."
                   : "Aucun secours configuré : la fonctionnalité sera temporairement indisponible pour les acheteurs."}
               </span>
             </div>

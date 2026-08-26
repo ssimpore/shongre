@@ -4,7 +4,6 @@ import {
   SettingResolution,
   MarketInheritanceMetrics,
 } from "./market.types";
-import { FR_CANONICAL_CONFIG } from "./market.defaults";
 
 /**
  * Checks if a value is a plain JavaScript object (and not null, array, date, regex, etc.)
@@ -39,7 +38,7 @@ function deepClone<T>(obj: T): T {
 /**
  * Deeply merges overrides onto a base object while strictly respecting
  * explicit values (including false, 0, empty string, and empty arrays).
- * Only `undefined` values are ignored/inherited.
+ * Only `undefined` values are ignored while materializing a bootstrap policy.
  */
 export function deepMergeOverrides<T extends Record<string, any>>(
   base: T,
@@ -54,7 +53,7 @@ export function deepMergeOverrides<T extends Record<string, any>>(
   for (const key of Object.keys(overrides)) {
     const overrideValue = overrides[key];
 
-    // If undefined, do NOT override (inherit baseline)
+    // Undefined leaves the bootstrap input unchanged.
     if (overrideValue === undefined) {
       continue;
     }
@@ -139,29 +138,19 @@ export function deleteNestedValue(
 }
 
 /**
- * Central Dynamic Inheritance Resolver Engine
+ * Explicit market policy resolver.
  */
 export class MarketResolver {
   /**
    * Resolves the complete effective MarketConfiguration for a given market.
-   * Logic: canonical config + baseline-market overrides + local overrides.
+   * A market carries a complete configuration; another market is never used as
+   * a runtime fallback.
    */
   public resolveEffectiveConfig(
     market: Market,
-    baselineMarket?: Market | null,
+    _baselineMarket?: Market | null,
   ): MarketConfiguration {
-    const baselineOverrides =
-      baselineMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveBaseline = deepMergeOverrides(
-      FR_CANONICAL_CONFIG,
-      baselineOverrides,
-    );
-
-    if (market.isDefault) {
-      return effectiveBaseline;
-    }
-
-    return deepMergeOverrides(effectiveBaseline, market.overrides);
+    return deepClone(market.configuration);
   }
 
   /**
@@ -172,49 +161,16 @@ export class MarketResolver {
     baselineMarket: Market | null,
     path: string,
   ): SettingResolution<T> {
-    const baselineOverrides =
-      baselineMarket?.overrides || (market.isDefault ? market.overrides : {});
-    const effectiveBaseline = deepMergeOverrides(
-      FR_CANONICAL_CONFIG,
-      baselineOverrides,
-    );
-    const baselineValue = getNestedValue(effectiveBaseline, path);
-    const baselineMarketCode = baselineMarket?.code || market.code;
-
-    if (market.isDefault) {
-      const baselineSpecificOverride = getNestedValue(market.overrides, path);
-      const isOverridden = baselineSpecificOverride !== undefined;
-      return {
-        value: (isOverridden ? baselineSpecificOverride : baselineValue) as T,
-        source: "BASELINE",
-        sourceMarketCode: baselineMarketCode,
-        isInherited: false,
-        overrideDefined: isOverridden,
-        baselineReferenceValue: baselineValue,
-      };
-    }
-
-    // Check if target market defines an explicit override
-    const localOverride = getNestedValue(market.overrides, path);
-    const hasLocalOverride = localOverride !== undefined;
-
-    if (hasLocalOverride) {
-      return {
-        value: localOverride as T,
-        source: "LOCAL",
-        sourceMarketCode: market.code,
-        isInherited: false,
-        overrideDefined: true,
-        baselineReferenceValue: baselineValue,
-      };
-    }
-
+    const localValue = getNestedValue(market.configuration, path);
+    const baselineValue = baselineMarket
+      ? getNestedValue(baselineMarket.configuration, path)
+      : localValue;
     return {
-      value: baselineValue as T,
-      source: "BASELINE",
-      sourceMarketCode: baselineMarketCode,
-      isInherited: true,
-      overrideDefined: false,
+      value: localValue as T,
+      source: "LOCAL",
+      sourceMarketCode: market.code,
+      isInherited: false,
+      overrideDefined: localValue !== undefined,
       baselineReferenceValue: baselineValue,
     };
   }
@@ -237,66 +193,35 @@ export class MarketResolver {
   }
 
   /**
-   * Calculates inheritance percentage and breakdown metrics for a market.
+   * Reports explicit configuration coverage for the compatibility admin API.
    */
   public getInheritanceMetrics(
     market: Market,
     baselineMarket?: Market | null,
   ): MarketInheritanceMetrics {
-    const allPaths = this.countLeafFields(FR_CANONICAL_CONFIG);
+    const allPaths = this.countLeafFields(market.configuration);
     const totalFieldsCount = allPaths.length;
-
-    if (market.isDefault) {
-      return {
-        marketCode: market.code,
-        totalFieldsCount,
-        inheritedFieldsCount: 0,
-        overriddenFieldsCount: 0,
-        percentInherited: 0,
-        percentOverridden: 100,
-      };
-    }
-
-    let overriddenCount = 0;
-    for (const path of allPaths) {
-      if (getNestedValue(market.overrides, path) !== undefined) {
-        overriddenCount++;
-      }
-    }
-
-    const inheritedCount = totalFieldsCount - overriddenCount;
-    const percentInherited = Math.round(
-      (inheritedCount / totalFieldsCount) * 100,
-    );
-    const percentOverridden = 100 - percentInherited;
 
     return {
       marketCode: market.code,
       totalFieldsCount,
-      inheritedFieldsCount: inheritedCount,
-      overriddenFieldsCount: overriddenCount,
-      percentInherited,
-      percentOverridden,
+      inheritedFieldsCount: 0,
+      overriddenFieldsCount: totalFieldsCount,
+      percentInherited: 0,
+      percentOverridden: 100,
     };
   }
 
   /**
-   * Identifies which markets inherit a setting from the default market.
+   * Compatibility API: explicit policies never have downstream markets.
    */
   public getImpactedMarkets(
     settingPath: string,
     allMarkets: Market[],
   ): string[] {
-    const impactedCodes: string[] = [];
-    for (const m of allMarkets) {
-      if (!m.isDefault) {
-        const localVal = getNestedValue(m.overrides, settingPath);
-        if (localVal === undefined) {
-          impactedCodes.push(m.code);
-        }
-      }
-    }
-    return impactedCodes;
+    void settingPath;
+    void allMarkets;
+    return [];
   }
 }
 

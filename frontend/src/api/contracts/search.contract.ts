@@ -15,8 +15,10 @@ export interface SearchResponse {
   };
 }
 
+export type MarketScopedSearchFilters = SearchFilters & { marketCode: string };
+
 export interface SearchServiceContract {
-  search(params: SearchFilters): Promise<SearchResponse>;
-  getPopularKeywords(): Promise<string[]>;
-  getSearchSuggestions(query: string): Promise<string[]>;
+  search(params: MarketScopedSearchFilters): Promise<SearchResponse>;
+  getPopularKeywords(marketCode: string): Promise<string[]>;
+  getSearchSuggestions(query: string, marketCode: string): Promise<string[]>;
 }

@@ -64,7 +64,7 @@ export const ProviderMarketOverridesTab: React.FC<
         priority: Number(overridePriority),
         customNotes,
       });
-      toast.success(`Surcharge enregistrée pour ${selectedMarket}.`);
+      toast.success(`Affectation enregistrée pour ${selectedMarket}.`);
       onUpdated();
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de l'enregistrement.");
@@ -75,7 +75,7 @@ export const ProviderMarketOverridesTab: React.FC<
     try {
       await providerService.resetMarketOverride(provider.id, selectedMarket);
       toast.success(
-        `Surcharge supprimée. ${selectedMarket} hérite à nouveau de ${defaultMarket.name}.`,
+        `Affectation supprimée. ${provider.name} est désormais indisponible sur ${selectedMarket} tant qu'aucune nouvelle affectation n'est enregistrée.`,
       );
       onUpdated();
     } catch (err: any) {
@@ -122,7 +122,7 @@ export const ProviderMarketOverridesTab: React.FC<
                         : "bg-info-surface text-info"
                     }`}
                   >
-                    Surcharge
+                    Affecté
                   </span>
                 )}
               </button>
@@ -131,14 +131,14 @@ export const ProviderMarketOverridesTab: React.FC<
         </div>
       </div>
 
-      {/* 2. Side-by-side canonical baseline vs target market */}
+      {/* 2. Side-by-side default-market comparison vs target assignment */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Canonical market reference card */}
+        {/* Default-market comparison card */}
         <div className="bg-stone-50/80 p-5 rounded-xl border border-stone-200 space-y-3">
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
             <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
-              <span>{defaultMarket.flag}</span> {defaultMarket.name} (Référence
-              canonique)
+              <span>{defaultMarket.flag}</span> {defaultMarket.name} (marché
+              par défaut)
             </span>
             <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
               {t("admin.providerMarketOverridesTab.baseDHeritage")}
@@ -168,12 +168,12 @@ export const ProviderMarketOverridesTab: React.FC<
             </div>
           </div>
           <p className="text-micro text-stone-500 italic pt-2">
-            Toute modification de cette base affecte les marchés qui en
-            héritent.
+            Valeurs affichées uniquement à titre de comparaison. Elles ne se
+            propagent à aucun autre marché.
           </p>
         </div>
 
-        {/* Target Market Override Card */}
+        {/* Target Market Assignment Card */}
         <div
           className={`p-5 rounded-xl border shadow-xs space-y-4 ${
             isOverridden
@@ -198,7 +198,7 @@ export const ProviderMarketOverridesTab: React.FC<
               </span>
             ) : (
               <span className="text-micro font-semibold bg-stone-100 text-stone-600 px-2 py-0.5 rounded">
-                Hérite de {defaultMarket.name}
+                Aucune affectation
               </span>
             )}
           </div>
@@ -272,7 +272,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
                 className="text-xs text-danger hover:bg-danger-surface"
               >
-                Réinitialiser sur {defaultMarket.name}
+                Supprimer l'affectation
               </Button>
             ) : (
               <span className="text-xs text-stone-500 italic">

@@ -196,6 +196,44 @@ describe("API v1 Endpoints Integration", () => {
     expect(data).not.toHaveProperty("subscriptionId");
   });
 
+  it("isolates country search while resolving an explicit shared publication", async () => {
+    const [frResponse, beResponse] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/listings?marketCode=FR`),
+      fetch(`${baseUrl}/api/v1/listings?marketCode=BE`),
+    ]);
+    expect(frResponse.status).toBe(200);
+    expect(beResponse.status).toBe(200);
+    const fr = await frResponse.json();
+    const be = await beResponse.json();
+    expect(fr.listings.some((listing: any) => listing.id === "list_be_1")).toBe(
+      false,
+    );
+    expect(be.listings.some((listing: any) => listing.id === "list_be_1")).toBe(
+      true,
+    );
+    expect(be.listings.some((listing: any) => listing.id === "list_1")).toBe(
+      true,
+    );
+
+    const sharedDetail = await fetch(`${baseUrl}/api/v1/listings/list_1`, {
+      headers: { "X-Shongre-Market": "BE" },
+    });
+    expect(await sharedDetail.json()).toMatchObject({
+      id: "list_1",
+      marketCode: "BE",
+      price: 265,
+      currency: "EUR",
+    });
+  });
+
+  it("does not expose a Belgium-only listing through the France detail route", async () => {
+    const response = await fetch(`${baseUrl}/api/v1/listings/list_be_1`, {
+      headers: { "X-Shongre-Market": "FR" },
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toBeNull();
+  });
+
   it("returns privacy-safe public profiles and hides staff profiles", async () => {
     const sellerResponse = await fetch(`${baseUrl}/api/v1/users/user_camille`);
     expect(sellerResponse.status).toBe(200);
@@ -655,9 +693,12 @@ describe("API v1 Endpoints Integration", () => {
     expect((await ownAccount.json()).accountKind).toBe("individual");
 
     const buyerPlatform = await fetch(
-      `${baseUrl}/api/v1/finance/platform/overview`,
+      `${baseUrl}/api/v1/finance/platform/overview?period=30d&marketCode=ALL&currency=EUR`,
       {
-        headers: auth(buyerToken),
+        headers: {
+          ...auth(buyerToken),
+          "X-Shongre-Market": "FR",
+        },
       },
     );
     expect(buyerPlatform.status).toBe(403);
@@ -700,7 +741,7 @@ describe("API v1 Endpoints Integration", () => {
     expect(financeReconciliation.status).toBe(200);
 
     const adminPlatform = await fetch(
-      `${baseUrl}/api/v1/finance/platform/overview`,
+      `${baseUrl}/api/v1/finance/platform/overview?period=30d&marketCode=ALL&currency=EUR`,
       {
         headers: auth(adminToken),
       },
@@ -953,7 +994,10 @@ describe("API v1 Endpoints Integration", () => {
       `${baseUrl}/api/v1/messaging/conversations`,
       {
         method: "POST",
-        headers: auth(buyerToken),
+        headers: {
+          ...auth(buyerToken),
+          "X-Shongre-Market": "FR",
+        },
         body: JSON.stringify({
           listingId: "list_1",
           sellerId: "user_admin",

@@ -18,9 +18,19 @@ export const publicationInputSchema = z.object({
     .max(PUBLICATION_CONSTRAINTS.description.maxLength)
     .default(""),
   amountMinor: z.number().int().positive(),
-  currency: z.string().length(3).default("EUR"),
+  currency: z.string().length(3),
   categoryId: z.string().min(1),
   marketCode: marketCodeSchema,
+  selectedMarkets: z.array(marketCodeSchema).min(1).optional(),
+  marketPublications: z
+    .record(
+      z.object({
+        priceMinor: z.number().int().nonnegative().optional(),
+        currency: z.string().length(3).optional(),
+        localizedContent: z.record(z.unknown()).optional(),
+      }),
+    )
+    .optional(),
   city: z.string().min(1),
   postalCode: z.string().min(3),
   condition: z.string().min(1),

@@ -1,5 +1,6 @@
 import {
   Listing,
+  ListingMarketPublication,
   SearchFilters,
   DeliveryType,
 } from "../../../shared/types/index.js";
@@ -7,10 +8,15 @@ import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { AppError } from "../../../shared/errors/app-error.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
 import { databaseFailure } from "./repository-error.js";
+import {
+  getCurrencyMinorUnitDigits,
+  minorToMajorAmount,
+} from "@shongre/shared";
+import { getCountryConfig } from "@shongre/contracts";
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
-  findPublicById(id: string): Promise<Listing | null>;
+  findPublicById(id: string, marketCode: string): Promise<Listing | null>;
   search(filter: SearchFilters): Promise<{
     items: Listing[];
     total: number;
@@ -22,7 +28,7 @@ export interface IListingRepository {
   delete(id: string): Promise<boolean>;
   toggleFavorite(userId: string, listingId: string): Promise<boolean>;
   getFavorites(userId: string): Promise<string[]>;
-  createDraft(userId?: string): Promise<any>;
+  createDraft(userId: string, marketCode: string): Promise<any>;
   saveDraft(draft: any, userId?: string): Promise<void>;
   getDraft(userId?: string): Promise<any | null>;
 }
@@ -41,6 +47,31 @@ export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
     brand: "Specialized",
     model: "Diverge E5",
     marketCode: "FR",
+    marketCodes: ["FR", "BE"],
+    marketPublications: [
+      {
+        marketCode: "FR",
+        status: "active",
+        isPrimary: true,
+        priceMinor: 25_000,
+        currency: "EUR",
+        complianceState: "approved",
+        availableServices: { handDelivery: true, relayPoint: true },
+        sortDate: "2026-08-24T09:00:00.000Z",
+        publishedAt: "2026-08-24T09:00:00.000Z",
+      },
+      {
+        marketCode: "BE",
+        status: "active",
+        isPrimary: false,
+        priceMinor: 26_500,
+        currency: "EUR",
+        complianceState: "approved",
+        availableServices: { handDelivery: true, relayPoint: true },
+        sortDate: "2026-08-25T09:00:00.000Z",
+        publishedAt: "2026-08-25T09:00:00.000Z",
+      },
+    ],
     city: "Lyon",
     postalCode: "69002",
     department: "69 - Rhône",
@@ -59,6 +90,51 @@ export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  list_be_1: {
+    id: "list_be_1",
+    sellerId: "user_camille",
+    categoryId: "bicycles",
+    title: "Vélo urbain électrique — Bruxelles",
+    description: "Vélo électrique entretenu, retrait possible à Bruxelles.",
+    price: 1_450,
+    currency: "EUR",
+    status: "published",
+    condition: "tres-bon-etat",
+    brand: "Cowboy",
+    model: "Classic",
+    marketCode: "BE",
+    marketCodes: ["BE"],
+    marketPublications: [
+      {
+        marketCode: "BE",
+        status: "active",
+        isPrimary: true,
+        priceMinor: 145_000,
+        currency: "EUR",
+        complianceState: "approved",
+        availableServices: { handDelivery: true },
+        sortDate: "2026-08-25T10:00:00.000Z",
+        publishedAt: "2026-08-25T10:00:00.000Z",
+      },
+    ],
+    city: "Bruxelles",
+    postalCode: "1000",
+    region: "Bruxelles-Capitale",
+    country: "BE",
+    allowedDelivery: ["hand_delivery"],
+    shippingCost: 0,
+    images: [
+      "https://images.unsplash.com/photo-1571333250630-f0230c320b6d?auto=format&fit=crop&w=800&q=80",
+    ],
+    isUrgent: false,
+    isFeatured: false,
+    viewCount: 87,
+    favoriteCount: 9,
+    attributes: { assistance: "electric" },
+    createdAt: "2026-08-25T10:00:00.000Z",
+    updatedAt: "2026-08-25T10:00:00.000Z",
+    expiresAt: "2026-10-24T10:00:00.000Z",
   },
 };
 
@@ -88,11 +164,32 @@ export class DemoListingRepository implements IListingRepository {
     return item ? { ...item } : null;
   }
 
-  async findPublicById(id: string): Promise<Listing | null> {
+  async findPublicById(id: string, marketCode: string): Promise<Listing | null> {
     const item = await this.findById(id);
-    return item && ["published", "reserved", "sold"].includes(item.status)
-      ? item
-      : null;
+    if (!item || !["published", "reserved", "sold"].includes(item.status))
+      return null;
+    const requestedMarketCode = requireMarketCode(marketCode);
+    const publication = item.marketPublications?.find(
+      (entry) =>
+        entry.marketCode === requestedMarketCode &&
+        entry.status === "active" &&
+        entry.complianceState === "approved",
+    );
+    if (item.marketPublications?.length && !publication) return null;
+    if (!publication && item.marketCode !== requestedMarketCode) return null;
+    return publication
+      ? {
+          ...item,
+          marketCode: requestedMarketCode,
+          price: minorToMajorAmount(
+            publication.priceMinor,
+            publication.currency,
+          ),
+          currency: publication.currency,
+          publishedAt: publication.publishedAt ?? item.publishedAt,
+          organicFreshnessAt: publication.sortDate,
+        }
+      : item;
   }
 
   async search(filters: SearchFilters): Promise<{
@@ -106,9 +203,32 @@ export class DemoListingRepository implements IListingRepository {
     );
 
     if (filters.marketCode) {
-      result = result.filter(
-        (l) => l.marketCode.toUpperCase() === filters.marketCode?.toUpperCase(),
-      );
+      const marketCode = requireMarketCode(filters.marketCode);
+      result = result.flatMap((listing) => {
+        const publication = listing.marketPublications?.find(
+          (entry) =>
+            entry.marketCode === marketCode &&
+            entry.status === "active" &&
+            entry.complianceState === "approved",
+        );
+        if (listing.marketPublications?.length && !publication) return [];
+        if (!publication && listing.marketCode !== marketCode) return [];
+        return [
+          publication
+            ? {
+                ...listing,
+                marketCode,
+                price: minorToMajorAmount(
+                  publication.priceMinor,
+                  publication.currency,
+                ),
+                currency: publication.currency,
+                publishedAt: publication.publishedAt ?? listing.publishedAt,
+                organicFreshnessAt: publication.sortDate,
+              }
+            : listing,
+        ];
+      });
     }
     if (filters.categoryId) {
       result = result.filter((l) => l.categoryId === filters.categoryId);
@@ -207,7 +327,7 @@ export class DemoListingRepository implements IListingRepository {
     return userFavs ? Array.from(userFavs) : ["list_1"];
   }
 
-  async createDraft(userId?: string): Promise<any> {
+  async createDraft(userId: string, marketCode: string): Promise<any> {
     const draft = {
       step: "category",
       categoryId: "",
@@ -216,7 +336,7 @@ export class DemoListingRepository implements IListingRepository {
       price: 0,
       condition: "bon-etat",
       photos: [],
-      marketCode: "FR",
+      marketCode: requireMarketCode(marketCode),
       allowedDelivery: ["hand_delivery"],
     };
     if (userId) {
@@ -240,8 +360,90 @@ export class PostgresListingRepository implements IListingRepository {
   private static readonly SELLER_PROJECTION =
     "id, slug, name, account_type, account_family, primary_role, status, avatar_url, city, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
 
-  private mapRowToListing(row: any): Listing {
+  private static readonly MARKET_PUBLICATION_PROJECTION =
+    "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date";
+
+  private toMarketPublicationRows(listing: Listing, listingId: string) {
+    const defaultStatus: ListingMarketPublication["status"] =
+      listing.status === "published" ||
+      listing.status === "reserved" ||
+      listing.status === "sold"
+        ? "active"
+        : listing.status === "flagged"
+          ? "pending_review"
+          : listing.status === "rejected"
+            ? "rejected"
+            : listing.status === "archived"
+              ? "expired"
+              : "draft";
+    const configured = listing.marketPublications?.length
+      ? listing.marketPublications
+      : [
+          {
+            marketCode: listing.marketCode,
+            status: defaultStatus,
+            isPrimary: true,
+            priceMinor: Math.round(
+              listing.price *
+                10 ** getCurrencyMinorUnitDigits(listing.currency),
+            ),
+            currency: listing.currency,
+            complianceState:
+              listing.status === "flagged" ? "pending" : "approved",
+            availableServices: Object.fromEntries(
+              listing.allowedDelivery.map((method) => [method, true]),
+            ),
+            publishedAt: listing.publishedAt,
+            sortDate:
+              listing.organicFreshnessAt ||
+              listing.publishedAt ||
+              listing.createdAt,
+          } satisfies ListingMarketPublication,
+        ];
+    if (configured.filter((publication) => publication.isPrimary).length !== 1)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une annonce doit avoir exactement un marché principal.",
+      });
+    return configured.map((publication) => ({
+      listing_id: listingId,
+      market_code: requireMarketCode(publication.marketCode),
+      status: publication.status,
+      is_primary: publication.isPrimary,
+      price_minor: publication.priceMinor,
+      currency: publication.currency.toUpperCase(),
+      localized_content: publication.localizedContent || {},
+      available_services: publication.availableServices || {},
+      compliance_state: publication.complianceState,
+      published_at: publication.publishedAt || null,
+      sort_date: publication.sortDate,
+      updated_at: listing.updatedAt,
+    }));
+  }
+
+  private mapRowToListing(row: any, requestedMarketCode?: string): Listing {
     const profile = row.profiles;
+    const marketPublications: ListingMarketPublication[] = Array.isArray(
+      row.listing_market_publications,
+    )
+      ? row.listing_market_publications.map((publication: any) => ({
+          marketCode: requireMarketCode(publication.market_code),
+          status: publication.status,
+          isPrimary: Boolean(publication.is_primary),
+          priceMinor: Number(publication.price_minor),
+          currency: String(publication.currency).toUpperCase(),
+          localizedContent: publication.localized_content || {},
+          availableServices: publication.available_services || {},
+          complianceState: publication.compliance_state,
+          publishedAt: publication.published_at || undefined,
+          sortDate: publication.sort_date,
+        }))
+      : [];
+    const effectivePublication = requestedMarketCode
+      ? marketPublications.find(
+          (publication) => publication.marketCode === requestedMarketCode,
+        )
+      : marketPublications.find((publication) => publication.isPrimary);
     return {
       id: row.id,
       sellerId: row.seller_id,
@@ -293,16 +495,26 @@ export class PostgresListingRepository implements IListingRepository {
       categoryId: row.category_id,
       title: row.title,
       description: row.description,
-      price: Number(row.price),
+      price: effectivePublication
+        ? minorToMajorAmount(
+            effectivePublication.priceMinor,
+            effectivePublication.currency,
+          )
+        : Number(row.price),
       originalPrice: row.original_price
         ? Number(row.original_price)
         : undefined,
-      currency: row.currency,
+      currency: effectivePublication?.currency || row.currency,
       status: row.status,
       condition: row.condition || "bon-etat",
       brand: row.brand || undefined,
       model: row.model || undefined,
-      marketCode: requireMarketCode(row.market_code),
+      marketCode:
+        effectivePublication?.marketCode || requireMarketCode(row.market_code),
+      marketCodes: marketPublications.map(
+        (publication) => publication.marketCode,
+      ),
+      marketPublications,
       city: row.city,
       postalCode: row.postal_code,
       department: row.department || undefined,
@@ -336,7 +548,8 @@ export class PostgresListingRepository implements IListingRepository {
       promotionLabel: row.promotion_label || undefined,
       promotionStartAt: row.promotion_start_at || undefined,
       promotionEndAt: row.promotion_end_at || undefined,
-      publishedAt: row.published_at || row.created_at,
+      publishedAt:
+        effectivePublication?.publishedAt || row.published_at || row.created_at,
       materiallyUpdatedAt: row.materially_updated_at || undefined,
       organicFreshnessAt:
         row.organic_freshness_at || row.published_at || row.created_at,
@@ -360,7 +573,7 @@ export class PostgresListingRepository implements IListingRepository {
       const { data, error } = await supabase
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `*, listing_media(url, sort_order), listing_market_publications(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
         )
         .eq("id", id)
         .single();
@@ -375,20 +588,24 @@ export class PostgresListingRepository implements IListingRepository {
     }
   }
 
-  async findPublicById(id: string): Promise<Listing | null> {
+  async findPublicById(id: string, marketCode: string): Promise<Listing | null> {
     try {
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await (supabase
+      const requestedMarketCode = requireMarketCode(marketCode);
+      const { data, error } = await ((supabase as any)
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `*, listing_media(url, sort_order), listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
         )
         .eq("id", id)
+        .eq("listing_market_publications.market_code", requestedMarketCode)
+        .eq("listing_market_publications.status", "active")
+        .eq("listing_market_publications.compliance_state", "approved")
         .in("status", ["published", "reserved", "sold"] as any)
         .maybeSingle() as any);
       if (error) databaseFailure("listings.findPublicById", error);
       if (!data) return null;
-      const listing = this.mapRowToListing(data);
+      const listing = this.mapRowToListing(data, requestedMarketCode);
       if (
         listing.publisherStatus === "suspended" ||
         listing.seller?.status !== "active"
@@ -412,17 +629,26 @@ export class PostgresListingRepository implements IListingRepository {
       const page = Math.max(1, filters.page || 1);
       const limit = Math.min(500, filters.limit || 20);
       const offset = (page - 1) * limit;
+      const requestedMarketCode = filters.marketCode
+        ? requireMarketCode(filters.marketCode)
+        : undefined;
+      const publicationJoin = requestedMarketCode
+        ? `listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION})`
+        : `listing_market_publications(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION})`;
 
-      let query = supabase
+      let query = (supabase as any)
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `*, listing_media(url, sort_order), ${publicationJoin}, profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
           { count: "exact" },
         )
         .eq("status", "published");
 
-      if (filters.marketCode) {
-        query = query.eq("market_code", filters.marketCode.toUpperCase());
+      if (requestedMarketCode) {
+        query = query
+          .eq("listing_market_publications.market_code", requestedMarketCode)
+          .eq("listing_market_publications.status", "active")
+          .eq("listing_market_publications.compliance_state", "approved");
       }
       if (filters.categoryId) {
         query = query.eq("category_id", filters.categoryId);
@@ -437,10 +663,38 @@ export class PostgresListingRepository implements IListingRepository {
         );
       }
       if (filters.minPrice !== undefined) {
-        query = query.gte("price", filters.minPrice);
+        if (requestedMarketCode) {
+          const publicationCurrency =
+            getCountryConfig(requestedMarketCode)?.currency;
+          if (!publicationCurrency)
+            throw new AppError({
+              code: "VALIDATION_ERROR",
+              message: "Devise du marché introuvable.",
+            });
+          const factor =
+            10 ** getCurrencyMinorUnitDigits(publicationCurrency);
+          query = query.gte(
+            "listing_market_publications.price_minor",
+            Math.round(filters.minPrice * factor),
+          );
+        } else query = query.gte("price", filters.minPrice);
       }
       if (filters.maxPrice !== undefined) {
-        query = query.lte("price", filters.maxPrice);
+        if (requestedMarketCode) {
+          const publicationCurrency =
+            getCountryConfig(requestedMarketCode)?.currency;
+          if (!publicationCurrency)
+            throw new AppError({
+              code: "VALIDATION_ERROR",
+              message: "Devise du marché introuvable.",
+            });
+          const factor =
+            10 ** getCurrencyMinorUnitDigits(publicationCurrency);
+          query = query.lte(
+            "listing_market_publications.price_minor",
+            Math.round(filters.maxPrice * factor),
+          );
+        } else query = query.lte("price", filters.maxPrice);
       }
       if (filters.city) {
         query = query.ilike("city", `%${filters.city}%`);
@@ -453,9 +707,19 @@ export class PostgresListingRepository implements IListingRepository {
       }
 
       if (filters.sortBy === "price_asc") {
-        query = query.order("price", { ascending: true });
+        query = requestedMarketCode
+          ? query.order("price_minor", {
+              ascending: true,
+              referencedTable: "listing_market_publications",
+            })
+          : query.order("price", { ascending: true });
       } else if (filters.sortBy === "price_desc") {
-        query = query.order("price", { ascending: false });
+        query = requestedMarketCode
+          ? query.order("price_minor", {
+              ascending: false,
+              referencedTable: "listing_market_publications",
+            })
+          : query.order("price", { ascending: false });
       } else {
         // Promotion never masquerades as organic freshness. Sponsored
         // insertion is handled separately by UnifiedDiscoveryService.
@@ -474,7 +738,9 @@ export class PostgresListingRepository implements IListingRepository {
 
       const total = count || 0;
       const totalPages = Math.max(1, Math.ceil(total / limit));
-      const items = data.map((r: any) => this.mapRowToListing(r));
+      const items = data.map((r: any) =>
+        this.mapRowToListing(r, requestedMarketCode),
+      );
 
       return { items, total, page, totalPages };
     } catch (error) {
@@ -548,7 +814,13 @@ export class PostgresListingRepository implements IListingRepository {
     if (error || !data) {
       databaseFailure("listings.save", error);
     }
-    return this.mapRowToListing(data);
+    const publicationRows = this.toMarketPublicationRows(listing, data.id);
+    const { error: publicationError } = await (supabase as any)
+      .from("listing_market_publications")
+      .upsert(publicationRows, { onConflict: "listing_id,market_code" });
+    if (publicationError)
+      databaseFailure("listings.saveMarketPublications", publicationError);
+    return (await this.findById(data.id)) || this.mapRowToListing(data);
   }
 
   async update(id: string, updates: Partial<Listing>): Promise<Listing> {
@@ -600,7 +872,20 @@ export class PostgresListingRepository implements IListingRepository {
     if (error || !data) {
       databaseFailure("listings.update", error);
     }
-    return this.mapRowToListing(data);
+    if (updates.price !== undefined) {
+      const currency = String(updates.currency || data.currency).toUpperCase();
+      const priceMinor = Math.round(
+        updates.price * 10 ** getCurrencyMinorUnitDigits(currency),
+      );
+      const { error: publicationError } = await (supabase as any)
+        .from("listing_market_publications")
+        .update({ price_minor: priceMinor, currency })
+        .eq("listing_id", id)
+        .eq("is_primary", true);
+      if (publicationError)
+        databaseFailure("listings.updatePrimaryMarketPrice", publicationError);
+    }
+    return (await this.findById(id)) || this.mapRowToListing(data);
   }
 
   async delete(id: string): Promise<boolean> {
@@ -634,7 +919,7 @@ export class PostgresListingRepository implements IListingRepository {
     }
   }
 
-  async createDraft(userId?: string): Promise<any> {
+  async createDraft(userId: string, marketCode: string): Promise<any> {
     if (!userId)
       throw new AppError({
         code: "UNAUTHENTICATED",
@@ -648,7 +933,7 @@ export class PostgresListingRepository implements IListingRepository {
       price: 0,
       condition: "bon-etat",
       photos: [],
-      marketCode: "FR",
+      marketCode: requireMarketCode(marketCode),
       allowedDelivery: ["hand_delivery"],
     };
     await this.saveDraft(draft, userId);

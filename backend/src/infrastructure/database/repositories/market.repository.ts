@@ -4,6 +4,7 @@ import {
 } from "../../../shared/types/index.js";
 import {
   COUNTRY_REGISTRY,
+  getDefaultCountryConfig,
   getCountryConfig,
   type CountryConfig,
 } from "@shongre/contracts";
@@ -30,32 +31,71 @@ export interface IMarketRepository {
   }): Promise<void>;
 }
 
-const commercialOverrides: Record<
+const SAFE_UNAVAILABLE_COMMERCIAL_POLICY = {
+  protectionFeeRate: 0,
+  protectionFixedFee: 0,
+  freeListingsLimit: 0,
+  reservationDepositRateBps: 0,
+  reservationDepositMinimumMinor: 0,
+  reservationDepositMaximumMinor: 0,
+  allowedDeliveryMethods: [] as DeliveryType[],
+};
+
+const demoCommercialPolicies: Record<
   string,
-  Partial<
-    Pick<
-      CountryMarketDefinition,
-      | "protectionFeeRate"
-      | "protectionFixedFee"
-      | "freeListingsLimit"
-      | "allowedDeliveryMethods"
-    >
+  Pick<
+    CountryMarketDefinition,
+    | "protectionFeeRate"
+    | "protectionFixedFee"
+    | "freeListingsLimit"
+    | "reservationDepositRateBps"
+    | "reservationDepositMinimumMinor"
+    | "reservationDepositMaximumMinor"
+    | "allowedDeliveryMethods"
   >
 > = {
-  BE: { protectionFeeRate: 0.045, protectionFixedFee: 0.8 },
+  FR: {
+    protectionFeeRate: 0.04,
+    protectionFixedFee: 0.7,
+    freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
+    allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
+  },
+  BE: {
+    protectionFeeRate: 0.045,
+    protectionFixedFee: 0.8,
+    freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
+    allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
+  },
   CH: {
     protectionFeeRate: 0.035,
     protectionFixedFee: 1,
     freeListingsLimit: 5,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
     allowedDeliveryMethods: ["hand_delivery", "home_delivery"],
   },
-  ES: { protectionFeeRate: 0.045 },
+  LU: {
+    protectionFeeRate: 0.04,
+    protectionFixedFee: 0.7,
+    freeListingsLimit: 10,
+    reservationDepositRateBps: 1_000,
+    reservationDepositMinimumMinor: 500,
+    reservationDepositMaximumMinor: 20_000,
+    allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
+  },
 };
 
-function fromCountryConfig(
-  country: CountryConfig,
-  overrides: Partial<CountryMarketDefinition> = {},
-): CountryMarketDefinition {
+function fromCountryConfig(country: CountryConfig): CountryMarketDefinition {
+  const commercial =
+    demoCommercialPolicies[country.marketCode] ||
+    SAFE_UNAVAILABLE_COMMERCIAL_POLICY;
   return {
     ...country,
     supportedLocales: [...country.supportedLocales],
@@ -67,20 +107,14 @@ function fromCountryConfig(
     monetization: { ...country.monetization },
     locale: country.defaultLocale,
     currencySymbol: country.currencySymbol || country.currency,
-    protectionFeeRate: 0.04,
-    protectionFixedFee: 0.7,
-    freeListingsLimit: 10,
-    reservationDepositRateBps: 1_000,
-    reservationDepositMinimumMinor: 500,
-    reservationDepositMaximumMinor: 20_000,
-    allowedDeliveryMethods: ["hand_delivery", "relay_point", "home_delivery"],
-    isBaseMarket: country.code === "FR",
+    ...commercial,
+    allowedDeliveryMethods: [...commercial.allowedDeliveryMethods],
+    isBaseMarket: country.isDefault,
     isActive:
       country.enabled &&
       country.launchStatus === "active" &&
       country.marketplace.enabled,
     version: 1,
-    ...overrides,
   };
 }
 
@@ -88,13 +122,13 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> =
   Object.fromEntries(
     COUNTRY_REGISTRY.map((country) => [
       country.code,
-      fromCountryConfig(country, commercialOverrides[country.code]),
+      fromCountryConfig(country),
     ]),
   );
 
 export class DemoMarketRepository implements IMarketRepository {
   private markets: Map<string, CountryMarketDefinition> = new Map();
-  private activeCode = "FR";
+  private activeCode = getDefaultCountryConfig().marketCode;
 
   constructor(
     initialMarkets: Record<
@@ -115,7 +149,7 @@ export class DemoMarketRepository implements IMarketRepository {
     Object.values(initialMarkets).forEach((m) =>
       this.markets.set(m.code, { ...m }),
     );
-    this.activeCode = "FR";
+    this.activeCode = getDefaultCountryConfig().marketCode;
   }
 
   async getAll(): Promise<CountryMarketDefinition[]> {
@@ -139,55 +173,19 @@ export class DemoMarketRepository implements IMarketRepository {
   }
 
   async getEffective(code: string): Promise<CountryMarketDefinition> {
-    const baseMarket = this.markets.get("FR") || CANONICAL_DEMO_MARKETS.FR;
-    const targetCode = (code || "FR").toUpperCase();
+    const targetCode = String(code || "").trim().toUpperCase();
     const targetMarket = this.markets.get(targetCode);
-
-    if (!targetMarket) {
-      return { ...baseMarket };
-    }
-
+    if (!targetMarket) throw new Error(`Unknown market: ${targetCode}`);
     return {
-      ...baseMarket,
       ...targetMarket,
-      supportedLocales:
-        targetMarket.supportedLocales?.length > 0
-          ? [...targetMarket.supportedLocales]
-          : [...baseMarket.supportedLocales],
+      supportedLocales: [...targetMarket.supportedLocales],
+      supportedCurrencies: [...targetMarket.supportedCurrencies],
+      locationHierarchy: [...targetMarket.locationHierarchy],
       payments: {
-        ...(targetMarket.payments || baseMarket.payments),
-        providerIds: [
-          ...(targetMarket.payments?.providerIds ||
-            baseMarket.payments.providerIds),
-        ],
+        ...targetMarket.payments,
+        providerIds: [...targetMarket.payments.providerIds],
       },
-      protectionFeeRate:
-        typeof targetMarket.protectionFeeRate === "number"
-          ? targetMarket.protectionFeeRate
-          : baseMarket.protectionFeeRate,
-      protectionFixedFee:
-        typeof targetMarket.protectionFixedFee === "number"
-          ? targetMarket.protectionFixedFee
-          : baseMarket.protectionFixedFee,
-      freeListingsLimit:
-        typeof targetMarket.freeListingsLimit === "number"
-          ? targetMarket.freeListingsLimit
-          : baseMarket.freeListingsLimit,
-      reservationDepositRateBps:
-        targetMarket.reservationDepositRateBps ??
-        baseMarket.reservationDepositRateBps,
-      reservationDepositMinimumMinor:
-        targetMarket.reservationDepositMinimumMinor ??
-        baseMarket.reservationDepositMinimumMinor,
-      reservationDepositMaximumMinor:
-        targetMarket.reservationDepositMaximumMinor ??
-        baseMarket.reservationDepositMaximumMinor,
-      allowedDeliveryMethods:
-        targetMarket.allowedDeliveryMethods?.length > 0
-          ? [...targetMarket.allowedDeliveryMethods]
-          : [...baseMarket.allowedDeliveryMethods],
-      isBaseMarket: targetMarket.isBaseMarket ?? false,
-      isActive: targetMarket.isActive ?? baseMarket.isActive,
+      allowedDeliveryMethods: [...targetMarket.allowedDeliveryMethods],
     };
   }
 
@@ -220,12 +218,13 @@ export class DemoMarketRepository implements IMarketRepository {
 }
 
 export class PostgresMarketRepository implements IMarketRepository {
-  private activeCode = "FR";
+  private activeCode = getDefaultCountryConfig().marketCode;
 
   private mapRowToMarket(row: any): CountryMarketDefinition {
-    const bootstrap =
-      getCountryConfig(String(row.code || "").toUpperCase()) ||
-      COUNTRY_REGISTRY[0];
+    const bootstrap = getCountryConfig(String(row.code || "").toUpperCase());
+    if (!bootstrap) {
+      databaseFailure("markets.mapRowToMarket.unknownMarket");
+    }
     return {
       ...bootstrap,
       code: String(row.code).toUpperCase(),
@@ -258,24 +257,20 @@ export class PostgresMarketRepository implements IMarketRepository {
       launchContent: row.launch_content || bootstrap.launchContent,
       gatewayVisible: row.gateway_visible ?? bootstrap.gatewayVisible,
       displayOrder: Number(row.display_order ?? bootstrap.displayOrder),
-      protectionFeeRate: Number(row.protection_fee_rate || 0.04),
-      protectionFixedFee: Number(row.protection_fixed_fee || 0.7),
-      freeListingsLimit: Number(row.free_listings_limit || 10),
+      protectionFeeRate: Number(row.protection_fee_rate ?? 0),
+      protectionFixedFee: Number(row.protection_fixed_fee ?? 0),
+      freeListingsLimit: Number(row.free_listings_limit ?? 0),
       reservationDepositRateBps: Number(
-        row.reservation_deposit_rate_bps ?? 1_000,
+        row.reservation_deposit_rate_bps ?? 0,
       ),
       reservationDepositMinimumMinor: Number(
-        row.reservation_deposit_minimum_minor ?? 500,
+        row.reservation_deposit_minimum_minor ?? 0,
       ),
       reservationDepositMaximumMinor: Number(
-        row.reservation_deposit_maximum_minor ?? 20_000,
+        row.reservation_deposit_maximum_minor ?? 0,
       ),
       allowedDeliveryMethods:
-        (row.allowed_delivery_methods as DeliveryType[]) || [
-          "hand_delivery",
-          "relay_point",
-          "home_delivery",
-        ],
+        (row.allowed_delivery_methods as DeliveryType[]) || [],
       isBaseMarket: Boolean(row.is_base_market),
       isActive:
         row.enabled !== undefined
@@ -335,53 +330,9 @@ export class PostgresMarketRepository implements IMarketRepository {
   }
 
   async getEffective(code: string): Promise<CountryMarketDefinition> {
-    const all = await this.getAll();
-    const base = all.find((m) => m.code === "FR");
-    if (!base) databaseFailure("markets.getEffective.missingDefaultMarket");
-    const target = all.find((m) => m.code === (code || "FR").toUpperCase());
-
-    if (!target) return { ...base };
-
-    return {
-      ...base,
-      ...target,
-      supportedLocales:
-        target.supportedLocales?.length > 0
-          ? [...target.supportedLocales]
-          : [...base.supportedLocales],
-      payments: {
-        ...(target.payments || base.payments),
-        providerIds: [
-          ...(target.payments?.providerIds || base.payments.providerIds),
-        ],
-      },
-      protectionFeeRate:
-        typeof target.protectionFeeRate === "number"
-          ? target.protectionFeeRate
-          : base.protectionFeeRate,
-      protectionFixedFee:
-        typeof target.protectionFixedFee === "number"
-          ? target.protectionFixedFee
-          : base.protectionFixedFee,
-      freeListingsLimit:
-        typeof target.freeListingsLimit === "number"
-          ? target.freeListingsLimit
-          : base.freeListingsLimit,
-      reservationDepositRateBps:
-        target.reservationDepositRateBps ?? base.reservationDepositRateBps,
-      reservationDepositMinimumMinor:
-        target.reservationDepositMinimumMinor ??
-        base.reservationDepositMinimumMinor,
-      reservationDepositMaximumMinor:
-        target.reservationDepositMaximumMinor ??
-        base.reservationDepositMaximumMinor,
-      allowedDeliveryMethods:
-        target.allowedDeliveryMethods?.length > 0
-          ? [...target.allowedDeliveryMethods]
-          : [...base.allowedDeliveryMethods],
-      isBaseMarket: target.isBaseMarket ?? false,
-      isActive: target.isActive ?? base.isActive,
-    };
+    const target = await this.getByCode(String(code || "").toUpperCase());
+    if (!target) throw new Error(`Unknown market: ${code}`);
+    return target;
   }
 
   async updateConfiguration(

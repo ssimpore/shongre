@@ -39,6 +39,7 @@ export class MessagingService {
 
   async createConversationForListing(input: {
     listingId: string;
+    marketCode: string;
     buyerId: string;
     initialMessage?: string;
   }): Promise<Conversation> {
@@ -48,7 +49,10 @@ export class MessagingService {
         message: "Identifiant d’annonce manquant.",
       });
     }
-    const listing = await this.listingRepo.findPublicById(input.listingId);
+    const listing = await this.listingRepo.findPublicById(
+      input.listingId,
+      input.marketCode,
+    );
     if (!listing) {
       throw new AppError({
         code: "NOT_FOUND",

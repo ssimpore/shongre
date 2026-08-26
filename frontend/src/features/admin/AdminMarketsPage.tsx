@@ -113,6 +113,9 @@ export const AdminMarketsPage: React.FC = () => {
   const [newMarketCurrency, setNewMarketCurrency] = useState(
     baselineMarket.currency,
   );
+  const [newMarketTimezone, setNewMarketTimezone] = useState(
+    baselineMarket.timezone,
+  );
   const [newMarketStatus, setNewMarketStatus] = useState<MarketStatus>("draft");
 
   const canManageMarkets = can("market.manage");
@@ -215,6 +218,7 @@ export const AdminMarketsPage: React.FC = () => {
           flag: newMarketFlag.trim(),
           defaultLocale: newMarketLocale.trim(),
           currency: newMarketCurrency.toUpperCase().trim(),
+          timezone: newMarketTimezone.trim(),
           status: newMarketStatus,
         },
         currentUser
@@ -275,7 +279,7 @@ export const AdminMarketsPage: React.FC = () => {
     }
   };
 
-  const handleResetAllToFrance = (code: string) => {
+  const handleRestoreReviewedPolicy = (code: string) => {
     setPendingResetMarketCode(code);
   };
 
@@ -393,14 +397,9 @@ export const AdminMarketsPage: React.FC = () => {
     const displayValue = formatter
       ? formatter(resolution.value)
       : String(resolution.value);
-    const frenchRefDisplay = formatter
+    const defaultReferenceDisplay = formatter
       ? formatter(resolution.baselineReferenceValue)
       : String(resolution.baselineReferenceValue);
-
-    // If editing the baseline, calculate which markets inherit this setting.
-    const impactedMarkets = isBaseline
-      ? marketService.getImpactedMarkets(path)
-      : [];
 
     return (
       <div className="py-3.5 px-4 rounded-xl border border-border-subtle bg-white hover:border-border-base transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -413,15 +412,11 @@ export const AdminMarketsPage: React.FC = () => {
 
             {isBaseline ? (
               <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-full border border-stone-200">
-                Valeur canonique {baselineMarket.name}
-              </span>
-            ) : isOverridden ? (
-              <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
-                ✏️ Surcharge Locale ({selectedMarket.code})
+                Marché par défaut : {baselineMarket.name}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full border border-success-border">
-                Hérité de {baselineMarket.name}
+              <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
+                Politique locale explicite ({selectedMarket.code})
               </span>
             )}
           </div>
@@ -434,19 +429,9 @@ export const AdminMarketsPage: React.FC = () => {
             <div className="text-xs font-extrabold text-stone-900 font-mono">
               {displayValue}
             </div>
-            {!isBaseline && !isOverridden && (
-              <div className="text-micro text-stone-500">
-                Identique à {baselineMarket.name}
-              </div>
-            )}
             {!isBaseline && isOverridden && (
               <div className="text-micro text-warning">
-                ({baselineMarket.name} : {frenchRefDisplay})
-              </div>
-            )}
-            {isBaseline && impactedMarkets.length > 0 && (
-              <div className="text-micro text-info font-medium">
-                Hérité par {impactedMarkets.join(", ")}
+                (comparaison {baselineMarket.name} : {defaultReferenceDisplay})
               </div>
             )}
           </div>
@@ -481,7 +466,7 @@ export const AdminMarketsPage: React.FC = () => {
                 onClick={() => handleResetOverride(path)}
               >
                 <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />
-                Réinitialiser sur {baselineMarket.name}
+                Restaurer la valeur locale validée
               </Button>
             )}
           </div>
@@ -500,16 +485,14 @@ export const AdminMarketsPage: React.FC = () => {
               {t("admin.adminMarketsPage.gestionMultiMarchesTerritoires")}
             </h1>
             <span className="text-xs bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">
-              Architecture Canonique FR
+              Registre multi-marchés
             </span>
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
             {t("admin.adminMarketsPage.gerezLesPaysActivesDevises")}
-            <strong>
-              {" "}
-              {t("admin.adminMarketsPage.franceFrEstLeMarche")}
-            </strong>{" "}
-            dont héritent automatiquement toutes les valeurs non surchargées.
+            Chaque marché possède une politique complète et explicite. La France
+            reste le marché initial par défaut, sans propager ses valeurs aux
+            autres pays.
           </p>
         </div>
 
@@ -553,7 +536,9 @@ export const AdminMarketsPage: React.FC = () => {
             className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"
             aria-hidden="true"
           />
-          Éditeur d'Héritage & Surcharges ({selectedMarket.name})
+          {t("admin.adminMarketsPage.localPolicyEditor", {
+            market: selectedMarket.name,
+          })}
         </button>
         <button
           type="button"
@@ -580,13 +565,9 @@ export const AdminMarketsPage: React.FC = () => {
             <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
             <div className="text-xs text-warning space-y-1">
               <span className="font-bold">
-                {t("admin.adminMarketsPage.moteurDHeritageHierarchiqueEn")}
+                {t("admin.adminMarketsPage.independentPolicyTitle")}
               </span>
-              <p>
-                {t(
-                  "admin.adminMarketsPage.chaqueParametreNonExplicitementConfigure",
-                )}
-              </p>
+              <p>{t("admin.adminMarketsPage.independentPolicyDescription")}</p>
             </div>
           </div>
 
@@ -627,7 +608,7 @@ export const AdminMarketsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Inheritance Metrics Bar */}
+                    {/* Explicit configuration coverage */}
                     <div className="space-y-1 pt-2 border-t border-border-subtle">
                       <div className="flex justify-between text-micro font-bold">
                         {isDefault ? (
@@ -639,21 +620,20 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <span className="text-success">
-                              {metrics.percentInherited}% hérité de{" "}
-                              {baselineMarket.name}
+                            {metrics.percentOverridden}% configuré localement
                             </span>
                             <span className="text-warning">
-                              {metrics.percentOverridden}% personnalisé
+                              Aucun héritage inter-marché
                             </span>
                           </>
                         )}
                       </div>
                       <ProgressBar
-                        value={isDefault ? 100 : metrics.percentInherited}
+                        value={metrics.percentOverridden}
                         label={
                           isDefault
-                            ? "Marché canonique"
-                            : `Part héritée de ${baselineMarket.name}`
+                            ? "Marché par défaut"
+                            : "Couverture de la politique locale"
                         }
                         variant={isDefault ? "primary" : "success"}
                       />
@@ -711,7 +691,7 @@ export const AdminMarketsPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: INHERITANCE & OVERRIDE EDITOR */}
+      {/* TAB 2: EXPLICIT LOCAL POLICY EDITOR */}
       {activeTab === "editor" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Market Picker Selector for Editor */}
@@ -733,8 +713,8 @@ export const AdminMarketsPage: React.FC = () => {
                 </div>
                 <p className="text-xs text-stone-500">
                   {selectedMarket.isDefault
-                    ? "Toutes les modifications sur ce marché constituent la base de référence pour l'ensemble des pays."
-                    : `${inheritanceMetrics.percentInherited}% hérité de ${baselineMarket.name} • ${inheritanceMetrics.percentOverridden}% surchargé localement`}
+                    ? "Marché initial par défaut ; ses changements ne se propagent pas aux autres pays."
+                    : `${inheritanceMetrics.percentOverridden}% de politique locale explicite • aucun héritage inter-marché`}
                 </p>
               </div>
             </div>
@@ -760,30 +740,29 @@ export const AdminMarketsPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   className="text-xs text-stone-600 hover:text-danger"
-                  onClick={() => handleResetAllToFrance(selectedMarket.code)}
+                  onClick={() =>
+                    handleRestoreReviewedPolicy(selectedMarket.code)
+                  }
                 >
                   <RefreshCw className="w-3.5 h-3.5 mr-1" />
-                  Tout réinitialiser sur {baselineMarket.name}
+                  {t("admin.adminMarketsPage.restoreReviewedPolicy")}
                 </Button>
               )}
             </div>
           </div>
 
-          {/* Canonical market warning */}
+          {/* Default market notice */}
           {selectedMarket.isDefault && (
             <div className="p-4 rounded-2xl bg-info-surface border border-info-border flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-info shrink-0 mt-0.5" />
               <div className="text-xs text-info space-y-1">
                 <span className="font-bold">
-                  Avertissement d'impact global :
+                  {t("admin.adminMarketsPage.defaultMarketNoticeTitle")}
                 </span>
                 <p>
-                  Vous éditez actuellement la{" "}
-                  <strong>configuration canonique {baselineMarket.name}</strong>
-                  . Toute modification de valeur sur cette page se propagera
-                  automatiquement et instantanément à tous les marchés
-                  dépendants (Belgique, Espagne, Suisse, etc.) qui n'ont pas
-                  défini de surcharge explicite sur le paramètre concerné.
+                  {t("admin.adminMarketsPage.defaultMarketNoticeDescription", {
+                    market: baselineMarket.name,
+                  })}
                 </p>
               </div>
             </div>
@@ -986,9 +965,9 @@ export const AdminMarketsPage: React.FC = () => {
                       )}
                     </span>
                     <p>
-                      Par défaut, tous les marchés héritent des catégories de la
-                      {baselineMarket.name}. Vous pouvez activer ou désactiver
-                      spécifiquement des catégories ou sous-catégories pour{" "}
+                      La taxonomie est partagée, mais sa disponibilité est
+                      configurée explicitement par marché. Activez ou désactivez
+                      des catégories ou sous-catégories pour{" "}
                       {selectedMarket.name} ({selectedMarket.code}).
                     </p>
                   </div>
@@ -1176,7 +1155,7 @@ export const AdminMarketsPage: React.FC = () => {
                 {renderSettingRow(
                   "search.priceFilterStopsMajor",
                   "Paliers du filtre de prix",
-                  "Montants en unité majeure, séparés par des virgules et hérités par marché",
+                  "Montants locaux en unité majeure, séparés par des virgules",
                   "string",
                   (value) => normalizePriceFilterStops(value).join(", "),
                 )}
@@ -1777,6 +1756,20 @@ export const AdminMarketsPage: React.FC = () => {
 
           <div className="space-y-1">
             <label className="text-xs font-bold text-stone-700 uppercase">
+              Fuseau horaire IANA
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="ex: Europe/Rome, Africa/Dakar"
+              value={newMarketTimezone}
+              onChange={(e) => setNewMarketTimezone(e.target.value)}
+              className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-stone-700 uppercase">
               {t("admin.adminMarketsPage.nomDuMarche")}
             </label>
             <input
@@ -1855,7 +1848,7 @@ export const AdminMarketsPage: React.FC = () => {
               Annuler
             </Button>
             <Button variant="primary" size="sm" type="submit">
-              Créer avec héritage {baselineMarket.name}
+              Créer le brouillon sécurisé
             </Button>
           </div>
         </form>

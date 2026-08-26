@@ -214,26 +214,38 @@ describe("other formatters", () => {
     ).toContain("14 250,50");
   });
 
+  it.each([
+    ["en-US", "JPY", 12_345, /12,345/],
+    ["en-US", "EUR", 12_345, /123\.45/],
+    ["en-US", "BHD", 12_345, /12\.345/],
+  ])(
+    "uses the ISO minor-unit exponent for %s/%s",
+    (locale, currency, amountMinor, expected) => {
+      expect(formatMoney({ amountMinor, currency }, { locale })).toMatch(
+        expected,
+      );
+    },
+  );
+
   it("derives currency labels and symbols from Intl", () => {
     expect(formatCurrencySymbol("EUR", "fr-FR")).toBe("€");
     expect(getCurrencyDisplayName("EUR", "en-US")).toBe("Euro");
   });
 
   it.each([
-    ["fr-FR", "EUR", /€/],
-    ["fr-BE", "EUR", /€/],
-    ["fr-CH", "CHF", /CHF/],
-    ["fr-SN", "XOF", /(F\s*CFA|XOF)/],
-    ["fr-BF", "XOF", /(F\s*CFA|XOF)/],
+    ["fr-FR", "EUR", /1[\s.]?500/, /€/],
+    ["fr-BE", "EUR", /1[\s.]?500/, /€/],
+    ["fr-CH", "CHF", /1[\s']?500/, /CHF/],
+    ["fr-SN", "XOF", /150[\s.]?000/, /(F\s*CFA|XOF)/],
+    ["fr-BF", "XOF", /150[\s.]?000/, /(F\s*CFA|XOF)/],
   ])(
     "formats authoritative minor units for %s/%s",
-    (locale, currency, unit) => {
+    (locale, currency, amount, unit) => {
       const formatted = formatMoney(
         { amountMinor: 150_000, currency },
         { locale },
       ).replace(/\u202f|\u00a0/g, " ");
-      expect(formatted).toContain("1");
-      expect(formatted).toContain("500");
+      expect(formatted).toMatch(amount);
       expect(formatted).toMatch(unit);
     },
   );

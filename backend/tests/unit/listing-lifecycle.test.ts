@@ -14,7 +14,7 @@ describe("Listing & Order Lifecycle", () => {
   });
 
   it("creates a draft and validates mandatory publication fields", async () => {
-    const draft = await listingsService.createListingDraft("user_thomas");
+    const draft = await listingsService.createListingDraft("user_thomas", "FR");
     expect(draft.step).toBe("category");
 
     await expect(
@@ -63,6 +63,35 @@ describe("Listing & Order Lifecycle", () => {
     expect(published.status).toBe("published");
     expect(published).not.toHaveProperty("safetyRiskScore");
     expect(published.price).toBe(1850);
+  });
+
+  it("persists one listing with explicit France and Belgium publications", async () => {
+    const published = await listingsService.publishListing(
+      {
+        title: "Appareil photo hybride multi-marché",
+        description:
+          "Excellent état, vendu avec objectif et batterie supplémentaire.",
+        price: 920,
+        categoryId: "electronics.smartphones",
+        marketCode: "FR",
+        selectedMarkets: ["FR", "BE"],
+        condition: "tres-bon-etat",
+        city: "Lille",
+        postalCode: "59000",
+      },
+      "user_camille",
+    );
+
+    expect(published.marketCodes).toEqual(["FR", "BE"]);
+    expect(published.marketPublications).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ marketCode: "FR", isPrimary: true }),
+        expect.objectContaining({ marketCode: "BE", isPrimary: false }),
+      ]),
+    );
+    await expect(
+      repositories.listings.findPublicById(published.id, "BE"),
+    ).resolves.toMatchObject({ marketCode: "BE", currency: "EUR" });
   });
 
   it("starts provider checkout without exposing a handover secret", async () => {

@@ -34,7 +34,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header card with inheritance explanation */}
+      {/* Header card with explicit-assignment explanation */}
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
@@ -42,10 +42,9 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
             {t("admin.providerMarketMatrix.matriceDeCouvertureMultiMarches")}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            {availableMarkets.find((market) => market.isDefault)?.name ||
-              "Le marché par défaut"}{" "}
-            est la référence canonique ; les autres marchés peuvent hériter de
-            sa configuration.
+            Chaque cellule résulte d'une affectation propre au marché. Une
+            cellule non configurée reste indisponible et ne reprend jamais le
+            fournisseur d'un autre pays.
           </p>
         </div>
 
@@ -77,7 +76,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-stone-400" />
-          <span>Non vérifié / hérité</span>
+          <span>Affectation non vérifiée</span>
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-info" />
@@ -144,12 +143,6 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                     {marketCodes.map((code) => {
                       const cell = row.markets[code];
                       const isDefaultMarket = code === defaultMarketCode;
-                      const isInherited = cell.isInherited && !isDefaultMarket;
-                      const isCustomized =
-                        !cell.isInherited &&
-                        !isDefaultMarket &&
-                        cell.isAvailable;
-
                       return (
                         <td
                           key={code}
@@ -182,13 +175,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                                   ? "Live vérifié"
                                   : cell.mode === "demo"
                                     ? "Démo uniquement"
-                                    : isCustomized
-                                      ? "Surcharge non vérifiée"
-                                      : isInherited
-                                        ? "Hérité · non vérifié"
-                                        : isDefaultMarket
-                                          ? "Référence · non vérifiée"
-                                          : "Non vérifié"}
+                                    : "Affectation non vérifiée"}
                               </span>
                             </Link>
                           )}

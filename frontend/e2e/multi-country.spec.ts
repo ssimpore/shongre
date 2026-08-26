@@ -86,6 +86,30 @@ test.describe("multi-country public routing", () => {
     }
   });
 
+  test("refreshes market-scoped search data and price formatting", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "guest");
+
+    await page.goto("/be/recherche?query=v%C3%A9lo", {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(
+      page.getByText("Vélo urbain électrique Cowboy Classic"),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/1[\s.\u202f]?450,00[\s\u00a0\u202f]*€/),
+    ).toBeVisible();
+
+    await page.goto("/recherche?query=Cowboy", {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(
+      page.getByText("Vélo urbain électrique Cowboy Classic"),
+    ).toHaveCount(0);
+  });
+
   test("permanently canonicalizes aliases while preserving queries", async ({
     request,
   }) => {

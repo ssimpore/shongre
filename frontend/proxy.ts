@@ -12,13 +12,16 @@ function requestHostname(request: NextRequest): string {
 
 export function proxy(request: NextRequest) {
   const hostname = requestHostname(request);
+  const allowLocalE2EHost =
+    process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
   let context: ReturnType<typeof resolveMarketContext>;
   try {
     context = resolveMarketContext({
       hostname,
       pathname: request.nextUrl.pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
-      allowDevelopmentHosts: process.env.NODE_ENV !== "production",
+      allowDevelopmentHosts:
+        process.env.NODE_ENV !== "production" || allowLocalE2EHost,
     });
   } catch {
     console.error(

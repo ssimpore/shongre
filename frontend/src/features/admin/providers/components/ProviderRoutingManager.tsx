@@ -1,27 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Sliders, ShieldCheck } from "lucide-react";
-import {
-  Provider,
-  ProviderConfiguration,
-  PROVIDER_CONFIGURATION_CONSTRAINTS,
-} from "../../../../domains/providers/provider.types";
 import { getAllCapabilities } from "../../../../domains/providers/provider-capabilities";
+import { providerService } from "../../../../domains/providers/provider.service";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 import { ProviderCapabilityLabel } from "./ProviderCapabilityLabel";
 
-interface ProviderRoutingManagerProps {
-  providers: Provider[];
-  configurations: Record<string, ProviderConfiguration>;
-  onRefresh: () => void;
-}
-
-export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
-  providers,
-  configurations,
-  onRefresh,
-}) => {
+export const ProviderRoutingManager: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket, availableMarkets } = useMarketLocation();
   const [selectedMarket, setSelectedMarket] = useState<string>(
@@ -30,35 +16,19 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
 
   const capabilitiesWithMultipleProviders = useMemo(() => {
     return getAllCapabilities().map((cap) => {
-      const candidates = providers.filter((provider) =>
-        provider.operational.implementedCapabilities.includes(cap.id),
+      const resolution = providerService.resolveEffectiveProviders(
+        cap.id,
+        selectedMarket,
       );
-      const verifiedCandidates = candidates
-        .filter((provider) => {
-          const configuration = configurations[provider.id];
-          return Boolean(
-            configuration?.enabled &&
-            configuration.environment !== "demo" &&
-            configuration.health === "healthy" &&
-            configuration.healthLastCheckedAt,
-          );
-        })
-        .sort(
-          (a, b) =>
-            (configurations[a.id]?.priority ||
-              PROVIDER_CONFIGURATION_CONSTRAINTS.unconfiguredSortPriority) -
-            (configurations[b.id]?.priority ||
-              PROVIDER_CONFIGURATION_CONSTRAINTS.unconfiguredSortPriority),
-        );
 
       return {
         capability: cap,
-        primary: verifiedCandidates[0] || null,
-        fallback: verifiedCandidates[1] || null,
-        hasRedundancy: verifiedCandidates.length > 1,
+        primary: resolution.primaryProvider,
+        fallback: resolution.fallbackProvider,
+        automaticFailoverApproved: resolution.fallbackActivationApproved,
       };
     });
-  }, [providers, configurations, selectedMarket]);
+  }, [selectedMarket]);
 
   return (
     <div className="space-y-4">
@@ -89,7 +59,7 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
             {availableMarkets.map((market) => (
               <option key={market.code} value={market.code}>
                 {market.flag} {market.name}
-                {market.isDefault ? " · référence" : ""}
+                {market.isDefault ? " · défaut" : ""}
               </option>
             ))}
           </select>
@@ -99,7 +69,12 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
       {/* Capabilities Routing List */}
       <div className="space-y-3">
         {capabilitiesWithMultipleProviders.map(
-          ({ capability, primary, fallback, hasRedundancy }) => {
+          ({
+            capability,
+            primary,
+            fallback,
+            automaticFailoverApproved,
+          }) => {
             return (
               <div
                 key={capability.id}
@@ -183,9 +158,11 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
                         </Link>
                         <span
                           className="w-2 h-2 rounded-full bg-info"
-                          title={t(
-                            "admin.providerRoutingManager.pretPourBascule",
-                          )}
+                          title={
+                            automaticFailoverApproved
+                              ? "Bascule automatique explicitement autorisée"
+                              : "Secours explicite avec activation manuelle"
+                          }
                         />
                       </div>
                     ) : (
@@ -198,10 +175,12 @@ export const ProviderRoutingManager: React.FC<ProviderRoutingManagerProps> = ({
 
                 {/* Status Pill */}
                 <div className="shrink-0 flex items-center gap-2">
-                  {hasRedundancy ? (
+                  {fallback ? (
                     <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-full">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Secours vérifié
+                      {automaticFailoverApproved
+                        ? "Bascule auto approuvée"
+                        : "Secours manuel"}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">

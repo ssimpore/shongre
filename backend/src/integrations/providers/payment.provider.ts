@@ -15,7 +15,7 @@ export interface PaymentIntentResult {
 export interface IPaymentProvider {
   createPaymentIntent(
     amount: number,
-    currency?: string,
+    currency: string,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult>;
   requestPayout(
@@ -24,7 +24,7 @@ export interface IPaymentProvider {
     currency: string,
     idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
-  getBalance(accountReference: string): Promise<{
+  getBalance(accountReference: string, currency: string): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;
@@ -34,7 +34,7 @@ export interface IPaymentProvider {
 export class DemoPaymentProvider implements IPaymentProvider {
   async createPaymentIntent(
     amount: number,
-    currency = "EUR",
+    currency: string,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult> {
     const id = deterministicProviderId(
@@ -64,7 +64,7 @@ export class DemoPaymentProvider implements IPaymentProvider {
     };
   }
 
-  async getBalance(accountReference: string): Promise<{
+  async getBalance(accountReference: string, currency: string): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;
@@ -73,7 +73,7 @@ export class DemoPaymentProvider implements IPaymentProvider {
     return {
       availableMinor: 48_000,
       pendingMinor: 25_000,
-      currency: "EUR",
+      currency: currency.toUpperCase(),
     };
   }
 }
@@ -81,7 +81,7 @@ export class DemoPaymentProvider implements IPaymentProvider {
 export class StripePaymentProvider implements IPaymentProvider {
   async createPaymentIntent(
     amount: number,
-    currency = "EUR",
+    currency: string,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult> {
     const res = await stripeAdapter.createPaymentIntent({
@@ -138,7 +138,7 @@ export class StripePaymentProvider implements IPaymentProvider {
     };
   }
 
-  async getBalance(accountReference: string) {
+  async getBalance(accountReference: string, currency: string) {
     if (!/^acct_[A-Za-z0-9]+$/.test(accountReference)) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -146,18 +146,21 @@ export class StripePaymentProvider implements IPaymentProvider {
       });
     }
     const payload = await stripeConnectRequest("/v1/balance", accountReference);
+    const normalizedCurrency = currency.toLowerCase();
     const available = Array.isArray(payload.available)
-      ? payload.available[0]
+      ? payload.available.find(
+          (entry: any) => entry?.currency === normalizedCurrency,
+        )
       : undefined;
     const pending = Array.isArray(payload.pending)
-      ? payload.pending[0]
+      ? payload.pending.find(
+          (entry: any) => entry?.currency === normalizedCurrency,
+        )
       : undefined;
     return {
       availableMinor: Number(available?.amount || 0),
       pendingMinor: Number(pending?.amount || 0),
-      currency: String(
-        available?.currency || pending?.currency || "eur",
-      ).toUpperCase(),
+      currency: normalizedCurrency.toUpperCase(),
     };
   }
 }

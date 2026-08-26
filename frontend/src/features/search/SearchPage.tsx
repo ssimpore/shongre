@@ -11,7 +11,10 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import type { SearchFacetValue } from "../../api/contracts/search.contract";
+import type {
+  MarketScopedSearchFilters,
+  SearchFacetValue,
+} from "../../api/contracts/search.contract";
 import { services } from "../../api/client/service-registry";
 import { Listing, SearchFilters, ListingCondition } from "../../types";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
@@ -222,7 +225,7 @@ export const SearchPage: React.FC = () => {
     let cancelled = false;
     setIsLoading(true);
     setSearchError(false);
-    const filters: SearchFilters = {
+    const filters: MarketScopedSearchFilters = {
       query: query || undefined,
       categorySlug: categorySlug || undefined,
       subCategorySlug: subCategorySlug || undefined,

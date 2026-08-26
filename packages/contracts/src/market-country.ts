@@ -15,8 +15,24 @@ export const marketLaunchStatusSchema = z.enum([
 
 export type MarketLaunchStatus = z.infer<typeof marketLaunchStatusSchema>;
 
+export interface MarketCapabilities {
+  discovery: boolean;
+  publication: boolean;
+  multiMarketPublication: boolean;
+  payments: boolean;
+  payouts: boolean;
+  delivery: boolean;
+  verification: boolean;
+  subscriptions: boolean;
+  promotions: boolean;
+}
+
 export interface CountryConfig {
   code: string;
+  marketId: string;
+  marketCode: string;
+  countryCode: string;
+  isDefault: boolean;
   slug: string;
   name: string;
   nativeName: string;
@@ -28,10 +44,14 @@ export interface CountryConfig {
   defaultLocale: string;
   supportedLocales: readonly string[];
   currency: string;
+  supportedCurrencies: readonly string[];
   currencySymbol?: string;
   timezone: string;
+  measurementSystem: "metric" | "imperial";
   phoneCountryCode: string;
   addressFormat?: string;
+  locationHierarchy: readonly string[];
+  capabilities: MarketCapabilities;
   legalEntity?: string;
   seo: {
     indexable: boolean;
@@ -69,10 +89,64 @@ export interface CountryConfig {
   displayOrder: number;
 }
 
-const country = (config: CountryConfig): CountryConfig =>
-  Object.freeze({
+type CountryConfigInput = Omit<
+  CountryConfig,
+  | "marketId"
+  | "marketCode"
+  | "countryCode"
+  | "isDefault"
+  | "supportedCurrencies"
+  | "measurementSystem"
+  | "locationHierarchy"
+  | "capabilities"
+> &
+  Partial<
+    Pick<
+      CountryConfig,
+      | "marketId"
+      | "marketCode"
+      | "countryCode"
+      | "isDefault"
+      | "supportedCurrencies"
+      | "measurementSystem"
+      | "locationHierarchy"
+      | "capabilities"
+    >
+  >;
+
+const country = (input: CountryConfigInput): CountryConfig => {
+  const config: CountryConfig = {
+    marketId: input.marketId || `market-${input.slug}`,
+    marketCode: input.marketCode || input.code,
+    countryCode: input.countryCode || input.code,
+    isDefault: input.isDefault === true,
+    supportedCurrencies: input.supportedCurrencies || [input.currency],
+    measurementSystem: input.measurementSystem || "metric",
+    locationHierarchy: input.locationHierarchy || [
+      "country",
+      "region",
+      "municipality",
+      "postal_code",
+    ],
+    capabilities: input.capabilities || {
+      discovery: input.marketplace.enabled,
+      publication: input.marketplace.enabled,
+      multiMarketPublication: input.marketplace.enabled,
+      payments: input.payments.enabled,
+      payouts: input.payments.enabled,
+      delivery: input.marketplace.enabled,
+      verification: input.marketplace.enabled,
+      subscriptions: input.monetization.enabled,
+      promotions: input.monetization.enabled,
+    },
+    ...input,
+  };
+  return Object.freeze({
     ...config,
     supportedLocales: Object.freeze([...config.supportedLocales]),
+    supportedCurrencies: Object.freeze([...config.supportedCurrencies]),
+    locationHierarchy: Object.freeze([...config.locationHierarchy]),
+    capabilities: Object.freeze({ ...config.capabilities }),
     payments: Object.freeze({
       ...config.payments,
       providerIds: Object.freeze([...config.payments.providerIds]),
@@ -84,6 +158,7 @@ const country = (config: CountryConfig): CountryConfig =>
     compliance: Object.freeze({ ...config.compliance }),
     launchContent: Object.freeze({ ...config.launchContent }),
   });
+};
 
 /**
  * Canonical country identity and routing registry.
@@ -96,6 +171,7 @@ const country = (config: CountryConfig): CountryConfig =>
 export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
   country({
     code: "FR",
+    isDefault: true,
     slug: "fr",
     name: "France",
     nativeName: "France",
@@ -111,6 +187,13 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     timezone: "Europe/Paris",
     phoneCountryCode: "+33",
     addressFormat: "street, postalCode city",
+    locationHierarchy: [
+      "country",
+      "region",
+      "department",
+      "municipality",
+      "postal_code",
+    ],
     legalEntity: "Shongre France",
     seo: { indexable: true, hreflang: "fr-FR" },
     marketplace: { enabled: true, crossBorderSearch: false },
@@ -152,6 +235,13 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     timezone: "Europe/Brussels",
     phoneCountryCode: "+32",
     addressFormat: "street, postalCode municipality",
+    locationHierarchy: [
+      "country",
+      "region",
+      "province",
+      "municipality",
+      "postal_code",
+    ],
     legalEntity: "Shongre Europe",
     seo: { indexable: true, hreflang: "fr-BE" },
     marketplace: { enabled: true, crossBorderSearch: false },
@@ -193,6 +283,12 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     timezone: "Europe/Zurich",
     phoneCountryCode: "+41",
     addressFormat: "street, postalCode municipality",
+    locationHierarchy: [
+      "country",
+      "canton",
+      "municipality",
+      "postal_code",
+    ],
     legalEntity: "Shongre Europe",
     seo: { indexable: true, hreflang: "fr-CH" },
     marketplace: { enabled: true, crossBorderSearch: false },
@@ -395,6 +491,15 @@ const COUNTRY_BY_CODE = new Map(
 const COUNTRY_BY_SLUG = new Map(
   COUNTRY_REGISTRY.map((entry) => [entry.slug, entry]),
 );
+const DEFAULT_COUNTRIES = COUNTRY_REGISTRY.filter((entry) => entry.isDefault);
+if (DEFAULT_COUNTRIES.length !== 1) {
+  throw new Error("COUNTRY_REGISTRY must define exactly one default market.");
+}
+export const DEFAULT_COUNTRY_CONFIG = DEFAULT_COUNTRIES[0];
+
+export function getDefaultCountryConfig(): CountryConfig {
+  return DEFAULT_COUNTRY_CONFIG;
+}
 
 export function getCountryConfig(code: string): CountryConfig | undefined {
   return COUNTRY_BY_CODE.get(
@@ -448,6 +553,7 @@ export interface MarketContext {
   market: string | null;
   locale: string | null;
   currency: string | null;
+  timezone: string | null;
   publicPath: string;
   internalPath: string;
   routingBasePath: string;
@@ -493,7 +599,7 @@ function originFor(
   infrastructure: MarketInfrastructureConfig,
 ): string {
   const domain =
-    country?.code === "FR"
+    country?.isDefault
       ? infrastructure.franceDomain
       : infrastructure.globalDomain;
   return `${infrastructure.canonicalProtocol}://${domain}`;
@@ -519,10 +625,11 @@ function resultForCountry(
     kind: marketplaceAvailable ? "market" : "coming_soon",
     hostname,
     country,
-    countryCode: country.code,
-    market: country.code,
+    countryCode: country.countryCode,
+    market: country.marketCode,
     locale: country.defaultLocale,
     currency: country.currency,
+    timezone: country.timezone,
     publicPath,
     internalPath,
     routingBasePath: country.basePath,
@@ -555,6 +662,7 @@ export function resolveMarketContext(
     market: null,
     locale: null,
     currency: null,
+    timezone: null,
     publicPath: pathname,
     internalPath: pathname,
     routingBasePath: "/",
@@ -579,7 +687,7 @@ export function resolveMarketContext(
   }
 
   if (hostname === franceHost || (isLocal && hostname === "fr.localhost")) {
-    const france = getCountryConfig("FR")!;
+    const france = getDefaultCountryConfig();
     return resultForCountry(
       france,
       hostname,
@@ -591,7 +699,7 @@ export function resolveMarketContext(
 
   const localSlug = isLocal ? hostname.split(".")[0] : "";
   const localCountry = getCountryConfigBySlug(localSlug);
-  if (localCountry && localCountry.code !== "FR") {
+  if (localCountry && !localCountry.isDefault) {
     return resultForCountry(
       localCountry,
       hostname,
@@ -621,6 +729,7 @@ export function resolveMarketContext(
       market: null,
       locale: "fr",
       currency: null,
+      timezone: null,
       publicPath: "/",
       internalPath: "/",
       routingBasePath: "/",
@@ -631,7 +740,7 @@ export function resolveMarketContext(
   const [firstSegment = ""] = pathname.slice(1).split("/");
   const country = getCountryConfigBySlug(firstSegment);
 
-  if (country?.code === "FR") {
+  if (country?.isDefault) {
     const suffix = pathname.slice(`/${firstSegment}`.length) || "/";
     const target = `${originFor(country, infrastructure)}${normalizePathname(suffix)}`;
     return {
@@ -642,6 +751,7 @@ export function resolveMarketContext(
       market: country.code,
       locale: country.defaultLocale,
       currency: country.currency,
+      timezone: country.timezone,
       publicPath: pathname,
       internalPath: normalizePathname(suffix),
       routingBasePath: country.basePath,
@@ -666,7 +776,7 @@ export function resolveMarketContext(
   // Keep localhost `/` as France for backwards-compatible development. The
   // global gateway is available at `global.localhost`.
   if (isLocalPathHost && pathname === "/") {
-    const france = getCountryConfig("FR")!;
+    const france = getDefaultCountryConfig();
     return resultForCountry(
       france,
       hostname,
@@ -684,6 +794,7 @@ export function resolveMarketContext(
     market: null,
     locale: null,
     currency: null,
+    timezone: null,
     publicPath: pathname,
     internalPath: pathname,
     routingBasePath: "/",

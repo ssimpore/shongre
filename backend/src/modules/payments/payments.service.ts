@@ -16,7 +16,7 @@ export class PaymentsService {
 
   async createPaymentIntent(
     amount: number,
-    currency = "EUR",
+    currency: string,
     metadata?: Record<string, string>,
   ): Promise<PaymentIntentResult> {
     return this.paymentProvider.createPaymentIntent(amount, currency, metadata);
@@ -50,13 +50,14 @@ export class PaymentsService {
     );
   }
 
-  async getSellerBalance(sellerId: string): Promise<{
+  async getSellerBalance(sellerId: string, currency: string): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;
   }> {
     return this.paymentProvider.getBalance(
       await this.getPayoutAccount(sellerId),
+      currency,
     );
   }
 

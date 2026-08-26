@@ -86,6 +86,28 @@ export type ListingStatus =
 export type DeliveryType =
   "hand_delivery" | "relay_point" | "home_delivery" | "cocolis" | "express";
 
+export type ListingMarketPublicationStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "paused"
+  | "suspended"
+  | "rejected"
+  | "expired";
+
+export interface ListingMarketPublication {
+  marketCode: string;
+  status: ListingMarketPublicationStatus;
+  isPrimary: boolean;
+  priceMinor: number;
+  currency: string;
+  localizedContent?: Record<string, unknown>;
+  availableServices?: Record<string, unknown>;
+  complianceState: "pending" | "approved" | "restricted" | "rejected";
+  publishedAt?: string;
+  sortDate: string;
+}
+
 export interface Listing {
   id: string;
   sellerId: string;
@@ -118,6 +140,8 @@ export interface Listing {
   brand?: string;
   model?: string;
   marketCode: string;
+  marketCodes?: string[];
+  marketPublications?: ListingMarketPublication[];
   city: string;
   postalCode: string;
   department?: string;
