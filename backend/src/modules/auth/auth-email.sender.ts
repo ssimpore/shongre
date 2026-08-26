@@ -16,10 +16,23 @@ export class AuthEmailSender {
     template: AuthEmailTemplate;
     actionUrl: string;
   }): Promise<void> {
+    if (config.emailMode === "console") return;
+    if (config.emailMode === "sandbox") {
+      const recipient = input.to.trim().toLowerCase();
+      const allowed = config.emailRecipientAllowlist.some((entry) => {
+        const rule = entry.trim().toLowerCase();
+        return rule.startsWith("@")
+          ? recipient.endsWith(rule)
+          : recipient === rule;
+      });
+      if (!allowed) {
+        throw new Error(
+          "Authentication email recipient is not allowed in this environment.",
+        );
+      }
+    }
     if (!config.authEmailDeliveryUrl) {
-      if (config.nodeEnv === "production")
-        throw new Error("AUTH_EMAIL_DELIVERY_URL is not configured.");
-      return;
+      throw new Error("AUTH_EMAIL_DELIVERY_URL is not configured.");
     }
     const idempotencyKey = createHash("sha256")
       .update(`${input.template}:${input.to.toLowerCase()}:${input.actionUrl}`)

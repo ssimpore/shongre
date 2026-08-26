@@ -16,16 +16,8 @@
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "servers": [
     {
-      "url": "http://127.0.0.1:4000/api/v1",
-      "description": "Local development"
-    },
-    {
-      "url": "https://api.staging.shongre.com/api/v1",
-      "description": "Staging"
-    },
-    {
-      "url": "https://api.shongre.com/api/v1",
-      "description": "Production"
+      "url": "/api/v1",
+      "description": "Current deployment. The origin is supplied by runtime/deployment configuration."
     }
   ],
   "tags": [
@@ -18567,6 +18559,31 @@
         "x-shongre-permission": "finance.transactions.read"
       }
     },
+    "/api/health": {
+      "get": {
+        "operationId": "getApiHealth",
+        "tags": ["operations"],
+        "summary": "Compatibility process-health endpoint",
+        "servers": [{ "url": "/" }],
+        "responses": {
+          "200": {
+            "description": "The HTTP process is alive with safe release metadata.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-runtime": "server",
+        "x-shongre-source": "backend/src/app/server/index.ts"
+      }
+    },
     "/health": {
       "get": {
         "operationId": "getHealth",
@@ -24784,6 +24801,39 @@
         "x-shongre-permission": "listing.create"
       }
     },
+    "/api/ready": {
+      "get": {
+        "operationId": "getApiReadiness",
+        "tags": ["operations"],
+        "summary": "Compatibility dependency-aware readiness endpoint",
+        "servers": [{ "url": "/" }],
+        "responses": {
+          "200": {
+            "description": "The process and database dependency are ready.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "description": "A required dependency is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-runtime": "server",
+        "x-shongre-source": "backend/src/app/server/index.ts"
+      }
+    },
     "/readyz": {
       "get": {
         "operationId": "getReadiness",
@@ -28935,7 +28985,7 @@
           "nativeName",
           "enabled",
           "launchStatus",
-          "primaryDomain",
+          "canonicalDomainMode",
           "basePath",
           "defaultLocale",
           "supportedLocales",
@@ -28967,7 +29017,11 @@
               "paused"
             ]
           },
-          "primaryDomain": { "type": "string", "format": "hostname" },
+          "canonicalDomainMode": {
+            "type": "string",
+            "enum": ["france", "international"],
+            "description": "Stable routing mode. Concrete hostnames are supplied by deployment configuration."
+          },
           "basePath": { "type": "string", "pattern": "^/$|^/[a-z0-9-]+$" },
           "defaultLocale": { "type": "string" },
           "supportedLocales": {
@@ -29015,7 +29069,10 @@
               "paused"
             ]
           },
-          "primaryDomain": { "type": "string", "format": "hostname" },
+          "canonicalDomainMode": {
+            "type": "string",
+            "enum": ["france", "international"]
+          },
           "basePath": { "type": "string", "pattern": "^/$|^/[a-z0-9-]+$" },
           "defaultLocale": { "type": "string" },
           "supportedLocales": {

@@ -116,8 +116,7 @@ export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
             country.marketCode,
             {
               enabled: !isNotNeeded,
-              priority:
-                index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+              priority: index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
               customNotes: "Affectation explicite du scénario démo.",
             },
           ]),

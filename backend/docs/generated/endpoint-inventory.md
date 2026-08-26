@@ -3,9 +3,9 @@
 > Generated from `backend/openapi/openapi.json`. Do not edit by hand.
 
 - Contract version: `1.0.0`
-- API base path: `http://127.0.0.1:4000/api/v1`
-- Operations: **404**
-- Specification SHA-256: `c8cdf4bfe5562e11`
+- API base path: `/api/v1`
+- Operations: **406**
+- Specification SHA-256: `af86da362505e55d`
 
 ## account
 
@@ -516,6 +516,8 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/health` | `getApiHealth` | `public` | — | `200` |
+| `GET` | `/api/ready` | `getApiReadiness` | `public` | — | `200` |
 | `GET` | `/health` | `getHealth` | `public` | — | `200` |
 | `GET` | `/livez` | `getLiveness` | `public` | — | `200` |
 | `GET` | `/readyz` | `getReadiness` | `public` | — | `200` |

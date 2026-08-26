@@ -1,0 +1,147 @@
+name: Build once and deploy DEV
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full main-branch commit SHA; defaults to the workflow ref
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+concurrency:
+  group: build-deploy-development
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, attest, scan, and manifest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      release_sha: ${{ steps.release.outputs.sha }}
+      evidence_run_id: ${{ github.run_id }}
+    steps:
+      - name: Resolve the already-tested commit
+        id: release
+        env:
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          DISPATCH_SHA: ${{ inputs.release_sha }}
+        run: |
+          sha="${WORKFLOW_RUN_SHA:-${DISPATCH_SHA:-$GITHUB_SHA}}"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+          fetch-depth: 0
+      - name: Require a tested commit from main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            ci_run="$(gh run list --workflow ci.yml --commit "$RELEASE_SHA" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            test -n "$ci_run"
+          fi
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Resolve immutable image names
+        id: images
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          {
+            echo "frontend=ghcr.io/$owner/shongre-frontend"
+            echo "backend=ghcr.io/$owner/shongre-backend"
+            echo "tag=sha-$RELEASE_SHA"
+          } >> "$GITHUB_OUTPUT"
+      - name: Build and push the environment-agnostic frontend once
+        id: frontend
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.images.outputs.frontend }}:${{ steps.images.outputs.tag }}
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ steps.release.outputs.sha }}
+            VERSION=${{ steps.images.outputs.tag }}
+            SOURCE_URL=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+          sbom: true
+          provenance: mode=max
+      - name: Build and push the API, worker, and migration image once
+        id: backend
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.images.outputs.backend }}:${{ steps.images.outputs.tag }}
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ steps.release.outputs.sha }}
+            VERSION=${{ steps.images.outputs.tag }}
+            SOURCE_URL=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+          sbom: true
+          provenance: mode=max
+      - name: Pull and scan both immutable image digests
+        env:
+          FRONTEND_REF: ${{ steps.images.outputs.frontend }}@${{ steps.frontend.outputs.digest }}
+          BACKEND_REF: ${{ steps.images.outputs.backend }}@${{ steps.backend.outputs.digest }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/trivy-cache"
+          for image in "$FRONTEND_REF" "$BACKEND_REF"; do
+            docker pull "$image"
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$RUNNER_TEMP/trivy-cache:/root/.cache" \
+              ghcr.io/aquasecurity/trivy:0.73.0@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c image \
+              --scanners vuln --exit-code 1 --severity HIGH,CRITICAL "$image"
+          done
+      - name: Generate the release source of truth
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+          FRONTEND_REF: ${{ steps.images.outputs.frontend }}@${{ steps.frontend.outputs.digest }}
+          BACKEND_REF: ${{ steps.images.outputs.backend }}@${{ steps.backend.outputs.digest }}
+        run: |
+          node scripts/release-manifest.mjs create release-manifest.json "$RELEASE_SHA" "$GITHUB_REPOSITORY" "$FRONTEND_REF" "$BACKEND_REF"
+          node scripts/release-manifest.mjs validate release-manifest.json "$RELEASE_SHA"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-${{ steps.release.outputs.sha }}
+          path: release-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+
+  deploy-development:
+    needs: build
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: development
+      release_sha: ${{ needs.build.outputs.release_sha }}
+      evidence_run_id: ${{ needs.build.outputs.evidence_run_id }}
+      mode: deploy

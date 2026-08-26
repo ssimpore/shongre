@@ -633,8 +633,7 @@ export class MockListingRepository implements IListingRepository {
             status: "active" as const,
             isPrimary: mCode === primary,
             publishedAt: new Date().toISOString(),
-            currency:
-              getCountryConfig(mCode)?.currency || listing.currency,
+            currency: getCountryConfig(mCode)?.currency || listing.currency,
             complianceChecked: true,
           }));
 

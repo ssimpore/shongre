@@ -177,8 +177,8 @@ export class AuthService {
   }
 
   /**
-   * Creates a one-use authorization code for a top-level transition between
-   * shongre.fr and shongre.com. Cookies remain host-only; the destination
+   * Creates a one-use authorization code for a top-level domain transition.
+   * Cookies remain host-only; the destination
    * creates its own session only after consuming this short-lived code.
    */
   async beginDomainHandoff(
@@ -235,14 +235,7 @@ export class AuthService {
       buildPublicUrl({
         country: targetCountry,
         route: "/auth/domain-handoff",
-        infrastructure: {
-          globalDomain: process.env.SHONGRE_GLOBAL_DOMAIN || "shongre.com",
-          franceDomain: process.env.SHONGRE_FR_DOMAIN || "shongre.fr",
-          canonicalProtocol:
-            process.env.SHONGRE_CANONICAL_PROTOCOL === "http"
-              ? "http"
-              : "https",
-        },
+        infrastructure: config.marketInfrastructure,
       }),
     );
     authorizationUrl.searchParams.set("code", code);
@@ -962,10 +955,7 @@ export class AuthService {
       "verify_email",
       24 * 60 * 60,
     );
-    const actionUrl = new URL(
-      "/verification-email",
-      config.frontendUrl || "http://localhost:3000",
-    );
+    const actionUrl = new URL("/verification-email", config.frontendUrl);
     actionUrl.searchParams.set("token", rawToken);
     await this.emailSender.send({
       to: user.email,
@@ -1010,7 +1000,7 @@ export class AuthService {
     );
     const actionUrl = new URL(
       "/reinitialisation-mot-de-passe",
-      config.frontendUrl || "http://localhost:3000",
+      config.frontendUrl,
     );
     actionUrl.searchParams.set("token", rawToken);
     await this.emailSender.send({

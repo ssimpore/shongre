@@ -196,7 +196,7 @@ export function FinanceRevenueTrendChart({
               <LineChart
                 data={chartData}
                 margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
-                accessibilityLayer
+                accessibilityLayer={false}
               >
                 <CartesianGrid
                   vertical={false}

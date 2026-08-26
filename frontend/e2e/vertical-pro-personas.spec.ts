@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForStableLayout } from "./overflow";
 import { usePersona } from "./personas";
 
 const seedConsent = async (page: Parameters<typeof usePersona>[0]) => {
@@ -23,6 +24,7 @@ test("the demo persona menu remains operable at the commented mobile viewport", 
     "/emploi/offre/conseiller-ere-de-vente-en-alternance-job-sales-apprentice-lille/postuler",
     { waitUntil: "domcontentloaded" },
   );
+  await waitForStableLayout(page);
 
   await page.locator('button[aria-controls="demo-persona-menu"]').click();
   const menu = page.getByRole("menu", {

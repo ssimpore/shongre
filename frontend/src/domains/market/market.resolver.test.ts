@@ -1,8 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  deepMergeOverrides,
-  MarketResolver,
-} from "./market.resolver";
+import { deepMergeOverrides, MarketResolver } from "./market.resolver";
 import type { Market } from "./market.types";
 import { INITIAL_MARKETS } from "./market.defaults";
 

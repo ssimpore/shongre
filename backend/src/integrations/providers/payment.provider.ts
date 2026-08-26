@@ -24,7 +24,10 @@ export interface IPaymentProvider {
     currency: string,
     idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
-  getBalance(accountReference: string, currency: string): Promise<{
+  getBalance(
+    accountReference: string,
+    currency: string,
+  ): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;
@@ -64,7 +67,10 @@ export class DemoPaymentProvider implements IPaymentProvider {
     };
   }
 
-  async getBalance(accountReference: string, currency: string): Promise<{
+  async getBalance(
+    accountReference: string,
+    currency: string,
+  ): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;

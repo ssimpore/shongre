@@ -1,3 +1,5 @@
+import { getPublicRuntimeConfig } from "../platform/runtime-config/public-runtime-config";
+
 export type MobileStoreId = "app-store" | "google-play";
 export type SocialNetworkId = "instagram" | "facebook" | "linkedin" | "youtube";
 
@@ -47,16 +49,18 @@ export const MOBILE_STORE_LINKS: readonly FooterExternalLink<MobileStoreId>[] =
     {
       id: "app-store",
       name: "App Store",
-      url: resolvePublicExternalUrl(process.env.NEXT_PUBLIC_APP_STORE_URL, [
-        "apps.apple.com",
-      ]),
+      url: resolvePublicExternalUrl(
+        getPublicRuntimeConfig().externalLinks.appStore,
+        ["apps.apple.com"],
+      ),
     },
     {
       id: "google-play",
       name: "Google Play",
-      url: resolvePublicExternalUrl(process.env.NEXT_PUBLIC_GOOGLE_PLAY_URL, [
-        "play.google.com",
-      ]),
+      url: resolvePublicExternalUrl(
+        getPublicRuntimeConfig().externalLinks.googlePlay,
+        ["play.google.com"],
+      ),
     },
   ] as const;
 
@@ -65,31 +69,32 @@ export const SOCIAL_LINKS: readonly FooterExternalLink<SocialNetworkId>[] = [
     id: "instagram",
     name: "Instagram",
     url: resolvePublicExternalUrl(
-      process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM_URL,
+      getPublicRuntimeConfig().externalLinks.instagram,
       ["instagram.com"],
     ),
   },
   {
     id: "facebook",
     name: "Facebook",
-    url: resolvePublicExternalUrl(process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK_URL, [
-      "facebook.com",
-      "fb.com",
-    ]),
+    url: resolvePublicExternalUrl(
+      getPublicRuntimeConfig().externalLinks.facebook,
+      ["facebook.com", "fb.com"],
+    ),
   },
   {
     id: "linkedin",
     name: "LinkedIn",
-    url: resolvePublicExternalUrl(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN_URL, [
-      "linkedin.com",
-    ]),
+    url: resolvePublicExternalUrl(
+      getPublicRuntimeConfig().externalLinks.linkedin,
+      ["linkedin.com"],
+    ),
   },
   {
     id: "youtube",
     name: "YouTube",
-    url: resolvePublicExternalUrl(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE_URL, [
-      "youtube.com",
-      "youtu.be",
-    ]),
+    url: resolvePublicExternalUrl(
+      getPublicRuntimeConfig().externalLinks.youtube,
+      ["youtube.com", "youtu.be"],
+    ),
   },
 ] as const;

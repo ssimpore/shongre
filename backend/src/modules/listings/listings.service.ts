@@ -207,10 +207,7 @@ export class ListingsService {
         code: "VALIDATION_ERROR",
         message: "Ce marché n’est pas disponible.",
       });
-    await this.listingRepo.saveDraft(
-      { ...draft, marketCode },
-      userId,
-    );
+    await this.listingRepo.saveDraft({ ...draft, marketCode }, userId);
   }
 
   getBulkImportTemplate(locale: string) {
@@ -465,9 +462,9 @@ export class ListingsService {
     const publicationPolicies = await Promise.all(
       selectedMarketCodes.map((selectedMarketCode) =>
         this.publisherEntitlements.authorizePublication({
-        actorUserId: sellerId,
-        organizationId: draft.organizationId,
-        branchId: draft.branchId,
+          actorUserId: sellerId,
+          organizationId: draft.organizationId,
+          branchId: draft.branchId,
           marketCode: selectedMarketCode,
           categoryId: draft.categoryId!,
         }),
@@ -534,7 +531,9 @@ export class ListingsService {
       safety.riskScore >= 50 ? "pending_review" : "active";
     const marketPublications = selectedMarkets.map((selectedMarket) => {
       const custom = draft.marketPublications?.[selectedMarket.code];
-      const currency = (custom?.currency || selectedMarket.currency).toUpperCase();
+      const currency = (
+        custom?.currency || selectedMarket.currency
+      ).toUpperCase();
       if (!selectedMarket.supportedCurrencies.includes(currency))
         throw new AppError({
           code: "VALIDATION_ERROR",
@@ -552,8 +551,7 @@ export class ListingsService {
       const priceMinor =
         custom?.priceMinor ??
         Math.round(
-          Number(effectivePrice) *
-            10 ** getCurrencyMinorUnitDigits(currency),
+          Number(effectivePrice) * 10 ** getCurrencyMinorUnitDigits(currency),
         );
       if (!Number.isSafeInteger(priceMinor) || priceMinor < 0)
         throw new AppError({

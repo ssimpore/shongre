@@ -11,7 +11,9 @@ const migration = readFileSync(
 
 describe("listing market publications migration", () => {
   it("models one shared listing with explicit market-scoped state", () => {
-    expect(migration).toContain("CREATE TABLE IF NOT EXISTS public.listing_market_publications");
+    expect(migration).toContain(
+      "CREATE TABLE IF NOT EXISTS public.listing_market_publications",
+    );
     expect(migration).toContain("PRIMARY KEY (listing_id, market_code)");
     expect(migration).toContain("listing_market_one_primary_idx");
     expect(migration).toContain("price_minor BIGINT");

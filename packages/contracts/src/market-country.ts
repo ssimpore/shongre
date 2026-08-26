@@ -39,7 +39,7 @@ export interface CountryConfig {
   flag: string;
   enabled: boolean;
   launchStatus: MarketLaunchStatus;
-  primaryDomain: string;
+  canonicalDomainMode: "france" | "international";
   basePath: string;
   defaultLocale: string;
   supportedLocales: readonly string[];
@@ -178,7 +178,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     flag: "🇫🇷",
     enabled: true,
     launchStatus: "active",
-    primaryDomain: "shongre.fr",
+    canonicalDomainMode: "france",
     basePath: "/",
     defaultLocale: "fr-FR",
     supportedLocales: ["fr-FR", "en-US"],
@@ -226,7 +226,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     flag: "🇧🇪",
     enabled: true,
     launchStatus: "active",
-    primaryDomain: "shongre.com",
+    canonicalDomainMode: "international",
     basePath: "/be",
     defaultLocale: "fr-BE",
     supportedLocales: ["fr-BE", "nl-BE", "en-US"],
@@ -274,7 +274,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     flag: "🇨🇭",
     enabled: true,
     launchStatus: "active",
-    primaryDomain: "shongre.com",
+    canonicalDomainMode: "international",
     basePath: "/ch",
     defaultLocale: "fr-CH",
     supportedLocales: ["fr-CH", "de-CH", "it-CH", "en-US"],
@@ -283,12 +283,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     timezone: "Europe/Zurich",
     phoneCountryCode: "+41",
     addressFormat: "street, postalCode municipality",
-    locationHierarchy: [
-      "country",
-      "canton",
-      "municipality",
-      "postal_code",
-    ],
+    locationHierarchy: ["country", "canton", "municipality", "postal_code"],
     legalEntity: "Shongre Europe",
     seo: { indexable: true, hreflang: "fr-CH" },
     marketplace: { enabled: true, crossBorderSearch: false },
@@ -321,7 +316,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     flag: "🇸🇳",
     enabled: true,
     launchStatus: "coming_soon",
-    primaryDomain: "shongre.com",
+    canonicalDomainMode: "international",
     basePath: "/sn",
     defaultLocale: "fr-SN",
     supportedLocales: ["fr-SN"],
@@ -362,7 +357,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
     flag: "🇧🇫",
     enabled: true,
     launchStatus: "coming_soon",
-    primaryDomain: "shongre.com",
+    canonicalDomainMode: "international",
     basePath: "/bf",
     defaultLocale: "fr-BF",
     supportedLocales: ["fr-BF"],
@@ -442,7 +437,7 @@ export const COUNTRY_REGISTRY: readonly CountryConfig[] = Object.freeze([
         flag,
         enabled: true,
         launchStatus: code === "LU" ? "active" : "coming_soon",
-        primaryDomain: "shongre.com",
+        canonicalDomainMode: "international",
         basePath: `/${slug}`,
         defaultLocale: locale,
         supportedLocales: [locale],
@@ -531,12 +526,6 @@ export interface MarketInfrastructureConfig {
   canonicalProtocol: "https" | "http";
 }
 
-export const DEFAULT_MARKET_INFRASTRUCTURE: MarketInfrastructureConfig = {
-  globalDomain: "shongre.com",
-  franceDomain: "shongre.fr",
-  canonicalProtocol: "https",
-};
-
 export type MarketResolutionKind =
   | "global_gateway"
   | "market"
@@ -558,6 +547,7 @@ export interface MarketContext {
   internalPath: string;
   routingBasePath: string;
   canonicalUrl: string;
+  infrastructure: MarketInfrastructureConfig;
   redirectUrl?: string;
   redirectStatus?: 308;
   reason?: string;
@@ -566,7 +556,7 @@ export interface MarketContext {
 export interface ResolveMarketContextInput {
   hostname: string;
   pathname?: string;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure: MarketInfrastructureConfig;
   allowDevelopmentHosts?: boolean;
 }
 
@@ -599,7 +589,7 @@ function originFor(
   infrastructure: MarketInfrastructureConfig,
 ): string {
   const domain =
-    country?.isDefault
+    country?.canonicalDomainMode === "france"
       ? infrastructure.franceDomain
       : infrastructure.globalDomain;
   return `${infrastructure.canonicalProtocol}://${domain}`;
@@ -634,16 +624,14 @@ function resultForCountry(
     internalPath,
     routingBasePath: country.basePath,
     canonicalUrl: `${originFor(country, infrastructure)}${canonicalPath}`,
+    infrastructure,
   };
 }
 
 export function resolveMarketContext(
   input: ResolveMarketContextInput,
 ): MarketContext {
-  const infrastructure: MarketInfrastructureConfig = {
-    ...DEFAULT_MARKET_INFRASTRUCTURE,
-    ...input.infrastructure,
-  };
+  const infrastructure = input.infrastructure;
   const hostname = normalizeHostname(input.hostname);
   const pathname = normalizePathname(input.pathname);
   const globalHost = normalizeHostname(infrastructure.globalDomain);
@@ -667,6 +655,7 @@ export function resolveMarketContext(
     internalPath: pathname,
     routingBasePath: "/",
     canonicalUrl: `${originFor(null, infrastructure)}/`,
+    infrastructure,
     reason: "HOST_NOT_ALLOWED",
   });
 
@@ -684,6 +673,42 @@ export function resolveMarketContext(
       redirectStatus: 308,
       reason: "CANONICAL_HOST",
     };
+  }
+
+  const [firstSegment = ""] = pathname.slice(1).split("/");
+  const pathCountry = getCountryConfigBySlug(firstSegment);
+  const usesSharedDevelopmentHost = isLocal && franceHost === globalHost;
+  if (usesSharedDevelopmentHost && pathCountry?.isDefault) {
+    const suffix = pathname.slice(`/${firstSegment}`.length) || "/";
+    const target = `${originFor(pathCountry, infrastructure)}${normalizePathname(suffix)}`;
+    return {
+      kind: "redirect",
+      hostname,
+      country: pathCountry,
+      countryCode: pathCountry.code,
+      market: pathCountry.code,
+      locale: pathCountry.defaultLocale,
+      currency: pathCountry.currency,
+      timezone: pathCountry.timezone,
+      publicPath: pathname,
+      internalPath: normalizePathname(suffix),
+      routingBasePath: pathCountry.basePath,
+      canonicalUrl: target,
+      infrastructure,
+      redirectUrl: target,
+      redirectStatus: 308,
+      reason: "FRANCE_CANONICAL_DOMAIN",
+    };
+  }
+  if (usesSharedDevelopmentHost && pathCountry && !pathCountry.isDefault) {
+    const suffix = pathname.slice(`/${firstSegment}`.length) || "/";
+    return resultForCountry(
+      pathCountry,
+      hostname,
+      pathname,
+      normalizePathname(suffix),
+      infrastructure,
+    );
   }
 
   if (hostname === franceHost || (isLocal && hostname === "fr.localhost")) {
@@ -734,11 +759,11 @@ export function resolveMarketContext(
       internalPath: "/",
       routingBasePath: "/",
       canonicalUrl: `${originFor(null, infrastructure)}/`,
+      infrastructure,
     };
   }
 
-  const [firstSegment = ""] = pathname.slice(1).split("/");
-  const country = getCountryConfigBySlug(firstSegment);
+  const country = pathCountry;
 
   if (country?.isDefault) {
     const suffix = pathname.slice(`/${firstSegment}`.length) || "/";
@@ -756,6 +781,7 @@ export function resolveMarketContext(
       internalPath: normalizePathname(suffix),
       routingBasePath: country.basePath,
       canonicalUrl: target,
+      infrastructure,
       redirectUrl: target,
       redirectStatus: 308,
       reason: "FRANCE_CANONICAL_DOMAIN",
@@ -799,6 +825,7 @@ export function resolveMarketContext(
     internalPath: pathname,
     routingBasePath: "/",
     canonicalUrl: `${originFor(null, infrastructure)}/`,
+    infrastructure,
     reason: /^[a-z]{2}$/i.test(firstSegment)
       ? "UNKNOWN_COUNTRY"
       : "GLOBAL_ROUTE_REQUIRES_COUNTRY",
@@ -811,17 +838,14 @@ export interface BuildPublicUrlInput {
   query?:
     URLSearchParams | Record<string, string | number | boolean | undefined>;
   hash?: string;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure: MarketInfrastructureConfig;
 }
 
 export function buildPublicUrl(input: BuildPublicUrlInput): string {
   const countryConfig = getCountryConfig(input.country);
   if (!countryConfig)
     throw new Error(`Unknown Shongre country: ${input.country}`);
-  const infrastructure = {
-    ...DEFAULT_MARKET_INFRASTRUCTURE,
-    ...input.infrastructure,
-  };
+  const infrastructure = input.infrastructure;
   const url = new URL(
     publicPathFor(countryConfig, input.route || "/"),
     originFor(countryConfig, infrastructure),
@@ -843,7 +867,7 @@ export function buildMarketSwitchUrl(input: {
   internalPath?: string;
   query?: URLSearchParams;
   routeExists?: boolean;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure: MarketInfrastructureConfig;
 }): string {
   return buildPublicUrl({
     country: input.targetCountry,

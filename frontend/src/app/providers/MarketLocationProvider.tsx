@@ -311,7 +311,7 @@ export const MarketLocationProvider: React.FC<{
       locale: currentLocale,
       domain:
         typeof window === "undefined"
-          ? country.primaryDomain
+          ? country.canonicalDomainMode
           : window.location.hostname,
       market: country.code,
       currency: currentCurrency,
@@ -352,7 +352,8 @@ export const MarketLocationProvider: React.FC<{
         const crossesRegistrableDomain =
           sourceCountry &&
           targetCountry &&
-          sourceCountry.primaryDomain !== targetCountry.primaryDomain;
+          sourceCountry.canonicalDomainMode !==
+            targetCountry.canonicalDomainMode;
         const canHandoff =
           isAuthenticated &&
           crossesRegistrableDomain &&

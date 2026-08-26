@@ -23,13 +23,15 @@ max_client_conn = 100
 
 [realtime]
 enabled = true
+port = 54323
+ip_version = "auto"
 
 [studio]
 enabled = true
 port = 54324
 api_url = "http://127.0.0.1:54321"
 
-[local_smtp]
+[inbucket]
 enabled = true
 port = 54325
 smtp_port = 54326
@@ -57,7 +59,7 @@ allowed_mime_types = ["image/jpeg", "image/png", "image/webp"]
 [auth]
 enabled = true
 site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["https://shongre.com"]
+additional_redirect_urls = ["http://127.0.0.1:3000", "http://127.0.0.1:3000"]
 jwt_expiry = 3600
 enable_signup = true
 

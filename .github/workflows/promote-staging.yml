@@ -1,0 +1,84 @@
+name: Promote exact release to STAGING
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full commit SHA previously built and successfully deployed to DEV
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve successful DEV release evidence
+    runs-on: ubuntu-latest
+    outputs:
+      evidence_run_id: ${{ steps.evidence.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Require a successful build-and-DEV run
+        id: evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          run_id="$(scripts/download-release-evidence.sh release "$RELEASE_SHA" .release)"
+          node scripts/release-manifest.mjs validate .release/release-manifest.json "$RELEASE_SHA"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+
+  deploy-staging:
+    needs: resolve
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: staging
+      release_sha: ${{ inputs.release_sha }}
+      evidence_run_id: ${{ needs.resolve.outputs.evidence_run_id }}
+      mode: deploy
+
+  certify-staging:
+    name: Certify the public STAGING Tunnel journey
+    needs: [resolve, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Download and revalidate the deployed manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          EVIDENCE_RUN_ID: ${{ needs.resolve.outputs.evidence_run_id }}
+        run: |
+          mkdir -p .release
+          gh run download "$EVIDENCE_RUN_ID" --name "release-$RELEASE_SHA" --dir .release
+          node scripts/release-manifest.mjs validate .release/release-manifest.json "$RELEASE_SHA"
+      - run: npm ci
+      - name: Install the bounded hosted browser
+        run: npx playwright install --with-deps chromium
+      - name: Run public web/API checks through Cloudflare Tunnel
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ vars.PUBLIC_INTL_URL }}
+          PLAYWRIGHT_API_URL: ${{ vars.API_URL }}
+          PLAYWRIGHT_EXPECTED_ENVIRONMENT: staging
+        run: npm run test:e2e --workspace=frontend -- hosted-smoke.spec.ts --project=chromium
+      - name: Bind certification to the exact digests and schema
+        run: node scripts/release-manifest.mjs certify .release/release-manifest.json staging-certification.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: staging-certification-${{ inputs.release_sha }}
+          path: staging-certification.json
+          if-no-files-found: error
+          retention-days: 90

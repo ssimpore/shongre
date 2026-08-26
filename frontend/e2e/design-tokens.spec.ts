@@ -454,6 +454,10 @@ test.describe('design-token runtime contracts @serial', () => {
             .flatMap((element) => String(element.className).split(/\s+/))
             .filter((className) => /^(?:[a-z-]+:)*(?:text|leading|tracking|font)-\[[^\]]+\]$/.test(className));
           const inlineTypography = [...document.querySelectorAll<HTMLElement>('[style]')]
+            // Recharts creates one off-screen, aria-hidden measurement node so
+            // it can size axis labels. It never paints product typography and
+            // merely mirrors the chart's token-backed computed font values.
+            .filter((element) => !element.matches('#recharts_measurement_span[aria-hidden="true"]'))
             .filter((element) =>
               /(?:font-family|font-size|font-weight|line-height|letter-spacing)/i.test(
                 element.getAttribute('style') || '',

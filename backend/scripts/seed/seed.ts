@@ -26,11 +26,11 @@ async function runSeed() {
   }
 
   if (
-    process.env.APP_ENV === "production" ||
+    process.env.APP_ENV !== "local" ||
     process.env.NODE_ENV === "production"
   ) {
     throw new Error(
-      "Demo seed execution is forbidden in production. Apply migration-driven reference data only.",
+      "Demo seed execution is allowed only in APP_ENV=local. Apply migration-driven reference data elsewhere.",
     );
   }
   if (process.env.ALLOW_DEMO_SEED !== "true") {

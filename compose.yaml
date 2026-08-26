@@ -1,0 +1,106 @@
+name: ${COMPOSE_PROJECT_NAME:-shongre}
+
+x-application: &application
+  init: true
+  restart: unless-stopped
+  networks:
+    - private
+  read_only: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+  stop_grace_period: 30s
+
+services:
+  frontend:
+    <<: *application
+    env_file:
+      - ${SHONGRE_FRONTEND_ENV_FILE:-.env.example}
+    environment:
+      RELEASE_SHA: ${RELEASE_SHA:-unreleased}
+      IMAGE_REFERENCE: ${FRONTEND_IMAGE:-shongre-frontend:local}
+    image: ${FRONTEND_IMAGE:-shongre-frontend:local}
+    pull_policy: ${SHONGRE_PULL_POLICY:-missing}
+    expose:
+      - "3000"
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /app/frontend/.next/cache:size=128m,uid=1000,gid=1000,mode=0750
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    <<: *application
+    env_file:
+      - ${SHONGRE_RUNTIME_ENV_FILE:-.env.local}
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      RELEASE_SHA: ${RELEASE_SHA:-unreleased}
+      IMAGE_REFERENCE: ${BACKEND_IMAGE:-shongre-backend:local}
+    image: ${BACKEND_IMAGE:-shongre-backend:local}
+    pull_policy: ${SHONGRE_PULL_POLICY:-missing}
+    expose:
+      - "4000"
+
+  worker:
+    <<: *application
+    env_file:
+      - ${SHONGRE_RUNTIME_ENV_FILE:-.env.local}
+    environment:
+      RELEASE_SHA: ${RELEASE_SHA:-unreleased}
+      IMAGE_REFERENCE: ${BACKEND_IMAGE:-shongre-backend:local}
+    image: ${BACKEND_IMAGE:-shongre-backend:local}
+    pull_policy: ${SHONGRE_PULL_POLICY:-missing}
+    command: ["node", "dist/worker.js"]
+    healthcheck:
+      disable: true
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.5.2@sha256:12ff5c6992a9863db4da270746af7c244bcaee49353039af8104268a18d6c4f0
+    pull_policy: always
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --metrics
+      - 0.0.0.0:2000
+      - run
+      - --token-file
+      - /run/secrets/cloudflare_tunnel_token
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    expose:
+      - "2000"
+    networks:
+      - private
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+      - /home/nonroot/.cloudflared:size=8m,uid=65532,gid=65532,mode=0700
+    secrets:
+      - cloudflare_tunnel_token
+    stop_grace_period: 30s
+
+networks:
+  private:
+    name: ${COMPOSE_PROJECT_NAME:-shongre}-private
+    driver: bridge
+
+secrets:
+  cloudflare_tunnel_token:
+    file: ${CLOUDFLARE_TUNNEL_TOKEN_FILE:-.runtime/cloudflared-token}

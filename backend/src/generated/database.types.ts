@@ -552,7 +552,7 @@ export interface Database {
           legal_entity: string | null;
           enabled: boolean;
           launch_status: string;
-          primary_domain: string;
+          canonical_domain_mode: string;
           base_path: string;
           seo_policy: Json;
           marketplace_policy: Json;
@@ -592,7 +592,7 @@ export interface Database {
           legal_entity?: string | null;
           enabled?: boolean;
           launch_status?: string;
-          primary_domain?: string;
+          canonical_domain_mode?: string;
           base_path?: string;
           seo_policy?: Json;
           marketplace_policy?: Json;

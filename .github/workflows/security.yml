@@ -1,0 +1,42 @@
+name: Deep security validation
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-security
+  cancel-in-progress: true
+
+jobs:
+  source-and-supply-chain:
+    name: Source, dependencies, IaC, and Dockerfiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: make secret-scan
+      - run: npm audit --audit-level=high
+      - name: Scan repository configuration and containers-as-code
+        run: |
+          docker run --rm -v "$PWD:/workspace:ro" \
+            ghcr.io/aquasecurity/trivy:0.73.0@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c fs \
+            --scanners vuln,misconfig,secret \
+            --exit-code 1 --severity HIGH,CRITICAL /workspace
+      - name: Report MEDIUM dependency and configuration findings for triage
+        run: |
+          docker run --rm -v "$PWD:/workspace:ro" \
+            ghcr.io/aquasecurity/trivy:0.73.0@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c fs \
+            --scanners vuln,misconfig \
+            --exit-code 0 --severity MEDIUM /workspace
+      - name: Re-run critical, migration, and contract gates
+        run: make migrations-check contracts-check test-critical

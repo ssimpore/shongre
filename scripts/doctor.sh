@@ -97,6 +97,23 @@ else
 fi
 
 printf '\nInfrastructure\n'
+if [[ -f "$SHONGRE_ROOT/compose.yaml" && -f "$SHONGRE_ROOT/compose.local.yaml" ]]; then
+  shongre_pass "canonical hosted and local Compose topology files"
+else
+  shongre_fail "Compose topology files are missing"
+  failed=1
+fi
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+  shongre_pass "$(docker compose version)"
+else
+  shongre_warn "Docker Compose v2 is unavailable"
+fi
+if grep -q 'cloudflare/cloudflared:2026.5.2' "$SHONGRE_ROOT/compose.yaml"; then
+  shongre_pass "cloudflared is containerized and version-pinned"
+else
+  shongre_fail "cloudflared image is not pinned to the reviewed version"
+  failed=1
+fi
 if (( environment_valid == 0 )); then
   shongre_warn "infrastructure checks skipped until the root environment is valid"
 elif [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then

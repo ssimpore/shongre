@@ -6,9 +6,15 @@ import { runPsql } from "./psql.js";
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
-const migrationsDirectory = path.resolve(
-  currentDirectory,
-  "../../supabase/migrations",
+const migrationDirectoryCandidates = [
+  process.env.MIGRATIONS_DIRECTORY,
+  path.resolve(currentDirectory, "../supabase/migrations"),
+  path.resolve(currentDirectory, "../../supabase/migrations"),
+  path.resolve(process.cwd(), "supabase/migrations"),
+].filter((candidate): candidate is string => Boolean(candidate));
+
+const migrationsDirectory = migrationDirectoryCandidates.find((candidate) =>
+  fs.existsSync(candidate),
 );
 
 function migrationVersion(fileName: string): string {
@@ -29,8 +35,10 @@ function migrationChecksum(sql: string): string {
 }
 
 function listMigrationFiles(): string[] {
-  if (!fs.existsSync(migrationsDirectory)) {
-    throw new Error(`Migrations directory not found at ${migrationsDirectory}`);
+  if (!migrationsDirectory) {
+    throw new Error(
+      `Migrations directory not found. Checked: ${migrationDirectoryCandidates.join(", ")}`,
+    );
   }
 
   const files = fs
@@ -57,6 +65,24 @@ async function runMigrations() {
       "DATABASE_URL is not set; validation completed without changing a database.",
     );
     return;
+  }
+
+  const environmentId = process.env.ENVIRONMENT_ID;
+  const databaseEnvironmentId = process.env.DATABASE_ENVIRONMENT_ID;
+  if (!environmentId || !databaseEnvironmentId) {
+    throw new Error(
+      "ENVIRONMENT_ID and DATABASE_ENVIRONMENT_ID are required before changing a database.",
+    );
+  }
+  if (environmentId !== databaseEnvironmentId) {
+    throw new Error(
+      `Database target mismatch: DATABASE_ENVIRONMENT_ID=${databaseEnvironmentId} does not match ENVIRONMENT_ID=${environmentId}.`,
+    );
+  }
+  if (process.env.MIGRATION_APPROVAL !== environmentId) {
+    throw new Error(
+      `Set MIGRATION_APPROVAL=${environmentId} for this dedicated migration invocation.`,
+    );
   }
 
   runPsql(

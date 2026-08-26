@@ -50,10 +50,10 @@ export class DemoMarketsService implements MarketsServiceContract {
     if (!country) throw new Error("Marché introuvable.");
     const current = marketService.getMarket(code);
     marketService.updateMarketRouting(code, {
-      primaryDomain:
-        patch.primaryDomain ||
-        current.routing?.primaryDomain ||
-        country.primaryDomain,
+      canonicalDomainMode:
+        patch.canonicalDomainMode ||
+        current.routing?.canonicalDomainMode ||
+        country.canonicalDomainMode,
       basePath: patch.basePath || current.routing?.basePath || country.basePath,
       gatewayVisible:
         patch.gatewayVisible ??
@@ -67,7 +67,8 @@ export class DemoMarketsService implements MarketsServiceContract {
     return {
       ...country,
       ...patch,
-      primaryDomain: patch.primaryDomain || country.primaryDomain,
+      canonicalDomainMode:
+        patch.canonicalDomainMode || country.canonicalDomainMode,
       basePath: patch.basePath || country.basePath,
     } as CountryConfig;
   }

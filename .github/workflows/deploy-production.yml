@@ -1,0 +1,62 @@
+name: Deploy staging-certified release to PRODUCTION
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Full staging-certified commit SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Verify build-once and STAGING certification evidence
+    runs-on: ubuntu-latest
+    outputs:
+      evidence_run_id: ${{ steps.release.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Require the certified commit to belong to main
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+      - name: Download successful immutable build evidence
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          run_id="$(scripts/download-release-evidence.sh release "$RELEASE_SHA" .evidence/release)"
+          node scripts/release-manifest.mjs validate .evidence/release/release-manifest.json "$RELEASE_SHA"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+      - name: Require successful certification of the same digests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          scripts/download-release-evidence.sh certification "$RELEASE_SHA" .evidence/certification >/dev/null
+          node scripts/release-manifest.mjs verify-certification \
+            .evidence/release/release-manifest.json \
+            .evidence/certification/staging-certification.json
+
+  deploy-production:
+    needs: resolve
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: production
+      release_sha: ${{ inputs.release_sha }}
+      evidence_run_id: ${{ needs.resolve.outputs.evidence_run_id }}
+      mode: deploy

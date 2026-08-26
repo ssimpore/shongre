@@ -23,6 +23,7 @@ import { ProgressBar, Skeleton } from "../../../design-system";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { CrmUniversalSearch } from "./components/CrmUniversalSearch";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -190,11 +191,12 @@ export const CrmOverviewPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
+      <CrmUniversalSearch />
       <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-white shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wide text-stone-400">
-              <span className="text-primary">CRM commercial</span>
+              <span className="text-primary-on-dark">CRM commercial</span>
               <span aria-hidden="true">/</span>
               <span>
                 {getCountryConfig(dashboard.marketCode)?.name ??

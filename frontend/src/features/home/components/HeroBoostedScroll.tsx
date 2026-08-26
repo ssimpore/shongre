@@ -97,7 +97,6 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
       .catch(() => {
         setAllListings([]);
       });
-
   }, [activeMarket.code]);
 
   // Load and sort listings: give explicit priority to the Sézane coat (list-105) and De'Longhi espresso (list-109)

@@ -2,7 +2,7 @@
  * AI assistance available to the product, expressed as a backend capability.
  *
  * The frontend previously talked to Google Gemini directly from the browser,
- * reading `VITE_GEMINI_API_KEY` — which shipped the key to every visitor because
+ * reading a browser-prefixed AI key — which shipped it to every visitor because
  * the legacy bundler exposed that prefix to the browser. A provider key is a
  * server-side secret, so AI joins every other backend capability here: the UI
  * calls the contract, demo answers it deterministically today, and the HTTP

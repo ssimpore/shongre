@@ -8,6 +8,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const domainOwnershipMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/00065_environment_owned_market_domains.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 describe("multi-country platform migration", () => {
   it("stores routing and policy configuration for all initial target markets", () => {
@@ -15,7 +22,6 @@ describe("multi-country platform migration", () => {
       expect(migration).toContain(`('${code}'`);
     }
     for (const column of [
-      "primary_domain",
       "base_path",
       "launch_status",
       "supported_locales",
@@ -26,7 +32,13 @@ describe("multi-country platform migration", () => {
     ]) {
       expect(migration).toContain(column);
     }
-    expect(migration).toContain("markets_domain_path_unique_idx");
+    expect(domainOwnershipMigration).toContain("canonical_domain_mode");
+    expect(domainOwnershipMigration).toContain(
+      "markets_domain_mode_path_unique_idx",
+    );
+    expect(domainOwnershipMigration).toContain(
+      "DROP COLUMN IF EXISTS primary_domain",
+    );
   });
 
   it("keeps shared entities global and models only their market availability", () => {

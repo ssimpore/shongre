@@ -244,7 +244,7 @@ export interface Market {
   currencySymbol: string;
   timezone: string;
   routing?: {
-    primaryDomain: string;
+    canonicalDomainMode: "france" | "international";
     basePath: string;
     gatewayVisible: boolean;
     seoIndexable: boolean;

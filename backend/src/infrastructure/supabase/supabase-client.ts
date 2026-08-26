@@ -1,12 +1,13 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../../generated/database.types.js";
+import { config } from "../../app/config/index.js";
 
 let anonClientInstance: SupabaseClient<Database> | null = null;
 let adminClientInstance: SupabaseClient<Database> | null = null;
 
 export function getSupabaseAnonClient(): SupabaseClient<Database> {
-  const url = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
+  const url = config.supabaseUrl;
+  const anonKey = config.supabaseAnonKey;
 
   if (!url || !anonKey) {
     throw new Error(
@@ -21,8 +22,8 @@ export function getSupabaseAnonClient(): SupabaseClient<Database> {
 }
 
 export function getSupabaseAdminClient(): SupabaseClient<Database> {
-  const url = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = config.supabaseUrl;
+  const serviceRoleKey = config.supabaseServiceRoleKey;
 
   if (!url || !serviceRoleKey) {
     throw new Error(

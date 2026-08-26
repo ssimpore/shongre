@@ -113,9 +113,7 @@ describe("provider platform registry", () => {
 
   it("rejects a healthy provider that cannot handle the requested currency", () => {
     const observedAt = "2026-08-24T10:00:00.000Z";
-    const stripe = SHONGRE_PROVIDER_REGISTRY.find(
-      ({ id }) => id === "stripe",
-    )!;
+    const stripe = SHONGRE_PROVIDER_REGISTRY.find(({ id }) => id === "stripe")!;
     const result = resolveProviderRoute({
       policy: {
         capability: "payment.card",

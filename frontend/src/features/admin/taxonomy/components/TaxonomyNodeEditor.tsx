@@ -46,6 +46,7 @@ import { useTranslation } from "../../../../i18n/I18nProvider";
 import { themeColors } from "@shongre/design-tokens";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 import { TAXONOMY_PUBLICATION_CONSTRAINTS } from "@shongre/contracts/taxonomy";
+import { publicRouteUrl } from "../../../../domains/market/market-routing";
 
 export interface TaxonomyNodeEditorProps {
   nodeId: string;
@@ -1525,7 +1526,10 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   `${node.name} d'occasion - Shongre`}
               </div>
               <div className="text-micro text-success font-mono">
-                https://shongre.com/categorie/{node.slug}
+                {publicRouteUrl({
+                  countryCode: selectedMarketCode,
+                  route: `/categorie/${node.slug}`,
+                })}
               </div>
               <div className="text-xs text-stone-600 line-clamp-2">
                 {metaDescriptionTemplate.replace("{category}", node.name) ||

@@ -1,5 +1,12 @@
-import { buildPublicUrl, getCountryConfigBySlug } from "@shongre/contracts";
+import {
+  buildPublicUrl,
+  getCountryConfigBySlug,
+  isProduction,
+} from "@shongre/contracts";
 import { marketInfrastructureFromEnvironment } from "../../../src/platform/market/server-market-context";
+import { webEnvironmentFromEnvironment } from "../../../src/platform/market/market-infrastructure";
+
+export const dynamic = "force-dynamic";
 
 const INDEXABLE_PATHS = [
   "/",
@@ -29,6 +36,9 @@ export async function GET(
   _request: Request,
   context: { params: Promise<{ country: string }> },
 ): Promise<Response> {
+  if (!isProduction(webEnvironmentFromEnvironment().environment)) {
+    return new Response("Not found", { status: 404 });
+  }
   const { country: slug } = await context.params;
   const country = getCountryConfigBySlug(slug);
   if (

@@ -1590,8 +1590,7 @@ export const messagesFr = {
     "Retour au catalogue des fournisseurs",
   "admin.adminProviderDetailPage.capacitesFournies": "Capacités fournies :",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & Clés",
-  "admin.adminProviderDetailPage.marchesSurcharges":
-    "Marchés & affectations",
+  "admin.adminProviderDetailPage.marchesSurcharges": "Marchés & affectations",
   "admin.adminProviderDetailPage.santeTestsDemo": "Santé & Tests Démo",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Utilisation & Dépendances",
@@ -2351,8 +2350,7 @@ export const messagesFr = {
   // --- admin.providerMarketOverridesTab ---
   "admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter":
     "Sélectionnez le marché dont vous gérez l'affectation :",
-  "admin.providerMarketOverridesTab.baseDHeritage":
-    "Comparaison uniquement",
+  "admin.providerMarketOverridesTab.baseDHeritage": "Comparaison uniquement",
   "admin.providerMarketOverridesTab.touteModificationApporteeALa":
     "Toute modification apportée à la France est immédiatement répercutée sur les marchés sans surcharge.",
   "admin.providerMarketOverridesTab.configurationPersonnalisee":

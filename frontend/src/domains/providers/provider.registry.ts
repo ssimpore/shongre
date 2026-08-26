@@ -891,7 +891,7 @@ const PROVIDER_PRESENTATION_REGISTRY: Array<Omit<Provider, "operational">> = [
           key: "domain",
           label: "Nom de domaine déclaré",
           type: "text",
-          defaultValue: "shongre.com",
+          defaultValue: "",
           required: true,
         },
         {

@@ -1,9 +1,16 @@
 import type { MetadataRoute } from "next";
-import { buildPublicUrl, COUNTRY_REGISTRY } from "@shongre/contracts";
+import {
+  buildPublicUrl,
+  COUNTRY_REGISTRY,
+  isProduction,
+} from "@shongre/contracts";
 import {
   marketInfrastructureFromEnvironment,
   resolveServerMarketContext,
 } from "../src/platform/market/server-market-context";
+import { webEnvironmentFromEnvironment } from "../src/platform/market/market-infrastructure";
+
+export const dynamic = "force-dynamic";
 
 const INDEXABLE_PATHS = [
   "/",
@@ -30,13 +37,15 @@ function entriesForCountry(countryCode: string): MetadataRoute.Sitemap {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  if (!isProduction(webEnvironmentFromEnvironment().environment)) return [];
   const context = await resolveServerMarketContext("/");
   if (context.kind === "market") {
     return entriesForCountry(context.countryCode ?? "FR");
   }
 
   const infrastructure = marketInfrastructureFromEnvironment();
-  const gatewayUrl = `${infrastructure.canonicalProtocol}://${infrastructure.globalDomain}/`;
+  const gatewayUrl =
+    webEnvironmentFromEnvironment().urls.internationalApp.toString();
   return [
     {
       url: gatewayUrl,
@@ -45,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...COUNTRY_REGISTRY.filter(
       (country) =>
-        country.primaryDomain === infrastructure.globalDomain &&
+        country.canonicalDomainMode === "international" &&
         country.launchStatus === "active" &&
         country.marketplace.enabled &&
         country.seo.indexable,

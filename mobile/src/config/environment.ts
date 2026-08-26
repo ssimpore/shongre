@@ -1,6 +1,14 @@
-import type { CountryConfig } from "@shongre/contracts";
+import {
+  createEnvironmentConfig,
+  type CountryConfig,
+} from "@shongre/contracts";
 
 export type MobileDataMode = "demo" | "api";
+
+function required(name: string, value: string | undefined): string {
+  if (!value) throw new Error(`[Mobile Config] ${name} is required.`);
+  return value;
+}
 
 function resolveDataMode(): MobileDataMode {
   const value = process.env.EXPO_PUBLIC_DATA_MODE || "demo";
@@ -11,28 +19,40 @@ function resolveDataMode(): MobileDataMode {
 }
 
 const dataMode = resolveDataMode();
-const apiUrl = (process.env.EXPO_PUBLIC_API_URL || "").replace(/\/$/, "");
-const webUrl = (process.env.EXPO_PUBLIC_WEB_URL || "").replace(/\/$/, "");
-const franceWebUrl = (process.env.EXPO_PUBLIC_FRANCE_WEB_URL || webUrl).replace(
-  /\/$/,
-  "",
-);
-const globalWebUrl = (process.env.EXPO_PUBLIC_GLOBAL_WEB_URL || webUrl).replace(
-  /\/$/,
-  "",
-);
+const apiUrl = required(
+  "EXPO_PUBLIC_API_URL",
+  process.env.EXPO_PUBLIC_API_URL,
+).replace(/\/$/, "");
+const parsedApiUrl = new URL(apiUrl);
+if (parsedApiUrl.pathname.replace(/\/$/, "") !== "/api/v1") {
+  throw new Error("[Mobile Config] EXPO_PUBLIC_API_URL must end with /api/v1.");
+}
 
-if (dataMode === "api" && !apiUrl) {
-  throw new Error(
-    "[Mobile Config] EXPO_PUBLIC_API_URL is required in api mode.",
-  );
-}
-if (!webUrl) {
-  throw new Error("[Mobile Config] EXPO_PUBLIC_WEB_URL is required.");
-}
+const environment = createEnvironmentConfig({
+  appEnvironment: required(
+    "EXPO_PUBLIC_APP_ENV",
+    process.env.EXPO_PUBLIC_APP_ENV,
+  ),
+  environmentId: required(
+    "EXPO_PUBLIC_ENVIRONMENT_ID",
+    process.env.EXPO_PUBLIC_ENVIRONMENT_ID,
+  ),
+  publicFranceUrl: required(
+    "EXPO_PUBLIC_FR_URL",
+    process.env.EXPO_PUBLIC_FR_URL,
+  ),
+  publicInternationalUrl: required(
+    "EXPO_PUBLIC_INTL_URL",
+    process.env.EXPO_PUBLIC_INTL_URL,
+  ),
+  apiUrl: parsedApiUrl.origin,
+});
 
 function marketWebUrl(country: CountryConfig, route: string): string {
-  const origin = country.code === "FR" ? franceWebUrl : globalWebUrl;
+  const origin =
+    country.canonicalDomainMode === "france"
+      ? environment.urls.franceApp
+      : environment.urls.internationalApp;
   const url = new URL(origin);
   const basePath = country.basePath === "/" ? "" : country.basePath;
   url.pathname = `${basePath}${route.startsWith("/") ? route : `/${route}`}`;
@@ -40,11 +60,9 @@ function marketWebUrl(country: CountryConfig, route: string): string {
 }
 
 export const mobileEnvironment = Object.freeze({
+  ...environment,
   dataMode,
   apiUrl,
-  webUrl,
-  franceWebUrl,
-  globalWebUrl,
   marketWebUrl,
   linksFor(country: CountryConfig) {
     return {
@@ -54,9 +72,4 @@ export const mobileEnvironment = Object.freeze({
       accountDeletionUrl: marketWebUrl(country, "/account/delete"),
     };
   },
-  privacyUrl: process.env.EXPO_PUBLIC_PRIVACY_URL || `${webUrl}/privacy`,
-  termsUrl: process.env.EXPO_PUBLIC_TERMS_URL || `${webUrl}/terms`,
-  supportUrl: process.env.EXPO_PUBLIC_SUPPORT_URL || `${webUrl}/support`,
-  accountDeletionUrl:
-    process.env.EXPO_PUBLIC_ACCOUNT_DELETION_URL || `${webUrl}/account/delete`,
 });

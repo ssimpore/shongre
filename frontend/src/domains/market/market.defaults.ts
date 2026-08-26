@@ -1,8 +1,4 @@
-import {
-  Market,
-  MarketConfiguration,
-  MarketOverrides,
-} from "./market.types";
+import { Market, MarketConfiguration, MarketOverrides } from "./market.types";
 import { deepMergeOverrides } from "./market.resolver";
 import {
   PRICE_FILTER_STOPS_MAJOR_DEFAULT,
@@ -1227,7 +1223,7 @@ const marketFromCountryRegistry = (
   currencySymbol: country.currencySymbol || country.currency,
   timezone: country.timezone,
   routing: {
-    primaryDomain: country.primaryDomain,
+    canonicalDomainMode: country.canonicalDomainMode,
     basePath: country.basePath,
     gatewayVisible: country.gatewayVisible,
     seoIndexable: country.seo.indexable,
@@ -1245,7 +1241,10 @@ const marketFromCountryRegistry = (
     currencySymbol: country.currencySymbol || country.currency,
     timezone: country.timezone,
     phonePrefix: country.phoneCountryCode,
-    supportEmail: `support@${country.primaryDomain}`,
+    supportEmail:
+      country.canonicalDomainMode === "france"
+        ? "support@shongre.fr"
+        : "support@shongre.com",
     tagline: country.launchContent.description,
   }),
   createdAt: "2026-08-25T00:00:00Z",

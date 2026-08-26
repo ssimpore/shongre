@@ -6,18 +6,25 @@ import { resolve } from "node:path";
 
 const frontendRoot = resolve(import.meta.dirname, "..");
 const repositoryRoot = resolve(frontendRoot, "..");
-const envPath = existsSync(resolve(repositoryRoot, ".env"))
-  ? resolve(repositoryRoot, ".env")
-  : resolve(repositoryRoot, ".env.example");
-
-for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
-  const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
-  if (!match || process.env[match[1]] !== undefined) continue;
-  process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+const inheritedKeys = new Set(Object.keys(process.env));
+for (const envPath of [
+  resolve(repositoryRoot, ".env"),
+  resolve(repositoryRoot, ".env.local"),
+]) {
+  if (!existsSync(envPath)) continue;
+  for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
+    if (!match || inheritedKeys.has(match[1])) continue;
+    process.env[match[1]] = match[2].replace(/^['"]|['"]$/g, "");
+  }
 }
 
-process.env.NEXT_PUBLIC_DATA_MODE ??= process.env.VITE_DATA_MODE ?? "demo";
-process.env.NEXT_PUBLIC_API_URL ??= process.env.VITE_API_URL ?? "";
+process.env.NEXT_PUBLIC_DATA_MODE ??= "demo";
+process.env.NEXT_PUBLIC_APP_ENV ??= process.env.APP_ENV;
+process.env.NEXT_PUBLIC_ENVIRONMENT_ID ??= process.env.ENVIRONMENT_ID;
+process.env.NEXT_PUBLIC_FR_URL ??= process.env.PUBLIC_FR_URL;
+process.env.NEXT_PUBLIC_INTL_URL ??= process.env.PUBLIC_INTL_URL;
+process.env.NEXT_PUBLIC_API_URL ??= `${process.env.API_URL || ""}${process.env.API_PREFIX || "/api/v1"}`;
 
 const command = process.argv[2] ?? "dev";
 const args = [

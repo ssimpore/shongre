@@ -43,7 +43,10 @@ window. Operation removals are blocked unless the base contract already marks
 the operation deprecated and supplies `x-sunset-at`. All repository consumers
 must migrate before a legacy operation is removed.
 
-There are no active compatibility aliases after this consolidation. A future
+There are no active business-route compatibility aliases after this
+consolidation. The operational `/api/health` and `/api/ready` names coexist with
+the orchestrator-native `/livez` and `/readyz`; all four are implemented once by
+the server boundary and documented in this contract. A future business
 exception must appear in OpenAPI, identify its replacement, owner, and sunset,
 and be covered by breaking-change checks.
 

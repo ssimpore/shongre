@@ -5,6 +5,10 @@ versioned HTTP API, domain services, repositories, privileged integrations,
 workers, Supabase migrations and backend tests. Web and mobile applications
 consume public contracts; they never import this implementation.
 
+The six-environment URL, fingerprint, Supabase, provider and deployment model is
+documented in
+[`docs/architecture/environments.md`](../docs/architecture/environments.md).
+
 ## Layout
 
 ```text
@@ -95,20 +99,27 @@ make infra-stop
 `make migrations-check` always validates every migration file name, uniqueness
 and non-empty SQL without connecting to a database. `make db-migrate` applies
 unapplied migrations with `psql`, transaction failure-on-error semantics and
-the Supabase-compatible migration ledger only after proving that the configured
-development database is loopback and has an allowed local name.
+the Supabase-compatible migration ledger. Interactive local use proves a
+loopback target; remote use additionally requires the protected deployment
+workflow's approval marker and hosted fingerprint validation.
 
 `make db-seed` follows the same safety model and applies the idempotent reference
 data in one transaction. Without an explicit safe local URL it discovers the
 running local Supabase endpoint; it never treats a remote database as a
 development fallback.
 
+The production backend image contains `dist/server.js`, `dist/worker.js`,
+`dist/migrate.js`, `psql`, and the exact source-controlled SQL history. The
+protected host runner invokes that migrator once under an environment lock
+before rolling out API/worker containers from the same digest. Replica startup
+never runs migrations.
+
 `make db-types` requires the Supabase CLI plus either `DATABASE_URL` or
 `SUPABASE_PROJECT_REF`; it writes directly to
 `backend/src/generated/database.types.ts` and refuses placeholder output.
 
 Use `make db-reset` only for disposable local development data. The root target
-requires `APP_ENV=development`, a loopback Supabase host, the local CLI workdir,
+requires `APP_ENV=local`, a loopback Supabase host, the local CLI workdir,
 and an available Docker daemon.
 
 ## Security invariants

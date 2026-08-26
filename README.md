@@ -3,6 +3,9 @@
 Authentication architecture, provider-console setup, session lifecycle and
 rollout instructions are documented in
 [`docs/architecture/authentication.md`](docs/architecture/authentication.md).
+The six-environment deployment, domain, Supabase, provider, CI/CD, DNS and
+rollback model is documented in
+[`docs/architecture/environments.md`](docs/architecture/environments.md).
 
 Shongre is a multi-market classifieds and transactional marketplace for individual and professional sellers. The repository contains a Next.js Web application, a modular Node.js backend, and one Expo/React Native mobile application for iOS and Android.
 
@@ -70,17 +73,22 @@ make check      # deterministic pre-commit/pre-PR gate
 Select a root profile with `SHONGRE_ENV`. Environment precedence is:
 
 ```text
-local:       exported process variable > .env.local > .env
-staging:     exported process variable > .env.staging.local > .env.staging > .env
-production:  exported process variable > .env.production.local > .env.production > .env
+local:        exported variable > .env.local > .env
+test:         exported variable > .env.test.local > .env.test > .env
+preview:      exported variable > .env.preview.local > .env.preview > .env
+development:  exported variable > .env.development.local > .env.development > .env
+staging:      exported variable > .env.staging.local > .env.staging > .env
+production:   exported variable > .env.production.local > .env.production > .env
 ```
 
 The generic `.env.local` is intentionally not loaded into staging or production. All host ports and runtime URLs come from the selected configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
 
 ```bash
 make env-local                    # validate local demo mode
+make env-test                     # validate deterministic test isolation
+make env-development              # validate hosted development resources
 make env-staging                  # validate hosted staging credentials
-SHONGRE_ENV=production make info # inspect non-secret production resolution
+SHONGRE_ENV=production make env-info # inspect non-secret production resolution
 make production-config-check      # fail closed until every live secret exists
 ```
 
@@ -149,7 +157,32 @@ make db-types
 make infra-stop
 ```
 
-Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Mutating database commands require `APP_ENV=development` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
+Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Destructive database and demo-seed commands require `APP_ENV=local` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
+
+## Docker, Cloudflare, and promotion
+
+`compose.yaml` is the canonical hosted topology. It publishes no origin ports;
+two pinned `cloudflared` connectors reach Web/API over a private Docker bridge.
+`compose.local.yaml` is the only override that binds Web/API, and it binds them
+to loopback. Useful local checks are:
+
+```bash
+make docker-config
+make docker-build
+make docker-start
+make docker-health
+make docker-audit
+make docker-stop
+```
+
+Main CI builds frontend and backend once, attaches SBOM/provenance, scans the
+exact digests, writes a release manifest, then deploys DEV. STAGING and
+PRODUCTION are promotions of those same digests; production requires the
+matching STAGING certification and GitHub Environment approval. Rollback
+redeploys an original known-good manifest and never rebuilds or reverses a
+migration. Host bootstrap, Tunnel routes, token isolation and failure handling
+are in [`docs/operations/docker-cloudflare-deployment.md`](docs/operations/docker-cloudflare-deployment.md)
+and [`infrastructure/cloudflare/README.md`](infrastructure/cloudflare/README.md).
 
 ## Quality
 
@@ -174,7 +207,7 @@ make openapi-docs        # build the standalone Redoc API reference
 make crm-check           # focused CRM contracts, services, RLS and provider boundaries
 ```
 
-`make check` validates the environment and migrations, formatting, all workspaces, tests, Web/backend builds, infrastructure configuration, tracked-secret scanning, and frontend/backend boundaries. `make test-critical` is a focused gate for authentication/RBAC, listing lifecycle and ownership, messaging, payments/escrow/finance, monetization/entitlements, verification/compliance, provider safety, and public data boundaries. `make check-all` adds the focused critical gate, cross-platform propagation, browser E2E, and the high-severity dependency audit. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
+`make check` validates the environment and migrations, formatting, all workspaces, tests, Web/backend builds, infrastructure configuration, tracked-secret scanning, runtime-hostname policy, and frontend/backend boundaries. `make test-critical` is a focused gate for authentication/RBAC, listing lifecycle and ownership, messaging, payments/escrow/finance, monetization/entitlements, verification/compliance, provider safety, and public data boundaries. `make check-all` adds the focused critical gate, cross-platform propagation, browser E2E, and the high-severity dependency audit. Native/store-specific checks inspect generated projects after `make mobile-prebuild-clean`.
 
 ## Mobile and store readiness
 
@@ -267,6 +300,8 @@ packages/shared/          framework-free formatting and validation
 packages/brand/           canonical brand mark and generated app assets
 packages/contracts/       generated OpenAPI types plus stable domain schemas
 infrastructure/           cross-cutting operations and association-file templates
+compose.yaml               private hosted Web/API/worker/cloudflared topology
+compose.local.yaml         explicit loopback-only Docker development override
 scripts/                  environment, process, port, health, and infrastructure tooling
 docs/                     architecture, security, operations, and current store baseline
 Makefile                  canonical developer and release CLI

@@ -60,7 +60,13 @@ export class DemoOrderPaymentGateway implements OrderPaymentGateway {
       .slice(0, 18)}`;
     return {
       id,
-      url: `${config.frontendUrl || "http://127.0.0.1:3000"}/paiement/retour?checkout=demo&session_id=${id}&order_id=${input.orderId}`,
+      url: (() => {
+        const url = new URL("/paiement/retour", config.frontendUrl);
+        url.searchParams.set("checkout", "demo");
+        url.searchParams.set("session_id", id);
+        url.searchParams.set("order_id", input.orderId);
+        return url.toString();
+      })(),
       status: "open",
     };
   }

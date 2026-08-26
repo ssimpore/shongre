@@ -2,7 +2,7 @@
 
 # Safe environment loader for every root command.
 #
-# Select a profile with SHONGRE_ENV=local|staging|production. APP_ENV is also
+# Select a profile with SHONGRE_ENV=local|test|preview|development|staging|production. APP_ENV is also
 # accepted when it was explicitly exported before this file is sourced.
 # Precedence is:
 #
@@ -12,8 +12,8 @@
 #     > .env
 #
 # Local development uses .env.local > .env. We intentionally do not load the
-# generic .env.local for staging or production, preventing local-only values or
-# secrets from leaking into those profiles. The example file remains
+# generic .env.local for any non-local profile, preventing local-only values or
+# secrets from leaking into test or hosted targets. The example file remains
 # documentation/initialization only and is never loaded at runtime.
 
 if [[ "${SHONGRE_ENV_LOADED:-}" == "1" ]]; then
@@ -32,7 +32,7 @@ fi
 
 requested_environment="${SHONGRE_ENV:-${APP_ENV:-local}}"
 case "$requested_environment" in
-  local|development)
+  local)
     SHONGRE_ENV=local
     environment_files=(
       "$SHONGRE_ROOT/.env.local"
@@ -45,6 +45,22 @@ case "$requested_environment" in
     environment_files=(
       "$SHONGRE_ROOT/.env.test.local"
       "$SHONGRE_ROOT/.env.test"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  preview)
+    SHONGRE_ENV=preview
+    environment_files=(
+      "$SHONGRE_ROOT/.env.preview.local"
+      "$SHONGRE_ROOT/.env.preview"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  development)
+    SHONGRE_ENV=development
+    environment_files=(
+      "$SHONGRE_ROOT/.env.development.local"
+      "$SHONGRE_ROOT/.env.development"
       "$SHONGRE_ROOT/.env"
     )
     ;;
@@ -65,7 +81,7 @@ case "$requested_environment" in
     )
     ;;
   *)
-    printf 'Invalid SHONGRE_ENV: %s (expected local, test, staging, or production)\n' "$requested_environment" >&2
+    printf 'Invalid SHONGRE_ENV: %s (expected local, test, preview, development, staging, or production)\n' "$requested_environment" >&2
     return 1 2>/dev/null || exit 1
     ;;
 esac
@@ -112,45 +128,39 @@ for environment_file in "${environment_files[@]}"; do
   shongre_load_env_file "$environment_file"
 done
 
-# Derived URLs track port overrides. They are not persisted and contain no
-# secrets. Production builds use the explicit PRODUCTION_* values instead.
+# Derived local URLs track port overrides. Hosted environments must supply
+# their deployment URLs explicitly and contain no hostname defaults in source.
 if [[ -z "${E2E_FRONTEND_PORT:-}" && "${FRONTEND_PORT:-}" =~ ^[0-9]+$ ]]; then
   export E2E_FRONTEND_PORT="$((FRONTEND_PORT + 110))"
 fi
-if [[ -z "${VITE_API_URL:-}" && -n "${BACKEND_HOST:-}" && -n "${BACKEND_PORT:-}" ]]; then
-  export VITE_API_URL="http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX:-/api/v1}"
+if [[ "$SHONGRE_ENV" == "local" ]]; then
+  export ENVIRONMENT_ID="${ENVIRONMENT_ID:-shongre-local}"
+  export DATABASE_ENVIRONMENT_ID="${DATABASE_ENVIRONMENT_ID:-${ENVIRONMENT_ID}}"
+  export PUBLIC_FR_URL="${PUBLIC_FR_URL:-http://${FRONTEND_HOST}:${FRONTEND_PORT}}"
+  export PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-http://${FRONTEND_HOST}:${FRONTEND_PORT}}"
+  export API_URL="${API_URL:-http://${BACKEND_HOST}:${BACKEND_PORT}}"
 fi
-export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-${VITE_DATA_MODE:-demo}}"
+export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-demo}"
 export DATABASE_INFRA_MODE="${DATABASE_INFRA_MODE:-local}"
-export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${VITE_API_URL:-}}"
-export NEXT_PUBLIC_APP_NAME="${NEXT_PUBLIC_APP_NAME:-${VITE_APP_NAME:-Shongre}}"
-if [[ -z "${CORS_ORIGIN:-}" && -n "${FRONTEND_HOST:-}" && -n "${FRONTEND_PORT:-}" ]]; then
-  export CORS_ORIGIN="http://${FRONTEND_HOST}:${FRONTEND_PORT}"
+export NEXT_PUBLIC_APP_ENV="${NEXT_PUBLIC_APP_ENV:-${APP_ENV:-}}"
+export NEXT_PUBLIC_ENVIRONMENT_ID="${NEXT_PUBLIC_ENVIRONMENT_ID:-${ENVIRONMENT_ID:-}}"
+export NEXT_PUBLIC_FR_URL="${NEXT_PUBLIC_FR_URL:-${PUBLIC_FR_URL:-}}"
+export NEXT_PUBLIC_INTL_URL="${NEXT_PUBLIC_INTL_URL:-${PUBLIC_INTL_URL:-}}"
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${API_URL:-}${API_PREFIX:-/api/v1}}"
+export NEXT_PUBLIC_APP_NAME="${NEXT_PUBLIC_APP_NAME:-Shongre}"
+if [[ -z "${CORS_ORIGIN:-}" && -n "${PUBLIC_FR_URL:-}" && -n "${PUBLIC_INTL_URL:-}" ]]; then
+  export CORS_ORIGIN="${PUBLIC_FR_URL},${PUBLIC_INTL_URL}"
 fi
-if [[ -z "${VITE_APP_URL:-}" && -n "${FRONTEND_HOST:-}" && -n "${FRONTEND_PORT:-}" ]]; then
-  export VITE_APP_URL="http://${FRONTEND_HOST}:${FRONTEND_PORT}"
-fi
-export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${VITE_APP_URL:-}}"
-export NEXT_PUBLIC_DEFAULT_COUNTRY_CODE="${NEXT_PUBLIC_DEFAULT_COUNTRY_CODE:-${VITE_DEFAULT_COUNTRY_CODE:-FR}}"
-export NEXT_PUBLIC_DEFAULT_CURRENCY="${NEXT_PUBLIC_DEFAULT_CURRENCY:-${VITE_DEFAULT_CURRENCY:-EUR}}"
-export NEXT_PUBLIC_DEFAULT_LOCALE="${NEXT_PUBLIC_DEFAULT_LOCALE:-${VITE_DEFAULT_LOCALE:-fr-FR}}"
-export NEXT_PUBLIC_ENABLE_AI_FEATURES="${NEXT_PUBLIC_ENABLE_AI_FEATURES:-${VITE_ENABLE_AI_FEATURES:-false}}"
-export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-${VITE_ENABLE_MOCK_STORAGE:-true}}"
-if [[ -z "${FRONTEND_URL:-}" && -n "${FRONTEND_HOST:-}" && -n "${FRONTEND_PORT:-}" ]]; then
-  export FRONTEND_URL="http://${FRONTEND_HOST}:${FRONTEND_PORT}"
-fi
+export NEXT_PUBLIC_DEFAULT_COUNTRY_CODE="${NEXT_PUBLIC_DEFAULT_COUNTRY_CODE:-FR}"
+export NEXT_PUBLIC_DEFAULT_CURRENCY="${NEXT_PUBLIC_DEFAULT_CURRENCY:-EUR}"
+export NEXT_PUBLIC_DEFAULT_LOCALE="${NEXT_PUBLIC_DEFAULT_LOCALE:-fr-FR}"
+export NEXT_PUBLIC_ENABLE_AI_FEATURES="${NEXT_PUBLIC_ENABLE_AI_FEATURES:-false}"
+export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-true}"
 if [[ -z "${SUPABASE_URL:-}" && -n "${SUPABASE_HOST:-}" && -n "${SUPABASE_API_PORT:-}" ]]; then
   export SUPABASE_URL="http://${SUPABASE_HOST}:${SUPABASE_API_PORT}"
 fi
-if [[ -z "${EXPO_PUBLIC_API_URL:-}" && -n "${BACKEND_HOST:-}" && -n "${BACKEND_PORT:-}" ]]; then
-  export EXPO_PUBLIC_API_URL="http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX:-/api/v1}"
-fi
-if [[ -z "${EXPO_PUBLIC_WEB_URL:-}" && -n "${FRONTEND_HOST:-}" && -n "${FRONTEND_PORT:-}" ]]; then
-  export EXPO_PUBLIC_WEB_URL="http://${FRONTEND_HOST}:${FRONTEND_PORT}"
-fi
-if [[ -n "${EXPO_PUBLIC_WEB_URL:-}" ]]; then
-  export EXPO_PUBLIC_PRIVACY_URL="${EXPO_PUBLIC_PRIVACY_URL:-${EXPO_PUBLIC_WEB_URL}/privacy}"
-  export EXPO_PUBLIC_TERMS_URL="${EXPO_PUBLIC_TERMS_URL:-${EXPO_PUBLIC_WEB_URL}/terms}"
-  export EXPO_PUBLIC_SUPPORT_URL="${EXPO_PUBLIC_SUPPORT_URL:-${EXPO_PUBLIC_WEB_URL}/support}"
-  export EXPO_PUBLIC_ACCOUNT_DELETION_URL="${EXPO_PUBLIC_ACCOUNT_DELETION_URL:-${EXPO_PUBLIC_WEB_URL}/account/delete}"
-fi
+export EXPO_PUBLIC_APP_ENV="${EXPO_PUBLIC_APP_ENV:-${APP_ENV:-}}"
+export EXPO_PUBLIC_ENVIRONMENT_ID="${EXPO_PUBLIC_ENVIRONMENT_ID:-${ENVIRONMENT_ID:-}}"
+export EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-${API_URL:-}${API_PREFIX:-/api/v1}}"
+export EXPO_PUBLIC_FR_URL="${EXPO_PUBLIC_FR_URL:-${PUBLIC_FR_URL:-}}"
+export EXPO_PUBLIC_INTL_URL="${EXPO_PUBLIC_INTL_URL:-${PUBLIC_INTL_URL:-}}"

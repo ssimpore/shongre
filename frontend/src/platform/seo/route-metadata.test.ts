@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
 import { metadataForRoute } from "./route-metadata";
 
+const infrastructure = {
+  globalDomain: "shongre.com",
+  franceDomain: "shongre.fr",
+  canonicalProtocol: "https" as const,
+};
+
 function contextFor(hostname: string, pathname: string) {
-  const context = resolveMarketContext({ hostname, pathname });
+  const context = resolveMarketContext({ hostname, pathname, infrastructure });
   if (context.kind !== "market") {
     throw new Error(`Expected a marketplace context, received ${context.kind}`);
   }

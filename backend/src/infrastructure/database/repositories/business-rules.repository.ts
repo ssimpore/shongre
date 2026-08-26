@@ -128,13 +128,13 @@ const createExplicitDemoCatalog = (
   const localize = (value: unknown, key?: string): unknown => {
     if (Array.isArray(value)) {
       if (
-        [
-          "marketCodes",
-          "countryAvailability",
-          "eligibleMarketCodes",
-        ].includes(key || "")
+        ["marketCodes", "countryAvailability", "eligibleMarketCodes"].includes(
+          key || "",
+        )
       )
-        return value.map((entry) => (entry === source.marketCode ? marketCode : entry));
+        return value.map((entry) =>
+          entry === source.marketCode ? marketCode : entry,
+        );
       return value.map((entry) => localize(entry));
     }
     if (value && typeof value === "object")
@@ -144,7 +144,8 @@ const createExplicitDemoCatalog = (
         ),
       );
     if (typeof value === "string") {
-      if (key === "marketCode" && value === source.marketCode) return marketCode;
+      if (key === "marketCode" && value === source.marketCode)
+        return marketCode;
       return value.replaceAll(source.configurationVersionId, versionId);
     }
     return value;

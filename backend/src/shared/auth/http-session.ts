@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import type { IncomingMessage, ServerResponse } from "http";
+import { isIP } from "net";
 import { config } from "../../app/config/index.js";
 import { AppError } from "../errors/app-error.js";
 import { randomOAuthValue } from "../../modules/auth/oauth-provider.client.js";
@@ -158,12 +159,16 @@ export function requireCsrf(req: IncomingMessage): void {
 }
 
 export function requestMetadata(req: IncomingMessage): AuthRequestMetadata {
-  const forwarded = Array.isArray(req.headers["x-forwarded-for"])
-    ? req.headers["x-forwarded-for"][0]
-    : req.headers["x-forwarded-for"];
-  const rawIp = (forwarded || req.socket.remoteAddress || "")
-    .split(",")[0]
-    .trim();
+  const cloudflareHeader = Array.isArray(req.headers["cf-connecting-ip"])
+    ? req.headers["cf-connecting-ip"][0]
+    : req.headers["cf-connecting-ip"];
+  const trustedCloudflareIp =
+    process.env.SHONGRE_TRUST_PROXY_IP === "true" &&
+    cloudflareHeader &&
+    isIP(cloudflareHeader.trim())
+      ? cloudflareHeader.trim()
+      : "";
+  const rawIp = trustedCloudflareIp || req.socket.remoteAddress || "";
   const ipPrefix = rawIp.includes(":")
     ? rawIp.split(":").slice(0, 4).join(":")
     : rawIp.split(".").slice(0, 3).join(".");

@@ -102,7 +102,9 @@ test("lets an admin change the recent-search display limit for the homepage @ser
   await setting.getByRole("button", { name: "Modifier" }).click();
   const value = page.locator("#admin-edit-override-value");
   await value.fill("2");
-  await page.getByRole("button", { name: "Enregistrer la surcharge" }).click();
+  await page
+    .getByRole("button", { name: "Enregistrer la valeur locale" })
+    .click();
 
   for (let index = 0; index < 5; index += 1) {
     await recordRecentSearch(page, `Admin limite ${index}`);

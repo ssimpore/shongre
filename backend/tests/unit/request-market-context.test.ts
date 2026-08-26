@@ -6,6 +6,7 @@ import {
   requireOpenMarketplace,
   resolveApiRequestMarket,
 } from "../../src/modules/markets/request-market-context.js";
+import { config } from "../../src/app/config/index.js";
 
 function request(headers: Record<string, string>): IncomingMessage {
   return { headers } as unknown as IncomingMessage;
@@ -63,7 +64,10 @@ describe("API market-context consistency", () => {
     expect(() =>
       resolveApiRequestMarket({
         req: request({
-          referer: "https://shongre.fr/vehicules",
+          referer: new URL(
+            "/vehicules",
+            config.environment.urls.franceApp,
+          ).toString(),
           "x-shongre-market": "CH",
         }),
         query: new URLSearchParams(),

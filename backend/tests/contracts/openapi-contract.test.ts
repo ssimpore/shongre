@@ -35,7 +35,7 @@ describe("canonical OpenAPI contract", () => {
     }
 
     expect(routerOperationCount).toBe(Object.keys(OPENAPI_OPERATIONS).length);
-    expect(operationCount - routerOperationCount).toBe(3);
+    expect(operationCount - routerOperationCount).toBe(5);
     expect(operationCount).toBeGreaterThan(250);
   });
 

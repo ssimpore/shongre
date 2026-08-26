@@ -8,9 +8,12 @@ export default defineConfig({
   test: {
     environment: "node",
     env: {
+      EXPO_PUBLIC_APP_ENV: "test",
+      EXPO_PUBLIC_ENVIRONMENT_ID: "shongre-test",
       EXPO_PUBLIC_DATA_MODE: "demo",
       EXPO_PUBLIC_API_URL: "https://api.mobile-test.shongre.invalid/api/v1",
-      EXPO_PUBLIC_WEB_URL: "https://mobile-test.shongre.invalid",
+      EXPO_PUBLIC_FR_URL: "https://fr.mobile-test.shongre.invalid",
+      EXPO_PUBLIC_INTL_URL: "https://intl.mobile-test.shongre.invalid",
     },
     include: ["tests/**/*.test.ts"],
   },

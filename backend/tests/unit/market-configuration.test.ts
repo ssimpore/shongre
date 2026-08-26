@@ -21,7 +21,7 @@ describe("country administration release gates", () => {
     await expect(
       service.updateCountryConfiguration(
         "CH",
-        { primaryDomain: "shongre.com", basePath: "/be" },
+        { canonicalDomainMode: "international", basePath: "/be" },
         "00000000-0000-4000-8000-000000000001",
       ),
     ).rejects.toThrow("déjà utilisée");

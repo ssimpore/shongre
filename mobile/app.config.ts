@@ -1,5 +1,6 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 import { configColors } from "@shongre/design-tokens/config";
+import { createEnvironmentConfig } from "@shongre/contracts/environment";
 
 function required(name: string): string {
   const value = process.env[name];
@@ -20,7 +21,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   const bundleIdentifier = required("IOS_BUNDLE_IDENTIFIER");
   const androidPackage = required("ANDROID_PACKAGE_NAME");
   const version = required("APP_VERSION");
-  const webHost = new URL(required("PRODUCTION_WEB_URL")).host;
+  const environment = createEnvironmentConfig({
+    appEnvironment: required("APP_ENV"),
+    environmentId: required("ENVIRONMENT_ID"),
+    publicFranceUrl: required("PUBLIC_FR_URL"),
+    publicInternationalUrl: required("PUBLIC_INTL_URL"),
+    apiUrl: required("API_URL"),
+  });
+  const webOrigins = [
+    ...new Map(
+      [environment.urls.franceApp, environment.urls.internationalApp].map(
+        (url) => [url.host, url],
+      ),
+    ).values(),
+  ];
 
   return {
     ...config,
@@ -74,7 +88,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier,
       buildNumber: required("IOS_BUILD_NUMBER"),
       supportsTablet: true,
-      associatedDomains: [`applinks:${webHost}`],
+      associatedDomains: webOrigins.map((url) => `applinks:${url.host}`),
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -149,7 +163,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         {
           action: "VIEW",
           autoVerify: true,
-          data: [{ scheme: "https", host: webHost, pathPrefix: "/" }],
+          data: webOrigins.map((url) => ({
+            scheme: url.protocol.replace(":", ""),
+            host: url.host,
+            pathPrefix: "/",
+          })),
           category: ["BROWSABLE", "DEFAULT"],
         },
       ],
@@ -160,6 +178,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       favicon: "./assets/favicon.png",
     },
     extra: {
+      environment: environment.environment,
+      environmentId: environment.environmentId,
       eas: process.env.EAS_PROJECT_ID
         ? { projectId: process.env.EAS_PROJECT_ID }
         : undefined,

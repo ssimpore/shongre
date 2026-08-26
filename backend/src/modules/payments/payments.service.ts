@@ -50,7 +50,10 @@ export class PaymentsService {
     );
   }
 
-  async getSellerBalance(sellerId: string, currency: string): Promise<{
+  async getSellerBalance(
+    sellerId: string,
+    currency: string,
+  ): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;

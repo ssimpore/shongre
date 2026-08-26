@@ -173,7 +173,9 @@ export class DemoMarketRepository implements IMarketRepository {
   }
 
   async getEffective(code: string): Promise<CountryMarketDefinition> {
-    const targetCode = String(code || "").trim().toUpperCase();
+    const targetCode = String(code || "")
+      .trim()
+      .toUpperCase();
     const targetMarket = this.markets.get(targetCode);
     if (!targetMarket) throw new Error(`Unknown market: ${targetCode}`);
     return {
@@ -233,7 +235,8 @@ export class PostgresMarketRepository implements IMarketRepository {
       nativeName: row.native_name || bootstrap.nativeName,
       enabled: row.enabled ?? bootstrap.enabled,
       launchStatus: row.launch_status || bootstrap.launchStatus,
-      primaryDomain: row.primary_domain || bootstrap.primaryDomain,
+      canonicalDomainMode:
+        row.canonical_domain_mode || bootstrap.canonicalDomainMode,
       basePath: row.base_path || bootstrap.basePath,
       defaultLocale:
         row.default_locale || row.locale || bootstrap.defaultLocale,
@@ -260,9 +263,7 @@ export class PostgresMarketRepository implements IMarketRepository {
       protectionFeeRate: Number(row.protection_fee_rate ?? 0),
       protectionFixedFee: Number(row.protection_fixed_fee ?? 0),
       freeListingsLimit: Number(row.free_listings_limit ?? 0),
-      reservationDepositRateBps: Number(
-        row.reservation_deposit_rate_bps ?? 0,
-      ),
+      reservationDepositRateBps: Number(row.reservation_deposit_rate_bps ?? 0),
       reservationDepositMinimumMinor: Number(
         row.reservation_deposit_minimum_minor ?? 0,
       ),
@@ -346,7 +347,7 @@ export class PostgresMarketRepository implements IMarketRepository {
       native_name: input.nativeName,
       enabled: input.enabled,
       launch_status: input.launchStatus,
-      primary_domain: input.primaryDomain,
+      canonical_domain_mode: input.canonicalDomainMode,
       base_path: input.basePath,
       default_locale: input.defaultLocale,
       supported_locales: input.supportedLocales

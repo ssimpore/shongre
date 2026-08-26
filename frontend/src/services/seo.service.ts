@@ -236,7 +236,11 @@ function applyAlternateLinks(
     const link = document.createElement("link");
     link.rel = "alternate";
     link.hreflang = country.seo.hreflang;
-    link.href = buildPublicUrl({ country: country.code, route: canonicalPath });
+    link.href = buildPublicUrl({
+      country: country.code,
+      route: canonicalPath,
+      infrastructure: marketContext.infrastructure,
+    });
     link.setAttribute(MANAGED, "");
     document.head.appendChild(link);
   }
@@ -244,7 +248,7 @@ function applyAlternateLinks(
     const fallback = document.createElement("link");
     fallback.rel = "alternate";
     fallback.hreflang = "x-default";
-    fallback.href = "https://shongre.com/";
+    fallback.href = `${marketContext.infrastructure.canonicalProtocol}://${marketContext.infrastructure.globalDomain}/`;
     fallback.setAttribute(MANAGED, "");
     document.head.appendChild(fallback);
   }
@@ -282,6 +286,7 @@ export function applyPageMeta(
     ? buildPublicUrl({
         country: marketContext.countryCode,
         route: canonicalPath,
+        infrastructure: marketContext.infrastructure,
       })
     : resolveCanonical(canonicalPath, origin);
 

@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { resolveMarketContext } from "@shongre/contracts";
-import { marketInfrastructureFromEnvironment } from "./src/platform/market/market-infrastructure";
+import {
+  isLocal,
+  isTest,
+  resolveMarketContext,
+  type EnvironmentConfig,
+} from "@shongre/contracts";
+import {
+  marketInfrastructureFromEnvironment,
+  webEnvironmentFromEnvironment,
+} from "./src/platform/market/market-infrastructure";
 
 function requestHostname(request: NextRequest): string {
   const trustProxy = process.env.SHONGRE_TRUST_PROXY_HOST === "true";
@@ -10,10 +18,70 @@ function requestHostname(request: NextRequest): string {
   return forwarded || request.headers.get("host") || request.nextUrl.host;
 }
 
+function contentSecurityPolicy(environment: EnvironmentConfig): string {
+  const localDevelopment =
+    isLocal(environment.environment) || isTest(environment.environment);
+  const connectSources = [
+    "'self'",
+    environment.urls.api.origin,
+    "https://api.stripe.com",
+    "https://m.stripe.network",
+  ];
+  if (localDevelopment) {
+    connectSources.push("http:", "ws:", "wss:");
+  }
+
+  const directives = [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${localDevelopment ? " 'unsafe-eval'" : ""} https://js.stripe.com`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' blob: data: https:",
+    "font-src 'self' data:",
+    `connect-src ${connectSources.join(" ")}`,
+    "frame-src https://js.stripe.com https://hooks.stripe.com",
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+  ];
+  if (environment.urls.franceApp.protocol === "https:") {
+    directives.push("upgrade-insecure-requests");
+  }
+  return directives.join("; ");
+}
+
+function applyRuntimeHeaders(
+  response: NextResponse,
+  environment: EnvironmentConfig,
+): NextResponse {
+  response.headers.set(
+    "Content-Security-Policy",
+    contentSecurityPolicy(environment),
+  );
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(), geolocation=(self), microphone=(), payment=(self)",
+  );
+  if (environment.urls.franceApp.protocol === "https:") {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains; preload",
+    );
+  }
+  if (!environment.searchIndexingEnabled) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+  }
+  return response;
+}
+
 export function proxy(request: NextRequest) {
+  const environment = webEnvironmentFromEnvironment();
   const hostname = requestHostname(request);
-  const allowLocalE2EHost =
-    process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
+  const allowLocalE2EHost = process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
   let context: ReturnType<typeof resolveMarketContext>;
   try {
     context = resolveMarketContext({
@@ -21,7 +89,9 @@ export function proxy(request: NextRequest) {
       pathname: request.nextUrl.pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
       allowDevelopmentHosts:
-        process.env.NODE_ENV !== "production" || allowLocalE2EHost,
+        isLocal(environment.environment) ||
+        isTest(environment.environment) ||
+        allowLocalE2EHost,
     });
   } catch {
     console.error(
@@ -31,10 +101,13 @@ export function proxy(request: NextRequest) {
         hostname,
       }),
     );
-    return new NextResponse("Market resolution failed", {
-      status: 500,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return applyRuntimeHeaders(
+      new NextResponse("Market resolution failed", {
+        status: 500,
+        headers: { "Cache-Control": "no-store" },
+      }),
+      environment,
+    );
   }
 
   if (context.kind === "invalid_host") {
@@ -46,10 +119,13 @@ export function proxy(request: NextRequest) {
         hostname,
       }),
     );
-    return new NextResponse("Invalid Shongre host", {
-      status: 400,
-      headers: { "Cache-Control": "no-store" },
-    });
+    return applyRuntimeHeaders(
+      new NextResponse("Invalid Shongre host", {
+        status: 400,
+        headers: { "Cache-Control": "no-store" },
+      }),
+      environment,
+    );
   }
 
   if (context.kind === "redirect" && context.redirectUrl) {
@@ -70,10 +146,13 @@ export function proxy(request: NextRequest) {
           reason: context.reason,
         }),
       );
-      return new NextResponse("Canonical redirect loop prevented", {
-        status: 508,
-        headers: { "Cache-Control": "no-store" },
-      });
+      return applyRuntimeHeaders(
+        new NextResponse("Canonical redirect loop prevented", {
+          status: 508,
+          headers: { "Cache-Control": "no-store" },
+        }),
+        environment,
+      );
     }
     console.info(
       JSON.stringify({
@@ -87,7 +166,10 @@ export function proxy(request: NextRequest) {
       }),
     );
     destination.search = request.nextUrl.search;
-    return NextResponse.redirect(destination, 308);
+    return applyRuntimeHeaders(
+      NextResponse.redirect(destination, 308),
+      environment,
+    );
   }
 
   if (context.kind === "not_found") {
@@ -121,11 +203,11 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Vary", "Host");
   response.headers.set("x-shongre-market", context.countryCode || "GLOBAL");
-  return response;
+  return applyRuntimeHeaders(response, environment);
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
+    "/((?!healthz$|_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
   ],
 };

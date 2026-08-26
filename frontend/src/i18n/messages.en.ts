@@ -1310,8 +1310,7 @@ export const messagesEn: MessageCatalogue = {
     "Back to the provider catalogue",
   "admin.adminProviderDetailPage.capacitesFournies": "Capabilities provided:",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & keys",
-  "admin.adminProviderDetailPage.marchesSurcharges":
-    "Markets & assignments",
+  "admin.adminProviderDetailPage.marchesSurcharges": "Markets & assignments",
   "admin.adminProviderDetailPage.santeTestsDemo": "Health & demo tests",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Usage & dependencies",
@@ -3063,8 +3062,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminMarketsPage.independentPolicyDescription":
     "Each market carries a complete policy. The default market is shown for comparison only, and its changes never propagate to other countries.",
   "admin.adminMarketsPage.restoreReviewedPolicy": "Restore reviewed policy",
-  "admin.adminMarketsPage.defaultMarketNoticeTitle":
-    "Initial default market",
+  "admin.adminMarketsPage.defaultMarketNoticeTitle": "Initial default market",
   "admin.adminMarketsPage.defaultMarketNoticeDescription":
     "You are editing the explicit {market} policy. This configuration does not propagate to any other market.",
   "admin.monetization.transitionTitle": "Confirm catalogue transition",

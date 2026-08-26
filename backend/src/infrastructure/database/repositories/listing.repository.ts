@@ -164,7 +164,10 @@ export class DemoListingRepository implements IListingRepository {
     return item ? { ...item } : null;
   }
 
-  async findPublicById(id: string, marketCode: string): Promise<Listing | null> {
+  async findPublicById(
+    id: string,
+    marketCode: string,
+  ): Promise<Listing | null> {
     const item = await this.findById(id);
     if (!item || !["published", "reserved", "sold"].includes(item.status))
       return null;
@@ -588,7 +591,10 @@ export class PostgresListingRepository implements IListingRepository {
     }
   }
 
-  async findPublicById(id: string, marketCode: string): Promise<Listing | null> {
+  async findPublicById(
+    id: string,
+    marketCode: string,
+  ): Promise<Listing | null> {
     try {
       const supabase = getSupabaseAdminClient();
       const requestedMarketCode = requireMarketCode(marketCode);
@@ -671,8 +677,7 @@ export class PostgresListingRepository implements IListingRepository {
               code: "VALIDATION_ERROR",
               message: "Devise du marché introuvable.",
             });
-          const factor =
-            10 ** getCurrencyMinorUnitDigits(publicationCurrency);
+          const factor = 10 ** getCurrencyMinorUnitDigits(publicationCurrency);
           query = query.gte(
             "listing_market_publications.price_minor",
             Math.round(filters.minPrice * factor),
@@ -688,8 +693,7 @@ export class PostgresListingRepository implements IListingRepository {
               code: "VALIDATION_ERROR",
               message: "Devise du marché introuvable.",
             });
-          const factor =
-            10 ** getCurrencyMinorUnitDigits(publicationCurrency);
+          const factor = 10 ** getCurrencyMinorUnitDigits(publicationCurrency);
           query = query.lte(
             "listing_market_publications.price_minor",
             Math.round(filters.maxPrice * factor),

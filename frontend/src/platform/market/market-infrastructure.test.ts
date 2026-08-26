@@ -8,12 +8,11 @@ describe("marketInfrastructureFromPublicEnvironment", () => {
   });
 
   it("keeps client-side market switches on staging domains", () => {
-    vi.stubEnv(
-      "NEXT_PUBLIC_SHONGRE_GLOBAL_DOMAIN",
-      "staging.shongre.com",
-    );
-    vi.stubEnv("NEXT_PUBLIC_SHONGRE_FR_DOMAIN", "staging.shongre.fr");
-    vi.stubEnv("NEXT_PUBLIC_SHONGRE_CANONICAL_PROTOCOL", "https");
+    vi.stubEnv("NEXT_PUBLIC_APP_ENV", "staging");
+    vi.stubEnv("NEXT_PUBLIC_ENVIRONMENT_ID", "shongre-staging");
+    vi.stubEnv("NEXT_PUBLIC_INTL_URL", "https://staging.shongre.com");
+    vi.stubEnv("NEXT_PUBLIC_FR_URL", "https://staging.shongre.fr");
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api-staging.shongre.fr");
 
     expect(marketInfrastructureFromPublicEnvironment()).toEqual({
       globalDomain: "staging.shongre.com",

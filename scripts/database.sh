@@ -15,10 +15,10 @@ require_environment() {
   fi
 }
 
-require_development() {
+require_local() {
   require_environment
-  if [[ "${APP_ENV:-}" != "development" ]]; then
-    shongre_fail "refusing $action outside APP_ENV=development"
+  if [[ "${APP_ENV:-}" != "local" ]]; then
+    shongre_fail "refusing $action outside APP_ENV=local"
     exit 1
   fi
 }
@@ -74,23 +74,52 @@ local_database_url() {
   printf 'postgresql://postgres:postgres@%s:%s/postgres' "$SUPABASE_HOST" "$SUPABASE_DB_PORT"
 }
 
+migration_database_url() {
+  require_environment
+  if [[ "$APP_ENV" == "local" ]]; then
+    local_database_url
+    return
+  fi
+  if [[ "${SHONGRE_REMOTE_MIGRATION_APPROVED:-}" != "true" ]]; then
+    shongre_fail "remote migrations require the protected deployment workflow"
+    shongre_info "SHONGRE_REMOTE_MIGRATION_APPROVED is set only by approved deployment automation"
+    exit 1
+  fi
+  if [[ "$DATABASE_INFRA_MODE" != "hosted" || -z "${DATABASE_URL:-}" ]]; then
+    shongre_fail "remote migrations require hosted database mode and DATABASE_URL"
+    exit 1
+  fi
+  printf '%s' "$DATABASE_URL"
+}
+
 case "$action" in
   check)
     shongre_info "validating ordered migrations without a database connection"
     env -u DATABASE_URL npm run db:migrate --workspace=backend
     ;;
   migrate)
-    require_development
-    resolved_database_url="$(local_database_url)"
-    DATABASE_URL="$resolved_database_url" npm run db:migrate --workspace=backend
+    resolved_database_url="$(migration_database_url)"
+    DATABASE_URL="$resolved_database_url" \
+      DATABASE_ENVIRONMENT_ID="$DATABASE_ENVIRONMENT_ID" \
+      MIGRATION_APPROVAL="$ENVIRONMENT_ID" \
+      npm run db:migrate --workspace=backend
+    ;;
+  diff)
+    require_local
+    command -v supabase >/dev/null 2>&1 || {
+      shongre_fail "Supabase CLI is required for schema diff"
+      exit 1
+    }
+    "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
+    supabase db diff --workdir "$SHONGRE_ROOT/backend"
     ;;
   seed)
-    require_development
+    require_local
     resolved_database_url="$(local_database_url)"
     DATABASE_URL="$resolved_database_url" ALLOW_DEMO_SEED=true npm run db:seed --workspace=backend
     ;;
   reset)
-    require_development
+    require_local
     if [[ -n "${DATABASE_URL:-}" ]]; then
       assert_local_database_url "$DATABASE_URL"
     fi
@@ -115,7 +144,7 @@ case "$action" in
     env -u DATABASE_URL supabase db reset --workdir "$SHONGRE_ROOT/backend"
     ;;
   shell)
-    require_development
+    require_local
     command -v psql >/dev/null 2>&1 || {
       shongre_fail "psql is required for make db-shell"
       exit 1
@@ -124,7 +153,7 @@ case "$action" in
     exec psql -X "$resolved_database_url"
     ;;
   *)
-    shongre_fail "usage: scripts/database.sh <check|migrate|seed|reset|shell>"
+    shongre_fail "usage: scripts/database.sh <check|migrate|diff|seed|reset|shell>"
     exit 2
     ;;
 esac

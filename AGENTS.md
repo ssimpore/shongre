@@ -48,6 +48,23 @@ The platform includes or will include:
 
 All coding agents must follow this file before modifying the repository.
 
+## Delivery invariants
+
+Hosted releases use the root `compose.yaml` and persistent remote-managed
+Cloudflare Tunnels. Never publish application origin ports, place a Tunnel token
+in Git/GitHub variables/image layers, or recreate Tunnel/DNS infrastructure in
+an application deployment. `compose.local.yaml` is the loopback-only developer
+override.
+
+Build frontend and backend images once per main commit. Environment values are
+runtime configuration, never Docker build arguments. DEV, STAGING, PRODUCTION,
+and rollback must consume exact image digests from a validated release
+manifest. Production accepts only the same digests certified in STAGING.
+
+Run migrations once from the exact backend digest before rollout. Never run a
+migration on replica startup or automatically reverse a database migration
+during application rollback. Preserve expand/contract compatibility.
+
 ---
 
 # 2. Golden rule
@@ -3637,6 +3654,8 @@ Support clear environments:
 ```text
 local
 test
+preview
+development
 staging
 production
 ```
@@ -4953,3 +4972,83 @@ A change is not complete until reviewers can answer all of these:
 Any intentional exception must be documented beside the relevant contract or
 architecture decision with an owner and rationale. "France is the current
 default" is never sufficient justification for omitting country awareness.
+
+---
+
+# 160. Canonical multi-environment architecture
+
+Shongre has exactly six application environments:
+
+```text
+local
+test
+preview
+development
+staging
+production
+```
+
+`APP_ENV` is the only Shongre environment selector. `NODE_ENV` may control
+framework build/runtime mechanics but must not select infrastructure, provider
+modes, SEO indexing, safety behavior or business policy. Parse environments and
+URLs through `@shongre/contracts/environment`; do not create a second enum or
+helper set.
+
+Concrete deployment origins come only from:
+
+```text
+PUBLIC_FR_URL
+PUBLIC_INTL_URL
+API_URL
+```
+
+Browser/mobile API projections are the API origin plus the one canonical
+`/api/v1` prefix. Runtime source must not contain environment hostnames. CI
+enforces this through `make hostname-check`; narrow exceptions are limited to
+central local-host routing/security code, deliberate tests/fixtures,
+documentation, historical migrations, deployment profiles and DNS/IaC.
+
+Market records store `canonicalDomainMode` (`france` or `international`) and a
+base path, never a concrete deployment hostname. France is root on the France
+origin. Every other country is a path on the international origin. URL, SEO,
+email, notification, share, OAuth and webhook construction uses the canonical
+builders and typed configuration.
+
+Every runtime binding carries the same non-secret `ENVIRONMENT_ID` through
+`API_ENVIRONMENT_ID`, `SUPABASE_ENVIRONMENT_ID`,
+`STORAGE_ENVIRONMENT_ID`, and the Web/mobile public fingerprints. Hosted
+Supabase also requires exact `SUPABASE_PROJECT_REF` and
+`EXPECTED_SUPABASE_PROJECT_REF` equality. Never isolate environments with table
+prefixes or schemas inside one Supabase project.
+
+Provider modes are fail-closed:
+
+```text
+local        payment=test email=console AI=mock        analytics=off
+test         payment=test email=console AI=mock        analytics=test
+preview      payment=test email=sandbox AI=development analytics=test
+development  payment=test email=sandbox AI=development analytics=development
+staging      payment=test email=sandbox AI=staging     analytics=staging
+production   payment=live email=live    AI=production  analytics=production
+```
+
+Lower environments must reject live payment/email and production AI/analytics.
+Sandbox email requires an explicit exact-address/domain allowlist. Preview must
+not receive production secrets, customer data, webhooks, campaigns, queues or
+cron. Production secrets remain server-only and live only in protected secret
+stores.
+
+Only production is indexable. Local, test, preview, development and staging
+must emit `noindex, nofollow`, block robots and omit public sitemaps.
+
+The root environment profiles and Makefile are the canonical operator
+interface. Destructive database/reset/seed commands require a proven local
+target and `APP_ENV=local`. Deployments use `.github/workflows/deploy.yml` and
+protected GitHub environments; production accepts only commits already on
+`origin/main`. Rollback reverts immutable images and never runs a destructive
+down migration.
+
+The complete matrix, external DNS/Supabase/Vercel/provider actions, commands,
+health endpoints, backup and rollback rules are in
+`docs/architecture/environments.md`. Update that document, `.env.example`, CI,
+mobile build profiles and tests whenever the environment contract changes.

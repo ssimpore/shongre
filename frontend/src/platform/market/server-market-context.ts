@@ -1,7 +1,15 @@
 import { cache } from "react";
 import { headers } from "next/headers";
-import { resolveMarketContext, type MarketContext } from "@shongre/contracts";
-import { marketInfrastructureFromEnvironment } from "./market-infrastructure";
+import {
+  isLocal,
+  isTest,
+  resolveMarketContext,
+  type MarketContext,
+} from "@shongre/contracts";
+import {
+  marketInfrastructureFromEnvironment,
+  webEnvironmentFromEnvironment,
+} from "./market-infrastructure";
 
 export { marketInfrastructureFromEnvironment } from "./market-infrastructure";
 
@@ -12,12 +20,14 @@ export const resolveServerMarketContext = cache(
       requestHeaders.get("x-shongre-resolved-host") ||
       requestHeaders.get("host") ||
       "";
+    const environment = webEnvironmentFromEnvironment();
     return resolveMarketContext({
       hostname,
       pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
       allowDevelopmentHosts:
-        process.env.NODE_ENV !== "production" ||
+        isLocal(environment.environment) ||
+        isTest(environment.environment) ||
         process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1",
     });
   },

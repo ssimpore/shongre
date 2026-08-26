@@ -8,6 +8,11 @@ import {
   DEFAULT_TITLE,
 } from "../src/services/seo.service";
 import { DEFAULT_LOCALE } from "../src/i18n/locale";
+import { webEnvironmentFromEnvironment } from "../src/platform/market/market-infrastructure";
+import {
+  createPublicRuntimeConfig,
+  serializePublicRuntimeConfig,
+} from "../src/platform/runtime-config/public-runtime-config.server";
 
 const inter = localFont({
   src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
@@ -16,18 +21,18 @@ const inter = localFont({
   weight: "100 900",
 });
 
-const origin = process.env.PRODUCTION_WEB_URL ?? "https://shongre.com";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(origin),
-  title: {
-    default: DEFAULT_TITLE,
-    template: "%s",
-  },
-  description: DEFAULT_DESCRIPTION,
-  applicationName: "Shongre",
-  icons: { icon: "/favicon.svg", apple: "/favicon.svg" },
-};
+export function generateMetadata(): Metadata {
+  return {
+    metadataBase: webEnvironmentFromEnvironment().urls.internationalApp,
+    title: {
+      default: DEFAULT_TITLE,
+      template: "%s",
+    },
+    description: DEFAULT_DESCRIPTION,
+    applicationName: "Shongre",
+    icons: { icon: "/favicon.svg", apple: "/favicon.svg" },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -42,9 +47,20 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const requestLocale =
     requestHeaders.get("x-shongre-market-locale") || DEFAULT_LOCALE;
+  const runtimeConfig = serializePublicRuntimeConfig(
+    createPublicRuntimeConfig(),
+  );
   return (
     <html lang={requestLocale} className={inter.variable}>
-      <body>{children}</body>
+      <body>
+        <script
+          id="shongre-runtime-config"
+          dangerouslySetInnerHTML={{
+            __html: `window.__SHONGRE_RUNTIME_CONFIG__=${runtimeConfig};`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

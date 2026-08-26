@@ -6,10 +6,7 @@ import {
   SettingResolution,
   MarketInheritanceMetrics,
 } from "./market.types";
-import {
-  createSafeMarketPolicy,
-  INITIAL_MARKETS,
-} from "./market.defaults";
+import { createSafeMarketPolicy, INITIAL_MARKETS } from "./market.defaults";
 import {
   normalizePriceFilterStops,
   normalizeRecentSearchesLimit,
@@ -345,15 +342,8 @@ export class MarketService {
       (market) => market.code === marketCode.toUpperCase(),
     );
     if (targetIdx < 0) throw new Error(`Market [${marketCode}] not found.`);
-    const primaryDomain = routing.primaryDomain.trim().toLowerCase();
+    const canonicalDomainMode = routing.canonicalDomainMode;
     const basePath = routing.basePath.trim() || "/";
-    if (
-      !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/.test(
-        primaryDomain,
-      )
-    ) {
-      throw new Error("Le domaine public n’est pas valide.");
-    }
     if (!/^\/$|^\/[a-z0-9-]+$/.test(basePath)) {
       throw new Error("Le préfixe doit être / ou /code-pays.");
     }
@@ -363,13 +353,15 @@ export class MarketService {
       );
     }
     if (!markets[targetIdx].isDefault && basePath === "/") {
-      throw new Error("La racine shongre.com est réservée au portail global.");
+      throw new Error(
+        "La racine internationale est réservée au portail global.",
+      );
     }
     if (
       markets.some(
         (market, index) =>
           index !== targetIdx &&
-          market.routing?.primaryDomain === primaryDomain &&
+          market.routing?.canonicalDomainMode === canonicalDomainMode &&
           market.routing?.basePath === basePath,
       )
     ) {
@@ -378,7 +370,7 @@ export class MarketService {
     const current = markets[targetIdx];
     const updated: Market = {
       ...current,
-      routing: { ...routing, primaryDomain, basePath },
+      routing: { ...routing, canonicalDomainMode, basePath },
       updatedAt: new Date().toISOString(),
       version: current.version + 1,
     };
@@ -431,15 +423,12 @@ export class MarketService {
       status: data.status || "draft",
       isDefault: false,
       defaultLocale: data.defaultLocale,
-      supportedLocales: data.supportedLocales || [
-        data.defaultLocale,
-      ],
+      supportedLocales: data.supportedLocales || [data.defaultLocale],
       currency: data.currency.toUpperCase(),
-      currencySymbol:
-        data.currencySymbol || data.currency.toUpperCase(),
+      currencySymbol: data.currencySymbol || data.currency.toUpperCase(),
       timezone: data.timezone,
       routing: {
-        primaryDomain: "shongre.com",
+        canonicalDomainMode: "international",
         basePath: `/${normalizedCode.toLowerCase()}`,
         gatewayVisible: false,
         seoIndexable: false,

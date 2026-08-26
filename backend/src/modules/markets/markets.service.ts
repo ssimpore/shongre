@@ -20,12 +20,7 @@ const countryConfigurationPatchSchema = z
     nativeName: z.string().trim().min(2).max(120).optional(),
     enabled: z.boolean().optional(),
     launchStatus: marketLaunchStatusSchema.optional(),
-    primaryDomain: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .regex(/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/)
-      .optional(),
+    canonicalDomainMode: z.enum(["france", "international"]).optional(),
     basePath: z
       .string()
       .regex(/^\/$|^\/[a-z0-9-]+$/)
@@ -143,7 +138,9 @@ export class MarketsService {
     code: string,
   ): Promise<CountryMarketDefinition> {
     const normalizedCode = countryCodeSchema.parse(
-      String(code || "").trim().toUpperCase(),
+      String(code || "")
+        .trim()
+        .toUpperCase(),
     );
     const market = await this.marketRepo.getByCode(normalizedCode);
     if (!market) {
@@ -182,7 +179,17 @@ export class MarketsService {
     if (candidate.code === "FR" && candidate.basePath !== "/") {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "La France doit conserver la racine canonique de shongre.fr.",
+        message: "La France doit conserver la racine de son domaine canonique.",
+      });
+    }
+    if (
+      (candidate.code === "FR" && candidate.canonicalDomainMode !== "france") ||
+      (candidate.code !== "FR" &&
+        candidate.canonicalDomainMode !== "international")
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le mode de domaine canonique ne correspond pas au marché.",
       });
     }
     if (candidate.code !== "FR" && candidate.basePath === "/") {
@@ -224,7 +231,7 @@ export class MarketsService {
     const duplicate = (await this.marketRepo.getAll()).find(
       (market) =>
         market.code !== candidate.code &&
-        market.primaryDomain === candidate.primaryDomain &&
+        market.canonicalDomainMode === candidate.canonicalDomainMode &&
         market.basePath === candidate.basePath,
     );
     if (duplicate) {

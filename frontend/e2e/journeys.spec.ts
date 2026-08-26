@@ -474,6 +474,6 @@ test.describe("honest product surfaces", () => {
   test("the document language reflects the active locale", async ({ page }) => {
     await usePersona(page, "guest");
     await page.goto("/");
-    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr-FR");
   });
 });

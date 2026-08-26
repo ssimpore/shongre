@@ -207,12 +207,18 @@ export function metadataForRoute({
   const canonicalPath = category
     ? `/categorie/${encodeURIComponent(category)}`
     : pathname;
+  if (!marketContext?.countryCode && !origin) {
+    throw new Error(
+      "Route metadata requires either a resolved market context or an explicit origin.",
+    );
+  }
   const canonical = marketContext?.countryCode
     ? buildPublicUrl({
         country: marketContext.countryCode,
         route: canonicalPath,
+        infrastructure: marketContext.infrastructure,
       })
-    : resolveCanonical(canonicalPath, origin || "https://shongre.fr");
+    : resolveCanonical(canonicalPath, origin!);
   const resolvedTitle = resolveTitle(title);
   const canonicalOrigin = new URL(canonical).origin;
   const image = entity?.image
@@ -246,11 +252,16 @@ export function metadataForRoute({
       )
       .map((country) => [
         country.seo.hreflang,
-        buildPublicUrl({ country: country.code, route: canonicalPath }),
+        buildPublicUrl({
+          country: country.code,
+          route: canonicalPath,
+          infrastructure: marketContext!.infrastructure,
+        }),
       ]),
   );
   if (Object.keys(languages).length > 0) {
-    languages["x-default"] = "https://shongre.com/";
+    languages["x-default"] =
+      `${marketContext!.infrastructure.canonicalProtocol}://${marketContext!.infrastructure.globalDomain}/`;
   }
 
   return {
@@ -312,7 +323,11 @@ export function structuredDataForRoute(
       ? originOrContext
       : new URL(originOrContext.canonicalUrl).origin;
   const canonical = marketContext?.countryCode
-    ? buildPublicUrl({ country: marketContext.countryCode, route: pathname })
+    ? buildPublicUrl({
+        country: marketContext.countryCode,
+        route: pathname,
+        infrastructure: marketContext.infrastructure,
+      })
     : resolveCanonical(pathname, origin);
 
   let payload: Record<string, unknown> | null = null;

@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { buildPublicUrl, getCountryConfig } from "@shongre/contracts";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
+import { config } from "../../../app/config/index.js";
 
 export type NotificationCategory =
   | "messages"
@@ -348,7 +349,11 @@ export class PostgresNotificationRepository implements INotificationRepository {
       marketCode,
       linkUrl:
         linkRoute && country
-          ? buildPublicUrl({ country: country.code, route: linkRoute })
+          ? buildPublicUrl({
+              country: country.code,
+              route: linkRoute,
+              infrastructure: config.marketInfrastructure,
+            })
           : undefined,
       isRead: Boolean(row.is_read),
       inAppVisible: row.in_app_visible !== false,
@@ -602,7 +607,11 @@ export class PostgresNotificationRepository implements INotificationRepository {
         const route = row.link_route || row.link_url;
         const country = getCountryConfig(requireMarketCode(row.market_code));
         return route && country
-          ? buildPublicUrl({ country: country.code, route })
+          ? buildPublicUrl({
+              country: country.code,
+              route,
+              infrastructure: config.marketInfrastructure,
+            })
           : undefined;
       })(),
       category: row.category,

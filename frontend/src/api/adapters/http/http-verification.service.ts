@@ -14,6 +14,7 @@ import type {
   ManualReviewState,
   VerificationDimension,
 } from "@shongre/contracts/compliance";
+import { getPublicRuntimeConfig } from "../../../platform/runtime-config/public-runtime-config";
 
 export class HttpVerificationService implements VerificationServiceContract {
   async listComplianceRules(): Promise<ComplianceRule[]> {
@@ -156,7 +157,7 @@ async function createStripeAccountToken(input: {
   displayName: string;
   sellerType: "individual" | "professional";
 }): Promise<string> {
-  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+  const publishableKey = getPublicRuntimeConfig().stripePublishableKey;
   if (!/^pk_(test|live)_[A-Za-z0-9]+$/.test(publishableKey)) {
     throw new Error("Le parcours de versement n’est pas configuré.");
   }

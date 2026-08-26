@@ -10,8 +10,12 @@ if [[ ! -f "$SHONGRE_ROOT/.env" && ! -f "$SHONGRE_ROOT/.env.local" && ! -f "$SHO
 fi
 
 required=(
-  APP_ENV FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
+  APP_ENV ENVIRONMENT_ID API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID
+  PUBLIC_FR_URL PUBLIC_INTL_URL API_URL FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
   NEXT_PUBLIC_DATA_MODE BACKEND_DATA_MODE DATABASE_INFRA_MODE EXPO_PUBLIC_DATA_MODE
+  NEXT_PUBLIC_APP_ENV NEXT_PUBLIC_ENVIRONMENT_ID NEXT_PUBLIC_FR_URL NEXT_PUBLIC_INTL_URL NEXT_PUBLIC_API_URL
+  EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_FR_URL EXPO_PUBLIC_INTL_URL EXPO_PUBLIC_API_URL
+  PAYMENT_MODE EMAIL_MODE AI_MODE ANALYTICS_MODE
   EXPO_METRO_PORT EXPO_WEB_PORT STORYBOOK_PORT SUPABASE_API_PORT
   SUPABASE_DB_PORT SUPABASE_SHADOW_PORT SUPABASE_REALTIME_PORT
   SUPABASE_STUDIO_PORT SUPABASE_INBUCKET_PORT SUPABASE_SMTP_PORT
@@ -34,8 +38,8 @@ for key in "${required[@]}"; do
 done
 
 case "${APP_ENV:-}" in
-  development|test|staging|production) ;;
-  *) shongre_fail "APP_ENV must be development, test, staging, or production"; failed=1 ;;
+  local|test|preview|development|staging|production) ;;
+  *) shongre_fail "APP_ENV must be local, test, preview, development, staging, or production"; failed=1 ;;
 esac
 case "$NEXT_PUBLIC_DATA_MODE" in
   demo|api) ;;
@@ -55,21 +59,76 @@ case "$EXPO_PUBLIC_DATA_MODE" in
 esac
 
 case "$SHONGRE_ENV:$APP_ENV" in
-  local:development|test:test|staging:staging|production:production) ;;
+  local:local|test:test|preview:preview|development:development|staging:staging|production:production) ;;
   *)
-    expected_app_env="${SHONGRE_ENV/local/development}"
-    shongre_fail "SHONGRE_ENV=$SHONGRE_ENV requires APP_ENV=$expected_app_env"
+    shongre_fail "SHONGRE_ENV=$SHONGRE_ENV requires APP_ENV=$SHONGRE_ENV"
     failed=1
     ;;
 esac
 
 if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "hosted" ]]; then
-  for key in DATABASE_URL SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY; do
+  for key in DATABASE_URL SUPABASE_PROJECT_REF EXPECTED_SUPABASE_PROJECT_REF SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY; do
     if [[ -z "${!key:-}" ]]; then
       shongre_fail "$key is required for hosted database mode"
       failed=1
     fi
   done
+fi
+
+for fingerprint in API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID NEXT_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_ENVIRONMENT_ID; do
+  if [[ "${!fingerprint:-}" != "${ENVIRONMENT_ID:-}" ]]; then
+    shongre_fail "$fingerprint must match ENVIRONMENT_ID"
+    failed=1
+  fi
+done
+if [[ "${NEXT_PUBLIC_APP_ENV:-}" != "${APP_ENV:-}" || "${EXPO_PUBLIC_APP_ENV:-}" != "${APP_ENV:-}" ]]; then
+  shongre_fail "public client APP_ENV values must match APP_ENV"
+  failed=1
+fi
+
+expected_modes=""
+case "$APP_ENV" in
+  local) expected_modes="test console mock off" ;;
+  test) expected_modes="test console mock test" ;;
+  preview) expected_modes="test sandbox development test" ;;
+  development) expected_modes="test sandbox development development" ;;
+  staging) expected_modes="test sandbox staging staging" ;;
+  production) expected_modes="live live production production" ;;
+esac
+read -r expected_payment expected_email expected_ai expected_analytics <<< "$expected_modes"
+for pair in \
+  "PAYMENT_MODE:$expected_payment" \
+  "EMAIL_MODE:$expected_email" \
+  "AI_MODE:$expected_ai" \
+  "ANALYTICS_MODE:$expected_analytics"; do
+  name="${pair%%:*}"
+  expected="${pair#*:}"
+  if [[ "${!name:-}" != "$expected" ]]; then
+    shongre_fail "$name must be $expected for APP_ENV=$APP_ENV"
+    failed=1
+  fi
+done
+
+if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-}" API_URL="${API_URL:-}" NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-}" EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-}" node --input-type=module -e '
+  const names = ["PUBLIC_FR_URL", "PUBLIC_INTL_URL", "API_URL"];
+  const urls = Object.fromEntries(names.map((name) => [name, new URL(process.env[name])]));
+  for (const [name, url] of Object.entries(urls)) {
+    if (!/^https?:$/.test(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+      throw new Error(`${name} must be a credential-free HTTP(S) origin`);
+    }
+    if (!["local", "test"].includes(process.env.APP_ENV) && url.protocol !== "https:") {
+      throw new Error(`${name} must use HTTPS outside local/test`);
+    }
+  }
+  for (const name of ["NEXT_PUBLIC_API_URL", "EXPO_PUBLIC_API_URL"]) {
+    const url = new URL(process.env[name]);
+    if (url.origin !== urls.API_URL.origin || url.pathname.replace(/\/$/, "") !== "/api/v1") {
+      throw new Error(`${name} must equal API_URL plus /api/v1`);
+    }
+  }
+'; then
+  shongre_fail "deployment URL configuration is invalid or cross-environment"
+  failed=1
 fi
 if [[ "${API_PREFIX:-}" != "/api/v1" ]]; then
   shongre_fail "API_PREFIX is fixed at /api/v1 by the canonical OpenAPI contract"

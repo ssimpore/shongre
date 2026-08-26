@@ -1,0 +1,69 @@
+name: Roll back to known-good image digests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Protected deployment environment
+        required: true
+        type: choice
+        options: [development, staging, production]
+      release_sha:
+        description: Full commit SHA of the known-good immutable release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+concurrency:
+  group: rollback-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve known-good release without rebuilding
+    runs-on: ubuntu-latest
+    outputs:
+      evidence_run_id: ${{ steps.release.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Production rollback target must belong to main
+        if: inputs.environment == 'production'
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+      - name: Require successful immutable release evidence
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          run_id="$(scripts/download-release-evidence.sh release "$RELEASE_SHA" .evidence/release)"
+          node scripts/release-manifest.mjs validate .evidence/release/release-manifest.json "$RELEASE_SHA"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+      - name: Production rollback also requires prior STAGING certification
+        if: inputs.environment == 'production'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          scripts/download-release-evidence.sh certification "$RELEASE_SHA" .evidence/certification >/dev/null
+          node scripts/release-manifest.mjs verify-certification \
+            .evidence/release/release-manifest.json \
+            .evidence/certification/staging-certification.json
+
+  rollback:
+    needs: resolve
+    uses: ./.github/workflows/reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment }}
+      release_sha: ${{ inputs.release_sha }}
+      evidence_run_id: ${{ needs.resolve.outputs.evidence_run_id }}
+      mode: rollback

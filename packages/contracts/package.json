@@ -34,6 +34,7 @@
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts",
     "./provider-platform": "./src/provider-platform.ts",
+    "./environment": "./src/app-environment.ts",
     "./openapi": "./src/openapi.ts"
   },
   "scripts": {

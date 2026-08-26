@@ -1,6 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { randomUUID } from "crypto";
-import { config } from "../config/index.js";
+import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router } from "../../api/v1/router.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -248,16 +248,10 @@ export function createHttpServer() {
           .filter(Boolean),
         ...config.oauthAllowedReturnOrigins,
       ]);
-      const allowWildcard =
-        configuredOrigins.has("*") && config.nodeEnv !== "production";
       if (requestOrigin && configuredOrigins.has(requestOrigin)) {
         res.setHeader("Access-Control-Allow-Origin", requestOrigin);
         res.setHeader("Access-Control-Allow-Credentials", "true");
         res.setHeader("Vary", "Origin");
-      } else if (allowWildcard) {
-        // Credentialed wildcard CORS is invalid in browsers; development's
-        // wildcard stays explicitly non-credentialed.
-        res.setHeader("Access-Control-Allow-Origin", "*");
       }
       res.setHeader(
         "Access-Control-Allow-Methods",
@@ -275,7 +269,7 @@ export function createHttpServer() {
         "camera=(), microphone=(), geolocation=()",
       );
       res.setHeader("Cross-Origin-Resource-Policy", "same-site");
-      if (config.nodeEnv === "production") {
+      if (config.environment.environment === "production") {
         res.setHeader(
           "Strict-Transport-Security",
           "max-age=31536000; includeSubDomains",
@@ -309,11 +303,13 @@ export function createHttpServer() {
           JSON.stringify({
             status: "ok",
             service: "shongre-backend",
-            version: "1.0.0",
+            version: config.version,
+            environment: config.environment.environment,
+            release: config.release,
             port: config.port,
-            home: `http://${config.host}:${config.port}/`,
-            api: `http://${config.host}:${config.port}${config.apiPrefix}`,
-            health: `http://${config.host}:${config.port}/health`,
+            home: config.publicApiUrl,
+            api: buildApiUrl("/"),
+            health: new URL("/health", config.environment.urls.api).toString(),
           }),
         );
         return;
@@ -321,13 +317,19 @@ export function createHttpServer() {
 
       // Liveness is deliberately shallow: it answers whether this process can
       // serve HTTP, without ejecting every replica during a dependency outage.
-      if (req.url === "/health" || req.url === "/livez") {
+      if (
+        req.url === "/health" ||
+        req.url === "/livez" ||
+        req.url === "/api/health"
+      ) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             status: "ok",
             service: "shongre-backend",
-            version: "1.0.0",
+            version: config.version,
+            environment: config.environment.environment,
+            release: config.release,
           }),
         );
         return;
@@ -335,7 +337,7 @@ export function createHttpServer() {
 
       // Readiness is dependency-aware and returns a failing status so the
       // orchestrator does not route traffic before the database is usable.
-      if (req.url === "/readyz") {
+      if (req.url === "/readyz" || req.url === "/api/ready") {
         const databaseReady =
           await import("../../infrastructure/database/db-client.js").then(
             ({ db }) => db.healthCheck(),
@@ -346,6 +348,9 @@ export function createHttpServer() {
           JSON.stringify({
             status: databaseReady ? "ready" : "not_ready",
             service: "shongre-backend",
+            version: config.version,
+            environment: config.environment.environment,
+            release: config.release,
             dependencies: { database: databaseReady ? "up" : "down" },
           }),
         );

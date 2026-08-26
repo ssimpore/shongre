@@ -1,0 +1,71 @@
+name: Reusable immutable deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      release_sha:
+        required: true
+        type: string
+      evidence_run_id:
+        required: true
+        type: string
+      mode:
+        required: false
+        default: deploy
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+jobs:
+  deploy:
+    name: ${{ inputs.mode }} ${{ inputs.environment }} exact digests
+    if: contains(fromJSON('["development","staging","production"]'), inputs.environment) && contains(fromJSON('["deploy","rollback"]'), inputs.mode)
+    runs-on: [self-hosted, linux, "shongre-${{ inputs.environment }}"]
+    environment: ${{ inputs.environment }}
+    timeout-minutes: 30
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Download the immutable release manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          EVIDENCE_RUN_ID: ${{ inputs.evidence_run_id }}
+        run: |
+          test "$RELEASE_SHA" != ""
+          mkdir -p .release
+          gh run download "$EVIDENCE_RUN_ID" --name "release-$RELEASE_SHA" --dir .release
+          node scripts/release-manifest.mjs validate .release/release-manifest.json "$RELEASE_SHA"
+      - name: Authenticate the host to GHCR
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
+      - name: Deploy using only host-managed runtime files
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          SHONGRE_RUNTIME_ENV_FILE: ${{ vars.SHONGRE_RUNTIME_ENV_FILE }}
+          SHONGRE_FRONTEND_ENV_FILE: ${{ vars.SHONGRE_FRONTEND_ENV_FILE }}
+          CLOUDFLARE_TUNNEL_TOKEN_FILE: ${{ vars.CLOUDFLARE_TUNNEL_TOKEN_FILE }}
+          SHONGRE_DEPLOY_STATE_ROOT: ${{ vars.SHONGRE_DEPLOY_STATE_ROOT }}
+        run: scripts/host-deploy.sh "${{ inputs.environment }}" .release/release-manifest.json "${{ inputs.mode }}"
+      - name: Verify the public Cloudflare route
+        env:
+          SHONGRE_ENV: ${{ inputs.environment }}
+        run: scripts/remote-health.sh "${{ inputs.environment }}"
+      - name: Publish deployment summary
+        run: |
+          {
+            echo "### ${{ inputs.mode }}: ${{ inputs.environment }}"
+            echo "- Commit: \`${{ inputs.release_sha }}\`"
+            echo "- Artifact run: \`${{ inputs.evidence_run_id }}\`"
+            echo "- Images: exact digests from the validated release manifest"
+            echo "- Tunnel: persistent, not recreated"
+          } >> "$GITHUB_STEP_SUMMARY"

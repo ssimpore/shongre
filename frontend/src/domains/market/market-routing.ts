@@ -6,12 +6,14 @@ import {
   type MarketContext,
   type MarketInfrastructureConfig,
 } from "@shongre/contracts";
+import { marketInfrastructureFromPublicEnvironment } from "../../platform/market/market-infrastructure";
 
 export function currentBrowserMarketCode(): string | null {
   if (typeof window === "undefined") return null;
   const context = resolveMarketContext({
     hostname: window.location.host,
     pathname: window.location.pathname,
+    infrastructure: marketInfrastructureFromPublicEnvironment(),
     allowDevelopmentHosts: true,
   });
   return context.kind === "market" || context.kind === "coming_soon"
@@ -45,7 +47,7 @@ export function buildRuntimeMarketUrl(input: {
   targetCountry: string;
   context: MarketContext;
   routeExists?: boolean;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure?: MarketInfrastructureConfig;
 }): string {
   const internalPath =
     input.routeExists === false
@@ -75,30 +77,33 @@ export function buildRuntimeMarketUrl(input: {
     internalPath,
     query,
     routeExists: input.routeExists,
-    infrastructure: input.infrastructure,
+    infrastructure:
+      input.infrastructure ?? marketInfrastructureFromPublicEnvironment(),
   });
 }
 
 export function publicListingUrl(input: {
   listingId: string;
   countryCode: string;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure?: MarketInfrastructureConfig;
 }): string {
   return buildPublicUrl({
     country: input.countryCode,
     route: `/annonce/${encodeURIComponent(input.listingId)}`,
-    infrastructure: input.infrastructure,
+    infrastructure:
+      input.infrastructure ?? marketInfrastructureFromPublicEnvironment(),
   });
 }
 
 export function publicRouteUrl(input: {
   route: string;
   countryCode: string;
-  infrastructure?: Partial<MarketInfrastructureConfig>;
+  infrastructure?: MarketInfrastructureConfig;
 }): string {
   return buildPublicUrl({
     country: input.countryCode,
     route: input.route,
-    infrastructure: input.infrastructure,
+    infrastructure:
+      input.infrastructure ?? marketInfrastructureFromPublicEnvironment(),
   });
 }

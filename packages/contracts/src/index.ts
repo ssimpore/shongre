@@ -30,3 +30,4 @@ export * from "./business-verticals";
 export * from "./types/pagination";
 export * from "./access-control";
 export * from "./provider-platform";
+export * from "./app-environment";

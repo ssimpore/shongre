@@ -73,9 +73,17 @@ function evidenceFile(name, maxAgeDays, requiredMarkers) {
 
 exact("APP_ENV", "production");
 exact("NODE_ENV", "production");
+exact("NEXT_PUBLIC_APP_ENV", "production");
+exact("EXPO_PUBLIC_APP_ENV", "production");
 exact("BACKEND_DATA_MODE", "database");
+exact("DATABASE_INFRA_MODE", "hosted");
 exact("NEXT_PUBLIC_DATA_MODE", "api");
+exact("EXPO_PUBLIC_DATA_MODE", "api");
 exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
+exact("PAYMENT_MODE", "live");
+exact("EMAIL_MODE", "live");
+exact("AI_MODE", "production");
+exact("ANALYTICS_MODE", "production");
 exact("PAYMENT_PROVIDER", "stripe");
 check(
   ["stripe", "live"].includes(value("KYC_PROVIDER")),
@@ -84,25 +92,50 @@ check(
 exact("BUSINESS_REGISTRY_PROVIDER", "siret");
 exact("AI_PROVIDER", "gemini");
 exact("AUTH_COOKIE_SECURE", "true");
+exact("SHONGRE_TRUST_PROXY_HOST", "true");
+exact("SHONGRE_TRUST_PROXY_IP", "true");
 
-const frontendUrl = httpsUrl("FRONTEND_URL");
-const publicAppUrl = httpsUrl("NEXT_PUBLIC_APP_URL");
+const environmentId = required("ENVIRONMENT_ID");
+for (const name of [
+  "API_ENVIRONMENT_ID",
+  "DATABASE_ENVIRONMENT_ID",
+  "SUPABASE_ENVIRONMENT_ID",
+  "STORAGE_ENVIRONMENT_ID",
+  "NEXT_PUBLIC_ENVIRONMENT_ID",
+  "EXPO_PUBLIC_ENVIRONMENT_ID",
+]) {
+  exact(name, environmentId);
+}
+
+const franceUrl = httpsUrl("PUBLIC_FR_URL");
+const internationalUrl = httpsUrl("PUBLIC_INTL_URL");
+const apiUrl = httpsUrl("API_URL");
+exact("NEXT_PUBLIC_FR_URL", value("PUBLIC_FR_URL"));
+exact("NEXT_PUBLIC_INTL_URL", value("PUBLIC_INTL_URL"));
+exact("EXPO_PUBLIC_FR_URL", value("PUBLIC_FR_URL"));
+exact("EXPO_PUBLIC_INTL_URL", value("PUBLIC_INTL_URL"));
 const publicApiUrl = httpsUrl("NEXT_PUBLIC_API_URL");
+const mobileApiUrl = httpsUrl("EXPO_PUBLIC_API_URL");
 httpsUrl("SUPABASE_URL");
 httpsUrl("AUTH_EMAIL_DELIVERY_URL");
 httpsUrl("BUSINESS_REGISTRY_API_URL");
 httpsUrl("KYC_PROVIDER_BASE_URL");
 
-if (frontendUrl && publicAppUrl) {
+if (franceUrl && internationalUrl) {
   check(
-    frontendUrl.origin === publicAppUrl.origin,
-    "FRONTEND_URL and NEXT_PUBLIC_APP_URL must use the same origin",
+    franceUrl.origin !== internationalUrl.origin,
+    "PUBLIC_FR_URL and PUBLIC_INTL_URL must use distinct production origins",
   );
 }
-if (publicApiUrl) {
+for (const [name, clientUrl] of [
+  ["NEXT_PUBLIC_API_URL", publicApiUrl],
+  ["EXPO_PUBLIC_API_URL", mobileApiUrl],
+]) {
+  if (!clientUrl || !apiUrl) continue;
+  check(clientUrl.origin === apiUrl.origin, `${name} must use API_URL origin`);
   check(
-    publicApiUrl.pathname.replace(/\/$/, "").endsWith("/api/v1"),
-    "NEXT_PUBLIC_API_URL must include the versioned /api/v1 prefix",
+    clientUrl.pathname.replace(/\/$/, "") === "/api/v1",
+    `${name} must include exactly the versioned /api/v1 prefix`,
   );
 }
 
@@ -122,6 +155,17 @@ for (const origin of corsOrigins) {
     fail("Every CORS origin must be an absolute URL");
   }
 }
+if (franceUrl && internationalUrl) {
+  const expectedCorsOrigins = new Set([
+    franceUrl.origin,
+    internationalUrl.origin,
+  ]);
+  check(
+    corsOrigins.length === expectedCorsOrigins.size &&
+      corsOrigins.every((origin) => expectedCorsOrigins.has(origin)),
+    "CORS_ORIGIN must contain exactly the configured France and international origins",
+  );
+}
 
 const databaseUrl = required("DATABASE_URL");
 try {
@@ -135,7 +179,23 @@ try {
 
 required("SUPABASE_ANON_KEY", 16);
 required("SUPABASE_SERVICE_ROLE_KEY", 32);
+const supabaseProjectRef = required("SUPABASE_PROJECT_REF");
+exact("EXPECTED_SUPABASE_PROJECT_REF", supabaseProjectRef);
 required("JWT_SECRET", 32);
+required("MFA_ENCRYPTION_KEY", 32);
+const providerCredentialKey = required(
+  "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+  40,
+);
+try {
+  check(
+    Buffer.from(providerCredentialKey, "base64").length === 32,
+    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 must decode to 32 bytes",
+  );
+} catch {
+  fail("PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 must be valid base64");
+}
+required("PROVIDER_CREDENTIAL_KEY_VERSION");
 required("AUTH_EMAIL_DELIVERY_TOKEN", 24);
 required("COMPLIANCE_WEBHOOK_SECRET", 32);
 required("HANDOVER_PIN_PEPPER", 32);

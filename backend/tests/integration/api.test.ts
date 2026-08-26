@@ -6,6 +6,7 @@ import {
 } from "../../src/app/bootstrap/seed-demo-credentials.js";
 import { Server } from "http";
 import { generateTotpCode } from "../../src/modules/auth/mfa.service.js";
+import { config } from "../../src/app/config/index.js";
 
 describe("API v1 Endpoints Integration", () => {
   let server: Server;
@@ -100,12 +101,21 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   it("exposes separate liveness and dependency-aware readiness probes", async () => {
-    const [liveResponse, readyResponse] = await Promise.all([
-      fetch(`${baseUrl}/livez`),
-      fetch(`${baseUrl}/readyz`),
-    ]);
+    const [liveResponse, readyResponse, apiHealthResponse, apiReadyResponse] =
+      await Promise.all([
+        fetch(`${baseUrl}/livez`),
+        fetch(`${baseUrl}/readyz`),
+        fetch(`${baseUrl}/api/health`),
+        fetch(`${baseUrl}/api/ready`),
+      ]);
     expect(liveResponse.status).toBe(200);
     expect(readyResponse.status).toBe(200);
+    expect(apiHealthResponse.status).toBe(200);
+    expect(apiReadyResponse.status).toBe(200);
+    expect(await apiHealthResponse.json()).toMatchObject({
+      status: "ok",
+      environment: config.environment.environment,
+    });
     expect(await readyResponse.json()).toMatchObject({
       status: "ready",
       dependencies: { database: "up" },

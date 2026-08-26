@@ -91,14 +91,7 @@ function walk(directory, files = []) {
 
 function checkProductionEnvironment() {
   once("production-env", () => {
-    const names = [
-      "PRODUCTION_API_URL",
-      "PRODUCTION_WEB_URL",
-      "PRODUCTION_PRIVACY_URL",
-      "PRODUCTION_TERMS_URL",
-      "PRODUCTION_SUPPORT_URL",
-      "PRODUCTION_ACCOUNT_DELETION_URL",
-    ];
+    const names = ["API_URL", "PUBLIC_FR_URL", "PUBLIC_INTL_URL"];
     const forbidden =
       /localhost|127\.0\.0\.1|0\.0\.0\.0|10\.0\.2\.2|\.local(?::|\/|$)|trycloudflare|ngrok|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|10\.\d+\./i;
     const invalid = [];
@@ -516,7 +509,7 @@ function checkAccountDeletionAndUgc() {
       )
         ? STATUS.pass
         : STATUS.fail,
-      `${env.PRODUCTION_ACCOUNT_DELETION_URL || "URL not configured"}`,
+      `${env.PUBLIC_INTL_URL ? `${env.PUBLIC_INTL_URL.replace(/\/$/, "")}/account/delete` : "URL not configured"}`,
     );
     const ugc =
       declaresRoute(router, "/reports") &&

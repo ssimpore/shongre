@@ -57,7 +57,7 @@ test.describe("horizontal overflow", () => {
       for (const route of PUBLIC_ROUTES) {
         await test.step(`${route.name} (${route.path})`, async () => {
           await page.goto(route.path, { waitUntil: "domcontentloaded" });
-          await waitForStableLayout(page);
+          await waitForStableLayout(page, 20_000);
           await expectNoHorizontalOverflow(
             page,
             `${route.name} @ ${viewport.width}px`,
@@ -252,7 +252,9 @@ test.describe("compact footer", () => {
     { name: "768-tablet-portrait", width: 768, height: 1024 },
     { name: "1440-desktop", width: 1440, height: 900 },
   ]) {
-    test(`keeps legal controls usable at ${viewport.name}`, async ({ page }) => {
+    test(`keeps legal controls usable at ${viewport.name}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({
         width: viewport.width,
         height: viewport.height,

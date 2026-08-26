@@ -6,6 +6,7 @@ import { useEstablishedConsent, usePersona } from "./personas";
 
 const local = new URL(BASE_URL);
 const globalGatewayUrl = `${local.protocol}//global.localhost:${local.port}/`;
+const localCanonical = (path: string) => new URL(path, `${local.origin}/`).href;
 
 test.describe("multi-country public routing", () => {
   test("keeps the local root as France and scopes Belgium and Switzerland", async ({
@@ -24,7 +25,7 @@ test.describe("multi-country public routing", () => {
     ).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      "https://shongre.com/be/",
+      localCanonical("/be/"),
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "fr-BE");
 
@@ -35,7 +36,7 @@ test.describe("multi-country public routing", () => {
     ).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      "https://shongre.com/ch/",
+      localCanonical("/ch/"),
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "fr-CH");
   });
@@ -51,7 +52,7 @@ test.describe("multi-country public routing", () => {
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Belgique" })).toHaveAttribute(
       "href",
-      "https://shongre.com/be/",
+      localCanonical("/be/"),
     );
     await expect(page.getByText("Burkina Faso", { exact: true })).toBeVisible();
     await expect(page.getByRole("search")).toHaveCount(0);
@@ -110,25 +111,22 @@ test.describe("multi-country public routing", () => {
     ).toHaveCount(0);
   });
 
-  test("permanently canonicalizes aliases while preserving queries", async ({
+  test("canonicalizes path aliases and rejects unconfigured hosts", async ({
     request,
   }) => {
-    const france = await request.get(
-      "/fr/recherche?query=velo&page=2",
-      { headers: { Host: "shongre.com" }, maxRedirects: 0 },
-    );
-    expect(france.status()).toBe(308);
-    expect(france.headers().location).toBe(
-      "https://shongre.fr/recherche?query=velo&page=2",
-    );
-
-    const www = await request.get("/be/annonce/123?src=test", {
-      headers: { Host: "www.shongre.com" },
+    const france = await request.get("/fr/recherche?query=velo&page=2", {
       maxRedirects: 0,
     });
-    expect(www.status()).toBe(308);
-    expect(www.headers().location).toBe(
-      "https://shongre.com/be/annonce/123?src=test",
+    expect(france.status()).toBe(308);
+    expect(new URL(france.headers().location!, BASE_URL).href).toBe(
+      localCanonical("/recherche?query=velo&page=2"),
     );
+
+    const unknownHost = await request.get("/be/annonce/123?src=test", {
+      headers: { Host: "unconfigured.invalid" },
+      maxRedirects: 0,
+    });
+    expect(unknownHost.status()).toBe(400);
+    expect(unknownHost.headers().location).toBeUndefined();
   });
 });

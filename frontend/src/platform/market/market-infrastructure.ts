@@ -1,4 +1,49 @@
-import type { MarketInfrastructureConfig } from "@shongre/contracts";
+import {
+  createEnvironmentConfig,
+  type EnvironmentConfig,
+  type MarketInfrastructureConfig,
+} from "@shongre/contracts";
+import { getPublicRuntimeConfig } from "../runtime-config/public-runtime-config";
+
+function required(name: string, value: string | undefined): string {
+  if (!value) throw new Error(`[Web Config] ${name} is required.`);
+  return value;
+}
+
+function marketInfrastructureFromConfig(
+  config: EnvironmentConfig,
+): MarketInfrastructureConfig {
+  return {
+    globalDomain: config.urls.internationalApp.host,
+    franceDomain: config.urls.franceApp.host,
+    canonicalProtocol:
+      config.urls.franceApp.protocol === "http:" ? "http" : "https",
+  };
+}
+
+export function webEnvironmentFromEnvironment(): EnvironmentConfig {
+  return createEnvironmentConfig({
+    appEnvironment: required("APP_ENV", process.env.APP_ENV),
+    environmentId: required("ENVIRONMENT_ID", process.env.ENVIRONMENT_ID),
+    publicFranceUrl: required("PUBLIC_FR_URL", process.env.PUBLIC_FR_URL),
+    publicInternationalUrl: required(
+      "PUBLIC_INTL_URL",
+      process.env.PUBLIC_INTL_URL,
+    ),
+    apiUrl: required("API_URL", process.env.API_URL),
+  });
+}
+
+export function webEnvironmentFromPublicEnvironment(): EnvironmentConfig {
+  const runtime = getPublicRuntimeConfig();
+  return createEnvironmentConfig({
+    appEnvironment: runtime.appEnvironment,
+    environmentId: runtime.environmentId,
+    publicFranceUrl: runtime.franceUrl,
+    publicInternationalUrl: runtime.internationalUrl,
+    apiUrl: new URL(runtime.apiBaseUrl).origin,
+  });
+}
 
 /**
  * Stable domain configuration shared by the proxy, metadata routes and server
@@ -6,37 +51,13 @@ import type { MarketInfrastructureConfig } from "@shongre/contracts";
  * import it without pulling React server-only code into its runtime bundle.
  */
 export function marketInfrastructureFromEnvironment(): MarketInfrastructureConfig {
-  return {
-    globalDomain:
-      process.env.SHONGRE_GLOBAL_DOMAIN ||
-      process.env.NEXT_PUBLIC_SHONGRE_GLOBAL_DOMAIN ||
-      "shongre.com",
-    franceDomain:
-      process.env.SHONGRE_FR_DOMAIN ||
-      process.env.NEXT_PUBLIC_SHONGRE_FR_DOMAIN ||
-      "shongre.fr",
-    canonicalProtocol:
-      (process.env.SHONGRE_CANONICAL_PROTOCOL ||
-        process.env.NEXT_PUBLIC_SHONGRE_CANONICAL_PROTOCOL) === "http"
-        ? "http"
-        : "https",
-  };
+  return marketInfrastructureFromConfig(webEnvironmentFromEnvironment());
 }
 
 /**
- * Browser-safe market routing configuration. Next.js only exposes variables
- * with the NEXT_PUBLIC_ prefix to client components, so the market switcher
- * must not rely on the server-only canonical domain variables.
+ * Browser-safe market routing configuration injected by the runtime server.
+ * No deployment URL is compiled into the promoted frontend image.
  */
 export function marketInfrastructureFromPublicEnvironment(): MarketInfrastructureConfig {
-  return {
-    globalDomain:
-      process.env.NEXT_PUBLIC_SHONGRE_GLOBAL_DOMAIN || "shongre.com",
-    franceDomain:
-      process.env.NEXT_PUBLIC_SHONGRE_FR_DOMAIN || "shongre.fr",
-    canonicalProtocol:
-      process.env.NEXT_PUBLIC_SHONGRE_CANONICAL_PROTOCOL === "http"
-        ? "http"
-        : "https",
-  };
+  return marketInfrastructureFromConfig(webEnvironmentFromPublicEnvironment());
 }

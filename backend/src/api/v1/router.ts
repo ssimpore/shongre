@@ -486,10 +486,7 @@ export class ApiV1Router {
         requestMetadata(req),
       );
 
-      const frontendBase =
-        config.frontendUrl ||
-        config.oauthAllowedReturnOrigins[0] ||
-        "http://localhost:3000";
+      const frontendBase = config.frontendUrl;
       const webCallback = new URL("/auth/callback", frontendBase);
       webCallback.searchParams.set("provider", params.provider);
       webCallback.searchParams.set("status", result.status);
@@ -4628,10 +4625,7 @@ function complianceReturnUrl(returnTo: unknown): string {
     !returnTo.startsWith("//")
       ? returnTo
       : "/compte/verification";
-  return new URL(
-    safePath,
-    config.frontendUrl || "http://localhost:3000",
-  ).toString();
+  return new URL(safePath, config.frontendUrl).toString();
 }
 
 /**

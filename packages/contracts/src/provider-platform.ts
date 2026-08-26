@@ -1318,13 +1318,19 @@ export function resolveProviderRoute(params: {
     reasons.push("Provider operation is missing.");
   }
   if (normalizedMarketCode !== policy.marketCode) {
-    reasons.push("Market code must use its canonical uppercase representation.");
+    reasons.push(
+      "Market code must use its canonical uppercase representation.",
+    );
   }
   if (normalizedCurrency && normalizedCurrency !== policy.currency) {
-    reasons.push("Currency code must use its canonical uppercase representation.");
+    reasons.push(
+      "Currency code must use its canonical uppercase representation.",
+    );
   }
   if (!country || country.launchStatus !== "active") {
-    reasons.push(`Market ${normalizedMarketCode || "(missing)"} is not active.`);
+    reasons.push(
+      `Market ${normalizedMarketCode || "(missing)"} is not active.`,
+    );
   } else if (
     normalizedCurrency &&
     !country.supportedCurrencies.includes(normalizedCurrency)

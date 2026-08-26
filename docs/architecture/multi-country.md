@@ -37,12 +37,12 @@ resolveMarketContext(host, path)
 ```
 
 `CountryConfig` is the single public schema. Its safe bootstrap registry lives
-in `@shongre/contracts` because host resolution must work before a database or
-API is reachable. The backend `markets` table persists the same shape for
-admin-owned mutable policy, audit and availability. Stable domain/base-path
-changes are staged configuration changes: validate them in admin, update the
-bootstrap registry through review, deploy the edge snapshot, then activate the
-market. This avoids an unreviewed database edit instantly moving public traffic.
+in `@shongre/contracts` because path resolution must work before a database or
+API is reachable. The backend `markets` table persists admin-owned mutable
+policy, audit and availability. It stores only `canonicalDomainMode` and a base
+path; concrete hostnames are deployment configuration. Routing changes require
+review, a registry update and deployment before activation. This avoids an
+unreviewed database edit moving public traffic or crossing environments.
 
 Commercial prices, credentials, legal text and provider secrets are not stored
 in the bootstrap registry. Tax rates for markets pending legal review remain
@@ -117,9 +117,11 @@ Attach `shongre.fr`, `www.shongre.fr`, `shongre.com` and `www.shongre.com` to
 the same Web deployment and certificate. Configure:
 
 ```env
-SHONGRE_FR_DOMAIN=shongre.fr
-SHONGRE_GLOBAL_DOMAIN=shongre.com
-SHONGRE_CANONICAL_PROTOCOL=https
+APP_ENV=production
+ENVIRONMENT_ID=shongre-production
+PUBLIC_FR_URL=https://shongre.fr
+PUBLIC_INTL_URL=https://shongre.com
+API_URL=https://api.shongre.fr
 SHONGRE_TRUST_PROXY_HOST=false
 OAUTH_ALLOWED_RETURN_ORIGINS=https://shongre.fr,https://shongre.com
 ```
@@ -134,10 +136,10 @@ frontend is expected to work with the backend stopped in demo mode.
 
 ## Administration, rollout and rollback
 
-The Markets administration surface exposes domain, base path, default and
+The Markets administration surface exposes canonical domain mode, base path, default and
 supported locales, currency, timezone, launch status, marketplace/payment
 availability, SEO visibility, compliance review and launch copy. Backend
-validation prevents duplicate domain/path pairs, a non-root France route, a
+validation prevents duplicate mode/path pairs, a non-root France route, a
 root international market, payment without a provider, or activation before a
 required legal review. Every change records actor, fields and versions.
 
@@ -168,11 +170,11 @@ Before production activation verify:
 
 Every domain is classified before implementation:
 
-| Scope | Meaning | Examples |
-| --- | --- | --- |
-| `PLATFORM_GLOBAL` | One record for the platform; market is not part of identity | users, identity, conversations, provider definitions, audit events |
-| `MARKET_SCOPED` | The record is valid in exactly one explicit market | saved search, local legal content, market notification, provider route assignment |
-| `MULTI_MARKET_SHARED` | One shared entity with explicit market availability rows | listings, organizations, stores, taxonomy nodes |
+| Scope                 | Meaning                                                     | Examples                                                                          |
+| --------------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `PLATFORM_GLOBAL`     | One record for the platform; market is not part of identity | users, identity, conversations, provider definitions, audit events                |
+| `MARKET_SCOPED`       | The record is valid in exactly one explicit market          | saved search, local legal content, market notification, provider route assignment |
+| `MULTI_MARKET_SHARED` | One shared entity with explicit market availability rows    | listings, organizations, stores, taxonomy nodes                                   |
 
 Listings are `MULTI_MARKET_SHARED`. `listings` owns content, seller, origin and
 lifecycle. `listing_market_publications` owns `{market, status, isPrimary,
@@ -212,7 +214,7 @@ readiness.
 Use this checklist in order. A country must remain `coming_soon` until every
 required gate is complete.
 
-1. Add a reviewed `CountryConfig` entry with ISO country/market codes, domain,
+1. Add a reviewed `CountryConfig` entry with ISO country/market codes, canonical domain mode,
    base path, locales, currency list, timezone, measurement system, phone prefix,
    address format and location hierarchy. Do not copy France's commercial policy.
 2. Add the matching `markets` migration/config row. Leave marketplace, payments,

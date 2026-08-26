@@ -137,8 +137,8 @@ export const ProviderMarketOverridesTab: React.FC<
         <div className="bg-stone-50/80 p-5 rounded-xl border border-stone-200 space-y-3">
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
             <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
-              <span>{defaultMarket.flag}</span> {defaultMarket.name} (marché
-              par défaut)
+              <span>{defaultMarket.flag}</span> {defaultMarket.name} (marché par
+              défaut)
             </span>
             <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
               {t("admin.providerMarketOverridesTab.baseDHeritage")}

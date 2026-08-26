@@ -16,10 +16,12 @@ fi
 
 export FRONTEND_PORT="$E2E_FRONTEND_PORT"
 export PORT="$E2E_FRONTEND_PORT"
-export VITE_APP_URL="http://${FRONTEND_HOST}:${E2E_FRONTEND_PORT}"
-export NEXT_PUBLIC_APP_URL="$VITE_APP_URL"
+export E2E_BASE_URL="http://${FRONTEND_HOST}:${E2E_FRONTEND_PORT}"
+export PUBLIC_FR_URL="$E2E_BASE_URL"
+export PUBLIC_INTL_URL="$E2E_BASE_URL"
+export NEXT_PUBLIC_FR_URL="$E2E_BASE_URL"
+export NEXT_PUBLIC_INTL_URL="$E2E_BASE_URL"
 export NEXT_PUBLIC_DATA_MODE=demo
-export VITE_DATA_MODE=demo
 export PLAYWRIGHT_REUSE_EXISTING_SERVER=1
 export SHONGRE_DISABLE_DEV_ASSET_HEADERS=1
 export SHONGRE_E2E_ALLOW_HTTP=1
@@ -78,7 +80,7 @@ e2e_server_pid=$!
 
 server_ready=0
 for _ in {1..60}; do
-  if curl --silent --fail --max-time 2 "$VITE_APP_URL" >/dev/null 2>&1; then
+  if curl --silent --fail --max-time 2 "$E2E_BASE_URL" >/dev/null 2>&1; then
     server_ready=1
     break
   fi
@@ -93,7 +95,7 @@ if [[ "$server_ready" != "1" ]]; then
   exit 1
 fi
 
-shongre_info "running Playwright against the isolated standalone server at $VITE_APP_URL"
+shongre_info "running Playwright against the isolated standalone server at $E2E_BASE_URL"
 shongre_info "phase 1/2: regular browser tests with bounded parallelism"
 npm run test:e2e --workspace=frontend -- --grep-invert '@serial' --pass-with-no-tests "$@"
 shongre_info "phase 2/2: multi-route and multi-persona audits without compiler contention"

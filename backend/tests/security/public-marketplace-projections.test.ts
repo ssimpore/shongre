@@ -124,7 +124,9 @@ describe("public marketplace projections", () => {
         new DemoListingRepository({ [status]: listing(status) }),
         new DemoAIProvider(),
       );
-      expect(await service.getListingById(`listing-${status}`, "FR")).toBeNull();
+      expect(
+        await service.getListingById(`listing-${status}`, "FR"),
+      ).toBeNull();
     },
   );
 

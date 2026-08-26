@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-.PHONY: help setup doctor info env env-init env-check env-local env-staging env-production install reinstall \
+.PHONY: help setup doctor info env-info env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
@@ -9,13 +9,15 @@ SHELL := /bin/bash
 	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
-	db-start db-stop db-status db-health db-migrate migrations-check db-seed db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
+	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
 	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check crm-check marketing-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
-	production-config-check production-release-check backup-restore-test secret-scan
+	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy-dev deploy-staging deploy-prod rollback remote-health \
+	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
+	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
 define env_run
 	@source scripts/env.sh && $(1)
@@ -61,17 +63,29 @@ env-check: ## Validate required names, modes, ports, and public-variable safety
 env-local: ## Validate the ignored local development profile
 	@SHONGRE_ENV=local scripts/env-check.sh
 
+env-test: ## Validate the isolated automated-test profile
+	@SHONGRE_ENV=test scripts/env-check.sh
+
+env-preview: ## Validate an explicitly populated dynamic preview profile
+	@SHONGRE_ENV=preview scripts/env-check.sh
+
+env-development: ## Validate development, including required hosted resources
+	@SHONGRE_ENV=development scripts/env-check.sh
+
 env-staging: ## Validate staging, including required hosted database credentials
 	@SHONGRE_ENV=staging scripts/env-check.sh
 
 env-production: ## Validate production, including required hosted database credentials
 	@SHONGRE_ENV=production scripts/env-check.sh
 
+env-matrix-check: ## Validate all six profiles with isolated non-secret resource bindings
+	@scripts/environment-matrix-check.sh
+
 doctor: ## Diagnose tools, versions, configuration, ports, and optional platforms
 	@scripts/doctor.sh
 
-info: env-check ## Print resolved non-secret runtime endpoints and data modes
-	@source scripts/env.sh && printf 'Profile:     %s\nEnvironment: %s\nWeb:         http://%s:%s\nPlaywright:  http://%s:%s\nBackend:     http://%s:%s%s\nMetro:       http://%s:%s\nData modes:  web=%s backend=%s/%s mobile=%s\n' "$$SHONGRE_ENV" "$$APP_ENV" "$$FRONTEND_HOST" "$$FRONTEND_PORT" "$$FRONTEND_HOST" "$$E2E_FRONTEND_PORT" "$$BACKEND_HOST" "$$BACKEND_PORT" "$$API_PREFIX" "$$EXPO_HOST" "$$EXPO_METRO_PORT" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
+info env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
+	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s mobile=%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
 
 install: ## Install the npm workspace using its committed lockfile
 	@npm install
@@ -81,7 +95,7 @@ reinstall: clean-deps install
 ##@ Development
 dev: dev-web ## Run backend, worker, and Web with tracked cleanup
 demo: ## Run the complete Web stack with command-scoped deterministic demo modes
-	@NEXT_PUBLIC_DATA_MODE=demo VITE_DATA_MODE=demo BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
+	@NEXT_PUBLIC_DATA_MODE=demo BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
 dev-web:
 	@scripts/dev.sh web
 dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
@@ -153,15 +167,15 @@ worker-logs:
 
 ##@ Application quality
 frontend-build: ## Build the production Web artifact
-	@source scripts/env.sh && npm run build --workspace=frontend
+	@source scripts/env.sh && NODE_ENV=production npm run build --workspace=frontend
 frontend-lint:
 	@npm run lint --workspace=frontend
 frontend-typecheck:
 	@npm run typecheck --workspace=frontend
 frontend-test: ## Run Web unit and component tests
-	@npm run test --workspace=frontend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
-	@scripts/e2e.sh $(E2E_ARGS)
+	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
 frontend-check:
 	@source scripts/env.sh && SKIP_E2E="$${SKIP_E2E:-0}" npm run check --workspace=frontend
 frontend-clean:
@@ -174,14 +188,14 @@ backend-lint:
 backend-typecheck:
 	@npm run typecheck --workspace=backend
 backend-test: ## Run backend unit, integration, security, contract, and RLS tests
-	@npm run test --workspace=backend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=backend'
 backend-check: backend-lint backend-test backend-build
 	@npm run benchmark --workspace=backend
 	@npm run check:boundary
 contracts-lint contracts-typecheck:
 	@npm run typecheck --workspace=@shongre/contracts
 contracts-test:
-	@npm run test --workspace=@shongre/contracts
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=@shongre/contracts'
 contracts-check: contracts-typecheck contracts-test
 openapi-lint: ## Lint the canonical OpenAPI contract
 	@npm run openapi:lint
@@ -193,6 +207,12 @@ openapi-docs: ## Build standalone API reference documentation
 	@npm run openapi:docs
 openapi-breaking-check: ## Compare the contract with OPENAPI_BASE_REF when configured
 	@npm run openapi:breaking
+api-schema: openapi-lint openapi-check ## Validate the canonical OpenAPI schema
+api-types: openapi-generate openapi-check ## Regenerate and compile OpenAPI client contracts
+release-manifest-check: ## Test digest, commit, OpenAPI, and migration manifest invariants
+	@node scripts/release-manifest.test.mjs
+deployment-config-check: ## Test deploy-file isolation, target binding, and permissions
+	@node scripts/validate-deployment-env.test.mjs
 
 ##@ Shared product system
 tokens-build:
@@ -266,7 +286,7 @@ mobile-lint:
 mobile-typecheck:
 	@npm run typecheck --workspace=mobile
 mobile-test:
-	@npm run test --workspace=mobile
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile'
 mobile-check: mobile-lint mobile-typecheck mobile-test expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, and configuration
 
 ##@ Infrastructure & database
@@ -289,6 +309,34 @@ infra-config:
 infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
 	@scripts/infra.sh check
 infra-validate: infra-check
+docker-config: ## Render and validate the canonical Compose topology
+	@scripts/compose.sh config
+docker-build: ## Build both environment-agnostic runtime images locally
+	@scripts/compose.sh build
+docker-build-frontend: ## Build the environment-agnostic Web image locally
+	@docker build -f frontend/Dockerfile -t shongre-frontend:local .
+docker-build-backend: ## Build the shared API/worker/migrator image locally
+	@docker build -f backend/Dockerfile -t shongre-backend:local .
+docker-start: ## Start the loopback-only local container topology
+	@scripts/compose.sh start
+docker-stop: ## Stop only this checkout's local container topology
+	@scripts/compose.sh stop
+docker-status:
+	@scripts/compose.sh status
+docker-health:
+	@scripts/compose.sh health
+docker-logs:
+	@scripts/compose.sh logs
+docker-scan: ## Scan locally built runtime images for HIGH/CRITICAL findings
+	@for image in shongre-frontend:local shongre-backend:local; do docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v shongre-trivy-cache:/root/.cache ghcr.io/aquasecurity/trivy:0.73.0@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c image --scanners vuln --exit-code 1 --severity HIGH,CRITICAL "$$image"; done
+docker-audit: ## Verify runtime users and absence of common secret/build files
+	@scripts/image-audit.sh
+tunnel-status: ## Show the environment's private cloudflared connector containers
+	@scripts/tunnel.sh status
+tunnel-health: ## Require an active cloudflared HA connection metric
+	@scripts/tunnel.sh health
+tunnel-logs: ## Show bounded connector logs without printing its token
+	@scripts/tunnel.sh logs
 production-config-check:
 	@SHONGRE_ENV=production bash -c 'source scripts/env.sh && node scripts/production-readiness.mjs'
 production-release-check:
@@ -297,10 +345,14 @@ backup-restore-test:
 	@scripts/verify-backup-restore.sh
 secret-scan:
 	@node scripts/scan-tracked-secrets.mjs
+hostname-check: ## Reject environment-specific hostnames in runtime source
+	@node scripts/check-runtime-hostnames.mjs
 db-start supabase-start: infra-start
 db-stop supabase-stop: infra-stop
 db-migrate: ## Apply ordered migrations to the explicitly configured database
 	@scripts/database.sh migrate
+db-diff: ## Print a local schema diff without mutating a hosted environment
+	@scripts/database.sh diff
 supabase-migrate: db-migrate
 migrations-check: ## Validate migration ordering and contents without connecting to a database
 	@scripts/database.sh check
@@ -345,9 +397,9 @@ test-unit: test
 test-integration: ## Run the backend HTTP integration suite
 	@npm run test:integration --workspace=backend
 test-critical: ## Run focused marketplace security, auth, listing, money, and compliance tests
-	@npm run test:critical --workspace=backend
-	@npm run test:critical --workspace=frontend
-	@npm run test:critical --workspace=@shongre/shared
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=backend'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=frontend'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=@shongre/shared'
 test-e2e: frontend-test-e2e ## Run all configured Playwright engines
 test-coverage:
 	@npm run test --workspace=frontend -- --coverage
@@ -358,17 +410,17 @@ i18n-check: ## Validate locale catalogues and untranslated-surface regression bu
 taxonomy-check: ## Validate canonical taxonomy coverage and publication schemas
 	@npm run check:taxonomy --workspace=frontend
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
-	@npm run test:providers --workspace=backend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:providers --workspace=backend'
 crm-check: ## Run focused CRM contracts, services, RLS, SSRF, and demo-adapter tests
-	@npm run test:crm --workspace=backend
-	@npm run test:crm --workspace=frontend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=backend'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=frontend'
 marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, provider, and demo tests
-	@npm run test:marketing --workspace=backend
-	@npm run test:marketing --workspace=frontend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:marketing --workspace=backend'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:marketing --workspace=frontend'
 	@npm run openapi:check
 contracts: contracts-check ## Validate stable public client/backend contracts
 generate: tokens-build db-types openapi-generate ## Regenerate deterministic tokens, database types, and API clients
-check: env env-check migrations-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan ## Run the deterministic pre-commit and pre-PR gate
+check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
 check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets
 	@npm audit --audit-level=high
@@ -376,6 +428,18 @@ ci: env
 	@npm ci
 	@$(MAKE) check
 build: ui-build frontend-build backend-build mobile-typecheck ## Build all local production artifacts without publishing
+
+##@ Deployment
+deploy-dev: ## Dispatch the current commit through the protected development pipeline
+	@scripts/deploy.sh deploy development
+deploy-staging: ## Dispatch the current commit through the protected staging pipeline
+	@scripts/deploy.sh deploy staging
+deploy-prod: ## Dispatch a main-branch commit through the protected production pipeline
+	@scripts/deploy.sh deploy production
+rollback: ## Roll back by digest; usage: make rollback ENVIRONMENT=staging RELEASE_SHA=<full-sha>
+	@[[ "$${RELEASE_SHA:-}" =~ ^[0-9a-f]{40}$$ ]] || { echo 'RELEASE_SHA must be a full known-good commit SHA'; exit 2; }; RELEASE_SHA="$$RELEASE_SHA" scripts/deploy.sh rollback "$${ENVIRONMENT:-}"
+remote-health: ## Verify a deployed target; usage: make remote-health ENVIRONMENT=staging
+	@scripts/remote-health.sh "$${ENVIRONMENT:-}"
 
 ##@ Maintenance
 clean: stop-all ## Remove disposable build, cache, coverage, and test artifacts
@@ -422,7 +486,7 @@ deep-links-check:
 mobile-identifiers-check:
 	@node mobile/scripts/release-check.mjs identifiers
 mobile-production-env-check:
-	@node mobile/scripts/release-check.mjs production-env
+	@SHONGRE_ENV=production bash -c 'source scripts/env.sh && node mobile/scripts/release-check.mjs production-env'
 release-content-check:
 	@node mobile/scripts/release-check.mjs content
 ios-sdk-check:

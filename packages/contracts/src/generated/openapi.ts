@@ -1010,6 +1010,40 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/health": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Compatibility process-health endpoint */
+        readonly get: operations["getApiHealth"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/ready": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Compatibility dependency-aware readiness endpoint */
+        readonly get: operations["getApiReadiness"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/auth/domain-handoff/exchange": {
         readonly parameters: {
             readonly query?: never;
@@ -7134,6 +7168,11 @@ export interface components {
         readonly CountryConfig: {
             readonly addressFormat?: string;
             readonly basePath: string;
+            /**
+             * @description Stable routing mode. Concrete hostnames are supplied by deployment configuration.
+             * @enum {string}
+             */
+            readonly canonicalDomainMode: "france" | "international";
             readonly code: components["schemas"]["MarketCode"];
             readonly compliance: components["schemas"]["JsonValue"];
             readonly currency: string;
@@ -7152,8 +7191,6 @@ export interface components {
             readonly nativeName: string;
             readonly payments: components["schemas"]["JsonValue"];
             readonly phoneCountryCode: string;
-            /** Format: hostname */
-            readonly primaryDomain: string;
             readonly seo: components["schemas"]["JsonValue"];
             readonly slug: string;
             readonly supportedLocales: readonly string[];
@@ -7166,6 +7203,8 @@ export interface components {
         readonly CountryConfigPatch: {
             readonly addressFormat?: string;
             readonly basePath?: string;
+            /** @enum {string} */
+            readonly canonicalDomainMode?: "france" | "international";
             readonly compliance?: {
                 readonly [key: string]: unknown;
             };
@@ -7193,8 +7232,6 @@ export interface components {
                 readonly [key: string]: unknown;
             };
             readonly phoneCountryCode?: string;
-            /** Format: hostname */
-            readonly primaryDomain?: string;
             readonly seo?: {
                 readonly [key: string]: unknown;
             };
@@ -10371,6 +10408,57 @@ export interface operations {
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getApiHealth: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The HTTP process is alive with safe release metadata. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getApiReadiness: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The process and database dependency are ready. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+            /** @description A required dependency is unavailable. */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
         };
     };
     readonly postAuthDomainHandoffExchange: {

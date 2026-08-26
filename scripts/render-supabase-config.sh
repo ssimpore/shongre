@@ -19,8 +19,8 @@ rendered="$(sed \
   -e "s|{{SUPABASE_SMTP_PORT}}|$SUPABASE_SMTP_PORT|g" \
   -e "s|{{SUPABASE_POP3_PORT}}|$SUPABASE_POP3_PORT|g" \
   -e "s|{{SUPABASE_POOLER_PORT}}|$SUPABASE_POOLER_PORT|g" \
-  -e "s|{{FRONTEND_URL}}|http://$FRONTEND_HOST:$FRONTEND_PORT|g" \
-  -e "s|{{PRODUCTION_WEB_URL}}|$PRODUCTION_WEB_URL|g" \
+  -e "s|{{PUBLIC_FR_URL}}|$PUBLIC_FR_URL|g" \
+  -e "s|{{PUBLIC_INTL_URL}}|$PUBLIC_INTL_URL|g" \
   "$template")"
 
 if printf '%s\n' "$rendered" | grep -Eq '\{\{[A-Z_]+'; then

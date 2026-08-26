@@ -74,7 +74,13 @@ make env
 make frontend
 ```
 
-The application runtime mode is configured centrally in `src/api/client/api-client.config.ts` and the root ignored `.env`:
+The data mode is configured centrally in `src/api/client/api-client.config.ts`.
+Deployment origins and `APP_ENV` come from the typed environment projection in
+`src/platform/market/market-infrastructure.ts`. The Next server validates them
+at container startup and injects a safe `window.__SHONGRE_RUNTIME_CONFIG__`
+before application code. They are not compiled into the Docker image, so the
+same digest is promoted through DEV, STAGING, and PRODUCTION. See
+[`docs/architecture/environments.md`](../docs/architecture/environments.md).
 
 ```env
 # Central Data Mode: "demo" (default) | "api"
@@ -128,7 +134,8 @@ npm run check
 The package-local checks remain available for focused work, but every
 contribution must finish with root `make check`. That gate validates formatting,
 types and tests across all workspaces, migration ordering, Web/backend builds,
-infrastructure configuration, tracked secrets, and frontend/backend boundaries.
+infrastructure configuration, tracked secrets, runtime hostname policy, and
+frontend/backend boundaries.
 Use `make test-critical` for the focused marketplace-integrity subset and
 `make check-all` when browser or cross-platform behavior is affected.
 

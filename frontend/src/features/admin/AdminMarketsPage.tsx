@@ -86,7 +86,9 @@ export const AdminMarketsPage: React.FC = () => {
   const [isAddMarketModalOpen, setIsAddMarketModalOpen] = useState(false);
   const [isEditOverrideModalOpen, setIsEditOverrideModalOpen] = useState(false);
   const [isRoutingModalOpen, setIsRoutingModalOpen] = useState(false);
-  const [routingDomain, setRoutingDomain] = useState("");
+  const [routingDomainMode, setRoutingDomainMode] = useState<
+    "france" | "international"
+  >("international");
   const [routingBasePath, setRoutingBasePath] = useState("");
   const [routingGatewayVisible, setRoutingGatewayVisible] = useState(false);
   const [routingSeoIndexable, setRoutingSeoIndexable] = useState(false);
@@ -138,8 +140,10 @@ export const AdminMarketsPage: React.FC = () => {
 
   const openRoutingEditor = () => {
     const routing = selectedMarket.routing;
-    setRoutingDomain(
-      routing?.primaryDomain || selectedCountryConfig?.primaryDomain || "",
+    setRoutingDomainMode(
+      routing?.canonicalDomainMode ||
+        selectedCountryConfig?.canonicalDomainMode ||
+        "international",
     );
     setRoutingBasePath(
       routing?.basePath || selectedCountryConfig?.basePath || "/",
@@ -158,7 +162,7 @@ export const AdminMarketsPage: React.FC = () => {
     setIsSavingRouting(true);
     try {
       await services.markets.updateCountryConfiguration(selectedMarket.code, {
-        primaryDomain: routingDomain,
+        canonicalDomainMode: routingDomainMode,
         basePath: routingBasePath,
         gatewayVisible: routingGatewayVisible,
         seo: {
@@ -169,7 +173,7 @@ export const AdminMarketsPage: React.FC = () => {
       marketService.updateMarketRouting(
         selectedMarket.code,
         {
-          primaryDomain: routingDomain,
+          canonicalDomainMode: routingDomainMode,
           basePath: routingBasePath,
           gatewayVisible: routingGatewayVisible,
           seoIndexable: routingSeoIndexable,
@@ -620,7 +624,7 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <span className="text-success">
-                            {metrics.percentOverridden}% configuré localement
+                              {metrics.percentOverridden}% configuré localement
                             </span>
                             <span className="text-warning">
                               Aucun héritage inter-marché
@@ -817,8 +821,8 @@ export const AdminMarketsPage: React.FC = () => {
                   {[
                     [
                       "Domaine canonique",
-                      selectedMarket.routing?.primaryDomain ||
-                        selectedCountryConfig.primaryDomain,
+                      selectedMarket.routing?.canonicalDomainMode ||
+                        selectedCountryConfig.canonicalDomainMode,
                     ],
                     [
                       "Préfixe public",
@@ -1650,19 +1654,25 @@ export const AdminMarketsPage: React.FC = () => {
         isOpen={isRoutingModalOpen}
         onClose={() => setIsRoutingModalOpen(false)}
         title={`Routage public — ${selectedMarket.name}`}
-        description="Le domaine et le préfixe sont uniques. Une activation reste bloquée tant que les contrôles juridiques requis ne sont pas approuvés."
+        description="Le mode de domaine et le préfixe sont uniques. Les noms d’hôte concrets viennent exclusivement de la configuration du déploiement."
         maxWidth="md"
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-1 text-xs font-bold text-stone-700">
-              Domaine canonique
-              <input
-                value={routingDomain}
-                onChange={(event) => setRoutingDomain(event.target.value)}
-                placeholder="shongre.com"
+              Mode de domaine canonique
+              <select
+                value={routingDomainMode}
+                onChange={(event) =>
+                  setRoutingDomainMode(
+                    event.target.value as "france" | "international",
+                  )
+                }
                 className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
+              >
+                <option value="france">France</option>
+                <option value="international">International</option>
+              </select>
             </label>
             <label className="space-y-1 text-xs font-bold text-stone-700">
               Préfixe public

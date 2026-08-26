@@ -42,4 +42,19 @@ else
   printf 'NOT APPLICABLE in %s mode\n' "$BACKEND_DATA_MODE"
 fi
 
+printf 'Cloudflare Tunnel: '
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+  connector_count="$(docker ps \
+    --filter "label=com.docker.compose.project=shongre-${APP_ENV}" \
+    --filter 'label=com.docker.compose.service=cloudflared' \
+    --format '{{.ID}}' | wc -l | tr -d ' ')"
+  if (( connector_count > 0 )); then
+    printf 'RUNNING (%s connector container(s)); use make tunnel-health for edge sessions\n' "$connector_count"
+  else
+    printf 'NOT RUNNING (not required for normal local development)\n'
+  fi
+else
+  printf 'NOT AVAILABLE (Docker daemon not running)\n'
+fi
+
 exit "$failed"

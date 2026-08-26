@@ -76,9 +76,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true);
       try {
         if (!identity) {
-          setFavoriteIds(
-            storageService.getFavorites(GUEST_FAVORITES_KEY),
-          );
+          setFavoriteIds(storageService.getFavorites(GUEST_FAVORITES_KEY));
           return;
         }
 
@@ -90,8 +88,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           const migratedIds = await Promise.all(
             missingGuestIds.map(async (listingId) => ({
               listingId,
-              confirmed:
-                await services.listings.toggleFavorite(listingId),
+              confirmed: await services.listings.toggleFavorite(listingId),
             })),
           );
           ids = [
@@ -103,10 +100,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           // Clear only after every remote/demo adapter write succeeds. If a
           // write fails, the guest bucket remains available for a later retry.
           for (const listingId of guestIds) {
-            storageService.toggleFavorite(
-              listingId,
-              GUEST_FAVORITES_KEY,
-            );
+            storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
           }
         }
 
@@ -129,38 +123,41 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
     [favoriteIds],
   );
 
-  const toggleFavorite = useCallback(async (listingId: string) => {
-    // Optimistic: a heart that waits on a round trip feels broken. The service
-    // result is authoritative and reconciles the set immediately after.
-    let optimistic = false;
-    setFavoriteIds((previous) => {
-      optimistic = !previous.includes(listingId);
-      return optimistic
-        ? [...previous, listingId]
-        : previous.filter((id) => id !== listingId);
-    });
-
-    try {
-      const confirmed = identity
-        ? await services.listings.toggleFavorite(listingId)
-        : storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
+  const toggleFavorite = useCallback(
+    async (listingId: string) => {
+      // Optimistic: a heart that waits on a round trip feels broken. The service
+      // result is authoritative and reconciles the set immediately after.
+      let optimistic = false;
       setFavoriteIds((previous) => {
-        const without = previous.filter((id) => id !== listingId);
-        return confirmed ? [...without, listingId] : without;
+        optimistic = !previous.includes(listingId);
+        return optimistic
+          ? [...previous, listingId]
+          : previous.filter((id) => id !== listingId);
       });
-      return confirmed;
-    } catch {
-      // Put the set back the way it was rather than leaving a lie on screen.
-      setFavoriteIds((previous) =>
-        optimistic
-          ? previous.filter((id) => id !== listingId)
-          : [...previous, listingId],
-      );
-      throw new Error(
-        "Impossible de mettre à jour vos favoris pour le moment.",
-      );
-    }
-  }, [identity]);
+
+      try {
+        const confirmed = identity
+          ? await services.listings.toggleFavorite(listingId)
+          : storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
+        setFavoriteIds((previous) => {
+          const without = previous.filter((id) => id !== listingId);
+          return confirmed ? [...without, listingId] : without;
+        });
+        return confirmed;
+      } catch {
+        // Put the set back the way it was rather than leaving a lie on screen.
+        setFavoriteIds((previous) =>
+          optimistic
+            ? previous.filter((id) => id !== listingId)
+            : [...previous, listingId],
+        );
+        throw new Error(
+          "Impossible de mettre à jour vos favoris pour le moment.",
+        );
+      }
+    },
+    [identity],
+  );
 
   const clearFavorites = useCallback(async () => {
     const previous = favoriteIds;

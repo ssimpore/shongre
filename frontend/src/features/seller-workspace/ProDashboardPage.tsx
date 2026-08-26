@@ -68,9 +68,9 @@ export const ProDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black text-stone-900">
               {t("sellerworkspace.proDashboardPage.tableauDeBordVendeurPro")}
             </h1>
@@ -83,7 +83,7 @@ export const ProDashboardPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <Button
             type="button"
             variant="outline"
@@ -105,7 +105,7 @@ export const ProDashboardPage: React.FC = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
             <span>Vues totales catalogue</span>
@@ -188,7 +188,7 @@ export const ProDashboardPage: React.FC = () => {
 
       {/* Analytics Chart Bar Visualizer */}
       <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm sm:text-base font-bold text-stone-900">
             {t("sellerworkspace.proDashboardPage.evolutionDeLAudience7")}
           </h2>

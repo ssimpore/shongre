@@ -763,10 +763,9 @@ class StorageService {
 
   // Multi-Market Configuration & Active Market Store
   getMarkets(): Market[] {
-    const stored = this.get<Array<Market & { overrides?: Record<string, any> }>>(
-      KEYS.MARKETS,
-      INITIAL_MARKETS,
-    );
+    const stored = this.get<
+      Array<Market & { overrides?: Record<string, any> }>
+    >(KEYS.MARKETS, INITIAL_MARKETS);
     return stored.map((rawMarket) => {
       if (rawMarket.configuration) return rawMarket;
       const seed = INITIAL_MARKETS.find(

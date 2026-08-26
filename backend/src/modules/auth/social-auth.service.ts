@@ -360,10 +360,7 @@ export class SocialAuthService {
       tokenHash: sha256(verificationToken),
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     });
-    const verificationUrl = new URL(
-      "/verification-email",
-      config.frontendUrl || "http://localhost:3000",
-    );
+    const verificationUrl = new URL("/verification-email", config.frontendUrl);
     verificationUrl.searchParams.set("token", verificationToken);
     try {
       await this.emailSender.send({

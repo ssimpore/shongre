@@ -1,7 +1,13 @@
 import type { IncomingMessage } from "node:http";
-import { getCountryConfig, resolveMarketContext } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  isLocal,
+  isTest,
+  resolveMarketContext,
+} from "@shongre/contracts";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { config } from "../../app/config/index.js";
 
 function firstHeader(value: string | string[] | undefined): string {
   return Array.isArray(value) ? value[0] || "" : value || "";
@@ -44,13 +50,10 @@ function marketFromReferrer(req: IncomingMessage): string | null {
     const context = resolveMarketContext({
       hostname: url.host,
       pathname: url.pathname,
-      infrastructure: {
-        globalDomain: process.env.SHONGRE_GLOBAL_DOMAIN || "shongre.com",
-        franceDomain: process.env.SHONGRE_FR_DOMAIN || "shongre.fr",
-        canonicalProtocol:
-          process.env.SHONGRE_CANONICAL_PROTOCOL === "http" ? "http" : "https",
-      },
-      allowDevelopmentHosts: process.env.NODE_ENV !== "production",
+      infrastructure: config.marketInfrastructure,
+      allowDevelopmentHosts:
+        isLocal(config.environment.environment) ||
+        isTest(config.environment.environment),
     });
     return context.kind === "market" || context.kind === "coming_soon"
       ? context.countryCode
@@ -120,7 +123,7 @@ export function resolveApiRequestMarket(input: {
       market: marketCode,
       locale: country.defaultLocale,
       currency: country.currency,
-      canonicalDomain: country.primaryDomain,
+      canonicalDomainMode: country.canonicalDomainMode,
       hostname: firstHeader(input.req.headers.host),
     });
   }

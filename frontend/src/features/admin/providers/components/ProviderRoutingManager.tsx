@@ -69,12 +69,7 @@ export const ProviderRoutingManager: React.FC = () => {
       {/* Capabilities Routing List */}
       <div className="space-y-3">
         {capabilitiesWithMultipleProviders.map(
-          ({
-            capability,
-            primary,
-            fallback,
-            automaticFailoverApproved,
-          }) => {
+          ({ capability, primary, fallback, automaticFailoverApproved }) => {
             return (
               <div
                 key={capability.id}

@@ -32,10 +32,13 @@ export interface AnalyticsEventRecord {
 
 const memoryEvents: AnalyticsEventRecord[] = [];
 const france = getCountryConfig("FR")!;
-let activeMarketContext = {
+let activeMarketContext: Omit<
+  AnalyticsEventRecord,
+  "name" | "payload" | "occurredAt"
+> = {
   country: france.code,
   locale: france.defaultLocale,
-  domain: france.primaryDomain,
+  domain: france.canonicalDomainMode,
   market: france.code,
   currency: france.currency,
 };

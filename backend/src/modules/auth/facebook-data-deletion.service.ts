@@ -72,7 +72,7 @@ export class FacebookDataDeletionService {
     private readonly appSecret = config.facebookOAuth.clientSecret,
     private readonly statusBaseUrl = new URL(
       `${config.apiPrefix}/auth/oauth/facebook/data-deletion/status`,
-      config.facebookOAuth.callbackUrl || "http://localhost:4000",
+      config.environment.urls.api,
     ).toString(),
     private readonly accountDeletion: Pick<
       UsersService,

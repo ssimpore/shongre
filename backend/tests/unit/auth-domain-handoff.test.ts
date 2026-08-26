@@ -5,6 +5,7 @@ import { DemoKYCProvider } from "../../src/integrations/providers/kyc.provider.j
 import { AuthService } from "../../src/modules/auth/auth.service.js";
 import { SessionService } from "../../src/modules/auth/session.service.js";
 import type { Principal } from "../../src/shared/auth/principal.js";
+import { config } from "../../src/app/config/index.js";
 
 describe("cross-domain Shongre identity handoff", () => {
   it("issues a short-lived one-use code and creates a distinct destination session", async () => {
@@ -37,7 +38,9 @@ describe("cross-domain Shongre identity handoff", () => {
       returnTo: "/recherche?query=velo",
     });
     const authorizationUrl = new URL(started.authorizationUrl);
-    expect(authorizationUrl.origin).toBe("https://shongre.com");
+    expect(authorizationUrl.origin).toBe(
+      config.environment.urls.internationalApp.origin,
+    );
     expect(authorizationUrl.pathname).toBe("/be/auth/domain-handoff");
     expect(Date.parse(started.expiresAt) - Date.now()).toBeLessThanOrEqual(
       120_000,

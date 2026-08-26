@@ -166,7 +166,8 @@ export class ProviderResolver {
     });
 
     const routingRule =
-      routingRules?.[`${normMarket}:${capability}`] ?? routingRules?.[capability];
+      routingRules?.[`${normMarket}:${capability}`] ??
+      routingRules?.[capability];
     const primary = routingRule
       ? sorted.find((provider) => provider.id === routingRule.primaryProviderId)
       : sorted[0];
@@ -187,9 +188,9 @@ export class ProviderResolver {
     }
     const primaryConfig = configurations[primary.id] || null;
     const fallback = routingRule?.fallbackProviderId
-      ? sorted.find(
+      ? (sorted.find(
           (provider) => provider.id === routingRule.fallbackProviderId,
-        ) ?? null
+        ) ?? null)
       : null;
     const fallbackConfig = fallback
       ? configurations[fallback.id] || null

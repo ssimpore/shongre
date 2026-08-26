@@ -304,9 +304,7 @@ export const AdminProvidersPage: React.FC = () => {
 
       {activeTab === "matrix" && <ProviderMarketMatrix />}
 
-      {activeTab === "routing" && (
-        <ProviderRoutingManager />
-      )}
+      {activeTab === "routing" && <ProviderRoutingManager />}
 
       {activeTab === "audit" && <ProviderAuditLogsTab />}
 

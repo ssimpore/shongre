@@ -28,7 +28,10 @@ export class HttpSearchService implements SearchServiceContract {
     ];
   }
 
-  async getSearchSuggestions(query: string, marketCode: string): Promise<string[]> {
+  async getSearchSuggestions(
+    query: string,
+    marketCode: string,
+  ): Promise<string[]> {
     const popular = await this.getPopularKeywords(marketCode);
     if (!query) return popular;
     return popular.filter((k) => k.toLowerCase().includes(query.toLowerCase()));
