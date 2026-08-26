@@ -25,16 +25,33 @@ case "$action" in
       shongre_info "infrastructure is NOT APPLICABLE while BACKEND_DATA_MODE=$BACKEND_DATA_MODE"
       exit 0
     fi
+    if [[ "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+      shongre_info "local infrastructure is NOT APPLICABLE while DATABASE_INFRA_MODE=hosted"
+      exit 0
+    fi
     command -v supabase >/dev/null 2>&1 || { shongre_fail "Supabase CLI is required in database mode"; exit 1; }
     command -v docker >/dev/null 2>&1 || { shongre_fail "Docker is required in database mode"; exit 1; }
     docker info >/dev/null 2>&1 || { shongre_fail "Docker daemon is unavailable; start Docker and retry"; exit 1; }
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
     supabase start --workdir "$SHONGRE_ROOT/backend"
+    "$SHONGRE_ROOT/scripts/sync-local-supabase-env.sh"
     ;;
   stop)
+    if [[ "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+      shongre_info "hosted infrastructure is managed externally"
+      exit 0
+    fi
     if command -v supabase >/dev/null 2>&1; then supabase stop --workdir "$SHONGRE_ROOT/backend"; else shongre_info "Supabase CLI unavailable"; fi
     ;;
   status|health)
+    if [[ "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+      shongre_pass "hosted database configuration (use backend health checks for connectivity)"
+      exit 0
+    fi
+    if [[ "$BACKEND_DATA_MODE" != "database" && "$action" == "status" ]]; then
+      shongre_info "local Supabase is not running (not required while BACKEND_DATA_MODE=$BACKEND_DATA_MODE)"
+      exit 0
+    fi
     if command -v supabase >/dev/null 2>&1; then
       if supabase status --workdir "$SHONGRE_ROOT/backend"; then
         exit 0

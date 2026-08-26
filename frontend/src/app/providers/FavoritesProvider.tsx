@@ -26,6 +26,8 @@ const FavoritesContext = createContext<FavoritesContextValue | undefined>(
   undefined,
 );
 
+const GUEST_FAVORITES_KEY = "guest";
+
 /**
  * One source of truth for saved listings.
  *
@@ -43,7 +45,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, isRestoring } = useAuth();
   const identity = currentUser?.id ?? null;
   const previousIdentity = useRef<string | null | undefined>(undefined);
 
@@ -59,6 +61,8 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
    */
   useEffect(() => {
     let cancelled = false;
+    if (isRestoring) return () => undefined;
+
     // Only an observed signed-out -> signed-in transition merges. Merging on
     // mount instead would hand whoever is already signed in on a shared device
     // the saves left behind by the last signed-out visitor.
@@ -68,21 +72,57 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       Boolean(identity);
     previousIdentity.current = identity;
 
-    if (signingIn) storageService.mergeGuestFavorites();
+    const loadFavorites = async () => {
+      setIsLoading(true);
+      try {
+        if (!identity) {
+          setFavoriteIds(
+            storageService.getFavorites(GUEST_FAVORITES_KEY),
+          );
+          return;
+        }
 
-    setIsLoading(true);
-    services.listings
-      .getFavorites()
-      .then((ids) => {
+        let ids = await services.listings.getFavorites();
+
+        if (signingIn) {
+          const guestIds = storageService.getFavorites(GUEST_FAVORITES_KEY);
+          const missingGuestIds = guestIds.filter((id) => !ids.includes(id));
+          const migratedIds = await Promise.all(
+            missingGuestIds.map(async (listingId) => ({
+              listingId,
+              confirmed:
+                await services.listings.toggleFavorite(listingId),
+            })),
+          );
+          ids = [
+            ...ids,
+            ...migratedIds
+              .filter(({ confirmed }) => confirmed)
+              .map(({ listingId }) => listingId),
+          ];
+          // Clear only after every remote/demo adapter write succeeds. If a
+          // write fails, the guest bucket remains available for a later retry.
+          for (const listingId of guestIds) {
+            storageService.toggleFavorite(
+              listingId,
+              GUEST_FAVORITES_KEY,
+            );
+          }
+        }
+
         if (!cancelled) setFavoriteIds(ids);
-      })
-      .finally(() => {
+      } catch {
+        if (!cancelled) setFavoriteIds([]);
+      } finally {
         if (!cancelled) setIsLoading(false);
-      });
+      }
+    };
+
+    void loadFavorites();
     return () => {
       cancelled = true;
     };
-  }, [identity]);
+  }, [identity, isRestoring]);
 
   const isFavorite = useCallback(
     (listingId: string) => favoriteIds.includes(listingId),
@@ -101,7 +141,9 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
     });
 
     try {
-      const confirmed = await services.listings.toggleFavorite(listingId);
+      const confirmed = identity
+        ? await services.listings.toggleFavorite(listingId)
+        : storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
       setFavoriteIds((previous) => {
         const without = previous.filter((id) => id !== listingId);
         return confirmed ? [...without, listingId] : without;
@@ -118,20 +160,26 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         "Impossible de mettre à jour vos favoris pour le moment.",
       );
     }
-  }, []);
+  }, [identity]);
 
   const clearFavorites = useCallback(async () => {
     const previous = favoriteIds;
     setFavoriteIds([]);
     try {
-      await Promise.all(
-        previous.map((id) => services.listings.toggleFavorite(id)),
-      );
+      if (identity) {
+        await Promise.all(
+          previous.map((id) => services.listings.toggleFavorite(id)),
+        );
+      } else {
+        previous.forEach((id) =>
+          storageService.toggleFavorite(id, GUEST_FAVORITES_KEY),
+        );
+      }
     } catch {
       setFavoriteIds(previous);
       throw new Error("Impossible de vider vos favoris pour le moment.");
     }
-  }, [favoriteIds]);
+  }, [favoriteIds, identity]);
 
   const value = useMemo<FavoritesContextValue>(
     () => ({

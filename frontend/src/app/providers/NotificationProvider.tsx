@@ -36,9 +36,9 @@ const NotificationContext = createContext<NotificationContextValue | undefined>(
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isRestoring } = useAuth();
   const toast = useToast();
-  const currentUserId = currentUser ? currentUser.id : "user-thomas";
+  const currentUserId = currentUser?.id ?? null;
 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [recentNotifications, setRecentNotifications] = useState<
@@ -48,6 +48,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Load recent notifications & unread count
   const refresh = useCallback(async () => {
+    if (isRestoring) return;
+    if (!currentUserId) {
+      setRecentNotifications([]);
+      setUnreadCount(0);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const [items, count] = await Promise.all([
         services.notifications.getUserNotifications(currentUserId),
@@ -55,13 +64,19 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       ]);
       setRecentNotifications(items.slice(0, PAGE_SIZES.notificationPreview));
       setUnreadCount(count);
+    } catch {
+      // Notification previews must never take down a public or expired-session
+      // page. Authentication screens and explicit notification actions surface
+      // their own errors; the shell safely presents an empty badge here.
+      setRecentNotifications([]);
+      setUnreadCount(0);
     } finally {
       setIsLoading(false);
     }
-  }, [currentUserId]);
+  }, [currentUserId, isRestoring]);
 
   useEffect(() => {
-    refresh();
+    void refresh();
   }, [refresh]);
 
   // Subscribe to real-time events
@@ -106,6 +121,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [currentUserId, toast]);
 
   const markAsRead = async (id: string) => {
+    if (!currentUserId) return;
     await services.notifications.markAsRead(id);
     setRecentNotifications((prev) =>
       prev.map((n) =>
@@ -116,6 +132,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const markAllAsRead = async () => {
+    if (!currentUserId) return;
     await services.notifications.markAllAsRead(currentUserId);
     setRecentNotifications((prev) =>
       prev.map((n) => ({ ...n, isRead: true, status: "read" })),
@@ -127,6 +144,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     type: NotificationType,
     context?: any,
   ) => {
+    if (!currentUserId) {
+      toast.info("Connectez-vous pour accéder aux notifications.");
+      return;
+    }
     const notif = notificationCatalogService.createNotificationFromEvent({
       type,
       recipientId: currentUserId,

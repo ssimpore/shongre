@@ -9,7 +9,7 @@ import { httpClient } from "./http-client";
 import { Listing, ListingStatus, SearchFilters } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
 
-type BackendListing = {
+export type BackendListing = {
   id: string;
   sellerId: string;
   seller?: {
@@ -65,7 +65,7 @@ const frontendStatus = (status: string): ListingStatus =>
         ? status
         : "pending_review") as ListingStatus);
 
-const mapListing = (listing: BackendListing): Listing => {
+export const mapBackendListing = (listing: BackendListing): Listing => {
   const sellerType =
     listing.seller?.accountType === "professional" ? "pro" : "individual";
   const categoryParts = listing.categoryId.split(".");
@@ -100,13 +100,13 @@ const mapListing = (listing: BackendListing): Listing => {
     region: listing.region || "",
     latitude: listing.latitude,
     longitude: listing.longitude,
-    photos: listing.images.map((url, index) => ({
+    photos: (listing.images ?? []).map((url, index) => ({
       id: `${listing.id}:media:${index}`,
       url,
       isCover: index === 0,
     })),
-    coverImageUrl: listing.images[0] || "",
-    deliveryOptions: listing.allowedDelivery
+    coverImageUrl: listing.images?.[0] || "",
+    deliveryOptions: (listing.allowedDelivery ?? [])
       .filter((type) =>
         ["hand_delivery", "home_delivery", "custom_carrier"].includes(type),
       )
@@ -116,7 +116,7 @@ const mapListing = (listing: BackendListing): Listing => {
         price: type === "hand_delivery" ? 0 : listing.shippingCost,
       })),
     isOnlinePaymentAvailable: true,
-    attributes: listing.attributes,
+    attributes: listing.attributes ?? {},
     status: frontendStatus(listing.status),
     viewsCount: listing.viewCount,
     viewCount: listing.viewCount,
@@ -165,14 +165,14 @@ export class HttpListingsService implements ListingsServiceContract {
     }>("/listings", {
       params: filter as Record<string, string | number | boolean | undefined>,
     });
-    return { ...result, listings: result.listings.map(mapListing) };
+    return { ...result, listings: result.listings.map(mapBackendListing) };
   }
 
   async getListingById(id: string): Promise<Listing | null> {
     const listing = await httpClient.get<BackendListing | null>(
       `/listings/${id}`,
     );
-    return listing ? mapListing(listing) : null;
+    return listing ? mapBackendListing(listing) : null;
   }
 
   async searchListings(params: SearchFilters) {
@@ -182,7 +182,7 @@ export class HttpListingsService implements ListingsServiceContract {
       page: number;
       totalPages: number;
     }>("/listings/search", params);
-    return { ...result, items: result.items.map(mapListing) };
+    return { ...result, items: result.items.map(mapBackendListing) };
   }
 
   async createListingDraft(): Promise<PublicationDraftState> {
@@ -203,7 +203,7 @@ export class HttpListingsService implements ListingsServiceContract {
     const listing = await httpClient.post<BackendListing>("/listings/publish", {
       draft: publicationPayload(draft),
     });
-    return mapListing(listing);
+    return mapBackendListing(listing);
   }
 
   async uploadListingPhoto(file: File) {
@@ -254,7 +254,7 @@ export class HttpListingsService implements ListingsServiceContract {
       "/listings/bulk-import/publish",
       { marketCode: input.marketCode, rows: input.rows },
     );
-    return listings.map(mapListing);
+    return listings.map(mapBackendListing);
   }
 
   async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
@@ -267,7 +267,7 @@ export class HttpListingsService implements ListingsServiceContract {
       postalCode: updates.postalCode,
       attributes: updates.attributes,
     });
-    return mapListing(listing);
+    return mapBackendListing(listing);
   }
 
   async deleteListing(id: string): Promise<boolean> {

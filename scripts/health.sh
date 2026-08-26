@@ -58,6 +58,10 @@ require_infrastructure_when_configured() {
     shongre_info "Supabase is not required while BACKEND_DATA_MODE=$BACKEND_DATA_MODE"
     return
   }
+  if [[ "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+    shongre_pass "hosted database configuration (connectivity is exercised through the backend)"
+    return
+  fi
   if command -v supabase >/dev/null 2>&1 && supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
     shongre_pass "local Supabase services"
   else

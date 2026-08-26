@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-.PHONY: help setup doctor info env env-init env-check install reinstall \
-	dev demo dev-web dev-mobile dev-all start stop stop-all restart status health smoke logs \
+.PHONY: help setup doctor info env env-init env-check env-local env-staging env-production install reinstall \
+	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
@@ -52,17 +52,26 @@ setup: env install doctor ## Prepare a complete standalone development checkout
 env: env-init ## Create missing local environment files without overwriting values
 
 env-init:
-	@if [[ ! -e .env ]]; then cp .env.example .env && echo 'Created .env from .env.example'; else echo '.env already exists; left unchanged'; fi
+	@if [[ ! -e .env.local ]]; then cp .env.example .env.local && echo 'Created .env.local from .env.example'; else echo '.env.local already exists; left unchanged'; fi
 	@source scripts/env.sh && scripts/render-supabase-config.sh
 
 env-check: ## Validate required names, modes, ports, and public-variable safety
 	@scripts/env-check.sh
 
+env-local: ## Validate the ignored local development profile
+	@SHONGRE_ENV=local scripts/env-check.sh
+
+env-staging: ## Validate staging, including required hosted database credentials
+	@SHONGRE_ENV=staging scripts/env-check.sh
+
+env-production: ## Validate production, including required hosted database credentials
+	@SHONGRE_ENV=production scripts/env-check.sh
+
 doctor: ## Diagnose tools, versions, configuration, ports, and optional platforms
 	@scripts/doctor.sh
 
 info: env-check ## Print resolved non-secret runtime endpoints and data modes
-	@source scripts/env.sh && printf 'Environment: %s\nWeb:         http://%s:%s\nPlaywright:  http://%s:%s\nBackend:     http://%s:%s%s\nMetro:       http://%s:%s\nData modes:  web=%s backend=%s mobile=%s\n' "$$APP_ENV" "$$FRONTEND_HOST" "$$FRONTEND_PORT" "$$FRONTEND_HOST" "$$E2E_FRONTEND_PORT" "$$BACKEND_HOST" "$$BACKEND_PORT" "$$API_PREFIX" "$$EXPO_HOST" "$$EXPO_METRO_PORT" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
+	@source scripts/env.sh && printf 'Profile:     %s\nEnvironment: %s\nWeb:         http://%s:%s\nPlaywright:  http://%s:%s\nBackend:     http://%s:%s%s\nMetro:       http://%s:%s\nData modes:  web=%s backend=%s/%s mobile=%s\n' "$$SHONGRE_ENV" "$$APP_ENV" "$$FRONTEND_HOST" "$$FRONTEND_PORT" "$$FRONTEND_HOST" "$$E2E_FRONTEND_PORT" "$$BACKEND_HOST" "$$BACKEND_PORT" "$$API_PREFIX" "$$EXPO_HOST" "$$EXPO_METRO_PORT" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
 
 install: ## Install the npm workspace using its committed lockfile
 	@npm install
@@ -75,6 +84,9 @@ demo: ## Run the complete Web stack with command-scoped deterministic demo modes
 	@NEXT_PUBLIC_DATA_MODE=demo VITE_DATA_MODE=demo BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
 dev-web:
 	@scripts/dev.sh web
+dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
+	@SHONGRE_ENV=staging scripts/dev.sh web
+staging: dev-staging ## Alias for dev-staging
 dev-mobile: ## Run backend, worker, and one Expo Metro server
 	@scripts/dev.sh mobile
 dev-all: ## Run backend, worker, Web, and one Expo Metro server
@@ -278,9 +290,9 @@ infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
 	@scripts/infra.sh check
 infra-validate: infra-check
 production-config-check:
-	@node scripts/production-readiness.mjs
+	@SHONGRE_ENV=production bash -c 'source scripts/env.sh && node scripts/production-readiness.mjs'
 production-release-check:
-	@node scripts/production-readiness.mjs --require-evidence
+	@SHONGRE_ENV=production bash -c 'source scripts/env.sh && node scripts/production-readiness.mjs --require-evidence'
 backup-restore-test:
 	@scripts/verify-backup-restore.sh
 secret-scan:

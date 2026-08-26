@@ -125,7 +125,10 @@ export class DataModeService {
     );
 
     try {
-      const response = await this.fetcher(readinessUrl, {
+      // Native browser fetch validates its receiver. Calling the stored
+      // function as `this.fetcher(...)` binds `this` to DataModeService and
+      // Chrome rejects the request with `TypeError: Illegal invocation`.
+      const response = await this.fetcher.call(globalThis, readinessUrl, {
         method: "GET",
         headers: { Accept: "application/json" },
         cache: "no-store",

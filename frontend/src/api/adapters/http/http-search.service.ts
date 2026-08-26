@@ -4,10 +4,17 @@ import {
   MarketScopedSearchFilters,
 } from "../../contracts/search.contract";
 import { httpClient } from "./http-client";
+import {
+  mapBackendListing,
+  type BackendListing,
+} from "./http-listings.service";
 
 export class HttpSearchService implements SearchServiceContract {
   async search(params: MarketScopedSearchFilters): Promise<SearchResponse> {
-    return httpClient.post<SearchResponse>("/listings/search", params);
+    const result = await httpClient.post<
+      Omit<SearchResponse, "items"> & { items: BackendListing[] }
+    >("/listings/search", params);
+    return { ...result, items: result.items.map(mapBackendListing) };
   }
 
   async getPopularKeywords(_marketCode: string): Promise<string[]> {

@@ -99,13 +99,15 @@ fi
 printf '\nInfrastructure\n'
 if (( environment_valid == 0 )); then
   shongre_warn "infrastructure checks skipped until the root environment is valid"
-elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
+elif [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then
   for command_name in docker supabase; do
     shongre_require_command "$command_name" || failed=1
   done
   if command -v docker >/dev/null 2>&1; then
     if docker info >/dev/null 2>&1; then shongre_pass "Docker daemon"; else shongre_fail "Docker daemon is unavailable"; failed=1; fi
   fi
+elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
+  shongre_pass "hosted database selected; local Docker and Supabase CLI are not runtime dependencies"
 else
   for command_name in docker supabase; do
     if command -v "$command_name" >/dev/null 2>&1; then shongre_pass "$command_name"; else shongre_warn "$command_name not installed (optional in demo mode)"; fi

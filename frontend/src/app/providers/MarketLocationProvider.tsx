@@ -36,9 +36,12 @@ import {
 import { useAuth } from "./AuthProvider";
 import { services } from "../../api/client/service-registry";
 import { analyticsService } from "../../services/analytics.service";
+import { marketInfrastructureFromPublicEnvironment } from "../../platform/market/market-infrastructure";
 
 const INITIAL_DEFAULT_MARKET =
   INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
+const RUNTIME_MARKET_INFRASTRUCTURE =
+  marketInfrastructureFromPublicEnvironment();
 interface MarketContextType {
   marketContext: MarketContext | null;
   activeMarket: Market;
@@ -340,6 +343,7 @@ export const MarketLocationProvider: React.FC<{
         const directDestination = buildRuntimeMarketUrl({
           targetCountry: market.code,
           context: initialMarketContext,
+          infrastructure: RUNTIME_MARKET_INFRASTRUCTURE,
         });
         const sourceCountry = getCountryConfig(
           initialMarketContext.countryCode || activeMarketCode,

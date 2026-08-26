@@ -43,7 +43,8 @@ contract at boot and in CI. The architecture and API change workflow are in
 ## Prerequisites
 
 - Node.js 22 through 26 and npm 10 or newer (see `package.json` engines and `.nvmrc`)
-- Docker plus the Supabase CLI for local database mode
+- Docker Desktop (or another Docker-compatible daemon) for local database mode;
+  the Supabase CLI is installed project-locally by `npm install`
 - Expo-compatible iOS/Android tooling for local native runs
 - macOS and current Xcode for local iOS builds; EAS may build remotely
 
@@ -56,7 +57,7 @@ make setup
 make dev
 ```
 
-`make setup` creates an ignored `.env` from `.env.example`, installs the npm workspace, renders local Supabase configuration, and runs diagnostics. Keep secrets in ignored `.env.local` or secure CI/EAS variables.
+`make setup` creates an ignored `.env.local` from `.env.example`, installs the npm workspace, renders local Supabase configuration, and runs diagnostics. Keep staging secrets in `.env.staging.local`, production secrets in the deployment secret store (or `.env.production.local` for an explicit local production check), and never commit those local files.
 
 The complete everyday workflow is intentionally small:
 
@@ -66,18 +67,28 @@ make doctor     # diagnose the machine and configured modes
 make check      # deterministic pre-commit/pre-PR gate
 ```
 
-Environment precedence is:
+Select a root profile with `SHONGRE_ENV`. Environment precedence is:
 
 ```text
-exported process variable  >  .env.local  >  .env
+local:       exported process variable > .env.local > .env
+staging:     exported process variable > .env.staging.local > .env.staging > .env
+production:  exported process variable > .env.production.local > .env.production > .env
 ```
 
-All host ports and runtime URLs come from that configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
+The generic `.env.local` is intentionally not loaded into staging or production. All host ports and runtime URLs come from the selected configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
+
+```bash
+make env-local                    # validate local demo mode
+make env-staging                  # validate hosted staging credentials
+SHONGRE_ENV=production make info # inspect non-secret production resolution
+make production-config-check      # fail closed until every live secret exists
+```
 
 ## Development
 
 ```bash
 make dev          # backend API + scheduled worker + web
+make staging      # same stack using hosted staging configuration
 make dev-mobile   # backend API + scheduled worker + one Expo Metro server
 make dev-all      # backend API + scheduled worker + web + Expo Metro
 
@@ -95,6 +106,11 @@ make smoke        # health plus anonymous listings request
 make logs
 make stop-all
 ```
+
+With `BACKEND_DATA_MODE=database` and `DATABASE_INFRA_MODE=local` in the ignored
+`.env.local`, `make dev` starts local Supabase, imports its generated local
+credentials from `.runtime/supabase.env`, applies pending migrations, and then
+starts the application services. Docker must be installed and running first.
 
 Processes launched through the root tooling are recorded under ignored `.runtime/`. Port collision handling prints the owning PID/command and only terminates a process whose tracked PID belongs to this repository. It never runs a broad `killall`, pattern kill, or blind SIGKILL.
 

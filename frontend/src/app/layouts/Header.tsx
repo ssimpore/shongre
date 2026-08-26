@@ -767,14 +767,14 @@ export const Header: React.FC = () => {
                         <Link
                           to="/connexion"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`w-full h-control-md px-3 text-center text-xs font-bold text-stone-900 bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-stone-900 bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           Se connecter
                         </Link>
                         <Link
                           to="/inscription"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`w-full h-control-md px-3 text-center text-xs font-bold text-white bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-white bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           S'inscrire
                         </Link>

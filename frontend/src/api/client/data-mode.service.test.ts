@@ -56,6 +56,24 @@ describe("DataModeService", () => {
     ).toBe("api");
   });
 
+  it("invokes the runtime fetcher with the global receiver", async () => {
+    const fetcher = vi.fn(function (this: typeof globalThis) {
+      if (this !== globalThis) {
+        throw new TypeError("Illegal invocation");
+      }
+      return Promise.resolve(availableResponse);
+    });
+    const service = new DataModeService({
+      storage: new MemoryStorage(),
+      fetcher,
+      apiBaseUrl: "https://api.shongre.test/api/v1",
+      defaultMode: "api",
+    });
+
+    await expect(service.assertLiveAvailable()).resolves.toBeUndefined();
+    expect(fetcher.mock.instances[0]).toBe(globalThis);
+  });
+
   it("rejects an unconfigured Live mode without changing the selection", async () => {
     const storage = new MemoryStorage();
     const service = new DataModeService({

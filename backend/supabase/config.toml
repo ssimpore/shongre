@@ -23,15 +23,13 @@ max_client_conn = 100
 
 [realtime]
 enabled = true
-port = 54323
-ip_version = "auto"
 
 [studio]
 enabled = true
 port = 54324
 api_url = "http://127.0.0.1:54321"
 
-[inbucket]
+[local_smtp]
 enabled = true
 port = 54325
 smtp_port = 54326

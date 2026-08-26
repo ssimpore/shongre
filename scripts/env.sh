@@ -1,7 +1,19 @@
 #!/usr/bin/env bash
 
 # Safe environment loader for every root command.
-# Precedence: exported shell values > .env.local > .env. The example file is
+#
+# Select a profile with SHONGRE_ENV=local|staging|production. APP_ENV is also
+# accepted when it was explicitly exported before this file is sourced.
+# Precedence is:
+#
+#   exported shell values
+#     > .env.<profile>.local
+#     > .env.<profile>
+#     > .env
+#
+# Local development uses .env.local > .env. We intentionally do not load the
+# generic .env.local for staging or production, preventing local-only values or
+# secrets from leaking into those profiles. The example file remains
 # documentation/initialization only and is never loaded at runtime.
 
 if [[ "${SHONGRE_ENV_LOADED:-}" == "1" ]]; then
@@ -11,6 +23,53 @@ export SHONGRE_ENV_LOADED=1
 
 SHONGRE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export SHONGRE_ROOT
+
+# Project-scoped command-line tools (including the Supabase CLI) are preferred
+# over machine-global installations so every checkout uses the locked version.
+if [[ -d "$SHONGRE_ROOT/node_modules/.bin" ]]; then
+  export PATH="$SHONGRE_ROOT/node_modules/.bin:$PATH"
+fi
+
+requested_environment="${SHONGRE_ENV:-${APP_ENV:-local}}"
+case "$requested_environment" in
+  local|development)
+    SHONGRE_ENV=local
+    environment_files=(
+      "$SHONGRE_ROOT/.env.local"
+      "$SHONGRE_ROOT/.runtime/supabase.env"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  test)
+    SHONGRE_ENV=test
+    environment_files=(
+      "$SHONGRE_ROOT/.env.test.local"
+      "$SHONGRE_ROOT/.env.test"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  staging)
+    SHONGRE_ENV=staging
+    environment_files=(
+      "$SHONGRE_ROOT/.env.staging.local"
+      "$SHONGRE_ROOT/.env.staging"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  production)
+    SHONGRE_ENV=production
+    environment_files=(
+      "$SHONGRE_ROOT/.env.production.local"
+      "$SHONGRE_ROOT/.env.production"
+      "$SHONGRE_ROOT/.env"
+    )
+    ;;
+  *)
+    printf 'Invalid SHONGRE_ENV: %s (expected local, test, staging, or production)\n' "$requested_environment" >&2
+    return 1 2>/dev/null || exit 1
+    ;;
+esac
+export SHONGRE_ENV
 
 # Android tooling does not discover the default macOS SDK location reliably
 # outside Android Studio. Respect an explicit value, otherwise expose the
@@ -49,8 +108,9 @@ shongre_load_env_file() {
   done < "$env_file"
 }
 
-shongre_load_env_file "$SHONGRE_ROOT/.env.local"
-shongre_load_env_file "$SHONGRE_ROOT/.env"
+for environment_file in "${environment_files[@]}"; do
+  shongre_load_env_file "$environment_file"
+done
 
 # Derived URLs track port overrides. They are not persisted and contain no
 # secrets. Production builds use the explicit PRODUCTION_* values instead.
@@ -61,6 +121,7 @@ if [[ -z "${VITE_API_URL:-}" && -n "${BACKEND_HOST:-}" && -n "${BACKEND_PORT:-}"
   export VITE_API_URL="http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX:-/api/v1}"
 fi
 export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-${VITE_DATA_MODE:-demo}}"
+export DATABASE_INFRA_MODE="${DATABASE_INFRA_MODE:-local}"
 export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${VITE_API_URL:-}}"
 export NEXT_PUBLIC_APP_NAME="${NEXT_PUBLIC_APP_NAME:-${VITE_APP_NAME:-Shongre}}"
 if [[ -z "${CORS_ORIGIN:-}" && -n "${FRONTEND_HOST:-}" && -n "${FRONTEND_PORT:-}" ]]; then

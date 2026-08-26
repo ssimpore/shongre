@@ -15,6 +15,7 @@ import { useMarketLocation } from "../../../app/providers/MarketLocationProvider
 import { formatPrice } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { getListingCategoryLabel } from "../../../domains/taxonomy/taxonomy.display";
+import { useFavorites } from "../../../app/providers/FavoritesProvider";
 
 const MAX_FEATURED_LISTINGS = 8;
 const STEP_MS = 4500;
@@ -71,9 +72,9 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 }) => {
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
+  const { favoriteIds: favorites, toggleFavorite } = useFavorites();
   const [isPaused, setIsPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const railRef = useRef<HTMLDivElement>(null);
   // Read by the resize observer, which must not re-subscribe on every slide.
@@ -97,14 +98,6 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
         setAllListings([]);
       });
 
-    listingRepository
-      .getFavorites()
-      .then((favs) => {
-        setFavorites(favs.map((f) => f.id));
-      })
-      .catch(() => {
-        setFavorites([]);
-      });
   }, [activeMarket.code]);
 
   // Load and sort listings: give explicit priority to the Sézane coat (list-105) and De'Longhi espresso (list-109)
@@ -214,10 +207,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   ) => {
     e.preventDefault();
     e.stopPropagation();
-    const isFav = await listingRepository.toggleFavorite(listingId);
-    setFavorites((prev) =>
-      isFav ? [...prev, listingId] : prev.filter((id) => id !== listingId),
-    );
+    await toggleFavorite(listingId);
   };
 
   /* A newly opened market may have no eligible featured listing. Collapsing

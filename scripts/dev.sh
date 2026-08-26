@@ -55,9 +55,17 @@ case "$mode" in
   *) shongre_fail "usage: scripts/dev.sh <web|mobile|all>"; exit 2 ;;
 esac
 
-if [[ "$BACKEND_DATA_MODE" == "database" ]]; then
+if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then
   shongre_info "database mode selected; ensuring local infrastructure"
   "$SHONGRE_ROOT/scripts/infra.sh" start
+  # The CLI creates local API credentials when the stack starts. Import the
+  # generated, ignored runtime file for the backend and worker started below.
+  set -a
+  source "$SHONGRE_ROOT/.runtime/supabase.env"
+  set +a
+  "$SHONGRE_ROOT/scripts/database.sh" migrate
+elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
+  shongre_info "hosted database mode selected; local Supabase will not be started"
 fi
 
 for service_name in "${selected_services[@]}"; do

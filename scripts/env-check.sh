@@ -4,14 +4,14 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env.sh"
 source "$SHONGRE_ROOT/scripts/utils.sh"
 
-if [[ ! -f "$SHONGRE_ROOT/.env" && ! -f "$SHONGRE_ROOT/.env.local" ]]; then
-  shongre_fail "No root .env or .env.local exists. Run: make env"
+if [[ ! -f "$SHONGRE_ROOT/.env" && ! -f "$SHONGRE_ROOT/.env.local" && ! -f "$SHONGRE_ROOT/.env.${SHONGRE_ENV}" ]]; then
+  shongre_fail "No root environment file exists for SHONGRE_ENV=$SHONGRE_ENV. Run: make env"
   exit 1
 fi
 
 required=(
   APP_ENV FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
-  NEXT_PUBLIC_DATA_MODE BACKEND_DATA_MODE EXPO_PUBLIC_DATA_MODE
+  NEXT_PUBLIC_DATA_MODE BACKEND_DATA_MODE DATABASE_INFRA_MODE EXPO_PUBLIC_DATA_MODE
   EXPO_METRO_PORT EXPO_WEB_PORT STORYBOOK_PORT SUPABASE_API_PORT
   SUPABASE_DB_PORT SUPABASE_SHADOW_PORT SUPABASE_REALTIME_PORT
   SUPABASE_STUDIO_PORT SUPABASE_INBUCKET_PORT SUPABASE_SMTP_PORT
@@ -45,10 +45,32 @@ case "${BACKEND_DATA_MODE:-}" in
   demo|database) ;;
   *) shongre_fail "BACKEND_DATA_MODE must be demo or database"; failed=1 ;;
 esac
+case "${DATABASE_INFRA_MODE:-}" in
+  local|hosted) ;;
+  *) shongre_fail "DATABASE_INFRA_MODE must be local or hosted"; failed=1 ;;
+esac
 case "$EXPO_PUBLIC_DATA_MODE" in
   demo|api) ;;
   *) shongre_fail "EXPO_PUBLIC_DATA_MODE must be demo or api"; failed=1 ;;
 esac
+
+case "$SHONGRE_ENV:$APP_ENV" in
+  local:development|test:test|staging:staging|production:production) ;;
+  *)
+    expected_app_env="${SHONGRE_ENV/local/development}"
+    shongre_fail "SHONGRE_ENV=$SHONGRE_ENV requires APP_ENV=$expected_app_env"
+    failed=1
+    ;;
+esac
+
+if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+  for key in DATABASE_URL SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY; do
+    if [[ -z "${!key:-}" ]]; then
+      shongre_fail "$key is required for hosted database mode"
+      failed=1
+    fi
+  done
+fi
 if [[ "${API_PREFIX:-}" != "/api/v1" ]]; then
   shongre_fail "API_PREFIX is fixed at /api/v1 by the canonical OpenAPI contract"
   failed=1

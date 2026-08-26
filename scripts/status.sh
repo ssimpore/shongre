@@ -11,9 +11,9 @@ if ! "$SHONGRE_ROOT/scripts/env-check.sh" >/dev/null 2>&1; then
 fi
 
 printf 'Git: %s\n' "$(git -C "$SHONGRE_ROOT" branch --show-current 2>/dev/null || printf 'detached')"
-if [[ -f "$SHONGRE_ROOT/.env" || -f "$SHONGRE_ROOT/.env.local" ]]; then
-  printf 'Environment: .env present | APP_ENV=%s | web=%s | backend=%s | mobile=%s\n\n' \
-    "$APP_ENV" "$NEXT_PUBLIC_DATA_MODE" "$BACKEND_DATA_MODE" "$EXPO_PUBLIC_DATA_MODE"
+if [[ -f "$SHONGRE_ROOT/.env" || -f "$SHONGRE_ROOT/.env.local" || -f "$SHONGRE_ROOT/.env.${SHONGRE_ENV}" ]]; then
+  printf 'Environment: %s | APP_ENV=%s | web=%s | backend=%s/%s | mobile=%s\n\n' \
+    "$SHONGRE_ENV" "$APP_ENV" "$NEXT_PUBLIC_DATA_MODE" "$BACKEND_DATA_MODE" "$DATABASE_INFRA_MODE" "$EXPO_PUBLIC_DATA_MODE"
 else
   printf 'Environment: root environment missing (run make env)\n\n'
 fi
@@ -31,7 +31,9 @@ done
 printf '\n'
 "$SHONGRE_ROOT/scripts/ports.sh"
 printf '\nInfrastructure: '
-if command -v supabase >/dev/null 2>&1 && supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
+if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "hosted" ]]; then
+  printf 'HOSTED (managed externally)\n'
+elif command -v supabase >/dev/null 2>&1 && supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
   printf 'RUNNING\n'
 elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
   printf 'UNAVAILABLE (run make infra-start)\n'
