@@ -40,8 +40,9 @@ authenticated principal
   -> idempotent import into existing CRM account model
 ```
 
-The canonical public contract is in `backend/openapi/openapi.json`. The current
-frontend remains in demo mode and does not call these routes.
+The canonical public contract is in `backend/openapi/openapi.json`. The frontend
+remains demo-first by default; explicit API mode uses the completed HTTP adapter
+for these routes and never silently falls back to demo.
 
 ## Source and compliance matrix
 
@@ -116,3 +117,15 @@ and obtain explicit authorization to switch the frontend HTTP adapter on.
 
 No official registry, crawler, enrichment provider, email sender, payment
 provider, or production AI route is activated by this implementation.
+
+The public access mode is explicit and uses the same CRM implementation:
+`STANDALONE`, `SHONGRE_CONNECTED`, or `INTERNAL_SHONGRE`. Legacy commercial
+catalogue values are normalized at the entitlement boundary and never branch
+the CRM data model or frontend feature implementation.
+
+External professional identities resolve the existing commercial CRM and
+Marketing editor capabilities needed by this shared product surface. They do
+not receive Marketing approval, CRM platform configuration, administration, or
+`crm.prospecting.internal_first_party`; those remain explicit organization or
+staff grants. Quota, source, subscription and retention decisions still come
+from active backend entitlements rather than from the coarse account type.

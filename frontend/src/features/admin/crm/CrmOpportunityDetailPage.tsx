@@ -42,6 +42,7 @@ import {
 import { Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 function money(amountMinor: number, currency: string, locale: string) {
@@ -105,6 +106,7 @@ const activityPresentation: Record<
 export const CrmOpportunityDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const crmPaths = useCrmSurface();
   const { currentLocale } = useMarketLocation();
   const toast = useToast();
   const [opportunity, setOpportunity] = useState<CrmOpportunity | null>(null);
@@ -131,7 +133,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
       ? `${opportunity.name} | CRM Shongre`
       : "Opportunité CRM | Shongre",
     description: "Vue commerciale complète de l’opportunité.",
-    canonicalPath: id ? `/admin/crm/opportunites/${id}` : undefined,
+    canonicalPath: id ? crmPaths.opportunity(id) : undefined,
     noIndex: true,
   });
 
@@ -351,7 +353,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/admin/crm/pipeline")}
+            onClick={() => navigate(crmPaths.pipeline)}
           >
             <ArrowLeft className="h-icon-md w-icon-md" /> Pipeline
           </Button>
@@ -368,7 +370,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
       <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-white shadow-sm">
         <div className="p-5 sm:p-6">
           <Link
-            to="/admin/crm/pipeline"
+            to={crmPaths.pipeline}
             className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
           >
             <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
@@ -598,7 +600,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 </p>
               </div>
               <Link
-                to="/admin/crm/taches"
+                to={crmPaths.tasks}
                 className="text-xs font-bold text-primary hover:underline"
               >
                 Toutes les tâches

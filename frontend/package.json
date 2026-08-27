@@ -19,7 +19,7 @@
     "pretest": "npm run build --workspace=@shongre/design-tokens",
     "test": "vitest run",
     "test:critical": "vitest run src/security src/api/adapters/demo/demo-payments.service.test.ts src/api/adapters/demo/demo-promotions.service.test.ts src/domains/publication src/domains/messaging src/domains/transaction src/domains/verification src/services/storage.favorites.test.ts",
-    "test:crm": "vitest run src/api/adapters/demo/demo-crm.service.test.ts src/api/adapters/demo/demo-prospecting.service.test.ts src/api/adapters/demo/demo-provider-control-plane.service.test.ts src/api/client/service-registry.test.ts",
+    "test:crm": "vitest run src/api/adapters/demo/demo-crm.service.test.ts src/api/adapters/demo/demo-prospecting.service.test.ts src/api/adapters/demo/demo-provider-control-plane.service.test.ts src/api/adapters/http/http-crm-prospecting.service.test.ts src/api/client/service-registry.test.ts src/features/crm/CrmSurfaceContext.test.ts",
     "test:marketing": "vitest run src/api/adapters/demo/demo-marketing.service.test.ts src/api/client/service-registry.test.ts",
     "check": "node ./bin/shongre.js check",
     "cli": "node ./bin/shongre.js",

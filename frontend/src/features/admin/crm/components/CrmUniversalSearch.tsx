@@ -4,6 +4,7 @@ import { Search, Building2, User, TrendingUp, X } from "lucide-react";
 import { services } from "../../../../api/client/service-registry";
 import { Badge } from "../../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { useCrmSurface } from "../../../crm/CrmSurfaceContext";
 
 interface CrmUniversalSearchProps {
   placeholder?: string;
@@ -25,6 +26,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
   className = "",
 }) => {
   const { t } = useTranslation();
+  const crmPaths = useCrmSurface();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UniversalSearchResult[]>([]);
@@ -76,7 +78,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
               account.lifecycle === "customer"
                 ? ("success" as const)
                 : ("primary" as const),
-            linkTo: `/admin/crm/entreprises/${account.id}`,
+            linkTo: crmPaths.company(account.id),
           })),
           ...contactPage.items.map((contact) => ({
             type: "contact" as const,
@@ -88,7 +90,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
               contact.lifecycle === "customer"
                 ? ("success" as const)
                 : ("deal" as const),
-            linkTo: `/admin/crm/contacts/${contact.id}`,
+            linkTo: crmPaths.contact(contact.id),
           })),
           ...opportunityPage.items.map((opportunity) => ({
             type: "opportunity" as const,
@@ -100,7 +102,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
               opportunity.status === "won"
                 ? ("success" as const)
                 : ("warning" as const),
-            linkTo: `/admin/crm/opportunites/${opportunity.id}`,
+            linkTo: crmPaths.opportunity(opportunity.id),
           })),
         ];
         if (cancelled) return;
@@ -118,7 +120,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [crmPaths, query]);
 
   const handleSelect = (item: UniversalSearchResult) => {
     setIsOpen(false);

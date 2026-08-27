@@ -289,7 +289,7 @@ export const prospectingEntitlementsSchema = z.object({
 
 export const prospectingUsageSchema = z.object({
   period: z.string().regex(/^\d{4}-\d{2}$/),
-  accessMode: z.enum(["STANDALONE", "SHONGRE_PRO", "INTERNAL"]),
+  accessMode: z.enum(["STANDALONE", "SHONGRE_CONNECTED", "INTERNAL_SHONGRE"]),
   planName: z.string().trim().min(1).max(160),
   discoveriesUsed: z.number().int().nonnegative(),
   enrichmentsUsed: z.number().int().nonnegative(),

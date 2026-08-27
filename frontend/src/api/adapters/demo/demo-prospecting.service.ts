@@ -643,7 +643,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
     const standalone = tenantKey() === "user_standalone_trial_owner";
     return {
       period: "2026-08",
-      accessMode: standalone ? "STANDALONE" : "SHONGRE_PRO",
+      accessMode: standalone ? "STANDALONE" : "SHONGRE_CONNECTED",
       planName: standalone
         ? "Prospects Growth · Démo"
         : "Allocation Shongre Pro + Prospects — démonstration",

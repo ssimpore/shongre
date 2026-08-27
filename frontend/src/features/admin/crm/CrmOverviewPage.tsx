@@ -24,6 +24,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { CrmUniversalSearch } from "./components/CrmUniversalSearch";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -54,6 +55,7 @@ const stageProgressVariant = [
 export const CrmOverviewPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentLocale } = useMarketLocation();
+  const crmPaths = useCrmSurface();
   const [dashboard, setDashboard] = useState<CrmDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export const CrmOverviewPage: React.FC = () => {
   usePageMeta({
     title: t("meta.crmOverview.title"),
     description: t("meta.crmOverview.description"),
-    canonicalPath: "/admin/crm",
+    canonicalPath: crmPaths.overview,
     noIndex: true,
   });
 
@@ -217,7 +219,7 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
-              to="/admin/crm/prospection"
+              to={crmPaths.discover}
               variant="outline"
               size="sm"
               className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
@@ -228,38 +230,40 @@ export const CrmOverviewPage: React.FC = () => {
               />
               Prospection assistée
             </Button>
-            <Button to="/admin/crm/pipeline" variant="primary" size="sm">
+            <Button to={crmPaths.pipeline} variant="primary" size="sm">
               <Plus className="h-icon-md w-icon-md" aria-hidden="true" />
               Nouvelle opportunité
             </Button>
           </div>
         </div>
-        <nav
-          aria-label="Navigation CRM rapide"
-          className="flex overflow-x-auto border-t border-stone-800 px-3 sm:px-4"
-        >
-          {[
-            ["Vue d’ensemble", "/admin/crm"],
-            ["Contacts", "/admin/crm/contacts"],
-            ["Entreprises", "/admin/crm/entreprises"],
-            ["Pipeline", "/admin/crm/pipeline"],
-            ["Tâches", "/admin/crm/taches"],
-            ["Rapports", "/admin/crm/rapports"],
-          ].map(([label, to], index) => (
-            <Link
-              key={to}
-              to={to}
-              aria-current={index === 0 ? "page" : undefined}
-              className={`shrink-0 border-b-2 px-3 py-3 text-xs font-bold transition-colors ${
-                index === 0
-                  ? "border-primary text-white"
-                  : "border-transparent text-stone-400 hover:text-white"
-              }`}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
+        {crmPaths.kind === "admin" && (
+          <nav
+            aria-label="Navigation CRM rapide"
+            className="flex overflow-x-auto border-t border-stone-800 px-3 sm:px-4"
+          >
+            {[
+              ["Vue d’ensemble", crmPaths.overview],
+              ["Contacts", crmPaths.contacts],
+              ["Entreprises", crmPaths.companies],
+              ["Pipeline", crmPaths.pipeline],
+              ["Tâches", crmPaths.tasks],
+              ["Rapports", crmPaths.analytics],
+            ].map(([label, to], index) => (
+              <Link
+                key={to}
+                to={to}
+                aria-current={index === 0 ? "page" : undefined}
+                className={`shrink-0 border-b-2 px-3 py-3 text-xs font-bold transition-colors ${
+                  index === 0
+                    ? "border-primary text-white"
+                    : "border-transparent text-stone-400 hover:text-white"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </section>
 
       <section
@@ -301,7 +305,7 @@ export const CrmOverviewPage: React.FC = () => {
               </p>
             </div>
             <Link
-              to="/admin/crm/pipeline"
+              to={crmPaths.pipeline}
               className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
             >
               Ouvrir le pipeline{" "}
@@ -411,7 +415,7 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
           <div className="border-t border-border-subtle p-3">
             <Link
-              to="/admin/crm/taches"
+              to={crmPaths.tasks}
               className="flex items-center justify-center gap-1 text-xs font-bold text-primary hover:underline"
             >
               Voir toutes les tâches{" "}
@@ -465,7 +469,7 @@ export const CrmOverviewPage: React.FC = () => {
                 >
                   <td className="px-5 py-3">
                     <Link
-                      to={`/admin/crm/opportunites/${opportunity.id}`}
+                      to={crmPaths.opportunity(opportunity.id)}
                       className="font-bold text-stone-950 hover:text-primary"
                     >
                       {opportunity.name}
@@ -519,7 +523,7 @@ export const CrmOverviewPage: React.FC = () => {
             Prévision déterministe · aucune donnée envoyée à un fournisseur IA
           </span>
           <Link
-            to="/admin/crm/pipeline"
+            to={crmPaths.pipeline}
             className="font-bold text-primary hover:underline"
           >
             Afficher le pipeline complet

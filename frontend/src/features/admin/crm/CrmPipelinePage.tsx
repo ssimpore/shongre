@@ -35,6 +35,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -75,6 +76,7 @@ interface ClosingState {
 export const CrmPipelinePage: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale } = useMarketLocation();
+  const crmPaths = useCrmSurface();
   const toast = useToast();
   const [pipelines, setPipelines] = useState<CrmPipeline[]>([]);
   const [selectedPipelineId, setSelectedPipelineId] = useState("");
@@ -96,7 +98,7 @@ export const CrmPipelinePage: React.FC = () => {
   usePageMeta({
     title: t("meta.crmPipeline.title"),
     description: t("meta.crmPipeline.description"),
-    canonicalPath: "/admin/crm/pipeline",
+    canonicalPath: crmPaths.pipeline,
     noIndex: true,
   });
 
@@ -125,20 +127,46 @@ export const CrmPipelinePage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [activeMarket.code]);
 
   const pipeline =
     pipelines.find((item) => item.id === selectedPipelineId) ?? pipelines[0];
   const visibleOpportunities = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("fr");
+    const marketAccountIds = new Set(
+      accounts
+        .filter(
+          (account) =>
+            crmPaths.kind === "admin" ||
+            account.marketCode === activeMarket.code,
+        )
+        .map((account) => account.id),
+    );
     return opportunities.filter(
       (item) =>
         item.pipelineId === pipeline?.id &&
+        (crmPaths.kind === "admin" ||
+          (item.accountId ? marketAccountIds.has(item.accountId) : false)) &&
         (!query ||
           item.name.toLocaleLowerCase("fr").includes(query) ||
           item.accountName?.toLocaleLowerCase("fr").includes(query)),
     );
-  }, [opportunities, pipeline?.id, search]);
+  }, [
+    accounts,
+    activeMarket.code,
+    crmPaths.kind,
+    opportunities,
+    pipeline?.id,
+    search,
+  ]);
+  const availableAccounts = useMemo(
+    () =>
+      accounts.filter(
+        (account) =>
+          crmPaths.kind === "admin" || account.marketCode === activeMarket.code,
+      ),
+    [accounts, activeMarket.code, crmPaths.kind],
+  );
   const pipelineValue = visibleOpportunities
     .filter((item) => item.status === "open")
     .reduce((sum, item) => sum + item.amount.amountMinor, 0);
@@ -269,7 +297,7 @@ export const CrmPipelinePage: React.FC = () => {
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              to="/admin/crm"
+              to={crmPaths.overview}
               className="mb-2 inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
             >
               <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
@@ -405,7 +433,7 @@ export const CrmPipelinePage: React.FC = () => {
                       className="rounded-xl border border-stone-200 bg-white p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm"
                     >
                       <Link
-                        to={`/admin/crm/opportunites/${opportunity.id}`}
+                        to={crmPaths.opportunity(opportunity.id)}
                         className="block text-xs font-black leading-snug text-stone-950 hover:text-primary"
                       >
                         {opportunity.name}
@@ -530,7 +558,7 @@ export const CrmPipelinePage: React.FC = () => {
               onChange={(event) => setAccountId(event.target.value)}
               options={[
                 { value: "", label: "Sans entreprise" },
-                ...accounts.map((account) => ({
+                ...availableAccounts.map((account) => ({
                   value: account.id,
                   label: account.name,
                 })),

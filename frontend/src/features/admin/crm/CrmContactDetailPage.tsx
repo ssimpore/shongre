@@ -33,6 +33,7 @@ import { Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 const lifecycleOptions = [
   { value: "lead", label: "Lead" },
@@ -53,8 +54,9 @@ function tomorrowMorning() {
 export const CrmContactDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const crmPaths = useCrmSurface();
   const toast = useToast();
-  const { currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const [contact, setContact] = useState<CrmContact | null>(null);
   const [accounts, setAccounts] = useState<CrmAccount[]>([]);
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
@@ -73,7 +75,7 @@ export const CrmContactDetailPage: React.FC = () => {
       ? `${contact.fullName} | CRM Shongre`
       : "Contact CRM | Shongre",
     description: "Vue complète du contact CRM.",
-    canonicalPath: id ? `/admin/crm/contacts/${id}` : undefined,
+    canonicalPath: id ? crmPaths.contact(id) : undefined,
     noIndex: true,
   });
 
@@ -89,6 +91,13 @@ export const CrmContactDetailPage: React.FC = () => {
           services.crm.listTasks({ limit: 100 }),
           services.crm.listActivities("contact", id),
         ]);
+      if (
+        crmPaths.kind === "prospects" &&
+        item.country !== activeMarket.countryCode
+      ) {
+        setContact(null);
+        return;
+      }
       setContact(item);
       setAccounts(
         accountPage.items.filter((account) =>
@@ -114,7 +123,7 @@ export const CrmContactDetailPage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, [id]);
+  }, [activeMarket.countryCode, crmPaths.kind, id]);
 
   const updateLifecycle = async (lifecycle: CrmContact["lifecycle"]) => {
     if (!contact) return;
@@ -225,7 +234,7 @@ export const CrmContactDetailPage: React.FC = () => {
         <Button
           className="mt-4"
           size="sm"
-          onClick={() => navigate("/admin/crm/contacts")}
+          onClick={() => navigate(crmPaths.contacts)}
         >
           Retour aux contacts
         </Button>
@@ -239,7 +248,7 @@ export const CrmContactDetailPage: React.FC = () => {
     <div className="space-y-4 pb-8">
       <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
         <Link
-          to="/admin/crm/contacts"
+          to={crmPaths.contacts}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Contacts
@@ -423,7 +432,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 opportunities.map((opportunity) => (
                   <Link
                     key={opportunity.id}
-                    to={`/admin/crm/opportunites/${opportunity.id}`}
+                    to={crmPaths.opportunity(opportunity.id)}
                     className="flex items-center gap-3 py-3 hover:text-primary"
                   >
                     <span className="min-w-0 flex-1">
@@ -526,7 +535,7 @@ export const CrmContactDetailPage: React.FC = () => {
             {accounts.map((account) => (
               <Link
                 key={account.id}
-                to={`/admin/crm/entreprises/${account.id}`}
+                to={crmPaths.company(account.id)}
                 className="mt-3 flex items-center gap-2 rounded-xl bg-stone-50 p-3 text-xs font-bold hover:text-primary"
               >
                 <Building2 className="h-icon-md w-icon-md" /> {account.name}

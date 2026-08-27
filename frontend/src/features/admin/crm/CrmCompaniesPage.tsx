@@ -34,6 +34,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 const lifecycleLabel: Record<CrmAccount["lifecycle"], string> = {
   lead: "Lead",
@@ -60,6 +61,7 @@ export const CrmCompaniesPage: React.FC = () => {
   const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const { can } = useAuth();
+  const crmPaths = useCrmSurface();
   const canManageSharedViews = can("crm.configuration.manage");
   const [accounts, setAccounts] = useState<CrmAccount[]>([]);
   const [savedViews, setSavedViews] = useState<CrmSavedView[]>([]);
@@ -85,7 +87,7 @@ export const CrmCompaniesPage: React.FC = () => {
   usePageMeta({
     title: t("meta.crmCompanies.title"),
     description: t("meta.crmCompanies.description"),
-    canonicalPath: "/admin/crm/entreprises",
+    canonicalPath: crmPaths.companies,
     noIndex: true,
   });
 
@@ -111,7 +113,7 @@ export const CrmCompaniesPage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [activeMarket.code]);
 
   const applySavedView = (viewId: string) => {
     setSelectedViewId(viewId);
@@ -203,13 +205,15 @@ export const CrmCompaniesPage: React.FC = () => {
     const query = search.trim().toLocaleLowerCase("fr");
     return accounts.filter(
       (account) =>
+        (crmPaths.kind === "admin" ||
+          account.marketCode === activeMarket.code) &&
         (lifecycle === "all" || account.lifecycle === lifecycle) &&
         (!query ||
           account.name.toLocaleLowerCase("fr").includes(query) ||
           account.industry?.toLocaleLowerCase("fr").includes(query) ||
           account.domain?.toLocaleLowerCase("fr").includes(query)),
     );
-  }, [accounts, lifecycle, search]);
+  }, [accounts, activeMarket.code, crmPaths.kind, lifecycle, search]);
 
   const createAccount = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -251,7 +255,7 @@ export const CrmCompaniesPage: React.FC = () => {
     <div className="space-y-4 pb-8">
       <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
         <Link
-          to="/admin/crm"
+          to={crmPaths.overview}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
@@ -408,7 +412,7 @@ export const CrmCompaniesPage: React.FC = () => {
                         </span>
                         <div className="min-w-0">
                           <Link
-                            to={`/admin/crm/entreprises/${account.id}`}
+                            to={crmPaths.company(account.id)}
                             className="block truncate font-black text-stone-950 hover:text-primary"
                           >
                             {account.name}

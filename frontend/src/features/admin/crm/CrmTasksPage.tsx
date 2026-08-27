@@ -27,6 +27,7 @@ import { EmptyState, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 type TaskFilter = "pending" | "completed" | "all";
 type RelatedType = "none" | "account" | "contact" | "opportunity";
@@ -51,14 +52,15 @@ function defaultDueDate() {
 }
 
 export const CrmTasksPage: React.FC = () => {
+  const crmPaths = useCrmSurface();
   usePageMeta({
     title: "Tâches CRM | Shongre",
     description: "Planification et suivi des relances commerciales.",
-    canonicalPath: "/admin/crm/taches",
+    canonicalPath: crmPaths.tasks,
     noIndex: true,
   });
   const toast = useToast();
-  const { currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [accounts, setAccounts] = useState<CrmAccount[]>([]);
   const [contacts, setContacts] = useState<CrmContact[]>([]);
@@ -84,10 +86,54 @@ export const CrmTasksPage: React.FC = () => {
           services.crm.listContacts({ limit: 100 }),
           services.crm.listOpportunities({ limit: 100 }),
         ]);
-      setTasks(taskPage.items);
-      setAccounts(accountPage.items);
-      setContacts(contactPage.items);
-      setOpportunities(opportunityPage.items);
+      const marketAccounts =
+        crmPaths.kind === "admin"
+          ? accountPage.items
+          : accountPage.items.filter(
+              (account) => account.marketCode === activeMarket.code,
+            );
+      const marketAccountIds = new Set(
+        marketAccounts.map((account) => account.id),
+      );
+      const marketContacts =
+        crmPaths.kind === "admin"
+          ? contactPage.items
+          : contactPage.items.filter(
+              (contact) => contact.country === activeMarket.countryCode,
+            );
+      const marketContactIds = new Set(
+        marketContacts.map((contact) => contact.id),
+      );
+      const marketOpportunities =
+        crmPaths.kind === "admin"
+          ? opportunityPage.items
+          : opportunityPage.items.filter((opportunity) =>
+              opportunity.accountId
+                ? marketAccountIds.has(opportunity.accountId)
+                : false,
+            );
+      const marketOpportunityIds = new Set(
+        marketOpportunities.map((opportunity) => opportunity.id),
+      );
+      const marketTasks =
+        crmPaths.kind === "admin"
+          ? taskPage.items
+          : taskPage.items.filter(
+              (task) =>
+                (task.accountId
+                  ? marketAccountIds.has(task.accountId)
+                  : false) ||
+                (task.contactId
+                  ? marketContactIds.has(task.contactId)
+                  : false) ||
+                (task.opportunityId
+                  ? marketOpportunityIds.has(task.opportunityId)
+                  : false),
+            );
+      setTasks(marketTasks);
+      setAccounts(marketAccounts);
+      setContacts(marketContacts);
+      setOpportunities(marketOpportunities);
     } catch (reason) {
       toast.error(
         reason instanceof Error ? reason.message : "Tâches indisponibles.",
@@ -99,7 +145,7 @@ export const CrmTasksPage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [activeMarket.code, activeMarket.countryCode, crmPaths.kind]);
 
   const entityLabels = useMemo(() => {
     const values = new Map<string, string>();

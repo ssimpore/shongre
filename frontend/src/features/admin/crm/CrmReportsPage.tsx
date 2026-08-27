@@ -11,12 +11,14 @@ import { services } from "../../../api/client/service-registry";
 import { ProgressBar, Skeleton } from "../../../design-system";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 export const CrmReportsPage: React.FC = () => {
+  const crmPaths = useCrmSurface();
   usePageMeta({
     title: "Rapports CRM | Shongre",
     description: "Analytique commerciale CRM.",
-    canonicalPath: "/admin/crm/rapports",
+    canonicalPath: crmPaths.analytics,
     noIndex: true,
   });
   const { currentLocale } = useMarketLocation();

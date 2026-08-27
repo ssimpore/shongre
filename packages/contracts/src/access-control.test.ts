@@ -42,6 +42,25 @@ describe("canonical access-control policy", () => {
     expect(generic.has("immo.property.manage.own")).toBe(false);
   });
 
+  it("grants customer CRM capabilities without leaking internal Shongre access", () => {
+    const professional = capabilities({
+      accountType: "professional",
+      professionalVertical: "generic",
+    });
+
+    expect(professional.has("crm.dashboard.read")).toBe(true);
+    expect(professional.has("crm.accounts.create")).toBe(true);
+    expect(professional.has("crm.opportunities.transition")).toBe(true);
+    expect(professional.has("marketing.campaigns.create")).toBe(true);
+    expect(professional.has("marketing.campaigns.send")).toBe(true);
+    expect(professional.has("marketing.campaigns.approve")).toBe(false);
+    expect(professional.has("crm.prospecting.internal_first_party")).toBe(
+      false,
+    );
+    expect(professional.has("crm.configuration.manage")).toBe(false);
+    expect(professional.has("admin.access")).toBe(false);
+  });
+
   it.each(STAFF_ROLES)(
     "never grants customer capabilities implicitly to %s staff",
     (staffRole) => {

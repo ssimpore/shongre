@@ -55,6 +55,7 @@ export type ProspectingEntryPoint =
 
 export interface ProspectingWorkspacePageProps {
   entryPoint?: ProspectingEntryPoint;
+  routeBasePath?: string;
 }
 
 const workspaceTabs = [
@@ -369,11 +370,14 @@ function UsagePanel({ usage }: { usage: ProspectingUsage | null }) {
 
 export const ProspectingWorkspacePage: React.FC<
   ProspectingWorkspacePageProps
-> = ({ entryPoint = "PRO_WORKSPACE" }) => {
+> = ({ entryPoint = "PRO_WORKSPACE", routeBasePath }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const isWide = useMediaQuery("(min-width: 1280px)");
-  const controller = useProspectingWorkspaceController();
+  const isWide = useMediaQuery("(min-width: 1024px)");
+  const controller = useProspectingWorkspaceController(
+    entryPoint === "INTERNAL_SHONGRE" ? "INTERNAL_SHONGRE" : "SUBSCRIBER",
+    routeBasePath,
+  );
   usePageMeta({
     title: t("meta.crmAiProspecting.title"),
     description: t("meta.crmAiProspecting.description"),
@@ -381,7 +385,7 @@ export const ProspectingWorkspacePage: React.FC<
       entryPoint === "INTERNAL_SHONGRE"
         ? "/admin/crm/prospection"
         : entryPoint === "STANDALONE"
-          ? "/prospects/app"
+          ? (routeBasePath ?? "/app")
           : "/compte/pro/prospects",
     noIndex: true,
   });
@@ -514,7 +518,7 @@ export const ProspectingWorkspacePage: React.FC<
       const preflight = await controller.checkCampaign(campaignId);
       if (preflight.canSend) {
         toast.success(
-          `${preflight.audience.eligible} destinataire(s) éligible(s) dans la démonstration.`,
+          `${preflight.audience.eligible} destinataire(s) éligible(s).`,
           "Pré-vol conforme",
         );
       } else {
@@ -615,14 +619,16 @@ export const ProspectingWorkspacePage: React.FC<
         </div>
       </header>
 
-      <Tabs
-        tabs={workspaceTabs}
-        activeTab={controller.view}
-        onChange={controller.setView}
-        label="Navigation Shongre Prospects"
-        idPrefix="prospecting-workspace"
-        variant="underline"
-      />
+      {!routeBasePath && (
+        <Tabs
+          tabs={workspaceTabs}
+          activeTab={controller.view}
+          onChange={controller.setView}
+          label="Navigation Shongre Prospects"
+          idPrefix="prospecting-workspace"
+          variant="underline"
+        />
+      )}
 
       {controller.error && (
         <Notice variant="error" title="Action non terminée">
@@ -630,7 +636,17 @@ export const ProspectingWorkspacePage: React.FC<
         </Notice>
       )}
 
-      <TabPanel tab={controller.view} idPrefix="prospecting-workspace">
+      <TabPanel
+        tab={controller.view}
+        idPrefix="prospecting-workspace"
+        {...(routeBasePath
+          ? {
+              role: "region",
+              "aria-label": "Contenu de Shongre Prospects",
+              "aria-labelledby": undefined,
+            }
+          : {})}
+      >
         {controller.view === "overview" && (
           <UnifiedOverviewPanel {...crmPanelProps} />
         )}
@@ -723,7 +739,7 @@ export const ProspectingWorkspacePage: React.FC<
             <div
               className={
                 isWide && controller.selectedCandidate
-                  ? "grid gap-4 xl:grid-cols-content-aside-lg"
+                  ? "grid gap-4 lg:grid-cols-content-aside-lg"
                   : ""
               }
             >
@@ -776,7 +792,7 @@ export const ProspectingWorkspacePage: React.FC<
                           />
                         }
                         title="Lancez votre première découverte"
-                        description="Décrivez un type d’entreprise. Le mode démo fonctionne sans backend ni fournisseur externe."
+                        description="Décrivez un type d’entreprise pour lancer une recherche sur les sources autorisées de votre organisation."
                         action={
                           <Button
                             variant="primary"
@@ -959,8 +975,8 @@ export const ProspectingWorkspacePage: React.FC<
           className="h-icon-sm w-icon-sm shrink-0"
           aria-hidden="true"
         />
-        Mode démonstration déterministe : aucun prospect réel, email, paiement,
-        fournisseur IA ou registre externe n’est contacté.
+        Chaque découverte, import et campagne reste soumis aux droits du tenant,
+        aux quotas, à la provenance et aux contrôles de conformité du marché.
       </footer>
     </div>
   );

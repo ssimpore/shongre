@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import type {
   CrmAccount,
   CrmActivity,
@@ -14,6 +14,7 @@ import type {
   LeadSourceDefinition,
   ProspectCandidate,
   ProspectOpportunityBrief,
+  ProspectingContext,
   ProspectingProfile,
   ProspectingUsage,
 } from "@shongre/contracts/prospecting";
@@ -44,6 +45,40 @@ const VIEWS = new Set<ProspectingWorkspaceView>([
   "usage",
 ]);
 
+const ROUTED_VIEW_PATH: Record<ProspectingWorkspaceView, string> = {
+  overview: "",
+  discover: "discover",
+  companies: "companies",
+  pipeline: "pipeline",
+  campaigns: "campaigns",
+  tasks: "tasks",
+  sources: "sources",
+  compliance: "settings",
+  usage: "billing",
+};
+
+function viewFromPathname(
+  pathname: string,
+  routeBasePath?: string,
+): ProspectingWorkspaceView | null {
+  if (!routeBasePath) return null;
+  const normalizedBase = routeBasePath.replace(/\/$/, "");
+  if (
+    pathname !== normalizedBase &&
+    !pathname.startsWith(`${normalizedBase}/`)
+  ) {
+    return null;
+  }
+  const segment = pathname
+    .slice(normalizedBase.length)
+    .replace(/^\/+|\/+$/g, "");
+  return (
+    (Object.entries(ROUTED_VIEW_PATH).find(
+      ([, path]) => path === segment,
+    )?.[0] as ProspectingWorkspaceView | undefined) ?? null
+  );
+}
+
 function message(error: unknown): string {
   return error instanceof Error
     ? error.message
@@ -63,12 +98,19 @@ function deterministicCommandId(value: string): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 }
 
-export function useProspectingWorkspaceController() {
+export function useProspectingWorkspaceController(
+  operatingContext: ProspectingContext = "SUBSCRIBER",
+  routeBasePath?: string,
+) {
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, currentCurrency } = useMarketLocation();
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const rawView = params.get("view") as ProspectingWorkspaceView | null;
-  const view = rawView && VIEWS.has(rawView) ? rawView : "overview";
+  const routedView = viewFromPathname(location.pathname, routeBasePath);
+  const view =
+    routedView ?? (rawView && VIEWS.has(rawView) ? rawView : "overview");
   const [query, setQuery] = useState(params.get("q") || "");
   const [profiles, setProfiles] = useState<ProspectingProfile[]>([]);
   const [sources, setSources] = useState<LeadSourceDefinition[]>([]);
@@ -198,10 +240,23 @@ export function useProspectingWorkspaceController() {
     (next: string) => {
       if (!VIEWS.has(next as ProspectingWorkspaceView)) return;
       const updated = new URLSearchParams(params);
-      updated.set("view", next);
-      setParams(updated, { replace: true });
+      if (routeBasePath) {
+        updated.delete("view");
+        const segment = ROUTED_VIEW_PATH[next as ProspectingWorkspaceView];
+        const search = updated.toString();
+        navigate(
+          {
+            pathname: `${routeBasePath.replace(/\/$/, "")}${segment ? `/${segment}` : ""}`,
+            search: search ? `?${search}` : "",
+          },
+          { replace: false },
+        );
+      } else {
+        updated.set("view", next);
+        setParams(updated, { replace: true });
+      }
     },
-    [params, setParams],
+    [navigate, params, routeBasePath, setParams],
   );
 
   const discover = useCallback(
@@ -211,13 +266,25 @@ export function useProspectingWorkspaceController() {
       setError(null);
       if (overrideQuery !== undefined) setQuery(overrideQuery);
       const updated = new URLSearchParams(params);
-      updated.set("view", "discover");
       if (activeQuery) updated.set("q", activeQuery);
       else updated.delete("q");
-      setParams(updated, { replace: true });
+      if (routeBasePath) {
+        updated.delete("view");
+        const search = updated.toString();
+        navigate(
+          {
+            pathname: `${routeBasePath.replace(/\/$/, "")}/discover`,
+            search: search ? `?${search}` : "",
+          },
+          { replace: true },
+        );
+      } else {
+        updated.set("view", "discover");
+        setParams(updated, { replace: true });
+      }
       try {
         const result = await services.crmProspecting.discover({
-          context: "SUBSCRIBER",
+          context: operatingContext,
           idempotencyKey: deterministicCommandId(
             [currentUser?.id, activeMarket.code, activeQuery].join(":"),
           ),
@@ -234,7 +301,13 @@ export function useProspectingWorkspaceController() {
             companyTypes: [],
             geographicArea: undefined,
             requireWebsite: true,
-            sourceIds: ["demo_authorized_registry"],
+            sourceIds: sources
+              .filter(
+                (source) =>
+                  source.lifecycle === "ACTIVE" &&
+                  source.operations.includes("SEARCH"),
+              )
+              .map((source) => source.id),
             freshness: ["CURRENT"],
             limit: 25,
           },
@@ -258,10 +331,14 @@ export function useProspectingWorkspaceController() {
       currentCurrency,
       currentLocale,
       currentUser?.id,
+      navigate,
+      operatingContext,
       params,
       profiles,
       query,
+      routeBasePath,
       setParams,
+      sources,
     ],
   );
 

@@ -119,7 +119,7 @@ export const ROUTE_POLICIES = {
     "/compte/pro/finances",
     "finance.organization.read.own",
   ),
-  standaloneProspects: professional("/prospects/app", "crm.prospecting.read"),
+  standaloneProspects: professional("/app", "crm.prospecting.read"),
 
   adminOverview: staff("/admin", "admin.access"),
   adminAnalytics: {

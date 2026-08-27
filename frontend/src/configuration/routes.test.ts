@@ -60,4 +60,18 @@ describe("route builders", () => {
       "/compte/achats?transactionId=tx%2F456",
     );
   });
+
+  it("builds the standalone Prospects CRM surface without admin routes", () => {
+    expect(routes.prospects.workspace()).toBe("/app");
+    expect(routes.prospects.company("company / été")).toBe(
+      "/app/companies/company%20%2F%20%C3%A9t%C3%A9",
+    );
+    expect(routes.prospects.contact("contact 42")).toBe(
+      "/app/contacts/contact%2042",
+    );
+    expect(routes.prospects.opportunity("opportunity 7")).toBe(
+      "/app/opportunities/opportunity%207",
+    );
+    expect(routes.prospects.analytics()).toBe("/app/analytics");
+  });
 });

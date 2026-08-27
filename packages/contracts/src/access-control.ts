@@ -464,6 +464,8 @@ const INDIVIDUAL_CAPABILITIES = [
 
 const PROFESSIONAL_CORE_CAPABILITIES = [
   ...CUSTOMER_CORE_CAPABILITIES,
+  ...CRM_COMMERCIAL_CAPABILITIES,
+  ...MARKETING_EDITOR_CAPABILITIES,
   "finance.organization.read.own",
   "subscription.manage.own",
   "subscription.upgrade",

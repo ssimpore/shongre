@@ -8881,7 +8881,7 @@ export interface components {
         };
         readonly ProspectingUsage: {
             /** @enum {string} */
-            readonly accessMode: "STANDALONE" | "SHONGRE_PRO" | "INTERNAL";
+            readonly accessMode: "STANDALONE" | "SHONGRE_CONNECTED" | "INTERNAL_SHONGRE";
             readonly aiCreditsUsed: number;
             readonly discoveriesUsed: number;
             readonly enrichmentsUsed: number;

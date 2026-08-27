@@ -38,6 +38,7 @@ import { Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -60,7 +61,8 @@ const lifecycleOptions = [
 export const CrmCompanyDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentLocale } = useMarketLocation();
+  const crmPaths = useCrmSurface();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [account, setAccount] = useState<CrmAccount | null>(null);
   const [contacts, setContacts] = useState<CrmContact[]>([]);
@@ -79,7 +81,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
       ? `${account.name} | CRM Shongre`
       : "Entreprise CRM | Shongre",
     description: "Vue complète du compte CRM.",
-    canonicalPath: id ? `/admin/crm/entreprises/${id}` : undefined,
+    canonicalPath: id ? crmPaths.company(id) : undefined,
     noIndex: true,
   });
 
@@ -94,6 +96,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
           services.crm.listOpportunities({ limit: 100 }),
           services.crm.getAccountShongreIntelligence(id),
         ]);
+      if (
+        crmPaths.kind === "prospects" &&
+        item.marketCode !== activeMarket.code
+      ) {
+        setAccount(null);
+        return;
+      }
       setAccount(item);
       setShongre(intelligence);
       setContacts(
@@ -119,7 +128,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, [id]);
+  }, [activeMarket.code, crmPaths.kind, id]);
 
   const updateLifecycle = async (value: CrmAccount["lifecycle"]) => {
     if (!account) return;
@@ -213,7 +222,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         <Button
           className="mt-4"
           size="sm"
-          onClick={() => navigate("/admin/crm/entreprises")}
+          onClick={() => navigate(crmPaths.companies)}
         >
           Retour aux entreprises
         </Button>
@@ -229,7 +238,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
     <div className="space-y-4 pb-8">
       <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
         <Link
-          to="/admin/crm/entreprises"
+          to={crmPaths.companies}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Entreprises
@@ -516,7 +525,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   Pipeline associé à ce compte
                 </p>
               </div>
-              <Button to="/admin/crm/pipeline" variant="outline" size="sm">
+              <Button to={crmPaths.pipeline} variant="outline" size="sm">
                 <Plus className="h-icon-md w-icon-md" /> Ajouter
               </Button>
             </div>
@@ -536,7 +545,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <Link
-                        to={`/admin/crm/opportunites/${opportunity.id}`}
+                        to={crmPaths.opportunity(opportunity.id)}
                         className="truncate text-xs font-black text-stone-900 hover:text-primary"
                       >
                         {opportunity.name}
@@ -625,7 +634,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 contacts.map((contact) => (
                   <Link
                     key={contact.id}
-                    to={`/admin/crm/contacts/${contact.id}`}
+                    to={crmPaths.contact(contact.id)}
                     className="flex items-center gap-3 py-3 hover:text-primary"
                   >
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">

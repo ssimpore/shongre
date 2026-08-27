@@ -10,43 +10,72 @@ import type {
   ProspectingProfileInput,
   ProspectingUsage,
 } from "../../contracts/crm-prospecting.contract";
+import {
+  leadSourceDefinitionSchema,
+  prospectDiscoveryResultSchema,
+  prospectImportResultSchema,
+  prospectOpportunityBriefSchema,
+  prospectingProfileSchema,
+  prospectingUsageSchema,
+} from "@shongre/contracts/prospecting";
+import { z } from "zod";
+import { httpClient } from "./http-client";
 
-function unavailable(): never {
-  throw new Error(
-    "L’adaptateur HTTP Shongre Prospects est réservé mais n’est pas activé dans le frontend. Utilisez le mode démo.",
-  );
-}
+const profileListSchema = z.object({
+  items: z.array(prospectingProfileSchema),
+});
+const sourceListSchema = z.object({
+  items: z.array(leadSourceDefinitionSchema),
+});
 
-/** Future adapter kept fail-closed until frontend connectivity is authorized. */
+/** Live adapter for the canonical CRM prospecting OpenAPI operations. */
 export class HttpCrmProspectingService implements CrmProspectingServiceContract {
   async listProfiles(): Promise<ProspectingProfile[]> {
-    return unavailable();
+    const response = await httpClient.get<unknown>("/crm/prospecting/profiles");
+    return profileListSchema.parse(response).items;
   }
   async createProfile(
-    _input: ProspectingProfileInput,
+    input: ProspectingProfileInput,
   ): Promise<ProspectingProfile> {
-    return unavailable();
+    return prospectingProfileSchema.parse(
+      await httpClient.post<unknown>("/crm/prospecting/profiles", input),
+    );
   }
-  async listSources(_marketCode: string): Promise<LeadSourceDefinition[]> {
-    return unavailable();
+  async listSources(marketCode: string): Promise<LeadSourceDefinition[]> {
+    const response = await httpClient.get<unknown>("/crm/prospecting/sources", {
+      params: { marketCode },
+    });
+    return sourceListSchema.parse(response).items;
   }
   async discover(
-    _input: ProspectDiscoveryRequest,
+    input: ProspectDiscoveryRequest,
   ): Promise<ProspectDiscoveryResult> {
-    return unavailable();
+    return prospectDiscoveryResultSchema.parse(
+      await httpClient.post<unknown>("/crm/prospecting/discover", input),
+    );
   }
   async getOpportunityBrief(
-    _candidateId: string,
+    candidateId: string,
   ): Promise<ProspectOpportunityBrief> {
-    return unavailable();
+    return prospectOpportunityBriefSchema.parse(
+      await httpClient.get<unknown>(
+        `/crm/prospecting/candidates/${encodeURIComponent(candidateId)}/brief`,
+      ),
+    );
   }
   async importCandidate(
-    _input: ProspectImportRequest,
+    input: ProspectImportRequest,
   ): Promise<ProspectImportResult> {
-    return unavailable();
+    return prospectImportResultSchema.parse(
+      await httpClient.post<unknown>("/crm/prospecting/imports", input),
+    );
   }
-  async getUsage(_marketCode: string): Promise<ProspectingUsage> {
-    return unavailable();
+  async getUsage(marketCode: string): Promise<ProspectingUsage> {
+    return prospectingUsageSchema.parse(
+      await httpClient.get<unknown>("/crm/prospecting/usage", {
+        params: { marketCode },
+      }),
+    );
   }
 }
 

@@ -5,7 +5,7 @@
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
 - Operations: **421**
-- Specification SHA-256: `4621e6531e0fee35`
+- Specification SHA-256: `1a81d0834c986eb0`
 
 ## account
 

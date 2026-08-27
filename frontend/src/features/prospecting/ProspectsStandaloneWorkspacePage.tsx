@@ -9,3 +9,10 @@ export function ProspectsStandaloneWorkspacePage() {
     </Container>
   );
 }
+
+/** Product-origin route rendered inside the dedicated Prospects app shell. */
+export function ProspectsAppWorkspacePage() {
+  return (
+    <ProspectingWorkspacePage entryPoint="STANDALONE" routeBasePath="/app" />
+  );
+}

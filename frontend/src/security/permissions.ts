@@ -1210,6 +1210,14 @@ function fallbackCategory(
 }
 
 const INTERNAL_RESOURCE_LABELS: Record<string, string> = {
+  "crm.prospecting": "la prospection commerciale",
+  "crm.prospecting.lists": "les listes de prospects",
+  "crm.prospecting.campaigns": "les campagnes de prospection",
+  "crm.prospecting.analytics": "les analyses de prospection",
+  "crm.prospecting.profiles": "les profils de ciblage",
+  "crm.prospecting.outreach": "les prises de contact sortantes",
+  "crm.prospecting.sources": "les sources de prospection",
+  "crm.prospecting.compliance": "la conformité de la prospection",
   "crm.dashboard": "le tableau de bord CRM",
   "crm.accounts": "les comptes CRM",
   "crm.contacts": "les contacts CRM",
@@ -1254,6 +1262,13 @@ const INTERNAL_ACTION_LABELS: Record<string, string> = {
   approve: "Approuver",
   pause: "Suspendre",
   cancel: "Annuler",
+  discover: "Découvrir des entreprises avec",
+  import: "Importer des prospects avec",
+  enrich: "Enrichir les prospects avec",
+  score: "Évaluer les prospects avec",
+  merge: "Fusionner les doublons dans",
+  convert_shongre: "Convertir vers Shongre depuis",
+  internal_first_party: "Utiliser les données first-party autorisées dans",
 };
 
 function internalPlatformPermission(

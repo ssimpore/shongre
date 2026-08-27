@@ -24,6 +24,7 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 
 const lifecycleLabel: Record<CrmContact["lifecycle"], string> = {
   lead: "Lead",
@@ -38,6 +39,7 @@ const lifecycleLabel: Record<CrmContact["lifecycle"], string> = {
 export const CrmContactsPage: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
+  const crmPaths = useCrmSurface();
   const toast = useToast();
   const [contacts, setContacts] = useState<CrmContact[]>([]);
   const [accounts, setAccounts] = useState<CrmAccount[]>([]);
@@ -55,7 +57,7 @@ export const CrmContactsPage: React.FC = () => {
   usePageMeta({
     title: t("meta.crmContacts.title"),
     description: t("meta.crmContacts.description"),
-    canonicalPath: "/admin/crm/contacts",
+    canonicalPath: crmPaths.contacts,
     noIndex: true,
   });
 
@@ -81,7 +83,7 @@ export const CrmContactsPage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [activeMarket.countryCode]);
 
   const accountById = useMemo(
     () => new Map(accounts.map((account) => [account.id, account])),
@@ -89,17 +91,24 @@ export const CrmContactsPage: React.FC = () => {
   );
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase("fr");
-    return contacts.filter(
-      (contact) =>
+    return contacts.filter((contact) => {
+      if (
+        crmPaths.kind === "prospects" &&
+        contact.country !== activeMarket.countryCode
+      ) {
+        return false;
+      }
+      return (
         !query ||
         contact.fullName.toLocaleLowerCase("fr").includes(query) ||
         contact.email?.toLocaleLowerCase("fr").includes(query) ||
         contact.jobTitle?.toLocaleLowerCase("fr").includes(query) ||
         contact.accountIds.some((id) =>
           accountById.get(id)?.name.toLocaleLowerCase("fr").includes(query),
-        ),
-    );
-  }, [accountById, contacts, search]);
+        )
+      );
+    });
+  }, [accountById, activeMarket.countryCode, contacts, crmPaths.kind, search]);
 
   const createContact = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -143,7 +152,7 @@ export const CrmContactsPage: React.FC = () => {
     <div className="space-y-4 pb-8">
       <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
         <Link
-          to="/admin/crm"
+          to={crmPaths.overview}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
@@ -229,7 +238,7 @@ export const CrmContactsPage: React.FC = () => {
                           </span>
                           <div className="min-w-0">
                             <Link
-                              to={`/admin/crm/contacts/${contact.id}`}
+                              to={crmPaths.contact(contact.id)}
                               className="block truncate font-black text-stone-950 hover:text-primary"
                             >
                               {contact.fullName}
@@ -243,7 +252,7 @@ export const CrmContactsPage: React.FC = () => {
                       <td className="px-4 py-3.5">
                         {account ? (
                           <Link
-                            to={`/admin/crm/entreprises/${account.id}`}
+                            to={crmPaths.company(account.id)}
                             className="inline-flex items-center gap-1.5 font-bold text-stone-700 hover:text-primary"
                           >
                             <Building2 className="h-icon-sm w-icon-sm" />{" "}

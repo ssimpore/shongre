@@ -178,7 +178,9 @@ export class ProspectingService {
       return {
         accountId,
         accessMode:
-          principal.accountType === "staff" ? "INTERNAL" : "SHONGRE_PRO",
+          principal.accountType === "staff"
+            ? "INTERNAL_SHONGRE"
+            : "SHONGRE_CONNECTED",
         planName:
           principal.accountType === "staff"
             ? "Accès interne de démonstration"
@@ -196,10 +198,10 @@ export class ProspectingService {
     const values = new Map(active.map((entry) => [entry.key, entry.value]));
     const accessMode =
       principal.accountType === "staff"
-        ? "INTERNAL"
+        ? "INTERNAL_SHONGRE"
         : values.get("prospecting.accessMode") === "STANDALONE"
           ? "STANDALONE"
-          : "SHONGRE_PRO";
+          : "SHONGRE_CONNECTED";
     return {
       accountId,
       accessMode,

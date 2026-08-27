@@ -3,14 +3,16 @@
 ## Entry points
 
 - Public product landing, product demonstration and entry-point choice: `/prospects`.
-- Standalone workspace: `/prospects/app`.
+- Standalone CRM application: `/app` (the legacy `/prospects/app` redirects here).
 - Shongre Pro workspace: `/compte/pro/prospects`.
 - Internal CRM workspace: `/admin/crm/prospection`.
 
-All three workspaces render `ProspectingWorkspacePage` with an entry-point
-variant. They share `useProspectingWorkspaceController`,
-`CrmProspectingServiceContract`, and the configured service registry. No page
-imports backend implementation.
+The standalone application exposes product routes for discovery, companies,
+contacts, lists, pipeline, opportunities, tasks, activities, campaigns,
+analytics, sources, team, billing and settings under `/app/*`. Existing CRM
+pages are reused through `CrmSurfaceContext`; internal and product-facing links
+change, but the components, service contracts and backend authorization do not
+fork.
 
 ## Demo architecture
 
@@ -23,9 +25,11 @@ page
   -> deterministic tenant-keyed demo adapters
 ```
 
-Normal runtime remains `NEXT_PUBLIC_DATA_MODE=demo`. The HTTP adapter is a
-fail-closed future boundary and performs no requests. The workspace therefore
-works with the backend, Supabase, AI providers and enrichment providers stopped.
+Normal runtime remains `NEXT_PUBLIC_DATA_MODE=demo`, so the workspace works with
+the backend, Supabase, AI providers and enrichment providers stopped. Explicit
+`api` mode selects the live `HttpCrmProspectingService`, which calls only the
+canonical `/api/v1/crm/prospecting/*` OpenAPI operations and validates response
+payloads before returning them to the UI. API failures never fall back to demo.
 
 The `standalone_trial_owner` persona demonstrates an organization that uses the
 SaaS product without marketplace seller activity. `pro_atelier` demonstrates
@@ -53,6 +57,12 @@ by the current account, so switching personas reloads isolated state.
   inactive;
 - responsive table/detail drawer composition using the existing design system.
 
+The product navigation is capability-driven. Customer CRM users inherit the
+shared commercial CRM and Marketing editor permissions, while approval,
+platform configuration, administration and internal first-party access remain
+separate grants. Backend permission checks and RLS remain authoritative even
+when a route is known to the client.
+
 ## Deterministic scenarios
 
 `DemoProspectingService` supports `prospects_default`, `empty_discovery`,
@@ -77,13 +87,13 @@ product workspace; it does not create a second store or bypass either domain.
   `CountryConfig`. The demo integration never derives currency from UI text or
   silently copies a France-only value.
 
-## Connecting later
+## Connected mode
 
-Production connection requires explicit authorization. Then implement the
-methods in `frontend/src/api/adapters/http/http-crm-prospecting.service.ts`, map
-the canonical OpenAPI DTOs, configure session transport and API URL, and run
-contract/E2E tests. CRM and Marketing already keep their independent HTTP
-adapters; the controller continues to orchestrate the same public contracts.
+Production connection is explicit through the central data-mode and runtime API
+configuration. CRM, Prospects and Marketing keep independent adapters behind
+their existing service contracts; the product controller orchestrates them and
+does not import backend implementation. The HTTP client supplies Shongre session,
+CSRF, request-id and market-context transport.
 
 Real source, AI, mailbox and campaign-delivery providers remain release-gated.
 The integrated demo is commercially coherent but is not evidence that external

@@ -235,10 +235,30 @@ const ProspectsProductPage = lazy(() =>
     default: m.ProspectsProductPage,
   })),
 );
-const ProspectsStandaloneWorkspacePage = lazy(() =>
+const ProspectsAppWorkspacePage = lazy(() =>
   import("../../features/prospecting/ProspectsStandaloneWorkspacePage").then(
-    (m) => ({ default: m.ProspectsStandaloneWorkspacePage }),
+    (m) => ({ default: m.ProspectsAppWorkspacePage }),
   ),
+);
+const ProspectsAppLayout = lazy(() =>
+  import("../../features/prospecting/ProspectsAppLayout").then((m) => ({
+    default: m.ProspectsAppLayout,
+  })),
+);
+const ProspectsActivitiesPage = lazy(() =>
+  import("../../features/prospecting/ProspectsAppUtilityPages").then((m) => ({
+    default: m.ProspectsActivitiesPage,
+  })),
+);
+const ProspectsTeamPage = lazy(() =>
+  import("../../features/prospecting/ProspectsAppUtilityPages").then((m) => ({
+    default: m.ProspectsTeamPage,
+  })),
+);
+const ProspectsBillingPage = lazy(() =>
+  import("../../features/prospecting/ProspectsAppUtilityPages").then((m) => ({
+    default: m.ProspectsBillingPage,
+  })),
 );
 const ProspectsProWorkspacePage = lazy(() =>
   import("../../features/prospecting/ProspectingWorkspacePage").then((m) => ({
@@ -633,11 +653,58 @@ export const APP_ROUTES: RouteObject[] = [
       { path: "prospects", element: withSuspense(ProspectsProductPage) },
       {
         path: "prospects/app",
+        element: <Navigate to={routes.prospects.workspace()} replace />,
+      },
+      {
+        path: "app",
         element: (
           <RequireRoutePolicy policyId="standaloneProspects">
-            {withSuspense(ProspectsStandaloneWorkspacePage)}
+            {withSuspense(ProspectsAppLayout)}
           </RequireRoutePolicy>
         ),
+        children: [
+          { index: true, element: withSuspense(CrmOverviewPage) },
+          {
+            path: "discover",
+            element: withSuspense(ProspectsAppWorkspacePage),
+          },
+          { path: "companies", element: withSuspense(CrmCompaniesPage) },
+          {
+            path: "companies/:id",
+            element: withSuspense(CrmCompanyDetailPage),
+          },
+          { path: "contacts", element: withSuspense(CrmContactsPage) },
+          {
+            path: "contacts/:id",
+            element: withSuspense(CrmContactDetailPage),
+          },
+          { path: "lists", element: withSuspense(CrmCompaniesPage) },
+          { path: "pipeline", element: withSuspense(CrmPipelinePage) },
+          {
+            path: "opportunities/:id",
+            element: withSuspense(CrmOpportunityDetailPage),
+          },
+          { path: "tasks", element: withSuspense(CrmTasksPage) },
+          {
+            path: "activities",
+            element: withSuspense(ProspectsActivitiesPage),
+          },
+          {
+            path: "campaigns",
+            element: withSuspense(ProspectsAppWorkspacePage),
+          },
+          { path: "analytics", element: withSuspense(CrmReportsPage) },
+          {
+            path: "sources",
+            element: withSuspense(ProspectsAppWorkspacePage),
+          },
+          { path: "team", element: withSuspense(ProspectsTeamPage) },
+          { path: "billing", element: withSuspense(ProspectsBillingPage) },
+          {
+            path: "settings",
+            element: withSuspense(ProspectsAppWorkspacePage),
+          },
+        ],
       },
     ],
   },
