@@ -71,6 +71,28 @@ function evidenceFile(name, maxAgeDays, requiredMarkers) {
   }
 }
 
+function jsonEvidenceFile(name, maxAgeDays, validate) {
+  const candidate = value(name);
+  check(Boolean(candidate), `${name} is required for release approval`);
+  if (!candidate) return;
+  const resolved = path.resolve(candidate);
+  check(fs.existsSync(resolved), `${name} does not exist`);
+  if (!fs.existsSync(resolved)) return;
+  const ageDays =
+    (Date.now() - fs.statSync(resolved).mtimeMs) / (24 * 60 * 60 * 1_000);
+  check(
+    ageDays <= maxAgeDays,
+    `${name} is older than the allowed ${maxAgeDays} days`,
+  );
+  try {
+    validate(JSON.parse(fs.readFileSync(resolved, "utf8")));
+  } catch (error) {
+    fail(
+      `${name} is invalid: ${error instanceof Error ? error.message : "unknown error"}`,
+    );
+  }
+}
+
 exact("APP_ENV", "production");
 exact("NODE_ENV", "production");
 exact("NEXT_PUBLIC_APP_ENV", "production");
@@ -80,6 +102,7 @@ exact("DATABASE_INFRA_MODE", "hosted");
 exact("NEXT_PUBLIC_DATA_MODE", "api");
 exact("EXPO_PUBLIC_DATA_MODE", "api");
 exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
+exact("NEXT_PUBLIC_ENABLE_AI_FEATURES", "false");
 exact("PAYMENT_MODE", "live");
 exact("EMAIL_MODE", "live");
 exact("AI_MODE", "production");
@@ -94,6 +117,11 @@ exact("AI_PROVIDER", "gemini");
 exact("AUTH_COOKIE_SECURE", "true");
 exact("SHONGRE_TRUST_PROXY_HOST", "true");
 exact("SHONGRE_TRUST_PROXY_IP", "true");
+exact("ENABLE_SOCIAL_AUTH", "false");
+exact("ENABLE_ACCOUNT_LINKING", "false");
+exact("ENABLE_GOOGLE_AUTH", "false");
+exact("ENABLE_APPLE_AUTH", "false");
+exact("ENABLE_FACEBOOK_AUTH", "false");
 
 const environmentId = required("ENVIRONMENT_ID");
 for (const name of [
@@ -228,11 +256,18 @@ for (const [name, candidate] of Object.entries(process.env)) {
 }
 
 if (requireEvidence) {
+  const releaseSha = required("RELEASE_SHA", 40);
+  check(
+    /^[0-9a-f]{40}$/.test(releaseSha),
+    "RELEASE_SHA must be a full commit SHA",
+  );
   evidenceFile("BACKUP_RESTORE_EVIDENCE_FILE", 30, [
     "database_restore=PASS",
     "storage_restore=PASS",
   ]);
   evidenceFile("PROVIDER_SMOKE_EVIDENCE_FILE", 14, [
+    "environment=staging",
+    `release_sha=${releaseSha}`,
     "stripe_payment=PASS",
     "stripe_refund=PASS",
     "stripe_payout=PASS",
@@ -242,11 +277,43 @@ if (requireEvidence) {
     "transactional_email=PASS",
   ]);
   evidenceFile("RELEASE_APPROVAL_EVIDENCE_FILE", 14, [
+    `release_sha=${releaseSha}`,
     "security=APPROVED",
     "legal=APPROVED",
     "operations=APPROVED",
     "product=APPROVED",
   ]);
+  jsonEvidenceFile("STAGING_CERTIFICATION_EVIDENCE_FILE", 14, (evidence) => {
+    if (
+      evidence.schemaVersion !== 1 ||
+      evidence.environment !== "staging" ||
+      evidence.result !== "passed" ||
+      evidence.commit !== releaseSha ||
+      evidence.checks?.hostedSmoke?.unexpected !== 0 ||
+      evidence.checks?.performance?.result !== "PASS"
+    ) {
+      throw new Error(
+        "certificate must bind successful hosted and performance checks to RELEASE_SHA",
+      );
+    }
+  });
+  jsonEvidenceFile("OBSERVABILITY_EVIDENCE_FILE", 14, (evidence) => {
+    if (
+      evidence.schemaVersion !== 1 ||
+      evidence.result !== "PASS" ||
+      evidence.release !== releaseSha ||
+      evidence.scope !== "PLATFORM_GLOBAL" ||
+      evidence.checks?.request_id_propagation !== "PASS" ||
+      evidence.checks?.log_drain !== "PASS" ||
+      evidence.checks?.trace_lookup !== "PASS" ||
+      evidence.checks?.alert_delivery !== "PASS" ||
+      evidence.checks?.on_call !== "PASS"
+    ) {
+      throw new Error(
+        "observability evidence must prove request IDs, drains, traces, alerts, and on-call delivery",
+      );
+    }
+  });
 }
 
 if (failures.length > 0) {

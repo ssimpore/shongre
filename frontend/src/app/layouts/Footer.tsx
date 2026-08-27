@@ -54,11 +54,6 @@ const SOCIAL_ICONS: Record<SocialNetworkId, BrandIcon> = {
   youtube: YouTubeBrandIcon,
 };
 
-const AVAILABLE_STORE_LINKS = MOBILE_STORE_LINKS.filter((store) => store.url);
-const AVAILABLE_SOCIAL_LINKS = SOCIAL_LINKS.filter((social) => social.url);
-const HAS_EXTERNAL_PROMOTIONS =
-  AVAILABLE_STORE_LINKS.length > 0 || AVAILABLE_SOCIAL_LINKS.length > 0;
-
 const LEGAL_LINKS = [
   { to: "/conditions-utilisation", labelKey: "footer.terms" },
   { to: "/confidentialite", labelKey: "footer.privacy" },
@@ -301,81 +296,80 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {HAS_EXTERNAL_PROMOTIONS ? (
-          <div
-            className={`${PANEL} flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between`}
+        <div
+          className={`${PANEL} flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between`}
+        >
+          <section
+            aria-labelledby="footer-mobile-apps-heading"
+            className="min-w-0 flex-1"
           >
-            {AVAILABLE_STORE_LINKS.length > 0 ? (
-              <section
-                aria-labelledby="footer-mobile-apps-heading"
-                className="min-w-0 flex-1"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <h2
-                      id="footer-mobile-apps-heading"
-                      className="text-sm font-bold text-white"
-                    >
-                      {t("footer.mobileAppsHeading")}
-                    </h2>
-                    <p className="mt-1 leading-relaxed text-stone-400">
-                      {t("footer.appPitch")}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                    {AVAILABLE_STORE_LINKS.map((store) => {
-                      return (
-                        <StoreBadge
-                          key={store.id}
-                          name={store.name}
-                          url={store.url}
-                          Icon={STORE_ICONS[store.id]}
-                          statusLabel={t("footer.downloadFrom")}
-                          accessibleLabel={t("footer.downloadApp", {
-                            store: store.name,
-                          })}
-                          unavailableLabel={t("footer.comingSoon", {
-                            name: store.name,
-                          })}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-            ) : null}
-
-            {AVAILABLE_SOCIAL_LINKS.length > 0 ? (
-              <section
-                aria-labelledby="footer-social-heading"
-                className="border-t border-stone-800/60 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
-              >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <h2
-                  id="footer-social-heading"
+                  id="footer-mobile-apps-heading"
                   className="text-sm font-bold text-white"
                 >
-                  {t("footer.followHeading")}
+                  {t("footer.mobileAppsHeading")}
                 </h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {AVAILABLE_SOCIAL_LINKS.map((social) => (
-                    <SocialLink
-                      key={social.id}
-                      name={social.name}
-                      url={social.url}
-                      Icon={SOCIAL_ICONS[social.id]}
-                      accessibleLabel={t("footer.followOn", {
-                        network: social.name,
+                <p className="mt-1 leading-relaxed text-stone-400">
+                  {t("footer.appPitch")}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                {MOBILE_STORE_LINKS.map((store) => {
+                  const isAvailable = Boolean(store.url);
+                  return (
+                    <StoreBadge
+                      key={store.id}
+                      name={store.name}
+                      url={store.url}
+                      Icon={STORE_ICONS[store.id]}
+                      statusLabel={t(
+                        isAvailable
+                          ? "footer.downloadFrom"
+                          : "footer.comingToStore",
+                      )}
+                      accessibleLabel={t("footer.downloadApp", {
+                        store: store.name,
                       })}
                       unavailableLabel={t("footer.comingSoon", {
-                        name: social.name,
+                        name: store.name,
                       })}
                     />
-                  ))}
-                </div>
-              </section>
-            ) : null}
-          </div>
-        ) : null}
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="footer-social-heading"
+            className="border-t border-stone-800/60 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
+          >
+            <h2
+              id="footer-social-heading"
+              className="text-sm font-bold text-white"
+            >
+              {t("footer.followHeading")}
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {SOCIAL_LINKS.map((social) => (
+                <SocialLink
+                  key={social.id}
+                  name={social.name}
+                  url={social.url}
+                  Icon={SOCIAL_ICONS[social.id]}
+                  accessibleLabel={t("footer.followOn", {
+                    network: social.name,
+                  })}
+                  unavailableLabel={t("footer.comingSoon", {
+                    name: social.name,
+                  })}
+                />
+              ))}
+            </div>
+          </section>
+        </div>
 
         <div className="flex flex-col gap-4 pt-1 text-xs text-stone-400 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-4">

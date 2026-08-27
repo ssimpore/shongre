@@ -49,6 +49,83 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+const REQUIRED_HOSTED_SMOKE_TESTS = [
+  "serves the international gateway with environment-safe headers",
+  "serves the France marketplace with environment-safe headers",
+  "serves live and ready API probes through the Tunnel",
+  "returns a market-scoped public listings feed",
+];
+
+function playwrightSpecs(suites = []) {
+  return suites.flatMap((suite) => [
+    ...(suite.specs || []),
+    ...playwrightSpecs(suite.suites || []),
+  ]);
+}
+
+function validateHostedSmokeReport(path) {
+  const report = readJson(path);
+  const specs = playwrightSpecs(report.suites);
+  const byTitle = new Map(specs.map((spec) => [spec.title, spec]));
+  for (const title of REQUIRED_HOSTED_SMOKE_TESTS) {
+    const spec = byTitle.get(title);
+    if (!spec) fail(`hosted smoke report is missing: ${title}`);
+    const outcomes = (spec.tests || []).flatMap((test) =>
+      (test.results || []).map((result) => result.status),
+    );
+    if (!outcomes.includes("passed")) {
+      fail(`hosted smoke test did not pass: ${title}`);
+    }
+  }
+  if ((report.stats?.unexpected || 0) !== 0) {
+    fail("hosted smoke report contains unexpected failures");
+  }
+  return {
+    requiredTests: REQUIRED_HOSTED_SMOKE_TESTS,
+    expected: Number(
+      report.stats?.expected || REQUIRED_HOSTED_SMOKE_TESTS.length,
+    ),
+    skipped: Number(report.stats?.skipped || 0),
+    unexpected: Number(report.stats?.unexpected || 0),
+    durationMs: Math.round(Number(report.stats?.duration || 0)),
+    reportDigest: filePathDigest(path),
+  };
+}
+
+function validatePerformanceEvidence(path, manifest) {
+  const evidence = readJson(path);
+  const endpointNames = new Set(
+    (evidence.endpoints || []).map((endpoint) => endpoint.name),
+  );
+  if (
+    evidence.schemaVersion !== 1 ||
+    evidence.environment !== "staging" ||
+    evidence.release !== manifest.commit ||
+    evidence.result !== "PASS" ||
+    evidence.scope !== "MARKET_SCOPED" ||
+    !/^[A-Z]{2}$/.test(evidence.marketCode || "") ||
+    !["liveness", "readiness", "marketplace_listings"].every((name) =>
+      endpointNames.has(name),
+    )
+  ) {
+    fail(
+      "performance evidence is not a successful market-scoped staging record",
+    );
+  }
+  return {
+    result: evidence.result,
+    marketCode: evidence.marketCode,
+    verifiedAt: evidence.verifiedAt,
+    budgets: evidence.budgets,
+    endpoints: evidence.endpoints,
+    reportDigest: filePathDigest(path),
+  };
+}
+
+function filePathDigest(path) {
+  return sha256(readFileSync(path));
+}
+
 function validateManifest(manifest, expectedRelease = "") {
   if (manifest.schemaVersion !== 1) fail("unsupported schemaVersion");
   assertSha(manifest.commit, "commit");
@@ -129,9 +206,24 @@ if (command === "create") {
   validateManifest(readJson(input), expectedRelease);
   console.log(`Validated ${input}.`);
 } else if (command === "certify") {
-  const [manifestPath, output] = args;
-  if (!manifestPath || !output) fail("usage: certify MANIFEST OUTPUT");
+  const [manifestPath, output, hostedSmokeReportPath, performanceEvidencePath] =
+    args;
+  if (
+    !manifestPath ||
+    !output ||
+    !hostedSmokeReportPath ||
+    !performanceEvidencePath
+  ) {
+    fail(
+      "usage: certify MANIFEST OUTPUT HOSTED_SMOKE_REPORT PERFORMANCE_EVIDENCE",
+    );
+  }
   const manifest = validateManifest(readJson(manifestPath));
+  const hostedSmoke = validateHostedSmokeReport(hostedSmokeReportPath);
+  const performance = validatePerformanceEvidence(
+    performanceEvidencePath,
+    manifest,
+  );
   const certification = {
     schemaVersion: 1,
     environment: "staging",
@@ -142,6 +234,10 @@ if (command === "create") {
     openapiDigest: manifest.openapiDigest,
     migrationRevision: manifest.migrationRevision,
     migrationDigest: manifest.migrationDigest,
+    checks: {
+      hostedSmoke,
+      performance,
+    },
     workflow: {
       runId: process.env.GITHUB_RUN_ID || "local",
       runAttempt: process.env.GITHUB_RUN_ATTEMPT || "1",
@@ -164,6 +260,21 @@ if (command === "create") {
     certification.result !== "passed"
   ) {
     fail("staging certification is not a successful supported record");
+  }
+  if (
+    !certification.checks?.hostedSmoke ||
+    certification.checks.hostedSmoke.unexpected !== 0 ||
+    !REQUIRED_HOSTED_SMOKE_TESTS.every((title) =>
+      certification.checks.hostedSmoke.requiredTests?.includes(title),
+    )
+  ) {
+    fail("staging certification is missing the required hosted smoke evidence");
+  }
+  if (
+    certification.checks?.performance?.result !== "PASS" ||
+    !/^[A-Z]{2}$/.test(certification.checks.performance.marketCode || "")
+  ) {
+    fail("staging certification is missing successful performance evidence");
   }
   for (const field of [
     "commit",

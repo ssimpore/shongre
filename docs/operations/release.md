@@ -16,14 +16,25 @@ process production data or money.
    neither image is rebuilt per environment. Buildx attaches SBOM and
    provenance, Trivy scans both, and the release manifest records immutable
    digests for every promotion.
-3. Deploy the same artifacts to staging with production-shaped configuration.
-   Run real provider sandbox tests for payment, refund, transfer/payout,
-   Identity, registry verification, Gemini moderation, and transactional email.
-4. Complete the backup restore drill and record restricted evidence. Fill the
-   provider-smoke and security/legal/operations/product approval files with the
-   exact PASS/APPROVED markers required by `scripts/production-readiness.mjs`.
+3. Deploy the same artifacts to staging with production-shaped provider
+   selection: Stripe/Identity in test mode, SIRENE, Gemini staging and the
+   sandbox transactional-email boundary. Demo providers are rejected by the
+   staging environment gate. Run real sandbox tests for payment, refund,
+   transfer/payout, Identity, registry verification, Gemini moderation, and
+   transactional email.
+4. Complete the database and object-storage restore drill and record restricted
+   evidence. Run the hosted load smoke and observability evidence probes. The
+   provider-smoke and approval files must name the exact `release_sha`; the
+   staging certificate must embed successful public-browser and performance
+   evidence for the same commit.
 5. Load production secrets from the secret manager and run
    `make production-release-check`. Never paste values into tickets or logs.
+
+Useful evidence commands are `make performance-smoke`,
+`make observability-evidence`, and
+`ALLOW_BACKUP_RESTORE_TEST=true make backup-restore-test`. Signed storage URLs,
+dashboard links, alert receivers and evidence paths are release-scoped secrets
+or restricted operations configuration; they never belong in Git.
 
 ## Production sequence
 

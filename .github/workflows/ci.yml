@@ -59,6 +59,7 @@ jobs:
           NEXT_PUBLIC_FR_URL: https://fr.shongre.invalid
           NEXT_PUBLIC_INTL_URL: https://intl.shongre.invalid
           NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
+          NEXT_PUBLIC_ENABLE_AI_FEATURES: "false"
           NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
           EXPO_PUBLIC_DATA_MODE: api
           EXPO_PUBLIC_APP_ENV: production
@@ -102,6 +103,11 @@ jobs:
           AI_PROVIDER: gemini
           GEMINI_API_KEY: ci-only-gemini-api-key
           GEMINI_MODEL: gemini-2.5-flash
+          ENABLE_SOCIAL_AUTH: "false"
+          ENABLE_ACCOUNT_LINKING: "false"
+          ENABLE_GOOGLE_AUTH: "false"
+          ENABLE_APPLE_AUTH: "false"
+          ENABLE_FACEBOOK_AUTH: "false"
         run: make production-config-check
 
   migrations:

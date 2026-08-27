@@ -28,6 +28,43 @@ validate_profile() (
     export SUPABASE_SERVICE_ROLE_KEY=matrix-validation-server-value
   fi
 
+  if [[ "$profile" == "staging" || "$profile" == "production" ]]; then
+    export JWT_SECRET=matrix-validation-jwt-secret-123456789
+    export MFA_ENCRYPTION_KEY=matrix-validation-mfa-secret-123456789
+    export PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+    export PROVIDER_CREDENTIAL_KEY_VERSION=matrix-v1
+    export AUTH_EMAIL_DELIVERY_URL=https://email.shongre.invalid/send
+    export AUTH_EMAIL_DELIVERY_TOKEN=matrix-email-token
+    export PAYMENT_PROVIDER=stripe
+    export KYC_PROVIDER=stripe
+    export BUSINESS_REGISTRY_PROVIDER=siret
+    export AI_PROVIDER=gemini
+    export STRIPE_WEBHOOK_SECRET=whsec_matrix
+    export STRIPE_CONNECT_WEBHOOK_SECRET=whsec_connect_matrix
+    export COMPLIANCE_WEBHOOK_SECRET=matrix-compliance
+    export HANDOVER_PIN_PEPPER=matrix-handover
+    export KYC_PROVIDER_BASE_URL=https://identity.shongre.invalid
+    export KYC_PROVIDER_API_TOKEN=matrix-identity
+    export BUSINESS_REGISTRY_API_URL=https://registry.shongre.invalid
+    export BUSINESS_REGISTRY_API_TOKEN=matrix-registry
+    export GEMINI_API_KEY=matrix-gemini
+    export GEMINI_MODEL=gemini-matrix
+    export ENABLE_SOCIAL_AUTH=false
+    export ENABLE_ACCOUNT_LINKING=false
+    export ENABLE_GOOGLE_AUTH=false
+    export ENABLE_APPLE_AUTH=false
+    export ENABLE_FACEBOOK_AUTH=false
+    export NEXT_PUBLIC_ENABLE_AI_FEATURES=false
+    if [[ "$profile" == "staging" ]]; then
+      export STRIPE_SECRET_KEY=sk_test_matrix
+      export NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_matrix
+      export EMAIL_RECIPIENT_ALLOWLIST=matrix-recipient@shongre.invalid
+    else
+      export STRIPE_SECRET_KEY=sk_live_matrix
+      export NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_matrix
+    fi
+  fi
+
   "$root/scripts/env-check.sh"
 )
 

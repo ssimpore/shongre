@@ -127,7 +127,9 @@ test.describe("Homepage discovery simplification", () => {
     await expect(page).toHaveURL("/solutions-pro");
   });
 
-  test("removes duplicate and inactive footer promotions", async ({ page }) => {
+  test("keeps footer essentials and truthful upcoming promotions", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
@@ -147,10 +149,13 @@ test.describe("Homepage discovery simplification", () => {
     ).toHaveCount(0);
     await expect(
       footer.getByRole("region", { name: "Applications mobiles Shongre" }),
-    ).toHaveCount(0);
-    await expect(footer.getByText("Suivez-nous", { exact: true })).toHaveCount(
-      0,
-    );
-    await expect(footer.getByText(/bientôt disponible/)).toHaveCount(0);
+    ).toBeVisible();
+    await expect(
+      footer.getByRole("region", { name: "Suivez Shongre" }),
+    ).toBeVisible();
+    await expect(footer.getByText("Bientôt sur")).toHaveCount(2);
+    await expect(
+      footer.getByRole("img", { name: /bientôt disponible/ }),
+    ).toHaveCount(4);
   });
 });

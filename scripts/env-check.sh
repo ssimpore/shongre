@@ -109,6 +109,55 @@ for pair in \
   fi
 done
 
+if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
+  for pair in \
+    "PAYMENT_PROVIDER:stripe" \
+    "KYC_PROVIDER:stripe" \
+    "BUSINESS_REGISTRY_PROVIDER:siret" \
+    "AI_PROVIDER:gemini" \
+    "ENABLE_SOCIAL_AUTH:false" \
+    "ENABLE_ACCOUNT_LINKING:false" \
+    "ENABLE_GOOGLE_AUTH:false" \
+    "ENABLE_APPLE_AUTH:false" \
+    "ENABLE_FACEBOOK_AUTH:false" \
+    "NEXT_PUBLIC_ENABLE_AI_FEATURES:false"; do
+    name="${pair%%:*}"
+    expected="${pair#*:}"
+    if [[ "${!name:-}" != "$expected" ]]; then
+      shongre_fail "$name must be $expected for the certified launch scope"
+      failed=1
+    fi
+  done
+  for key in \
+    JWT_SECRET MFA_ENCRYPTION_KEY PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 PROVIDER_CREDENTIAL_KEY_VERSION \
+    AUTH_EMAIL_DELIVERY_URL AUTH_EMAIL_DELIVERY_TOKEN STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET \
+    STRIPE_CONNECT_WEBHOOK_SECRET NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY COMPLIANCE_WEBHOOK_SECRET HANDOVER_PIN_PEPPER \
+    KYC_PROVIDER_BASE_URL KYC_PROVIDER_API_TOKEN BUSINESS_REGISTRY_API_URL BUSINESS_REGISTRY_API_TOKEN \
+    GEMINI_API_KEY GEMINI_MODEL; do
+    if [[ -z "${!key:-}" ]]; then
+      shongre_fail "$key is required for $APP_ENV provider certification"
+      failed=1
+    fi
+  done
+  stripe_secret_prefix="sk_test_"
+  stripe_public_prefix="pk_test_"
+  if [[ "$APP_ENV" == "production" ]]; then
+    stripe_secret_prefix="sk_live_"
+    stripe_public_prefix="pk_live_"
+  elif [[ -z "${EMAIL_RECIPIENT_ALLOWLIST:-}" ]]; then
+    shongre_fail "EMAIL_RECIPIENT_ALLOWLIST is required in staging"
+    failed=1
+  fi
+  if [[ "${STRIPE_SECRET_KEY:-}" != "$stripe_secret_prefix"* ]]; then
+    shongre_fail "STRIPE_SECRET_KEY has the wrong mode for $APP_ENV"
+    failed=1
+  fi
+  if [[ "${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}" != "$stripe_public_prefix"* ]]; then
+    shongre_fail "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY has the wrong mode for $APP_ENV"
+    failed=1
+  fi
+fi
+
 if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-}" API_URL="${API_URL:-}" NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-}" EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-}" node --input-type=module -e '
   const names = ["PUBLIC_FR_URL", "PUBLIC_INTL_URL", "API_URL"];
   const urls = Object.fromEntries(names.map((name) => [name, new URL(process.env[name])]));

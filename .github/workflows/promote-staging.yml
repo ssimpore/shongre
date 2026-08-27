@@ -71,11 +71,32 @@ jobs:
       - name: Run public web/API checks through Cloudflare Tunnel
         env:
           PLAYWRIGHT_BASE_URL: ${{ vars.PUBLIC_INTL_URL }}
+          PLAYWRIGHT_FR_URL: ${{ vars.PUBLIC_FR_URL }}
           PLAYWRIGHT_API_URL: ${{ vars.API_URL }}
           PLAYWRIGHT_EXPECTED_ENVIRONMENT: staging
-        run: npm run test:e2e --workspace=frontend -- hosted-smoke.spec.ts --project=chromium
+          PLAYWRIGHT_EXPECTED_RELEASE: ${{ inputs.release_sha }}
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/.release/hosted-smoke-report.json
+        run: npm run test:e2e --workspace=frontend -- hosted-smoke.spec.ts --project=chromium --reporter=json
+      - name: Verify hosted latency and success-rate budgets
+        env:
+          LOAD_TEST_API_URL: ${{ vars.API_URL }}
+          LOAD_TEST_REFERER: ${{ vars.PUBLIC_FR_URL }}
+          LOAD_TEST_EXPECTED_ENVIRONMENT: staging
+          LOAD_TEST_EXPECTED_RELEASE: ${{ inputs.release_sha }}
+          LOAD_TEST_MARKET: FR
+          LOAD_TEST_REQUESTS: "30"
+          LOAD_TEST_CONCURRENCY: "4"
+          LOAD_TEST_P95_MS: "750"
+          LOAD_TEST_MIN_SUCCESS_RATE: "0.99"
+          PERFORMANCE_EVIDENCE_FILE: .release/performance-evidence.json
+        run: node scripts/load-smoke.mjs
       - name: Bind certification to the exact digests and schema
-        run: node scripts/release-manifest.mjs certify .release/release-manifest.json staging-certification.json
+        run: >-
+          node scripts/release-manifest.mjs certify
+          .release/release-manifest.json
+          staging-certification.json
+          .release/hosted-smoke-report.json
+          .release/performance-evidence.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: staging-certification-${{ inputs.release_sha }}

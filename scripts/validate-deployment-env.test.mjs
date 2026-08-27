@@ -18,6 +18,8 @@ PUBLIC_INTL_URL=https://staging-intl.shongre.example
 API_URL=https://api-staging.shongre.example
 NEXT_PUBLIC_DATA_MODE=api
 NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
+NEXT_PUBLIC_ENABLE_AI_FEATURES=false
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_ci
 `;
 const backend = `APP_ENV=${environment}
 ENVIRONMENT_ID=${environmentId}
@@ -25,6 +27,48 @@ API_ENVIRONMENT_ID=${environmentId}
 DATABASE_ENVIRONMENT_ID=${environmentId}
 SUPABASE_ENVIRONMENT_ID=${environmentId}
 STORAGE_ENVIRONMENT_ID=${environmentId}
+NODE_ENV=production
+BACKEND_DATA_MODE=database
+DATABASE_INFRA_MODE=hosted
+PAYMENT_MODE=test
+EMAIL_MODE=sandbox
+AI_MODE=staging
+ANALYTICS_MODE=staging
+PAYMENT_PROVIDER=stripe
+KYC_PROVIDER=stripe
+BUSINESS_REGISTRY_PROVIDER=siret
+AI_PROVIDER=gemini
+AUTH_COOKIE_SECURE=true
+SHONGRE_TRUST_PROXY_HOST=true
+SHONGRE_TRUST_PROXY_IP=true
+ENABLE_SOCIAL_AUTH=false
+ENABLE_GOOGLE_AUTH=false
+ENABLE_APPLE_AUTH=false
+ENABLE_FACEBOOK_AUTH=false
+DATABASE_URL=postgresql://ci:ci@db.example/shongre
+SUPABASE_PROJECT_REF=staging-ref
+EXPECTED_SUPABASE_PROJECT_REF=staging-ref
+SUPABASE_URL=https://staging-ref.supabase.co
+SUPABASE_ANON_KEY=ci-anon
+SUPABASE_SERVICE_ROLE_KEY=ci-service-role
+JWT_SECRET=ci-jwt-secret
+MFA_ENCRYPTION_KEY=ci-mfa-key
+PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=Y2ktcHJvdmlkZXIta2V5
+PROVIDER_CREDENTIAL_KEY_VERSION=staging-v1
+AUTH_EMAIL_DELIVERY_URL=https://email.example/send
+AUTH_EMAIL_DELIVERY_TOKEN=ci-email-token
+EMAIL_RECIPIENT_ALLOWLIST=release-tester@example.com
+STRIPE_SECRET_KEY=sk_test_ci
+STRIPE_WEBHOOK_SECRET=whsec_ci
+STRIPE_CONNECT_WEBHOOK_SECRET=whsec_connect_ci
+COMPLIANCE_WEBHOOK_SECRET=ci-compliance
+HANDOVER_PIN_PEPPER=ci-handover
+KYC_PROVIDER_BASE_URL=https://identity.example
+KYC_PROVIDER_API_TOKEN=ci-identity
+BUSINESS_REGISTRY_API_URL=https://registry.example
+BUSINESS_REGISTRY_API_TOKEN=ci-registry
+GEMINI_API_KEY=ci-gemini
+GEMINI_MODEL=gemini-test
 `;
 
 function writePrivate(path, value) {

@@ -54,3 +54,17 @@ Page the on-call engineer for:
 Create dashboard links and alert receiver identifiers in the deployment system,
 not this repository. Each page links to `docs/operations/incident-response.md`
 and includes environment, release id, affected route/provider, and trace ids.
+
+## Release evidence
+
+Before production promotion, run `make observability-evidence` against the
+staging-certified release. The probe requires the exact environment and release
+SHA, dashboard/alert/on-call HTTPS references, and explicit confirmation that a
+generated request id was found in the log and trace drains and that a test page
+reached the on-call receiver. It writes a restricted JSON record through
+`OBSERVABILITY_EVIDENCE_FILE`; `make production-release-check` rejects missing,
+stale, mismatched, or incomplete evidence.
+
+This confirmation is deliberately not inferred from a configured vendor name.
+A dashboard that exists but receives no release traffic is not operational
+evidence.
