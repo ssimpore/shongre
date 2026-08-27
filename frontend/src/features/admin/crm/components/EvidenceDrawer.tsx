@@ -62,7 +62,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                 key={idx}
                 className="flex items-start gap-2 p-2.5 bg-stone-50 rounded-xl"
               >
-                <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
                 <span className="text-stone-800 leading-relaxed text-xs">
                   {reason}
                 </span>
@@ -73,7 +73,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
           {candidate.fit.caveats && candidate.fit.caveats.length > 0 && (
             <div className="pt-2 space-y-1.5">
               <span className="font-bold text-warning text-xs flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                <AlertTriangle className="w-icon-sm h-icon-sm text-warning" />
                 Points d'attention :
               </span>
               {candidate.fit.caveats.map((cav, idx) => (
@@ -108,7 +108,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                     className="text-primary hover:underline flex items-center gap-1 font-bold text-micro"
                   >
                     <span>{t("admin.evidenceDrawer.consulterLaSource")}</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-icon-xs h-icon-xs" />
                   </a>
                 </div>
 
@@ -135,7 +135,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
 
         {/* Transparency Notice */}
         <div className="p-3.5 bg-stone-100 rounded-xl flex items-start gap-2.5 text-micro text-stone-500">
-          <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
+          <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
           <span>
             {t("admin.evidenceDrawer.cesInformationsSontIssuesExclusivement")}
           </span>

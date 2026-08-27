@@ -46,7 +46,10 @@ export const NewsletterConfirmPage: React.FC = () => {
   if (state === "loading") {
     return (
       <div className="mx-auto flex max-w-md items-center justify-center px-4 py-24 text-stone-600">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
+        <Loader2
+          className="mr-2 h-icon-lg w-icon-lg animate-spin"
+          aria-hidden="true"
+        />
         Validation en cours…
       </div>
     );
@@ -88,7 +91,7 @@ export const NewsletterConfirmPage: React.FC = () => {
 
         {state === "confirmed" && (
           <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-xs text-stone-500 text-left flex items-start gap-3">
-            <ShieldCheck className="w-4 h-4 text-success shrink-0 mt-0.5" />
+            <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
             <span>
               {t(
                 "newsletter.newsletterConfirmPage.vousRecevrezChaqueSemaineLes",

@@ -250,7 +250,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900">
-              <GitBranch className="h-5 w-5 text-violet-300" />
+              <GitBranch className="h-icon-lg w-icon-lg text-violet-300" />
             </span>
             <div>
               <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
@@ -262,7 +262,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             </div>
           </div>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="h-4 w-4" /> Nouveau pipeline
+            <Plus className="h-icon-md w-icon-md" /> Nouveau pipeline
           </Button>
         </div>
         <p className="mt-3 text-xs text-stone-400">
@@ -296,14 +296,14 @@ export const CrmPipelineSettingsPage: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Actif
+                  <CheckCircle2 className="h-icon-sm w-icon-sm" /> Actif
                 </span>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => openEdit(pipeline)}
                 >
-                  <Pencil className="h-3.5 w-3.5" /> Modifier
+                  <Pencil className="h-icon-sm w-icon-sm" /> Modifier
                 </Button>
               </div>
             </div>
@@ -323,12 +323,12 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                       </strong>
                       {stage.isWon && (
                         <span className="inline-flex items-center gap-1 text-micro font-bold text-success">
-                          <CheckCircle2 className="h-3 w-3" /> Gagné
+                          <CheckCircle2 className="h-icon-xs w-icon-xs" /> Gagné
                         </span>
                       )}
                       {stage.isLost && (
                         <span className="inline-flex items-center gap-1 text-micro font-bold text-danger">
-                          <XCircle className="h-3 w-3" /> Perdu
+                          <XCircle className="h-icon-xs w-icon-xs" /> Perdu
                         </span>
                       )}
                     </div>
@@ -356,7 +356,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
               ))}
             </div>
             <div className="flex items-start gap-2 border-t border-border-subtle bg-stone-50 p-4 text-micro text-stone-500">
-              <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <LockKeyhole className="mt-0.5 h-icon-sm w-icon-sm shrink-0" />
               Les mises à jour utilisent un contrôle de version. Une étape déjà
               utilisée ne peut pas être supprimée.
             </div>
@@ -421,7 +421,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 variant="outline"
                 onClick={addStage}
               >
-                <Plus className="h-3.5 w-3.5" /> Ajouter une étape
+                <Plus className="h-icon-sm w-icon-sm" /> Ajouter une étape
               </Button>
             </div>
             {draft.stages.map((stage, index) => (
@@ -478,7 +478,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     aria-label={`Remonter l’étape ${stage.name}`}
                     className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
-                    <ArrowUp className="h-3.5 w-3.5" />
+                    <ArrowUp className="h-icon-sm w-icon-sm" />
                   </button>
                   <button
                     type="button"
@@ -487,7 +487,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     aria-label={`Descendre l’étape ${stage.name}`}
                     className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
-                    <ArrowDown className="h-3.5 w-3.5" />
+                    <ArrowDown className="h-icon-sm w-icon-sm" />
                   </button>
                   <button
                     type="button"
@@ -496,7 +496,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     aria-label={`Supprimer l’étape ${stage.name}`}
                     className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-danger-border text-danger enabled:hover:bg-danger-surface disabled:opacity-30"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-icon-sm w-icon-sm" />
                   </button>
                 </div>
               </div>

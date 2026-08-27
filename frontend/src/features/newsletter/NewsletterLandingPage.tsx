@@ -21,7 +21,7 @@ export const NewsletterLandingPage: React.FC = () => {
       {/* 1. Header & Value Proposition */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
-          <Mail className="w-3.5 h-3.5" />
+          <Mail className="w-icon-sm h-icon-sm" />
           <span>
             {t("newsletter.newsletterLandingPage.laNewsletterShongre")}
           </span>
@@ -73,7 +73,7 @@ export const NewsletterLandingPage: React.FC = () => {
       <div className="bg-stone-50 border border-border-base rounded-3xl p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs text-stone-600">
         <div className="space-y-1">
           <div className="w-8 h-8 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto mb-2">
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-icon-md h-icon-md" />
           </div>
           <h4 className="font-black text-stone-900">
             {t("newsletter.newsletterLandingPage.100SansSpam")}
@@ -85,7 +85,7 @@ export const NewsletterLandingPage: React.FC = () => {
 
         <div className="space-y-1">
           <div className="w-8 h-8 rounded-full bg-primary-light text-primary flex items-center justify-center mx-auto mb-2">
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-icon-md h-icon-md" />
           </div>
           <h4 className="font-black text-stone-900">
             {t("newsletter.newsletterLandingPage.contenuEditorialSoigne")}
@@ -99,7 +99,7 @@ export const NewsletterLandingPage: React.FC = () => {
 
         <div className="space-y-1">
           <div className="w-8 h-8 rounded-full bg-stone-200 text-stone-700 flex items-center justify-center mx-auto mb-2">
-            <ShieldCheck className="w-4 h-4" />
+            <ShieldCheck className="w-icon-md h-icon-md" />
           </div>
           <h4 className="font-black text-stone-900">
             {t("newsletter.newsletterLandingPage.desinscriptionInstantanee")}

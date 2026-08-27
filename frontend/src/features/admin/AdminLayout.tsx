@@ -261,7 +261,7 @@ export const AdminLayout: React.FC = () => {
 
             {/* Scope pill */}
             <div className="hidden md:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700 text-stone-300 text-xs px-2.5 py-1 rounded-full">
-              <Globe className="w-3.5 h-3.5 text-sky-400" />
+              <Globe className="w-icon-sm h-icon-sm text-sky-400" />
               <span>{marketLabel}</span>
             </div>
           </div>
@@ -327,7 +327,7 @@ export const AdminLayout: React.FC = () => {
               aria-label={t("admin.adminLayout.retourALaPlaceDe")}
               className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-xl text-xs font-bold bg-stone-800 text-stone-200 border border-stone-700 hover:bg-stone-700 hover:text-white transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
+              <ArrowLeft className="w-icon-sm h-icon-sm" />
               <span className="hidden md:inline">
                 {t("admin.adminLayout.placeDeMarche")}
               </span>
@@ -360,7 +360,7 @@ export const AdminLayout: React.FC = () => {
               {activeNavItem ? (
                 <activeNavItem.icon className="w-4 h-4 text-primary shrink-0" />
               ) : (
-                <LayoutDashboard className="w-4 h-4 text-primary shrink-0" />
+                <LayoutDashboard className="w-icon-md h-icon-md text-primary shrink-0" />
               )}
               <span className="flex flex-col items-start min-w-0">
                 <span className="text-micro font-bold uppercase tracking-wider text-stone-500 leading-none">
@@ -372,7 +372,7 @@ export const AdminLayout: React.FC = () => {
               </span>
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-stone-500 shrink-0 transition-transform ${
+              className={`w-icon-md h-icon-md text-stone-500 shrink-0 transition-transform ${
                 isSectionMenuOpen ? "rotate-180" : ""
               }`}
             />

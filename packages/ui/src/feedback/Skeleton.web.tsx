@@ -8,7 +8,7 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
 const shapeClasses = {
   line: "h-4 rounded-lg",
   control: "h-control-touch rounded-control",
-  media: "aspect-[4/3] rounded-control",
+  media: "aspect-media rounded-control",
   circle: "aspect-square rounded-full",
   panel: "min-h-32 rounded-card",
 } as const;
@@ -54,7 +54,7 @@ export const SearchResultsSkeleton: React.FC<{
   <div
     aria-hidden="true"
     className={cn(
-      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,var(--spacing-listing-card))] sm:justify-start sm:gap-4",
+      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-listing-grid-fixed sm:justify-start sm:gap-4",
       className,
     )}
   >

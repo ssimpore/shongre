@@ -69,7 +69,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start gap-3 p-3 bg-warning-surface rounded-xl border border-warning-border text-xs text-warning">
-          <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+          <AlertTriangle className="w-icon-md h-icon-md text-warning shrink-0 mt-0.5" />
           <p>
             Vous êtes sur le point de signaler le profil de{" "}
             <strong>{seller.companyName || seller.name}</strong>. Nos équipes de
@@ -137,7 +137,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
             size="sm"
             type="submit"
             isLoading={isSubmitting}
-            leftIcon={<Flag className="w-3.5 h-3.5" />}
+            leftIcon={<Flag className="w-icon-sm h-icon-sm" />}
           >
             {t("profile.sellerReportModal.envoyerLeSignalement")}
           </Button>

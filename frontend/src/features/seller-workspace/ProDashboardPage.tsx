@@ -89,7 +89,7 @@ export const ProDashboardPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsBillingModalOpen(true)}
-            leftIcon={<FileText className="w-4 h-4" />}
+            leftIcon={<FileText className="w-icon-md h-icon-md" />}
           >
             {t("sellerworkspace.proDashboardPage.facturesRecus")}
           </Button>
@@ -99,7 +99,7 @@ export const ProDashboardPage: React.FC = () => {
             className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-xs"
           >
             <span>Voir ma vitrine en ligne</span>
-            <ArrowUpRight className="w-4 h-4" />
+            <ArrowUpRight className="w-icon-md h-icon-md" />
           </Link>
         </div>
       </div>
@@ -109,14 +109,14 @@ export const ProDashboardPage: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
             <span>Vues totales catalogue</span>
-            <Eye className="w-4 h-4 text-primary" />
+            <Eye className="w-icon-md h-icon-md text-primary" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {(analytics?.monthlyViews || 0).toLocaleString(locale)}
           </div>
           {hasCatalogue ? (
             <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-              <TrendingUp className="w-3 h-3" aria-hidden="true" />+
+              <TrendingUp className="w-icon-xs h-icon-xs" aria-hidden="true" />+
               {analytics?.weeklyViewsChangePercent.toLocaleString(locale)}%
               cette semaine
             </div>
@@ -130,14 +130,14 @@ export const ProDashboardPage: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
           <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
             <span>Demandes & Contacts</span>
-            <MessageSquare className="w-4 h-4 text-info" />
+            <MessageSquare className="w-icon-md h-icon-md text-info" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {analytics?.contactsCount.toLocaleString(locale) || "0"}
           </div>
           {hasCatalogue ? (
             <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-              <TrendingUp className="w-3 h-3" aria-hidden="true" />+
+              <TrendingUp className="w-icon-xs h-icon-xs" aria-hidden="true" />+
               {analytics?.weeklyContactsChangePercent.toLocaleString(locale)}%
             </div>
           ) : (
@@ -152,7 +152,7 @@ export const ProDashboardPage: React.FC = () => {
             <span>
               {t("sellerworkspace.proDashboardPage.tauxDeConversion")}
             </span>
-            <BarChart2 className="w-4 h-4 text-amber-500" />
+            <BarChart2 className="w-icon-md h-icon-md text-amber-500" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {hasCatalogue ? `${analytics?.conversionRate}%` : "—"}
@@ -169,7 +169,7 @@ export const ProDashboardPage: React.FC = () => {
             <span>
               {t("sellerworkspace.proDashboardPage.volumeDeVentesEstime")}
             </span>
-            <DollarSign className="w-4 h-4 text-success" />
+            <DollarSign className="w-icon-md h-icon-md text-success" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {analytics

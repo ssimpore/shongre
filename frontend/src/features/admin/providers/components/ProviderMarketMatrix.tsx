@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Select } from "../../../../design-system";
 import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { ProviderCategory } from "../../../../domains/providers/provider.types";
@@ -38,7 +39,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-info" />
+            <Globe className="w-icon-md h-icon-md text-info" />
             {t("admin.providerMarketMatrix.matriceDeCouvertureMultiMarches")}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -50,10 +51,11 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
 
         {/* Category filter */}
         <div className="flex items-center gap-2 shrink-0">
-          <select
+          <Select
+            className="w-auto"
+            aria-label="Filtrer par catégorie"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="py-1.5 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-700 font-medium h-control-touch"
           >
             <option value="ALL">Tous les domaines ({matrixRows.length})</option>
             {Object.values(PROVIDER_CATEGORIES).map((cat) => (
@@ -61,7 +63,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                 {cat.shortLabel}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -113,7 +115,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>
                         {m.isDefault && (
-                          <span className="text-micro bg-primary text-white px-1.5 py-0.2 rounded-sm font-bold">
+                          <span className="text-micro bg-primary text-white px-1.5 py-0.5 rounded-sm font-bold">
                             {t("admin.providerMarketMatrix.ref")}
                           </span>
                         )}

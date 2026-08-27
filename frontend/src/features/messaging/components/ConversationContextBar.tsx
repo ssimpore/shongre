@@ -49,7 +49,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             />
           ) : (
             <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center shrink-0 text-stone-400">
-              <Package className="w-5 h-5" />
+              <Package className="w-icon-lg h-icon-lg" />
             </div>
           )}
 
@@ -60,7 +60,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 className="font-bold text-stone-900 hover:text-primary transition-colors truncate flex items-center gap-1 group"
               >
                 <span>{listingContext.listingTitle}</span>
-                <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ExternalLink className="w-icon-xs h-icon-xs opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
               {listingContext.listingStatus === "reserved" && (
                 <Badge variant="warning" size="sm">
@@ -87,7 +87,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             variant="outline"
             size="sm"
             onClick={onViewTransaction}
-            leftIcon={<ShieldCheck className="w-3.5 h-3.5 text-success" />}
+            leftIcon={
+              <ShieldCheck className="w-icon-sm h-icon-sm text-success" />
+            }
             className="text-xs"
           >
             {t("messaging.conversationContextBar.suiviDeCommande")}
@@ -99,7 +101,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={onMakeOffer}
-                leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
+                leftIcon={
+                  <DollarSign className="w-icon-sm h-icon-sm text-warning" />
+                }
                 className="text-xs"
               >
                 {t("messaging.conversationContextBar.faireUneOffre")}
@@ -110,7 +114,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={onSchedulePickup}
-                leftIcon={<Calendar className="w-3.5 h-3.5 text-primary" />}
+                leftIcon={
+                  <Calendar className="w-icon-sm h-icon-sm text-primary" />
+                }
                 className="text-xs"
               >
                 {t("messaging.conversationContextBar.fixerRendezVous")}

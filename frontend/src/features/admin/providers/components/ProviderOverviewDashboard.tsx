@@ -143,7 +143,7 @@ export const ProviderOverviewDashboard: React.FC<
               {t("admin.providerOverviewDashboard.integrationsRepertoriees")}
             </span>
             <span className="p-2 rounded-lg bg-stone-100 text-stone-700 shrink-0">
-              <Cpu className="w-4 h-4" />
+              <Cpu className="w-icon-md h-icon-md" />
             </span>
           </div>
           <div className="mt-3">
@@ -170,7 +170,7 @@ export const ProviderOverviewDashboard: React.FC<
                     : "bg-warning-surface text-warning"
               }`}
             >
-              <Activity className="w-4 h-4" />
+              <Activity className="w-icon-md h-icon-md" />
             </span>
           </div>
           <div className="mt-3">
@@ -199,7 +199,7 @@ export const ProviderOverviewDashboard: React.FC<
               Prêts pour production
             </span>
             <span className="p-2 rounded-lg bg-info-surface text-info">
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-icon-md h-icon-md" />
             </span>
           </div>
           <div className="mt-3">
@@ -224,7 +224,7 @@ export const ProviderOverviewDashboard: React.FC<
                   : "bg-danger-surface text-danger"
               }`}
             >
-              <AlertTriangle className="w-4 h-4" />
+              <AlertTriangle className="w-icon-md h-icon-md" />
             </span>
           </div>
           <div className="mt-3">
@@ -249,7 +249,7 @@ export const ProviderOverviewDashboard: React.FC<
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-success" />
+              <ShieldCheck className="w-icon-md h-icon-md text-success" />
               {t("admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe")}
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
@@ -264,7 +264,7 @@ export const ProviderOverviewDashboard: React.FC<
               variant="outline"
               size="sm"
               onClick={() => onNavigateToTab("matrix")}
-              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+              rightIcon={<ArrowRight className="w-icon-sm h-icon-sm" />}
               className="text-xs h-control-sm"
             >
               {t("admin.providerOverviewDashboard.matriceMultiMarches")}
@@ -320,31 +320,31 @@ export const ProviderOverviewDashboard: React.FC<
                     />
                     {status === "operational" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded-sm">
-                        <CheckCircle2 className="w-3 h-3" />
+                        <CheckCircle2 className="w-icon-xs h-icon-xs" />
                         Actif
                       </span>
                     )}
                     {status === "degraded" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-1.5 py-0.5 rounded-sm">
-                        <AlertTriangle className="w-3 h-3" />
+                        <AlertTriangle className="w-icon-xs h-icon-xs" />
                         {t("admin.providerOverviewDashboard.degrade")}
                       </span>
                     )}
                     {status === "unavailable" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface px-1.5 py-0.5 rounded-sm">
-                        <XCircle className="w-3 h-3" />
+                        <XCircle className="w-icon-xs h-icon-xs" />
                         Inactif
                       </span>
                     )}
                     {status === "demo" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-info bg-info-surface px-1.5 py-0.5 rounded-sm">
-                        <CircleHelp className="w-3 h-3" />
+                        <CircleHelp className="w-icon-xs h-icon-xs" />
                         Démo
                       </span>
                     )}
                     {status === "unknown" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded-sm">
-                        <CircleHelp className="w-3 h-3" />
+                        <CircleHelp className="w-icon-xs h-icon-xs" />
                         Non vérifié
                       </span>
                     )}
@@ -381,7 +381,7 @@ export const ProviderOverviewDashboard: React.FC<
         <div className="lg:col-span-2 bg-white rounded-xl border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
+              <Layers className="w-icon-md h-icon-md text-primary" />
               {t(
                 "admin.providerOverviewDashboard.repartitionParDomaineCategorie",
               )}
@@ -433,7 +433,7 @@ export const ProviderOverviewDashboard: React.FC<
         <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-stone-600" />
+              <Clock className="w-icon-md h-icon-md text-stone-600" />
               {t("admin.providerOverviewDashboard.changementsRecents")}
             </h2>
           </div>

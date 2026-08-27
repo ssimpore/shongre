@@ -90,7 +90,9 @@ export function DomainHandoffPage() {
             to="/connexion"
             variant="primary"
             className="w-full"
-            rightIcon={<ArrowRight className="h-4 w-4" aria-hidden="true" />}
+            rightIcon={
+              <ArrowRight className="h-icon-md w-icon-md" aria-hidden="true" />
+            }
           >
             Se connecter
           </Button>

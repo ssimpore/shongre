@@ -269,7 +269,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 variant="ghost"
                 size="sm"
                 onClick={handleResetOverride}
-                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+                leftIcon={<RotateCcw className="w-icon-sm h-icon-sm" />}
                 className="text-xs text-danger hover:bg-danger-surface"
               >
                 Supprimer l'affectation

@@ -1,4 +1,5 @@
 import { isProSeller } from "../../domains/user/user.domain";
+import { Select } from "../../design-system";
 import React, { useState, useEffect } from "react";
 import { Search, CheckCircle2, AlertTriangle, FileCheck } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -163,7 +164,7 @@ export const AdminUsersPage: React.FC = () => {
       <div className="bg-white rounded-2xl border border-border-base p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -176,11 +177,11 @@ export const AdminUsersPage: React.FC = () => {
             />
           </div>
 
-          <select
+          <Select
+            className="w-auto"
             aria-label={t("admin.adminUsersPage.filtrerParTypeDeCompte")}
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
             <option value="all">
               {t("admin.adminUsersPage.tousLesTypesDeCompte")}
@@ -188,13 +189,13 @@ export const AdminUsersPage: React.FC = () => {
             <option value="individual">Particulier</option>
             <option value="professional">Professionnel (Pro)</option>
             <option value="staff">Personnel Interne (Staff)</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
+            className="w-auto"
             aria-label={t("admin.adminUsersPage.filtrerParRolePlateforme")}
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="py-2 px-3 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
           >
             <option value="all">
               Tous les rôles ({ALL_PLATFORM_ROLES.length})
@@ -204,7 +205,7 @@ export const AdminUsersPage: React.FC = () => {
                 {ROLE_DEFINITIONS[r]?.title || r}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {/* Announced, because it is the only feedback a filter gives. Typing in
@@ -276,7 +277,7 @@ export const AdminUsersPage: React.FC = () => {
                           <div className="font-bold text-stone-900 flex items-center gap-1.5">
                             <span>{u.name}</span>
                             {u.isVerified && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-info" />
+                              <CheckCircle2 className="w-icon-sm h-icon-sm text-info" />
                             )}
                           </div>
                           <div className="text-xs text-stone-500">
@@ -319,8 +320,8 @@ export const AdminUsersPage: React.FC = () => {
                           </span>
                         ) : isPendingPro ? (
                           <span className="text-micro bg-warning-surface text-warning font-bold px-2 py-1 rounded-sm flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3" /> KBIS En
-                            attente
+                            <AlertTriangle className="w-icon-xs h-icon-xs" />{" "}
+                            KBIS En attente
                           </span>
                         ) : (
                           <span className="text-micro bg-success-surface text-success font-bold px-2 py-1 rounded-sm">
@@ -354,7 +355,7 @@ export const AdminUsersPage: React.FC = () => {
                             onClick={() => setKbisModalUser(u)}
                             className="text-xs bg-success hover:bg-success text-white flex items-center gap-1"
                           >
-                            <FileCheck className="w-3 h-3" />
+                            <FileCheck className="w-icon-xs h-icon-xs" />
                             <span>Valider KBIS</span>
                           </Button>
                         )}

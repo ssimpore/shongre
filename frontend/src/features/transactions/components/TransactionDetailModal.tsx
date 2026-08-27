@@ -155,9 +155,9 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               }`}
             >
               {feedback.type === "success" ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <CheckCircle2 className="h-icon-md w-icon-md shrink-0" />
               ) : (
-                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <AlertTriangle className="h-icon-md w-icon-md shrink-0" />
               )}
               {feedback.text}
             </div>
@@ -201,7 +201,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             ) && (
               <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                 <h4 className="flex items-center gap-2 text-sm font-bold">
-                  <KeyRound className="h-4 w-4 text-primary" /> Code de remise
+                  <KeyRound className="h-icon-md w-icon-md text-primary" /> Code
+                  de remise
                 </h4>
                 {handoverCode ? (
                   <div className="mt-3">
@@ -280,7 +281,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   disabled={
                     isLoading || !carrierName.trim() || !trackingNumber.trim()
                   }
-                  leftIcon={<PackageCheck className="h-4 w-4" />}
+                  leftIcon={<PackageCheck className="h-icon-md w-icon-md" />}
                 >
                   Enregistrer l’expédition
                 </Button>

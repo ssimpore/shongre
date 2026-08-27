@@ -75,7 +75,7 @@ export const SupportRequestsPage: React.FC = () => {
           size="sm"
           className="font-bold flex items-center gap-2"
         >
-          <PlusCircle className="w-4 h-4" />
+          <PlusCircle className="w-icon-md h-icon-md" />
           <span>Nouvelle demande</span>
         </Button>
       </div>
@@ -111,7 +111,7 @@ export const SupportRequestsPage: React.FC = () => {
       ) : requests.length === 0 ? (
         <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
           <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center mx-auto">
-            <Headphones className="w-6 h-6" />
+            <Headphones className="w-icon-xl h-icon-xl" />
           </div>
           <div className="space-y-1">
             <h2 className="text-base font-black text-stone-900">
@@ -174,10 +174,10 @@ export const SupportRequestsPage: React.FC = () => {
 
                 <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                   <div className="flex items-center gap-1.5 text-xs text-stone-500 font-bold">
-                    <MessageSquare className="w-4 h-4" />
+                    <MessageSquare className="w-icon-md h-icon-md" />
                     <span aria-label="Dossier avec historique">1+</span>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-stone-400 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-icon-lg h-icon-lg text-stone-400 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </Link>
             );

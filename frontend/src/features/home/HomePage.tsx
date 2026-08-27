@@ -290,7 +290,7 @@ export const HomePage: React.FC = () => {
                 to={publishCta.to}
                 variant="primary"
                 size="md"
-                leftIcon={<PlusCircle className="w-4 h-4" />}
+                leftIcon={<PlusCircle className="w-icon-md h-icon-md" />}
               >
                 {t(publishCta.labelKey)}
               </Button>

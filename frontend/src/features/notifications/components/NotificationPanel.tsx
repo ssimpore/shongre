@@ -85,7 +85,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               onClick={onMarkAllAsRead}
               className="text-micro font-bold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <Check className="w-3.5 h-3.5 text-primary" />
+              <Check className="w-icon-sm h-icon-sm text-primary" />
               <span>{t("notifications.notificationPanel.toutLire")}</span>
             </button>
           )}
@@ -101,7 +101,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               "notifications.notificationPanel.preferencesDeNotifications",
             )}
           >
-            <Settings className="w-3.5 h-3.5" />
+            <Settings className="w-icon-sm h-icon-sm" />
           </Link>
         </div>
       </div>
@@ -123,7 +123,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         ) : notifications.length === 0 ? (
           <div className="p-8 text-center space-y-2">
             <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto">
-              <Bell className="w-5 h-5" />
+              <Bell className="w-icon-lg h-icon-lg" />
             </div>
             <p className="text-xs font-bold text-stone-800">
               {t(
@@ -160,7 +160,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           <span>
             {t("notifications.notificationPanel.voirToutesLesNotifications")}
           </span>
-          <ExternalLink className="w-3 h-3" />
+          <ExternalLink className="w-icon-xs h-icon-xs" />
         </Link>
       </div>
     </div>

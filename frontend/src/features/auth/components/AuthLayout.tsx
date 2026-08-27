@@ -41,7 +41,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="text-center mb-8">
           {badgeText && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-icon-sm h-icon-sm" />
               <span>{badgeText}</span>
             </div>
           )}
@@ -77,17 +77,17 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         {/* Trust Guarantees */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-micro font-semibold text-stone-600">
           <div className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-stone-600" />
+            <Lock className="w-icon-sm h-icon-sm text-stone-600" />
             <span>Chiffrement SSL 256-bit</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
+            <ShieldCheck className="w-icon-sm h-icon-sm text-stone-600" />
             <span>{t("auth.authLayout.conformiteRgpdFranceUe")}</span>
           </div>
           <div className="w-1 h-1 rounded-full bg-stone-300" />
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
+            <CheckCircle2 className="w-icon-sm h-icon-sm text-success" />
             <span>{t("auth.authLayout.protectionAcheteurVendeur")}</span>
           </div>
         </div>

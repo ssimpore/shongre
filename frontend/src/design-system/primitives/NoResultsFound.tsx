@@ -119,7 +119,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
           className="mt-6 w-full max-w-md bg-bg-subtle/80 rounded-control border border-border-subtle p-4 text-left"
         >
           <div className="flex items-center gap-1.5 text-xs font-bold text-text-main mb-2">
-            <Lightbulb className="w-3.5 h-3.5 text-warning shrink-0" />
+            <Lightbulb className="w-icon-sm h-icon-sm text-warning shrink-0" />
             <span>
               {t("ui.noResultsFound.conseilsPourTrouverVotreBonheur")}
             </span>
@@ -148,7 +148,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
             size="md"
             fullWidth
             onClick={onClearFilters}
-            leftIcon={<RotateCcw className="w-4 h-4" />}
+            leftIcon={<RotateCcw className="w-icon-md h-icon-md" />}
           >
             {resolvedClearFiltersLabel}
           </Button>
@@ -162,7 +162,9 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
             size="md"
             fullWidth
             onClick={onSaveSearch}
-            leftIcon={<BookmarkPlus className="w-4 h-4 text-primary" />}
+            leftIcon={
+              <BookmarkPlus className="w-icon-md h-icon-md text-primary" />
+            }
           >
             {resolvedSaveSearchLabel}
           </Button>

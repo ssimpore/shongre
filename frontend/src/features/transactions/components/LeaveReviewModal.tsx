@@ -155,7 +155,9 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
                       : "bg-stone-50 text-stone-600 border-stone-200/60 hover:bg-stone-100 hover:border-stone-300 shadow-2xs"
                   }`}
                 >
-                  {isSelected && <Check className="w-4 h-4 text-primary" />}
+                  {isSelected && (
+                    <Check className="w-icon-md h-icon-md text-primary" />
+                  )}
                   {badge}
                 </button>
               );
@@ -195,7 +197,7 @@ export const LeaveReviewModal: React.FC<LeaveReviewModalProps> = ({
             type="submit"
             isLoading={isSubmitting}
             size="md"
-            leftIcon={<Sparkles className="w-5 h-5" />}
+            leftIcon={<Sparkles className="w-icon-lg h-icon-lg" />}
           >
             Publier mon avis
           </Button>

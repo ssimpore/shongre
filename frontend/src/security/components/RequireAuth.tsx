@@ -47,7 +47,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
             to={routes.auth.login(returnTo)}
             variant="primary"
             size="md"
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
             className="w-full sm:w-auto"
           >
             Se connecter
@@ -56,7 +56,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
             to={routes.auth.register(returnTo)}
             variant="outline"
             size="md"
-            leftIcon={<UserPlus className="w-4 h-4" />}
+            leftIcon={<UserPlus className="w-icon-md h-icon-md" />}
             className="w-full sm:w-auto"
           >
             {t("security.requireAuth.creerUnCompte")}

@@ -401,7 +401,7 @@ export const AdminNewsletterPage: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => setCreateOpen(true)}
-              leftIcon={<PlusCircle className="h-4 w-4" />}
+              leftIcon={<PlusCircle className="h-icon-md w-icon-md" />}
             >
               Nouvelle campagne
             </Button>
@@ -524,9 +524,9 @@ export const AdminNewsletterPage: React.FC = () => {
             >
               <div className="flex items-center gap-2">
                 {preflight.canSend ? (
-                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <CheckCircle2 className="h-icon-lg w-icon-lg text-success" />
                 ) : (
-                  <CircleAlert className="h-5 w-5 text-danger" />
+                  <CircleAlert className="h-icon-lg w-icon-lg text-danger" />
                 )}
                 <strong className="text-sm">
                   {preflight.canSend
@@ -582,7 +582,7 @@ export const AdminNewsletterPage: React.FC = () => {
                   disabled={submitting}
                   onClick={() => void sendCampaign(preflightCampaign)}
                 >
-                  <Send className="h-3.5 w-3.5" />
+                  <Send className="h-icon-sm w-icon-sm" />
                   Mettre en file
                 </Button>
               )}
@@ -738,7 +738,7 @@ const Overview: React.FC<{
       </div>
       <section className="min-w-0 rounded-2xl border border-border-base bg-white p-5 shadow-xs">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-success" />
+          <ShieldCheck className="h-icon-md w-icon-md text-success" />
           <h2 className="text-sm font-black">Garde-fous actifs</h2>
         </div>
         <ul className="mt-4 space-y-3 text-xs text-stone-600">
@@ -750,7 +750,7 @@ const Overview: React.FC<{
             "Aucun fallback Demo ou fournisseur plateforme silencieux",
           ].map((item) => (
             <li key={item} className="flex gap-2">
-              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+              <CheckCircle2 className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success" />
               <span>{item}</span>
             </li>
           ))}
@@ -835,7 +835,7 @@ const Campaigns: React.FC<{
                 onClick={() => onPreview(campaign)}
                 aria-label={`Aperçu de ${campaign.name}`}
               >
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-icon-sm w-icon-sm" />
                 Aperçu
               </Button>
               {!["COMPLETED", "CANCELLED"].includes(campaign.status) && (
@@ -844,7 +844,7 @@ const Campaigns: React.FC<{
                   size="sm"
                   onClick={() => onPreflight(campaign)}
                 >
-                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <ShieldCheck className="h-icon-sm w-icon-sm" />
                   Pré-vol
                 </Button>
               )}
@@ -857,7 +857,7 @@ const Campaigns: React.FC<{
                     disabled={sending}
                     onClick={() => onSend(campaign)}
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="h-icon-sm w-icon-sm" />
                     Envoyer
                   </Button>
                 )}
@@ -877,7 +877,7 @@ const Audiences: React.FC<{
   <div className="grid gap-5 xl:grid-cols-2">
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
       <div className="flex items-center gap-2">
-        <Users className="h-4 w-4 text-primary" />
+        <Users className="h-icon-md w-icon-md text-primary" />
         <h2 className="text-sm font-black">Listes statiques</h2>
       </div>
       <div className="mt-4 space-y-2">
@@ -903,7 +903,7 @@ const Audiences: React.FC<{
     </section>
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
       <div className="flex items-center gap-2">
-        <ListFilter className="h-4 w-4 text-violet-700" />
+        <ListFilter className="h-icon-md w-icon-md text-violet-700" />
         <h2 className="text-sm font-black">Segments dynamiques</h2>
       </div>
       <div className="mt-4 space-y-2">
@@ -985,7 +985,7 @@ const Audiences: React.FC<{
                 </td>
                 <td className="px-3 py-3">
                   {profile.crmContactId ? (
-                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    <CheckCircle2 className="h-icon-md w-icon-md text-success" />
                   ) : (
                     <span className="text-stone-600">—</span>
                   )}
@@ -1004,7 +1004,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
 }) => (
   <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
     <div className="flex items-center gap-2">
-      <LayoutTemplate className="h-4 w-4 text-primary" />
+      <LayoutTemplate className="h-icon-md w-icon-md text-primary" />
       <div>
         <h2 className="text-sm font-black">Modèles versionnés</h2>
         <p className="mt-1 text-xs text-stone-500">
@@ -1020,7 +1020,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
         >
           <div className="flex items-start justify-between gap-3">
             <span className="rounded-xl bg-violet-50 p-2 text-violet-700">
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="h-icon-md w-icon-md" />
             </span>
             <Badge variant="neutral" size="sm">
               v{template.currentVersion}
@@ -1100,7 +1100,7 @@ const Automation: React.FC<{
           "Consentement et fréquence revérifiés avant envoi",
         ].map((item) => (
           <li key={item} className="flex gap-2">
-            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+            <CheckCircle2 className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success" />
             {item}
           </li>
         ))}
@@ -1173,7 +1173,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
   <div className="grid gap-5 xl:grid-cols-3">
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center gap-2">
-        <Ban className="h-4 w-4 text-danger" />
+        <Ban className="h-icon-md w-icon-md text-danger" />
         <div>
           <h2 className="text-sm font-black">Suppressions actives</h2>
           <p className="mt-1 text-xs text-stone-500">
@@ -1212,7 +1212,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
     </section>
     <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
       <div className="flex items-center gap-2">
-        <Clock3 className="h-4 w-4 text-violet-700" />
+        <Clock3 className="h-icon-md w-icon-md text-violet-700" />
         <h2 className="text-sm font-black">Finalités séparées</h2>
       </div>
       <div className="mt-4 space-y-3 text-xs">

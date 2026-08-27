@@ -255,7 +255,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
                 to="/compte"
                 variant="outline"
                 size="md"
-                leftIcon={<ArrowLeft className="w-4 h-4" />}
+                leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
               >
                 {t("security.requirePermission.retourAMonCompte")}
               </Button>
@@ -289,7 +289,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
               to={routes.home()}
               variant="outline"
               size="md"
-              leftIcon={<ArrowLeft className="w-4 h-4" />}
+              leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
             >
               {t("security.requirePermission.retourALAccueil")}
             </Button>

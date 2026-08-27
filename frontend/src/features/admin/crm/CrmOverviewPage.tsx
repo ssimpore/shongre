@@ -134,7 +134,7 @@ export const CrmOverviewPage: React.FC = () => {
         </h1>
         <p className="mx-auto mt-1 max-w-lg text-sm text-stone-600">{error}</p>
         <Button className="mt-5" size="sm" onClick={() => void loadDashboard()}>
-          <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
           Réessayer
         </Button>
       </div>
@@ -222,11 +222,14 @@ export const CrmOverviewPage: React.FC = () => {
               size="sm"
               className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
             >
-              <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+              <Sparkles
+                className="h-icon-md w-icon-md text-primary"
+                aria-hidden="true"
+              />
               Prospection assistée
             </Button>
             <Button to="/admin/crm/pipeline" variant="primary" size="sm">
-              <Plus className="h-4 w-4" aria-hidden="true" />
+              <Plus className="h-icon-md w-icon-md" aria-hidden="true" />
               Nouvelle opportunité
             </Button>
           </div>
@@ -302,7 +305,7 @@ export const CrmOverviewPage: React.FC = () => {
               className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
             >
               Ouvrir le pipeline{" "}
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </Link>
           </div>
           <div className="space-y-3 p-4 sm:p-5">
@@ -377,7 +380,10 @@ export const CrmOverviewPage: React.FC = () => {
                 Prochaines actions commerciales
               </p>
             </div>
-            <Clock3 className="h-4 w-4 text-primary" aria-hidden="true" />
+            <Clock3
+              className="h-icon-md w-icon-md text-primary"
+              aria-hidden="true"
+            />
           </div>
           <div className="divide-y divide-border-subtle px-4">
             {dashboard.priorityTasks.slice(0, 5).map((task) => (
@@ -409,7 +415,7 @@ export const CrmOverviewPage: React.FC = () => {
               className="flex items-center justify-center gap-1 text-xs font-bold text-primary hover:underline"
             >
               Voir toutes les tâches{" "}
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </Link>
           </div>
         </section>
@@ -427,7 +433,7 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
           <label className="relative block sm:w-64">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400"
+              className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-stone-400"
               aria-hidden="true"
             />
             <span className="sr-only">Rechercher dans les opportunités</span>
@@ -507,7 +513,7 @@ export const CrmOverviewPage: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
           <span className="inline-flex items-center gap-1.5">
             <CheckCircle2
-              className="h-3.5 w-3.5 text-success"
+              className="h-icon-sm w-icon-sm text-success"
               aria-hidden="true"
             />
             Prévision déterministe · aucune donnée envoyée à un fournisseur IA

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Select } from "../../design-system";
 import type {
   CommissionCalculation,
   CommercialConfigurationVersion,
@@ -292,8 +293,9 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
             </label>
             <label className="text-xs font-bold text-stone-700">
               Type vendeur
-              <select
-                className="mt-1 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+              <Select
+                className="mt-1 w-full"
+                labelledByAncestor
                 value={input.sellerType}
                 onChange={(event) =>
                   setInput((current) => ({
@@ -305,12 +307,13 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 <option value="individual">Particulier</option>
                 <option value="professional">Professionnel</option>
                 <option value="organization">Organisation</option>
-              </select>
+              </Select>
             </label>
             <label className="text-xs font-bold text-stone-700">
               Verticale
-              <select
-                className="mt-1 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+              <Select
+                className="mt-1 w-full"
+                labelledByAncestor
                 value={input.verticalId}
                 onChange={(event) =>
                   setInput((current) => ({
@@ -324,7 +327,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                     {vertical.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
             <label className="text-xs font-bold text-stone-700">
               Catégorie (identifiant)
@@ -361,7 +364,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
             </p>
           )}
           <Button className="mt-4" type="submit" isLoading={loading}>
-            <Calculator className="h-4 w-4" /> Simuler
+            <Calculator className="h-icon-md w-icon-md" /> Simuler
           </Button>
         </form>
 
@@ -438,7 +441,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               setEditorOpen(true);
             }}
           >
-            <Plus className="h-4 w-4" /> Nouvelle politique
+            <Plus className="h-icon-md w-icon-md" /> Nouvelle politique
           </Button>
         </div>
         <div className="mt-3 grid gap-3 lg:grid-cols-2">
@@ -489,7 +492,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   setEditorOpen(true);
                 }}
               >
-                <Copy className="h-4 w-4" /> Cloner en brouillon
+                <Copy className="h-icon-md w-icon-md" /> Cloner en brouillon
               </Button>
               {policy.status === "active" && (
                 <Button

@@ -22,6 +22,8 @@ import {
   Container,
   Drawer,
   FilterPanel,
+  Input,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -31,8 +33,6 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { storageService } from "../../services/storage.service";
 import { JobCard } from "./components/JobCard";
 
-const fieldClass =
-  "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 
 const EMPLOYMENT_FILTER_KEYS = [
@@ -109,8 +109,9 @@ const EmploymentFilters: React.FC<{
           <span className="mb-2 block text-xs font-bold text-text-main">
             {label}
           </span>
-          <select
-            className={fieldClass}
+          <Select
+            className="w-full"
+            labelledByAncestor
             value={params.get(param) || ""}
             onChange={(event) =>
               setParam(param, event.target.value || undefined)
@@ -124,15 +125,16 @@ const EmploymentFilters: React.FC<{
                 {entry.label}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       ))}
       <label className="block">
         <span className="mb-2 block text-xs font-bold text-text-main">
           Rayon autour du lieu
         </span>
-        <select
-          className={fieldClass}
+        <Select
+          className="w-full"
+          labelledByAncestor
           value={params.get("radius") || ""}
           disabled={!params.get("location")}
           onChange={(event) =>
@@ -145,14 +147,15 @@ const EmploymentFilters: React.FC<{
           <option value="25">25 km</option>
           <option value="50">50 km</option>
           <option value="100">100 km</option>
-        </select>
+        </Select>
       </label>
       <label className="block">
         <span className="mb-2 block text-xs font-bold text-text-main">
           Date de publication
         </span>
-        <select
-          className={fieldClass}
+        <Select
+          className="w-full"
+          labelledByAncestor
           value={params.get("published") || ""}
           onChange={(event) =>
             setParam("published", event.target.value || undefined)
@@ -162,7 +165,7 @@ const EmploymentFilters: React.FC<{
           <option value="1">Depuis 24 heures</option>
           <option value="7">Depuis 7 jours</option>
           <option value="30">Depuis 30 jours</option>
-        </select>
+        </Select>
       </label>
       <div>
         <label
@@ -171,10 +174,10 @@ const EmploymentFilters: React.FC<{
         >
           Rémunération minimale annuelle
         </label>
-        <input
+        <Input
           id="employment-salary"
           inputMode="numeric"
-          className={fieldClass}
+          className="w-full"
           placeholder={`Ex. ${new Intl.NumberFormat(currentLocale).format(35_000)} ${currencySymbol}`}
           value={params.get("salary") || ""}
           onChange={(event) =>
@@ -186,8 +189,9 @@ const EmploymentFilters: React.FC<{
         <span className="mb-2 block text-xs font-bold text-text-main">
           Période de rémunération
         </span>
-        <select
-          className={fieldClass}
+        <Select
+          className="w-full"
+          labelledByAncestor
           value={params.get("salaryFrequency") || ""}
           onChange={(event) =>
             setParam("salaryFrequency", event.target.value || undefined)
@@ -199,7 +203,7 @@ const EmploymentFilters: React.FC<{
               {entry.label}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="flex min-h-8 cursor-pointer items-center gap-2 text-xs text-text-main">
         <input
@@ -417,7 +421,7 @@ export const EmploymentSearchPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-bg-page">
+    <main className="min-h-screen bg-bg-base">
       <section className="border-b border-border-base bg-text-main text-white">
         <Container className="py-8 sm:py-10">
           <div className="max-w-3xl">
@@ -529,9 +533,9 @@ export const EmploymentSearchPage: React.FC = () => {
             >
               Filtres
             </Button>
-            <select
+            <Select
+              className="w-full hidden w-auto sm:block"
               aria-label="Trier les offres"
-              className={`${fieldClass} hidden w-auto sm:block h-control-touch`}
               value={query.sort}
               onChange={(event) => setParam("sort", event.target.value)}
             >
@@ -541,7 +545,7 @@ export const EmploymentSearchPage: React.FC = () => {
               <option value="distance">Distance</option>
               <option value="deadline">Date limite</option>
               <option value="promoted">Placements sponsorisés</option>
-            </select>
+            </Select>
           </div>
         </div>
 

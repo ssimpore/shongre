@@ -27,6 +27,7 @@ import {
   Container,
   Drawer,
   FilterPanel,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -97,13 +98,13 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Matière
         </legend>
-        <select
+        <Select
+          className="w-full"
           aria-label="Matière"
           value={params.get("subject") || ""}
           onChange={(event) =>
             updateParam("subject", event.target.value || undefined)
           }
-          className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary"
         >
           <option value="">Toutes les matières</option>
           {catalog.subjects.map((subject) => (
@@ -111,7 +112,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
               {subject.label}
             </option>
           ))}
-        </select>
+        </Select>
       </fieldset>
 
       <fieldset>
@@ -207,13 +208,13 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Prix par heure
         </legend>
-        <select
+        <Select
+          className="w-full"
           aria-label="Prix maximum par heure"
           value={params.get("maxPrice") || ""}
           onChange={(event) =>
             updateParam("maxPrice", event.target.value || undefined)
           }
-          className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="">Sans maximum</option>
           {[2_500, 3_000, 4_000, 6_000].map((amountMinor) => (
@@ -225,33 +226,34 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
               maximum
             </option>
           ))}
-        </select>
+        </Select>
       </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Langue
         </legend>
-        <select
+        <Select
+          className="w-full"
           aria-label="Langue"
           value={params.get("language") || ""}
           onChange={(event) =>
             updateParam("language", event.target.value || undefined)
           }
-          className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="">Toutes les langues</option>
           <option value="fr">Français</option>
           <option value="en">Anglais</option>
           <option value="es">Espagnol</option>
-        </select>
+        </Select>
       </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Type de professeur
         </legend>
-        <select
+        <Select
+          className="w-full"
           aria-label="Type de professeur"
           value={params.get("tutorType") || "all"}
           onChange={(event) =>
@@ -260,12 +262,11 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
               event.target.value === "all" ? undefined : event.target.value,
             )
           }
-          className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main"
         >
           <option value="all">Tous les profils</option>
           <option value="individual">Professeur indépendant</option>
           <option value="organization">École ou organisme</option>
-        </select>
+        </Select>
       </fieldset>
 
       <fieldset className="space-y-2 border-t border-border-subtle pt-4">
@@ -282,17 +283,18 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         </label>
         <label className="block text-xs font-bold text-text-main">
           Note moyenne
-          <select
+          <Select
+            className="mt-2 w-full"
+            labelledByAncestor
             value={params.get("rating") || ""}
             onChange={(event) =>
               updateParam("rating", event.target.value || undefined)
             }
-            className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main"
           >
             <option value="">Toutes les notes</option>
             <option value="4">4 et plus, avec assez d’avis</option>
             <option value="4.5">4,5 et plus, avec assez d’avis</option>
-          </select>
+          </Select>
         </label>
       </fieldset>
     </FilterPanel>
@@ -549,17 +551,19 @@ export const CoursesSearchPage: React.FC = () => {
             <label className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
               <ArrowUpDown className="h-icon-sm w-icon-sm" aria-hidden="true" />
               <span className="sr-only sm:not-sr-only">Trier par</span>
-              <select
+              <Select
+                size="sm"
+                className="pl-3 pr-8 w-auto"
+                labelledByAncestor
                 value={query.sort}
                 onChange={(event) => updateParam("sort", event.target.value)}
-                className="h-control-sm rounded-control border border-border-base bg-bg-surface pl-3 pr-8 text-xs text-text-main"
               >
                 <option value="relevance">Pertinence</option>
                 <option value="price_asc">Prix croissant</option>
                 <option value="price_desc">Prix décroissant</option>
                 <option value="rating">Avis vérifiés</option>
                 <option value="response_time">Temps de réponse</option>
-              </select>
+              </Select>
             </label>
           </div>
 

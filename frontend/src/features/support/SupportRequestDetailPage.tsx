@@ -115,7 +115,7 @@ export const SupportRequestDetailPage: React.FC = () => {
           onClick={() => navigate("/compte/support")}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-icon-md h-icon-md" />
           <span>
             {t("support.supportRequestDetailPage.retourAMesDemandes")}
           </span>
@@ -182,7 +182,7 @@ export const SupportRequestDetailPage: React.FC = () => {
                       }`}
                     >
                       {isAgent ? (
-                        <Headphones className="w-3.5 h-3.5" />
+                        <Headphones className="w-icon-sm h-icon-sm" />
                       ) : (
                         currentUser?.name?.charAt(0) || "V"
                       )}
@@ -257,7 +257,7 @@ export const SupportRequestDetailPage: React.FC = () => {
               disabled={isSubmitting || !replyText.trim()}
               className="font-bold flex items-center gap-2"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-icon-md h-icon-md" />
               <span>{isSubmitting ? "Envoi..." : "Envoyer ma réponse"}</span>
             </Button>
           </div>

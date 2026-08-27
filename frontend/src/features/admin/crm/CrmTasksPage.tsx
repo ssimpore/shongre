@@ -213,7 +213,7 @@ export const CrmTasksPage: React.FC = () => {
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" /> Nouvelle tâche
+            <Plus className="h-icon-md w-icon-md" /> Nouvelle tâche
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
@@ -240,7 +240,7 @@ export const CrmTasksPage: React.FC = () => {
       <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
           <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
-            <Filter className="h-3.5 w-3.5" /> Vue
+            <Filter className="h-icon-sm w-icon-sm" /> Vue
           </div>
           <div
             className="flex rounded-lg bg-stone-100 p-1"
@@ -306,9 +306,9 @@ export const CrmTasksPage: React.FC = () => {
                     className="shrink-0 text-stone-400 enabled:hover:text-success disabled:text-success"
                   >
                     {done ? (
-                      <CheckCircle2 className="h-5 w-5" />
+                      <CheckCircle2 className="h-icon-lg w-icon-lg" />
                     ) : (
-                      <Circle className="h-5 w-5" />
+                      <Circle className="h-icon-lg w-icon-lg" />
                     )}
                   </button>
                   <div className="min-w-0 flex-1">
@@ -322,7 +322,7 @@ export const CrmTasksPage: React.FC = () => {
                     </p>
                   </div>
                   <div className="hidden items-center gap-1.5 text-micro font-bold sm:flex">
-                    <CalendarClock className="h-3.5 w-3.5" />
+                    <CalendarClock className="h-icon-sm w-icon-sm" />
                     <time
                       className={overdue ? "text-danger" : "text-stone-500"}
                     >

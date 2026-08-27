@@ -104,7 +104,10 @@ export const ModerationAppealsPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <div className="space-y-1">
         <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
-          <Scale className="w-6 h-6 text-primary" aria-hidden="true" />
+          <Scale
+            className="w-icon-xl h-icon-xl text-primary"
+            aria-hidden="true"
+          />
           Décisions et recours
         </h1>
         <p className="text-xs sm:text-sm text-stone-500">

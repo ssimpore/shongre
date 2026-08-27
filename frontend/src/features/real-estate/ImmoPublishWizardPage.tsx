@@ -38,6 +38,7 @@ import {
   FormField,
   Input,
   ProgressBar,
+  Select,
   Skeleton,
   Textarea,
 } from "../../design-system";
@@ -75,9 +76,6 @@ const FIRST_STEP = REAL_ESTATE_CONSTRAINTS.publication.firstStep;
 const TOTAL_STEPS = REAL_ESTATE_CONSTRAINTS.publication.stepCount;
 
 type DraftData = PropertyPublicationDraftData;
-
-const fieldClass =
-  "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
 
 export const ImmoPublishWizardPage: React.FC = () => {
   const { currentUser } = useAuth();
@@ -418,7 +416,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             </h1>
           </div>
           <p className="flex items-center gap-2 text-xs text-text-muted">
-            <Save className="h-4 w-4" />
+            <Save className="h-icon-md w-icon-md" />
             {saving ? "Enregistrement…" : "Brouillon enregistré"}
           </p>
         </div>
@@ -444,7 +442,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${active ? "bg-white/15" : complete ? "bg-success-surface text-success" : "bg-bg-subtle"}`}
                     >
                       {complete ? (
-                        <Check className="h-4 w-4" />
+                        <Check className="h-icon-md w-icon-md" />
                       ) : (
                         <Icon className="h-4 w-4" />
                       )}
@@ -488,8 +486,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-bold">
                   Votre projet
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.transactionType}
                     onChange={(event) =>
                       update("transactionType", event.target.value)
@@ -501,12 +500,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       Location saisonnière
                     </option>
                     <option value="shared_accommodation">Colocation</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="text-xs font-bold">
                   Type de bien
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.propertyType}
                     onChange={(event) =>
                       update("propertyType", event.target.value)
@@ -517,7 +517,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                         {type.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
               <p className="rounded-control bg-info-surface p-4 text-xs text-text-secondary">
@@ -570,8 +570,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
               </FormField>
               <label className="block text-xs font-bold">
                 Précision affichée sur la carte
-                <select
-                  className={`mt-2 ${fieldClass} h-control-touch`}
+                <Select
+                  className="mt-2 w-full"
+                  labelledByAncestor
                   value={data.locationPrecision}
                   onChange={(event) =>
                     update(
@@ -583,7 +584,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   <option value="street">Rue approximative</option>
                   <option value="district">Quartier</option>
                   <option value="city">Commune</option>
-                </select>
+                </Select>
               </label>
               <div>
                 <p className="mb-2 text-xs font-bold">Position de référence</p>
@@ -671,8 +672,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 </FormField>
                 <label className="text-xs font-bold">
                   État
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.condition}
                     onChange={(event) =>
                       update("condition", event.target.value)
@@ -683,7 +685,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     <option value="good">Bon état</option>
                     <option value="renovation_needed">Travaux à prévoir</option>
                     <option value="to_renovate">À rénover</option>
-                  </select>
+                  </Select>
                 </label>
               </div>
               <fieldset>
@@ -762,8 +764,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-bold">
                   Période
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.period}
                     onChange={(event) => update("period", event.target.value)}
                   >
@@ -771,12 +774,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     <option value="month">Par mois</option>
                     <option value="week">Par semaine</option>
                     <option value="night">Par nuit</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="text-xs font-bold">
                   Honoraires à la charge
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.feesPaidBy}
                     onChange={(event) =>
                       update("feesPaidBy", event.target.value)
@@ -787,7 +791,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     <option value="owner">du propriétaire</option>
                     <option value="tenant">du locataire</option>
                     <option value="shared">partagée</option>
-                  </select>
+                  </Select>
                 </label>
               </div>
             </div>
@@ -798,8 +802,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="text-xs font-bold">
                   Classe DPE
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.dpeClass}
                     onChange={(event) => update("dpeClass", event.target.value)}
                   >
@@ -807,12 +812,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     {["A", "B", "C", "D", "E", "F", "G"].map((item) => (
                       <option key={item}>{item}</option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className="text-xs font-bold">
                   Classe GES
-                  <select
-                    className={`mt-2 ${fieldClass} h-control-touch`}
+                  <Select
+                    className="mt-2 w-full"
+                    labelledByAncestor
                     value={data.gesClass}
                     onChange={(event) => update("gesClass", event.target.value)}
                   >
@@ -820,7 +826,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     {["A", "B", "C", "D", "E", "F", "G"].map((item) => (
                       <option key={item}>{item}</option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
               </div>
               <Checkbox
@@ -910,7 +916,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 </p>
               </div>
               <div className="rounded-card border border-border-base bg-bg-subtle p-5">
-                <ShieldCheck className="h-6 w-6 text-primary" />
+                <ShieldCheck className="h-icon-xl w-icon-xl text-primary" />
                 <p className="mt-2 text-sm font-black">Documents privés</p>
                 <p className="mt-1 text-xs text-text-muted">
                   Diagnostics, justificatif de propriété, règlement de
@@ -937,8 +943,9 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <div className="space-y-4">
               <label className="text-xs font-bold">
                 Vous publiez comme
-                <select
-                  className={`mt-2 ${fieldClass} h-control-touch`}
+                <Select
+                  className="mt-2 w-full"
+                  labelledByAncestor
                   value={data.sellerType}
                   onChange={(event) => update("sellerType", event.target.value)}
                 >
@@ -946,7 +953,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   <option value="agency">Agence immobilière</option>
                   <option value="developer">Promoteur</option>
                   <option value="property_manager">Gestionnaire</option>
-                </select>
+                </Select>
               </label>
               <FormField label="Nom affiché" required>
                 <Input
@@ -1113,7 +1120,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     variant="primary"
                     className="w-full"
                     onClick={next}
-                    leftIcon={<LockKeyhole className="h-4 w-4" />}
+                    leftIcon={<LockKeyhole className="h-icon-md w-icon-md" />}
                   >
                     Continuer vers le paiement
                   </Button>
@@ -1171,7 +1178,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 className="w-full"
                 isLoading={submitting}
                 onClick={checkout}
-                leftIcon={<LockKeyhole className="h-4 w-4" />}
+                leftIcon={<LockKeyhole className="h-icon-md w-icon-md" />}
               >
                 {offer.prices[0]?.amount.amountMinor === 0 &&
                 data.addOnIds.length === 0
@@ -1221,7 +1228,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     className="mt-5 w-full"
                     isLoading={submitting}
                     onClick={publish}
-                    leftIcon={<CheckCircle2 className="h-4 w-4" />}
+                    leftIcon={<CheckCircle2 className="h-icon-md w-icon-md" />}
                   >
                     Envoyer en modération
                   </Button>
@@ -1240,7 +1247,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   )
                 }
                 disabled={step === FIRST_STEP}
-                leftIcon={<ArrowLeft className="h-4 w-4" />}
+                leftIcon={<ArrowLeft className="h-icon-md w-icon-md" />}
               >
                 Retour
               </Button>
@@ -1248,7 +1255,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 <Button
                   variant="primary"
                   onClick={next}
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                  rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
                 >
                   Continuer
                 </Button>

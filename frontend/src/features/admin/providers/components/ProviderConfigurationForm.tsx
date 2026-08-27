@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../../design-system";
 import { Save, Lock } from "lucide-react";
 import {
   Provider,
@@ -149,11 +150,11 @@ export const ProviderConfigurationForm: React.FC<
             <p className="text-micro text-stone-500 mb-2">
               {t("admin.providerConfigurationForm.contexteDExecution")}
             </p>
-            <select
+            <Select
+              className="rounded w-auto"
               id="provider-environment"
               value={environment}
               onChange={(e) => setEnvironment(e.target.value as any)}
-              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-medium text-stone-800 h-control-touch"
             >
               <option value="demo">Demo (Simulation locale)</option>
               <option value="sandbox">
@@ -164,7 +165,7 @@ export const ProviderConfigurationForm: React.FC<
               <option value="production">
                 {t("admin.providerConfigurationForm.productionServeurSecurise")}
               </option>
-            </select>
+            </Select>
           </div>
 
           {/* Priority */}
@@ -212,7 +213,7 @@ export const ProviderConfigurationForm: React.FC<
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
-            <Lock className="w-3.5 h-3.5 text-warning" />
+            <Lock className="w-icon-sm h-icon-sm text-warning" />
             <span>
               {t("admin.providerConfigurationForm.securiteCertifiee")}
             </span>
@@ -240,7 +241,7 @@ export const ProviderConfigurationForm: React.FC<
                       {field.required && <span className="text-danger">*</span>}
                     </label>
                     {isSecret && (
-                      <span className="text-micro font-semibold text-warning bg-warning-surface border border-warning-border px-1.5 py-0.2 rounded">
+                      <span className="text-micro font-semibold text-warning bg-warning-surface border border-warning-border px-1.5 py-0.5 rounded">
                         Secret Serveur
                       </span>
                     )}
@@ -286,20 +287,20 @@ export const ProviderConfigurationForm: React.FC<
                       </span>
                     </label>
                   ) : field.type === "select" && field.options ? (
-                    <select
+                    <Select
+                      className="w-full"
                       id={`provider-field-${field.key}`}
                       value={val}
                       onChange={(e) =>
                         handleFieldChange(field.key, e.target.value)
                       }
-                      className="w-full py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 h-control-touch"
                     >
                       {field.options.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   ) : (
                     <input
                       id={`provider-field-${field.key}`}
@@ -331,7 +332,7 @@ export const ProviderConfigurationForm: React.FC<
           variant="primary"
           size="md"
           isLoading={isSaving}
-          leftIcon={<Save className="w-4 h-4" />}
+          leftIcon={<Save className="w-icon-md h-icon-md" />}
           className="text-xs font-bold"
         >
           {t("admin.providerConfigurationForm.enregistrerLaConfiguration")}

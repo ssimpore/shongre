@@ -34,6 +34,7 @@ import {
   Image,
   Input,
   Modal,
+  Select,
   Skeleton,
   StatePanel,
   Textarea,
@@ -599,7 +600,9 @@ export const AutoVehicleDetailPage: React.FC = () => {
             />
           </FormField>
           <FormField label="Votre demande" required>
-            <select
+            <Select
+              className="w-full"
+              labelledByAncestor
               value={lead.intention}
               onChange={(event) =>
                 setLead({
@@ -607,7 +610,6 @@ export const AutoVehicleDetailPage: React.FC = () => {
                   intention: event.target.value as typeof lead.intention,
                 })
               }
-              className="h-control-touch w-full rounded-control border border-border-base px-3 text-sm"
             >
               <option value="availability">Disponibilité</option>
               <option value="information">Informations</option>
@@ -624,7 +626,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
               <option value="warranty">Informations de garantie</option>
               <option value="inspection">Informations d’inspection</option>
               <option value="delivery">Informations de livraison</option>
-            </select>
+            </Select>
           </FormField>
           <FormField label="Message" required>
             <Textarea

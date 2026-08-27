@@ -10,7 +10,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 
 function GoogleMark() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-icon-md w-icon-md">
       <path
         fill="#4285F4"
         d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.6h3.3c1.9-1.8 2.9-4.4 2.9-7.5Z"
@@ -36,7 +36,7 @@ function AppleMark() {
     <svg
       aria-hidden="true"
       viewBox="0 0 24 24"
-      className="h-4 w-4 fill-current"
+      className="h-icon-md w-icon-md fill-current"
     >
       <path d="M17.1 12.6c0-2.4 2-3.6 2.1-3.7a4.6 4.6 0 0 0-3.6-1.9c-1.5-.2-3 .9-3.8.9-.8 0-2-.9-3.3-.8a4.9 4.9 0 0 0-4.1 2.5c-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.5 1.3-.1 1.8-.8 3.4-.8 1.5 0 2 .8 3.4.8 1.4 0 2.3-1.2 3.1-2.5a11 11 0 0 0 1.4-2.9 4.2 4.2 0 0 1-2.1-4.3ZM14.6 5.4A4.3 4.3 0 0 0 15.7 2a4.7 4.7 0 0 0-3.1 1.6 4 4 0 0 0-1.1 3.2 3.9 3.9 0 0 0 3.1-1.4Z" />
     </svg>
@@ -45,7 +45,7 @@ function AppleMark() {
 
 function FacebookMark() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-icon-md w-icon-md">
       <path
         fill="#1877F2"
         d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"

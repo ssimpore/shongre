@@ -23,8 +23,8 @@ export const PropertyCard: React.FC<{
     <article
       className={`group overflow-hidden rounded-card border bg-bg-surface shadow-xs transition-all ${
         selected
-          ? "border-primary shadow-card"
-          : "border-border-base hover:border-primary-border hover:shadow-card"
+          ? "border-primary shadow-md"
+          : "border-border-base hover:border-primary-border hover:shadow-md"
       }`}
       onMouseEnter={() => onSelect?.(property)}
     >

@@ -254,7 +254,7 @@ export const CrmCompaniesPage: React.FC = () => {
           to="/admin/crm"
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Vue d’ensemble
+          <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
         </Link>
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -266,14 +266,14 @@ export const CrmCompaniesPage: React.FC = () => {
             </p>
           </div>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" /> Nouvelle entreprise
+            <Plus className="h-icon-md w-icon-md" /> Nouvelle entreprise
           </Button>
         </div>
       </section>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs lg:flex-row lg:items-center">
         <label className="relative min-w-0 flex-1 lg:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
           <span className="sr-only">Rechercher une entreprise</span>
           <input
             type="search"
@@ -288,7 +288,7 @@ export const CrmCompaniesPage: React.FC = () => {
         </label>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
           <SlidersHorizontal
-            className="h-4 w-4 shrink-0 text-stone-400"
+            className="h-icon-md w-icon-md shrink-0 text-stone-400"
             aria-hidden="true"
           />
           {(
@@ -313,17 +313,18 @@ export const CrmCompaniesPage: React.FC = () => {
       <section className="flex flex-col gap-2 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-2">
           <Bookmark
-            className="h-4 w-4 shrink-0 text-primary"
+            className="h-icon-md w-icon-md shrink-0 text-primary"
             aria-hidden="true"
           />
           <label htmlFor="crm-account-saved-view" className="sr-only">
             Vue enregistrée
           </label>
-          <select
+          <Select
+            size="compact"
+            className="min-w-0 flex-1 sm:w-56"
             id="crm-account-saved-view"
             value={selectedViewId}
             onChange={(event) => applySavedView(event.target.value)}
-            className="h-control-md min-w-0 flex-1 rounded-control border border-stone-200 bg-stone-50 px-3 text-xs font-bold text-stone-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 sm:w-56"
           >
             <option value="">Vue standard</option>
             {savedViews.map((view) => (
@@ -334,7 +335,7 @@ export const CrmCompaniesPage: React.FC = () => {
                   : " · partagée"}
               </option>
             ))}
-          </select>
+          </Select>
           {selectedViewId &&
             (savedViews.find((view) => view.id === selectedViewId)
               ?.visibility === "personal" ||
@@ -350,7 +351,7 @@ export const CrmCompaniesPage: React.FC = () => {
                 className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-stone-400 transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Supprimer la vue sélectionnée"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-icon-md w-icon-md" />
               </button>
             )}
         </div>
@@ -360,7 +361,7 @@ export const CrmCompaniesPage: React.FC = () => {
           size="sm"
           onClick={() => setSaveViewOpen(true)}
         >
-          <BookmarkPlus className="h-4 w-4" /> Enregistrer la vue
+          <BookmarkPlus className="h-icon-md w-icon-md" /> Enregistrer la vue
         </Button>
       </section>
 
@@ -437,7 +438,7 @@ export const CrmCompaniesPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3.5 text-stone-600">
                       <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-stone-400" />{" "}
+                        <MapPin className="h-icon-sm w-icon-sm text-stone-400" />{" "}
                         {[account.city, account.country]
                           .filter(Boolean)
                           .join(", ") || "Non renseignée"}
@@ -449,7 +450,7 @@ export const CrmCompaniesPage: React.FC = () => {
                     <td className="px-4 py-3.5 text-right">
                       {account.fitScore !== undefined ? (
                         <span className="inline-flex items-center gap-1 font-black text-violet-700">
-                          <Sparkles className="h-3.5 w-3.5" />{" "}
+                          <Sparkles className="h-icon-sm w-icon-sm" />{" "}
                           {account.fitScore}
                         </span>
                       ) : (

@@ -160,7 +160,7 @@ export const AdminTaxonomyPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-primary-light text-primary">
-              <Layers className="w-5 h-5" />
+              <Layers className="w-icon-lg h-icon-lg" />
             </div>
             <h1 className="text-xl font-black text-stone-900 tracking-tight">
               {t("admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie")}
@@ -179,7 +179,7 @@ export const AdminTaxonomyPage: React.FC = () => {
               onClick={() => handleSelectTab("validation")}
               className="px-3 py-1.5 rounded-xl bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
             >
-              <AlertOctagon className="w-4 h-4" />
+              <AlertOctagon className="w-icon-md h-icon-md" />
               <span>{blockingErrors.length} bloquant(s)</span>
             </button>
           )}
@@ -189,13 +189,13 @@ export const AdminTaxonomyPage: React.FC = () => {
               variant="primary"
               size="sm"
               onClick={() => handleSelectTab("drafts")}
-              leftIcon={<GitCommit className="w-3.5 h-3.5" />}
+              leftIcon={<GitCommit className="w-icon-sm h-icon-sm" />}
             >
               {draftChanges.length} brouillon(s) à publier
             </Button>
           ) : (
             <span className="px-3 py-1.5 rounded-xl bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-success" />
+              <ShieldCheck className="w-icon-md h-icon-md text-success" />
               <span>{t("admin.adminTaxonomyPage.taxonomieSynchronisee")}</span>
             </span>
           )}
@@ -269,7 +269,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span
-                    className={`text-micro px-1.5 py-0.2 rounded-full font-bold ${
+                    className={`text-micro px-1.5 py-0.5 rounded-full font-bold ${
                       tab.badgeClass || "bg-stone-200 text-stone-700"
                     }`}
                   >

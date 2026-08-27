@@ -71,6 +71,13 @@ export function useDialogBehavior(
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && dismissOnEscape) {
+        /* Escape dismisses the innermost thing, not the whole surface. This
+           listener is on `document` in the capture phase, so without the check
+           it fired before any popup inside the dialog could react: opening the
+           sort menu inside the mobile filter drawer and pressing Escape took
+           the entire drawer with it, losing every filter the user had set.
+           An open popup marks itself, and then owns the key. */
+        if (container?.querySelector("[data-popover-open]")) return;
         e.stopPropagation();
         onClose();
         return;

@@ -26,7 +26,19 @@
 import { readdirSync, readFileSync } from "fs";
 import { join, relative } from "path";
 
-const ROOT = "src";
+/**
+ * Every tree whose classes end up in the stylesheet.
+ *
+ * `src/index.css` declares `@source "../../packages/ui/src"` and
+ * `@source "../../packages/features/src"`, so Tailwind compiles those trees
+ * into the same bundle — but this guard only ever walked `src`, which left the
+ * canonical primitive layer as the one place in the product where a raw hex, an
+ * arbitrary radius or an undeclared token could ship unchallenged. That is the
+ * wrong way round: a violation in `Button.web.tsx` reaches every screen, while
+ * one in a feature reaches a single page. Keep this list in step with the
+ * `@source` directives.
+ */
+const ROOTS = ["src", "../packages/ui/src", "../packages/features/src"];
 const THEME_SOURCE = "../packages/design-tokens/dist/tokens.css";
 
 /** Utility+shade combinations that have an exact semantic token equivalent. */
@@ -186,6 +198,145 @@ function findUndeclaredTokens(line) {
   return found;
 }
 
+/* ---------------------------------------------------------------------------
+   Guard 2b: named token values outside the `--color-*` namespace.
+
+   Guard 2 above only validates the five owned colour families, so every other
+   Tailwind namespace could name a token that does not exist and ship inert.
+   Four did, and none of them were visible to any test:
+
+     - `shadow-card` on 14 call sites across employment, real-estate and auto.
+       `--shadow-card` is not declared, so those cards had no elevation at all
+       and three `hover:shadow-card` transitions animated nothing.
+     - `bg-bg-page` on 6 pages. The declared token is `bg-base`; the pages only
+       looked right because <body> already paints the same colour underneath.
+     - `h-control` and `h-control-compact`, which are not steps on the control
+       scale (`sm|md|touch|lg|fab`). Both sat beside a real `h-control-touch`,
+       so the element kept a height and the dead class went unnoticed.
+
+   A class whose token is undeclared produces no CSS — no warning, no error.
+   That is the same failure mode as the `bg-danger-hover` bug Guard 2 was built
+   for, so the rule is generalised here rather than repeated per namespace.
+
+   Scope is deliberately narrow: only the namespaces that actually hold project
+   tokens, matched by longest prefix, and only for *named* values. Numeric and
+   fractional values (`h-3.5`, `max-w-27.5`, `gap-x-6`) resolve arithmetically
+   from `--spacing` and are always valid; arbitrary values are already rejected
+   by the BANNED list above. Anything the guard cannot classify is left alone —
+   a false negative is cheap here, a false positive blocks the build.
+   --------------------------------------------------------------------------- */
+function declaredIn(css, namespace) {
+  return new Set(
+    Array.from(
+      css.matchAll(new RegExp(`--${namespace}-([a-z0-9-]+)\\s*:`, "gi")),
+      (m) => m[1].toLowerCase(),
+    ),
+  );
+}
+
+const themeCss = readFileSync(THEME_SOURCE, "utf8");
+const appCss = readFileSync("src/index.css", "utf8");
+const bothCss = themeCss + appCss;
+
+/** `@utility z-modal { … }` declares a utility name with no `--token` behind it. */
+const customUtilities = new Set(
+  Array.from(appCss.matchAll(/@utility\s+([a-z0-9-]+)/gi), (m) => m[1]),
+);
+
+/** Tailwind ships these palettes itself; they need no project declaration. */
+const TAILWIND_PALETTE =
+  /^(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d{2,3})?$/;
+const COLOR_KEYWORDS = new Set([
+  "transparent", "current", "inherit", "auto", "white", "black", "initial", "unset", "none",
+]);
+/** `max-w-screen-xl` still resolves from the breakpoint scale in Tailwind v4. */
+const BREAKPOINT_WIDTH = /^screen-(?:sm|md|lg|xl|2xl)$/;
+const SIZE_KEYWORDS = new Set([
+  "auto", "full", "screen", "min", "max", "fit", "px", "none", "prose", "reverse",
+  "dvh", "dvw", "svh", "svw", "lvh", "lvw", "vh", "vw",
+  "3xs", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl", "7xl",
+]);
+const SHADOW_KEYWORDS = new Set([
+  "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "none", "inner", "initial",
+]);
+const RADIUS_KEYWORDS = new Set([
+  "none", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full", "initial",
+]);
+
+const spacingTokens = declaredIn(bothCss, "spacing");
+const shadowTokens = declaredIn(bothCss, "shadow");
+const radiusTokens = declaredIn(bothCss, "radius");
+const colorTokens = declaredIn(bothCss, "color");
+const containerTokens = declaredIn(bothCss, "container");
+
+const isColorValue = (v) =>
+  colorTokens.has(v) || TAILWIND_PALETTE.test(v) || COLOR_KEYWORDS.has(v);
+
+/**
+ * `bg-*` is shared with gradients, sizing, clipping and repetition, none of
+ * which name a colour token. `divide-y` / `border-x` are complete utilities
+ * whose trailing letter is a side, not a value.
+ */
+const NON_COLOR_BG =
+  /^(?:gradient|linear|radial|conic|clip|origin|repeat|blend|none|cover|contain|fixed|local|scroll|auto|center|top|bottom|left|right|position|size)\b/;
+const BARE_SIDE = /^(?:t|r|b|l|x|y|s|e|tl|tr|br|bl|ss|se|ee|es|reverse)$/;
+
+/**
+ * Prefix → validator, matched longest-first so `min-h-` never parses as `min-`
+ * and `gap-x-` never parses as `gap-`.
+ */
+const NAMESPACES = [
+  ["max-w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-* / --container-*"],
+  ["min-w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-* / --container-*"],
+  ["max-h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  ["min-h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  ["size", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  ["shadow", (v) => shadowTokens.has(v) || SHADOW_KEYWORDS.has(v) || isColorValue(v), "--shadow-*"],
+  ["rounded", (v) => radiusTokens.has(v) || RADIUS_KEYWORDS.has(v), "--radius-*"],
+  ["h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  ["w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  ["bg", isColorValue, "--color-*"],
+  ["placeholder", isColorValue, "--color-*"],
+  ["divide", isColorValue, "--color-*"],
+  ["fill", isColorValue, "--color-*"],
+  ["stroke", isColorValue, "--color-*"],
+  ["accent", isColorValue, "--color-*"],
+  ["caret", isColorValue, "--color-*"],
+].sort((a, b) => b[0].length - a[0].length);
+
+/** Directional variants share the base namespace: `rounded-tl-card`, `max-w-*`. */
+const SIDE = "(?:-(?:t|r|b|l|x|y|s|e|tl|tr|br|bl|ss|se|ee|es))?";
+
+const namespaceMisses = [];
+
+/** One whitespace-delimited class token, with any leading variants stripped. */
+const RAW_CLASS = /(?:^|[\s"'`{(])((?:[a-z0-9][a-z0-9.\/-]*:)*)(-?[a-z][a-z0-9./-]*)(?=$|[\s"'`})])/g;
+
+function checkNamespaces(line, file, lineNo) {
+  for (const m of line.matchAll(RAW_CLASS)) {
+    const cls = m[2];
+    if (customUtilities.has(cls)) continue;
+    // Opacity modifiers (`bg-primary/20`) do not change which token is named.
+    const bare = cls.split("/")[0];
+    for (const [prefix, ok, label] of NAMESPACES) {
+      const re = new RegExp(`^${prefix}${SIDE}-(.+)$`);
+      const hit = bare.match(re);
+      if (!hit) continue;
+      const value = hit[1];
+      // Numeric, fractional and negative values resolve arithmetically.
+      if (/^-?\d/.test(value)) break;
+      // `divide-y`, `border-x`: the trailing letter is the side, not a value.
+      if (BARE_SIDE.test(value)) break;
+      if (BREAKPOINT_WIDTH.test(value)) break;
+      if (prefix === "bg" && NON_COLOR_BG.test(value)) break;
+      if (!ok(value)) {
+        namespaceMisses.push({ file, line: lineNo, found: cls, hint: label });
+      }
+      break;
+    }
+  }
+}
+
 function walk(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
@@ -197,7 +348,8 @@ function walk(dir, out = []) {
 
 const violations = [];
 const undeclared = [];
-for (const file of walk(ROOT)) {
+const ALL_FILES = ROOTS.flatMap((root) => walk(root));
+for (const file of ALL_FILES) {
   const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
     for (const { re, hint } of BANNED) {
@@ -213,6 +365,7 @@ for (const file of walk(ROOT)) {
     for (const token of findUndeclaredTokens(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
+    if (!/\.test\.tsx?$/.test(file)) checkNamespaces(line, relative(".", file), i + 1);
   });
 }
 
@@ -221,7 +374,7 @@ for (const file of walk(ROOT)) {
    accessibility floor, so keep it out of feature components. Token mirrors
    are the one intentional exception and are already covered by parity tests. */
 const inlineTypography = [];
-for (const file of walk(ROOT)) {
+for (const file of ALL_FILES) {
   if (!file.endsWith(".tsx")) continue;
   if (file.includes("/design-system/tokens/")) continue;
   const source = readFileSync(file, "utf8");
@@ -272,9 +425,30 @@ if (undeclared.length > 0) {
   console.error("");
 }
 
+if (namespaceMisses.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${namespaceMisses.length} class(es) name a token that is not declared.\n`,
+  );
+  console.error(
+    "  Tailwind emits no CSS for these, so the utility is silently inert —",
+  );
+  console.error(
+    "  the same failure mode that shipped `shadow-card` with no elevation.\n",
+  );
+  for (const v of namespaceMisses.slice(0, 40)) {
+    console.error(
+      `  ${v.file}:${v.line}\n      ${v.found}  →  declare it in the ${v.hint} namespace, or use a step that exists`,
+    );
+  }
+  if (namespaceMisses.length > 40)
+    console.error(`\n  …and ${namespaceMisses.length - 40} more.`);
+  console.error("");
+}
+
 if (
   violations.length === 0 &&
   undeclared.length === 0 &&
+  namespaceMisses.length === 0 &&
   inlineTypography.length === 0
 ) {
   console.log(
@@ -283,7 +457,11 @@ if (
   process.exit(0);
 }
 
-if (violations.length === 0 && inlineTypography.length > 0) process.exit(1);
+if (
+  violations.length === 0 &&
+  (inlineTypography.length > 0 || namespaceMisses.length > 0)
+)
+  process.exit(1);
 
 console.error(`\n✘ design tokens: ${violations.length} off-scale value(s).\n`);
 console.error(

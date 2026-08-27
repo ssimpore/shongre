@@ -301,7 +301,7 @@ export function AccountSecurityPage() {
     <div className="space-y-6">
       <header>
         <div className="flex items-center gap-2 text-primary">
-          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+          <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
           <h1 className="text-xl font-black text-stone-950 sm:text-2xl">
             {t("auth.security.title")}
           </h1>
@@ -410,11 +410,11 @@ export function AccountSecurityPage() {
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100 text-stone-700">
                   {method.provider === "apple" ? (
-                    <Apple className="h-4 w-4" />
+                    <Apple className="h-icon-md w-icon-md" />
                   ) : method.provider === "password" ? (
-                    <KeyRound className="h-4 w-4" />
+                    <KeyRound className="h-icon-md w-icon-md" />
                   ) : (
-                    <Link2 className="h-4 w-4" />
+                    <Link2 className="h-icon-md w-icon-md" />
                   )}
                 </div>
                 <div className="min-w-0">
@@ -455,7 +455,7 @@ export function AccountSecurityPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    leftIcon={<Unlink className="h-3.5 w-3.5" />}
+                    leftIcon={<Unlink className="h-icon-sm w-icon-sm" />}
                     isLoading={busy === `unlink-${method.provider}`}
                     onClick={() =>
                       void unlink(method.provider as SocialAuthProvider)
@@ -468,7 +468,7 @@ export function AccountSecurityPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    leftIcon={<Link2 className="h-3.5 w-3.5" />}
+                    leftIcon={<Link2 className="h-icon-sm w-icon-sm" />}
                     isLoading={busy === `link-${method.provider}`}
                     onClick={() =>
                       void startLink(method.provider as SocialAuthProvider)
@@ -664,7 +664,7 @@ export function AccountSecurityPage() {
           <Button
             variant="outline"
             size="sm"
-            leftIcon={<RefreshCw className="h-3.5 w-3.5" />}
+            leftIcon={<RefreshCw className="h-icon-sm w-icon-sm" />}
             onClick={() => void load()}
           >
             {t("auth.security.refresh")}
@@ -679,7 +679,7 @@ export function AccountSecurityPage() {
               >
                 <div className="flex gap-3">
                   <Laptop
-                    className="mt-0.5 h-4 w-4 shrink-0 text-stone-500"
+                    className="mt-0.5 h-icon-md w-icon-md shrink-0 text-stone-500"
                     aria-hidden="true"
                   />
                   <div>
@@ -705,7 +705,7 @@ export function AccountSecurityPage() {
                 <Button
                   variant={session.isCurrent ? "outline" : "danger"}
                   size="sm"
-                  leftIcon={<LogOut className="h-3.5 w-3.5" />}
+                  leftIcon={<LogOut className="h-icon-sm w-icon-sm" />}
                   isLoading={busy === `session-${session.id}`}
                   onClick={() =>
                     void revokeSession(session.id, session.isCurrent)
@@ -738,7 +738,10 @@ export function AccountSecurityPage() {
       </section>
 
       <p className="flex items-center gap-2 text-xs text-stone-500">
-        <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
+        <CheckCircle2
+          className="h-icon-md w-icon-md text-success"
+          aria-hidden="true"
+        />
         {t("auth.security.secretsNotice")}
       </p>
     </div>

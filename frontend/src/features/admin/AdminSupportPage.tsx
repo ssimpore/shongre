@@ -17,7 +17,7 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Skeleton } from "../../design-system";
+import { Badge, Button, Select, Skeleton } from "../../design-system";
 import { FormField, Textarea } from "../../design-system/primitives/FormField";
 import { supportService } from "../../domains/support/support.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -235,14 +235,15 @@ export const AdminSupportPage: React.FC = () => {
             </h2>
             <label className="text-xs font-semibold text-stone-600">
               <span className="sr-only">Filtrer par statut</span>
-              <select
+              <Select
+                className="w-auto"
+                labelledByAncestor
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(
                     event.target.value as SupportCaseStatus | "all",
                   )
                 }
-                className="rounded-control border border-border-base bg-white px-3 py-2 text-xs h-control-touch"
               >
                 <option value="all">Tous les statuts</option>
                 {STATUS_OPTIONS.map((option) => (
@@ -250,7 +251,7 @@ export const AdminSupportPage: React.FC = () => {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </div>
 
@@ -350,7 +351,9 @@ export const AdminSupportPage: React.FC = () => {
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   <label className="text-xs font-semibold text-stone-600">
                     Statut
-                    <select
+                    <Select
+                      className="mt-1 block w-full"
+                      labelledByAncestor
                       value={selectedCase.status}
                       disabled={saving}
                       onChange={(event) =>
@@ -359,18 +362,19 @@ export const AdminSupportPage: React.FC = () => {
                           "Changement manuel du statut après revue du dossier",
                         )
                       }
-                      className="mt-1 block w-full rounded-control border border-border-base bg-white px-3 py-2 h-control-touch"
                     >
                       {STATUS_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                   <label className="text-xs font-semibold text-stone-600">
                     Priorité
-                    <select
+                    <Select
+                      className="mt-1 block w-full"
+                      labelledByAncestor
                       value={selectedCase.priority}
                       disabled={saving}
                       onChange={(event) =>
@@ -381,21 +385,23 @@ export const AdminSupportPage: React.FC = () => {
                           "Réévaluation manuelle de la priorité du dossier",
                         )
                       }
-                      className="mt-1 block w-full rounded-control border border-border-base bg-white px-3 py-2 h-control-touch"
                     >
                       {PRIORITY_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                 </div>
               </div>
 
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-black text-stone-900">
-                  <MessageSquare className="h-4 w-4" aria-hidden="true" />{" "}
+                  <MessageSquare
+                    className="h-icon-md w-icon-md"
+                    aria-hidden="true"
+                  />{" "}
                   Historique
                 </h3>
                 <div

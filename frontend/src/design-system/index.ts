@@ -23,10 +23,12 @@ export * from "./primitives/Icon";
 export * from "./primitives/Image";
 export * from "./primitives/Layout";
 export * from "./primitives/Modal";
+export * from "./primitives/Card";
 export * from "./primitives/ScrollRail";
 export * from "./primitives/ScrollableRegion";
 export * from "./primitives/SelectableCard";
 export * from "./primitives/SkipLink";
+export * from "./primitives/Spinner";
 export * from "./primitives/StatePanel";
 export * from "./primitives/Typography";
 

@@ -66,7 +66,7 @@ export const IdentityVerificationModal: React.FC<
       description="Cette étape apparaît uniquement lorsqu’une action exige une preuve d’identité."
       headerIcon={
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success-surface text-success">
-          <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+          <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
         </div>
       }
     >
@@ -91,7 +91,7 @@ export const IdentityVerificationModal: React.FC<
 
         <div className="flex gap-3 text-sm text-stone-600">
           <LockKeyhole
-            className="mt-0.5 h-5 w-5 shrink-0 text-success"
+            className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"
           />
           <p>
@@ -115,7 +115,7 @@ export const IdentityVerificationModal: React.FC<
           </Button>
           <Button onClick={begin} isLoading={isLoading}>
             Continuer chez le prestataire
-            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            <ExternalLink className="h-icon-md w-icon-md" aria-hidden="true" />
           </Button>
         </div>
       </div>

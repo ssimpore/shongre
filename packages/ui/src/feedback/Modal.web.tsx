@@ -56,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full ${maxWidths[maxWidth]} max-h-[calc(100dvh-2rem)] flex flex-col bg-bg-surface rounded-overlay shadow-overlay border border-border-base overflow-hidden animate-in zoom-in-95 ${className}`}
+        className={`w-full ${maxWidths[maxWidth]} max-h-dialog-modal-max-height flex flex-col bg-bg-surface rounded-overlay shadow-overlay border border-border-base overflow-hidden animate-in zoom-in-95 ${className}`}
       >
         <div className="flex items-start justify-between gap-3 p-5 sm:p-6 border-b border-border-subtle shrink-0">
           <div className="flex min-w-0 items-start gap-3">
@@ -120,7 +120,7 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full max-w-lg bg-bg-surface rounded-t-overlay sm:rounded-overlay shadow-overlay border border-border-base max-h-[90dvh] flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
+        className={`w-full max-w-lg bg-bg-surface rounded-t-overlay sm:rounded-overlay shadow-overlay border border-border-base max-h-dialog-drawer-max-height flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
       >
         <div className="flex items-center justify-between p-5 border-b border-border-subtle shrink-0">
           {title ? (

@@ -57,7 +57,7 @@ export const PreferencesModal: React.FC = () => {
         {/* Country / Market Selection */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
-            <Building2 className="w-3.5 h-3.5 text-primary" />
+            <Building2 className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.marchePays")}</span>
           </div>
           <div
@@ -90,7 +90,7 @@ export const PreferencesModal: React.FC = () => {
                     </span>
                   </span>
                   {isSelected ? (
-                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <Check className="w-icon-md h-icon-md text-primary shrink-0" />
                   ) : null}
                 </button>
               );
@@ -101,7 +101,7 @@ export const PreferencesModal: React.FC = () => {
         {/* Currency Selection */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
-            <Coins className="w-3.5 h-3.5 text-primary" />
+            <Coins className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
           <div
@@ -133,7 +133,7 @@ export const PreferencesModal: React.FC = () => {
                     </span>
                   </span>
                   {isSelected ? (
-                    <Check className="h-4 w-4 shrink-0 text-primary" />
+                    <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
                   ) : null}
                 </button>
               );
@@ -144,7 +144,7 @@ export const PreferencesModal: React.FC = () => {
         {/* Language Selection */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
-            <Languages className="w-3.5 h-3.5 text-primary" />
+            <Languages className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
           </div>
           <div
@@ -187,7 +187,7 @@ export const PreferencesModal: React.FC = () => {
                     </span>
                   </span>
                   {isSelected && lang.isAvailable ? (
-                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <Check className="w-icon-md h-icon-md text-primary shrink-0" />
                   ) : null}
                 </button>
               );

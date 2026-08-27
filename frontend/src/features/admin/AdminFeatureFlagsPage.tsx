@@ -8,7 +8,7 @@ import { FEATURE_FLAG_CONSTRAINTS } from "@shongre/contracts/feature-flags";
 import type { FeatureFlagAdminEntry } from "../../api/contracts/feature-flags.contract";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Skeleton } from "../../design-system";
+import { Badge, Button, Select, Skeleton } from "../../design-system";
 import {
   FormField,
   Input,
@@ -154,7 +154,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
     <div className="space-y-6">
       <header className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
         <div className="flex items-center gap-2 text-primary">
-          <Flag className="h-4 w-4" aria-hidden="true" />
+          <Flag className="h-icon-md w-icon-md" aria-hidden="true" />
           <span className="text-xs font-bold uppercase tracking-wider">
             Gouvernance produit
           </span>
@@ -235,7 +235,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     </p>
                   </div>
                   <ShieldCheck
-                    className="h-5 w-5 text-success"
+                    className="h-icon-lg w-icon-lg text-success"
                     aria-label="Modifications auditées"
                   />
                 </div>
@@ -273,7 +273,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                 <div className="grid gap-4 sm:grid-cols-3">
                   <label className="text-xs font-semibold text-stone-700">
                     Exposition
-                    <select
+                    <Select
+                      className="mt-1 block w-full"
+                      labelledByAncestor
                       value={draft.exposure}
                       onChange={(event) =>
                         setDraft({
@@ -282,15 +284,16 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                             .value as DefinitionDraft["exposure"],
                         })
                       }
-                      className="mt-1 block w-full rounded-control border border-border-base bg-white px-3 py-2 h-control-touch"
                     >
                       <option value="public">Client public</option>
                       <option value="server">Serveur uniquement</option>
-                    </select>
+                    </Select>
                   </label>
                   <label className="text-xs font-semibold text-stone-700">
                     Cycle de vie
-                    <select
+                    <Select
+                      className="mt-1 block w-full"
+                      labelledByAncestor
                       value={draft.lifecycle}
                       onChange={(event) =>
                         setDraft({
@@ -299,11 +302,10 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                             .value as DefinitionDraft["lifecycle"],
                         })
                       }
-                      className="mt-1 block w-full rounded-control border border-border-base bg-white px-3 py-2 h-control-touch"
                     >
                       <option value="active">Active</option>
                       <option value="archived">Archivée</option>
-                    </select>
+                    </Select>
                   </label>
                   <label className="flex items-center gap-2 self-end rounded-lg border border-border-base px-3 py-2.5 text-xs font-semibold text-stone-700">
                     <input
@@ -335,7 +337,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     size="sm"
                     disabled={saving || draft.reason.trim().length < 10}
                   >
-                    <Save className="h-4 w-4" /> Enregistrer
+                    <Save className="h-icon-md w-icon-md" /> Enregistrer
                   </Button>
                 </div>
               </form>
@@ -386,7 +388,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   className="mt-5 space-y-3 border-t border-border-subtle pt-4"
                 >
                   <h3 className="flex items-center gap-2 text-sm font-black text-stone-900">
-                    <Plus className="h-4 w-4" /> Nouvelle règle
+                    <Plus className="h-icon-md w-icon-md" /> Nouvelle règle
                   </h3>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <FormField label="Marché">

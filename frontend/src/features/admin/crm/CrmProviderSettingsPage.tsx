@@ -179,7 +179,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               onClick={openCreate}
               disabled={!snapshot || providers.length === 0}
             >
-              <Plus className="h-4 w-4" /> Nouvelle connexion
+              <Plus className="h-icon-md w-icon-md" /> Nouvelle connexion
             </Button>
             <Button
               to="/admin/fournisseurs"
@@ -187,7 +187,8 @@ export const CrmProviderSettingsPage: React.FC = () => {
               size="sm"
               className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
             >
-              <ExternalLink className="h-4 w-4" /> Console fournisseurs
+              <ExternalLink className="h-icon-md w-icon-md" /> Console
+              fournisseurs
             </Button>
           </div>
         </div>
@@ -276,8 +277,8 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       </p>
                       {connection.credentialConfigured && (
                         <p className="mt-1 inline-flex items-center gap-1 text-micro font-bold text-success">
-                          <KeyRound className="h-3 w-3" /> Credential configuré{" "}
-                          {connection.credentialHint}
+                          <KeyRound className="h-icon-xs w-icon-xs" />{" "}
+                          Credential configuré {connection.credentialHint}
                         </p>
                       )}
                     </div>
@@ -287,7 +288,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-bold ${connection.status === "ACTIVE" ? "text-success" : "text-stone-500"}`}
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5" />{" "}
+                      <CheckCircle2 className="h-icon-sm w-icon-sm" />{" "}
                       {connection.status}
                     </span>
                     <Button
@@ -298,7 +299,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                         setCredential("");
                       }}
                     >
-                      <RefreshCw className="h-3.5 w-3.5" /> Rotation
+                      <RefreshCw className="h-icon-sm w-icon-sm" /> Rotation
                     </Button>
                   </article>
                 ))}
@@ -320,9 +321,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
                   <div className="flex gap-3">
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100">
                       {aiOnly ? (
-                        <Bot className="h-4 w-4" />
+                        <Bot className="h-icon-md w-icon-md" />
                       ) : (
-                        <Mail className="h-4 w-4" />
+                        <Mail className="h-icon-md w-icon-md" />
                       )}
                     </span>
                     <div>
@@ -354,9 +355,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-success" : "text-stone-500"}`}
                     >
                       {runtime.health === "HEALTHY" ? (
-                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <CheckCircle2 className="h-icon-sm w-icon-sm" />
                       ) : (
-                        <CircleAlert className="h-3.5 w-3.5" />
+                        <CircleAlert className="h-icon-sm w-icon-sm" />
                       )}
                       {runtime.health}
                     </span>
@@ -376,7 +377,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
             </div>
           </section>
           <div className="flex items-start gap-2 rounded-2xl border border-success-border bg-success-surface p-4 text-xs text-success">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+            <ShieldCheck className="mt-0.5 h-icon-md w-icon-md shrink-0" />
             <span>
               <strong>Résolution fail-closed.</strong> En mode API, une capacité
               sans connexion active et autorisée échoue explicitement ; elle

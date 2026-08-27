@@ -251,7 +251,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       <div className="bg-white/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           <span className="text-xs font-bold text-stone-500 flex items-center gap-1 shrink-0">
-            <Compass className="w-3.5 h-3.5 text-primary" />
+            <Compass className="w-icon-sm h-icon-sm text-primary" />
             Explorer :
           </span>
 
@@ -287,7 +287,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             title={t("search.exploreMapView.recadrerSurLesAnnonces")}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
+            <Maximize2 className="w-icon-sm h-icon-sm" />
             <span className="hidden md:inline">Recadrer</span>
           </button>
 
@@ -299,7 +299,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             title={t("search.exploreMapView.changerLeStyleDeCarte")}
             className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers className="w-icon-sm h-icon-sm" />
             <span className="hidden md:inline">
               {mapStyle === "positron" ? "Plan doux" : "OSM"}
             </span>
@@ -379,7 +379,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                           </span>
                         </div>
                         <div className="text-xs text-stone-500 truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-stone-400" />
+                          <MapPin className="w-icon-xs h-icon-xs text-stone-400" />
                           {item.city} ({item.postalCode})
                         </div>
                         <div className="flex items-center justify-between mt-1">
@@ -418,7 +418,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
               aria-label={t("search.exploreMapView.fermerLaPrevisualisation")}
             >
-              <X className="w-4 h-4" />
+              <X className="w-icon-md h-icon-md" />
             </button>
 
             <div className="flex min-w-0 flex-1 gap-3">
@@ -450,7 +450,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
                 <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
                   <span className="flex items-center gap-0.5 font-medium text-stone-700">
-                    <MapPin className="w-3 h-3 text-primary" />
+                    <MapPin className="w-icon-xs h-icon-xs text-primary" />
                     {activeListing.city} ({activeListing.postalCode})
                   </span>
                 </div>
@@ -468,7 +468,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     {t("search.exploreMapView.voirLAnnonce")}
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-icon-xs h-icon-xs" />
                   </button>
                 </div>
               </div>
@@ -481,7 +481,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           the left edge, and this badge belongs over the map. */}
       <div className="absolute top-14 right-4 z-sticky pointer-events-none">
         <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
-          <Navigation className="w-3.5 h-3.5 text-primary" />
+          <Navigation className="w-icon-sm h-icon-sm text-primary" />
           <span>
             {plural(
               listings.length,

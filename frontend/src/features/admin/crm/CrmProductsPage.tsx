@@ -155,7 +155,7 @@ export const CrmProductsPage: React.FC = () => {
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" /> Nouveau produit
+            <Plus className="h-icon-md w-icon-md" /> Nouveau produit
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
@@ -188,7 +188,7 @@ export const CrmProductsPage: React.FC = () => {
           className="flex items-center gap-2 border-b border-border-subtle p-3"
         >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+            <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
             <Input
               aria-label="Rechercher un produit"
               value={query}
@@ -233,7 +233,7 @@ export const CrmProductsPage: React.FC = () => {
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
-                      <Tag className="h-4 w-4" />
+                      <Tag className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -278,9 +278,9 @@ export const CrmProductsPage: React.FC = () => {
                     className="inline-flex min-h-control-md items-center justify-center gap-1 rounded-control border border-stone-200 px-3 text-micro font-bold hover:bg-stone-50"
                   >
                     {product.isActive ? (
-                      <XCircle className="h-3.5 w-3.5" />
+                      <XCircle className="h-icon-sm w-icon-sm" />
                     ) : (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <CheckCircle2 className="h-icon-sm w-icon-sm" />
                     )}
                     {product.isActive ? "Désactiver" : "Activer"}
                   </button>

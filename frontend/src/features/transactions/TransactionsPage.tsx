@@ -204,7 +204,7 @@ export const TransactionsPage: React.FC = () => {
       {/* Payment state information */}
       <div className="p-4 bg-success-surface border border-success-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
         <div className="flex items-start sm:items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-success shrink-0" />
+          <ShieldCheck className="w-icon-xl h-icon-xl text-success shrink-0" />
           <span className="leading-relaxed">
             <strong>Paiement suivi par Shongre.</strong> L’état affiché provient
             du serveur et des confirmations du prestataire de paiement. Un
@@ -242,7 +242,7 @@ export const TransactionsPage: React.FC = () => {
       {/* Status Filter Pills */}
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
         <span className="text-stone-500 font-bold mr-1 flex items-center gap-1">
-          <Filter className="w-3.5 h-3.5" /> Filtrer :
+          <Filter className="w-icon-sm h-icon-sm" /> Filtrer :
         </span>
         <button
           type="button"
@@ -395,11 +395,12 @@ export const TransactionsPage: React.FC = () => {
                       <div className="flex items-center gap-2 mt-1.5 text-micro">
                         {tx.deliveryMethod === "hand_delivery" ? (
                           <span className="inline-flex items-center gap-1 font-semibold text-success bg-success-surface px-2 py-0.5 rounded">
-                            <MapPin className="w-3 h-3" /> Remise en main propre
+                            <MapPin className="w-icon-xs h-icon-xs" /> Remise en
+                            main propre
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 font-semibold text-info bg-info-surface px-2 py-0.5 rounded">
-                            <Truck className="w-3 h-3" />{" "}
+                            <Truck className="w-icon-xs h-icon-xs" />{" "}
                             {tx.carrierName || "Livraison Colis"}
                           </span>
                         )}
@@ -442,9 +443,9 @@ export const TransactionsPage: React.FC = () => {
                     }`}
                   >
                     {paymentConfirmed ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
                     ) : (
-                      <Clock className="w-3.5 h-3.5 shrink-0" />
+                      <Clock className="w-icon-sm h-icon-sm shrink-0" />
                     )}
                     <span className="whitespace-nowrap">
                       {paymentConfirmed
@@ -460,7 +461,7 @@ export const TransactionsPage: React.FC = () => {
                         : "text-stone-500"
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
                     <span>Remise / Envoi</span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
@@ -471,7 +472,7 @@ export const TransactionsPage: React.FC = () => {
                         : "text-stone-500"
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
                     <span>Commande terminée</span>
                   </div>
                 </div>

@@ -111,7 +111,7 @@ export const VerifyEmailPage: React.FC = () => {
               size="md"
               className="w-full"
               onClick={() => navigate("/compte")}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
             >
               {t("auth.verifyEmailPage.accederAMonEspace")}
             </Button>
@@ -121,7 +121,7 @@ export const VerifyEmailPage: React.FC = () => {
         <div className="space-y-4">
           {errorMessage && (
             <div className="p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+              <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMessage}</div>
             </div>
           )}
@@ -129,7 +129,7 @@ export const VerifyEmailPage: React.FC = () => {
           {resendStatus && (
             <div className="p-3.5 rounded-xl bg-success-surface border border-success-border text-xs text-success flex flex-col gap-1.5">
               <div className="flex items-center gap-2 font-bold">
-                <CheckCircle2 className="w-4 h-4 text-success" />
+                <CheckCircle2 className="w-icon-md h-icon-md text-success" />
                 <span>{resendStatus}</span>
               </div>
               {demoCodeHint && (
@@ -144,7 +144,7 @@ export const VerifyEmailPage: React.FC = () => {
           )}
 
           <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-700 flex items-start gap-3">
-            <Mail className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+            <Mail className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
             <div className="leading-relaxed">
               Consultez la boîte de réception de votre adresse email{" "}
               {currentUser?.email && (
@@ -195,7 +195,7 @@ export const VerifyEmailPage: React.FC = () => {
                 size="sm"
                 onClick={() => void handleResendVerification()}
                 className="text-primary"
-                leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
               >
                 <span>
                   {t("auth.verifyEmailPage.renvoyerUnEmailDeValidation")}

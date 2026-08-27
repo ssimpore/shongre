@@ -74,7 +74,7 @@ export const AdminProviderDetailPage: React.FC = () => {
             to="/admin/fournisseurs"
             variant="primary"
             size="sm"
-            leftIcon={<ArrowLeft className="w-3.5 h-3.5" />}
+            leftIcon={<ArrowLeft className="w-icon-sm h-icon-sm" />}
           >
             {t("admin.adminProviderDetailPage.retourAuxIntegrations")}
           </Button>
@@ -101,7 +101,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           to="/admin/fournisseurs"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="w-icon-sm h-icon-sm" />
           <span>
             {t(
               "admin.adminProviderDetailPage.retourAuCatalogueDesFournisseurs",
@@ -120,7 +120,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               {provider.metadata.documentationLabel ||
                 "Documentation technique"}
             </span>
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-icon-xs h-icon-xs" />
           </a>
         )}
       </div>
@@ -151,7 +151,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
                 {provider.metadata.companyName && (
                   <span className="flex items-center gap-1">
-                    <Building className="w-3.5 h-3.5 text-stone-400" />
+                    <Building className="w-icon-sm h-icon-sm text-stone-400" />
                     {provider.metadata.companyName}
                     {provider.metadata.headquartersCountry &&
                       ` (${provider.metadata.headquartersCountry})`}
@@ -171,7 +171,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {isActive ? (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-icon-sm h-icon-sm" />
                 Actif (Priorité {configuration.priority})
               </span>
             ) : (
@@ -252,7 +252,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Sliders className="w-3.5 h-3.5" />
+          <Sliders className="w-icon-sm h-icon-sm" />
           <span>{t("admin.adminProviderDetailPage.configurationCles")}</span>
         </button>
 
@@ -265,7 +265,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Globe className="w-3.5 h-3.5" />
+          <Globe className="w-icon-sm h-icon-sm" />
           <span>{t("admin.adminProviderDetailPage.marchesSurcharges")}</span>
         </button>
 
@@ -278,7 +278,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Activity className="w-3.5 h-3.5" />
+          <Activity className="w-icon-sm h-icon-sm" />
           <span>{t("admin.adminProviderDetailPage.santeTestsDemo")}</span>
         </button>
 
@@ -291,7 +291,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Layers className="w-3.5 h-3.5" />
+          <Layers className="w-icon-sm h-icon-sm" />
           <span>
             {t("admin.adminProviderDetailPage.utilisationDependances")}
           </span>
@@ -306,7 +306,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Clock className="w-3.5 h-3.5" />
+          <Clock className="w-icon-sm h-icon-sm" />
           <span>Journal d'Audit</span>
         </button>
       </div>

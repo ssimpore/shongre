@@ -200,7 +200,7 @@ export const CrmAiProspectingPage: React.FC = () => {
       <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold mb-2">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-icon-sm h-icon-sm" />
             <span>
               {t("admin.crmAiProspectingPage.prospectionB2bAssisteeParIa")}
             </span>
@@ -224,7 +224,7 @@ export const CrmAiProspectingPage: React.FC = () => {
           >
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Search className="w-5 h-5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-icon-lg h-icon-lg text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={query}
@@ -247,7 +247,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                 disabled={isSearching || !query.trim()}
                 className="font-bold shrink-0 flex items-center justify-center gap-2"
               >
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-icon-md h-icon-md" />
                 <span>
                   {isSearching
                     ? "Recherche en cours..."
@@ -310,7 +310,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                 onClick={handleBatchImport}
                 className="font-bold flex items-center gap-1.5 self-start sm:self-center"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-icon-md h-icon-md" />
                 <span>
                   Ajouter les {selectedCandidateIds.length} sélectionnés au CRM
                 </span>
@@ -345,9 +345,9 @@ export const CrmAiProspectingPage: React.FC = () => {
                             className="mt-0.5 text-stone-500 hover:text-stone-700 cursor-pointer"
                           >
                             {isSelected ? (
-                              <CheckSquare className="w-4 h-4 text-primary" />
+                              <CheckSquare className="w-icon-md h-icon-md text-primary" />
                             ) : (
-                              <Square className="w-4 h-4" />
+                              <Square className="w-icon-md h-icon-md" />
                             )}
                           </button>
                         )}
@@ -384,7 +384,7 @@ export const CrmAiProspectingPage: React.FC = () => {
                           key={i}
                           className="flex items-start gap-1.5 text-micro"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+                          <CheckCircle2 className="w-icon-sm h-icon-sm text-success shrink-0 mt-0.5" />
                           <span className="line-clamp-2">{r}</span>
                         </div>
                       ))}
@@ -392,7 +392,7 @@ export const CrmAiProspectingPage: React.FC = () => {
 
                     {cand.isDuplicate && (
                       <div className="p-2.5 rounded-xl bg-warning-surface text-warning text-micro font-medium flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5 text-warning shrink-0" />
+                        <AlertCircle className="w-icon-sm h-icon-sm text-warning shrink-0" />
                         <span>
                           {t(
                             "admin.crmAiProspectingPage.compteShongreOuFicheCrm",
@@ -409,13 +409,13 @@ export const CrmAiProspectingPage: React.FC = () => {
                       onClick={() => setSelectedCandidateForEvidence(cand)}
                       className="text-xs text-stone-600 hover:text-stone-900 font-bold flex items-center gap-1 cursor-pointer"
                     >
-                      <Eye className="w-3.5 h-3.5" />
+                      <Eye className="w-icon-sm h-icon-sm" />
                       <span>{plural(cand.sources.length, "source")}</span>
                     </button>
 
                     {isImported ? (
                       <span className="text-xs text-success font-bold flex items-center gap-1">
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="w-icon-md h-icon-md" />
                         <span>{t("admin.crmAiProspectingPage.importe")}</span>
                       </span>
                     ) : (

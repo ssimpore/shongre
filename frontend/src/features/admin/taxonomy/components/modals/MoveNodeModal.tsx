@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../../../design-system";
 import { TaxonomyNode } from "../../../../../domains/taxonomy/taxonomy.types";
 import { taxonomyAdminRepository } from "../../../../../repositories/taxonomy.repository";
 import { Modal } from "../../../../../design-system/primitives/Modal";
@@ -94,7 +95,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
         {/* Impact Warning */}
         <div className="p-3.5 bg-warning-surface border border-warning-border rounded-xl space-y-1.5 text-xs text-warning">
           <div className="flex items-center gap-1.5 font-bold text-warning">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
             <span>
               {t("admin.moveNodeModal.impactStructurelDuDeplacement")}
             </span>
@@ -116,10 +117,12 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           label={t("admin.moveNodeModal.choisirLeNouveauParentDe")}
           required
         >
-          <select
+          <Select
+            size="compact"
+            className="w-full"
+            labelledByAncestor
             value={selectedParentId}
             onChange={(e) => setSelectedParentId(e.target.value)}
-            className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
             <option value="root">
               {t("admin.moveNodeModal.racinePrincipaleNiveauCategorieRacine")}
@@ -134,7 +137,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
                 </option>
               );
             })}
-          </select>
+          </Select>
         </FormField>
 
         <div className="flex items-center justify-end gap-2 pt-4 border-t border-border-subtle">
@@ -148,7 +151,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
             disabled={
               isSubmitting || selectedParentId === (node.parentId || "root")
             }
-            leftIcon={<FolderTree className="w-4 h-4" />}
+            leftIcon={<FolderTree className="w-icon-md h-icon-md" />}
           >
             {isSubmitting
               ? "Déplacement en cours..."

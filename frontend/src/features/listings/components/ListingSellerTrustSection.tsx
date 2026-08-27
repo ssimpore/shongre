@@ -39,7 +39,7 @@ export const ListingSellerTrustSection: React.FC<
           className="flex min-h-6 items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline"
         >
           <span>{isPro ? "Voir la boutique" : "Voir le profil"}</span>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-icon-md h-icon-md" />
         </Link>
       </div>
 
@@ -51,7 +51,6 @@ export const ListingSellerTrustSection: React.FC<
             name={seller.name}
             size="lg"
             isVerified={seller.isVerified}
-            isPro={isPro}
             className="group-hover:ring-2 group-hover:ring-primary transition-all"
           />
         </Link>
@@ -81,7 +80,7 @@ export const ListingSellerTrustSection: React.FC<
               to={`${profileUrl}?tab=reviews`}
               className="flex min-h-6 items-center gap-1 font-bold text-stone-900 hover:text-primary"
             >
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
               <span>{seller.rating ? seller.rating.toFixed(1) : "5.0"}</span>
               <span className="font-normal text-stone-500">
                 ({seller.reviewCount || 0} avis)
@@ -89,7 +88,7 @@ export const ListingSellerTrustSection: React.FC<
             </Link>
             <span>•</span>
             <span className="flex items-center gap-1 text-stone-500">
-              <MapPin className="w-3 h-3 text-stone-400" />
+              <MapPin className="w-icon-xs h-icon-xs text-stone-400" />
               {seller.city} ({seller.postalCode})
             </span>
           </div>
@@ -105,13 +104,13 @@ export const ListingSellerTrustSection: React.FC<
       {/* Trust & Response metrics */}
       <div className="grid grid-cols-2 gap-2 text-xs text-stone-600 pt-2 border-t border-border-subtle">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+          <Clock className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
           <span className="truncate">
             Répond {seller.responseTimeText || "en quelques heures"}
           </span>
         </div>
         <div className="flex items-center gap-1.5 min-w-0">
-          <ShieldCheck className="w-3.5 h-3.5 text-success shrink-0" />
+          <ShieldCheck className="w-icon-sm h-icon-sm text-success shrink-0" />
           <span className="truncate">
             Taux de réponse : {seller.responseRatePercent ?? 100}%
           </span>
@@ -138,7 +137,7 @@ export const ListingSellerTrustSection: React.FC<
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-3 h-3 ${
+                        className={`w-icon-xs h-icon-xs ${
                           i < rev.rating
                             ? "fill-amber-400 text-amber-400"
                             : "text-stone-300"

@@ -42,6 +42,7 @@ import {
   FormField,
   Input,
   ProgressBar,
+  Select,
   SelectableCard,
   Skeleton,
   Textarea,
@@ -409,7 +410,9 @@ export const AutoPublishWizardPage: React.FC = () => {
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             <FormField label="Marque" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.makeId)}
                 onChange={(event) => {
                   const entry = catalog.vehicleCatalog.find(
@@ -418,14 +421,15 @@ export const AutoPublishWizardPage: React.FC = () => {
                   update("makeId", event.target.value);
                   if (entry) update("makeLabel", entry.label);
                 }}
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="peugeot">Peugeot</option>
                 <option value="bmw">BMW</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Modèle" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.modelId)}
                 onChange={(event) => {
                   const entry = catalog.vehicleCatalog.find(
@@ -434,7 +438,6 @@ export const AutoPublishWizardPage: React.FC = () => {
                   update("modelId", event.target.value);
                   if (entry) update("modelLabel", entry.label);
                 }}
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 {catalog.vehicleCatalog
                   .filter(
@@ -446,7 +449,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                       {row.label}
                     </option>
                   ))}
-              </select>
+              </Select>
             </FormField>
             <FormField label="Année-modèle" required>
               <Input
@@ -550,27 +553,29 @@ export const AutoPublishWizardPage: React.FC = () => {
               />
             </FormField>
             <FormField label="Énergie" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.fuelType)}
                 onChange={(event) => update("fuelType", event.target.value)}
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="petrol">Essence</option>
                 <option value="diesel">Diesel</option>
                 <option value="electric">Électrique</option>
                 <option value="hybrid">Hybride</option>
                 <option value="plug_in_hybrid">Hybride rechargeable</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Transmission" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.transmission)}
                 onChange={(event) => update("transmission", event.target.value)}
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="manual">Manuelle</option>
                 <option value="automatic">Automatique</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Carrosserie">
               <Input
@@ -659,30 +664,32 @@ export const AutoPublishWizardPage: React.FC = () => {
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <FormField label="État" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.condition)}
                 onChange={(event) => update("condition", event.target.value)}
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="excellent">Excellent</option>
                 <option value="good">Bon</option>
                 <option value="fair">Correct</option>
                 <option value="damaged">Endommagé</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Accidents connus" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.accidentStatus)}
                 onChange={(event) =>
                   update("accidentStatus", event.target.value)
                 }
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="none_declared">Aucun déclaré</option>
                 <option value="repaired">Réparé</option>
                 <option value="known_damage">Dommages connus</option>
                 <option value="unknown">Inconnu</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Propriétaires précédents">
               <Input
@@ -696,32 +703,34 @@ export const AutoPublishWizardPage: React.FC = () => {
               />
             </FormField>
             <FormField label="Carnet d’entretien">
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.maintenanceBookStatus)}
                 onChange={(event) =>
                   update("maintenanceBookStatus", event.target.value)
                 }
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="complete">Complet</option>
                 <option value="partial">Partiel</option>
                 <option value="none">Absent</option>
                 <option value="unknown">Inconnu</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Contrôle technique">
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={String(data.inspectionStatus)}
                 onChange={(event) =>
                   update("inspectionStatus", event.target.value)
                 }
-                className="h-control-touch w-full rounded-control border border-border-base px-3"
               >
                 <option value="valid">Valide</option>
                 <option value="due_soon">À renouveler bientôt</option>
                 <option value="expired">Expiré</option>
                 <option value="not_applicable">Non applicable</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Valide jusqu’au">
               <Input
@@ -1104,7 +1113,7 @@ export const AutoPublishWizardPage: React.FC = () => {
   })();
 
   return (
-    <div className="min-h-screen bg-bg-page pb-24">
+    <div className="min-h-screen bg-bg-base pb-24">
       <div className="mx-auto max-w-screen-xl px-4 py-6">
         <h1 className="text-2xl font-black tracking-tight">
           Publier un véhicule

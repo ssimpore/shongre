@@ -48,7 +48,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
+            <ShieldCheck className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyValidationTab.moteurDAuditValidationD")}
             </span>
@@ -64,7 +64,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           variant="outline"
           size="sm"
           onClick={handleRefresh}
-          leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+          leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
         >
           Réanalyser ({lastCheckTime})
         </Button>
@@ -76,9 +76,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>{t("admin.taxonomyValidationTab.etatGlobal")}</span>
             {errors.length === 0 ? (
-              <CheckCircle2 className="w-4 h-4 text-success" />
+              <CheckCircle2 className="w-icon-md h-icon-md text-success" />
             ) : (
-              <AlertOctagon className="w-4 h-4 text-danger" />
+              <AlertOctagon className="w-icon-md h-icon-md text-danger" />
             )}
           </div>
           <p
@@ -91,7 +91,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Erreurs bloquantes</span>
-            <AlertOctagon className="w-4 h-4 text-danger" />
+            <AlertOctagon className="w-icon-md h-icon-md text-danger" />
           </div>
           <p className="text-xl font-black text-danger">{errors.length}</p>
         </div>
@@ -99,7 +99,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Avertissements</span>
-            <AlertTriangle className="w-4 h-4 text-warning" />
+            <AlertTriangle className="w-icon-md h-icon-md text-warning" />
           </div>
           <p className="text-xl font-black text-warning">{warnings.length}</p>
         </div>
@@ -107,7 +107,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Recommandations</span>
-            <Info className="w-4 h-4 text-info" />
+            <Info className="w-icon-md h-icon-md text-info" />
           </div>
           <p className="text-xl font-black text-info">{infos.length}</p>
         </div>
@@ -193,11 +193,11 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5 shrink-0">
                     {issue.severity === "error" ? (
-                      <AlertOctagon className="w-5 h-5 text-danger" />
+                      <AlertOctagon className="w-icon-lg h-icon-lg text-danger" />
                     ) : issue.severity === "warning" ? (
-                      <AlertTriangle className="w-5 h-5 text-amber-500" />
+                      <AlertTriangle className="w-icon-lg h-icon-lg text-amber-500" />
                     ) : (
-                      <Info className="w-5 h-5 text-info" />
+                      <Info className="w-icon-lg h-icon-lg text-info" />
                     )}
                   </div>
 
@@ -238,7 +238,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => onNavigateToNode(targetNode)}
-                    leftIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                    leftIcon={<ArrowRight className="w-icon-sm h-icon-sm" />}
                     className="shrink-0"
                   >
                     Inspecter

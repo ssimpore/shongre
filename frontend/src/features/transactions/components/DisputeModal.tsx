@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../design-system";
 import { AlertTriangle } from "lucide-react";
 import { Transaction, UserProfile } from "../../../types";
 import { TRANSACTION_CONFIG } from "../../../configuration/transaction.config";
@@ -66,7 +67,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-sm font-medium">
         <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl text-warning flex items-start gap-3 shadow-2xs">
-          <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+          <AlertTriangle className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-warning">
               {t("transactions.disputeModal.protectionAcheteurVendeurActive")}
@@ -85,21 +86,26 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         )}
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">
+          <label
+            htmlFor="dispute-reason"
+            className="block font-bold text-stone-700 mb-2"
+          >
             {t("transactions.disputeModal.motifPrincipalDuLitige")}
             <span className="text-danger">*</span>
           </label>
-          <select
+          <Select
+            size="lg"
+            className="w-full"
+            id="dispute-reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="w-full h-control-lg px-4 bg-white text-stone-900 rounded-control border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-bold transition-colors"
           >
             {TRANSACTION_CONFIG.disputeReasons.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>

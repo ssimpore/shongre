@@ -128,8 +128,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           {/* 1. Category Suggestions */}
           {hasCategories && (
             <div className="py-1.5 px-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider">
-                <Layers className="w-3 h-3 text-stone-400" />
+              <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-text-muted uppercase tracking-wider">
+                <Layers className="w-icon-xs h-icon-xs text-text-disabled" />
                 <span>{t("ui.searchAutocomplete.categoriesRayons")}</span>
               </div>
               <div className="space-y-0.5 mt-1">
@@ -178,7 +178,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                           </span>
                           {catSuggestion.isSubCategory &&
                             catSuggestion.parentName && (
-                              <span className="text-micro text-stone-500 font-normal ml-1.5">
+                              <span className="text-micro text-text-muted font-normal ml-1.5">
                                 dans{" "}
                                 <span className="text-stone-700">
                                   {catSuggestion.parentName}
@@ -190,7 +190,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
 
                       <div className="flex items-center gap-1 text-micro text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                         <span>Explorer</span>
-                        <ChevronRight className="w-3 h-3" />
+                        <ChevronRight className="w-icon-xs h-icon-xs" />
                       </div>
                     </div>
                   );
@@ -202,8 +202,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           {/* 2. Keyword & Search Suggestions */}
           {hasKeywords && (
             <div className="py-1.5 px-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider">
-                <Search className="w-3 h-3 text-stone-400" />
+              <div className="flex items-center gap-1.5 px-3 py-1 text-micro font-bold text-text-muted uppercase tracking-wider">
+                <Search className="w-icon-xs h-icon-xs text-text-disabled" />
                 <span>{t("ui.searchAutocomplete.suggestionsDeRecherche")}</span>
               </div>
               <div className="space-y-0.5 mt-1">
@@ -233,7 +233,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Search className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary motion-interactive" />
+                        <Search className="w-icon-sm h-icon-sm text-text-disabled shrink-0 group-hover:text-primary motion-interactive" />
                         <span className="font-medium truncate">
                           <HighlightMatch
                             text={kw.keyword}
@@ -248,7 +248,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         )}
                       </div>
 
-                      <ArrowUpRight className="w-3.5 h-3.5 text-stone-400 group-hover:text-primary motion-interactive shrink-0" />
+                      <ArrowUpRight className="w-icon-sm h-icon-sm text-text-disabled group-hover:text-primary motion-interactive shrink-0" />
                     </div>
                   );
                 })}
@@ -276,17 +276,17 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
               className={`flex items-center justify-between min-h-control-sm px-3 py-2.5 rounded-control text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
                 selectedIndex === currentIndexTracker
                   ? "bg-stone-900 text-white"
-                  : "bg-bg-subtle text-stone-900 hover:bg-stone-200/70"
+                  : "bg-bg-subtle text-text-main hover:bg-stone-200/70"
               }`}
             >
               <div className="flex items-center gap-2 truncate">
-                <Search className="w-4 h-4 text-primary shrink-0" />
+                <Search className="w-icon-md h-icon-md text-primary shrink-0" />
                 <span className="truncate">
                   Rechercher « <span className="underline">{trimmedQuery}</span>{" "}
                   »
                 </span>
               </div>
-              <span className="text-micro font-semibold uppercase tracking-wider text-stone-500">
+              <span className="text-micro font-semibold uppercase tracking-wider text-text-muted">
                 {t("ui.searchAutocomplete.entree")}
               </span>
             </div>
@@ -301,8 +301,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           {hasRecent && (
             <div className="py-1.5 px-2">
               <div className="flex items-center justify-between px-3 py-1">
-                <div className="flex items-center gap-1.5 text-micro font-bold text-stone-500 uppercase tracking-wider">
-                  <Clock className="w-3 h-3 text-stone-400" />
+                <div className="flex items-center gap-1.5 text-micro font-bold text-text-muted uppercase tracking-wider">
+                  <Clock className="w-icon-xs h-icon-xs text-text-disabled" />
                   <span>{t("ui.searchAutocomplete.recherchesRecentes")}</span>
                 </div>
                 {onClearAllRecentSearches && (
@@ -312,7 +312,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       e.preventDefault();
                       onClearAllRecentSearches(e);
                     }}
-                    className="text-micro font-semibold text-stone-400 hover:text-stone-700 motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="text-micro font-semibold text-text-disabled hover:text-stone-700 motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
                     {t("ui.searchAutocomplete.effacerTout")}
                   </button>
@@ -343,7 +343,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
-                        <Clock className="w-3.5 h-3.5 text-stone-400 shrink-0 group-hover:text-primary motion-interactive" />
+                        <Clock className="w-icon-sm h-icon-sm text-text-disabled shrink-0 group-hover:text-primary motion-interactive" />
                         <span className="font-medium truncate">
                           {searchStr}
                         </span>
@@ -358,9 +358,9 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                             e.stopPropagation();
                             onClearRecentSearch(searchStr, e);
                           }}
-                          className={`p-1 text-stone-300 hover:text-stone-600 rounded-control hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
+                          className={`p-1 text-stone-300 hover:text-text-secondary rounded-control hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-icon-xs h-icon-xs" />
                         </button>
                       )}
                     </div>
@@ -373,8 +373,8 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
           {/* Popular Trending Keywords */}
           {hasTrending && (
             <div className="py-2 px-3">
-              <div className="flex items-center gap-1.5 py-1 text-micro font-bold text-stone-500 uppercase tracking-wider mb-2">
-                <Sparkles className="w-3 h-3 text-amber-500" />
+              <div className="flex items-center gap-1.5 py-1 text-micro font-bold text-text-muted uppercase tracking-wider mb-2">
+                <Sparkles className="w-icon-xs h-icon-xs text-amber-500" />
                 <span>
                   {t("ui.searchAutocomplete.recherchesLesPlusPopulaires")}
                 </span>
@@ -395,7 +395,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                     }}
                     className={`inline-flex items-center gap-1.5 h-control-md px-3 rounded-control bg-bg-subtle hover:bg-primary-light text-stone-800 hover:text-primary border border-border-base hover:border-primary-border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none active:scale-95`}
                   >
-                    <TrendingUp className="w-3 h-3 text-primary shrink-0" />
+                    <TrendingUp className="w-icon-xs h-icon-xs text-primary shrink-0" />
                     <span>{trend.keyword}</span>
                   </button>
                 ))}

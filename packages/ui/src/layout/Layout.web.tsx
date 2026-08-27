@@ -130,7 +130,7 @@ export const Grid = React.forwardRef<HTMLDivElement, GridProps>(
   ({ columns = 1, gap = "md", className, ...props }, ref) => {
     const columnsClass =
       columns === "auto"
-        ? "grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))]"
+        ? "grid-cols-auto-fit-md"
         : {
             1: "grid-cols-1",
             2: "grid-cols-1 sm:grid-cols-2",

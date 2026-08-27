@@ -50,7 +50,7 @@ const iconButtonClasses = createVariants({
       primary:
         "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-xs",
       secondary:
-        "bg-bg-subtle text-stone-900 hover:bg-bg-muted active:bg-stone-300",
+        "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-stone-300",
       outline:
         "border border-border-base bg-bg-surface text-stone-700 hover:text-stone-950 hover:bg-bg-base hover:border-border-hover",
       ghost:

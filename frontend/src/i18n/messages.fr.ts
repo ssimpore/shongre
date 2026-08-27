@@ -2035,6 +2035,7 @@ export const messagesFr = {
   // --- ui.dropdownMenu ---
   "ui.dropdownMenu.selectionne": "sélectionné",
   "ui.dropdownMenu.aucunResultatTrouve": "Aucun résultat trouvé",
+  "ui.dropdownMenu.effacerLaRecherche": "Effacer la recherche",
 
   // --- ui.globalSearchBar ---
   "ui.globalSearchBar.toutesLesCategories2": "Toutes les catégories",

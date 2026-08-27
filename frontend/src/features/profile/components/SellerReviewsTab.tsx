@@ -99,7 +99,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`w-5 h-5 ${
+                  className={`w-icon-lg h-icon-lg ${
                     star <= Math.round(stats.average)
                       ? "fill-amber-400 text-amber-400"
                       : "text-stone-300"
@@ -135,7 +135,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
               >
                 <span className="flex items-center gap-1 w-12 shrink-0 font-medium text-stone-700">
                   {item.star}{" "}
-                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
                 </span>
 
                 <ProgressBar
@@ -194,7 +194,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                         {rev.authorName}
                       </span>
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-surface px-2 py-1 rounded-full border border-success-border">
-                        <CheckCircle2 className="w-3 h-3" />
+                        <CheckCircle2 className="w-icon-xs h-icon-xs" />
                         {t("profile.sellerReviewsTab.achatVerifie")}
                       </span>
                     </div>
@@ -204,7 +204,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
-                            className={`w-3.5 h-3.5 ${
+                            className={`w-icon-sm h-icon-sm ${
                               star <= rev.rating
                                 ? "fill-amber-400 text-amber-400"
                                 : "text-stone-300"
@@ -214,7 +214,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1 text-xs">
-                        <Calendar className="w-3 h-3 text-stone-400" />
+                        <Calendar className="w-icon-xs h-icon-xs text-stone-400" />
                         {formatDate(rev.createdAt)}
                       </span>
                     </div>
@@ -223,7 +223,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
 
                 {rev.listingTitle && (
                   <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 bg-bg-base px-3 py-1.5 rounded-xl border border-border-base max-w-60 truncate">
-                    <ShoppingBag className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                    <ShoppingBag className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
                     <span className="truncate">{rev.listingTitle}</span>
                   </div>
                 )}
@@ -236,7 +236,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
 
               {rev.listingTitle && (
                 <div className="sm:hidden mt-3 pt-2 border-t border-border-subtle flex items-center gap-1.5 text-xs text-stone-500">
-                  <ShoppingBag className="w-3 h-3 text-stone-400 shrink-0" />
+                  <ShoppingBag className="w-icon-xs h-icon-xs text-stone-400 shrink-0" />
                   <span className="truncate">Article : {rev.listingTitle}</span>
                 </div>
               )}

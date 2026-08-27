@@ -117,16 +117,16 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           className="absolute right-1.5 top-1/2 -translate-y-1/2"
         >
           {showPassword ? (
-            <EyeOff className="w-4 h-4" />
+            <EyeOff className="w-icon-md h-icon-md" />
           ) : (
-            <Eye className="w-4 h-4" />
+            <Eye className="w-icon-md h-icon-md" />
           )}
         </IconButton>
       </div>
 
       {error && (
         <p className="mt-1 text-xs font-semibold text-danger flex items-center gap-1">
-          <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+          <ShieldAlert className="w-icon-sm h-icon-sm shrink-0" />
           <span>{error}</span>
         </p>
       )}
@@ -150,33 +150,33 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           <div className="grid grid-cols-2 gap-1 text-micro text-stone-600">
             <div className="flex items-center gap-1">
               {hasMinLength ? (
-                <Check className="w-3 h-3 text-success shrink-0" />
+                <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-3 h-3 text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
               )}
               <span>{t("auth.passwordField.8CaracteresMinimum")}</span>
             </div>
             <div className="flex items-center gap-1">
               {hasUppercase ? (
-                <Check className="w-3 h-3 text-success shrink-0" />
+                <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-3 h-3 text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
               )}
               <span>1 lettre majuscule</span>
             </div>
             <div className="flex items-center gap-1">
               {hasNumber ? (
-                <Check className="w-3 h-3 text-success shrink-0" />
+                <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-3 h-3 text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
               )}
               <span>1 chiffre</span>
             </div>
             <div className="flex items-center gap-1">
               {hasSpecial ? (
-                <Check className="w-3 h-3 text-success shrink-0" />
+                <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-3 h-3 text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
               )}
               <span>{t("auth.passwordField.1CaractereSpecial")}</span>
             </div>

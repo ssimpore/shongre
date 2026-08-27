@@ -26,7 +26,7 @@ export const TaxonomyAuditTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-            <History className="w-5 h-5 text-primary" />
+            <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyAuditTab.journalDAuditTracabiliteDes")}
             </span>
@@ -37,7 +37,7 @@ export const TaxonomyAuditTab: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t("admin.taxonomyAuditTab.filtrerLesLogsDAudit")}
@@ -88,7 +88,7 @@ export const TaxonomyAuditTab: React.FC = () => {
                     className="hover:bg-bg-subtle/40 transition-colors"
                   >
                     <td className="py-3 px-4 text-stone-500 font-mono flex items-center gap-1.5 whitespace-nowrap">
-                      <Clock className="w-3.5 h-3.5 text-stone-400" />
+                      <Clock className="w-icon-sm h-icon-sm text-stone-400" />
                       <span>{new Date(log.timestamp).toLocaleString()}</span>
                     </td>
                     <td className="py-3 px-4 font-bold text-stone-900">
@@ -101,7 +101,7 @@ export const TaxonomyAuditTab: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 text-stone-700 font-medium">
-                        <User className="w-3.5 h-3.5 text-stone-400" />
+                        <User className="w-icon-sm h-icon-sm text-stone-400" />
                         <span>{log.actor.name}</span>
                         <span className="text-micro text-stone-500 font-mono">
                           ({roleLabel(log.actor.role)})

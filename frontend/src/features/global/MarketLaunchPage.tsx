@@ -61,7 +61,7 @@ export function MarketLaunchPage({
             href={gatewayHref}
             className="mt-8 inline-flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-4 text-sm font-bold hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <ArrowLeft className="h-icon-md w-icon-md" aria-hidden="true" />
             Choisir un autre pays
           </a>
         </section>

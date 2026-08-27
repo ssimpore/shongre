@@ -33,30 +33,32 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
     priority: string,
   ) => {
     if (priority === "critical") {
-      return <AlertCircle className="w-4 h-4 text-danger" />;
+      return <AlertCircle className="w-icon-md h-icon-md text-danger" />;
     }
 
     switch (category) {
       case "messages":
-        return <MessageSquare className="w-4 h-4 text-info" />;
+        return <MessageSquare className="w-icon-md h-icon-md text-info" />;
       case "transactions":
-        return <ShoppingBag className="w-4 h-4 text-success" />;
+        return <ShoppingBag className="w-icon-md h-icon-md text-success" />;
       case "listings":
-        return <Tag className="w-4 h-4 text-primary" />;
+        return <Tag className="w-icon-md h-icon-md text-primary" />;
       case "delivery":
-        return <Package className="w-4 h-4 text-indigo-600" />;
+        return <Package className="w-icon-md h-icon-md text-indigo-600" />;
       case "reviews":
-        return <Star className="w-4 h-4 text-amber-500 fill-amber-400" />;
+        return (
+          <Star className="w-icon-md h-icon-md text-amber-500 fill-amber-400" />
+        );
       case "monetization":
-        return <DollarSign className="w-4 h-4 text-warning" />;
+        return <DollarSign className="w-icon-md h-icon-md text-warning" />;
       case "account":
       case "security":
-        return <ShieldCheck className="w-4 h-4 text-success" />;
+        return <ShieldCheck className="w-icon-md h-icon-md text-success" />;
       case "moderation":
-        return <AlertCircle className="w-4 h-4 text-warning" />;
+        return <AlertCircle className="w-icon-md h-icon-md text-warning" />;
       case "system":
       default:
-        return <Sparkles className="w-4 h-4 text-stone-600" />;
+        return <Sparkles className="w-icon-md h-icon-md text-stone-600" />;
     }
   };
 
@@ -108,7 +110,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
           notification.actions.length > 0 && (
             <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-primary group-hover:underline">
               <span>{notification.actions[0].label}</span>
-              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-icon-xs h-icon-xs group-hover:translate-x-0.5 transition-transform" />
             </div>
           )}
       </div>

@@ -95,19 +95,19 @@ function statePresentation(state: VerificationRequirement["state"]) {
     return {
       label: "Vérifié",
       className: "bg-success-surface text-success border-success-border",
-      icon: <CheckCircle2 className="h-4 w-4" aria-hidden="true" />,
+      icon: <CheckCircle2 className="h-icon-md w-icon-md" aria-hidden="true" />,
     };
   if (state === "pending")
     return {
       label: "En cours",
       className: "bg-warning-surface text-warning border-warning-border",
-      icon: <Clock3 className="h-4 w-4" aria-hidden="true" />,
+      icon: <Clock3 className="h-icon-md w-icon-md" aria-hidden="true" />,
     };
   if (state === "rejected" || state === "requires_action")
     return {
       label: "Action requise",
       className: "bg-danger-surface text-danger border-danger-border",
-      icon: <CircleAlert className="h-4 w-4" aria-hidden="true" />,
+      icon: <CircleAlert className="h-icon-md w-icon-md" aria-hidden="true" />,
     };
   return {
     label: "Non nécessaire pour le moment",
@@ -275,7 +275,7 @@ export const VerificationCenterPage: React.FC = () => {
       <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-7">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
-            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+            <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-success">
@@ -312,8 +312,11 @@ export const VerificationCenterPage: React.FC = () => {
             </div>
             {decision?.allowed ? (
               <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-success-border bg-success-surface px-3 py-1 text-xs font-bold text-success">
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> Prêt à
-                continuer
+                <CheckCircle2
+                  className="h-icon-md w-icon-md"
+                  aria-hidden="true"
+                />{" "}
+                Prêt à continuer
               </span>
             ) : null}
           </div>
@@ -361,7 +364,7 @@ export const VerificationCenterPage: React.FC = () => {
                         </span>
                       </span>
                       <ChevronRight
-                        className="h-5 w-5 text-stone-400"
+                        className="h-icon-lg w-icon-lg text-stone-400"
                         aria-hidden="true"
                       />
                     </button>

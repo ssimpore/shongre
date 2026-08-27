@@ -23,7 +23,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
     <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 space-y-4">
       <div className="flex items-center justify-between border-b border-stone-100 pb-2">
         <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-stone-600" />
+          <Clock className="w-icon-md h-icon-md text-stone-600" />
           {t("admin.providerAuditLogsTab.journalDAuditTracabiliteDes")}
         </h4>
         <span className="text-xs text-stone-500 font-mono">
@@ -48,7 +48,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
                     {PROVIDER_AUDIT_ACTION_LABELS[log.action]}
                   </span>
                   {log.marketCode && (
-                    <span className="text-micro font-bold bg-info-surface text-info px-1.5 py-0.2 rounded">
+                    <span className="text-micro font-bold bg-info-surface text-info px-1.5 py-0.5 rounded">
                       Marché {log.marketCode}
                     </span>
                   )}

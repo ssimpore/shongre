@@ -107,7 +107,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                 variant="outline"
                 size="sm"
                 onClick={() => setIsDiscardModalOpen(true)}
-                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+                leftIcon={<RotateCcw className="w-icon-sm h-icon-sm" />}
               >
                 {t("admin.taxonomyDraftPublishTab.annulerLesModifications")}
               </Button>
@@ -118,7 +118,7 @@ export const TaxonomyDraftPublishTab: React.FC<
               size="sm"
               onClick={() => setIsPublishModalOpen(true)}
               disabled={draftChanges.length === 0 || hasBlockingErrors}
-              leftIcon={<Send className="w-3.5 h-3.5" />}
+              leftIcon={<Send className="w-icon-sm h-icon-sm" />}
             >
               {t("admin.taxonomyDraftPublishTab.publierLesModifications")}
             </Button>
@@ -128,7 +128,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         {/* Blocking Error Notice if any */}
         {hasBlockingErrors && draftChanges.length > 0 && (
           <div className="p-3.5 bg-danger-surface border border-danger-border rounded-xl text-xs text-danger flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-danger shrink-0" />
+            <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0" />
             <span>
               {t(
                 "admin.taxonomyDraftPublishTab.publicationBloqueeDesAnomaliesCritiques",
@@ -142,7 +142,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         {draftChanges.length > 0 && (
           <div className="space-y-2 pt-3 border-t border-border-subtle">
             <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-              <FileDiff className="w-3.5 h-3.5 text-stone-500" />
+              <FileDiff className="w-icon-sm h-icon-sm text-stone-500" />
               <span>
                 {t("admin.taxonomyDraftPublishTab.detailDesChangementsEtages")}
               </span>
@@ -188,7 +188,7 @@ export const TaxonomyDraftPublishTab: React.FC<
       <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-            <History className="w-5 h-5 text-primary" />
+            <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees")}
             </span>
@@ -230,10 +230,10 @@ export const TaxonomyDraftPublishTab: React.FC<
                   className="hover:bg-bg-subtle/50 transition-colors"
                 >
                   <td className="py-3 px-3 font-mono font-bold text-stone-900 flex items-center gap-2">
-                    <GitCommit className="w-3.5 h-3.5 text-primary" />
+                    <GitCommit className="w-icon-sm h-icon-sm text-primary" />
                     <span>v{ver.versionNumber}.0</span>
                     {idx === 0 && (
-                      <span className="text-micro bg-success-surface text-success border border-success-border px-1.5 py-0.2 rounded font-bold">
+                      <span className="text-micro bg-success-surface text-success border border-success-border px-1.5 py-0.5 rounded font-bold">
                         Actuelle
                       </span>
                     )}

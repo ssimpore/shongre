@@ -183,7 +183,7 @@ export const AdminProvidersPage: React.FC = () => {
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2.5">
-            <Cpu className="w-6 h-6 text-primary" />
+            <Cpu className="w-icon-xl h-icon-xl text-primary" />
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
           <p className="text-xs text-stone-600 mt-1 max-w-2xl">
@@ -197,7 +197,7 @@ export const AdminProvidersPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+            leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
             className="text-xs h-control-md font-semibold"
           >
             Actualiser
@@ -225,7 +225,7 @@ export const AdminProvidersPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <LayoutDashboard className="w-3.5 h-3.5" />
+          <LayoutDashboard className="w-icon-sm h-icon-sm" />
           <span>Vue d'ensemble</span>
         </button>
 
@@ -238,7 +238,7 @@ export const AdminProvidersPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Layers className="w-3.5 h-3.5" />
+          <Layers className="w-icon-sm h-icon-sm" />
           <span>Catalogue des intégrations ({providers.length})</span>
         </button>
 
@@ -251,7 +251,7 @@ export const AdminProvidersPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Globe className="w-3.5 h-3.5" />
+          <Globe className="w-icon-sm h-icon-sm" />
           <span>{t("admin.adminProvidersPage.matriceMultiMarches")}</span>
         </button>
 
@@ -264,7 +264,7 @@ export const AdminProvidersPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Sliders className="w-3.5 h-3.5" />
+          <Sliders className="w-icon-sm h-icon-sm" />
           <span>Routage & Secours</span>
         </button>
 
@@ -277,7 +277,7 @@ export const AdminProvidersPage: React.FC = () => {
               : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
           }`}
         >
-          <Clock className="w-3.5 h-3.5" />
+          <Clock className="w-icon-sm h-icon-sm" />
           <span>Journal d'Audit</span>
         </button>
       </div>

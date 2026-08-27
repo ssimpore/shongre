@@ -336,7 +336,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
   return (
     <div className="min-w-0 space-y-5 pb-6">
-      <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-card sm:p-6">
+      <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-primary">

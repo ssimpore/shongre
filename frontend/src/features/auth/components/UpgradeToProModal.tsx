@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../design-system";
 import { Briefcase, ShieldCheck, AlertCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
@@ -92,13 +93,13 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
       description={t("auth.upgradeToProModal.conservezToutesVosAnnoncesAvis")}
       headerIcon={
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
-          <Briefcase className="h-5 w-5" />
+          <Briefcase className="h-icon-lg w-icon-lg" />
         </div>
       }
     >
       {error && (
         <div className="mb-4 p-3 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <AlertCircle className="w-icon-md h-icon-md shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -136,20 +137,24 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label
+              htmlFor="upgrade-pro-legal-form"
+              className="block text-xs font-bold text-stone-800 mb-1.5"
+            >
               Statut / Forme juridique <span className="text-primary">*</span>
             </label>
-            <select
+            <Select
+              className="w-full"
+              id="upgrade-pro-legal-form"
               value={legalForm}
               onChange={(e) => setLegalForm(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             >
               {currentMarket.supportedLegalForms.map((f) => (
                 <option key={f} value={f}>
                   {f}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -197,7 +202,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         </div>
 
         <div className="p-3.5 rounded-xl bg-warning-surface/70 border border-warning-border/80 text-xs text-warning flex items-start gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-warning shrink-0 mt-0.5" />
+          <ShieldCheck className="w-icon-md h-icon-md text-warning shrink-0 mt-0.5" />
           <div className="leading-relaxed">
             <strong>{t("auth.upgradeToProModal.verificationLegale")}</strong>{" "}
             Votre immatriculation fera l'objet d'un examen par nos services de
@@ -215,7 +220,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             variant="primary"
             size="md"
             isLoading={isLoading}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
           >
             {t("auth.upgradeToProModal.confirmerLaMiseANiveau")}
           </Button>

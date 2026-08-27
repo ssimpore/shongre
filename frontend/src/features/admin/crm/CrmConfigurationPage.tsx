@@ -70,7 +70,7 @@ export const CrmConfigurationPage: React.FC = () => {
       <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900">
-            <Settings2 className="h-5 w-5 text-violet-300" />
+            <Settings2 className="h-icon-lg w-icon-lg text-violet-300" />
           </span>
           <div>
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
@@ -102,7 +102,7 @@ export const CrmConfigurationPage: React.FC = () => {
             </p>
             <span className="mt-3 inline-flex items-center gap-1 text-micro font-bold text-primary">
               Configurer{" "}
-              <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
+              <ChevronRight className="h-icon-sm w-icon-sm transition group-hover:translate-x-0.5" />
             </span>
           </Link>
         ))}

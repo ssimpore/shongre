@@ -1681,6 +1681,7 @@ export const messagesEn: MessageCatalogue = {
   "ui.categoryFilterRail.sousCategories": "Subcategories:",
   "ui.dropdownMenu.selectionne": "selected",
   "ui.dropdownMenu.aucunResultatTrouve": "No results found",
+  "ui.dropdownMenu.effacerLaRecherche": "Clear search",
   "ui.globalSearchBar.toutesLesCategories2": "All categories",
   "ui.listingCard.livraisonCourt": "Delivery",
   "ui.priceRangeSlider.reinitialiser": "Reset",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Select } from "../../../../design-system";
 import {
   TaxonomyNode,
   TaxonomyCapabilities,
@@ -465,7 +466,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     id: node.id,
                   })}
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className="w-icon-xs h-icon-xs" />
                 </button>
               </span>
               <span>•</span>
@@ -480,7 +481,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setIsMoveModalOpen(true)}
-            leftIcon={<FolderTree className="w-3.5 h-3.5" />}
+            leftIcon={<FolderTree className="w-icon-sm h-icon-sm" />}
           >
             {t("admin.taxonomyNodeEditor.deplacer")}
           </Button>
@@ -489,7 +490,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             variant="outline"
             size="sm"
             onClick={handleDuplicate}
-            leftIcon={<Copy className="w-3.5 h-3.5" />}
+            leftIcon={<Copy className="w-icon-sm h-icon-sm" />}
           >
             Dupliquer
           </Button>
@@ -499,7 +500,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setIsDeprecateModalOpen(true)}
-              leftIcon={<Archive className="w-3.5 h-3.5 text-warning" />}
+              leftIcon={
+                <Archive className="w-icon-sm h-icon-sm text-warning" />
+              }
             >
               {t("admin.taxonomyNodeEditor.deprecier2")}
             </Button>
@@ -513,7 +516,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             size="sm"
             onClick={handleSaveGeneral}
             disabled={isSubmitting}
-            leftIcon={<Save className="w-3.5 h-3.5" />}
+            leftIcon={<Save className="w-icon-sm h-icon-sm" />}
           >
             {isSubmitting ? "Enregistrement..." : "Enregistrer"}
           </Button>
@@ -647,10 +650,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               </FormField>
 
               <FormField label={t("admin.taxonomyNodeEditor.schemaDEtat")}>
-                <select
+                <Select
+                  size="compact"
+                  className="w-full"
+                  labelledByAncestor
                   value={conditionScheme}
                   onChange={(e) => setConditionScheme(e.target.value as any)}
-                  className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   <option value="consumer_product">
                     {t("admin.taxonomyNodeEditor.produitStandardNeufTresBon")}
@@ -672,7 +677,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <option value="service">
                     {t("admin.taxonomyNodeEditor.serviceADomicileEnAtelier")}
                   </option>
-                </select>
+                </Select>
               </FormField>
             </div>
 
@@ -770,7 +775,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       )}
                       className="text-stone-500 hover:text-stone-700"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-icon-xs h-icon-xs" />
                     </button>
                   </span>
                 ))}
@@ -786,10 +791,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <FormField
                   label={t("admin.taxonomyNodeEditor.statutOperationnel")}
                 >
-                  <select
+                  <Select
+                    size="compact"
+                    className="w-full"
+                    labelledByAncestor
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full h-control-md px-3 bg-white border border-border-base rounded-control text-xs font-semibold"
                   >
                     <option value="active">
                       {t("admin.taxonomyNodeEditor.actifEnLigneEtIndexable")}
@@ -807,7 +814,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                         "admin.taxonomyNodeEditor.deprecieArchivageProgressif",
                       )}
                     </option>
-                  </select>
+                  </Select>
                 </FormField>
 
                 <div className="pt-6">
@@ -834,7 +841,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="min-w-0">
                   <h4 className="text-sm font-bold text-danger flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
                     {t("admin.taxonomyNodeEditor.zoneDeDanger")}
                   </h4>
                   <p className="text-xs text-stone-600 mt-1 max-w-prose">
@@ -850,7 +857,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsDeleteModalOpen(true)}
-                  leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                  leftIcon={<Trash2 className="w-icon-sm h-icon-sm" />}
                   className="border-danger-border text-danger hover:bg-danger hover:text-white shrink-0"
                 >
                   {t("admin.taxonomyNodeEditor.supprimerCeNUd")}
@@ -931,10 +938,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
                 {/* Add Attribute Dropdown */}
                 <div className="flex items-center gap-2">
-                  <select
+                  <Select
+                    size="compact"
+                    className="max-w-xs w-auto"
+                    aria-label="Ajouter un attribut du registre"
                     value={selectedRegistryAttrId}
                     onChange={(e) => setSelectedRegistryAttrId(e.target.value)}
-                    className="h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold max-w-xs"
                   >
                     <option value="">
                       {t("admin.taxonomyNodeEditor.choisirDansLeRegistre")}
@@ -944,13 +953,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                         {attr.label} ({attr.dataType})
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <Button
                     variant="primary"
                     size="sm"
                     onClick={handleAddAttribute}
                     disabled={!selectedRegistryAttrId}
-                    leftIcon={<Plus className="w-3.5 h-3.5" />}
+                    leftIcon={<Plus className="w-icon-sm h-icon-sm" />}
                   >
                     Assigner
                   </Button>
@@ -978,21 +987,21 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                             <span className="font-bold text-stone-900">
                               {attr.label}
                             </span>
-                            <span className="text-micro bg-primary-light text-primary px-1.5 py-0.2 rounded font-mono font-bold">
+                            <span className="text-micro bg-primary-light text-primary px-1.5 py-0.5 rounded font-mono font-bold">
                               {attr.dataType}
                             </span>
                             {attr.unit && (
-                              <span className="text-micro bg-stone-100 text-stone-700 px-1.5 py-0.2 rounded font-mono font-bold">
+                              <span className="text-micro bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded font-mono font-bold">
                                 {attr.unit}
                               </span>
                             )}
                             {attr.required && (
-                              <span className="text-micro bg-danger-surface text-danger px-1.5 py-0.2 rounded font-bold">
+                              <span className="text-micro bg-danger-surface text-danger px-1.5 py-0.5 rounded font-bold">
                                 Requis
                               </span>
                             )}
                             {attr.filterable && (
-                              <span className="text-micro bg-info-surface text-info px-1.5 py-0.2 rounded font-bold">
+                              <span className="text-micro bg-info-surface text-info px-1.5 py-0.5 rounded font-bold">
                                 Filtre
                               </span>
                             )}
@@ -1009,7 +1018,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                           onClick={() => handleRemoveLocalAttribute(attr.id)}
                           className="text-stone-500 hover:text-danger"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-icon-sm h-icon-sm" />
                         </Button>
                       </div>
                     );
@@ -1027,12 +1036,14 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 rounded-xl border border-border-base bg-white p-4 sm:grid-cols-2">
               <FormField label={t("admin.taxonomyNodeEditor.primaryCta")}>
-                <select
+                <Select
+                  size="compact"
+                  className="w-full"
+                  labelledByAncestor
                   value={primaryCta}
                   onChange={(event) =>
                     setPrimaryCta(event.target.value as TaxonomyPrimaryCta)
                   }
-                  className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
                 >
                   <option value="contact_seller">
                     {t("admin.taxonomyNodeEditor.cta.contactSeller")}
@@ -1058,19 +1069,21 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <option value="propose_exchange">
                     {t("admin.taxonomyNodeEditor.cta.proposeExchange")}
                   </option>
-                </select>
+                </Select>
               </FormField>
               <FormField
                 label={t("admin.taxonomyNodeEditor.moderationReviewMode")}
               >
-                <select
+                <Select
+                  size="compact"
+                  className="w-full"
+                  labelledByAncestor
                   value={moderationReviewMode}
                   onChange={(event) =>
                     setModerationReviewMode(
                       event.target.value as "standard" | "enhanced" | "manual",
                     )
                   }
-                  className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 text-xs font-semibold"
                 >
                   <option value="standard">
                     {t("admin.taxonomyNodeEditor.review.standard")}
@@ -1081,7 +1094,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <option value="manual">
                     {t("admin.taxonomyNodeEditor.review.manual")}
                   </option>
-                </select>
+                </Select>
               </FormField>
               <FormField
                 label={t("admin.taxonomyNodeEditor.standardDurationDays")}
@@ -1126,7 +1139,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             {/* Resolved publication schema summary */}
             <div className="p-4 bg-bg-subtle rounded-xl border border-border-subtle space-y-3">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-primary" />
+                <FileCheck className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
                     "admin.taxonomyNodeEditor.schemaDePublicationResoluEffectif",
@@ -1209,7 +1222,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           <div className="space-y-6 max-w-3xl">
             <div className="p-3.5 bg-info-surface border border-info-border rounded-xl text-xs text-info space-y-1">
               <div className="font-bold text-info flex items-center gap-1.5">
-                <HelpCircle className="w-4 h-4 text-info" />
+                <HelpCircle className="w-icon-md h-icon-md text-info" />
                 <span>
                   {t("admin.taxonomyNodeEditor.frontiereDArchitecture")}
                 </span>
@@ -1377,7 +1390,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           <div className="space-y-6 max-w-3xl">
             <div className="p-3.5 bg-bg-subtle rounded-xl border border-border-subtle text-xs space-y-1">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-primary" />
+                <Globe className="w-icon-md h-icon-md text-primary" />
                 <span>Architecture multi-marchés et héritage canonique</span>
               </div>
               <p className="text-stone-600">
@@ -1549,10 +1562,12 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <span className="text-xs font-bold text-stone-700">
                   Profil :
                 </span>
-                <select
+                <Select
+                  className="w-auto"
+                  size="sm"
+                  aria-label="Profil de prévisualisation"
                   value={previewUserType}
                   onChange={(e) => setPreviewUserType(e.target.value as any)}
-                  className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   <option value="individual">
                     {t("admin.taxonomyNodeEditor.vendeurParticulier")}
@@ -1560,31 +1575,33 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <option value="pro">
                     {t("admin.taxonomyNodeEditor.vendeurProfessionnel")}
                   </option>
-                </select>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-stone-700">
                   {t("admin.taxonomyNodeEditor.marche")}
                 </span>
-                <select
+                <Select
+                  className="w-auto"
+                  size="sm"
+                  aria-label={t("admin.taxonomyNodeEditor.marche")}
                   value={previewMarket}
                   onChange={(e) => setPreviewMarket(e.target.value)}
-                  className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
                 >
                   {availableMarkets.map((market) => (
                     <option key={market.code} value={market.code}>
                       {market.name} ({market.code})
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
 
             {/* Form Fields Simulation */}
             <div className="p-5 bg-bg-subtle rounded-2xl border border-border-subtle space-y-4">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
-                <Eye className="w-4 h-4 text-primary" />
+                <Eye className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
                     "admin.taxonomyNodeEditor.simulationDuFormulaireDePublication",
@@ -1666,7 +1683,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
             <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs text-stone-700">
               <div className="font-bold text-stone-900 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-success" />
+                <ShieldCheck className="w-icon-md h-icon-md text-success" />
                 <span>
                   {t("admin.taxonomyNodeEditor.politiqueDIntegriteCanonique")}
                 </span>

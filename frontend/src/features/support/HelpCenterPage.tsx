@@ -111,29 +111,37 @@ export const HelpCenterPage: React.FC = () => {
     {
       id: "all",
       label: "Toutes les questions",
-      icon: <HelpCircle className="w-4 h-4" />,
+      icon: <HelpCircle className="w-icon-md h-icon-md" />,
     },
     {
       id: "transactions",
       label: "Paiements & Remboursements",
-      icon: <CreditCard className="w-4 h-4" />,
+      icon: <CreditCard className="w-icon-md h-icon-md" />,
     },
     {
       id: "listings",
       label: "Annonces & Vente",
-      icon: <Tag className="w-4 h-4" />,
+      icon: <Tag className="w-icon-md h-icon-md" />,
     },
     {
       id: "delivery",
       label: "Livraison & Retrait",
-      icon: <Truck className="w-4 h-4" />,
+      icon: <Truck className="w-icon-md h-icon-md" />,
     },
-    { id: "account", label: "Mon compte", icon: <User className="w-4 h-4" /> },
-    { id: "pro", label: "Espace Pro", icon: <Briefcase className="w-4 h-4" /> },
+    {
+      id: "account",
+      label: "Mon compte",
+      icon: <User className="w-icon-md h-icon-md" />,
+    },
+    {
+      id: "pro",
+      label: "Espace Pro",
+      icon: <Briefcase className="w-icon-md h-icon-md" />,
+    },
     {
       id: "safety",
       label: "Sécurité & Fraude",
-      icon: <ShieldCheck className="w-4 h-4" />,
+      icon: <ShieldCheck className="w-icon-md h-icon-md" />,
     },
   ];
 
@@ -154,7 +162,7 @@ export const HelpCenterPage: React.FC = () => {
       {/* 1. Hero Search Header */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
-          <Headphones className="w-3.5 h-3.5" />
+          <Headphones className="w-icon-sm h-icon-sm" />
           <span>Centre d'aide Shongre</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black text-stone-900 tracking-tight">
@@ -166,7 +174,7 @@ export const HelpCenterPage: React.FC = () => {
 
         {/* Search Box */}
         <div className="relative max-w-lg mx-auto pt-2">
-          <Search className="w-5 h-5 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 mt-1" />
+          <Search className="w-icon-lg h-icon-lg text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 mt-1" />
           <input
             type="text"
             placeholder={t(
@@ -226,7 +234,7 @@ export const HelpCenterPage: React.FC = () => {
                   >
                     <span>{art.question}</span>
                     <ChevronDown
-                      className={`w-4 h-4 text-stone-400 shrink-0 transition-transform ${
+                      className={`w-icon-md h-icon-md text-stone-400 shrink-0 transition-transform ${
                         isOpen ? "rotate-180 text-primary" : ""
                       }`}
                     />
@@ -241,7 +249,7 @@ export const HelpCenterPage: React.FC = () => {
                           className="inline-flex items-center gap-1 font-bold text-primary hover:underline"
                         >
                           <span>{art.linkText}</span>
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight className="w-icon-xs h-icon-xs" />
                         </Link>
                       )}
                     </div>

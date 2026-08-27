@@ -101,7 +101,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
             fullWidth
             type="submit"
             isLoading={isSubmitting}
-            leftIcon={<DollarSign className="w-4 h-4" />}
+            leftIcon={<DollarSign className="w-icon-md h-icon-md" />}
           >
             {t("messaging.makeOfferModal.submitOffer")}
           </Button>

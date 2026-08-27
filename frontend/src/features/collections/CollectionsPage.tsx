@@ -218,7 +218,7 @@ export const CollectionsPage: React.FC = () => {
                   to="/collections"
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors mb-2"
                 >
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-icon-md h-icon-md" />
                   <span>
                     {t("collections.collectionsPage.toutesLesCollections")}
                   </span>
@@ -234,7 +234,7 @@ export const CollectionsPage: React.FC = () => {
                     {selectedCollection.badge.label}
                   </span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-800 text-stone-300 text-xs font-medium border border-stone-700">
-                    <Layers className="w-3 h-3 text-stone-400" />
+                    <Layers className="w-icon-xs h-icon-xs text-stone-400" />
                     {selectedCollection.itemCountLabel}
                   </span>
                 </div>
@@ -254,7 +254,7 @@ export const CollectionsPage: React.FC = () => {
 
                 {/* Curator note */}
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
-                  <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <Sparkles className="w-icon-md h-icon-md text-primary shrink-0 mt-0.5" />
                   <div className="text-xs text-stone-300 space-y-0.5">
                     <p className="font-bold text-white">
                       {t("collections.collectionsPage.leMotDeLaRedaction")}
@@ -405,7 +405,7 @@ export const CollectionsPage: React.FC = () => {
 
                       <div className="absolute bottom-3 left-3 z-raised">
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
-                          <Layers className="w-3.5 h-3.5 text-stone-300" />
+                          <Layers className="w-icon-sm h-icon-sm text-stone-300" />
                           {col.itemCountLabel}
                         </span>
                       </div>
@@ -435,7 +435,7 @@ export const CollectionsPage: React.FC = () => {
                         </div>
 
                         <div className="w-8 h-8 rounded-full bg-stone-100 group-hover:bg-primary group-hover:text-white text-stone-600 flex items-center justify-center transition-colors shrink-0">
-                          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                          <ChevronRight className="w-icon-md h-icon-md group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
                     </div>
@@ -445,7 +445,7 @@ export const CollectionsPage: React.FC = () => {
             ) : (
               <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-md mx-auto space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-                  <Search className="w-6 h-6" />
+                  <Search className="w-icon-xl h-icon-xl" />
                 </div>
                 <h3 className="text-base font-bold text-stone-900">
                   {t("collections.collectionsPage.aucuneCollectionTrouvee")}
@@ -509,7 +509,7 @@ export const CollectionsPage: React.FC = () => {
 
                 {/* In-collection search input */}
                 <div className="relative w-full sm:w-64">
-                  <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={inCollectionSearch}
@@ -566,7 +566,7 @@ export const CollectionsPage: React.FC = () => {
               ) : (
                 <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
                   <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-                    <Filter className="w-6 h-6" />
+                    <Filter className="w-icon-xl h-icon-xl" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-base font-bold text-stone-900">

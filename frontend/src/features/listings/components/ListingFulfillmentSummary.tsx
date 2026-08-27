@@ -75,7 +75,7 @@ export const ListingFulfillmentSummary: React.FC<
           <div className="p-3.5 rounded-xl bg-bg-base/60 border border-border-base flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center shrink-0">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-icon-md h-icon-md" />
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-stone-900">
@@ -98,7 +98,7 @@ export const ListingFulfillmentSummary: React.FC<
           <div className="p-3.5 rounded-xl bg-bg-base/60 border border-border-base flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center shrink-0">
-                <Package className="w-4 h-4" />
+                <Package className="w-icon-md h-icon-md" />
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-stone-900">
@@ -128,7 +128,7 @@ export const ListingFulfillmentSummary: React.FC<
           <div className="p-3.5 rounded-xl bg-bg-base/60 border border-border-base flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center shrink-0">
-                <Truck className="w-4 h-4" />
+                <Truck className="w-icon-md h-icon-md" />
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-stone-900">
@@ -154,7 +154,7 @@ export const ListingFulfillmentSummary: React.FC<
           <div className="p-3.5 rounded-xl bg-bg-base/60 border border-border-base flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center shrink-0">
-                <Store className="w-4 h-4" />
+                <Store className="w-icon-md h-icon-md" />
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-stone-900">

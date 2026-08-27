@@ -97,7 +97,7 @@ export const TaxonomyImportExportTab: React.FC<
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-              <Download className="w-5 h-5 text-primary" />
+              <Download className="w-icon-lg h-icon-lg text-primary" />
               <span>
                 {t(
                   "admin.taxonomyImportExportTab.exporterLaTaxonomieCanoniqueJson",
@@ -113,7 +113,7 @@ export const TaxonomyImportExportTab: React.FC<
             variant="primary"
             size="sm"
             onClick={handleExport}
-            leftIcon={<Download className="w-4 h-4" />}
+            leftIcon={<Download className="w-icon-md h-icon-md" />}
           >
             {t("admin.taxonomyImportExportTab.telechargerLExportJson")}
           </Button>
@@ -124,7 +124,7 @@ export const TaxonomyImportExportTab: React.FC<
       <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-primary" />
+            <Upload className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t(
                 "admin.taxonomyImportExportTab.importerUneArborescenceExterne",
@@ -158,9 +158,9 @@ export const TaxonomyImportExportTab: React.FC<
           >
             <div className="flex items-center gap-2 font-bold">
               {importResult.success ? (
-                <CheckCircle2 className="w-4 h-4 text-success" />
+                <CheckCircle2 className="w-icon-md h-icon-md text-success" />
               ) : (
-                <AlertOctagon className="w-4 h-4 text-danger" />
+                <AlertOctagon className="w-icon-md h-icon-md text-danger" />
               )}
               <span>
                 {importResult.success
@@ -183,7 +183,9 @@ export const TaxonomyImportExportTab: React.FC<
             variant="outline"
             size="sm"
             onClick={() => setIsResetModalOpen(true)}
-            leftIcon={<RotateCcw className="w-3.5 h-3.5 text-stone-500" />}
+            leftIcon={
+              <RotateCcw className="w-icon-sm h-icon-sm text-stone-500" />
+            }
           >
             {t(
               "admin.taxonomyImportExportTab.reinitialiserSurLeBaselineCanonique",
@@ -195,7 +197,7 @@ export const TaxonomyImportExportTab: React.FC<
             size="sm"
             onClick={handleImport}
             disabled={!importJson.trim()}
-            leftIcon={<Upload className="w-4 h-4" />}
+            leftIcon={<Upload className="w-icon-md h-icon-md" />}
           >
             Analyser & Appliquer l'import
           </Button>

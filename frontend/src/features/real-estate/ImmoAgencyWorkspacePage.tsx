@@ -27,6 +27,7 @@ import {
   Badge,
   Button,
   ScrollableRegion,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -237,7 +238,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               {workspace.organization.name}
             </h1>
             <Badge variant="success">
-              <CheckCircle2 className="mr-1 h-3 w-3" />
+              <CheckCircle2 className="mr-1 h-icon-xs w-icon-xs" />
               Agence vérifiée
             </Badge>
           </div>
@@ -482,7 +483,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              leftIcon={<Download className="h-4 w-4" />}
+              leftIcon={<Download className="h-icon-md w-icon-md" />}
               onClick={exportLeads}
             >
               Exporter en CSV
@@ -514,8 +515,10 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 </div>
                 <label className="text-micro font-bold">
                   Statut
-                  <select
-                    className="mt-1 h-control-md w-full rounded-control border border-border-base bg-white px-2 text-xs"
+                  <Select
+                    size="compact"
+                    className="mt-1 w-full"
+                    labelledByAncestor
                     value={lead.status}
                     onChange={(event) =>
                       updateLead(
@@ -529,12 +532,14 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         {label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <label className="text-micro font-bold">
                   Assigné à
-                  <select
-                    className="mt-1 h-control-md w-full rounded-control border border-border-base bg-white px-2 text-xs"
+                  <Select
+                    size="compact"
+                    className="mt-1 w-full"
+                    labelledByAncestor
                     value={lead.assignedUserId || ""}
                     onChange={async (event) => {
                       const updated = await services.realEstate.updateLead(
@@ -556,7 +561,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         {member.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </label>
                 <div className="grid gap-3 border-t border-border-subtle pt-3 md:col-span-3 md:grid-cols-media-content-md">
                   <label className="text-micro font-bold">
@@ -613,7 +618,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         disabled={!noteDrafts[lead.id]?.trim()}
                         onClick={() => addLeadNote(lead.id)}
                       >
-                        <MessageSquarePlus className="h-4 w-4" />
+                        <MessageSquarePlus className="h-icon-md w-icon-md" />
                       </Button>
                     </div>
                     {workspace.leadNotes
@@ -678,7 +683,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 className="w-full"
                 variant="outline"
                 onClick={() => requestImport("csv")}
-                leftIcon={<FileSpreadsheet className="h-4 w-4" />}
+                leftIcon={<FileSpreadsheet className="h-icon-md w-icon-md" />}
               >
                 Importer un CSV
               </Button>
@@ -686,7 +691,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 className="w-full"
                 variant="outline"
                 onClick={() => requestImport("xml")}
-                leftIcon={<Download className="h-4 w-4" />}
+                leftIcon={<Download className="h-icon-md w-icon-md" />}
               >
                 Déclarer un flux XML
               </Button>
@@ -791,7 +796,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       {tab === "profile" ? (
         <section className="grid gap-4 lg:grid-cols-agency-content-aside-secondary">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <Globe2 className="h-6 w-6 text-primary" />
+            <Globe2 className="h-icon-xl w-icon-xl text-primary" />
             <h2 className="mt-3 text-sm font-black">
               Profil public de l’agence
             </h2>
@@ -823,7 +828,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             </dl>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <PlugZap className="h-6 w-6 text-primary" />
+            <PlugZap className="h-icon-xl w-icon-xl text-primary" />
             <h2 className="mt-3 text-sm font-black">Import & API</h2>
             <p className="mt-2 text-xs text-text-secondary">
               Les capacités sont résolues depuis l’offre active, sans test sur
@@ -844,7 +849,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       {tab === "billing" ? (
         <section className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <Settings2 className="h-6 w-6 text-primary" />
+            <Settings2 className="h-icon-xl w-icon-xl text-primary" />
             <h2 className="mt-3 text-sm font-black">
               {workspace.subscription.offerName}
             </h2>
@@ -863,7 +868,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             ) : null}
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <CircleDollarSign className="h-6 w-6 text-primary" />
+            <CircleDollarSign className="h-icon-xl w-icon-xl text-primary" />
             <h2 className="mt-3 text-sm font-black">Crédits visibilité</h2>
             <p className="mt-2 text-3xl font-black">
               {formatNumber(workspace.visibilityCredits.available)}
@@ -875,7 +880,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5 lg:col-span-2">
             <div className="flex items-center gap-2">
-              <ReceiptText className="h-5 w-5 text-primary" />
+              <ReceiptText className="h-icon-lg w-icon-lg text-primary" />
               <h2 className="text-sm font-black">Factures</h2>
             </div>
             {workspace.invoices.length ? (

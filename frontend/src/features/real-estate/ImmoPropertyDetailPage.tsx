@@ -30,6 +30,7 @@ import {
   FormField,
   Image,
   Input,
+  Select,
   Skeleton,
   StatePanel,
   Textarea,
@@ -267,7 +268,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   onClick={favorite}
                   leftIcon={
                     <Heart
-                      className={`h-4 w-4 ${isFavorite(property.listingId) ? "fill-primary" : ""}`}
+                      className={`h-icon-md w-icon-md ${isFavorite(property.listingId) ? "fill-primary" : ""}`}
                     />
                   }
                 >
@@ -285,7 +286,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                       {property.title}
                     </h1>
                     <p className="mt-2 flex items-center gap-1.5 text-xs text-text-secondary">
-                      <MapPin className="h-4 w-4" />
+                      <MapPin className="h-icon-md w-icon-md" />
                       {property.address.publicLabel} · position approximative
                     </p>
                   </div>
@@ -296,21 +297,21 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 </div>
                 <div className="mt-5 grid grid-cols-3 gap-2 border-y border-border-subtle py-4 text-center">
                   <div>
-                    <Maximize2 className="mx-auto h-5 w-5 text-primary" />
+                    <Maximize2 className="mx-auto h-icon-lg w-icon-lg text-primary" />
                     <p className="mt-1 text-sm font-black">
                       {property.characteristics.livingAreaSquareMeters} m²
                     </p>
                     <p className="text-micro text-text-muted">Surface</p>
                   </div>
                   <div>
-                    <KeyRound className="mx-auto h-5 w-5 text-primary" />
+                    <KeyRound className="mx-auto h-icon-lg w-icon-lg text-primary" />
                     <p className="mt-1 text-sm font-black">
                       {property.characteristics.rooms}
                     </p>
                     <p className="text-micro text-text-muted">Pièces</p>
                   </div>
                   <div>
-                    <BedDouble className="mx-auto h-5 w-5 text-primary" />
+                    <BedDouble className="mx-auto h-icon-lg w-icon-lg text-primary" />
                     <p className="mt-1 text-sm font-black">
                       {property.characteristics.bedrooms}
                     </p>
@@ -337,7 +338,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             <section className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
                 <h2 className="flex items-center gap-2 text-sm font-black">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  <ShieldCheck className="h-icon-lg w-icon-lg text-primary" />
                   Performance & réglementation
                 </h2>
                 <dl className="mt-4 space-y-3 text-xs">
@@ -370,7 +371,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
               </div>
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
                 <h2 className="flex items-center gap-2 text-sm font-black">
-                  <BadgeCheck className="h-5 w-5 text-primary" />
+                  <BadgeCheck className="h-icon-lg w-icon-lg text-primary" />
                   Annonceur
                 </h2>
                 <p className="mt-4 font-black text-text-main">
@@ -395,7 +396,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             </section>
           </div>
 
-          <aside className="sticky top-24 rounded-card border border-border-base bg-bg-surface p-5 shadow-card">
+          <aside className="sticky top-24 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
             {!sentLeadId ? (
               <form onSubmit={submitLead} className="space-y-3">
                 <div>
@@ -408,8 +409,9 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 </div>
                 <label className="block text-xs font-bold">
                   Votre demande
-                  <select
-                    className="mt-1 h-control-touch w-full rounded-control border border-border-base bg-white px-3 text-xs"
+                  <Select
+                    className="mt-1 w-full"
+                    labelledByAncestor
                     value={form.type}
                     onChange={(event) =>
                       setForm({
@@ -422,7 +424,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     <option value="visit">Organiser une visite</option>
                     <option value="call">Être rappelé</option>
                     <option value="financing">Parler financement</option>
-                  </select>
+                  </Select>
                 </label>
                 <FormField label="Nom">
                   <Input
@@ -479,7 +481,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   variant="primary"
                   className="w-full"
                   isLoading={sending}
-                  leftIcon={<MessageSquare className="h-4 w-4" />}
+                  leftIcon={<MessageSquare className="h-icon-md w-icon-md" />}
                 >
                   Envoyer la demande
                 </Button>
@@ -495,7 +497,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                         "Bonjour, je souhaite être rappelé au sujet de ce bien.",
                     })
                   }
-                  leftIcon={<Phone className="h-4 w-4" />}
+                  leftIcon={<Phone className="h-icon-md w-icon-md" />}
                 >
                   Demander un rappel
                 </Button>
@@ -503,7 +505,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div className="rounded-control bg-success-surface p-4">
-                  <CheckCircle2 className="h-6 w-6 text-success" />
+                  <CheckCircle2 className="h-icon-xl w-icon-xl text-success" />
                   <p className="mt-2 text-sm font-black text-success">
                     Demande envoyée
                   </p>
@@ -523,7 +525,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   variant="primary"
                   className="w-full"
                   onClick={requestVisit}
-                  leftIcon={<CalendarDays className="h-4 w-4" />}
+                  leftIcon={<CalendarDays className="h-icon-md w-icon-md" />}
                 >
                   Demander ce créneau
                 </Button>

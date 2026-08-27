@@ -291,7 +291,7 @@ export const MyListingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            leftIcon={<Download className="w-3.5 h-3.5" />}
+            leftIcon={<Download className="w-icon-sm h-icon-sm" />}
           >
             Exporter (CSV)
           </Button>
@@ -301,7 +301,7 @@ export const MyListingsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setIsBulkImportOpen(true)}
-            leftIcon={<Upload className="w-3.5 h-3.5" />}
+            leftIcon={<Upload className="w-icon-sm h-icon-sm" />}
           >
             Importer (CSV)
           </Button>
@@ -359,7 +359,7 @@ export const MyListingsPage: React.FC = () => {
                       to={publishCta.to}
                       variant="primary"
                       size="compact"
-                      leftIcon={<PlusCircle className="h-4 w-4" />}
+                      leftIcon={<PlusCircle className="h-icon-md w-icon-md" />}
                     >
                       {t("sellerworkspace.myListingsPage.deposerUneAnnonce")}
                     </Button>
@@ -442,7 +442,7 @@ export const MyListingsPage: React.FC = () => {
                           "sellerworkspace.myListingsPage.gererLesPaysDePublication",
                         )}
                       >
-                        <Globe className="w-3.5 h-3.5 text-primary" />
+                        <Globe className="w-icon-sm h-icon-sm text-primary" />
                         <span>{markets.join(", ")}</span>
                         <span className="text-micro text-stone-500 font-normal">
                           ({markets.length})
@@ -467,7 +467,7 @@ export const MyListingsPage: React.FC = () => {
                   header: "Vues",
                   cell: (listing) => (
                     <div className="flex items-center gap-1.5 text-xs text-stone-600">
-                      <Eye className="w-3.5 h-3.5 text-stone-400" />
+                      <Eye className="w-icon-sm h-icon-sm text-stone-400" />
                       <span>
                         {listing.viewsCount ?? listing.viewCount ?? 0}
                       </span>
@@ -499,7 +499,7 @@ export const MyListingsPage: React.FC = () => {
                               "sellerworkspace.myListingsPage.boosterLAnnonce",
                             )}
                           >
-                            <Zap className="w-3.5 h-3.5 text-warning fill-amber-500" />
+                            <Zap className="w-icon-sm h-icon-sm text-warning fill-amber-500" />
                             <span className="hidden lg:inline">Booster</span>
                           </button>
 
@@ -522,7 +522,7 @@ export const MyListingsPage: React.FC = () => {
                           "sellerworkspace.myListingsPage.supprimerLAnnonce",
                         )}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-icon-md h-icon-md" />
                       </button>
                     </div>
                   ),

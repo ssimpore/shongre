@@ -1,4 +1,5 @@
 import React from "react";
+import { Select } from "../../../../design-system";
 import { Search, Plus, Filter, X } from "lucide-react";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
@@ -32,7 +33,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         {/* Search Bar */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t(
@@ -51,7 +52,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
               onClick={() => onSearchChange("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-icon-sm h-icon-sm" />
             </button>
           )}
         </div>
@@ -61,7 +62,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           variant="primary"
           size="sm"
           onClick={onAddRootCategory}
-          leftIcon={<Plus className="w-3.5 h-3.5" />}
+          leftIcon={<Plus className="w-icon-sm h-icon-sm" />}
           className="shrink-0"
         >
           {t("admin.taxonomyTreeToolbar.ajouterUneCategorie")}
@@ -72,17 +73,18 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-xs">
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 text-stone-500 font-semibold text-micro uppercase tracking-wider">
-            <Filter className="w-3 h-3" />
+            <Filter className="w-icon-xs h-icon-xs" />
             <span>Filtres :</span>
           </div>
 
-          <select
+          <Select
+            className="w-auto"
+            size="sm"
             aria-label={t(
               "admin.taxonomyTreeToolbar.filtrerParNiveauDeTaxonomie",
             )}
             value={levelFilter}
             onChange={(e) => onLevelFilterChange(e.target.value)}
-            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">
               {t("admin.taxonomyTreeToolbar.tousLesNiveaux")}
@@ -95,13 +97,14 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             </option>
             <option value="type">Types (Feuilles)</option>
             <option value="subtype">Sous-types</option>
-          </select>
+          </Select>
 
-          <select
+          <Select
+            className="w-auto"
+            size="sm"
             aria-label={t("admin.taxonomyTreeToolbar.filtrerParStatutDeN")}
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="h-control-sm px-2 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">
               {t("admin.taxonomyTreeToolbar.tousLesStatuts")}
@@ -111,7 +114,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             <option value="deprecated">
               {t("admin.taxonomyTreeToolbar.depreciesUniquement")}
             </option>
-          </select>
+          </Select>
         </div>
 
         <div className="flex items-center gap-1.5">

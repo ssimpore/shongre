@@ -97,7 +97,7 @@ export const Tabs: React.FC<TabsProps> = ({
                     "h-control-sm rounded-control px-3 text-xs sm:px-4",
                     isActive
                       ? "bg-stone-900 text-white"
-                      : "text-stone-600 hover:bg-bg-subtle",
+                      : "text-text-secondary hover:bg-bg-subtle",
                   )
                 : cn(
                     "relative px-2 pb-3 text-xs sm:px-3 sm:text-sm",
@@ -117,7 +117,7 @@ export const Tabs: React.FC<TabsProps> = ({
                     ? isSegmented
                       ? "bg-white/15 text-white"
                       : "bg-primary-light text-primary"
-                    : "bg-bg-muted text-stone-600",
+                    : "bg-bg-muted text-text-secondary",
                 )}
               >
                 {tab.count}

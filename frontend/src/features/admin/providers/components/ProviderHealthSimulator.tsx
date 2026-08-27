@@ -65,7 +65,7 @@ export const ProviderHealthSimulator: React.FC<
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" />
+              <Activity className="w-icon-md h-icon-md text-primary" />
               Santé fondée sur des preuves
             </h4>
             <p className="text-xs text-stone-500 mt-1 max-w-2xl">
@@ -85,11 +85,11 @@ export const ProviderHealthSimulator: React.FC<
             }`}
           >
             {isDemo || configuration.health === "unknown" ? (
-              <AlertTriangle className="w-3.5 h-3.5" />
+              <AlertTriangle className="w-icon-sm h-icon-sm" />
             ) : configuration.health === "healthy" ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <CheckCircle2 className="w-icon-sm h-icon-sm" />
             ) : (
-              <XCircle className="w-3.5 h-3.5" />
+              <XCircle className="w-icon-sm h-icon-sm" />
             )}
             {isDemo
               ? "Démo — non vérifié"
@@ -143,7 +143,7 @@ export const ProviderHealthSimulator: React.FC<
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-stone-700" />
+              <Terminal className="w-icon-md h-icon-md text-stone-700" />
               Test d’intégration sûr
             </h4>
             <p className="text-xs text-stone-500 mt-1">
@@ -157,7 +157,7 @@ export const ProviderHealthSimulator: React.FC<
             size="sm"
             onClick={handleRunTest}
             isLoading={isRunningTest}
-            leftIcon={<Play className="w-3.5 h-3.5" />}
+            leftIcon={<Play className="w-icon-sm h-icon-sm" />}
           >
             Lancer le diagnostic
           </Button>
@@ -174,9 +174,9 @@ export const ProviderHealthSimulator: React.FC<
           >
             <div className="flex items-start gap-2">
               {lastTestResult.success ? (
-                <CheckCircle2 className="w-4 h-4 text-success mt-0.5" />
+                <CheckCircle2 className="w-icon-md h-icon-md text-success mt-0.5" />
               ) : (
-                <AlertTriangle className="w-4 h-4 text-warning mt-0.5" />
+                <AlertTriangle className="w-icon-md h-icon-md text-warning mt-0.5" />
               )}
               <div className="min-w-0">
                 <p className="text-xs font-bold text-stone-900">

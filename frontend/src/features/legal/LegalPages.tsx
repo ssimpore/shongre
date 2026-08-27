@@ -193,8 +193,8 @@ export const HelpSafetyPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <div className="p-4 rounded-xl bg-danger-surface border border-danger-border text-danger space-y-1">
             <h2 className="font-bold flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-danger" /> Ne payez jamais
-              hors plateforme
+              <AlertTriangle className="w-icon-md h-icon-md text-danger" /> Ne
+              payez jamais hors plateforme
             </h2>
             <p className="text-xs">
               {t("legal.legalPages.refusezLesVirementsDirectsMandats")}
@@ -202,7 +202,7 @@ export const HelpSafetyPage: React.FC = () => {
           </div>
           <div className="p-4 rounded-xl bg-success-surface border border-success-border text-success space-y-1">
             <h2 className="font-bold flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-success" />{" "}
+              <ShieldCheck className="w-icon-md h-icon-md text-success" />{" "}
               {t("legal.legalPages.utilisezLeSequestreShongre")}
             </h2>
             <p className="text-xs">
@@ -271,7 +271,7 @@ export const DealsPage: React.FC = () => {
       />
       <div>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning-surface border border-warning-border text-warning text-xs font-bold mb-2">
-          <Tag className="w-3.5 h-3.5 text-warning" />
+          <Tag className="w-icon-sm h-icon-sm text-warning" />
           {t("legal.legalPages.offresVerifieesAPrixReduits")}
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-stone-900">

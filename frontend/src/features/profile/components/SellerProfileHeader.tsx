@@ -192,7 +192,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 name={displayName}
                 size="2xl"
                 isVerified={seller.isVerified}
-                isPro={isPro}
                 className="ring-4 ring-white shadow-md"
               />
             </div>
@@ -227,7 +226,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   className="flex shrink-0 items-center gap-1.5 font-bold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400 group-hover:scale-110 transition-transform duration-normal" />
+                  <Star className="w-icon-md h-icon-md fill-amber-400 text-amber-400 group-hover:scale-110 transition-transform duration-normal" />
                   <span>{seller.rating.toFixed(1)}</span>
                   <span className="font-medium text-stone-500 underline decoration-stone-200 group-hover:decoration-primary/40 underline-offset-4">
                     ({seller.reviewCount} avis)
@@ -238,7 +237,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
                 {/* Location */}
                 <span className="flex shrink-0 items-center gap-1.5 text-stone-600">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
+                  <MapPin className="h-icon-sm w-icon-sm shrink-0 text-stone-400 sm:h-4 sm:w-4" />
                   {seller.city}{" "}
                   {seller.postalCode
                     ? `(${seller.postalCode.slice(0, 2)})`
@@ -249,7 +248,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
                 {/* Seniority */}
                 <span className="flex shrink-0 items-center gap-1.5 text-stone-500">
-                  <Calendar className="h-3.5 w-3.5 shrink-0 text-stone-400 sm:h-4 sm:w-4" />
+                  <Calendar className="h-icon-sm w-icon-sm shrink-0 text-stone-400 sm:h-4 sm:w-4" />
                   <span className="sm:hidden">Depuis {memberYear}</span>
                   <span className="hidden sm:inline">
                     Membre depuis {memberYear}
@@ -268,7 +267,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   variant="outline"
                   size="md"
                   fullWidth
-                  leftIcon={<Edit3 className="w-4 h-4" />}
+                  leftIcon={<Edit3 className="w-icon-md h-icon-md" />}
                   className="flex-1 sm:flex-initial"
                 >
                   Modifier mon profil
@@ -278,7 +277,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   variant="secondary"
                   size="md"
                   fullWidth
-                  leftIcon={<List className="w-4 h-4" />}
+                  leftIcon={<List className="w-icon-md h-icon-md" />}
                   className="flex-1 sm:flex-initial"
                 >
                   {t("profile.sellerProfileHeader.gererMesAnnonces")}
@@ -295,7 +294,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   variant="primary"
                   size="md"
                   onClick={onContactClick}
-                  leftIcon={<MessageSquare className="w-4 h-4" />}
+                  leftIcon={<MessageSquare className="w-icon-md h-icon-md" />}
                   className="flex-1 sm:flex-initial min-w-0"
                 >
                   {/* Short label on phones, full label from `sm`. Truncation
@@ -314,7 +313,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   onClick={handleFollowToggle}
                   leftIcon={
                     <Heart
-                      className={`w-4 h-4 ${isFollowing ? "fill-primary text-primary" : ""}`}
+                      className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
                     />
                   }
                   className="hidden sm:inline-flex"
@@ -329,7 +328,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   ariaLabel={t("profile.sellerProfileHeader.partagerCeProfil")}
                   className="!h-control-touch !w-control-touch shrink-0"
                 >
-                  <Share2 className="w-5 h-5" />
+                  <Share2 className="w-icon-lg h-icon-lg" />
                 </IconButton>
 
                 {/* Overflow Menu */}
@@ -343,7 +342,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     )}
                     className="!h-control-touch !w-control-touch"
                   >
-                    <MoreVertical className="w-5 h-5" />
+                    <MoreVertical className="w-icon-lg h-icon-lg" />
                   </IconButton>
 
                   {isMenuOpen && (
@@ -357,7 +356,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
                       >
                         <Heart
-                          className={`w-4 h-4 ${isFollowing ? "fill-primary text-primary" : ""}`}
+                          className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
                         />
                         {isFollowing ? "Ne plus suivre" : "Suivre ce vendeur"}
                       </button>
@@ -366,7 +365,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         onClick={handleShare}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
                       >
-                        <Share2 className="w-4 h-4 text-stone-400" />
+                        <Share2 className="w-icon-md h-icon-md text-stone-400" />
                         {t("profile.sellerProfileHeader.partagerCeProfil2")}
                       </button>
                       <div className="border-t border-stone-100 my-1" />
@@ -378,7 +377,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-warning hover:bg-warning-surface text-left"
                       >
-                        <Flag className="w-4 h-4 text-warning" />
+                        <Flag className="w-icon-md h-icon-md text-warning" />
                         {t("profile.sellerProfileHeader.signalerCeProfil")}
                       </button>
                       <button
@@ -386,7 +385,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                         onClick={handleBlockToggle}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-danger hover:bg-danger-surface text-left"
                       >
-                        <Ban className="w-4 h-4 text-danger" />
+                        <Ban className="w-icon-md h-icon-md text-danger" />
                         {isBlocked
                           ? "Débloquer cet utilisateur"
                           : "Bloquer cet utilisateur"}

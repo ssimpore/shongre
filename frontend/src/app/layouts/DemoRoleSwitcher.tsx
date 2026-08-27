@@ -373,7 +373,7 @@ const DemoRoleSwitcherContent: React.FC = () => {
                 ({currentUser.name})
               </span>
             )}
-            <ChevronDown className="w-3.5 h-3.5 text-stone-400" />
+            <ChevronDown className="w-icon-sm h-icon-sm text-stone-400" />
           </button>
 
           {isOpen && (
@@ -508,7 +508,7 @@ const LiveModeToolbar: React.FC = () => {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
-            <Database className="h-3 w-3" aria-hidden="true" />
+            <Database className="h-icon-xs w-icon-xs" aria-hidden="true" />
             {t("shell.dataMode.modeLive")}
           </span>
           <span className="hidden truncate text-emerald-200 sm:inline">

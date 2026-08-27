@@ -278,7 +278,7 @@ export const AdminModerationPage: React.FC = () => {
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <ShieldAlert className="w-4 h-4" />
+            <ShieldAlert className="w-icon-md h-icon-md" />
             <span>
               Signalements Reçus (
               {reports.filter((r) => r.status !== "resolved").length})
@@ -296,7 +296,7 @@ export const AdminModerationPage: React.FC = () => {
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-icon-md h-icon-md" />
             <span>Contrôle & Audit IA Annonces ({listings.length})</span>
           </button>
         )}
@@ -311,7 +311,7 @@ export const AdminModerationPage: React.FC = () => {
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <Scale className="w-4 h-4" />
+            <Scale className="w-icon-md h-icon-md" />
             <span>
               Dossiers & recours (
               {
@@ -334,7 +334,7 @@ export const AdminModerationPage: React.FC = () => {
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
-            <Lock className="w-4 h-4" />
+            <Lock className="w-icon-md h-icon-md" />
             <span>
               Comptes Suspendus ({users.filter((u) => u.isSuspended).length})
             </span>
@@ -634,7 +634,7 @@ export const AdminModerationPage: React.FC = () => {
                           onClick={() => handleRunAISafetyAudit(list)}
                           className="text-xs flex items-center gap-1 text-primary border-primary/30 hover:bg-primary-light"
                         >
-                          <Sparkles className="w-3 h-3 text-primary" />
+                          <Sparkles className="w-icon-xs h-icon-xs text-primary" />
                           <span>Audit IA</span>
                         </Button>
                         <Button
@@ -656,7 +656,7 @@ export const AdminModerationPage: React.FC = () => {
                           onClick={() => setDeleteListingId(list.id)}
                           className="text-danger hover:bg-danger-surface text-xs"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-icon-sm h-icon-sm" />
                         </Button>
                       </div>
                     </td>
@@ -709,7 +709,7 @@ export const AdminModerationPage: React.FC = () => {
                       onClick={() => handleReactivateUser(u.id)}
                       className="text-xs text-success border-success-border hover:bg-success-surface"
                     >
-                      <Unlock className="w-3.5 h-3.5 mr-1" />
+                      <Unlock className="w-icon-sm h-icon-sm mr-1" />
                       {t("admin.adminModerationPage.leverLaSuspension")}
                     </Button>
                   )}

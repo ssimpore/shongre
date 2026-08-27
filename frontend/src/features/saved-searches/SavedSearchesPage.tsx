@@ -66,7 +66,7 @@ export const SavedSearchesPage: React.FC = () => {
             >
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-primary-light text-primary flex items-center justify-center shrink-0">
-                  <Search className="w-5 h-5" />
+                  <Search className="w-icon-lg h-icon-lg" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="font-bold text-sm text-stone-900 truncate">
@@ -98,7 +98,7 @@ export const SavedSearchesPage: React.FC = () => {
                       : "bg-stone-50 text-stone-600 border-stone-200"
                   }`}
                 >
-                  <Bell className="w-3.5 h-3.5" />
+                  <Bell className="w-icon-sm h-icon-sm" />
                   <span>
                     {search.hasNotifications
                       ? "Alertes activées"
@@ -130,7 +130,7 @@ export const SavedSearchesPage: React.FC = () => {
                       }),
                     );
                   }}
-                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                  rightIcon={<ArrowRight className="w-icon-sm h-icon-sm" />}
                 >
                   {t("savedsearches.savedSearchesPage.voirLesAnnonces")}
                 </Button>
@@ -142,7 +142,7 @@ export const SavedSearchesPage: React.FC = () => {
                   aria-label={`Supprimer la recherche « ${search.title} »`}
                   className="text-stone-500 hover:text-danger"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-icon-md h-icon-md" />
                 </Button>
               </div>
             </div>

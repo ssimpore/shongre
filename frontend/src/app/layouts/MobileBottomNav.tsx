@@ -107,7 +107,7 @@ export const MobileBottomNav: React.FC = () => {
               disc can never protrude into space the page believes is free. */}
           <div className="absolute -top-(--mobile-nav-fab-rise) flex flex-col items-center">
             <div className="w-control-fab h-control-fab rounded-pill bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 motion-interactive border-3 border-bg-surface">
-              <PlusCircle className="w-6 h-6 text-primary" />
+              <PlusCircle className="w-icon-xl h-icon-xl text-primary" />
             </div>
             <span className="text-micro font-bold text-stone-900 mt-1 whitespace-nowrap">
               {t(publishCta.shortLabelKey)}

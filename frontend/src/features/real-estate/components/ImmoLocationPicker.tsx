@@ -29,7 +29,7 @@ export const ImmoLocationPicker: React.FC<{
       draggable: true,
       icon: L.divIcon({
         className: "shongre-immo-location-marker",
-        html: '<span class="block h-5 w-5 rounded-full border-4 border-white bg-primary shadow-card"></span>',
+        html: '<span class="block h-5 w-5 rounded-full border-4 border-white bg-primary shadow-md"></span>',
         iconSize: [20, 20],
         iconAnchor: [10, 10],
       }),

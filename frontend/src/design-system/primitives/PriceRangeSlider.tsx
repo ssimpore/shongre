@@ -169,14 +169,14 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
   return (
     <div className={className}>
       <div className="flex items-center justify-between gap-2 mb-2.5">
-        <span className="text-xs font-bold text-stone-900 tabular-nums">
+        <span className="text-xs font-bold text-text-main tabular-nums">
           {label}
         </span>
         {(lowIndex !== FIRST_STOP_INDEX || highIndex !== lastStopIndex) && (
           <button
             type="button"
             onClick={() => commit(FIRST_STOP_INDEX, lastStopIndex)}
-            className="text-micro font-semibold text-stone-500 hover:text-primary transition-colors cursor-pointer shrink-0"
+            className="text-micro font-semibold text-text-muted hover:text-primary transition-colors cursor-pointer shrink-0"
           >
             {t("ui.priceRangeSlider.reinitialiser")}
           </button>
@@ -226,7 +226,7 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         />
       </div>
 
-      <div className="flex items-center justify-between text-micro text-stone-500 tabular-nums">
+      <div className="flex items-center justify-between text-micro text-text-muted tabular-nums">
         <span>{format(stops[FIRST_STOP_INDEX])}</span>
         <span>{format(stops[lastStopIndex])}+</span>
       </div>

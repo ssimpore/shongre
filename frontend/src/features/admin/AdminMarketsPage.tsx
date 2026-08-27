@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Select } from "../../design-system";
 import {
   Sliders,
   ShieldAlert,
@@ -469,7 +470,7 @@ export const AdminMarketsPage: React.FC = () => {
                 )}
                 onClick={() => handleResetOverride(path)}
               >
-                <RefreshCw className="w-3 h-3 text-stone-400 mr-1" />
+                <RefreshCw className="w-icon-xs h-icon-xs text-stone-400 mr-1" />
                 Restaurer la valeur locale validée
               </Button>
             )}
@@ -507,7 +508,7 @@ export const AdminMarketsPage: React.FC = () => {
               size="sm"
               onClick={() => setIsAddMarketModalOpen(true)}
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-icon-md h-icon-md" />
               <span>{t("admin.adminMarketsPage.ajouterUnMarche")}</span>
             </Button>
           )}
@@ -537,7 +538,7 @@ export const AdminMarketsPage: React.FC = () => {
           }`}
         >
           <Settings2
-            className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"
+            className="w-icon-sm h-icon-sm inline-block mr-1.5 -mt-0.5"
             aria-hidden="true"
           />
           {t("admin.adminMarketsPage.localPolicyEditor", {
@@ -554,7 +555,7 @@ export const AdminMarketsPage: React.FC = () => {
           }`}
         >
           <BarChart3
-            className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5"
+            className="w-icon-sm h-icon-sm inline-block mr-1.5 -mt-0.5"
             aria-hidden="true"
           />
           Matrice Comparative Multi-Pays
@@ -566,7 +567,7 @@ export const AdminMarketsPage: React.FC = () => {
         <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Informational Banner */}
           <div className="p-4 rounded-2xl bg-warning-surface/80 border border-warning-border/80 flex items-start gap-3">
-            <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+            <Info className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
             <div className="text-xs text-warning space-y-1">
               <span className="font-bold">
                 {t("admin.adminMarketsPage.independentPolicyTitle")}
@@ -656,13 +657,14 @@ export const AdminMarketsPage: React.FC = () => {
                         setActiveTab("editor");
                       }}
                     >
-                      <Sliders className="w-3.5 h-3.5 mr-1 text-primary" />
+                      <Sliders className="w-icon-sm h-icon-sm mr-1 text-primary" />
                       Configurer
                     </Button>
 
                     {/* Quick status toggle for non-default */}
                     {!isDefault && canManageMarkets && (
-                      <select
+                      <Select
+                        className="w-auto"
                         aria-label={`Statut du marché ${m.name}`}
                         value={m.status}
                         onChange={(e) =>
@@ -671,7 +673,6 @@ export const AdminMarketsPage: React.FC = () => {
                             e.target.value as MarketStatus,
                           )
                         }
-                        className="text-micro bg-bg-base border border-border-base rounded-control px-2 py-1 font-semibold text-stone-700 focus:outline-none h-control-touch"
                       >
                         <option value="active">Actif</option>
                         <option value="coming_soon">
@@ -685,7 +686,7 @@ export const AdminMarketsPage: React.FC = () => {
                         <option value="archived">
                           {t("admin.adminMarketsPage.archive")}
                         </option>
-                      </select>
+                      </Select>
                     )}
                   </div>
                 </div>
@@ -727,17 +728,18 @@ export const AdminMarketsPage: React.FC = () => {
               <span className="text-xs font-semibold text-stone-500">
                 {t("admin.adminMarketsPage.selectionnerUnMarche")}
               </span>
-              <select
+              <Select
+                className="w-auto"
+                aria-label={t("admin.adminMarketsPage.selectionnerUnMarche")}
                 value={selectedMarketCode}
                 onChange={(e) => setSelectedMarketCode(e.target.value)}
-                className="bg-stone-50 border border-border-base rounded-control px-3 py-1.5 text-xs font-bold text-stone-900 focus:outline-none h-control-touch"
               >
                 {markets.map((m) => (
                   <option key={m.code} value={m.code}>
                     {m.flag} {m.name} ({m.code})
                   </option>
                 ))}
-              </select>
+              </Select>
 
               {!selectedMarket.isDefault && canConfigureMarkets && (
                 <Button
@@ -748,7 +750,7 @@ export const AdminMarketsPage: React.FC = () => {
                     handleRestoreReviewedPolicy(selectedMarket.code)
                   }
                 >
-                  <RefreshCw className="w-3.5 h-3.5 mr-1" />
+                  <RefreshCw className="w-icon-sm h-icon-sm mr-1" />
                   {t("admin.adminMarketsPage.restoreReviewedPolicy")}
                 </Button>
               )}
@@ -758,7 +760,7 @@ export const AdminMarketsPage: React.FC = () => {
           {/* Default market notice */}
           {selectedMarket.isDefault && (
             <div className="p-4 rounded-2xl bg-info-surface border border-info-border flex items-start gap-3">
-              <ShieldAlert className="w-5 h-5 text-info shrink-0 mt-0.5" />
+              <ShieldAlert className="w-icon-lg h-icon-lg text-info shrink-0 mt-0.5" />
               <div className="text-xs text-info space-y-1">
                 <span className="font-bold">
                   {t("admin.adminMarketsPage.defaultMarketNoticeTitle")}
@@ -961,7 +963,7 @@ export const AdminMarketsPage: React.FC = () => {
             {activeDomainTab === "taxonomy" && (
               <div className="space-y-4">
                 <div className="p-4 bg-warning-surface/70 border border-warning-border rounded-2xl flex items-start gap-3">
-                  <Info className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+                  <Info className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
                   <div className="text-xs text-warning space-y-1">
                     <span className="font-bold">
                       {t(
@@ -1494,7 +1496,7 @@ export const AdminMarketsPage: React.FC = () => {
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>
                         {m.isDefault && (
-                          <span className="text-micro bg-primary-light text-primary px-1.5 py-0.2 rounded font-bold">
+                          <span className="text-micro bg-primary-light text-primary px-1.5 py-0.5 rounded font-bold">
                             Source
                           </span>
                         )}
@@ -1661,18 +1663,20 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-1 text-xs font-bold text-stone-700">
               Mode de domaine canonique
-              <select
+              <Select
+                size="compact"
+                className="w-full font-mono"
+                labelledByAncestor
                 value={routingDomainMode}
                 onChange={(event) =>
                   setRoutingDomainMode(
                     event.target.value as "france" | "international",
                   )
                 }
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="france">France</option>
                 <option value="international">International</option>
-              </select>
+              </Select>
             </label>
             <label className="space-y-1 text-xs font-bold text-stone-700">
               Préfixe public
@@ -1824,15 +1828,20 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">
+            <label
+              htmlFor="admin-new-market-status"
+              className="text-xs font-bold text-stone-700 uppercase"
+            >
               Statut Initial
             </label>
-            <select
+            <Select
+              size="compact"
+              className="w-full"
+              id="admin-new-market-status"
               value={newMarketStatus}
               onChange={(e) =>
                 setNewMarketStatus(e.target.value as MarketStatus)
               }
-              className="w-full h-control-md px-3 text-xs bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none font-semibold"
             >
               <option value="draft">Brouillon (Non visible)</option>
               <option value="coming_soon">
@@ -1845,7 +1854,7 @@ export const AdminMarketsPage: React.FC = () => {
               </option>
               <option value="paused">En pause</option>
               <option value="disabled">Désactivé</option>
-            </select>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-3 border-t border-border-subtle">
@@ -1882,10 +1891,12 @@ export const AdminMarketsPage: React.FC = () => {
             </label>
 
             {editingValueType === "boolean" ? (
-              <select
+              <Select
+                size="compact"
+                className="w-full"
+                id="admin-edit-override-value"
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
-                className="w-full h-control-md px-3 text-xs font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
               >
                 <option value="true">
                   {t("admin.adminMarketsPage.activeTrue")}
@@ -1893,7 +1904,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <option value="false">
                   {t("admin.adminMarketsPage.desactiveFalse")}
                 </option>
-              </select>
+              </Select>
             ) : (
               <input
                 id="admin-edit-override-value"

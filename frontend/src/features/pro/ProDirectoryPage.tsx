@@ -65,7 +65,7 @@ export const ProDirectoryPage: React.FC = () => {
       {/* Search Input */}
       <div className="flex items-center justify-between gap-4">
         <div className="max-w-md w-full relative">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t("proDirectory.rechercherParNomDeBoutique")}

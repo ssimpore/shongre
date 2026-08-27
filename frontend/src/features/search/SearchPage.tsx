@@ -513,7 +513,7 @@ export const SearchPage: React.FC = () => {
       {
         value: "",
         label: "Toutes les catégories",
-        icon: <Layers className="w-3.5 h-3.5 text-stone-500" />,
+        icon: <Layers className="w-icon-sm h-icon-sm text-stone-500" />,
       },
       ...TAXONOMY.map((cat) => ({
         value: cat.slug,
@@ -910,7 +910,7 @@ export const SearchPage: React.FC = () => {
                     searchPlaceholder="Rechercher une catégorie…"
                     headerTitle={
                       <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
-                        <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <Layers className="w-icon-sm h-icon-sm text-primary shrink-0" />
                         <span>{t("search.searchPage.categories")}</span>
                       </div>
                     }
@@ -938,7 +938,7 @@ export const SearchPage: React.FC = () => {
                         searchPlaceholder="Rechercher une sous-catégorie…"
                         headerTitle={
                           <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
-                            <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <Tag className="w-icon-sm h-icon-sm text-primary shrink-0" />
                             <span>{t("search.searchPage.sousCategories")}</span>
                           </div>
                         }
@@ -1219,12 +1219,12 @@ export const SearchPage: React.FC = () => {
               >
                 {showDesktopFilters ? (
                   <>
-                    <PanelLeftClose className="w-3.5 h-3.5 text-stone-500" />
+                    <PanelLeftClose className="w-icon-sm h-icon-sm text-stone-500" />
                     <span>Masquer</span>
                   </>
                 ) : (
                   <>
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+                    <SlidersHorizontal className="w-icon-sm h-icon-sm text-primary" />
                     <span>Filtres</span>
                   </>
                 )}
@@ -1250,7 +1250,7 @@ export const SearchPage: React.FC = () => {
                 aria-label={`Ouvrir les filtres de recherche (${activeFilterCount} actifs)`}
               >
                 <SlidersHorizontal
-                  className={`w-3.5 h-3.5 ${activeFilterCount > 0 ? "text-white" : "text-primary"}`}
+                  className={`w-icon-sm h-icon-sm ${activeFilterCount > 0 ? "text-white" : "text-primary"}`}
                 />
                 <span className="hidden sm:inline">Filtres</span>
                 {activeFilterCount > 0 && (
@@ -1302,11 +1302,11 @@ export const SearchPage: React.FC = () => {
                   className="shrink-0"
                   triggerClassName="w-auto"
                   mobileIcon={
-                    <ArrowUpDown className="w-3.5 h-3.5 text-stone-700" />
+                    <ArrowUpDown className="w-icon-sm h-icon-sm text-stone-700" />
                   }
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
-                      <ArrowUpDown className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <ArrowUpDown className="w-icon-sm h-icon-sm text-primary shrink-0" />
                       <span>{t("search.searchPage.trierPar2")}</span>
                     </div>
                   }
@@ -1413,7 +1413,7 @@ export const SearchPage: React.FC = () => {
                   className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-white px-2.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                   aria-label="Page précédente"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <ChevronLeft className="h-icon-sm w-icon-sm" />
                   <span className="hidden sm:inline">Précédente</span>
                 </button>
 
@@ -1452,7 +1452,7 @@ export const SearchPage: React.FC = () => {
                   aria-label="Page suivante"
                 >
                   <span className="hidden sm:inline">Suivante</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-icon-sm w-icon-sm" />
                 </button>
               </nav>
             )}
@@ -1492,7 +1492,7 @@ export const SearchPage: React.FC = () => {
               searchPlaceholder="Rechercher une catégorie…"
               headerTitle={
                 <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
-                  <Layers className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <Layers className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   <span>{t("search.searchPage.categories")}</span>
                 </div>
               }
@@ -1515,7 +1515,7 @@ export const SearchPage: React.FC = () => {
                   searchPlaceholder="Rechercher une sous-catégorie…"
                   headerTitle={
                     <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
-                      <Tag className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <Tag className="w-icon-sm h-icon-sm text-primary shrink-0" />
                       <span>{t("search.searchPage.sousCategories")}</span>
                     </div>
                   }

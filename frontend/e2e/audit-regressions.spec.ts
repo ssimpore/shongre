@@ -170,3 +170,166 @@ test.describe("publish wizard", () => {
     ).toBe(start.ticks);
   });
 });
+
+test.describe("listbox keyboard contract", () => {
+  /* `DropdownMenu` renders `role="listbox"` with `role="option"` children, but
+     had no key handling at all: Down did nothing, the only way through the
+     options was to Tab across every one, and Escape dropped focus on <body> —
+     leaving a keyboard user at the top of the document with no way back to the
+     control they had just closed. axe cannot see any of this; the roles are
+     correct, only the behaviour the roles promise was missing. */
+  const openSort = async (page: import("@playwright/test").Page) => {
+    const trigger = page.getByRole("button", { name: "Trier les résultats" });
+    await trigger.click();
+    await expect(page.getByRole("listbox")).toBeVisible();
+    // The panel paints before the effect that seeds the active option commits;
+    // reading `aria-activedescendant` any earlier races React, not the product.
+    await expect(trigger).toHaveAttribute("aria-activedescendant", /./);
+    return trigger;
+  };
+
+  const activeOptionText = (page: import("@playwright/test").Page) =>
+    page.evaluate(() => {
+      const t = document.querySelector('[aria-haspopup="listbox"]');
+      const id = t?.getAttribute("aria-activedescendant");
+      return id ? (document.getElementById(id)?.textContent?.trim() ?? "") : "";
+    });
+
+  test.beforeEach(async ({ page }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+  });
+
+  test("arrow keys move a visible active option", async ({ page }) => {
+    await openSort(page);
+    const first = await activeOptionText(page);
+    expect(first, "opening should land on the current selection").not.toBe("");
+
+    await page.keyboard.press("ArrowDown");
+    const second = await activeOptionText(page);
+    expect(second, "ArrowDown must move the active option").not.toBe(first);
+
+    await page.keyboard.press("ArrowUp");
+    expect(await activeOptionText(page)).toBe(first);
+
+    await page.keyboard.press("End");
+    const last = await activeOptionText(page);
+    await page.keyboard.press("Home");
+    expect(await activeOptionText(page)).toBe(first);
+    expect(last).not.toBe(first);
+  });
+
+  test("options are not tab stops while the listbox owns the keyboard", async ({
+    page,
+  }) => {
+    await openSort(page);
+    const optionTabIndexes = await page
+      .getByRole("option")
+      .evaluateAll((els) => els.map((e) => e.getAttribute("tabindex")));
+    expect(optionTabIndexes.every((t) => t === "-1")).toBe(true);
+  });
+
+  test("Escape closes and returns focus to the trigger", async ({ page }) => {
+    const trigger = await openSort(page);
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
+  /* Escape dismisses the innermost surface. The dialog hook listens on
+     `document` in the capture phase, so before the popup could mark itself the
+     drawer always won: opening the sort menu inside the mobile filter sheet and
+     pressing Escape closed the whole sheet, losing every filter set in it. */
+  test("Escape inside a drawer closes the menu, not the drawer", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    await page
+      .getByRole("button", { name: /filtre/i })
+      .first()
+      .click();
+    const drawer = page.getByRole("dialog");
+    await expect(drawer).toBeVisible();
+
+    const trigger = drawer.locator('[aria-haspopup="listbox"]').first();
+    await trigger.click();
+    await expect(page.getByRole("listbox")).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+    await expect(
+      drawer,
+      "the drawer must survive the first Escape",
+    ).toBeVisible();
+
+    await page.keyboard.press("Escape");
+    await expect(drawer).toHaveCount(0);
+  });
+
+  test("Enter commits the active option and restores focus", async ({
+    page,
+  }) => {
+    const trigger = await openSort(page);
+    await page.keyboard.press("ArrowDown");
+    const chosen = await activeOptionText(page);
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toContainText(chosen);
+  });
+});
+
+test.describe("declared-token classes", () => {
+  /* `shadow-card` was referenced by 14 call sites and never declared, so every
+     employment/immo/auto card rendered with no elevation and three `hover:`
+     transitions animated nothing. Tailwind emits no CSS for an undeclared
+     token and no warning either, which is why this needs a runtime assertion:
+     compare what the DOM asks for against what the stylesheet actually emits. */
+  test("every class the DOM uses resolves to a rule", async ({ page }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/emploi", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const dead = await page.evaluate(() => {
+      const emitted = new Set<string>();
+      const visit = (rules: CSSRuleList) => {
+        for (const r of rules) {
+          const nested = (r as CSSGroupingRule).cssRules;
+          if (nested) visit(nested);
+          const sel = (r as CSSStyleRule).selectorText;
+          if (!sel) continue;
+          // Tailwind escapes `.`, `:`, `/` and a leading digit (`.\32 xl\:…`).
+          for (const m of sel.matchAll(/\.((?:\\.|[^\s.,:>+~()[\]#\\])+)/g)) {
+            emitted.add(m[1].replace(/\\/g, ""));
+          }
+        }
+      };
+      for (const sheet of document.styleSheets) {
+        try {
+          visit(sheet.cssRules);
+        } catch {
+          /* cross-origin sheet */
+        }
+      }
+      // Third-party libraries ship class names with no CSS of their own, and
+      // two marker classes exist purely as test hooks.
+      const ignore =
+        /^(?:lucide|recharts|leaflet|inter_|jsx-|css-|__|\d|listing-grid$|listing-rail-track$)/;
+      const used = new Set<string>();
+      for (const el of document.querySelectorAll("[class]")) {
+        for (const c of el.getAttribute("class")!.split(/\s+/)) {
+          if (c && !ignore.test(c) && !emitted.has(c)) used.add(c);
+        }
+      }
+      return [...used];
+    });
+
+    expect(dead, `classes with no CSS rule: ${dead.join(", ")}`).toEqual([]);
+  });
+});

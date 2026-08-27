@@ -93,7 +93,6 @@ export const ProStorefrontEditorPage: React.FC = () => {
               name={companyName}
               size="lg"
               isVerified={true}
-              isPro={true}
               className="ring-2 ring-white"
             />
             <div className="text-white">
@@ -111,7 +110,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <Input
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
-            leftIcon={<Building2 className="w-4 h-4" />}
+            leftIcon={<Building2 className="w-icon-md h-icon-md" />}
           />
         </FormField>
 
@@ -156,7 +155,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <Input
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            leftIcon={<MapPin className="w-4 h-4" />}
+            leftIcon={<MapPin className="w-icon-md h-icon-md" />}
           />
         </FormField>
       </div>
@@ -170,7 +169,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <Input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            leftIcon={<Phone className="w-4 h-4" />}
+            leftIcon={<Phone className="w-icon-md h-icon-md" />}
           />
         </FormField>
 
@@ -178,7 +177,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           <Input
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
-            leftIcon={<Globe className="w-4 h-4" />}
+            leftIcon={<Globe className="w-icon-md h-icon-md" />}
           />
         </FormField>
       </div>
@@ -192,7 +191,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           rel="noopener noreferrer"
           className="text-xs font-bold text-primary hover:underline flex items-center gap-1.5"
         >
-          <Globe className="w-4 h-4" />
+          <Globe className="w-icon-md h-icon-md" />
           <span>
             {t("sellerworkspace.proStorefrontEditorPage.voirMaVitrineEnDirect")}
           </span>
@@ -205,7 +204,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
           type="submit"
           variant="primary"
           size="lg"
-          leftIcon={<Check className="w-4 h-4" />}
+          leftIcon={<Check className="w-icon-md h-icon-md" />}
           className="w-full sm:w-auto"
         >
           {t(

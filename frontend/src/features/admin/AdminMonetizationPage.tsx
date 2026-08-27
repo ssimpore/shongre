@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Select } from "../../design-system";
 import type {
   BusinessVertical,
   CommercialConfigurationVersion,
@@ -673,7 +674,7 @@ export const AdminMonetizationPage: React.FC = () => {
         className="min-h-80 rounded-xl border border-border-base bg-bg-surface flex items-center justify-center"
         aria-live="polite"
       >
-        <LoaderCircle className="w-5 h-5 animate-spin text-primary" />
+        <LoaderCircle className="w-icon-lg h-icon-lg animate-spin text-primary" />
         <span className="ml-2 text-sm font-semibold text-stone-700">
           Chargement du catalogue commercial…
         </span>
@@ -707,7 +708,7 @@ export const AdminMonetizationPage: React.FC = () => {
         <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-micro font-black uppercase tracking-wider text-primary">
-              <BadgeEuro className="w-4 h-4" /> Pilotage commercial
+              <BadgeEuro className="w-icon-md h-icon-md" /> Pilotage commercial
               <span className="text-stone-300">•</span>
               <span className="text-stone-500">
                 {activeMarket.name} · {activeMarket.currency}
@@ -732,10 +733,10 @@ export const AdminMonetizationPage: React.FC = () => {
               </div>
             </div>
             <Button size="sm" onClick={openEditor} disabled={!selectedProduct}>
-              <Plus className="w-4 h-4" /> Créer un brouillon
+              <Plus className="w-icon-md h-icon-md" /> Créer un brouillon
             </Button>
             <Button size="sm" variant="outline" onClick={exportCatalog}>
-              <Download className="w-4 h-4" /> Exporter JSON
+              <Download className="w-icon-md h-icon-md" /> Exporter JSON
             </Button>
           </div>
         </div>
@@ -789,9 +790,9 @@ export const AdminMonetizationPage: React.FC = () => {
           role="status"
         >
           {error ? (
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
           ) : (
-            <Check className="w-4 h-4 shrink-0" />
+            <Check className="w-icon-md h-icon-md shrink-0" />
           )}
           <span>{error || notice}</span>
         </div>
@@ -833,7 +834,7 @@ export const AdminMonetizationPage: React.FC = () => {
           <div className="p-3 border-b border-border-subtle flex flex-col sm:flex-row gap-2">
             <label className="relative flex-1 min-w-0">
               <span className="sr-only">Rechercher une offre</span>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-icon-md h-icon-md text-stone-400" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -842,27 +843,29 @@ export const AdminMonetizationPage: React.FC = () => {
               />
             </label>
             <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-stone-700">
-              <Filter className="w-4 h-4" />
+              <Filter className="w-icon-md h-icon-md" />
               <span className="sr-only">Audience</span>
-              <select
+              <Select
+                className="w-auto"
+                labelledByAncestor
                 value={audience}
                 onChange={(event) => setAudience(event.target.value)}
-                className="bg-transparent focus:outline-none h-control-touch"
               >
                 <option value="all">Toutes les audiences</option>
                 <option value="individual">Particuliers</option>
                 <option value="professional">Professionnels</option>
                 <option value="organization">Organisations</option>
-              </select>
+              </Select>
             </label>
             {tab === "plans" && (
               <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-stone-700">
-                <Layers3 className="w-4 h-4" />
+                <Layers3 className="w-icon-md h-icon-md" />
                 <span className="sr-only">Verticale</span>
-                <select
+                <Select
+                  className="w-auto"
+                  labelledByAncestor
                   value={verticalFilter}
                   onChange={(event) => setVerticalFilter(event.target.value)}
-                  className="bg-transparent focus:outline-none h-control-touch"
                 >
                   <option value="all">Toutes les verticales</option>
                   {overview.catalog.verticals
@@ -872,7 +875,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         {vertical.name}
                       </option>
                     ))}
-                </select>
+                </Select>
               </label>
             )}
           </div>
@@ -904,7 +907,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       key={product.id}
                       type="button"
                       onClick={() => setSelectedProductId(product.id)}
-                      className={`w-full text-left p-4 md:grid md:grid-cols-admin-monetization md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
+                      className={`w-full text-left p-4 md:grid md:grid-cols-admin-monetization md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
                     >
                       <span className="min-w-0">
                         <span className="block text-xs font-black text-stone-950 truncate">
@@ -952,7 +955,7 @@ export const AdminMonetizationPage: React.FC = () => {
                               : statusLabel(product.status)}
                         </Badge>
                       </span>
-                      <ChevronRight className="hidden md:block w-4 h-4 text-stone-400" />
+                      <ChevronRight className="hidden md:block w-icon-md h-icon-md text-stone-400" />
                     </button>
                   );
                 })}
@@ -977,7 +980,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </p>
                   </div>
                   <Button size="sm" onClick={() => openVerticalEditor()}>
-                    <Plus className="h-4 w-4" /> Nouvelle verticale
+                    <Plus className="h-icon-md w-icon-md" /> Nouvelle verticale
                   </Button>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1055,7 +1058,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 {overview.catalog.rules.map((rule) => (
                   <article key={rule.id} className="p-4 flex items-start gap-3">
                     <div className="w-8 h-8 rounded-control bg-primary-light text-primary flex items-center justify-center shrink-0">
-                      <SlidersHorizontal className="w-4 h-4" />
+                      <SlidersHorizontal className="w-icon-md h-icon-md" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1109,7 +1112,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </p>
                   </div>
                   <Button size="sm" onClick={() => setCampaignOpen(true)}>
-                    <Plus className="h-4 w-4" /> Nouvelle campagne
+                    <Plus className="h-icon-md w-icon-md" /> Nouvelle campagne
                   </Button>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1232,7 +1235,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 >
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 rounded-control bg-primary-light text-primary flex items-center justify-center shrink-0">
-                      <Gift className="w-4 h-4" />
+                      <Gift className="w-icon-md h-icon-md" />
                     </div>
                     <div>
                       <h2 className="text-sm font-black text-stone-950">
@@ -1260,7 +1263,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   </label>
                   <label className="block text-micro font-bold text-stone-600">
                     Forfait
-                    <select
+                    <Select
+                      className="mt-1 w-full"
+                      labelledByAncestor
                       required
                       value={complimentaryGrant.productVersionId}
                       onChange={(event) =>
@@ -1269,7 +1274,6 @@ export const AdminMonetizationPage: React.FC = () => {
                           productVersionId: event.target.value,
                         }))
                       }
-                      className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
                     >
                       <option value="">Sélectionner un forfait</option>
                       {overview.catalog.products
@@ -1286,7 +1290,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             {product.name} · {statusLabel(product.status)}
                           </option>
                         ))}
-                    </select>
+                    </Select>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <label className="text-micro font-bold text-stone-600">
@@ -1388,7 +1392,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   </label>
                   <label className="block text-micro font-bold text-stone-600">
                     Décision
-                    <select
+                    <Select
+                      className="mt-1 w-full"
+                      labelledByAncestor
                       value={complimentaryDecision.decision}
                       onChange={(event) =>
                         setComplimentaryDecision((current) => ({
@@ -1397,11 +1403,10 @@ export const AdminMonetizationPage: React.FC = () => {
                             "approved" | "rejected",
                         }))
                       }
-                      className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
                     >
                       <option value="approved">Approuver</option>
                       <option value="rejected">Rejeter</option>
-                    </select>
+                    </Select>
                   </label>
                   <label className="block text-micro font-bold text-stone-600">
                     Motif de décision
@@ -1726,7 +1731,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     className="p-4 flex flex-col md:flex-row md:items-center gap-3"
                   >
                     <div className="w-9 h-9 rounded-control bg-bg-subtle flex items-center justify-center shrink-0">
-                      <FileClock className="w-4 h-4 text-stone-600" />
+                      <FileClock className="w-icon-md h-icon-md text-stone-600" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -1800,7 +1805,7 @@ export const AdminMonetizationPage: React.FC = () => {
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" />
+                  <Sparkles className="w-icon-md h-icon-md text-primary" />
                   <h2 className="text-sm font-black text-stone-950">
                     Pourquoi ce résultat ?
                   </h2>
@@ -1812,7 +1817,9 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-2">
                 <label className="text-micro font-bold text-stone-600">
                   Compte
-                  <select
+                  <Select
+                    className="mt-1 w-full"
+                    labelledByAncestor
                     value={simulation.userType}
                     onChange={(event) =>
                       setSimulation((current) => ({
@@ -1820,16 +1827,17 @@ export const AdminMonetizationPage: React.FC = () => {
                         userType: event.target.value as typeof current.userType,
                       }))
                     }
-                    className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"
                   >
                     <option value="individual">Particulier</option>
                     <option value="professional">Professionnel</option>
                     <option value="organization">Organisation</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="text-micro font-bold text-stone-600">
                   Catégorie
-                  <select
+                  <Select
+                    className="mt-1 w-full"
+                    labelledByAncestor
                     value={simulation.categoryId}
                     onChange={(event) =>
                       setSimulation((current) => ({
@@ -1837,7 +1845,6 @@ export const AdminMonetizationPage: React.FC = () => {
                         categoryId: event.target.value,
                       }))
                     }
-                    className="mt-1 w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"
                   >
                     <option value={CANONICAL_TAXONOMY_IDS.vehicles}>
                       Auto
@@ -1851,7 +1858,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <option value={CANONICAL_TAXONOMY_IDS.electronics}>
                       Générique
                     </option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="col-span-2 text-micro font-bold text-stone-600">
                   Utilisation actuelle
@@ -1879,9 +1886,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 disabled={simulating}
               >
                 {simulating ? (
-                  <LoaderCircle className="w-4 h-4 animate-spin" />
+                  <LoaderCircle className="w-icon-md h-icon-md animate-spin" />
                 ) : (
-                  <ListFilter className="w-4 h-4" />
+                  <ListFilter className="w-icon-md h-icon-md" />
                 )}{" "}
                 Simuler
               </Button>
@@ -2033,14 +2040,15 @@ export const AdminMonetizationPage: React.FC = () => {
                     fullWidth
                     onClick={openEditor}
                   >
-                    <GitCompareArrows className="w-4 h-4" /> Modifier dans un
-                    brouillon
+                    <GitCompareArrows className="w-icon-md h-icon-md" />{" "}
+                    Modifier dans un brouillon
                   </Button>
                 </div>
               ) : null}
               <div className="rounded-lg border border-border-base bg-bg-surface p-3">
                 <div className="flex items-center gap-2 text-xs font-black text-stone-900">
-                  <History className="w-4 h-4 text-stone-500" /> Traçabilité
+                  <History className="w-icon-md h-icon-md text-stone-500" />{" "}
+                  Traçabilité
                 </div>
                 <p className="mt-1 text-micro leading-relaxed text-stone-500">
                   Chaque publication conserve le motif, le diff, l’auteur,
@@ -2160,7 +2168,9 @@ export const AdminMonetizationPage: React.FC = () => {
             </FormField>
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField label="État" required>
-                <select
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={verticalEditor.status}
                   onChange={(event) =>
                     setVerticalEditor((current) =>
@@ -2173,12 +2183,11 @@ export const AdminMonetizationPage: React.FC = () => {
                         : current,
                     )
                   }
-                  className="w-full h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-sm"
                 >
                   <option value="active">Active</option>
                   <option value="disabled">Désactivée</option>
                   <option value="archived">Archivée</option>
-                </select>
+                </Select>
               </FormField>
               <FormField label="Ordre d’affichage" required>
                 <Input
@@ -2229,9 +2238,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
               >
                 {saving ? (
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
+                  <LoaderCircle className="h-icon-md w-icon-md animate-spin" />
                 ) : (
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-icon-md w-icon-md" />
                 )}{" "}
                 Créer le brouillon
               </Button>
@@ -2273,7 +2282,9 @@ export const AdminMonetizationPage: React.FC = () => {
               />
             </FormField>
             <FormField label="Verticale" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={campaign.verticalId}
                 onChange={(event) =>
                   setCampaign((current) => ({
@@ -2281,7 +2292,6 @@ export const AdminMonetizationPage: React.FC = () => {
                     verticalId: event.target.value,
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 {overview?.catalog.verticals
                   .filter((vertical) => vertical.status === "active")
@@ -2290,10 +2300,12 @@ export const AdminMonetizationPage: React.FC = () => {
                       {vertical.name}
                     </option>
                   ))}
-              </select>
+              </Select>
             </FormField>
             <FormField label="Type de remise" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={campaign.discountType}
                 onChange={(event) =>
                   setCampaign((current) => ({
@@ -2302,13 +2314,12 @@ export const AdminMonetizationPage: React.FC = () => {
                       .value as Promotion["discountType"],
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 <option value="percentage">Pourcentage</option>
                 <option value="fixed">Montant fixe</option>
                 <option value="introductory_price">Prix d’introduction</option>
                 <option value="free_period">Période gratuite</option>
-              </select>
+              </Select>
             </FormField>
             {campaign.discountType !== "free_period" ? (
               <FormField
@@ -2373,7 +2384,9 @@ export const AdminMonetizationPage: React.FC = () => {
               </FormField>
             )}
             <FormField label="Activation" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={campaign.activationMode}
                 onChange={(event) =>
                   setCampaign((current) => ({
@@ -2382,15 +2395,16 @@ export const AdminMonetizationPage: React.FC = () => {
                       .value as Promotion["activationMode"],
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 <option value="coupon">Code coupon</option>
                 <option value="automatic">Automatique</option>
                 <option value="admin_grant">Attribution Admin</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Clients éligibles" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={campaign.eligibleCustomerType}
                 onChange={(event) =>
                   setCampaign((current) => ({
@@ -2399,15 +2413,16 @@ export const AdminMonetizationPage: React.FC = () => {
                       .value as Promotion["eligibleCustomerType"],
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 <option value="new">Nouveaux clients</option>
                 <option value="existing">Clients existants</option>
                 <option value="all">Tous les clients</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Cumul" required>
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={campaign.stackingPolicy}
                 onChange={(event) =>
                   setCampaign((current) => ({
@@ -2416,12 +2431,11 @@ export const AdminMonetizationPage: React.FC = () => {
                       .value as Promotion["stackingPolicy"],
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 <option value="exclusive">Exclusif</option>
                 <option value="best_only">Meilleure remise seulement</option>
                 <option value="stackable">Cumulable</option>
-              </select>
+              </Select>
             </FormField>
             <FormField
               label="Utilisations totales"
@@ -2587,9 +2601,9 @@ export const AdminMonetizationPage: React.FC = () => {
               }
             >
               {saving ? (
-                <LoaderCircle className="h-4 w-4 animate-spin" />
+                <LoaderCircle className="h-icon-md w-icon-md animate-spin" />
               ) : (
-                <Plus className="h-4 w-4" />
+                <Plus className="h-icon-md w-icon-md" />
               )}
               Ajouter au brouillon
             </Button>

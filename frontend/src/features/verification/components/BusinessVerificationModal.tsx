@@ -100,7 +100,7 @@ export const BusinessVerificationModal: React.FC<
       description="Shongre consulte le registre officiel et ne demande ici aucun document bancaire ou d’identité."
       headerIcon={
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning-surface text-warning">
-          <Building2 className="h-5 w-5" aria-hidden="true" />
+          <Building2 className="h-icon-lg w-icon-lg" aria-hidden="true" />
         </div>
       }
     >
@@ -130,7 +130,9 @@ export const BusinessVerificationModal: React.FC<
               variant="outline"
               onClick={lookup}
               isLoading={isLookingUp}
-              leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+              leftIcon={
+                <Search className="h-icon-md w-icon-md" aria-hidden="true" />
+              }
             >
               Consulter le registre
             </Button>
@@ -141,7 +143,7 @@ export const BusinessVerificationModal: React.FC<
           <div className="rounded-xl border border-success-border bg-success-surface p-4">
             <div className="flex items-start gap-3">
               <CheckCircle2
-                className="mt-0.5 h-5 w-5 shrink-0 text-success"
+                className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
                 aria-hidden="true"
               />
               <div>
@@ -159,7 +161,7 @@ export const BusinessVerificationModal: React.FC<
 
         <div className="flex gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-650">
           <ShieldCheck
-            className="mt-0.5 h-5 w-5 shrink-0 text-success"
+            className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"
           />
           <p>

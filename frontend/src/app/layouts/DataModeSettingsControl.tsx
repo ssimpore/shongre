@@ -90,7 +90,7 @@ export const DataModeSettingsControl: React.FC = () => {
         title={t("shell.dataMode.openSettings")}
         className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border border-stone-700 bg-stone-800 text-stone-300 transition-colors hover:border-stone-500 hover:bg-stone-700 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
-        <Settings2 className="h-3.5 w-3.5" aria-hidden="true" />
+        <Settings2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
       </button>
 
       <Modal
@@ -152,7 +152,7 @@ export const DataModeSettingsControl: React.FC = () => {
                   </span>
                   {selected ? (
                     <Check
-                      className="absolute right-3 top-3 h-4 w-4 text-primary"
+                      className="absolute right-3 top-3 h-icon-md w-icon-md text-primary"
                       aria-hidden="true"
                     />
                   ) : null}
@@ -165,7 +165,7 @@ export const DataModeSettingsControl: React.FC = () => {
             <div className="rounded-card border border-warning-border bg-warning-surface p-4 text-sm text-warning">
               <div className="flex items-start gap-3">
                 <ShieldAlert
-                  className="mt-0.5 h-5 w-5 shrink-0"
+                  className="mt-0.5 h-icon-lg w-icon-lg shrink-0"
                   aria-hidden="true"
                 />
                 <div>
@@ -209,7 +209,7 @@ export const DataModeSettingsControl: React.FC = () => {
             >
               {isSwitching ? (
                 <LoaderCircle
-                  className="h-4 w-4 animate-spin"
+                  className="h-icon-md w-icon-md animate-spin"
                   aria-hidden="true"
                 />
               ) : null}

@@ -170,7 +170,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         <div className="p-4 bg-stone-50 border border-stone-200/60 rounded-2xl flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-stone-600 shrink-0 shadow-sm">
-              <Landmark className="w-5 h-5" />
+              <Landmark className="w-icon-lg h-icon-lg" />
             </div>
             <div>
               <p className="font-bold text-stone-900 text-sm">
@@ -182,7 +182,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
             </div>
           </div>
           <span className="text-xs font-bold text-success bg-success-surface px-2.5 py-1 rounded-full flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+            <CheckCircle2 className="w-icon-sm h-icon-sm" />
             {payoutConfigured ? "Vérifié" : "À configurer"}
           </span>
         </div>
@@ -214,7 +214,7 @@ export const SellerPayoutModal: React.FC<SellerPayoutModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2 text-micro text-stone-500 pt-1">
-          <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
+          <ShieldCheck className="w-icon-md h-icon-md text-primary shrink-0" />
           <span>
             Virement exécuté par le prestataire de paiement vers le compte
             vérifié.

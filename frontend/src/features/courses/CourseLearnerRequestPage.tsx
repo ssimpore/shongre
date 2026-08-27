@@ -23,7 +23,13 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Button, Container, Skeleton, StatePanel } from "../../design-system";
+import {
+  Button,
+  Container,
+  Select,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -296,10 +302,11 @@ export const CourseLearnerRequestPage: React.FC = () => {
               </div>
               <label className="block text-xs font-bold text-text-main">
                 Matière
-                <select
+                <Select
+                  className="mt-2 w-full"
+                  labelledByAncestor
                   value={form.subjectId}
                   onChange={(event) => update("subjectId", event.target.value)}
-                  className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                 >
                   <option value="">Choisir une matière</option>
                   {catalog.subjects.map((subject) => (
@@ -307,14 +314,15 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       {subject.label}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="block text-xs font-bold text-text-main">
                 Niveau de l’élève
-                <select
+                <Select
+                  className="mt-2 w-full"
+                  labelledByAncestor
                   value={form.levelId}
                   onChange={(event) => update("levelId", event.target.value)}
-                  className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                 >
                   <option value="">Choisir un niveau</option>
                   {catalog.levels.map((level) => (
@@ -322,7 +330,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       {level.label}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label className="block text-xs font-bold text-text-main">
                 Objectif principal
@@ -423,19 +431,20 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   </label>
                   <label className="block text-xs font-bold text-text-main">
                     Rayon
-                    <select
+                    <Select
+                      className="mt-2 w-full"
+                      labelledByAncestor
                       value={form.radiusKm}
                       onChange={(event) =>
                         update("radiusKm", Number(event.target.value))
                       }
-                      className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                     >
                       {[5, 10, 15, 25, 40].map((radius) => (
                         <option key={radius} value={radius}>
                           {radius} km
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                 </div>
               )}
@@ -577,7 +586,9 @@ export const CourseLearnerRequestPage: React.FC = () => {
               </div>
               <label className="block text-xs font-bold text-text-main">
                 Tranche d’âge de l’élève
-                <select
+                <Select
+                  className="mt-2 w-full"
+                  labelledByAncestor
                   value={form.learnerAgeBand}
                   onChange={(event) =>
                     update(
@@ -585,13 +596,12 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       event.target.value as RequestFormState["learnerAgeBand"],
                     )
                   }
-                  className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-base px-3 text-sm font-normal"
                 >
                   <option value="adult">Adulte</option>
                   <option value="16_17">16–17 ans</option>
                   <option value="13_15">13–15 ans</option>
                   <option value="under_13">Moins de 13 ans</option>
-                </select>
+                </Select>
               </label>
               {isMinor && (
                 <div className="space-y-4 rounded-card border border-warning-border bg-warning-surface p-4">

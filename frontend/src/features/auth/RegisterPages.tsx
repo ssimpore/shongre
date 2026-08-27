@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../design-system";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User,
@@ -81,7 +82,7 @@ export const RegisterChoicePage: React.FC = () => {
       <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Sparkles className="w-icon-sm h-icon-sm" />
             <span>Inscription gratuite</span>
           </div>
 
@@ -121,7 +122,7 @@ export const RegisterChoicePage: React.FC = () => {
               size="md"
               className="w-full sm:w-auto"
               onClick={handleContinue}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
             >
               Continuer en{" "}
               {selectedType === "professional"
@@ -133,7 +134,7 @@ export const RegisterChoicePage: React.FC = () => {
 
         {/* FAQ note */}
         <div className="mt-6 p-4 rounded-xl bg-stone-100/60 border border-stone-200 text-xs text-stone-600 flex items-start gap-3">
-          <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
+          <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0 mt-0.5" />
           <div>
             <strong className="text-stone-900">
               {t("auth.registerPages.evolutionDeCompteSouple")}
@@ -235,7 +236,7 @@ export const RegisterIndividualPage: React.FC = () => {
     >
       {errorMessage && (
         <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+          <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
@@ -260,7 +261,7 @@ export const RegisterIndividualPage: React.FC = () => {
               autoComplete="name"
               className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
-            <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <User className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
@@ -282,7 +283,7 @@ export const RegisterIndividualPage: React.FC = () => {
               autoComplete="email"
               className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             />
-            <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
@@ -294,18 +295,18 @@ export const RegisterIndividualPage: React.FC = () => {
             >
               Pays <span className="text-primary">*</span>
             </label>
-            <select
+            <Select
+              className="w-full"
               id="reg-country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
             >
               {Object.values(SUPPORTED_MARKETS).map((m) => (
                 <option key={m.code} value={m.code}>
                   {m.flag} {m.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div>
@@ -404,7 +405,7 @@ export const RegisterIndividualPage: React.FC = () => {
           size="md"
           className="w-full mt-2"
           isLoading={isLoading}
-          rightIcon={<ArrowRight className="w-4 h-4" />}
+          rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
         >
           {t("auth.registerPages.creerMonCompteParticulier")}
         </Button>
@@ -546,7 +547,7 @@ export const RegisterProPage: React.FC = () => {
       <div className="w-full max-w-xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">
-            <Briefcase className="w-3.5 h-3.5" />
+            <Briefcase className="w-icon-sm h-icon-sm" />
             <span>{t("auth.registerPages.vendeurProfessionnel")}</span>
           </div>
 
@@ -566,11 +567,11 @@ export const RegisterProPage: React.FC = () => {
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? "bg-primary text-white" : "bg-success-surface text-success"}`}
             >
-              {step > 1 ? <Check className="w-3.5 h-3.5" /> : "1"}
+              {step > 1 ? <Check className="w-icon-sm h-icon-sm" /> : "1"}
             </span>
             <span>{t("auth.registerPages.identiteDuGerant")}</span>
           </div>
-          <ChevronRight className="w-4 h-4 text-stone-300" />
+          <ChevronRight className="w-icon-md h-icon-md text-stone-300" />
           <div
             className={`flex items-center gap-1.5 ${step === 2 ? "text-stone-950 font-black" : "text-stone-500"}`}
           >
@@ -586,7 +587,7 @@ export const RegisterProPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8">
           {errorMessage && (
             <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+              <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
               <div className="leading-relaxed">{errorMessage}</div>
             </div>
           )}
@@ -612,7 +613,7 @@ export const RegisterProPage: React.FC = () => {
                       required
                       className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                     />
-                    <User className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <User className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
@@ -633,7 +634,7 @@ export const RegisterProPage: React.FC = () => {
                       required
                       className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                     />
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
@@ -653,7 +654,7 @@ export const RegisterProPage: React.FC = () => {
                       placeholder="01 42 68 90 12"
                       className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                     />
-                    <Phone className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
@@ -674,7 +675,7 @@ export const RegisterProPage: React.FC = () => {
                     variant="primary"
                     size="md"
                     className="w-full"
-                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                    rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
                   >
                     {t(
                       "auth.registerPages.continuerVersLesInformationsEntreprise",
@@ -699,7 +700,8 @@ export const RegisterProPage: React.FC = () => {
                   Activité professionnelle{" "}
                   <span className="text-primary">*</span>
                 </label>
-                <select
+                <Select
+                  className="w-full"
                   id="reg-activite-professionnelle"
                   value={professionalVertical}
                   onChange={(event) =>
@@ -708,7 +710,6 @@ export const RegisterProPage: React.FC = () => {
                     )
                   }
                   required
-                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                 >
                   {PROFESSIONAL_VERTICAL_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -717,7 +718,7 @@ export const RegisterProPage: React.FC = () => {
                         : option.label}
                     </option>
                   ))}
-                </select>
+                </Select>
                 <p className="mt-1.5 text-xs text-stone-500">
                   Ce choix active uniquement les outils métier correspondant à
                   votre activité. Il pourra être vérifié lors de l'onboarding.
@@ -733,18 +734,18 @@ export const RegisterProPage: React.FC = () => {
                     Pays d'immatriculation{" "}
                     <span className="text-primary">*</span>
                   </label>
-                  <select
+                  <Select
+                    className="w-full"
                     id="reg-pays-d-immatriculation"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   >
                     {Object.values(SUPPORTED_MARKETS).map((m) => (
                       <option key={m.code} value={m.code}>
                         {m.flag} {m.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
@@ -754,18 +755,18 @@ export const RegisterProPage: React.FC = () => {
                   >
                     Forme juridique <span className="text-primary">*</span>
                   </label>
-                  <select
+                  <Select
+                    className="w-full"
                     id="reg-forme-juridique"
                     value={legalForm}
                     onChange={(e) => setLegalForm(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-control text-xs font-bold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   >
                     {currentMarket.supportedLegalForms.map((f) => (
                       <option key={f} value={f}>
                         {f}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -787,7 +788,7 @@ export const RegisterProPage: React.FC = () => {
                     required
                     className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
-                  <Building2 className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Building2 className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -849,7 +850,7 @@ export const RegisterProPage: React.FC = () => {
                     required
                     className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
                   />
-                  <MapPin className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <MapPin className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -934,7 +935,7 @@ export const RegisterProPage: React.FC = () => {
                   size="md"
                   className="flex-1"
                   isLoading={isLoading}
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
                 >
                   Valider mon inscription Pro
                 </Button>

@@ -56,7 +56,10 @@ export const NewsletterUnsubscribePage: React.FC = () => {
           <div className="space-y-5" role="status">
             <div className="rounded-2xl border border-success-border bg-success-surface p-4 text-left text-xs text-success">
               <span className="flex items-center gap-2 font-bold">
-                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                <CheckCircle2
+                  className="h-icon-md w-icon-md"
+                  aria-hidden="true"
+                />
                 Désabonnement pris en compte
               </span>
               <p className="mt-1 leading-relaxed">
@@ -65,7 +68,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
             </div>
             <div className="flex items-start gap-2.5 rounded-2xl border border-border-base bg-stone-50 p-4 text-left text-micro text-stone-500">
               <ShieldCheck
-                className="mt-0.5 h-4 w-4 shrink-0 text-success"
+                className="mt-0.5 h-icon-md w-icon-md shrink-0 text-success"
                 aria-hidden="true"
               />
               <span>
@@ -80,7 +83,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
             role="alert"
           >
             <span className="flex items-center gap-2 font-bold">
-              <AlertCircle className="h-4 w-4" aria-hidden="true" />
+              <AlertCircle className="h-icon-md w-icon-md" aria-hidden="true" />
               Lien invalide ou expiré
             </span>
             <p className="mt-1">

@@ -272,8 +272,8 @@ export const CrmPipelinePage: React.FC = () => {
               to="/admin/crm"
               className="mb-2 inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
             >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Vue
-              d’ensemble
+              <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
+              Vue d’ensemble
             </Link>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
               Pipeline commercial
@@ -287,19 +287,21 @@ export const CrmPipelinePage: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             <label className="relative min-w-52 flex-1 xl:flex-none">
               <span className="sr-only">Pipeline actif</span>
-              <select
+              <Select
+                size="compact"
+                className="w-full pl-3 pr-9 text-white"
+                labelledByAncestor
                 value={pipeline.id}
                 onChange={(event) => setSelectedPipelineId(event.target.value)}
-                className="h-control-md w-full appearance-none rounded-control border border-stone-700 bg-stone-900 pl-3 pr-9 text-xs font-bold text-white outline-none focus:border-primary"
               >
                 {pipelines.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
                   </option>
                 ))}
-              </select>
+              </Select>
               <ChevronDown
-                className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-400"
+                className="pointer-events-none absolute right-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-stone-400"
                 aria-hidden="true"
               />
             </label>
@@ -308,8 +310,8 @@ export const CrmPipelinePage: React.FC = () => {
               size="sm"
               onClick={() => setCreateOpen(true)}
             >
-              <Plus className="h-4 w-4" aria-hidden="true" /> Nouvelle
-              opportunité
+              <Plus className="h-icon-md w-icon-md" aria-hidden="true" />{" "}
+              Nouvelle opportunité
             </Button>
           </div>
         </div>
@@ -318,7 +320,7 @@ export const CrmPipelinePage: React.FC = () => {
       <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <label className="relative block min-w-0 flex-1 sm:max-w-sm">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400"
+            className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400"
             aria-hidden="true"
           />
           <span className="sr-only">Rechercher une opportunité</span>
@@ -332,7 +334,11 @@ export const CrmPipelinePage: React.FC = () => {
         </label>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
-            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" /> Filtres
+            <SlidersHorizontal
+              className="h-icon-md w-icon-md"
+              aria-hidden="true"
+            />{" "}
+            Filtres
           </Button>
           <span className="hidden text-micro text-stone-500 sm:inline">
             Utilisez les flèches sur chaque carte pour déplacer sans
@@ -406,7 +412,7 @@ export const CrmPipelinePage: React.FC = () => {
                       </Link>
                       <div className="mt-1.5 flex items-center gap-1.5 text-micro text-stone-500">
                         <Building2
-                          className="h-3 w-3 shrink-0"
+                          className="h-icon-xs w-icon-xs shrink-0"
                           aria-hidden="true"
                         />
                         <span className="truncate">
@@ -432,7 +438,7 @@ export const CrmPipelinePage: React.FC = () => {
                         {opportunity.expectedCloseDate && (
                           <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500">
                             <CalendarDays
-                              className="h-3 w-3"
+                              className="h-icon-xs w-icon-xs"
                               aria-hidden="true"
                             />
                             {new Intl.DateTimeFormat(currentLocale, {
@@ -461,13 +467,13 @@ export const CrmPipelinePage: React.FC = () => {
                           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowLeft
-                            className="h-3.5 w-3.5"
+                            className="h-icon-sm w-icon-sm"
                             aria-hidden="true"
                           />
                         </button>
                         <span className="inline-flex min-w-0 items-center gap-1 text-micro text-stone-500">
                           <UserRound
-                            className="h-3 w-3 shrink-0"
+                            className="h-icon-xs w-icon-xs shrink-0"
                             aria-hidden="true"
                           />
                           <span className="max-w-28 truncate">
@@ -488,7 +494,7 @@ export const CrmPipelinePage: React.FC = () => {
                           className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowRight
-                            className="h-3.5 w-3.5"
+                            className="h-icon-sm w-icon-sm"
                             aria-hidden="true"
                           />
                         </button>
@@ -589,12 +595,12 @@ export const CrmPipelinePage: React.FC = () => {
             >
               {closing.stage.isWon ? (
                 <CheckCircle2
-                  className="mt-0.5 h-5 w-5 shrink-0 text-success"
+                  className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
                   aria-hidden="true"
                 />
               ) : (
                 <XCircle
-                  className="mt-0.5 h-5 w-5 shrink-0 text-danger"
+                  className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-danger"
                   aria-hidden="true"
                 />
               )}
@@ -615,7 +621,7 @@ export const CrmPipelinePage: React.FC = () => {
                 <FormField label="Valeur contractuelle">
                   <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-black text-stone-900">
                     <CircleDollarSign
-                      className="h-4 w-4 text-success"
+                      className="h-icon-md w-icon-md text-success"
                       aria-hidden="true"
                     />
                     {money(

@@ -74,7 +74,7 @@ export const Image: React.FC<ImageProps> = ({
       <div
         role="img"
         aria-label={alt || "Image indisponible"}
-        className={`flex items-center justify-center bg-bg-subtle text-stone-500 ${className}`}
+        className={`flex items-center justify-center bg-bg-subtle text-text-muted ${className}`}
       >
         <ImageOff className={fallbackIconClassName} aria-hidden="true" />
       </div>

@@ -90,8 +90,8 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   const position = POSITIONED_BY_CALLER.test(className) ? "" : "relative";
   const surface =
     variant === "floating"
-      ? "rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-stone-600 hover:bg-bg-surface"
-      : "rounded-full text-stone-500 hover:bg-stone-100";
+      ? "rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-text-secondary hover:bg-bg-surface"
+      : "rounded-full text-text-muted hover:bg-stone-100";
 
   return (
     <button

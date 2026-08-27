@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Select } from "../../../../../design-system";
 import {
   TaxonomyAttribute,
   AttributeDataType,
@@ -222,10 +223,12 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
             label={t("admin.attributeEditModal.typeDeDonnee")}
             required
           >
-            <select
+            <Select
+              size="compact"
+              className="w-full"
+              labelledByAncestor
               value={dataType}
               onChange={(e) => setDataType(e.target.value as AttributeDataType)}
-              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="text">Texte libre (String)</option>
               <option value="number">
@@ -244,7 +247,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
               <option value="year">
                 {t("admin.attributeEditModal.anneeMillesime")}
               </option>
-            </select>
+            </Select>
           </FormField>
 
           <FormField
@@ -259,10 +262,12 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
           </FormField>
 
           <FormField label={t("admin.attributeEditModal.groupeDePublication")}>
-            <select
+            <Select
+              size="compact"
+              className="w-full"
+              labelledByAncestor
               value={publicationGroup}
               onChange={(e) => setPublicationGroup(e.target.value as any)}
-              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="general">
                 {t("admin.attributeEditModal.general")}
@@ -275,7 +280,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
               <option value="legal">
                 {t("admin.attributeEditModal.mentionsLegalesNormes")}
               </option>
-            </select>
+            </Select>
           </FormField>
         </div>
 
@@ -335,7 +340,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                 size="sm"
                 type="button"
                 onClick={handleAddOption}
-                leftIcon={<Plus className="w-3.5 h-3.5" />}
+                leftIcon={<Plus className="w-icon-sm h-icon-sm" />}
               >
                 {t("admin.attributeEditModal.ajouterUneOption")}
               </Button>
@@ -377,7 +382,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                       onClick={() => handleRemoveOption(idx)}
                       className="text-stone-500 hover:text-danger p-2"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-icon-sm h-icon-sm" />
                     </Button>
                   </div>
                 ))

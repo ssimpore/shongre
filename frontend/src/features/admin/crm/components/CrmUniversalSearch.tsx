@@ -137,11 +137,11 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
   const getItemIcon = (type: UniversalSearchResult["type"]) => {
     switch (type) {
       case "company":
-        return <Building2 className="w-4 h-4 text-primary" />;
+        return <Building2 className="w-icon-md h-icon-md text-primary" />;
       case "contact":
-        return <User className="w-4 h-4 text-info" />;
+        return <User className="w-icon-md h-icon-md text-info" />;
       case "opportunity":
-        return <TrendingUp className="w-4 h-4 text-warning" />;
+        return <TrendingUp className="w-icon-md h-icon-md text-warning" />;
     }
   };
 
@@ -151,7 +151,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       className={`relative w-full max-w-2xl ${className}`}
     >
       <div className="relative">
-        <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={query}
@@ -181,7 +181,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
             aria-label={t("admin.crmUniversalSearch.clear")}
             className="absolute right-2 top-1/2 inline-flex min-h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-md text-stone-500 transition-colors duration-fast hover:bg-stone-100 hover:text-stone-700"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-icon-sm h-icon-sm" />
           </button>
         )}
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Select } from "../../../../design-system";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -134,7 +135,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search bar */}
           <div className="lg:col-span-2 relative">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder={t(
@@ -150,17 +151,18 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-icon-sm h-icon-sm" />
               </button>
             )}
           </div>
 
           {/* Category Dropdown */}
           <div>
-            <select
+            <Select
+              className="w-full"
+              aria-label="Filtrer par catégorie"
               value={selectedCategory || "ALL"}
               onChange={(e) => onSelectCategory(e.target.value)}
-              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="ALL">
                 {t("admin.providerCatalogTable.toutesLesCategories")}
@@ -170,15 +172,16 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                   {cat.shortLabel} ({cat.name})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           {/* Status Dropdown */}
           <div>
-            <select
+            <Select
+              className="w-full"
+              aria-label="Filtrer par statut"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="all">
                 {t("admin.providerCatalogTable.tousLesStatuts")}
@@ -188,15 +191,16 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                 {t("admin.providerCatalogTable.desactive")}
               </option>
               <option value="requires_action">Action requise</option>
-            </select>
+            </Select>
           </div>
 
           {/* Health Dropdown */}
           <div>
-            <select
+            <Select
+              className="w-full"
+              aria-label="Filtrer par état de santé"
               value={healthFilter}
               onChange={(e) => setHealthFilter(e.target.value as any)}
-              className="w-full py-2 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50 text-stone-700 h-control-touch"
             >
               <option value="all">
                 {t("admin.providerCatalogTable.toutesLesSantes")}
@@ -208,7 +212,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                 {t("admin.providerCatalogTable.degrade")}
               </option>
               <option value="unavailable">Indisponible</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -229,7 +233,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               onClick={resetFilters}
               className="flex items-center gap-1 text-primary hover:underline font-medium text-xs"
             >
-              <RotateCcw className="w-3 h-3" />
+              <RotateCcw className="w-icon-xs h-icon-xs" />
               {t("admin.providerCatalogTable.reinitialiserLesFiltres")}
             </button>
           )}
@@ -369,7 +373,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                         <div className="flex items-center gap-2">
                           {isActive ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface border border-success-border px-2 py-0.5 rounded-full">
-                              <CheckCircle2 className="w-3 h-3" />
+                              <CheckCircle2 className="w-icon-xs h-icon-xs" />
                               {`Actif (P${
                                 cfg?.priority ||
                                 PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min
@@ -377,17 +381,17 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             </span>
                           ) : isDemoOnly ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-info bg-info-surface border border-info-border px-2 py-0.5 rounded-full">
-                              <AlertTriangle className="w-3 h-3" />
+                              <AlertTriangle className="w-icon-xs h-icon-xs" />
                               Démo uniquement
                             </span>
                           ) : isImplemented ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface border border-warning-border px-2 py-0.5 rounded-full">
-                              <AlertTriangle className="w-3 h-3" />
+                              <AlertTriangle className="w-icon-xs h-icon-xs" />
                               Implémenté · non vérifié
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-0.5 rounded-full">
-                              <X className="w-3 h-3" />
+                              <X className="w-icon-xs h-icon-xs" />
                               Non implémenté
                             </span>
                           )}
@@ -457,7 +461,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             variant="ghost"
                             size="sm"
                             onClick={() => onOpenTestModal(p.id)}
-                            leftIcon={<Play className="w-3 h-3" />}
+                            leftIcon={<Play className="w-icon-xs h-icon-xs" />}
                             className="h-control-sm text-xs px-2 text-stone-600 hover:text-stone-900"
                           >
                             Tester
@@ -466,7 +470,9 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             to={`/admin/fournisseurs/${p.id}`}
                             variant="outline"
                             size="sm"
-                            rightIcon={<ChevronRight className="w-3.5 h-3.5" />}
+                            rightIcon={
+                              <ChevronRight className="w-icon-sm h-icon-sm" />
+                            }
                             className="h-control-sm text-xs px-2.5 font-bold"
                           >
                             {t("admin.providerCatalogTable.gerer")}

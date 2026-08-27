@@ -90,7 +90,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     if (variant === "footer") {
       return (
         <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold py-1">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <CheckCircle2 className="w-icon-md h-icon-md shrink-0" />
           <span>Demande enregistrée — consultez votre messagerie</span>
         </div>
       );
@@ -101,7 +101,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         className={`p-6 rounded-3xl bg-success-surface border border-success-border text-center space-y-2 ${className}`}
       >
         <div className="w-10 h-10 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-5 h-5" />
+          <CheckCircle2 className="w-icon-lg h-icon-lg" />
         </div>
         <h4 className="text-sm font-black text-success">
           Vérifiez votre messagerie
@@ -123,7 +123,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             had typed. Two rows give the field the column's full width. */}
         <div className="flex flex-col gap-2 max-w-sm">
           <div className="relative">
-            <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="email"
               value={email}
@@ -132,7 +132,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               aria-label={t("newsletter.newsletterSignup.votreAdresseEmail")}
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20-on-dark transition-colors"
+              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-on-dark/20 transition-colors"
             />
           </div>
           <Button
@@ -141,7 +141,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             size="md"
             fullWidth
             isLoading={isSubmitting}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
           >
             <span>{isSubmitting ? "Inscription…" : "S'inscrire"}</span>
           </Button>
@@ -163,7 +163,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           {/* On the dark band the light-surface primary is unreadable (3.5:1),
               so this uses the inverse-surface brand variant. */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary-on-dark text-xs font-bold">
-            <Mail className="w-3.5 h-3.5" />
+            <Mail className="w-icon-sm h-icon-sm" />
             <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
           </div>
 
@@ -182,7 +182,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Mail className="w-5 h-5 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-icon-lg h-icon-lg text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
@@ -207,7 +207,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 className="font-black shrink-0 flex items-center justify-center gap-2"
               >
                 <span>{isSubmitting ? "Inscription..." : "S'inscrire"}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-icon-md h-icon-md" />
               </Button>
             </div>
 
@@ -227,7 +227,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
 
             {errorMessage && (
               <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-medium flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+                <AlertCircle className="w-icon-md h-icon-md shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}

@@ -174,7 +174,7 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
             className="mt-6"
             onClick={() => void checkActiveMode()}
           >
-            <RotateCw className="h-4 w-4" aria-hidden="true" />
+            <RotateCw className="h-icon-md w-icon-md" aria-hidden="true" />
             {copy("common.retry")}
           </Button>
         </div>

@@ -8,12 +8,12 @@ export interface ListingCharacteristicsProps {
 }
 
 const GROUP_ICONS: Record<string, React.ReactNode> = {
-  general: <Tag className="w-4 h-4 text-primary" />,
-  technical: <Cpu className="w-4 h-4 text-info" />,
-  engine: <Car className="w-4 h-4 text-warning" />,
-  property: <Home className="w-4 h-4 text-success" />,
-  energy: <Zap className="w-4 h-4 text-yellow-500" />,
-  dimensions: <Sliders className="w-4 h-4 text-purple-600" />,
+  general: <Tag className="w-icon-md h-icon-md text-primary" />,
+  technical: <Cpu className="w-icon-md h-icon-md text-info" />,
+  engine: <Car className="w-icon-md h-icon-md text-warning" />,
+  property: <Home className="w-icon-md h-icon-md text-success" />,
+  energy: <Zap className="w-icon-md h-icon-md text-yellow-500" />,
+  dimensions: <Sliders className="w-icon-md h-icon-md text-purple-600" />,
 };
 
 // DPE Energy Rating Colors
@@ -42,7 +42,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
         >
           <div className="flex items-center gap-2.5 pb-3 border-b border-border-subtle">
             {GROUP_ICONS[group.groupKey] || (
-              <Sparkles className="w-5 h-5 text-primary" />
+              <Sparkles className="w-icon-lg h-icon-lg text-primary" />
             )}
             <h2 className="text-base font-black text-text-main">
               {group.groupTitle}

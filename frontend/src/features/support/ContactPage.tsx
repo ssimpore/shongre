@@ -40,15 +40,15 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  User: <User className="w-5 h-5" />,
-  Tag: <Tag className="w-5 h-5" />,
-  ShoppingBag: <ShoppingBag className="w-5 h-5" />,
-  DollarSign: <DollarSign className="w-5 h-5" />,
-  CreditCard: <CreditCard className="w-5 h-5" />,
-  Truck: <Truck className="w-5 h-5" />,
-  Briefcase: <Briefcase className="w-5 h-5" />,
-  ShieldAlert: <ShieldAlert className="w-5 h-5" />,
-  HelpCircle: <HelpCircle className="w-5 h-5" />,
+  User: <User className="w-icon-lg h-icon-lg" />,
+  Tag: <Tag className="w-icon-lg h-icon-lg" />,
+  ShoppingBag: <ShoppingBag className="w-icon-lg h-icon-lg" />,
+  DollarSign: <DollarSign className="w-icon-lg h-icon-lg" />,
+  CreditCard: <CreditCard className="w-icon-lg h-icon-lg" />,
+  Truck: <Truck className="w-icon-lg h-icon-lg" />,
+  Briefcase: <Briefcase className="w-icon-lg h-icon-lg" />,
+  ShieldAlert: <ShieldAlert className="w-icon-lg h-icon-lg" />,
+  HelpCircle: <HelpCircle className="w-icon-lg h-icon-lg" />,
 };
 
 export const ContactPage: React.FC = () => {
@@ -315,7 +315,7 @@ export const ContactPage: React.FC = () => {
                   }`}
                 >
                   {CATEGORY_ICONS[cat.iconName] || (
-                    <HelpCircle className="w-5 h-5" />
+                    <HelpCircle className="w-icon-lg h-icon-lg" />
                   )}
                 </div>
 
@@ -382,7 +382,7 @@ export const ContactPage: React.FC = () => {
           {/* Handoff Banners */}
           {currentReasonDef?.isDisputeHandoff && (
             <div className="p-4 bg-warning-surface border border-warning-border rounded-2xl flex items-start gap-3 text-warning text-xs">
-              <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+              <AlertTriangle className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <p className="font-bold text-warning">
                   {t("support.contactPage.besoinDOuvrirUnLitige")}
@@ -404,7 +404,7 @@ export const ContactPage: React.FC = () => {
 
           {currentReasonDef?.isMessagingHandoff && (
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 text-stone-800 text-xs">
-              <MessageSquare className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <MessageSquare className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
               <div className="space-y-2">
                 <p className="font-bold text-stone-900">
                   {t("support.contactPage.echangeDirectAvecLeVendeur")}
@@ -428,7 +428,7 @@ export const ContactPage: React.FC = () => {
             !currentReasonDef.isDisputeHandoff &&
             !currentReasonDef.isMessagingHandoff && (
               <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-2xl text-xs text-stone-700 flex items-start gap-2.5">
-                <HelpCircle className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
+                <HelpCircle className="w-icon-md h-icon-md text-stone-500 shrink-0 mt-0.5" />
                 <span>
                   <strong>Conseil :</strong> {currentReasonDef.helpTip}
                 </span>

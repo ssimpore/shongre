@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Select } from "../../../../design-system";
 import { Link } from "react-router-dom";
 import { Sliders, ShieldCheck } from "lucide-react";
 import { getAllCapabilities } from "../../../../domains/providers/provider-capabilities";
@@ -36,7 +37,7 @@ export const ProviderRoutingManager: React.FC = () => {
       <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-primary" />
+            <Sliders className="w-icon-md h-icon-md text-primary" />
             {t(
               "admin.providerRoutingManager.gestionnaireDeRoutagePrioritesSecours",
             )}
@@ -48,13 +49,17 @@ export const ProviderRoutingManager: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-stone-600">
+          <label
+            htmlFor="provider-routing-target-market"
+            className="text-xs font-semibold text-stone-600"
+          >
             {t("admin.providerRoutingManager.marcheCible")}
           </label>
-          <select
+          <Select
+            className="w-auto"
+            id="provider-routing-target-market"
             value={selectedMarket}
             onChange={(e) => setSelectedMarket(e.target.value)}
-            className="py-1 px-2.5 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50 text-stone-800 font-bold h-control-touch"
           >
             {availableMarkets.map((market) => (
               <option key={market.code} value={market.code}>
@@ -62,7 +67,7 @@ export const ProviderRoutingManager: React.FC = () => {
                 {market.isDefault ? " · défaut" : ""}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -172,7 +177,7 @@ export const ProviderRoutingManager: React.FC = () => {
                 <div className="shrink-0 flex items-center gap-2">
                   {fallback ? (
                     <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-full">
-                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <ShieldCheck className="w-icon-sm h-icon-sm" />
                       {automaticFailoverApproved
                         ? "Bascule auto approuvée"
                         : "Secours manuel"}

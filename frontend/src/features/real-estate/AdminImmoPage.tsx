@@ -15,7 +15,7 @@ import type {
 import type { VerticalAddOn, VerticalOffer } from "@shongre/contracts/vertical";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Skeleton, Switch } from "../../design-system";
+import { Badge, Button, Select, Skeleton, Switch } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatImmoMoney } from "./immo-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
@@ -227,7 +227,7 @@ export const AdminImmoPage: React.FC = () => {
                 Catalogue générique, spécialisé par verticale et marché.
               </p>
             </div>
-            <CircleDollarSign className="h-5 w-5 text-primary" />
+            <CircleDollarSign className="h-icon-lg w-icon-lg text-primary" />
           </div>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-216 text-left text-xs">
@@ -454,7 +454,7 @@ export const AdminImmoPage: React.FC = () => {
           </div>
         </div>
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
-          <Settings2 className="h-6 w-6 text-primary" />
+          <Settings2 className="h-icon-xl w-icon-xl text-primary" />
           <h2 className="mt-3 text-sm font-black">
             Fonctionnalités {activeMarket.name}
           </h2>
@@ -657,9 +657,10 @@ export const AdminImmoPage: React.FC = () => {
                   <td className="p-3">{rule.propertyType || "Tous"}</td>
                   <td className="p-3">{rule.transactionType || "Toutes"}</td>
                   <td className="p-3">
-                    <select
+                    <Select
+                      className="w-auto"
+                      size="compact"
                       aria-label={`Exigence pour ${rule.fieldId}`}
-                      className="h-control-md rounded-control border border-border-base bg-white px-2"
                       value={rule.requirement}
                       onChange={(event) =>
                         updateFieldRule(rule, {
@@ -672,7 +673,7 @@ export const AdminImmoPage: React.FC = () => {
                       <option value="recommended">Recommandé</option>
                       <option value="optional">Facultatif</option>
                       <option value="hidden">Masqué</option>
-                    </select>
+                    </Select>
                   </td>
                   <td className="p-3">
                     <Switch
@@ -693,7 +694,7 @@ export const AdminImmoPage: React.FC = () => {
       <section className="grid gap-4 lg:grid-cols-2">
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-warning" />
+            <AlertTriangle className="h-icon-lg w-icon-lg text-warning" />
             <h2 className="text-sm font-black">File de modération</h2>
           </div>
           <div className="mt-4 space-y-3">

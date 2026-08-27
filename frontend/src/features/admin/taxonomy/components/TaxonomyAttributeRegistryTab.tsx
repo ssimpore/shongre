@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../../design-system";
 import { TaxonomyAttribute } from "../../../../domains/taxonomy/taxonomy.types";
 import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
 import { Button } from "../../../../design-system/primitives/Button";
@@ -53,7 +54,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
       <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary" />
+            <Layers className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t(
                 "admin.taxonomyAttributeRegistryTab.registreCentralDesAttributsCanoniques",
@@ -70,7 +71,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={handleOpenCreate}
-          leftIcon={<Plus className="w-3.5 h-3.5" />}
+          leftIcon={<Plus className="w-icon-sm h-icon-sm" />}
         >
           Nouvel attribut
         </Button>
@@ -79,7 +80,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
       {/* Filter & Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t(
@@ -95,11 +96,13 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-stone-400" />
-          <select
+          <Filter className="w-icon-sm h-icon-sm text-stone-400" />
+          <Select
+            className="w-auto"
+            size="compact"
+            aria-label="Filtrer par type de données"
             value={dataTypeFilter}
             onChange={(e) => setDataTypeFilter(e.target.value)}
-            className="h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-700"
           >
             <option value="all">
               {t("admin.taxonomyAttributeRegistryTab.tousLesTypesDeDonnees")}
@@ -119,7 +122,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             <option value="year">
               {t("admin.taxonomyAttributeRegistryTab.anneeMillesime")}
             </option>
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -146,7 +149,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                 <div className="flex items-center gap-2 text-xs font-mono text-stone-500">
                   <span>ID : {attr.id}</span>
                   {attr.unit && (
-                    <span className="bg-stone-100 text-stone-700 px-1.5 py-0.2 rounded font-bold">
+                    <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded font-bold">
                       {attr.unit}
                     </span>
                   )}
@@ -195,7 +198,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleOpenEdit(attr)}
-                  leftIcon={<Edit2 className="w-3 h-3" />}
+                  leftIcon={<Edit2 className="w-icon-xs h-icon-xs" />}
                 >
                   {t("admin.taxonomyAttributeRegistryTab.editer")}
                 </Button>

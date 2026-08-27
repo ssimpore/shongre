@@ -33,6 +33,7 @@ import {
   Container,
   Input,
   ScrollableRegion,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -486,7 +487,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                     </p>
                   </td>
                   <td className="px-4 py-3">
-                    <select
+                    <Select
+                      className="w-auto"
                       aria-label={`Affecter la demande de ${lead.contactName}`}
                       value={lead.assignedUserId || ""}
                       onChange={(event) =>
@@ -496,7 +498,6 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                           })
                           .then(load)
                       }
-                      className="h-control-compact rounded-control border border-border-base px-2 h-control-touch"
                     >
                       <option value="">Non assigné</option>
                       {workspace.members
@@ -506,16 +507,16 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                             {member.displayName}
                           </option>
                         ))}
-                    </select>
+                    </Select>
                   </td>
                   <td className="px-4 py-3">
-                    <select
+                    <Select
+                      className="w-auto"
                       aria-label={`Statut de la demande de ${lead.contactName}`}
                       value={lead.status}
                       onChange={(event) =>
                         moveLead(lead, event.target.value as AutoLead["status"])
                       }
-                      className="h-control-compact rounded-control border border-border-base px-2 h-control-touch"
                     >
                       {Object.entries(leadStatusLabels).map(
                         ([value, label]) => (
@@ -524,7 +525,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                           </option>
                         ),
                       )}
-                    </select>
+                    </Select>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">
                     {lead.nextReminderAt ? "Demain 14:00" : "—"}

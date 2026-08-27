@@ -50,7 +50,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
       <div className="space-y-5 p-1">
         {/* Warning banner */}
         <div className="p-4 rounded-xl bg-warning-surface border border-warning-border flex items-start gap-3 text-warning">
-          <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+          <AlertTriangle className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-bold text-warning">
               {customMessage ||
@@ -69,7 +69,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Affected Markets */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
             <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
-              <Globe className="w-3.5 h-3.5 text-info" />
+              <Globe className="w-icon-sm h-icon-sm text-info" />
               {t("admin.providerImpactModal.marchesTerritoriauxAffectes")}
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -87,7 +87,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Impacted Features */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
             <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
-              <Layers className="w-3.5 h-3.5 text-primary" />
+              <Layers className="w-icon-sm h-icon-sm text-primary" />
               {t(
                 "admin.providerImpactModal.fonctionnalitesDeLaMarketplaceConcernees",
               )}

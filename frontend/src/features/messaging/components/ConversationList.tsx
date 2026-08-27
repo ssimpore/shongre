@@ -58,7 +58,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
       <div className="p-4 border-b border-border-base space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-black text-stone-900 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-primary" />
+            <MessageSquare className="w-icon-lg h-icon-lg text-primary" />
             <span>Messagerie</span>
           </h1>
           {unreadTotal > 0 && (
@@ -70,7 +70,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t(
@@ -90,7 +90,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
               aria-label={t("messaging.conversationList.effacerLaRecherche")}
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-icon-sm h-icon-sm" />
             </button>
           )}
         </div>
@@ -144,7 +144,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           /* Empty State */
           <div className="p-8 text-center space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-400 mx-auto flex items-center justify-center">
-              <MessageSquare className="w-6 h-6" />
+              <MessageSquare className="w-icon-xl h-icon-xl" />
             </div>
             <div>
               <p className="text-sm font-bold text-stone-800">

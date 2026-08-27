@@ -17,7 +17,7 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
       className={`p-4 rounded-2xl bg-success-surface/70 border border-success-border/80 text-xs space-y-2 text-success ${className}`}
     >
       <div className="flex items-center gap-2 font-bold text-success">
-        <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+        <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
         <span>{t("listings.listingSafetyNotice.garantieSecuriteShongre")}</span>
       </div>
 
@@ -29,11 +29,11 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
 
       <div className="flex items-center gap-4 text-micro font-semibold text-success pt-1">
         <span className="flex items-center gap-1">
-          <CheckCircle2 className="w-3 h-3" />
+          <CheckCircle2 className="w-icon-xs h-icon-xs" />
           {t("listings.listingSafetyNotice.sequestreGaranti")}
         </span>
         <span className="flex items-center gap-1">
-          <Lock className="w-3 h-3" />
+          <Lock className="w-icon-xs h-icon-xs" />
           {t("listings.listingSafetyNotice.paiementChiffre3dSecure")}
         </span>
       </div>

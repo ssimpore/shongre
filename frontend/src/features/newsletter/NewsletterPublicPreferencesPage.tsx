@@ -57,7 +57,10 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
   if (state === "loading")
     return (
       <div className="mx-auto flex max-w-xl items-center justify-center px-4 py-24 text-stone-600">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
+        <Loader2
+          className="mr-2 h-icon-lg w-icon-lg animate-spin"
+          aria-hidden="true"
+        />
         Chargement des préférences…
       </div>
     );
@@ -68,7 +71,10 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
           className="flex gap-3 rounded-2xl border border-danger-border bg-danger-surface p-5 text-danger"
           role="alert"
         >
-          <AlertCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+          <AlertCircle
+            className="h-icon-lg w-icon-lg shrink-0"
+            aria-hidden="true"
+          />
           <div>
             <h1 className="font-bold">Lien invalide ou expiré</h1>
             <p className="mt-1 text-sm">
@@ -99,7 +105,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
           className="flex items-center gap-2 rounded-2xl border border-success-border bg-success-surface p-4 text-sm text-success"
           role="status"
         >
-          <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+          <CheckCircle2 className="h-icon-md w-icon-md" aria-hidden="true" />
           Préférences enregistrées.
         </div>
       )}
@@ -117,7 +123,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
         onClick={save}
         disabled={state === "saving"}
       >
-        <Save className="mr-2 h-4 w-4" aria-hidden="true" />
+        <Save className="mr-2 h-icon-md w-icon-md" aria-hidden="true" />
         {state === "saving" ? "Enregistrement…" : "Enregistrer mes préférences"}
       </Button>
     </main>

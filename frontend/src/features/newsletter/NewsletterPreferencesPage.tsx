@@ -177,7 +177,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
                 : "bg-stone-100 text-stone-500"
             }`}
           >
-            <Mail className="w-5 h-5" />
+            <Mail className="w-icon-lg h-icon-lg" />
           </div>
 
           {/* `min-w-0` on both the column and the address, plus a wrap on the
@@ -249,7 +249,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             disabled={isSaving || !isSubscribed}
             className="font-bold flex items-center gap-2"
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-icon-md h-icon-md" />
             <span>
               {isSaving ? "Enregistrement..." : "Enregistrer mes préférences"}
             </span>
@@ -259,7 +259,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
 
       {/* 4. Transactional Communication Isolation Notice */}
       <div className="p-4 bg-stone-50 border border-border-base rounded-2xl flex items-start gap-3 text-xs text-stone-600">
-        <ShieldCheck className="w-5 h-5 text-success shrink-0 mt-0.5" />
+        <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0 mt-0.5" />
         <div className="space-y-1">
           <span className="font-bold text-stone-900 block">
             {t(

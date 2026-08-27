@@ -74,7 +74,7 @@ export function DataTable<T>({
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
               {detailColumns.map((col) => (
                 <div key={col.id} className="min-w-0">
-                  <dt className="text-micro font-semibold uppercase tracking-wider text-stone-500">
+                  <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
                     {col.header}
                   </dt>
                   <dd className="text-xs text-stone-800 mt-0.5">

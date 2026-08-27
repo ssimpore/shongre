@@ -30,13 +30,13 @@ export const CrmAutomationsPage: React.FC = () => {
             disabled
             title="Activez d’abord un worker d’automatisation backend"
           >
-            <Workflow className="h-4 w-4" /> Nouveau workflow
+            <Workflow className="h-icon-md w-icon-md" /> Nouveau workflow
           </Button>
         </div>
       </section>
       <section className="rounded-2xl border border-warning-border bg-warning-surface p-5">
         <div className="flex items-start gap-3">
-          <CirclePause className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+          <CirclePause className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-warning" />
           <div>
             <h2 className="text-sm font-black text-warning">
               Moteur non activé dans cet environnement

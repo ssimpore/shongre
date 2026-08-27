@@ -63,14 +63,14 @@ export const NotFoundPage: React.FC = () => {
           <Button
             to={routes.home()}
             variant="primary"
-            leftIcon={<Home className="w-4 h-4" />}
+            leftIcon={<Home className="w-icon-md h-icon-md" />}
           >
             {t("errors.notFoundPage.retourALAccueil")}
           </Button>
           <Button
             to={routes.search()}
             variant="outline"
-            leftIcon={<Search className="w-4 h-4" />}
+            leftIcon={<Search className="w-icon-md h-icon-md" />}
           >
             {t("errors.notFoundPage.rechercherUneAnnonce")}
           </Button>
@@ -91,7 +91,7 @@ export const NotFoundPage: React.FC = () => {
               className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
             >
               {t("errors.notFoundPage.toutesLesCategories")}
-              <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+              <ArrowRight className="w-icon-sm h-icon-sm" aria-hidden="true" />
             </Link>
           </div>
 

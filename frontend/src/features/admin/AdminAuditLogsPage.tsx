@@ -1,4 +1,5 @@
 import { Modal } from "../../design-system/primitives/Modal";
+import { Select } from "../../design-system";
 import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import React, { useState, useEffect } from "react";
 import { Search, Download, Trash2, Eye } from "lucide-react";
@@ -171,7 +172,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             onClick={handleExportCsv}
             className="text-xs flex items-center gap-1.5"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-icon-sm h-icon-sm" />
             Exporter CSV
           </Button>
           <Button
@@ -180,7 +181,7 @@ export const AdminAuditLogsPage: React.FC = () => {
             onClick={() => setIsClearModalOpen(true)}
             className="text-xs text-danger hover:bg-danger-surface"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1" />
+            <Trash2 className="w-icon-sm h-icon-sm mr-1" />
             {t("admin.adminAuditLogsPage.reinitialiser")}
           </Button>
         </div>
@@ -189,7 +190,7 @@ export const AdminAuditLogsPage: React.FC = () => {
       {/* Filters */}
       <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
@@ -202,11 +203,11 @@ export const AdminAuditLogsPage: React.FC = () => {
           />
         </div>
 
-        <select
+        <Select
+          className="w-auto"
           aria-label={t("admin.adminAuditLogsPage.filtrerLeJournalParType")}
           value={selectedAction}
           onChange={(e) => setSelectedAction(e.target.value)}
-          className="py-2 px-3 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary bg-white h-control-touch"
         >
           <option value="all">
             Toutes les actions d'audit ({logs.length})
@@ -216,7 +217,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               {auditActionLabel(act)}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Logs Table */}
@@ -308,7 +309,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                           { action: auditActionLabel(log.action) },
                         )}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-icon-md h-icon-md" />
                       </button>
                     </td>
                   </tr>

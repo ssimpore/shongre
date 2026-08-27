@@ -242,7 +242,7 @@ export const CrmContactDetailPage: React.FC = () => {
           to="/admin/crm/contacts"
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Contacts
+          <ArrowLeft className="h-icon-sm w-icon-sm" /> Contacts
         </Link>
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
@@ -256,7 +256,8 @@ export const CrmContactDetailPage: React.FC = () => {
                 </h1>
                 {contact.doNotContact && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-red-950 px-2 py-1 text-micro font-bold text-red-300">
-                    <ShieldAlert className="h-3 w-3" /> Ne pas contacter
+                    <ShieldAlert className="h-icon-xs w-icon-xs" /> Ne pas
+                    contacter
                   </span>
                 )}
               </div>
@@ -270,7 +271,7 @@ export const CrmContactDetailPage: React.FC = () => {
                     className="inline-flex items-center gap-1 hover:text-white"
                     href={`mailto:${contact.email}`}
                   >
-                    <Mail className="h-3 w-3" /> {contact.email}
+                    <Mail className="h-icon-xs w-icon-xs" /> {contact.email}
                   </a>
                 )}
                 {contact.phone && (
@@ -278,7 +279,7 @@ export const CrmContactDetailPage: React.FC = () => {
                     className="inline-flex items-center gap-1 hover:text-white"
                     href={`tel:${contact.phone}`}
                   >
-                    <Phone className="h-3 w-3" /> {contact.phone}
+                    <Phone className="h-icon-xs w-icon-xs" /> {contact.phone}
                   </a>
                 )}
               </div>
@@ -301,10 +302,10 @@ export const CrmContactDetailPage: React.FC = () => {
               className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
               onClick={() => setTaskOpen(true)}
             >
-              <CalendarClock className="h-4 w-4" /> Tâche
+              <CalendarClock className="h-icon-md w-icon-md" /> Tâche
             </Button>
             <Button size="sm" onClick={() => setNoteOpen(true)}>
-              <MessageSquareText className="h-4 w-4" /> Note
+              <MessageSquareText className="h-icon-md w-icon-md" /> Note
             </Button>
           </div>
         </div>
@@ -364,7 +365,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => setNoteOpen(true)}
               >
-                <Plus className="h-4 w-4" /> Note
+                <Plus className="h-icon-md w-icon-md" /> Note
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
@@ -376,7 +377,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600">
-                      <MessageSquareText className="h-3.5 w-3.5" />
+                      <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -411,7 +412,7 @@ export const CrmContactDetailPage: React.FC = () => {
                   Influence et engagements en cours
                 </p>
               </div>
-              <Target className="h-4 w-4 text-primary" />
+              <Target className="h-icon-md w-icon-md text-primary" />
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {opportunities.length === 0 ? (
@@ -458,7 +459,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => setTaskOpen(true)}
               >
-                <Plus className="h-4 w-4" /> Ajouter
+                <Plus className="h-icon-md w-icon-md" /> Ajouter
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-4">
@@ -480,7 +481,7 @@ export const CrmContactDetailPage: React.FC = () => {
                           : `Terminer ${task.title}`
                       }
                     >
-                      <CheckCircle2 className="h-4 w-4" />
+                      <CheckCircle2 className="h-icon-md w-icon-md" />
                     </button>
                     <span className="min-w-0 flex-1">
                       <strong
@@ -528,7 +529,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 to={`/admin/crm/entreprises/${account.id}`}
                 className="mt-3 flex items-center gap-2 rounded-xl bg-stone-50 p-3 text-xs font-bold hover:text-primary"
               >
-                <Building2 className="h-4 w-4" /> {account.name}
+                <Building2 className="h-icon-md w-icon-md" /> {account.name}
               </Link>
             ))}
           </section>

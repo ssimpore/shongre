@@ -126,7 +126,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     <div key={sys.id} className="my-3 flex justify-center">
                       <div className="max-w-md w-full bg-white border border-border-base rounded-2xl p-3.5 shadow-2xs text-center space-y-1">
                         <div className="flex items-center justify-center gap-1.5 text-xs font-black text-stone-900">
-                          <ShieldCheck className="w-4 h-4 text-primary" />
+                          <ShieldCheck className="w-icon-md h-icon-md text-primary" />
                           <span>{sys.title}</span>
                         </div>
                         <p className="text-xs text-stone-600 leading-relaxed font-medium">
@@ -202,7 +202,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                             className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
                           />
                           <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
-                            <Maximize2 className="w-3.5 h-3.5" />
+                            <Maximize2 className="w-icon-sm h-icon-sm" />
                           </span>
                         </button>
                       )}
@@ -211,7 +211,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                       {isOffer && (
                         <div className="p-2.5 rounded-xl bg-warning-surface border border-warning-border text-warning mb-2 space-y-2">
                           <div className="flex items-center gap-1.5 font-extrabold text-xs">
-                            <DollarSign className="w-4 h-4 text-warning" />
+                            <DollarSign className="w-icon-md h-icon-md text-warning" />
                             <span>Offre proposée : {offerLabel}</span>
                           </div>
                           <p className="text-micro font-bold" role="status">
@@ -286,20 +286,20 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                         {isMe && (
                           <span className="inline-flex items-center">
                             {msg.status === "sending" && (
-                              <Clock className="w-3 h-3 animate-spin" />
+                              <Clock className="w-icon-xs h-icon-xs animate-spin" />
                             )}
                             {msg.status === "sent" && (
-                              <Check className="w-3 h-3" />
+                              <Check className="w-icon-xs h-icon-xs" />
                             )}
                             {msg.status === "delivered" && (
-                              <CheckCheck className="w-3 h-3 text-white/90" />
+                              <CheckCheck className="w-icon-xs h-icon-xs text-white/90" />
                             )}
                             {msg.status === "read" && (
-                              <CheckCheck className="w-3 h-3 text-white" />
+                              <CheckCheck className="w-icon-xs h-icon-xs text-white" />
                             )}
                             {msg.status === "failed" && (
                               <span className="flex items-center gap-1 text-red-200 font-bold">
-                                <AlertCircle className="w-3 h-3" />
+                                <AlertCircle className="w-icon-xs h-icon-xs" />
                                 <span>
                                   {t("messaging.messageTimeline.echec")}
                                 </span>

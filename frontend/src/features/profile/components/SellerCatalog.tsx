@@ -213,7 +213,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             to={publishCta.to}
             variant="primary"
             size="md"
-            leftIcon={<PlusCircle className="w-4 h-4" />}
+            leftIcon={<PlusCircle className="w-icon-md h-icon-md" />}
           >
             {t(publishCta.labelKey)}
           </Button>
@@ -233,7 +233,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Internal Catalog Search */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -249,7 +249,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 aria-label={t("profile.sellerCatalog.effacerLaRecherche")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-1"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-icon-sm h-icon-sm" />
               </button>
             )}
           </div>
@@ -266,7 +266,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                   : "bg-bg-base text-stone-700 border-border-base hover:bg-bg-subtle"
               }`}
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <SlidersHorizontal className="w-icon-sm h-icon-sm" />
               {/* `hidden` would take the only label out of the accessibility
                   tree below `sm`, leaving an icon-only button with no name —
                   the same defect the focused-layout back button had. */}
@@ -291,7 +291,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               placement="bottom-right"
               panelWidth="w-48"
               mobileIcon={
-                <ArrowUpDown className="w-3.5 h-3.5 text-stone-700" />
+                <ArrowUpDown className="w-icon-sm h-icon-sm text-stone-700" />
               }
               headerTitle="Trier par"
               options={[
@@ -440,7 +440,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             onClick={handleResetFilters}
             className="flex items-center gap-1 text-primary font-bold hover:underline"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-icon-sm h-icon-sm" />
             {t("profile.sellerCatalog.reinitialiserLesFiltres2")}
           </button>
         )}

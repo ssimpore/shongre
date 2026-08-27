@@ -29,7 +29,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Nouveau message",
       type: "message.received",
-      icon: <MessageSquare className="w-3.5 h-3.5 text-info" />,
+      icon: <MessageSquare className="w-icon-sm h-icon-sm text-info" />,
       context: {
         type: "conversation",
         conversationId: "conv-101",
@@ -41,7 +41,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Réservation acceptée",
       type: "reservation.accepted",
-      icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
+      icon: <ShoppingBag className="w-icon-sm h-icon-sm text-success" />,
       context: {
         type: "transaction",
         transactionId: "tx-201",
@@ -51,7 +51,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Nouvelle commande",
       type: "order.created",
-      icon: <ShoppingBag className="w-3.5 h-3.5 text-success" />,
+      icon: <ShoppingBag className="w-icon-sm h-icon-sm text-success" />,
       context: {
         type: "transaction",
         transactionId: "tx-301",
@@ -61,7 +61,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Paiement échoué (Critique)",
       type: "payment.failed",
-      icon: <AlertCircle className="w-3.5 h-3.5 text-danger" />,
+      icon: <AlertCircle className="w-icon-sm h-icon-sm text-danger" />,
       context: {
         type: "transaction",
         transactionId: "tx-401",
@@ -70,7 +70,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Colis expédié",
       type: "fulfillment.shipped",
-      icon: <Package className="w-3.5 h-3.5 text-indigo-600" />,
+      icon: <Package className="w-icon-sm h-icon-sm text-indigo-600" />,
       context: {
         type: "transaction",
         transactionId: "tx-501",
@@ -80,7 +80,9 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Avis 5 étoiles reçu",
       type: "review.received",
-      icon: <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />,
+      icon: (
+        <Star className="w-icon-sm h-icon-sm text-amber-500 fill-amber-400" />
+      ),
       context: {
         type: "account",
         reviewerName: "Julien M.",
@@ -90,7 +92,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Abonnement Pro activé",
       type: "subscription.started",
-      icon: <DollarSign className="w-3.5 h-3.5 text-warning" />,
+      icon: <DollarSign className="w-icon-sm h-icon-sm text-warning" />,
       context: {
         type: "subscription",
         planId: "plan_pro_premium",
@@ -100,7 +102,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Signalement modérateur",
       type: "moderation.report_assigned",
-      icon: <ShieldAlert className="w-3.5 h-3.5 text-stone-700" />,
+      icon: <ShieldAlert className="w-icon-sm h-icon-sm text-stone-700" />,
       context: {
         type: "moderation",
         reportId: "9842",
@@ -116,7 +118,7 @@ export const NotificationDemoToolbar: React.FC = () => {
         className="w-full flex items-center justify-between text-xs font-bold hover:text-primary-on-dark transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400" />
+          <Sparkles className="w-icon-md h-icon-md text-amber-400" />
           <span>
             {t(
               "notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel",
@@ -124,9 +126,9 @@ export const NotificationDemoToolbar: React.FC = () => {
           </span>
         </div>
         {isExpanded ? (
-          <ChevronUp className="w-4 h-4" />
+          <ChevronUp className="w-icon-md h-icon-md" />
         ) : (
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-icon-md h-icon-md" />
         )}
       </button>
 

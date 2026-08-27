@@ -32,26 +32,26 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const resolvedCancelText = cancelText ?? t("common.cancel");
   const iconConfig = {
     danger: {
-      icon: <ShieldAlert className="w-6 h-6 text-danger" />,
+      icon: <ShieldAlert className="w-icon-xl h-icon-xl text-danger" />,
       btnVariant: "primary" as const,
       btnClass: "bg-danger hover:bg-danger text-white",
       bgClass: "bg-danger-surface border-danger-border",
     },
     warning: {
-      icon: <AlertTriangle className="w-6 h-6 text-warning" />,
+      icon: <AlertTriangle className="w-icon-xl h-icon-xl text-warning" />,
       btnVariant: "primary" as const,
       btnClass:
         "bg-warning hover:bg-warning-hover active:bg-warning-active text-white",
       bgClass: "bg-warning-surface border-warning-border",
     },
     primary: {
-      icon: <Info className="w-6 h-6 text-primary" />,
+      icon: <Info className="w-icon-xl h-icon-xl text-primary" />,
       btnVariant: "primary" as const,
       btnClass: "",
       bgClass: "bg-primary-light border-primary-border",
     },
     success: {
-      icon: <CheckCircle2 className="w-6 h-6 text-success" />,
+      icon: <CheckCircle2 className="w-icon-xl h-icon-xl text-success" />,
       btnVariant: "primary" as const,
       btnClass: "bg-success hover:bg-success text-white",
       bgClass: "bg-success-surface border-success-border",

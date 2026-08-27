@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../../../design-system";
 import { TaxonomyNode } from "../../../../../domains/taxonomy/taxonomy.types";
 import { taxonomyAdminRepository } from "../../../../../repositories/taxonomy.repository";
 import { Modal } from "../../../../../design-system/primitives/Modal";
@@ -79,7 +80,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
         {/* Safety Guarantees Notice */}
         <div className="p-3.5 bg-info-surface border border-info-border rounded-xl space-y-2 text-xs text-info">
           <div className="flex items-center gap-2 font-bold text-info">
-            <ShieldCheck className="w-4 h-4 text-info" />
+            <ShieldCheck className="w-icon-md h-icon-md text-info" />
             <span>
               {t("admin.deprecateNodeModal.garantiesDeRetrocompatibilite")}
             </span>
@@ -99,10 +100,12 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
           )}
           hint="Recommandé : redirige les recherches et suggestions vers une nouvelle catégorie active."
         >
-          <select
+          <Select
+            size="compact"
+            className="w-full"
+            labelledByAncestor
             value={replacementId}
             onChange={(e) => setReplacementId(e.target.value)}
-            className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
           >
             <option value="">
               {t(
@@ -114,13 +117,13 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
                 {r.name} [{r.level} - /{r.slug}]
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         {replacementId && (
           <div className="p-3 bg-bg-subtle rounded-xl border border-border-subtle flex items-center justify-between text-xs">
             <span className="font-semibold text-stone-600">{node.name}</span>
-            <ArrowRight className="w-4 h-4 text-primary" />
+            <ArrowRight className="w-icon-md h-icon-md text-primary" />
             <span className="font-bold text-primary">
               {allNodes.find((n) => n.id === replacementId)?.name}
             </span>
@@ -136,7 +139,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
             size="sm"
             onClick={handleDeprecate}
             disabled={isSubmitting}
-            leftIcon={<Archive className="w-4 h-4" />}
+            leftIcon={<Archive className="w-icon-md h-icon-md" />}
           >
             {isSubmitting
               ? "Dépréciation en cours..."

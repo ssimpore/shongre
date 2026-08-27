@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../../design-system";
 import { Calendar } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
@@ -63,10 +64,12 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
           label={t("messaging.pickupSchedulerModal.creneauHoraire")}
           required
         >
-          <select
+          <Select
+            size="compact"
+            className="w-full"
+            labelledByAncestor
             value={timeSlot}
             onChange={(e) => setTimeSlot(e.target.value)}
-            className="w-full h-control-md px-3 border border-border-base rounded-control bg-white text-xs font-semibold"
           >
             <option value="10h00 - 12h00">
               {t("messaging.pickupSchedulerModal.matinee10h0012h00")}
@@ -81,7 +84,7 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
             <option value="18h00 - 20h00">
               {t("messaging.pickupSchedulerModal.soiree18h0020h00")}
             </option>
-          </select>
+          </Select>
         </FormField>
 
         <FormField
@@ -108,7 +111,7 @@ export const PickupSchedulerModal: React.FC<PickupSchedulerModalProps> = ({
             fullWidth
             type="submit"
             isLoading={isSubmitting}
-            leftIcon={<Calendar className="w-4 h-4" />}
+            leftIcon={<Calendar className="w-icon-md h-icon-md" />}
           >
             {t("messaging.pickupSchedulerModal.confirmerLeRendezVous")}
           </Button>

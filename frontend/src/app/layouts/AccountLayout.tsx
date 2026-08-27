@@ -82,103 +82,103 @@ export const AccountLayout: React.FC = () => {
     {
       to: "/compte",
       label: "Vue d'ensemble",
-      icon: <User className="w-4 h-4" />,
+      icon: <User className="w-icon-md h-icon-md" />,
       end: true,
       visible: canAccessRoute("accountOverview"),
     },
     {
       to: "/compte/annonces",
       label: "Mes annonces",
-      icon: <List className="w-4 h-4" />,
+      icon: <List className="w-icon-md h-icon-md" />,
       count: myListingsCount,
       visible: canAccessRoute("accountListings"),
     },
     {
       to: "/compte/education",
       label: t("verticals.education.workspace"),
-      icon: <GraduationCap className="w-4 h-4 text-primary" />,
+      icon: <GraduationCap className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountCourse"),
     },
     {
       to: "/compte/emploi",
       label: t("employment.nav.candidate"),
-      icon: <Briefcase className="w-4 h-4 text-primary" />,
+      icon: <Briefcase className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountEmploymentCandidate"),
     },
     {
       to: "/compte/favoris",
       label: "Mes favoris",
-      icon: <Heart className="w-4 h-4" />,
+      icon: <Heart className="w-icon-md h-icon-md" />,
       count: favCount,
       visible: canAccessRoute("accountFavorites"),
     },
     {
       to: "/compte/recherches",
       label: "Recherches sauvegardées",
-      icon: <Search className="w-4 h-4" />,
+      icon: <Search className="w-icon-md h-icon-md" />,
       count: savedSearchCount,
       visible: canAccessRoute("accountSavedSearches"),
     },
     {
       to: "/compte/messages",
       label: "Messages & Offres",
-      icon: <MessageSquare className="w-4 h-4" />,
+      icon: <MessageSquare className="w-icon-md h-icon-md" />,
       count: unreadMsgCount,
       visible: canAccessRoute("accountMessages"),
     },
     {
       to: "/compte/notifications",
       label: "Notifications",
-      icon: <Bell className="w-4 h-4" />,
+      icon: <Bell className="w-icon-md h-icon-md" />,
       count: unreadNotifCount,
       visible: canAccessRoute("accountNotifications"),
     },
     {
       to: "/compte/achats",
       label: "Transactions & Paiements",
-      icon: <ShoppingBag className="w-4 h-4" />,
+      icon: <ShoppingBag className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountPurchases"),
     },
     {
       to: routes.workspace.finances(),
       label: "Paiements & Revenus",
-      icon: <BadgeEuro className="w-4 h-4" />,
+      icon: <BadgeEuro className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountFinances"),
     },
     {
       to: "/compte/verification",
       label: "Sécurité & Vérification",
-      icon: <Shield className="w-4 h-4 text-success" />,
+      icon: <Shield className="w-icon-md h-icon-md text-success" />,
       visible: canAccessRoute("accountVerification"),
     },
     {
       to: "/compte/securite-compte",
       label: "Connexion & sécurité",
-      icon: <KeyRound className="w-4 h-4 text-primary" />,
+      icon: <KeyRound className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountSecurity"),
     },
     {
       to: "/compte/support",
       label: "Aide & Assistance",
-      icon: <Headphones className="w-4 h-4" />,
+      icon: <Headphones className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountSupport"),
     },
     {
       to: routes.workspace.moderationAppeals(),
       label: "Décisions & Recours",
-      icon: <Scale className="w-4 h-4" />,
+      icon: <Scale className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountModerationAppeals"),
     },
     {
       to: "/compte/newsletter",
       label: "Newsletter & Alertes",
-      icon: <Mail className="w-4 h-4" />,
+      icon: <Mail className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountNewsletter"),
     },
     {
       to: "/compte/profil",
       label: "Mon profil & Coordonnées",
-      icon: <Settings className="w-4 h-4" />,
+      icon: <Settings className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountProfile"),
     },
   ].filter((item) => item.visible);
@@ -187,49 +187,49 @@ export const AccountLayout: React.FC = () => {
     {
       to: routes.immo.workspace(),
       label: "Espace Immo",
-      icon: <Building2 className="w-4 h-4 text-primary" />,
+      icon: <Building2 className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountRealEstate"),
     },
     {
       to: routes.auto.workspace(),
       label: "Espace Auto",
-      icon: <CarFront className="w-4 h-4 text-primary" />,
+      icon: <CarFront className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountAuto"),
     },
     {
       to: routes.courses.organization(),
       label: t("verticals.education.organizationWorkspace"),
-      icon: <GraduationCap className="w-4 h-4 text-primary" />,
+      icon: <GraduationCap className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountCourseOrganization"),
     },
     {
       to: routes.employment.recruiterWorkspace(),
       label: t("employment.nav.recruiter"),
-      icon: <Users className="w-4 h-4 text-primary" />,
+      icon: <Users className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountEmploymentRecruiter"),
     },
     {
       to: routes.workspace.pro.dashboard(),
       label: "Dashboard Pro",
-      icon: <BarChart3 className="w-4 h-4 text-primary" />,
+      icon: <BarChart3 className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountProDashboard"),
     },
     {
       to: routes.workspace.pro.storefront(),
       label: "Personnaliser ma vitrine",
-      icon: <Briefcase className="w-4 h-4 text-primary" />,
+      icon: <Briefcase className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountProStorefront"),
     },
     {
       to: routes.workspace.pro.subscriptions(),
       label: "Mon forfait & Facturation",
-      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+      icon: <Sparkles className="w-icon-md h-icon-md text-amber-500" />,
       visible: canAccessRoute("accountProSubscriptions"),
     },
     {
       to: routes.workspace.pro.finances(),
       label: "Finances de l’organisation",
-      icon: <BadgeEuro className="w-4 h-4 text-success" />,
+      icon: <BadgeEuro className="w-icon-md h-icon-md text-success" />,
       visible: canAccessRoute("accountProFinances"),
     },
   ].filter((item) => item.visible);
@@ -250,7 +250,6 @@ export const AccountLayout: React.FC = () => {
                 name={accountName}
                 size="md"
                 isVerified={currentUser?.isVerified}
-                isPro={isPro}
               />
               <div className="min-w-0">
                 <div
@@ -346,7 +345,6 @@ export const AccountLayout: React.FC = () => {
                 name={accountName}
                 size="xl"
                 isVerified={currentUser?.isVerified}
-                isPro={isPro}
               />
               <div className="min-w-0 flex-1">
                 <div
@@ -450,7 +448,7 @@ export const AccountLayout: React.FC = () => {
                   }}
                   className="w-full min-h-control-sm flex items-center gap-2.5 px-3 text-xs font-semibold text-danger hover:bg-danger-surface rounded-control motion-interactive cursor-pointer text-left"
                 >
-                  <LogOut className="w-4 h-4 text-danger" />
+                  <LogOut className="w-icon-md h-icon-md text-danger" />
                   <span>{t("shell.accountLayout.seDeconnecter")}</span>
                 </button>
               </div>

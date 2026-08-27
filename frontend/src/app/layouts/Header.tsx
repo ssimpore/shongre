@@ -408,7 +408,9 @@ export const Header: React.FC = () => {
                 tabIndex={isHeaderSearchExpanded ? -1 : undefined}
                 variant="pro"
                 size="compact"
-                leftIcon={<PlusCircle className="w-4 h-4 text-primary" />}
+                leftIcon={
+                  <PlusCircle className="w-icon-md h-icon-md text-primary" />
+                }
                 className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
               >
                 {/* Tablet keeps the publish action but not its label — it is the
@@ -425,7 +427,7 @@ export const Header: React.FC = () => {
               className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
               aria-label="Favoris"
             >
-              <Heart className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
+              <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {favCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {favCount}
@@ -439,7 +441,7 @@ export const Header: React.FC = () => {
               className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
               aria-label="Messagerie"
             >
-              <MessageSquare className="w-5 h-5 group-hover:scale-110 transition-transform duration-fast" />
+              <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {unreadMessagesCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {unreadMessagesCount}
@@ -472,13 +474,12 @@ export const Header: React.FC = () => {
                     name={currentUser.name}
                     size="sm"
                     isVerified={currentUser.isVerified}
-                    isPro={isProSeller(currentUser)}
                   />
                   <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-25 truncate">
                     {currentUser.name.split(" ")[0]}
                   </span>
                   <ChevronDown
-                    className={`w-3.5 h-3.5 text-stone-400 hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? "rotate-180" : ""}`}
+                    className={`w-icon-sm h-icon-sm text-stone-400 hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? "rotate-180" : ""}`}
                   />
                 </button>
               ) : (
@@ -486,7 +487,7 @@ export const Header: React.FC = () => {
                   to="/connexion"
                   variant="ghost"
                   size="compact"
-                  leftIcon={<User className="w-4 h-4" />}
+                  leftIcon={<User className="w-icon-md h-icon-md" />}
                   className="px-3"
                 >
                   Se connecter
@@ -532,7 +533,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <User className="w-4 h-4 text-stone-400" />
+                      <User className="w-icon-md h-icon-md text-stone-400" />
                       {t("shell.header.tableauDeBordCompte")}
                     </Link>
                     <Link
@@ -540,7 +541,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <List className="w-4 h-4 text-stone-400" />
+                      <List className="w-icon-md h-icon-md text-stone-400" />
                       Mes annonces (
                       {
                         storageService
@@ -554,7 +555,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <Heart className="w-4 h-4 text-stone-400" />
+                      <Heart className="w-icon-md h-icon-md text-stone-400" />
                       Mes favoris
                     </Link>
                     <Link
@@ -562,7 +563,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                     >
-                      <ShoppingBag className="w-4 h-4 text-stone-400" />
+                      <ShoppingBag className="w-icon-md h-icon-md text-stone-400" />
                       Achats & Transactions
                     </Link>
 
@@ -575,7 +576,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-primary hover:bg-primary-light transition-colors"
                     >
-                      <User className="w-4 h-4 text-primary" />
+                      <User className="w-icon-md h-icon-md text-primary" />
                       {isProSeller(currentUser)
                         ? "Voir ma vitrine boutique"
                         : "Voir mon profil public"}
@@ -588,7 +589,7 @@ export const Header: React.FC = () => {
                       onClick={() => setIsAccountMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-bg-subtle transition-colors"
                     >
-                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <Sparkles className="w-icon-md h-icon-md text-amber-500" />
                       Solutions & Abonnements Pro
                     </Link>
 
@@ -600,7 +601,7 @@ export const Header: React.FC = () => {
                       }}
                       className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-danger" />
+                      <LogOut className="w-icon-md h-icon-md text-danger" />
                       {t("shell.header.deconnexion")}
                     </button>
                   </div>
@@ -623,9 +624,9 @@ export const Header: React.FC = () => {
               className={`lg:hidden h-control-md w-control-md rounded-control text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
             >
               {isMobileMenuOpen ? (
-                <X className="w-6 h-6 text-stone-900" />
+                <X className="w-icon-xl h-icon-xl text-stone-900" />
               ) : (
-                <Menu className="w-6 h-6 text-stone-900" />
+                <Menu className="w-icon-xl h-icon-xl text-stone-900" />
               )}
             </button>
           </div>
@@ -716,7 +717,7 @@ export const Header: React.FC = () => {
                   className={`h-control-sm w-control-sm touch-square rounded-pill text-stone-500 hover:text-stone-900 hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
                   aria-label={t("shell.header.fermerLeMenuMobile")}
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-icon-md h-icon-md" />
                 </button>
               </div>
 
@@ -731,7 +732,6 @@ export const Header: React.FC = () => {
                         name={currentUser.name}
                         size="md"
                         isVerified={currentUser.isVerified}
-                        isPro={isProSeller(currentUser)}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-sm text-stone-900 truncate">
@@ -811,10 +811,10 @@ export const Header: React.FC = () => {
                     className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
-                      <MapIcon className="w-4 h-4 text-primary" />
+                      <MapIcon className="w-icon-md h-icon-md text-primary" />
                       {t("shell.header.explorerSurLaCarte")}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-primary" />
+                    <ChevronRight className="w-icon-md h-icon-md text-primary" />
                   </Link>
 
                   {/* Bons plans & Prix réduits */}
@@ -824,10 +824,10 @@ export const Header: React.FC = () => {
                     className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <Sparkles className="w-icon-md h-icon-md text-amber-500" />
                       {t("shell.header.bonsPlansPrixReduits")}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-amber-400" />
+                    <ChevronRight className="w-icon-md h-icon-md text-amber-400" />
                   </Link>
 
                   {/* Boutiques Professionnelles */}
@@ -837,10 +837,10 @@ export const Header: React.FC = () => {
                     className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                   >
                     <span className="flex items-center gap-2.5">
-                      <Briefcase className="w-4 h-4 text-primary" />
+                      <Briefcase className="w-icon-md h-icon-md text-primary" />
                       Boutiques Professionnelles
                     </span>
-                    <ChevronRight className="w-4 h-4 text-stone-400" />
+                    <ChevronRight className="w-icon-md h-icon-md text-stone-400" />
                   </Link>
 
                   {/* Categories Collapsible */}
@@ -853,11 +853,11 @@ export const Header: React.FC = () => {
                       className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
                     >
                       <span className="flex items-center gap-2.5">
-                        <Layers className="w-4 h-4 text-primary" />
+                        <Layers className="w-icon-md h-icon-md text-primary" />
                         Catégories ({TAXONOMY.length})
                       </span>
                       <ChevronDown
-                        className={`w-4 h-4 text-stone-400 transition-transform ${
+                        className={`w-icon-md h-icon-md text-stone-400 transition-transform ${
                           isMobileCategoriesOpen ? "rotate-180" : ""
                         }`}
                       />
@@ -897,7 +897,7 @@ export const Header: React.FC = () => {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
-                        <User className="w-4 h-4 text-stone-500" />
+                        <User className="w-icon-md h-icon-md text-stone-500" />
                         {t("shell.header.tableauDeBord")}
                       </Link>
                       <Link
@@ -905,7 +905,7 @@ export const Header: React.FC = () => {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
-                        <List className="w-4 h-4 text-stone-500" />
+                        <List className="w-icon-md h-icon-md text-stone-500" />
                         {t("shell.header.mesAnnonces")}
                       </Link>
                       <Link
@@ -913,7 +913,7 @@ export const Header: React.FC = () => {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
-                        <Heart className="w-4 h-4 text-stone-500" />
+                        <Heart className="w-icon-md h-icon-md text-stone-500" />
                         Mes favoris ({favCount})
                       </Link>
                       <Link
@@ -921,7 +921,7 @@ export const Header: React.FC = () => {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
                       >
-                        <ShoppingBag className="w-4 h-4 text-stone-500" />
+                        <ShoppingBag className="w-icon-md h-icon-md text-stone-500" />
                         Achats & Transactions
                       </Link>
                       <Link
@@ -929,7 +929,7 @@ export const Header: React.FC = () => {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-warning hover:bg-warning-surface transition-colors"
                       >
-                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <Sparkles className="w-icon-md h-icon-md text-amber-500" />
                         Solutions Pro
                       </Link>
                       <button
@@ -940,7 +940,7 @@ export const Header: React.FC = () => {
                         }}
                         className="w-full touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
                       >
-                        <LogOut className="w-4 h-4 text-danger" />
+                        <LogOut className="w-icon-md h-icon-md text-danger" />
                         {t("shell.header.deconnexion")}
                       </button>
                     </div>

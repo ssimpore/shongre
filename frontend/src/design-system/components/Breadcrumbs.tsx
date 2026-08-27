@@ -19,7 +19,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => (
   <nav
     aria-label="Fil d'Ariane"
-    className={cn("flex items-center text-xs text-stone-500", className)}
+    className={cn("flex items-center text-xs text-text-muted", className)}
   >
     <ol className="flex flex-wrap items-center gap-1.5">
       {items.map((item, index) => {
@@ -32,7 +32,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             {item.href && !isLast ? (
               <Link
                 to={item.href}
-                className="inline-flex min-h-6 items-center font-medium motion-interactive hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-6 items-center font-medium motion-interactive hover:text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {item.label}
               </Link>
@@ -40,7 +40,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               <span
                 className={
                   isLast
-                    ? "max-w-60 truncate font-bold text-stone-900"
+                    ? "max-w-60 truncate font-bold text-text-main"
                     : "font-medium"
                 }
                 title={isLast ? item.label : undefined}
@@ -52,7 +52,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             {!isLast && (
               <ChevronRight
                 aria-hidden="true"
-                className="h-icon-sm w-icon-sm shrink-0 text-stone-400"
+                className="h-icon-sm w-icon-sm shrink-0 text-text-disabled"
               />
             )}
           </li>

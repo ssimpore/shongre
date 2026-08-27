@@ -353,10 +353,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             size="sm"
             onClick={() => navigate("/admin/crm/pipeline")}
           >
-            <ArrowLeft className="h-4 w-4" /> Pipeline
+            <ArrowLeft className="h-icon-md w-icon-md" /> Pipeline
           </Button>
           <Button size="sm" onClick={() => void load()}>
-            <RefreshCw className="h-4 w-4" /> Réessayer
+            <RefreshCw className="h-icon-md w-icon-md" /> Réessayer
           </Button>
         </div>
       </section>
@@ -371,7 +371,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             to="/admin/crm/pipeline"
             className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
           >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Pipeline
+            <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
+            Pipeline
           </Link>
           <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0">
@@ -390,16 +391,16 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-400">
                 <span className="inline-flex items-center gap-1.5">
-                  <Building2 className="h-3.5 w-3.5" />{" "}
+                  <Building2 className="h-icon-sm w-icon-sm" />{" "}
                   {opportunity.accountName ?? "Sans entreprise"}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <UserRound className="h-3.5 w-3.5" />{" "}
+                  <UserRound className="h-icon-sm w-icon-sm" />{" "}
                   {opportunity.ownerName ?? "Non assignée"}
                 </span>
                 {opportunity.expectedCloseDate && (
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-3.5 w-3.5" /> Clôture{" "}
+                    <CalendarDays className="h-icon-sm w-icon-sm" /> Clôture{" "}
                     {new Intl.DateTimeFormat(currentLocale, {
                       day: "numeric",
                       month: "long",
@@ -429,7 +430,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
                   onClick={() => setNoteOpen(true)}
                 >
-                  <MessageSquareText className="h-4 w-4" /> Ajouter une note
+                  <MessageSquareText className="h-icon-md w-icon-md" /> Ajouter
+                  une note
                 </Button>
                 <Button
                   variant="outline"
@@ -438,7 +440,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   onClick={() => setQuoteOpen(true)}
                   disabled={!opportunity.accountId}
                 >
-                  <FileText className="h-4 w-4" /> Devis
+                  <FileText className="h-icon-md w-icon-md" /> Devis
                 </Button>
                 {opportunity.status === "open" && (
                   <Button
@@ -446,7 +448,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     size="sm"
                     onClick={() => setCloseMode("won")}
                   >
-                    <CheckCircle2 className="h-4 w-4" /> Gagnée
+                    <CheckCircle2 className="h-icon-md w-icon-md" /> Gagnée
                   </Button>
                 )}
                 {opportunity.status === "open" && (
@@ -456,7 +458,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
                     onClick={() => setCloseMode("lost")}
                   >
-                    <XCircle className="h-4 w-4" /> Perdue
+                    <XCircle className="h-icon-md w-icon-md" /> Perdue
                   </Button>
                 )}
               </div>
@@ -487,7 +489,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-full border-2 text-micro font-black ${current ? "border-primary bg-primary text-white ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-white" : "border-stone-600 bg-stone-900 text-stone-400"}`}
                   >
                     {complete ? (
-                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      <Check
+                        className="h-icon-sm w-icon-sm"
+                        aria-hidden="true"
+                      />
                     ) : (
                       index + 1
                     )}
@@ -521,13 +526,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => setNoteOpen(true)}
               >
-                <Plus className="h-4 w-4" /> Note
+                <Plus className="h-icon-md w-icon-md" /> Note
               </Button>
             </div>
             <div className="p-5">
               {activities.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-stone-200 p-8 text-center">
-                  <Clock3 className="mx-auto h-6 w-6 text-stone-400" />
+                  <Clock3 className="mx-auto h-icon-xl w-icon-xl text-stone-400" />
                   <p className="mt-2 text-xs font-bold text-stone-700">
                     Aucune activité
                   </p>
@@ -615,7 +620,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                       aria-label={`Marquer « ${task.title} » comme terminée`}
                       className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${task.status === "completed" ? "border-success-border bg-success-surface text-success" : "border-stone-200 text-stone-400 hover:border-success-border hover:text-success"}`}
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="h-icon-md w-icon-md" />
                     </button>
                     <div className="min-w-0 flex-1">
                       <p
@@ -655,7 +660,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 onClick={() => setQuoteOpen(true)}
                 disabled={!opportunity.accountId}
               >
-                <Plus className="h-4 w-4" /> Créer
+                <Plus className="h-icon-md w-icon-md" /> Créer
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
@@ -670,7 +675,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     className="flex items-center gap-3 py-3"
                   >
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
-                      <FileText className="h-4 w-4" />
+                      <FileText className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <strong className="block truncate text-xs">
@@ -735,7 +740,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
           <section className="rounded-2xl border border-stone-800 bg-stone-950 p-4 text-white shadow-xs">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Sparkles className="h-icon-md w-icon-md text-primary" />
               <h2 className="text-sm font-black">Assistant commercial</h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-stone-400">
@@ -743,7 +748,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               autorisé par votre tenant.
             </p>
             <div className="mt-3 rounded-xl border border-stone-800 bg-stone-900 p-3 text-micro text-stone-400">
-              <Bot className="mb-1.5 h-4 w-4 text-stone-500" />
+              <Bot className="mb-1.5 h-icon-md w-icon-md text-stone-500" />
               Aucun fournisseur IA personnel actif. Le CRM reste entièrement
               fonctionnel sans IA.
             </div>
@@ -753,13 +758,14 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               size="sm"
               className="mt-3 w-full border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
             >
-              <Settings2 className="h-4 w-4" /> Configurer les fournisseurs
+              <Settings2 className="h-icon-md w-icon-md" /> Configurer les
+              fournisseurs
             </Button>
           </section>
 
           <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-primary" />
+              <Mail className="h-icon-md w-icon-md text-primary" />
               <h2 className="text-sm font-black text-stone-950">
                 Communication
               </h2>
@@ -774,7 +780,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               size="sm"
               className="mt-3 w-full"
             >
-              <Mail className="h-4 w-4" /> Connecter une messagerie
+              <Mail className="h-icon-md w-icon-md" /> Connecter une messagerie
             </Button>
           </section>
         </aside>
@@ -914,7 +920,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           {closeMode === "won" ? (
             <div className="rounded-xl border border-success-border bg-success-surface p-4">
               <div className="flex items-center gap-2 font-black text-success">
-                <CheckCircle2 className="h-5 w-5" /> Contrat de{" "}
+                <CheckCircle2 className="h-icon-lg w-icon-lg" /> Contrat de{" "}
                 {money(
                   opportunity.amount.amountMinor,
                   opportunity.amount.currency,

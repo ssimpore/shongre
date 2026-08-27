@@ -36,7 +36,7 @@ export const AutoVehicleCard: React.FC<Props> = ({
   const { currentLocale } = useMarketLocation();
 
   return (
-    <article className="group overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs transition-shadow hover:shadow-card">
+    <article className="group overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs transition-shadow hover:shadow-md">
       <div
         className={
           compact

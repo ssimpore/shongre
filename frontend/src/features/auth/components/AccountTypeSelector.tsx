@@ -40,7 +40,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
                 : "bg-stone-100 text-stone-700"
             }`}
           >
-            <User className="w-5 h-5" />
+            <User className="w-icon-lg h-icon-lg" />
           </div>
 
           <div
@@ -51,7 +51,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
             }`}
           >
             {selectedType === "individual" && (
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-icon-md h-icon-md" />
             )}
           </div>
         </div>
@@ -65,17 +65,17 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+            <CheckCircle2 className="w-icon-sm h-icon-sm text-success shrink-0" />
             <span>{t("auth.accountTypeSelector.depotDAnnoncesGratuitEt")}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+            <CheckCircle2 className="w-icon-sm h-icon-sm text-success shrink-0" />
             <span>
               {t("auth.accountTypeSelector.paiementSecuriseAvecSequestre")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
+            <CheckCircle2 className="w-icon-sm h-icon-sm text-success shrink-0" />
             <span>
               {t("auth.accountTypeSelector.messagerieInstantaneeDirecte")}
             </span>
@@ -101,7 +101,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
                 : "bg-stone-100 text-stone-700"
             }`}
           >
-            <Briefcase className="w-5 h-5" />
+            <Briefcase className="w-icon-lg h-icon-lg" />
           </div>
 
           <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
               }`}
             >
               {selectedType === "professional" && (
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-icon-md h-icon-md" />
               )}
             </div>
           </div>
@@ -131,19 +131,19 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
 
         <div className="mt-auto pt-3 border-t border-stone-100 space-y-1.5 text-micro font-medium text-stone-600">
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+            <ShieldCheck className="w-icon-sm h-icon-sm text-primary shrink-0" />
             <span>
               {t("auth.accountTypeSelector.badgeOfficielVendeurProVerifie")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Store className="w-3.5 h-3.5 text-primary shrink-0" />
+            <Store className="w-icon-sm h-icon-sm text-primary shrink-0" />
             <span>
               {t("auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable")}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
+            <Zap className="w-icon-sm h-icon-sm text-primary shrink-0" />
             <span>
               {t("auth.accountTypeSelector.facturationAutomatiqueAvecTva")}
             </span>

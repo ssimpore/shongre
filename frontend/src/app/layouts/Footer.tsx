@@ -74,7 +74,7 @@ const FooterLink: React.FC<{
     >
       <span>{children}</span>
       <ChevronRight
-        className="h-3.5 w-3.5 shrink-0 text-stone-600 transition-all duration-fast group-hover:translate-x-0.5 group-hover:text-primary-on-dark"
+        className="h-icon-sm w-icon-sm shrink-0 text-stone-600 transition-all duration-fast group-hover:translate-x-0.5 group-hover:text-primary-on-dark"
         aria-hidden="true"
       />
     </Link>
@@ -191,7 +191,7 @@ const FooterColumn: React.FC<{
             <span>{title}</span>
           </span>
           <ChevronDown
-            className={`h-4 w-4 shrink-0 transition-transform duration-normal md:hidden ${
+            className={`h-icon-md w-icon-md shrink-0 transition-transform duration-normal md:hidden ${
               isOpen ? "rotate-180 text-primary-on-dark" : "text-stone-400"
             }`}
             aria-hidden="true"

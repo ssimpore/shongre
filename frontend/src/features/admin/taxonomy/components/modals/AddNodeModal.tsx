@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Select } from "../../../../../design-system";
 import {
   TaxonomyNode,
   TaxonomyLevel,
@@ -231,23 +232,27 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           <FormField label="Statut initial">
-            <select
+            <Select
+              size="compact"
+              className="w-full"
+              labelledByAncestor
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
-              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="draft">
                 Brouillon (non visible publiquement)
               </option>
               <option value="active">Actif</option>
-            </select>
+            </Select>
           </FormField>
 
           <FormField label={t("admin.addNodeModal.schemaDEtat")}>
-            <select
+            <Select
+              size="compact"
+              className="w-full"
+              labelledByAncestor
               value={conditionScheme}
               onChange={(e) => setConditionScheme(e.target.value as any)}
-              className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold"
             >
               <option value="consumer_product">Produit standard</option>
               <option value="vehicle">
@@ -257,7 +262,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
               <option value="professional">Professionnel</option>
               <option value="job">Emploi</option>
               <option value="service">Service</option>
-            </select>
+            </Select>
           </FormField>
         </div>
 

@@ -94,7 +94,7 @@ export const StaffMfaPage: React.FC = () => {
       <div className="rounded-3xl border border-border-base bg-white p-6 shadow-sm sm:p-8">
         <header className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+            <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
           </div>
           <h1 className="mt-4 text-2xl font-black text-stone-950">
             Sécurité de l’espace interne
@@ -113,7 +113,7 @@ export const StaffMfaPage: React.FC = () => {
 
         {status?.enabled && status.sessionVerified ? (
           <div className="mt-6 rounded-2xl border border-success-border bg-success-surface p-5 text-center">
-            <CheckCircle2 className="mx-auto h-6 w-6 text-success" />
+            <CheckCircle2 className="mx-auto h-icon-xl w-icon-xl text-success" />
             <p className="mt-2 text-sm font-bold text-stone-900">
               Cette session est vérifiée.
             </p>
@@ -154,7 +154,7 @@ export const StaffMfaPage: React.FC = () => {
               devez l’activer avant d’accéder aux données opérationnelles.
             </Notice>
             <Button className="w-full" onClick={beginSetup} disabled={busy}>
-              <KeyRound className="h-4 w-4" />
+              <KeyRound className="h-icon-md w-icon-md" />
               {busy ? "Préparation…" : "Configurer mon authentificateur"}
             </Button>
           </div>
@@ -181,7 +181,7 @@ export const StaffMfaPage: React.FC = () => {
                     void navigator.clipboard.writeText(setup.secret)
                   }
                 >
-                  <Copy className="h-4 w-4" />
+                  <Copy className="h-icon-md w-icon-md" />
                 </Button>
               </div>
               <a
@@ -221,7 +221,7 @@ export const StaffMfaPage: React.FC = () => {
                   )
                 }
               >
-                <Copy className="h-4 w-4" /> Copier les codes
+                <Copy className="h-icon-md w-icon-md" /> Copier les codes
               </Button>
             </section>
 

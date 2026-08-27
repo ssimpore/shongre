@@ -61,7 +61,7 @@ export function ListingCard({
   const linkContent = (
     <>
       <div
-        className={`${horizontal ? "listing-card-list-image" : "aspect-[4/3] w-full"} relative overflow-hidden bg-bg-muted`}
+        className={`${horizontal ? "listing-card-list-image" : "aspect-media w-full"} relative overflow-hidden bg-bg-muted`}
       >
         {image ??
           (listing.imageUrl ? (
@@ -78,7 +78,7 @@ export function ListingCard({
         {(listing.photoCount ?? 0) > 1 ? (
           <span
             aria-label={`${listing.photoCount} photos`}
-            className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-control bg-stone-900/70 px-2 py-1 text-micro text-white backdrop-blur-xs"
+            className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs"
           >
             <SemanticIcon name="camera" size="xs" />
             {listing.photoCount}

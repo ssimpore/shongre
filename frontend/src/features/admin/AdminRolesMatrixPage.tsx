@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Select } from "../../design-system";
 import {
   Search,
   Check,
@@ -134,7 +135,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
       {/* Role Power Spectrum Cards */}
       <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-xs">
         <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-stone-700" />
+          <ShieldCheck className="w-icon-md h-icon-md text-stone-700" />
           Spectre d'Élévation des Privilèges ({roleStats.length} Rôles Définis)
         </h2>
 
@@ -188,7 +189,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
         <div className="flex-1 flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -204,13 +205,13 @@ export const AdminRolesMatrixPage: React.FC = () => {
           </div>
 
           {/* Category Selector */}
-          <select
+          <Select
+            className="w-auto"
             aria-label={t(
               "admin.adminRolesMatrixPage.filtrerLesPermissionsParCategorie",
             )}
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="py-2 px-3 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary bg-white h-control-touch"
           >
             <option value="all">
               {t("admin.adminRolesMatrixPage.toutesLesCategories")}
@@ -232,7 +233,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
             <option value="market">
               {t("admin.adminRolesMatrixPage.marchesTerritoires")}
             </option>
-          </select>
+          </Select>
         </div>
 
         {/* Sensitive toggle */}
@@ -243,7 +244,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
             onChange={(e) => setShowSensitiveOnly(e.target.checked)}
             className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary"
           />
-          <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+          <AlertTriangle className="w-icon-sm h-icon-sm text-warning" />
           <span>Permissions sensibles uniquement</span>
         </label>
       </div>
@@ -319,9 +320,9 @@ export const AdminRolesMatrixPage: React.FC = () => {
                         >
                           <div className="flex items-center gap-2">
                             {isExpanded ? (
-                              <ChevronDown className="w-4 h-4 text-stone-500" />
+                              <ChevronDown className="w-icon-md h-icon-md text-stone-500" />
                             ) : (
-                              <ChevronRight className="w-4 h-4 text-stone-500" />
+                              <ChevronRight className="w-icon-md h-icon-md text-stone-500" />
                             )}
                             <span className="uppercase text-xs tracking-wider text-stone-700">
                               Catégorie : {group.category} (
@@ -379,11 +380,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                   >
                                     {isGranted ? (
                                       <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-success-surface text-success">
-                                        <Check className="w-3.5 h-3.5 stroke-3" />
+                                        <Check className="w-icon-sm h-icon-sm stroke-3" />
                                       </span>
                                     ) : (
                                       <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-stone-300">
-                                        <X className="w-3 h-3 stroke-2" />
+                                        <X className="w-icon-xs h-icon-xs stroke-2" />
                                       </span>
                                     )}
                                   </td>

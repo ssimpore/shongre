@@ -64,7 +64,6 @@ export interface AvatarProps {
   name: string;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
   isVerified?: boolean;
-  isPro?: boolean;
   className?: string;
 }
 
@@ -73,7 +72,6 @@ export const Avatar: React.FC<AvatarProps> = ({
   name,
   size = "md",
   isVerified = false,
-  isPro = false,
   className = "",
 }) => {
   const { t } = useTranslation();

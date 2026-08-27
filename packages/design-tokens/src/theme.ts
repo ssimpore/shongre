@@ -31,6 +31,14 @@ export const themeColors = {
   "text-inverse": "#FFFFFF",
   focus: "#C4431F",
   overlay: "rgb(28 25 23 / 0.6)",
+  /* The scrim behind small white text sitting directly on a photo — media
+     counters, carousel controls, gallery pills. Denser than `overlay` (the
+     modal backdrop) because it has to carry 11px type at any photo brightness.
+     Named rather than written as `bg-stone-900/70` at each call site: those
+     surfaces are deliberately dark in *either* theme, so they must not follow
+     the neutral ramp when a dark theme inverts it. Ten different ad-hoc values
+     were in use for this one role before it had a name. */
+  "overlay-scrim": "rgb(28 25 23 / 0.7)",
   scrollbar: "#D6D3CD",
   "scrollbar-hover": "#A8A29E",
   "stone-50": "#FAFAF9",
@@ -256,6 +264,12 @@ export const themeSpacing = {
   "page-loading-min": "70vh",
   "dialog-viewport-max-height": "90vh",
   "dialog-viewport-max-width": "90vw",
+  /* The shell heights for Modal and Drawer. `dvh` rather than the `vh` used by
+     the media-preview tokens above: a dialog has to fit *inside* the visible
+     viewport while mobile browser chrome is showing, and `vh` ignores it — the
+     drawer's footer actions ended up under Safari's toolbar. */
+  "dialog-modal-max-height": "calc(100dvh - 2rem)",
+  "dialog-drawer-max-height": "90dvh",
   "media-preview-max-height": "80vh",
   "side-sheet-height": "100dvh",
   "safe-area-bottom": "env(safe-area-inset-bottom)",
@@ -298,6 +312,9 @@ export const themeSpacing = {
  * feature modules never encode sidebar or aside measurements independently.
  */
 export const themeGridTemplates = {
+  /* The generic responsive card grid: as many equal columns as fit, never
+     narrower than 16rem, and never wider than the container on one column. */
+  "auto-fit-md": "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
   "sidebar-compact": "14rem minmax(0, 1fr)",
   sidebar: "16rem minmax(0, 1fr)",
   "sidebar-wide": "19rem minmax(0, 1fr)",
@@ -347,6 +364,17 @@ export const themeGridTemplates = {
 } as const;
 
 /** Semantic 4px spacing scale shared by CSS utilities and React Native. */
+/**
+ * Media aspect ratios.
+ *
+ * `media` is the listing-card photo well. It was written as `aspect-[4/3]` in
+ * both the card and its loading skeleton, which meant the placeholder and the
+ * real card were two independent literals that had to be kept equal by hand.
+ */
+export const themeAspect = {
+  media: "4 / 3",
+} as const;
+
 export const themeSpaceScale = {
   none: "0rem",
   xs: "0.25rem",

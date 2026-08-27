@@ -137,9 +137,9 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                 aria-expanded={isExpanded}
               >
                 {isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5" />
+                  <ChevronDown className="w-icon-sm h-icon-sm" />
                 ) : (
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-icon-sm h-icon-sm" />
                 )}
               </button>
             ) : (
@@ -159,7 +159,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
                 {/* shortLabel pill if exists */}
                 {node.shortLabel && node.shortLabel !== node.name && (
-                  <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.2 rounded-full font-normal">
+                  <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.5 rounded-full font-normal">
                     {node.shortLabel}
                   </span>
                 )}
@@ -167,12 +167,12 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
               {/* Status indicators */}
               {node.status === "draft" && (
-                <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.2 rounded font-bold uppercase">
+                <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-bold uppercase">
                   Brouillon
                 </span>
               )}
               {node.status === "deprecated" && (
-                <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.2 rounded font-bold uppercase flex items-center gap-0.5">
+                <span className="shrink-0 text-micro bg-danger-surface text-danger border border-danger-border px-1.5 py-0.5 rounded font-bold uppercase flex items-center gap-0.5">
                   <Archive className="w-2.5 h-2.5" />
                   {t("admin.taxonomyHierarchyTree.deprecie")}
                 </span>
@@ -195,7 +195,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                   name: node.name,
                 })}
               >
-                <ArrowUp className="w-3 h-3" />
+                <ArrowUp className="w-icon-xs h-icon-xs" />
               </button>
             )}
             {index < totalSiblings - 1 && (
@@ -207,7 +207,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                   name: node.name,
                 })}
               >
-                <ArrowDown className="w-3 h-3" />
+                <ArrowDown className="w-icon-xs h-icon-xs" />
               </button>
             )}
 
@@ -222,7 +222,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
                   { name: node.name },
                 )}
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-icon-xs h-icon-xs" />
               </button>
             )}
 

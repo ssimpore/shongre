@@ -55,7 +55,13 @@ that merely rename a `div`.
   `display-*`, `heading-*`, `body-*`, `label-*`, `caption`, and `overline` roles.
 - Spacing follows the owned 4px base; controls, icons, avatars, listing cards,
   and page containers have semantic size tokens.
-- Elevation uses the warm `shadow-*` ramp plus `dropdown`, `overlay`, and `sticky`.
+- Elevation uses the warm `shadow-*` ramp plus `dropdown`, `overlay`, and
+  `sticky`. There is no `shadow-card`; a card's elevation is a step on the ramp
+  (`xs` at rest, `md` on hover). `overlay-scrim` is the one scrim behind small
+  white text on a photo — media counters, gallery controls — and is deliberately
+  dark in either theme, so it must not be written as a neutral-ramp shade.
+- Media aspect ratios are named: `aspect-media` is the listing-card photo well,
+  shared by the card and its loading skeleton so the two cannot drift.
 - Stacking uses `z-raised`, `z-sticky`, `z-dropdown`, `z-popover`, `z-header`,
   `z-drawer`, `z-modal`, `z-toast`, and `z-tooltip`. Numeric z-index is forbidden.
 - Responsive behavior follows the explicit `sm`, `md`, `lg`, `xl`, and `2xl`
@@ -67,6 +73,13 @@ that merely rename a `div`.
 
 - Use semantic elements first. Icon-only controls require an accessible name.
 - Use FormField to connect labels, descriptions, validation, and errors.
+- `Button`, `Select` and `DropdownMenu` require an accessible name in the type
+  system. A `Select` named by an ancestor — a caller's wrapping `<label>`, or a
+  `FormField` that injects the `id` — states that with `labelledByAncestor`
+  rather than duplicating the visible text into `aria-label`.
+- Listbox and menu surfaces owe the keyboard arrow keys, Home/End, Enter and an
+  Escape that returns focus to the trigger. `DropdownMenu` implements that once;
+  do not hand-roll a disclosure that only responds to Tab.
 - Use shared Tabs, DropdownMenu, Modal/Drawer, and dialog behavior rather than
   recreating keyboard/focus logic in a feature.
 - Interactive state cannot rely on color alone. Preserve focus-visible outlines.
@@ -98,6 +111,19 @@ radius/shadow/type size, numeric duration, or numeric z-index.
 `npm run check:design-system` and `npm run lint` validate semantic colors,
 declared token names, typography floors, raw hex utilities, arbitrary radii and
 shadows, numeric stacking, numeric motion, and arbitrary icon stroke widths.
+
+The declared-token check covers every namespace a project token can live in —
+`--color-*`, `--spacing-*`, `--shadow-*`, `--radius-*`, `--container-*` — not
+just colour. Tailwind emits nothing for a class whose token is undeclared, so
+`shadow-card`, `bg-bg-page` and `h-control-compact` all shipped as inert
+classes: real cards with no elevation, and hover transitions animating nothing.
+
+It walks `packages/ui/src` and `packages/features/src` as well as `src`, because
+`src/index.css` declares those trees as `@source` and Tailwind compiles them into
+the same stylesheet. Keep the `ROOTS` list in step with the `@source` directives:
+a violation in `Button.web.tsx` reaches every screen, one in a feature reaches a
+single page.
+
 Token parity and contrast are covered by unit tests.
 
 `npm run check:control-metrics` additionally parses JSX controls and rejects

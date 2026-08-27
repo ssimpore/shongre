@@ -203,7 +203,7 @@ export const SellerPublicPage: React.FC = () => {
             to={routes.home()}
             variant="outline"
             size="md"
-            leftIcon={<Home className="w-4 h-4" />}
+            leftIcon={<Home className="w-icon-md h-icon-md" />}
           >
             {t("profile.sellerPublicPage.retourALAccueil")}
           </Button>
@@ -211,7 +211,7 @@ export const SellerPublicPage: React.FC = () => {
             to={routes.search()}
             variant="primary"
             size="md"
-            leftIcon={<Search className="w-4 h-4" />}
+            leftIcon={<Search className="w-icon-md h-icon-md" />}
           >
             {t("profile.sellerPublicPage.rechercherDesAnnonces")}
           </Button>
@@ -237,7 +237,7 @@ export const SellerPublicPage: React.FC = () => {
           to={routes.search()}
           variant="primary"
           size="md"
-          leftIcon={<ArrowLeft className="w-4 h-4" />}
+          leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
         >
           {t("profile.sellerPublicPage.retournerAuxAnnonces")}
         </Button>
@@ -264,21 +264,21 @@ export const SellerPublicPage: React.FC = () => {
             to={routes.home()}
             className="hover:text-stone-900 flex items-center gap-1"
           >
-            <Home className="w-3.5 h-3.5" />
+            <Home className="w-icon-sm h-icon-sm" />
             <span>Accueil</span>
           </Link>
-          <ChevronRight className="w-3 h-3 text-stone-400" />
+          <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
           {isPro ? (
             <>
               <Link to="/solutions-pro" className="hover:text-stone-900">
                 Boutiques Pro
               </Link>
-              <ChevronRight className="w-3 h-3 text-stone-400" />
+              <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
             </>
           ) : (
             <>
               <span className="text-stone-500">Profils</span>
-              <ChevronRight className="w-3 h-3 text-stone-400" />
+              <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
             </>
           )}
           <span className="text-stone-900 font-bold truncate max-w-50">
@@ -311,20 +311,20 @@ export const SellerPublicPage: React.FC = () => {
               id: "catalog",
               label: "Annonces en ligne",
               count: activeListingsCount,
-              icon: <Package className="w-4 h-4" />,
+              icon: <Package className="w-icon-md h-icon-md" />,
             },
             {
               id: "reviews",
               label: "Avis vérifiés",
               count: reviews.length,
-              icon: <Star className="w-4 h-4" />,
+              icon: <Star className="w-icon-md h-icon-md" />,
             },
             ...(isPro
               ? [
                   {
                     id: "about",
                     label: "Informations légales",
-                    icon: <Building2 className="w-4 h-4" />,
+                    icon: <Building2 className="w-icon-md h-icon-md" />,
                   },
                 ]
               : []),

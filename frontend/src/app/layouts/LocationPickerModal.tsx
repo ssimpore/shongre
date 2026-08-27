@@ -158,11 +158,11 @@ export const LocationPickerModal: React.FC = () => {
           }`}
         >
           <div className="flex items-center gap-2.5">
-            <Navigation className="w-4 h-4 text-primary" />
+            <Navigation className="w-icon-md h-icon-md text-primary" />
             <span className="text-xs sm:text-sm">{wholeCountryLabel}</span>
           </div>
           {isWholeCountry && (
-            <Check className="w-4 h-4 text-primary shrink-0" />
+            <Check className="w-icon-md h-icon-md text-primary shrink-0" />
           )}
         </button>
 
@@ -182,7 +182,7 @@ export const LocationPickerModal: React.FC = () => {
               setCityInput(e.target.value);
               setGeolocationState({ status: "idle" });
             }}
-            leftIcon={<MapPin className="w-4 h-4" />}
+            leftIcon={<MapPin className="w-icon-md h-icon-md" />}
             aria-describedby={
               geolocationMessage ? "location-geolocation-status" : undefined
             }

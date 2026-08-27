@@ -534,7 +534,7 @@ export const MessagingPage: React.FC = () => {
             to={routes.search()}
             variant="primary"
             size="md"
-            leftIcon={<Search className="w-4 h-4" />}
+            leftIcon={<Search className="w-icon-md h-icon-md" />}
           >
             {t("messaging.messagingPage.parcourirLesAnnonces")}
           </Button>
@@ -758,7 +758,7 @@ export const MessagingPage: React.FC = () => {
             className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
             aria-label={t("messaging.messagingPage.fermerLaVuePleinEcran")}
           >
-            <X className="w-6 h-6" />
+            <X className="w-icon-xl h-icon-xl" />
           </button>
           <Image
             src={lightboxImageUrl}

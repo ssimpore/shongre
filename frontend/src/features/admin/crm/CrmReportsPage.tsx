@@ -94,7 +94,7 @@ export const CrmReportsPage: React.FC = () => {
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-primary" />
+            <BarChart3 className="h-icon-md w-icon-md text-primary" />
             <h2 className="text-sm font-black">Entonnoir par étape</h2>
           </div>
           <div className="mt-5 space-y-4">

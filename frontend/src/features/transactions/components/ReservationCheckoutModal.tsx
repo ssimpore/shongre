@@ -116,7 +116,7 @@ export const ReservationCheckoutModal: React.FC<
 
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-stone-700">
             <p className="flex items-center gap-2 font-bold text-stone-900">
-              <ShieldCheck className="h-4 w-4 text-primary" />
+              <ShieldCheck className="h-icon-md w-icon-md text-primary" />
               Acompte défini par le marché
             </p>
             <p className="mt-2 leading-relaxed">
@@ -126,7 +126,7 @@ export const ReservationCheckoutModal: React.FC<
           </div>
 
           <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-600">
-            <Lock className="h-5 w-5 shrink-0 text-success" />
+            <Lock className="h-icon-lg w-icon-lg shrink-0 text-success" />
             <span>
               Vous serez redirigé vers le paiement hébergé. La réservation ne
               devient financée qu’après confirmation du prestataire.
@@ -151,7 +151,7 @@ export const ReservationCheckoutModal: React.FC<
               onClick={handleReserve}
               isLoading={isProcessing}
               disabled={isProcessing}
-              leftIcon={<MapPin className="h-4 w-4" />}
+              leftIcon={<MapPin className="h-icon-md w-icon-md" />}
             >
               Continuer vers le paiement
             </Button>

@@ -490,7 +490,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   );
 
   return (
-    <main className="min-h-screen bg-bg-page pb-6">
+    <main className="min-h-screen bg-bg-base pb-6">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -529,7 +529,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           })}
         </ol>
 
-        <section className="mt-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-card sm:p-7">
+        <section className="mt-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
           {step === PUBLISH_STEP.employer && (
             <div className="space-y-5">
               <h2 className="text-xl font-black">Qui recrute ?</h2>
@@ -1079,7 +1079,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
         </section>
 
-        <footer className="sticky bottom-3 mt-4 flex items-center justify-between gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-card backdrop-blur sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
+        <footer className="sticky bottom-3 mt-4 flex items-center justify-between gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-sticky backdrop-blur sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
           <Button
             variant="secondary"
             disabled={step === PUBLISH_STEP.employer || submitting}

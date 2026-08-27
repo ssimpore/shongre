@@ -14,7 +14,7 @@ export interface PriceDisplayProps {
 }
 
 const priceClasses = createVariants({
-  base: "text-stone-900",
+  base: "text-text-main",
   variants: {
     size: {
       sm: "text-sm font-bold",
@@ -44,12 +44,12 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
         {formatPrice(price, { isFreeDonation })}
       </span>
       {hasDiscount && originalPrice !== undefined && (
-        <span className="text-xs text-stone-500 line-through">
+        <span className="text-xs text-text-muted line-through">
           {formatPrice(originalPrice)}
         </span>
       )}
       {isNegotiable && !isFreeDonation && (
-        <span className="rounded-md border border-stone-200 bg-stone-100 px-2 py-0.5 text-micro font-semibold text-stone-600">
+        <span className="rounded-md border border-stone-200 bg-stone-100 px-2 py-0.5 text-micro font-semibold text-text-secondary">
           {t("ui.uIComponents.negociable")}
         </span>
       )}
@@ -84,7 +84,7 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
       {rating.toFixed(1)}
     </span>
     {reviewCount !== undefined && (
-      <span className="text-xs font-normal text-stone-500">
+      <span className="text-xs font-normal text-text-muted">
         ({reviewCount})
       </span>
     )}

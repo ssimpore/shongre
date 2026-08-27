@@ -140,14 +140,14 @@ export const CrmCustomFieldsPage: React.FC = () => {
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
-            <Plus className="h-4 w-4" /> Nouveau champ
+            <Plus className="h-icon-md w-icon-md" /> Nouveau champ
           </Button>
         </div>
       </section>
       <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-3">
           <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
-            <SlidersHorizontal className="h-3.5 w-3.5" /> Entité
+            <SlidersHorizontal className="h-icon-sm w-icon-sm" /> Entité
           </div>
           <div
             className="flex flex-wrap rounded-lg bg-stone-100 p-1"

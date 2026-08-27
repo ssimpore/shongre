@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Select } from "../../design-system";
 import type {
   CommercialConfigurationVersion,
   CommissionEffect,
@@ -471,8 +472,9 @@ export function AdminCommissionPolicyEditor({
         </FormField>
         <div className="grid gap-3 sm:grid-cols-3">
           <FormField label="Type de politique" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+            <Select
+              className="w-full"
+              labelledByAncestor
               value={form.policyType}
               onChange={(event) =>
                 setForm((current) => ({
@@ -483,7 +485,7 @@ export function AdminCommissionPolicyEditor({
             >
               <option value="base">Commission de base</option>
               <option value="adjustment">Avantage / promotion</option>
-            </select>
+            </Select>
           </FormField>
           <FormField label="Priorité" hint="Départage une portée identique.">
             <Input
@@ -518,8 +520,9 @@ export function AdminCommissionPolicyEditor({
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <FormField label="Niveau de dérogation" required>
-            <select
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+            <Select
+              className="w-full"
+              labelledByAncestor
               value={form.scopeLevel}
               onChange={(event) =>
                 setForm((current) => ({
@@ -539,7 +542,7 @@ export function AdminCommissionPolicyEditor({
               <option value="organizationIds">Organisation</option>
               <option value="accountIds">Compte</option>
               <option value="campaignIds">Campagne</option>
-            </select>
+            </Select>
           </FormField>
           <FormField
             label="Valeurs de portée"
@@ -562,8 +565,9 @@ export function AdminCommissionPolicyEditor({
           <>
             <div className="grid gap-3 sm:grid-cols-3">
               <FormField label="Modèle" required>
-                <select
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={form.modelType}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -578,7 +582,7 @@ export function AdminCommissionPolicyEditor({
                   <option value="flat_category">Forfait catégorie</option>
                   <option value="threshold">Seuil</option>
                   <option value="tiered">Paliers</option>
-                </select>
+                </Select>
               </FormField>
               <FormField label="Taux (bps)">
                 <Input
@@ -636,8 +640,9 @@ export function AdminCommissionPolicyEditor({
                   />
                 </FormField>
                 <FormField label="Condition" required>
-                  <select
-                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  <Select
+                    className="w-full"
+                    labelledByAncestor
                     value={form.thresholdApplies}
                     onChange={(event) =>
                       setForm((current) => ({
@@ -650,15 +655,16 @@ export function AdminCommissionPolicyEditor({
                     <option value="at_or_above">Au moins le seuil</option>
                     <option value="above">Strictement au-dessus</option>
                     <option value="below">Sous le seuil</option>
-                  </select>
+                  </Select>
                 </FormField>
               </div>
             )}
             {form.modelType === "tiered" && (
               <div className="grid gap-3 sm:grid-cols-2">
                 <FormField label="Mode des paliers" required>
-                  <select
-                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  <Select
+                    className="w-full"
+                    labelledByAncestor
                     value={form.tierMode}
                     onChange={(event) =>
                       setForm((current) => ({
@@ -669,11 +675,12 @@ export function AdminCommissionPolicyEditor({
                   >
                     <option value="progressive">Progressif</option>
                     <option value="cliff">Cliff</option>
-                  </select>
+                  </Select>
                 </FormField>
                 <FormField label="Base des paliers" required>
-                  <select
-                    className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                  <Select
+                    className="w-full"
+                    labelledByAncestor
                     value={form.tierBasis}
                     onChange={(event) =>
                       setForm((current) => ({
@@ -687,12 +694,13 @@ export function AdminCommissionPolicyEditor({
                       Montant de la transaction
                     </option>
                     <option value="historical_volume">Volume cumulé</option>
-                  </select>
+                  </Select>
                 </FormField>
                 {form.tierBasis === "historical_volume" && (
                   <FormField label="Période de volume" required>
-                    <select
-                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                    <Select
+                      className="w-full"
+                      labelledByAncestor
                       value={form.volumePeriod}
                       onChange={(event) =>
                         setForm((current) => ({
@@ -706,7 +714,7 @@ export function AdminCommissionPolicyEditor({
                       <option value="quarter">Trimestre</option>
                       <option value="year">Année</option>
                       <option value="lifetime">Durée de vie</option>
-                    </select>
+                    </Select>
                   </FormField>
                 )}
                 <FormField
@@ -757,8 +765,9 @@ export function AdminCommissionPolicyEditor({
                 />
               </FormField>
               <FormField label="Base" required>
-                <select
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={form.base}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -774,13 +783,14 @@ export function AdminCommissionPolicyEditor({
                   <option value="platform_collected_amount">
                     Encaissé plateforme
                   </option>
-                </select>
+                </Select>
               </FormField>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <FormField label="Événement d’acquisition" required>
-                <select
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={form.earningEvent}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -798,11 +808,12 @@ export function AdminCommissionPolicyEditor({
                   <option value="booking_completed">
                     Réservation terminée
                   </option>
-                </select>
+                </Select>
               </FormField>
               <FormField label="Politique de remboursement" required>
-                <select
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={form.refundPolicy}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -818,11 +829,12 @@ export function AdminCommissionPolicyEditor({
                   </option>
                   <option value="non_refundable">Commission conservée</option>
                   <option value="manual_review">Revue manuelle</option>
-                </select>
+                </Select>
               </FormField>
               <FormField label="Traitement fiscal" required>
-                <select
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+                <Select
+                  className="w-full"
+                  labelledByAncestor
                   value={form.taxMode}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -834,7 +846,7 @@ export function AdminCommissionPolicyEditor({
                   <option value="inclusive">Taxe incluse</option>
                   <option value="exclusive">Taxe ajoutée</option>
                   <option value="exempt">Exonérée</option>
-                </select>
+                </Select>
               </FormField>
               <FormField label="Taux fiscal (bps)">
                 <Input
@@ -882,8 +894,9 @@ export function AdminCommissionPolicyEditor({
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <FormField label="Avantage" required>
-              <select
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={form.adjustmentType}
                 onChange={(event) =>
                   setForm((current) => ({
@@ -899,7 +912,7 @@ export function AdminCommissionPolicyEditor({
                 <option value="full_waiver">Exonération totale</option>
                 <option value="rate_override">Taux négocié</option>
                 <option value="fixed_override">Montant négocié</option>
-              </select>
+              </Select>
             </FormField>
             <FormField label="Taux (bps)">
               <Input
@@ -939,8 +952,9 @@ export function AdminCommissionPolicyEditor({
               />
             </FormField>
             <FormField label="Cumul" required>
-              <select
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3"
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={form.stackingPolicy}
                 onChange={(event) =>
                   setForm((current) => ({
@@ -953,7 +967,7 @@ export function AdminCommissionPolicyEditor({
                 <option value="exclusive">Exclusive</option>
                 <option value="best_price">Meilleur avantage</option>
                 <option value="stackable">Cumulable</option>
-              </select>
+              </Select>
             </FormField>
             <FormField
               label="Promotion existante"

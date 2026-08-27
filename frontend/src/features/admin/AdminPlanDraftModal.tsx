@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Select } from "../../design-system";
 import type { MonetizationProduct } from "@shongre/contracts/monetization";
 import {
   hasCommercialEntitlementValue,
@@ -189,7 +190,9 @@ export function AdminPlanDraftModal({
               />
             </FormField>
             <FormField label="État">
-              <select
+              <Select
+                className="w-full"
+                labelledByAncestor
                 value={draft.status}
                 onChange={(event) =>
                   setDraft((current) => ({
@@ -197,12 +200,11 @@ export function AdminPlanDraftModal({
                     status: event.target.value as MonetizationProduct["status"],
                   }))
                 }
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
               >
                 <option value="active">Actif après publication</option>
                 <option value="disabled">Désactivé</option>
                 <option value="archived">Archivé</option>
-              </select>
+              </Select>
             </FormField>
           </div>
           <FormField label="Description publique" required>
@@ -423,7 +425,9 @@ export function AdminPlanDraftModal({
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <FormField label="Disponibilité">
-                    <select
+                    <Select
+                      className="w-full"
+                      labelledByAncestor
                       value={entitlement.availability}
                       disabled={entitlement.implementationStatus !== "ready"}
                       onChange={(event) =>
@@ -433,16 +437,17 @@ export function AdminPlanDraftModal({
                             .value as MonetizationProduct["entitlements"][number]["availability"],
                         }))
                       }
-                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm disabled:cursor-not-allowed disabled:bg-bg-subtle"
                     >
                       <option value="enabled">Activé</option>
                       <option value="beta">Bêta</option>
                       <option value="maintenance">Maintenance</option>
                       <option value="disabled">Désactivé</option>
-                    </select>
+                    </Select>
                   </FormField>
                   <FormField label="Type">
-                    <select
+                    <Select
+                      className="w-full"
+                      labelledByAncestor
                       value={entitlement.featureType}
                       onChange={(event) =>
                         updateEntitlement(entitlement.key, (current) => ({
@@ -451,7 +456,6 @@ export function AdminPlanDraftModal({
                             .value as MonetizationProduct["entitlements"][number]["featureType"],
                         }))
                       }
-                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
                     >
                       <option value="boolean">Booléen</option>
                       <option value="integer_quota">Quota entier</option>
@@ -461,12 +465,14 @@ export function AdminPlanDraftModal({
                       <option value="scoped_permission">
                         Permission ciblée
                       </option>
-                    </select>
+                    </Select>
                   </FormField>
                 </div>
                 <FormField label={entitlement.label} className="mt-2">
                   {typeof entitlement.value === "boolean" ? (
-                    <select
+                    <Select
+                      className="w-full"
+                      labelledByAncestor
                       value={entitlement.value ? "true" : "false"}
                       onChange={(event) =>
                         updateEntitlement(entitlement.key, (current) => ({
@@ -474,11 +480,10 @@ export function AdminPlanDraftModal({
                           value: event.target.value === "true",
                         }))
                       }
-                      className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm"
                     >
                       <option value="true">Inclus</option>
                       <option value="false">Non inclus</option>
-                    </select>
+                    </Select>
                   ) : (
                     <Input
                       type={

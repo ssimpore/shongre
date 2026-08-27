@@ -222,14 +222,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           {activeLanguage.code.slice(0, 2)}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform ${
+          className={`w-icon-sm h-icon-sm transition-transform ${
             variant === "footer"
               ? isOpen
                 ? "rotate-180 text-primary-light"
-                : "text-stone-400"
+                : // Deliberately a light neutral on the footer's dark panel, not
+                  // the theme-following "disabled" role — it must not invert.
+                  "text-stone-400"
               : isOpen
                 ? "rotate-180 text-primary"
-                : "text-stone-500"
+                : "text-text-muted"
           }`}
         />
       </button>
@@ -268,13 +270,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                     <span className="text-base leading-none">{lang.flag}</span>
                     <div className="flex flex-col">
                       <span className="leading-tight">{lang.nativeName}</span>
-                      <span className="text-micro text-stone-500 font-normal">
+                      <span className="text-micro text-text-muted font-normal">
                         {lang.name}
                       </span>
                     </div>
                   </div>
                   {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <Check className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   )}
                 </button>
               );
@@ -291,11 +293,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
             >
               <div className="flex items-center gap-2">
-                <Settings2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                <Settings2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                 <span>{t("language.preferences")}</span>
               </div>
-              <div className="flex items-center text-stone-500">
-                <ChevronRight className="w-3 h-3 text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform" />
+              <div className="flex items-center text-text-muted">
+                <ChevronRight className="w-icon-xs h-icon-xs text-text-disabled group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </button>
           </div>

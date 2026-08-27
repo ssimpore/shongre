@@ -143,7 +143,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.utilisateursEnregistres")}
                 </span>
-                <Users className="w-4 h-4 text-stone-400" />
+                <Users className="w-icon-md h-icon-md text-stone-400" />
               </div>
               <div className="text-2xl font-black text-stone-900">
                 {stats?.totalUsers ?? "…"}
@@ -161,7 +161,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.verificationsProEnAttente")}
                 </span>
-                <Clock className="w-4 h-4 text-amber-500" />
+                <Clock className="w-icon-md h-icon-md text-amber-500" />
               </div>
               <div className="text-2xl font-black text-warning">
                 {pendingVerifications.length}
@@ -180,7 +180,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <span className="text-xs font-semibold">
                   Signalements ouverts
                 </span>
-                <ShieldAlert className="w-4 h-4 text-primary" />
+                <ShieldAlert className="w-icon-md h-icon-md text-primary" />
               </div>
               <div className="text-2xl font-black text-primary">
                 {reportsCount ?? "…"}
@@ -197,7 +197,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.catalogueDAnnonces")}
                 </span>
-                <TrendingUp className="w-4 h-4 text-success" />
+                <TrendingUp className="w-icon-md h-icon-md text-success" />
               </div>
               <div className="text-2xl font-black text-stone-900">
                 {stats?.totalListings ?? "…"}
@@ -218,7 +218,7 @@ export const AdminOverviewPage: React.FC = () => {
             <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-stone-700" />
+                  <CheckCircle2 className="w-icon-md h-icon-md text-stone-700" />
                   <h2 className="text-sm font-bold text-stone-900">
                     {t(
                       "admin.adminOverviewPage.dossiersProfessionnelsAVerifier",
@@ -230,7 +230,7 @@ export const AdminOverviewPage: React.FC = () => {
                   className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                 >
                   {t("admin.adminOverviewPage.gerer")}
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-icon-xs h-icon-xs" />
                 </Link>
               </div>
 
@@ -293,7 +293,7 @@ export const AdminOverviewPage: React.FC = () => {
             <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-stone-700" />
+                  <FileSpreadsheet className="w-icon-md h-icon-md text-stone-700" />
                   <h2 className="text-sm font-bold text-stone-900">
                     {t(
                       "admin.adminOverviewPage.dernieresActionsDAuditSecurite",
@@ -305,7 +305,8 @@ export const AdminOverviewPage: React.FC = () => {
                     to="/admin/audit"
                     className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                   >
-                    Journal complet <ArrowRight className="w-3 h-3" />
+                    Journal complet{" "}
+                    <ArrowRight className="w-icon-xs h-icon-xs" />
                   </Link>
                 )}
               </div>

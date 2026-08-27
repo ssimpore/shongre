@@ -111,7 +111,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
              the full 44px target. */
           className={`shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-black/10 cursor-pointer`}
         >
-          <X className="w-3 h-3" />
+          <X className="w-icon-xs h-icon-xs" />
         </button>
       )}
     </span>

@@ -258,7 +258,7 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-success" />
+            <Shield className="w-icon-lg h-icon-lg text-success" />
             <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
               {t(
                 "sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu",
@@ -281,15 +281,15 @@ export const AccountOverviewPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center font-bold">
-                  <Mail className="w-4 h-4" />
+                  <Mail className="w-icon-md h-icon-md" />
                 </div>
                 {isEmailVerified ? (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
-                    <CheckCircle2 className="w-3 h-3" /> Vérifié
+                    <CheckCircle2 className="w-icon-xs h-icon-xs" /> Vérifié
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-2 py-0.5 rounded-md border border-warning-border">
-                    <AlertCircle className="w-3 h-3" /> En attente
+                    <AlertCircle className="w-icon-xs h-icon-xs" /> En attente
                   </span>
                 )}
               </div>
@@ -303,7 +303,7 @@ export const AccountOverviewPage: React.FC = () => {
             <div className="mt-3 border-t border-border-subtle pt-2">
               {isEmailVerified ? (
                 <span className="text-micro text-stone-500 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-success" />{" "}
+                  <CheckCircle2 className="w-icon-xs h-icon-xs text-success" />{" "}
                   Notifications actives
                 </span>
               ) : (
@@ -322,11 +322,11 @@ export const AccountOverviewPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center font-bold">
-                  <Smartphone className="w-4 h-4" />
+                  <Smartphone className="w-icon-md h-icon-md" />
                 </div>
                 {hasVerifiedPhone ? (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
-                    <CheckCircle2 className="w-3 h-3" /> Vérifié SMS
+                    <CheckCircle2 className="w-icon-xs h-icon-xs" /> Vérifié SMS
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
@@ -359,11 +359,11 @@ export const AccountOverviewPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                  <KeyRound className="w-4 h-4" />
+                  <KeyRound className="w-icon-md h-icon-md" />
                 </div>
                 {currentUser?.mfaEnabled ? (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
-                    <CheckCircle2 className="w-3 h-3" /> 2FA Actif
+                    <CheckCircle2 className="w-icon-xs h-icon-xs" /> 2FA Actif
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
@@ -402,7 +402,7 @@ export const AccountOverviewPage: React.FC = () => {
           className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-2">
-            <List className="w-4 h-4" />
+            <List className="w-icon-md h-icon-md" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {activeListings.length}
@@ -417,7 +417,7 @@ export const AccountOverviewPage: React.FC = () => {
           className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center mb-2">
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-icon-md h-icon-md" />
           </div>
           <div className="text-2xl font-black text-stone-900">
             {unreadMsgCount}
@@ -432,7 +432,7 @@ export const AccountOverviewPage: React.FC = () => {
           className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-2">
-            <Heart className="w-4 h-4" />
+            <Heart className="w-icon-md h-icon-md" />
           </div>
           <div className="text-2xl font-black text-stone-900">{favCount}</div>
           <div className="text-xs font-semibold text-stone-500 mt-0.5">
@@ -450,12 +450,12 @@ export const AccountOverviewPage: React.FC = () => {
           className="motion-surface group flex cursor-pointer flex-col rounded-control border border-border-base bg-bg-surface p-4 text-left shadow-xs hover:border-primary hover:shadow-sm"
         >
           <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
-            <FileText className="w-4 h-4" />
+            <FileText className="w-icon-md h-icon-md" />
           </div>
           <div className="mt-auto">
             <div className="text-sm font-bold text-stone-900 flex items-center gap-1">
               Factures
-              <ChevronRight className="motion-interactive w-3.5 h-3.5 text-stone-400 group-hover:translate-x-0.5 group-hover:text-primary" />
+              <ChevronRight className="motion-interactive w-icon-sm h-icon-sm text-stone-400 group-hover:translate-x-0.5 group-hover:text-primary" />
             </div>
             <div className="text-xs font-semibold text-stone-500 mt-0.5">
               {t("sellerworkspace.accountOverviewPage.recusJustificatifs")}
@@ -484,7 +484,7 @@ export const AccountOverviewPage: React.FC = () => {
             onClick={() => setIsEditingProfile(!isEditingProfile)}
             className="inline-flex items-center gap-1.5 min-h-6 text-xs font-bold text-primary hover:underline cursor-pointer"
           >
-            <Edit3 className="w-3.5 h-3.5" />
+            <Edit3 className="w-icon-sm h-icon-sm" />
             {isEditingProfile ? "Fermer" : "Modifier mes informations"}
           </button>
         </div>
@@ -707,7 +707,7 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="flex flex-col items-center justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-icon-md h-icon-md" />
               {t(
                 "sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure",
               )}
@@ -728,7 +728,7 @@ export const AccountOverviewPage: React.FC = () => {
             size="compact"
             onClick={() => setShowProModal(true)}
             className="shrink-0"
-            leftIcon={<Briefcase className="h-3.5 w-3.5" />}
+            leftIcon={<Briefcase className="h-icon-sm w-icon-sm" />}
           >
             {t("sellerworkspace.accountOverviewPage.passerEnComptePro")}
           </Button>

@@ -17,6 +17,8 @@ import {
   Container,
   Drawer,
   FilterPanel,
+  Input,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -27,9 +29,6 @@ import { ImmoMap } from "./components/ImmoMap";
 import { PropertyCard } from "./components/PropertyCard";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-
-const fieldClass =
-  "h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-border";
 
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 const number = (value: string | null, multiplier = 1) =>
@@ -104,9 +103,9 @@ const ImmoFilters: React.FC<{
         <legend className="mb-2 text-xs font-bold text-text-main">
           Projet
         </legend>
-        <select
+        <Select
+          className="w-full"
           aria-label="Projet immobilier"
-          className={fieldClass}
           value={params.get("transaction") || "sale"}
           onChange={(event) => setParam("transaction", event.target.value)}
         >
@@ -114,7 +113,7 @@ const ImmoFilters: React.FC<{
           <option value="long_term_rental">Louer</option>
           <option value="seasonal_rental">Location saisonnière</option>
           <option value="shared_accommodation">Colocation</option>
-        </select>
+        </Select>
       </fieldset>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
@@ -142,30 +141,30 @@ const ImmoFilters: React.FC<{
           Budget
         </legend>
         <div className="grid grid-cols-2 gap-2">
-          <input
+          <Input
             aria-label="Budget minimum"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder={`Min. ${currencySymbol}`}
             value={params.get("minPrice") || ""}
             onChange={(event) =>
               setParam("minPrice", event.target.value || undefined)
             }
           />
-          <input
+          <Input
             aria-label="Budget maximum"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder={`Max. ${currencySymbol}`}
             value={params.get("maxPrice") || ""}
             onChange={(event) =>
               setParam("maxPrice", event.target.value || undefined)
             }
           />
-          <input
+          <Input
             aria-label="Prix minimum par mètre carré"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder={`Min. ${currencySymbol}/m²`}
             value={params.get("minPricePerSquareMeter") || ""}
             onChange={(event) =>
@@ -175,10 +174,10 @@ const ImmoFilters: React.FC<{
               )
             }
           />
-          <input
+          <Input
             aria-label="Prix maximum par mètre carré"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder={`Max. ${currencySymbol}/m²`}
             value={params.get("maxPricePerSquareMeter") || ""}
             onChange={(event) =>
@@ -195,29 +194,29 @@ const ImmoFilters: React.FC<{
           Surface et pièces
         </legend>
         <div className="grid grid-cols-2 gap-2">
-          <input
+          <Input
             aria-label="Surface minimum"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder="Min. m²"
             value={params.get("minSurface") || ""}
             onChange={(event) =>
               setParam("minSurface", event.target.value || undefined)
             }
           />
-          <input
+          <Input
             aria-label="Surface maximum"
             inputMode="numeric"
-            className={fieldClass}
+            className="w-full"
             placeholder="Max. m²"
             value={params.get("maxSurface") || ""}
             onChange={(event) =>
               setParam("maxSurface", event.target.value || undefined)
             }
           />
-          <select
+          <Select
+            className="w-full"
             aria-label="Nombre minimum de pièces"
-            className={fieldClass}
             value={params.get("rooms") || ""}
             onChange={(event) =>
               setParam("rooms", event.target.value || undefined)
@@ -229,10 +228,10 @@ const ImmoFilters: React.FC<{
                 {value}+
               </option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
+            className="w-full"
             aria-label="Nombre minimum de chambres"
-            className={fieldClass}
             value={params.get("bedrooms") || ""}
             onChange={(event) =>
               setParam("bedrooms", event.target.value || undefined)
@@ -244,13 +243,14 @@ const ImmoFilters: React.FC<{
                 {value}+
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </fieldset>
       <label className="block text-xs font-bold text-text-main">
         Location meublée
-        <select
-          className={`mt-2 ${fieldClass} h-control-touch`}
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("furnished") || ""}
           onChange={(event) =>
             setParam("furnished", event.target.value || undefined)
@@ -259,7 +259,7 @@ const ImmoFilters: React.FC<{
           <option value="">Indifférent</option>
           <option value="true">Meublé</option>
           <option value="false">Non meublé</option>
-        </select>
+        </Select>
       </label>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
@@ -289,8 +289,9 @@ const ImmoFilters: React.FC<{
       </fieldset>
       <label className="block text-xs font-bold text-text-main">
         Performance énergétique
-        <select
-          className={`mt-2 ${fieldClass} h-control-touch`}
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("dpe") || ""}
           onChange={(event) => setParam("dpe", event.target.value || undefined)}
         >
@@ -300,12 +301,13 @@ const ImmoFilters: React.FC<{
               {value}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-xs font-bold text-text-main">
         Annonceur
-        <select
-          className={`mt-2 ${fieldClass} h-control-touch`}
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("seller") || ""}
           onChange={(event) =>
             setParam("seller", event.target.value || undefined)
@@ -315,7 +317,7 @@ const ImmoFilters: React.FC<{
           <option value="owner">Particulier</option>
           <option value="agency">Agence</option>
           <option value="developer">Promoteur</option>
-        </select>
+        </Select>
       </label>
     </FilterPanel>
   );
@@ -560,12 +562,13 @@ export const ImmoSearchPage: React.FC = () => {
             <div className="grid w-full gap-2 sm:grid-cols-filter-row lg:max-w-2xl">
               <label className="relative block">
                 <span className="sr-only">Rechercher un bien</span>
-                <Search
-                  className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-text-muted"
-                  aria-hidden="true"
-                />
-                <input
-                  className={`${fieldClass} pl-9 h-control-touch`}
+                <Input
+                  leftIcon={
+                    <Search
+                      className="h-icon-md w-icon-md"
+                      aria-hidden="true"
+                    />
+                  }
                   placeholder="Appartement, terrasse…"
                   value={queryText}
                   onChange={(event) =>
@@ -573,18 +576,18 @@ export const ImmoSearchPage: React.FC = () => {
                   }
                 />
               </label>
-              <input
+              <Input
                 aria-label="Ville"
-                className={fieldClass}
+                className="w-full"
                 placeholder="Lyon"
                 value={params.get("city") || ""}
                 onChange={(event) =>
                   setParam("city", event.target.value || undefined)
                 }
               />
-              <select
+              <Select
+                className="w-full"
                 aria-label="Rayon"
-                className={fieldClass}
                 value={params.get("radius") || "25"}
                 onChange={(event) => setParam("radius", event.target.value)}
               >
@@ -593,7 +596,7 @@ export const ImmoSearchPage: React.FC = () => {
                     {radius} km
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
         </Container>
@@ -614,7 +617,7 @@ export const ImmoSearchPage: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={saveAlert}
-              leftIcon={<Bell className="h-4 w-4" />}
+              leftIcon={<Bell className="h-icon-md w-icon-md" />}
             >
               Créer une alerte
             </Button>
@@ -623,7 +626,7 @@ export const ImmoSearchPage: React.FC = () => {
               size="sm"
               className="lg:hidden"
               onClick={() => setMobileFilters(true)}
-              leftIcon={<Filter className="h-4 w-4" />}
+              leftIcon={<Filter className="h-icon-md w-icon-md" />}
             >
               Filtres
             </Button>
@@ -635,7 +638,7 @@ export const ImmoSearchPage: React.FC = () => {
                 onClick={() => setParam("view", "list")}
                 className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "list" ? "bg-primary text-white" : "text-text-secondary"}`}
               >
-                <List className="h-4 w-4" />
+                <List className="h-icon-md w-icon-md" />
               </button>
               <button
                 type="button"
@@ -644,12 +647,12 @@ export const ImmoSearchPage: React.FC = () => {
                 onClick={() => setParam("view", "map")}
                 className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "map" ? "bg-primary text-white" : "text-text-secondary"}`}
               >
-                <Map className="h-4 w-4" />
+                <Map className="h-icon-md w-icon-md" />
               </button>
             </div>
-            <select
+            <Select
+              className="w-auto"
               aria-label="Trier les biens"
-              className="h-control-touch rounded-control border border-border-base bg-bg-surface px-3 text-xs"
               value={query.sort}
               onChange={(event) => setParam("sort", event.target.value)}
             >
@@ -658,7 +661,7 @@ export const ImmoSearchPage: React.FC = () => {
               <option value="price_asc">Prix croissant</option>
               <option value="price_desc">Prix décroissant</option>
               <option value="surface_desc">Plus grandes surfaces</option>
-            </select>
+            </Select>
           </div>
         </div>
 

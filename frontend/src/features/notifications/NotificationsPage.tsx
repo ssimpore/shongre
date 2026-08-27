@@ -100,7 +100,7 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
-            <Bell className="w-6 h-6 text-primary" />
+            <Bell className="w-icon-xl h-icon-xl text-primary" />
             <span>
               {t("notifications.notificationsPage.centreDeNotifications")}
             </span>
@@ -116,7 +116,7 @@ export const NotificationsPage: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleMarkAllRead}
-              leftIcon={<Check className="w-3.5 h-3.5" />}
+              leftIcon={<Check className="w-icon-sm h-icon-sm" />}
               className="text-xs"
             >
               {t("notifications.notificationsPage.toutMarquerCommeLu")}
@@ -127,7 +127,7 @@ export const NotificationsPage: React.FC = () => {
             to="/compte/notifications/preferences"
             variant="outline"
             size="sm"
-            leftIcon={<Settings className="w-3.5 h-3.5" />}
+            leftIcon={<Settings className="w-icon-sm h-icon-sm" />}
             className="text-xs"
           >
             {t("notifications.notificationsPage.preferences")}
@@ -156,7 +156,7 @@ export const NotificationsPage: React.FC = () => {
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-micro font-extrabold ${
+                  className={`px-1.5 py-0.5 rounded-full text-micro font-extrabold ${
                     isActive
                       ? "bg-primary text-white"
                       : "bg-primary/20 text-primary"

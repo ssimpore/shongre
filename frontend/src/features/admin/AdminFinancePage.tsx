@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { Select } from "../../design-system";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   FinanceMetric,
@@ -141,9 +142,9 @@ function MetricCard({
           className={`mt-2 flex items-center gap-1 text-xs font-bold ${positive ? "text-success" : "text-danger"}`}
         >
           {positive ? (
-            <ArrowUpRight className="h-3.5 w-3.5" />
+            <ArrowUpRight className="h-icon-sm w-icon-sm" />
           ) : (
-            <ArrowDownRight className="h-3.5 w-3.5" />
+            <ArrowDownRight className="h-icon-sm w-icon-sm" />
           )}
           {formatPercentFromBps(Math.abs(change), 1)}
           <span className="font-normal text-text-muted">
@@ -435,11 +436,11 @@ function OverviewTab({
               >
                 <span className="flex items-center gap-2 font-semibold">
                   <AlertTriangle
-                    className={`h-4 w-4 ${item.severity === "warning" ? "text-warning" : "text-danger"}`}
+                    className={`h-icon-md w-icon-md ${item.severity === "warning" ? "text-warning" : "text-danger"}`}
                   />
                   {item.count} {item.label.toLocaleLowerCase("fr")}
                 </span>
-                <ChevronRight className="h-4 w-4 text-text-muted" />
+                <ChevronRight className="h-icon-md w-icon-md text-text-muted" />
               </li>
             ))}
           </ul>
@@ -583,7 +584,7 @@ function TransactionDetail({
         </table>
       </ScrollableRegion>
       <p className="mt-2 flex items-center gap-1 text-micro font-bold text-success">
-        <CheckCircle2 className="h-3.5 w-3.5" />
+        <CheckCircle2 className="h-icon-sm w-icon-sm" />
         Écriture équilibrée
       </p>
       {reconciliation && (
@@ -600,7 +601,7 @@ function TransactionDetail({
             </div>
           </div>
           <p className="mt-3 flex gap-1.5 text-micro text-text-muted">
-            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+            <ShieldCheck className="h-icon-sm w-icon-sm shrink-0" />
             Toute correction crée une nouvelle écriture. L’original reste
             immuable. Les ajustements nécessitent une double approbation et sont
             traités hors de cette vue.
@@ -741,7 +742,7 @@ function ReconciliationTab({
     <div className="grid gap-4 lg:grid-cols-3">
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs lg:col-span-2">
         <div className="flex items-center gap-2">
-          <TriangleAlert className="h-5 w-5 text-warning" />
+          <TriangleAlert className="h-icon-lg w-icon-lg text-warning" />
           <h2 className="text-sm font-black">Écarts ouverts</h2>
         </div>
         <div className="mt-4 space-y-3">
@@ -779,7 +780,7 @@ function ReconciliationTab({
         </div>
       </section>
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-        <Landmark className="h-5 w-5 text-success" />
+        <Landmark className="h-icon-lg w-icon-lg text-success" />
         <h2 className="mt-3 text-sm font-black">Contrôle fournisseur</h2>
         <p className="mt-2 text-xs leading-relaxed text-text-secondary">
           Chaque événement fournisseur est rapproché de son paiement, de sa
@@ -842,7 +843,7 @@ function SubscriptionsTab({
           icon={CreditCard}
         />
         <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-          <ReceiptText className="h-5 w-5 text-primary" />
+          <ReceiptText className="h-icon-lg w-icon-lg text-primary" />
           <h2 className="mt-3 text-sm font-black">Portefeuille actif</h2>
           <p className="mt-1 text-2xl font-black">
             {dashboard.subscriptionHealth.paidAccounts}
@@ -1037,7 +1038,7 @@ export const AdminFinancePage: React.FC = () => {
     return (
       <div className="flex min-h-105 items-center justify-center">
         <LoaderCircle
-          className="h-6 w-6 animate-spin text-primary"
+          className="h-icon-xl w-icon-xl animate-spin text-primary"
           aria-label="Chargement des finances"
         />
       </div>
@@ -1067,7 +1068,7 @@ export const AdminFinancePage: React.FC = () => {
             fournisseurs.
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 className="h-icon-md w-icon-md" />
             {dashboard.isPeriodClosed ? "Finalisé" : "Provisoire"} au{" "}
             {formatDate(dashboard.asOf, {
               day: "numeric",
@@ -1083,12 +1084,12 @@ export const AdminFinancePage: React.FC = () => {
             size="sm"
             onClick={() => void handleExport()}
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-icon-md w-icon-md" />
             Exporter
           </Button>
           {canManageReconciliation && (
             <Button size="sm" onClick={() => setTab("reconciliation")}>
-              <FileCheck2 className="h-4 w-4" />
+              <FileCheck2 className="h-icon-md w-icon-md" />
               Rapprochement
             </Button>
           )}
@@ -1097,8 +1098,9 @@ export const AdminFinancePage: React.FC = () => {
       <div className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-3">
         <label className="text-micro font-bold text-text-muted">
           <span className="sr-only">Période</span>
-          <select
-            className="h-control w-full rounded-control border border-border-base bg-white px-3 text-xs text-text-main h-control-touch"
+          <Select
+            className="w-full"
+            labelledByAncestor
             value={scope.period}
             onChange={(event) =>
               setScope((current) => ({
@@ -1111,12 +1113,13 @@ export const AdminFinancePage: React.FC = () => {
             <option value="30d">30 jours</option>
             <option value="quarter">Trimestre</option>
             <option value="year">Année</option>
-          </select>
+          </Select>
         </label>
         <label>
           <span className="sr-only">Marché</span>
-          <select
-            className="h-control w-full rounded-control border border-border-base bg-white px-3 text-xs text-text-main h-control-touch"
+          <Select
+            className="w-full"
+            labelledByAncestor
             value={scope.marketCode}
             onChange={(event) =>
               setScope((current) => ({
@@ -1131,12 +1134,13 @@ export const AdminFinancePage: React.FC = () => {
                 {market.name}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label>
           <span className="sr-only">Devise</span>
-          <select
-            className="h-control w-full rounded-control border border-border-base bg-white px-3 text-xs text-text-main h-control-touch"
+          <Select
+            className="w-full"
+            labelledByAncestor
             value={scope.currency}
             onChange={(event) =>
               setScope((current) => ({
@@ -1152,7 +1156,7 @@ export const AdminFinancePage: React.FC = () => {
                 {currency}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       </div>
       <div className="overflow-x-auto border-b border-border-base">
@@ -1171,25 +1175,26 @@ export const AdminFinancePage: React.FC = () => {
       {(tab === "transactions" || tab === "reconciliation") && (
         <div className="flex flex-col gap-2 rounded-card border border-border-base bg-bg-surface p-3 sm:flex-row">
           <label className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-muted" />
             <span className="sr-only">Rechercher une transaction</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="ID, utilisateur, facture…"
-              className="h-control w-full rounded-control border border-border-base pl-9 pr-3 text-xs h-control-touch"
+              className="w-full rounded-control border border-border-base pl-9 pr-3 text-xs h-control-touch"
             />
           </label>
           <label className="sm:w-48">
             <span className="sr-only">Statut</span>
-            <select
+            <Select
+              className="w-full"
+              labelledByAncestor
               value={status}
               onChange={(event) =>
                 setStatus(
                   event.target.value as FinanceTransactionStatus | "all",
                 )
               }
-              className="h-control w-full rounded-control border border-border-base bg-white px-3 text-xs h-control-touch"
             >
               <option value="all">Tous les statuts</option>
               {Object.entries(STATUS_LABELS).map(([value, label]) => (
@@ -1197,10 +1202,10 @@ export const AdminFinancePage: React.FC = () => {
                   {label}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <Button variant="outline" size="sm" onClick={() => void load()}>
-            <Filter className="h-4 w-4" />
+            <Filter className="h-icon-md w-icon-md" />
             Filtrer
           </Button>
         </div>

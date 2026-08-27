@@ -131,7 +131,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <main className="bg-bg-page py-8">
+      <main className="bg-bg-base py-8">
         <Container className="grid gap-5 lg:grid-cols-content-aside">
           <Skeleton className="h-152 rounded-card" />
           <Skeleton className="h-80 rounded-card" />
@@ -141,7 +141,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
   }
   if (error || !job) {
     return (
-      <main className="bg-bg-page py-12">
+      <main className="bg-bg-base py-12">
         <Container>
           <StatePanel
             variant="notFound"
@@ -208,7 +208,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-bg-page">
+    <main className="min-h-screen bg-bg-base">
       <Container className="py-5 sm:py-8">
         <nav
           aria-label="Fil d’Ariane"
@@ -443,7 +443,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24">
-            <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-card">
+            <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
               <Button variant="primary" className="w-full" onClick={apply}>
                 {job.applicationMethod === "shongre"
                   ? "Postuler gratuitement"

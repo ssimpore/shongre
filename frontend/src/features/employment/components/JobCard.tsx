@@ -26,7 +26,7 @@ export const JobCard: React.FC<{
   const { currentLocale } = useMarketLocation();
 
   return (
-    <article className="group rounded-card border border-border-base bg-bg-surface p-4 shadow-xs transition-all hover:border-primary-border hover:shadow-card sm:p-5">
+    <article className="group rounded-card border border-border-base bg-bg-surface p-4 shadow-xs transition-all hover:border-primary-border hover:shadow-md sm:p-5">
       <div className="flex items-start gap-3 sm:gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-border-subtle bg-bg-subtle text-sm font-black text-text-main sm:h-14 sm:w-14">
           {job.employer.logoUrl ? (

@@ -205,7 +205,7 @@ export function OAuthCallbackPage() {
             to="/connexion"
             variant="primary"
             className="w-full"
-            rightIcon={<ArrowRight className="h-4 w-4" />}
+            rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
           >
             {t("auth.callback.backToLogin")}
           </Button>

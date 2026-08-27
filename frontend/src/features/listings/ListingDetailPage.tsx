@@ -575,7 +575,7 @@ export const ListingDetailPage: React.FC = () => {
             aria-label={t("listings.listingDetailPage.partagerLAnnonce")}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
-            <Share2 className="w-3.5 h-3.5" />
+            <Share2 className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Partager</span>
           </button>
           <button
@@ -584,7 +584,7 @@ export const ListingDetailPage: React.FC = () => {
             aria-label={t("listings.listingDetailPage.signalerCetteAnnonce")}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
-            <Flag className="w-3.5 h-3.5" />
+            <Flag className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Signaler</span>
           </button>
         </div>
@@ -660,7 +660,7 @@ export const ListingDetailPage: React.FC = () => {
                 className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-stone-400 hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
               >
                 <Heart
-                  className={`w-6 h-6 transition-all duration-fast ${isListingFavorite(listing.id) ? "fill-primary text-primary scale-110" : "group-hover:scale-110"}`}
+                  className={`w-icon-xl h-icon-xl transition-all duration-fast ${isListingFavorite(listing.id) ? "fill-primary text-primary scale-110" : "group-hover:scale-110"}`}
                 />
               </button>
             </div>
@@ -693,11 +693,11 @@ export const ListingDetailPage: React.FC = () => {
             {/* Metadata Footer: Location, Publication Date */}
             <div className="flex items-center gap-4 text-xs font-medium text-stone-500 pt-5 mt-2 border-t border-stone-100 flex-wrap">
               <span className="flex items-center gap-1.5 text-stone-700">
-                <MapPin className="w-4 h-4 text-primary" />
+                <MapPin className="w-icon-md h-icon-md text-primary" />
                 {listing.city} ({listing.postalCode})
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-stone-400" />
+                <Clock className="w-icon-md h-icon-md text-stone-400" />
                 Publiée {formatRelativeDate(listing.createdAt)}
               </span>
             </div>
@@ -792,7 +792,7 @@ export const ListingDetailPage: React.FC = () => {
               />
               {listing.isOnlinePaymentAvailable && listing.price > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-stone-500 pt-1.5">
-                  <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+                  <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
                   {t(
                     "listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu",
                   )}
@@ -847,7 +847,7 @@ export const ListingDetailPage: React.FC = () => {
                   <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1 flex-wrap">
                     {seller.rating > 0 && (
                       <span className="flex items-center gap-1 font-semibold text-stone-700">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
                         {seller.rating.toFixed(1)}
                         <span className="font-normal text-stone-500">
                           ({plural(seller.reviewCount || 0, "avis", "avis")})
@@ -859,14 +859,14 @@ export const ListingDetailPage: React.FC = () => {
                     )}
                     {seller.city && (
                       <span className="flex items-center gap-1 truncate">
-                        <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                        <MapPin className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
                         {seller.city}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight className="w-icon-md h-icon-md text-stone-400 shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
               </Link>
             )}
 
@@ -876,7 +876,7 @@ export const ListingDetailPage: React.FC = () => {
             {actions.isOwner ? (
               <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                  <Edit3 className="w-4 h-4" />
+                  <Edit3 className="w-icon-md h-icon-md" />
                   <span>
                     {t("listings.listingDetailPage.vousEtesLAuteurDe")}
                   </span>
@@ -887,7 +887,7 @@ export const ListingDetailPage: React.FC = () => {
                     variant="primary"
                     size="md"
                     fullWidth
-                    leftIcon={<Edit3 className="w-4 h-4" />}
+                    leftIcon={<Edit3 className="w-icon-md h-icon-md" />}
                   >
                     {t("listings.listingDetailPage.modifierMonAnnonce")}
                   </Button>
@@ -896,7 +896,7 @@ export const ListingDetailPage: React.FC = () => {
                     variant="outline"
                     size="md"
                     fullWidth
-                    leftIcon={<Sliders className="w-4 h-4" />}
+                    leftIcon={<Sliders className="w-icon-md h-icon-md" />}
                   >
                     {t("listings.listingDetailPage.gererMesAnnoncesStats")}
                   </Button>
@@ -906,7 +906,7 @@ export const ListingDetailPage: React.FC = () => {
               /* Non-Active Status Notice (Reserved, Sold, Expired) */
               <div className="p-5 bg-warning-surface border border-warning-border rounded-2xl space-y-3 text-center">
                 <div className="flex items-center justify-center gap-2 font-bold text-warning text-base">
-                  <Clock className="w-5 h-5 text-warning" />
+                  <Clock className="w-icon-lg h-icon-lg text-warning" />
                   <span>{actions.statusNotice.title}</span>
                 </div>
                 <p className="text-sm text-warning leading-relaxed font-medium">
@@ -949,7 +949,7 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
-                    leftIcon={<ShieldCheck className="w-5 h-5" />}
+                    leftIcon={<ShieldCheck className="w-icon-lg h-icon-lg" />}
                     className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
                   >
                     Acheter maintenant
@@ -967,7 +967,9 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     fullWidth
                     onClick={() => setIsReservationModalOpen(true)}
-                    leftIcon={<Clock className="w-5 h-5 text-warning" />}
+                    leftIcon={
+                      <Clock className="w-icon-lg h-icon-lg text-warning" />
+                    }
                   >
                     {t("listings.listingDetailPage.reserverLArticle")}
                   </Button>
@@ -991,7 +993,9 @@ export const ListingDetailPage: React.FC = () => {
                         }
                         setIsOfferModalOpen(true);
                       }}
-                      leftIcon={<DollarSign className="w-4 h-4 text-warning" />}
+                      leftIcon={
+                        <DollarSign className="w-icon-md h-icon-md text-warning" />
+                      }
                     >
                       {t("listings.listingDetailPage.offreDePrix")}
                     </Button>
@@ -1018,7 +1022,9 @@ export const ListingDetailPage: React.FC = () => {
                         }
                         setIsContactModalOpen(true);
                       }}
-                      leftIcon={<MessageSquare className="w-4 h-4" />}
+                      leftIcon={
+                        <MessageSquare className="w-icon-md h-icon-md" />
+                      }
                     >
                       {contactActionLabel}
                     </Button>
@@ -1052,7 +1058,7 @@ export const ListingDetailPage: React.FC = () => {
               className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
               <span>{t("listings.listingDetailPage.voirTout")}</span>
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-icon-md h-icon-md" />
             </Link>
           </div>
 
@@ -1134,7 +1140,7 @@ export const ListingDetailPage: React.FC = () => {
               variant="primary"
               fullWidth
               onClick={handleSendMessage}
-              leftIcon={<Send className="w-4 h-4" />}
+              leftIcon={<Send className="w-icon-md h-icon-md" />}
             >
               {t("listings.listingDetailPage.envoyerLeMessage")}
             </Button>
@@ -1290,7 +1296,7 @@ export const ListingDetailPage: React.FC = () => {
               variant="primary"
               size="md"
               className="w-full sm:w-auto"
-              leftIcon={<Edit3 className="w-3.5 h-3.5" />}
+              leftIcon={<Edit3 className="w-icon-sm h-icon-sm" />}
             >
               Modifier
             </Button>
@@ -1316,7 +1322,9 @@ export const ListingDetailPage: React.FC = () => {
                     }
                     setIsOfferModalOpen(true);
                   }}
-                  leftIcon={<DollarSign className="w-3.5 h-3.5 text-warning" />}
+                  leftIcon={
+                    <DollarSign className="w-icon-sm h-icon-sm text-warning" />
+                  }
                 >
                   Offre
                 </Button>
@@ -1331,7 +1339,9 @@ export const ListingDetailPage: React.FC = () => {
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
                   onClick={() => setIsReservationModalOpen(true)}
-                  leftIcon={<Clock className="w-3.5 h-3.5 text-warning" />}
+                  leftIcon={
+                    <Clock className="w-icon-sm h-icon-sm text-warning" />
+                  }
                 >
                   {t("listings.listingDetailPage.reserver")}
                 </Button>
@@ -1356,7 +1366,7 @@ export const ListingDetailPage: React.FC = () => {
                     }
                     setIsContactModalOpen(true);
                   }}
-                  leftIcon={<MessageSquare className="w-3.5 h-3.5" />}
+                  leftIcon={<MessageSquare className="w-icon-sm h-icon-sm" />}
                 >
                   {contactActionLabel}
                 </Button>
@@ -1371,7 +1381,7 @@ export const ListingDetailPage: React.FC = () => {
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
                   onClick={() => setIsDirectPurchaseModalOpen(true)}
-                  leftIcon={<ShoppingBag className="w-3.5 h-3.5" />}
+                  leftIcon={<ShoppingBag className="w-icon-sm h-icon-sm" />}
                 >
                   Acheter
                 </Button>

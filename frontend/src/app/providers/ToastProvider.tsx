@@ -117,25 +117,25 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
           const icons = {
             success: (
               <CheckCircle2
-                className="w-5 h-5 text-emerald-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-emerald-400 shrink-0"
                 aria-hidden="true"
               />
             ),
             error: (
               <AlertCircle
-                className="w-5 h-5 text-red-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-red-400 shrink-0"
                 aria-hidden="true"
               />
             ),
             info: (
               <Info
-                className="w-5 h-5 text-sky-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-sky-400 shrink-0"
                 aria-hidden="true"
               />
             ),
             warning: (
               <AlertCircle
-                className="w-5 h-5 text-amber-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-amber-400 shrink-0"
                 aria-hidden="true"
               />
             ),
@@ -163,7 +163,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
                    toast. */
                 className="shrink-0 -m-1 p-1 w-6 h-6 inline-flex items-center justify-center rounded text-stone-400 hover:text-white transition-colors"
               >
-                <X className="w-4 h-4" aria-hidden="true" />
+                <X className="w-icon-md h-icon-md" aria-hidden="true" />
               </button>
             </div>
           );

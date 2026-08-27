@@ -36,7 +36,7 @@ export function AccountTypeOnboardingPage() {
       <Button
         variant="primary"
         className="w-full sm:w-auto"
-        rightIcon={<ArrowRight className="h-4 w-4" />}
+        rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
         onClick={() =>
           navigate(
             accountType === "professional"

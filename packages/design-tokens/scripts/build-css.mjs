@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  themeAspect,
   themeBorders,
   themeBreakpoints,
   themeColors,
@@ -65,6 +66,8 @@ for (const [name, value] of Object.entries(themeOpacity))
   add(`opacity-${name}`, value);
 for (const [name, value] of Object.entries(themeBorders))
   add(`border-${name}`, value);
+for (const [name, value] of Object.entries(themeAspect))
+  add(`aspect-${name}`, value);
 
 const root = [
   "  --design-system-contract-version: 4;",

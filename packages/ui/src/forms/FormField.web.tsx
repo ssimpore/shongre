@@ -5,6 +5,7 @@ import {
   CONTROL_MOTION_CLASS,
   ControlSize,
   controlHeightClasses,
+  controlMinHeightClasses,
 } from "../utils/controlMetrics";
 
 export interface FormFieldProps {
@@ -87,7 +88,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       )}
       {control}
       {hint && !error && (
-        <p id={hintId} className="text-xs text-stone-500">
+        <p id={hintId} className="text-xs text-text-muted">
           {hint}
         </p>
       )}
@@ -110,11 +111,27 @@ export interface InputProps extends Omit<
   size?: ControlSize;
 }
 
+/**
+ * Each step pins `min-height` alongside `height`, and that pairing is what makes
+ * the step real.
+ *
+ * `src/index.css` floors every bare `<input>`/`<select>` at `control-md` so a
+ * native control dropped into a page is never smaller than the scale allows.
+ * `min-height` beats a smaller `height`, though, so that floor silently ate the
+ * `sm` step: `<Select size="sm">` asked for 32px and measured 40px on every
+ * admin toolbar, and the base rule's own comment ("utility variants can
+ * intentionally opt into another owned size") was not true for anything below
+ * the floor. Restating the size as a utility puts it in `@layer utilities`,
+ * which the cascade resolves after `@layer base`.
+ *
+ * Touch is unaffected: the coarse-pointer block redefines `--spacing-control-sm`
+ * itself to the 44px touch token, so this resolves to 44px on a finger.
+ */
 const fieldSizeClasses: Record<ControlSize, string> = {
-  sm: `${controlHeightClasses.sm} px-3 text-xs`,
-  compact: `${controlHeightClasses.compact} px-3.5 text-sm`,
-  md: `${controlHeightClasses.md} px-4 text-sm`,
-  lg: `${controlHeightClasses.lg} px-4 text-base sm:text-sm`,
+  sm: `${controlHeightClasses.sm} ${controlMinHeightClasses.sm} px-3 text-xs`,
+  compact: `${controlHeightClasses.compact} ${controlMinHeightClasses.compact} px-3.5 text-sm`,
+  md: `${controlHeightClasses.md} ${controlMinHeightClasses.md} px-4 text-sm`,
+  lg: `${controlHeightClasses.lg} ${controlMinHeightClasses.lg} px-4 text-base sm:text-sm`,
 };
 
 const fieldStateClasses = (error?: boolean) =>
@@ -122,7 +139,41 @@ const fieldStateClasses = (error?: boolean) =>
     ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/20"
     : "border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary/20";
 
-const FIELD_BASE_CLASSES = `w-full bg-bg-surface text-text-main border ${CONTROL_MOTION_CLASS} placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed`;
+/**
+ * A width supplied by the caller, which must win over the field default.
+ *
+ * `cn` concatenates; it does not resolve Tailwind conflicts. So a call site
+ * passing `w-auto` still got `w-full` too, and Tailwind picks by stylesheet
+ * order, where `.w-full` is emitted last — the vehicle-search "Trier par"
+ * control stretched to the full toolbar and pushed its own label onto a second
+ * line. Fields fill their container by default because that is right in a form
+ * column; an inline toolbar control needs to say otherwise, and be believed.
+ *
+ * `Button` carries the same guard for `display`, and `FavoriteButton` for
+ * `position` — same root cause each time.
+ */
+const WIDTH_SET_BY_CALLER =
+  /(?:^|\s)(?:[a-z0-9-]+:)*w-(?:auto|fit|min|max|screen|px|\d|\[)/;
+
+const FIELD_BASE_CLASSES = `bg-bg-surface text-text-main border ${CONTROL_MOTION_CLASS} placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed`;
+
+/** The default width, applied unless the caller already picked one. */
+const fieldWidth = (className: string) =>
+  WIDTH_SET_BY_CALLER.test(className) ? "" : "w-full";
+
+/** Just the width utilities out of a caller's className. */
+const WIDTH_TOKEN =
+  /^(?:[a-z0-9-]+:)*w-(?:auto|fit|min|max|screen|px|full|\d.*|\[.*)$/;
+const callerWidths = (className: string) =>
+  className
+    .split(/\s+/)
+    .filter((t) => WIDTH_TOKEN.test(t))
+    .join(" ");
+const withoutWidths = (className: string) =>
+  className
+    .split(/\s+/)
+    .filter((t) => t && !WIDTH_TOKEN.test(t))
+    .join(" ");
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
@@ -130,9 +181,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref,
   ) => {
     return (
-      <div className="relative flex items-center w-full">
+      /* The wrapper owns the width so `leftIcon`/`rightIcon` stay positioned
+         against the control's real box, and it is where a caller-supplied
+         width has to land; the input itself then simply fills it. */
+      <div
+        className={cn(
+          "relative flex items-center",
+          WIDTH_SET_BY_CALLER.test(className)
+            ? callerWidths(className)
+            : "w-full",
+        )}
+      >
         {leftIcon && (
-          <div className="absolute left-3.5 text-stone-500 pointer-events-none flex items-center shrink-0">
+          <div className="absolute left-3.5 text-text-muted pointer-events-none flex items-center shrink-0">
             {leftIcon}
           </div>
         )}
@@ -140,18 +201,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           aria-invalid={error ? "true" : undefined}
           className={cn(
+            "w-full",
+            // width belongs to the wrapper above, not to the control
             FIELD_BASE_CLASSES,
             CONTROL_RADIUS_CLASS,
             fieldSizeClasses[size],
             leftIcon ? "pl-11" : "",
             rightIcon ? "pr-11" : "",
             fieldStateClasses(error),
-            className,
+            withoutWidths(className),
           )}
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-3.5 text-stone-500 flex items-center shrink-0">
+          <div className="absolute right-3.5 text-text-muted flex items-center shrink-0">
             {rightIcon}
           </div>
         )}
@@ -173,6 +236,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         rows={rows}
         aria-invalid={error ? "true" : undefined}
         className={cn(
+          fieldWidth(className),
           FIELD_BASE_CLASSES,
           CONTROL_RADIUS_CLASS,
           "min-h-control-touch p-4 text-base sm:text-sm",
@@ -203,20 +267,46 @@ interface SelectBaseProps extends Omit<
  * `FormField` the `id`/`htmlFor` pairing supplies the name, so passing `id` is
  * accepted as proof; anywhere else the call site must say what the control is
  * for. The compiler now asks the question instead of an audit finding it later.
+ *
+ * An *ancestor* is the fourth legitimate source, and the most common one in
+ * this product. Two shapes qualify, and only these two:
+ *
+ *   - a caller's own `<label>` wrapping the select, which names it through the
+ *     accessible-name algorithm — `<label><span>Rayon</span><select/></label>`
+ *     appears across every search and publish surface;
+ *   - a `FormField` ancestor, which clones its child with the same generated
+ *     `id` its `<label htmlFor>` points at.
+ *
+ * TypeScript can see neither, so `labelledByAncestor` is how the call site
+ * states it: an explicit, greppable claim. It is no more permissive than the
+ * `Checkbox` contract below, which accepts the wrapping-label case for exactly
+ * the same reason. What holds the line is `e2e/accessibility.spec.ts` — only the
+ * rendered tree can tell a real ancestor from a missing one.
+ *
+ * Do not reach for it to silence the compiler on a standalone filter select;
+ * that is the exact bug this union was introduced to stop.
  */
 export type SelectProps = SelectBaseProps &
-  ({ id: string } | { "aria-label": string } | { "aria-labelledby": string });
+  (
+    | { id: string }
+    | { "aria-label": string }
+    | { "aria-labelledby": string }
+    | { labelledByAncestor: true }
+  );
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
     { className = "", error, children, options, size = "md", ...props },
     ref,
   ) => {
+    // A naming claim, not an attribute — React would render it on the element.
+    delete (props as { labelledByAncestor?: unknown }).labelledByAncestor;
     return (
       <select
         ref={ref}
         aria-invalid={error ? "true" : undefined}
         className={cn(
+          fieldWidth(className),
           FIELD_BASE_CLASSES,
           CONTROL_RADIUS_CLASS,
           fieldSizeClasses[size],
@@ -299,12 +389,12 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         {input}
         <div className="flex flex-col">
           {label && (
-            <span className="text-sm font-semibold text-stone-900">
+            <span className="text-sm font-semibold text-text-main">
               {label}
             </span>
           )}
           {description && (
-            <span className="text-xs text-stone-500">{description}</span>
+            <span className="text-xs text-text-muted">{description}</span>
           )}
         </div>
       </label>
@@ -350,10 +440,10 @@ export const Switch: React.FC<SwitchProps> = ({
       {(label || description) && (
         <div className="flex flex-col">
           {label && (
-            <span className="text-sm font-medium text-stone-900">{label}</span>
+            <span className="text-sm font-medium text-text-main">{label}</span>
           )}
           {description && (
-            <span className="text-xs text-stone-500">{description}</span>
+            <span className="text-xs text-text-muted">{description}</span>
           )}
         </div>
       )}

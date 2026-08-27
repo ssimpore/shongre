@@ -146,7 +146,7 @@ export const CrmContactsPage: React.FC = () => {
           to="/admin/crm"
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Vue d’ensemble
+          <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
         </Link>
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -158,14 +158,14 @@ export const CrmContactsPage: React.FC = () => {
             </p>
           </div>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" /> Nouveau contact
+            <Plus className="h-icon-md w-icon-md" /> Nouveau contact
           </Button>
         </div>
       </section>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <label className="relative block min-w-0 flex-1 sm:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
           <span className="sr-only">Rechercher un contact</span>
           <input
             type="search"
@@ -176,8 +176,8 @@ export const CrmContactsPage: React.FC = () => {
           />
         </label>
         <span className="inline-flex items-center gap-1.5 text-micro text-stone-500">
-          <ShieldAlert className="h-3.5 w-3.5 text-stone-400" /> Les préférences
-          de contact sont appliquées avant tout envoi.
+          <ShieldAlert className="h-icon-sm w-icon-sm text-stone-400" /> Les
+          préférences de contact sont appliquées avant tout envoi.
         </span>
       </section>
 
@@ -246,7 +246,8 @@ export const CrmContactsPage: React.FC = () => {
                             to={`/admin/crm/entreprises/${account.id}`}
                             className="inline-flex items-center gap-1.5 font-bold text-stone-700 hover:text-primary"
                           >
-                            <Building2 className="h-3.5 w-3.5" /> {account.name}
+                            <Building2 className="h-icon-sm w-icon-sm" />{" "}
+                            {account.name}
                           </Link>
                         ) : (
                           <span className="text-stone-400">
@@ -258,13 +259,13 @@ export const CrmContactsPage: React.FC = () => {
                         <div className="space-y-1 text-micro text-stone-600">
                           {contact.email && (
                             <span className="flex items-center gap-1.5">
-                              <Mail className="h-3 w-3 text-stone-400" />{" "}
+                              <Mail className="h-icon-xs w-icon-xs text-stone-400" />{" "}
                               {contact.email}
                             </span>
                           )}
                           {contact.phone && (
                             <span className="flex items-center gap-1.5">
-                              <Phone className="h-3 w-3 text-stone-400" />{" "}
+                              <Phone className="h-icon-xs w-icon-xs text-stone-400" />{" "}
                               {contact.phone}
                             </span>
                           )}

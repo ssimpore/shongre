@@ -23,6 +23,7 @@ import {
   Container,
   Drawer,
   FilterPanel,
+  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -107,24 +108,26 @@ const AutoFilters: React.FC<FiltersProps> = ({
     >
       <label className="block text-xs font-bold text-text-main">
         Type de véhicule
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("type") || "car"}
           onChange={(event) => update("type", event.target.value)}
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           {catalog.vehicleTypes.map((type) => (
             <option key={type.type} value={type.type}>
               {type.label}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-xs font-bold text-text-main">
         Carrosserie
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("body") || ""}
           onChange={(event) => update("body", event.target.value || undefined)}
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Toutes</option>
           {bodyTypeOptions.map((option) => (
@@ -132,7 +135,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
@@ -202,29 +205,30 @@ const AutoFilters: React.FC<FiltersProps> = ({
             placeholder="Ville"
             className="h-control-touch min-w-0 rounded-control border border-border-base px-3 text-xs"
           />
-          <select
+          <Select
+            className="w-auto"
             aria-label="Rayon"
             value={
               params.get("radius") ||
               String(catalog.config.defaultSearchRadiusKm)
             }
             onChange={(event) => update("radius", event.target.value)}
-            className="h-control-touch rounded-control border border-border-base bg-bg-surface px-2 text-xs"
           >
             {[10, 25, 50, 100, 200].map((radius) => (
               <option key={radius} value={radius}>
                 {radius} km
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </fieldset>
       <label className="block text-xs font-bold text-text-main">
         Marque
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("make") || ""}
           onChange={(event) => update("make", event.target.value || undefined)}
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Toutes les marques</option>
           {catalog.vehicleCatalog
@@ -234,14 +238,15 @@ const AutoFilters: React.FC<FiltersProps> = ({
                 {entry.label}
               </option>
             ))}
-        </select>
+        </Select>
       </label>
       <label className="block text-xs font-bold text-text-main">
         Modèle
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("model") || ""}
           onChange={(event) => update("model", event.target.value || undefined)}
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Tous les modèles</option>
           {catalog.vehicleCatalog
@@ -255,7 +260,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
                 {entry.label}
               </option>
             ))}
-        </select>
+        </Select>
       </label>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">Prix</legend>
@@ -309,19 +314,20 @@ const AutoFilters: React.FC<FiltersProps> = ({
       </fieldset>
       <label className="block text-xs font-bold text-text-main">
         Kilométrage maximum
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("maxMileage") || ""}
           onChange={(event) =>
             update("maxMileage", event.target.value || undefined)
           }
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Sans maximum</option>
           <option value="30000">30 000 km</option>
           <option value="60000">60 000 km</option>
           <option value="100000">100 000 km</option>
           <option value="150000">150 000 km</option>
-        </select>
+        </Select>
       </label>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
@@ -353,31 +359,33 @@ const AutoFilters: React.FC<FiltersProps> = ({
       </fieldset>
       <label className="block text-xs font-bold text-text-main">
         Boîte de vitesses
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("transmission") || ""}
           onChange={(event) =>
             update("transmission", event.target.value || undefined)
           }
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Toutes</option>
           <option value="manual">Manuelle</option>
           <option value="automatic">Automatique</option>
-        </select>
+        </Select>
       </label>
       <label className="block text-xs font-bold text-text-main">
         Vendeur
-        <select
+        <Select
+          className="mt-2 w-full"
+          labelledByAncestor
           value={params.get("seller") || ""}
           onChange={(event) =>
             update("seller", event.target.value || undefined)
           }
-          className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal"
         >
           <option value="">Tous</option>
           <option value="individual">Particulier</option>
           <option value="dealer">Professionnel</option>
-        </select>
+        </Select>
       </label>
       <fieldset className="space-y-1 border-t border-border-subtle pt-4">
         <legend className="sr-only">Services</legend>
@@ -676,10 +684,14 @@ export const AutoSearchPage: React.FC = () => {
             </button>
             <label className="ml-auto text-xs text-text-secondary">
               Trier par{" "}
-              <select
+              <Select
+                /* Sizes to its content so the label stays on one line: fields
+                   fill their container by default, which is right in a form
+                   column and wrong for an inline toolbar control. */
+                className="ml-2 w-auto"
+                labelledByAncestor
                 value={query.sort}
                 onChange={(event) => update("sort", event.target.value)}
-                className="ml-2 h-control-compact rounded-control border border-border-base bg-bg-surface px-2 text-xs text-text-main h-control-touch"
               >
                 <option value="relevance">Pertinence</option>
                 <option value="price_asc">Prix croissant</option>
@@ -687,7 +699,7 @@ export const AutoSearchPage: React.FC = () => {
                 <option value="year_desc">Année récente</option>
                 <option value="mileage_asc">Kilométrage</option>
                 <option value="newest">Plus récentes</option>
-              </select>
+              </Select>
             </label>
           </div>
           {loading ? (

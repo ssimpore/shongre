@@ -150,7 +150,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               variant="outline"
               size="sm"
               onClick={handleDownloadSample}
-              leftIcon={<Download className="w-3.5 h-3.5" />}
+              leftIcon={<Download className="w-icon-sm h-icon-sm" />}
             >
               {t("sellerworkspace.bulkImportModal.modeleCsvVierge")}
             </Button>
@@ -158,7 +158,9 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               variant="outline"
               size="sm"
               onClick={handleLoadSample}
-              leftIcon={<Sparkles className="w-3.5 h-3.5 text-primary" />}
+              leftIcon={
+                <Sparkles className="w-icon-sm h-icon-sm text-primary" />
+              }
             >
               {t("sellerworkspace.bulkImportModal.chargerUnExemple4Articles")}
             </Button>
@@ -172,7 +174,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               className="hidden"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition-colors shadow-xs">
-              <Upload className="w-3.5 h-3.5" />
+              <Upload className="w-icon-sm h-icon-sm" />
               {t("sellerworkspace.bulkImportModal.parcourirUnFichierCsv")}
             </span>
           </label>
@@ -190,7 +192,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               </span>
               {validCount < parsedItems.length && (
                 <span className="text-warning flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5" />
+                  <AlertTriangle className="w-icon-sm h-icon-sm" />
                   {t("sellerworkspace.bulkImportModal.invalidRows", {
                     count: parsedItems.length - validCount,
                   })}
@@ -264,7 +266,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
             disabled={validCount === 0 || isImporting}
             isLoading={isImporting}
             onClick={handleExecuteImport}
-            leftIcon={<CheckCircle2 className="w-4 h-4" />}
+            leftIcon={<CheckCircle2 className="w-icon-md h-icon-md" />}
           >
             {t("sellerworkspace.bulkImportModal.importAndPublish", {
               count: validCount,

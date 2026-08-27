@@ -265,7 +265,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
           <div className="space-y-5">
             <div>
               <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <Truck className="w-4 h-4 text-primary" />
+                <Truck className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
                     "transactions.directPurchaseCheckoutModal.1ChoisissezVotreModeDe",
@@ -327,7 +327,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
             {selectedQuote?.deliveryType !== "hand_delivery" && (
               <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
                 <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
+                  <MapPin className="w-icon-md h-icon-md text-primary" />
                   <span>
                     {t(
                       "transactions.directPurchaseCheckoutModal.adresseDeLivraison",
@@ -428,7 +428,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
               {(authoritativeQuote?.protectionFeeMinor || 0) > 0 && (
                 <div className="flex justify-between text-stone-600">
                   <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-success" />
+                    <ShieldCheck className="w-icon-md h-icon-md text-success" />
                     <span>
                       {t(
                         "transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre",
@@ -463,7 +463,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 size="md"
                 onClick={handleProceedToPayment}
                 disabled={isQuoteLoading || !authoritativeQuote}
-                rightIcon={<ChevronRight className="w-4 h-4" />}
+                rightIcon={<ChevronRight className="w-icon-md h-icon-md" />}
               >
                 {isQuoteLoading
                   ? "Calcul du total…"
@@ -478,7 +478,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
           <div className="space-y-5">
             <div>
               <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-primary" />
+                <CreditCard className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
                     "transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise",
@@ -495,7 +495,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
             {/* Provider-hosted payment */}
             <div className="p-5 rounded-2xl border border-stone-200/60 bg-stone-50 space-y-3 shadow-inner">
               <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-success shrink-0" />
+                <Lock className="w-icon-lg h-icon-lg text-success shrink-0" />
                 <div>
                   <p className="text-sm font-bold text-stone-900">
                     Paiement hébergé et sécurisé
@@ -510,13 +510,13 @@ export const DirectPurchaseCheckoutModal: React.FC<
 
             {paymentError && (
               <div className="p-3 bg-danger-surface border border-danger-border rounded-xl flex items-center gap-2 text-xs text-danger">
-                <AlertCircle className="w-4 h-4 text-danger shrink-0" />
+                <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0" />
                 <span>{paymentError}</span>
               </div>
             )}
 
             <div className="p-4 bg-success-surface text-success rounded-2xl border border-success-border text-xs flex items-center gap-3 shadow-2xs font-medium">
-              <ShieldCheck className="w-5 h-5 text-success shrink-0" />
+              <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0" />
               <span>
                 <strong>Garantie Shongre :</strong> Le vendeur ne reçoit son
                 virement qu'après réception et validation du bien.
@@ -538,7 +538,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 onClick={handleExecutePayment}
                 isLoading={isProcessing}
                 disabled={!authoritativeQuote || isProcessing}
-                leftIcon={<Lock className="w-4 h-4" />}
+                leftIcon={<Lock className="w-icon-md h-icon-md" />}
               >
                 {`Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100) : "—"})`}
               </Button>

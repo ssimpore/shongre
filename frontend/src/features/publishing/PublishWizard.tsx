@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { Select } from "../../design-system";
 import { scrollToTop } from "../../utilities/motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -835,7 +836,7 @@ export const PublishWizard: React.FC = () => {
               {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
             </label>
             <div className="relative">
-              <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
+              <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-3" />
               <input
                 type="text"
                 placeholder={t("publishing.publishWizard.exCanapeDAngleIphone")}
@@ -877,7 +878,7 @@ export const PublishWizard: React.FC = () => {
                       </div>
                     </div>
                     {draft.taxonomyNodeId === n.id && (
-                      <Check className="w-4 h-4 text-primary shrink-0" />
+                      <Check className="w-icon-md h-icon-md text-primary shrink-0" />
                     )}
                   </button>
                 ))}
@@ -931,7 +932,7 @@ export const PublishWizard: React.FC = () => {
                     .join(" › ")}
                 </span>
               </div>
-              <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
+              <CheckCircle2 className="w-icon-lg h-icon-lg text-success shrink-0" />
             </div>
           )}
         </div>
@@ -997,7 +998,7 @@ export const PublishWizard: React.FC = () => {
           {schema && schema.fields.length > 0 && (
             <div className="pt-4 border-t border-border-subtle space-y-4">
               <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-primary" />
+                <Tag className="w-icon-sm h-icon-sm text-primary" />
                 <span>{t("publishing.publishWizard.criteresDetailles")}</span>
               </h3>
 
@@ -1020,12 +1021,14 @@ export const PublishWizard: React.FC = () => {
                         required={field.isRequired}
                         hint={hint}
                       >
-                        <select
+                        <Select
+                          size="compact"
+                          className="w-full"
+                          labelledByAncestor
                           value={value}
                           onChange={(e) =>
                             updateAttribute(attr.code, e.target.value)
                           }
-                          className="w-full h-control-md px-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold text-stone-900 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
                         >
                           <option value="">
                             {t(
@@ -1037,7 +1040,7 @@ export const PublishWizard: React.FC = () => {
                               {opt.label}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </FormField>
                     );
                   }
@@ -1286,7 +1289,7 @@ export const PublishWizard: React.FC = () => {
                       aria-label={`Supprimer la photo ${index + 1}`}
                       className="w-7 h-7 inline-flex items-center justify-center bg-danger text-white rounded-md shadow-xs hover:bg-danger-hover active:bg-danger-active transition-colors duration-fast cursor-pointer"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-icon-md h-icon-md" />
                     </button>
                   </div>
                   <div>
@@ -1322,7 +1325,7 @@ export const PublishWizard: React.FC = () => {
                     event.target.value = "";
                   }}
                 />
-                <Camera className="w-6 h-6 text-stone-400" />
+                <Camera className="w-icon-xl h-icon-xl text-stone-400" />
                 <span className="text-xs font-bold">
                   {isUploadingPhoto ? "Téléversement…" : "+ Ajouter photo"}
                 </span>
@@ -1354,7 +1357,7 @@ export const PublishWizard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs">
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-icon-md h-icon-md" />
                 </div>
                 <div>
                   <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider">
@@ -1373,7 +1376,7 @@ export const PublishWizard: React.FC = () => {
                 size="sm"
                 onClick={handleGenerateWithAI}
                 isLoading={isGeneratingWithAI}
-                leftIcon={<Bot className="w-3.5 h-3.5" />}
+                leftIcon={<Bot className="w-icon-sm h-icon-sm" />}
               >
                 {t("publishing.publishWizard.genererAvecLIa")}
               </Button>
@@ -1436,7 +1439,10 @@ export const PublishWizard: React.FC = () => {
           <div className="space-y-4">
             {schema && schema.supportedPriceModels.length > 1 && (
               <FormField label="Mode de tarification" required>
-                <select
+                <Select
+                  size="compact"
+                  className="w-full"
+                  labelledByAncestor
                   value={draft.pricing.priceModel}
                   onChange={(event) => {
                     const priceModel = event.target.value as PriceModel;
@@ -1453,14 +1459,13 @@ export const PublishWizard: React.FC = () => {
                       },
                     });
                   }}
-                  className={`h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                 >
                   {schema.supportedPriceModels.map((model) => (
                     <option key={model} value={model}>
                       {PRICE_MODEL_LABELS[model]}
                     </option>
                   ))}
-                </select>
+                </Select>
               </FormField>
             )}
 
@@ -1512,7 +1517,7 @@ export const PublishWizard: React.FC = () => {
             {currentUser?.role === "pro_seller" && isProductLike && (
               <div className="pt-4 border-t border-border-subtle space-y-3">
                 <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Store className="w-3.5 h-3.5 text-primary" />
+                  <Store className="w-icon-sm h-icon-sm text-primary" />
                   <span>
                     {t(
                       "publishing.publishWizard.gestionDesStocksReferenceProfessionnelle",
@@ -1586,7 +1591,7 @@ export const PublishWizard: React.FC = () => {
             <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700">
-                  <Bot className="w-4 h-4" />
+                  <Bot className="w-icon-md h-icon-md" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
@@ -1623,14 +1628,14 @@ export const PublishWizard: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center">
-                  <ShieldCheck className="w-4 h-4" />
+                  <ShieldCheck className="w-icon-md h-icon-md" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                     <span>
                       {t("publishing.publishWizard.achatEnLigneDirectSans")}
                     </span>
-                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.2 rounded">
+                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.5 rounded">
                       {t("publishing.publishWizard.sequestreGaranti")}
                     </span>
                   </div>
@@ -1671,7 +1676,7 @@ export const PublishWizard: React.FC = () => {
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-icon-md h-icon-md" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
@@ -1723,7 +1728,7 @@ export const PublishWizard: React.FC = () => {
             <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-icon-md h-icon-md" />
                 </div>
                 <div>
                   <div className="text-xs font-bold text-stone-900">
@@ -1753,7 +1758,7 @@ export const PublishWizard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center">
-                      <Package className="w-4 h-4" />
+                      <Package className="w-icon-md h-icon-md" />
                     </div>
                     <div>
                       <div className="text-xs font-bold text-stone-900">
@@ -1845,7 +1850,7 @@ export const PublishWizard: React.FC = () => {
               <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center">
-                    <Truck className="w-4 h-4" />
+                    <Truck className="w-icon-md h-icon-md" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-stone-900">
@@ -1934,7 +1939,7 @@ export const PublishWizard: React.FC = () => {
             className="w-full flex items-center justify-between gap-3 p-5 sm:p-6 text-left hover:bg-bg-base/60 transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-2.5 min-w-0">
-              <Globe className="w-5 h-5 text-primary shrink-0" />
+              <Globe className="w-icon-lg h-icon-lg text-primary shrink-0" />
               <span className="min-w-0">
                 <span className="block font-black text-stone-900">
                   {t("publishing.publishWizard.optionsAvancees")}
@@ -1950,7 +1955,7 @@ export const PublishWizard: React.FC = () => {
               </span>
             </span>
             <ChevronRight
-              className={`w-5 h-5 text-stone-400 shrink-0 transition-transform duration-fast ${
+              className={`w-icon-lg h-icon-lg text-stone-400 shrink-0 transition-transform duration-fast ${
                 showAdvanced ? "rotate-90" : ""
               }`}
             />
@@ -1964,7 +1969,7 @@ export const PublishWizard: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border-subtle">
               <div>
                 <div className="flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-primary" />
+                  <Globe className="w-icon-lg h-icon-lg text-primary" />
                   <h2 className="text-xl sm:text-2xl font-black text-stone-900">
                     {t("publishing.publishWizard.marchesEtPaysDeDiffusion")}
                   </h2>
@@ -2112,7 +2117,7 @@ export const PublishWizard: React.FC = () => {
                               : "border-stone-300 bg-white text-transparent"
                           }`}
                         >
-                          <Check className="h-3.5 w-3.5" />
+                          <Check className="h-icon-sm w-icon-sm" />
                         </span>
                       </div>
 
@@ -2163,7 +2168,7 @@ export const PublishWizard: React.FC = () => {
 
             {/* Cross-border Protection Notice */}
             <div className="p-4 bg-bg-base rounded-xl border border-border-base flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+              <ShieldCheck className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
               <div className="text-xs text-stone-700 space-y-1">
                 <span className="font-bold text-stone-900">
                   {t(
@@ -2344,7 +2349,7 @@ export const PublishWizard: React.FC = () => {
 
               {/* Multi-market compliance badge */}
               <div className="p-3.5 bg-success-surface border border-success-border rounded-xl flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                <CheckCircle2 className="w-icon-md h-icon-md text-success shrink-0" />
                 <span className="text-xs font-bold text-success">
                   Prête à être publiée sur{" "}
                   {(draft.selectedMarkets || [defaultMarketCode]).length} marché
@@ -2438,7 +2443,7 @@ export const PublishWizard: React.FC = () => {
             size="md"
             onClick={handlePrevStep}
             disabled={currentStep === 1 || isPublishing}
-            leftIcon={<ArrowLeft className="w-4 h-4" />}
+            leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
           >
             {t("publishing.publishWizard.precedent")}
           </Button>
@@ -2449,7 +2454,7 @@ export const PublishWizard: React.FC = () => {
                 variant="primary"
                 size="md"
                 onClick={handleNextStep}
-                rightIcon={<ArrowRight className="w-4 h-4" />}
+                rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
               >
                 <span className="hidden sm:inline">
                   Continuer : {PHASES[currentStep]?.label || ""}
@@ -2462,7 +2467,7 @@ export const PublishWizard: React.FC = () => {
                 size="lg"
                 onClick={handleFinalPublish}
                 isLoading={isPublishing}
-                leftIcon={<CheckCircle2 className="w-5 h-5" />}
+                leftIcon={<CheckCircle2 className="w-icon-lg h-icon-lg" />}
               >
                 {t("publishing.publishWizard.publierMonAnnonceMaintenant")}
               </Button>

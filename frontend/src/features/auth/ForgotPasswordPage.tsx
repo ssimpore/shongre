@@ -118,7 +118,7 @@ export const ForgotPasswordPage: React.FC = () => {
     >
       {errorMessage && (
         <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
+          <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
@@ -126,7 +126,7 @@ export const ForgotPasswordPage: React.FC = () => {
       {successMessage && step === "request" && (
         <div className="mb-5 p-4 rounded-xl bg-success-surface border border-success-border text-xs text-success space-y-2">
           <div className="flex items-start gap-2 font-bold text-success">
-            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
 
@@ -172,7 +172,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 autoComplete="email"
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
-              <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -182,7 +182,7 @@ export const ForgotPasswordPage: React.FC = () => {
             size="md"
             className="w-full"
             isLoading={isLoading}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
           >
             {t("auth.forgotPasswordPage.envoyerLeLienDeReinitialisation")}
           </Button>
@@ -203,7 +203,7 @@ export const ForgotPasswordPage: React.FC = () => {
                 required
                 className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
               />
-              <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -241,7 +241,7 @@ export const ForgotPasswordPage: React.FC = () => {
             size="md"
             className="w-full mt-2"
             isLoading={isLoading}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
           >
             {t("auth.forgotPasswordPage.mettreAJourMonMot")}
           </Button>

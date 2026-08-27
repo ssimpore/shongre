@@ -152,7 +152,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             aria-label={t(
               "ui.categoryFilterRail.faireDefilerLesCategoriesVers",
             )}
-            className={`hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-stone-900 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -ml-2`}
+            className={`hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -ml-2`}
           >
             <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
           </button>
@@ -188,7 +188,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               }`}
             >
               <LayoutGrid
-                className={`w-3.5 h-3.5 pointer-events-none ${!selectedCategorySlug ? "text-primary" : "text-stone-500"}`}
+                className={`w-icon-sm h-icon-sm pointer-events-none ${!selectedCategorySlug ? "text-primary" : "text-text-muted"}`}
               />
               <span className="pointer-events-none">
                 {t("ui.categoryFilterRail.toutesLesAnnonces")}
@@ -250,7 +250,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             aria-label={t(
               "ui.categoryFilterRail.faireDefilerLesCategoriesVers2",
             )}
-            className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-stone-900 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -mr-2`}
+            className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -mr-2`}
           >
             <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
           </button>
@@ -262,7 +262,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
         selectedCategorySlug &&
         subCategories.length > 0 && (
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-1 px-0.5 pl-1">
-            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 shrink-0 mr-1">
+            <span className="text-micro font-bold uppercase tracking-wider text-text-muted shrink-0 mr-1">
               {t("ui.categoryFilterRail.sousCategories")}
             </span>
 
@@ -274,7 +274,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                 !selectedSubCategorySlug
                   ? "bg-primary-light text-primary border-primary-border font-bold"
-                  : "bg-stone-100 text-stone-600 border-transparent hover:bg-stone-200"
+                  : "bg-stone-100 text-text-secondary border-transparent hover:bg-stone-200"
               }`}
             >
               Toutes

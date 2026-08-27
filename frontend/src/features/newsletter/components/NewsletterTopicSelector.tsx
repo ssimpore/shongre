@@ -11,12 +11,12 @@ interface NewsletterTopicSelectorProps {
 }
 
 const TOPIC_ICONS: Record<string, React.ReactNode> = {
-  deals: <Tag className="w-4 h-4 text-amber-500" />,
-  editorial: <Sparkles className="w-4 h-4 text-primary" />,
-  seller_tips: <Lightbulb className="w-4 h-4 text-success" />,
-  pro_insights: <Briefcase className="w-4 h-4 text-info" />,
-  new_features: <Zap className="w-4 h-4 text-indigo-500" />,
-  local_trends: <MapPin className="w-4 h-4 text-danger" />,
+  deals: <Tag className="w-icon-md h-icon-md text-amber-500" />,
+  editorial: <Sparkles className="w-icon-md h-icon-md text-primary" />,
+  seller_tips: <Lightbulb className="w-icon-md h-icon-md text-success" />,
+  pro_insights: <Briefcase className="w-icon-md h-icon-md text-info" />,
+  new_features: <Zap className="w-icon-md h-icon-md text-indigo-500" />,
+  local_trends: <MapPin className="w-icon-md h-icon-md text-danger" />,
 };
 
 export const NewsletterTopicSelector: React.FC<
@@ -47,7 +47,9 @@ export const NewsletterTopicSelector: React.FC<
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="p-2 rounded-xl bg-stone-100 shrink-0 mt-0.5">
-              {TOPIC_ICONS[t.id] || <Sparkles className="w-4 h-4" />}
+              {TOPIC_ICONS[t.id] || (
+                <Sparkles className="w-icon-md h-icon-md" />
+              )}
             </div>
 
             <div className="flex-1 min-w-0">

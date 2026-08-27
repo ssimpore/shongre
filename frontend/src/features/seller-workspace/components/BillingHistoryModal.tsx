@@ -164,7 +164,10 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
-                      <FileText className="h-5 w-5" aria-hidden="true" />
+                      <FileText
+                        className="h-icon-lg w-icon-lg"
+                        aria-hidden="true"
+                      />
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -213,7 +216,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                       size="sm"
                       isLoading={downloadingId === invoice.id}
                       onClick={() => void downloadInvoice(invoice)}
-                      leftIcon={<Download className="h-4 w-4" />}
+                      leftIcon={<Download className="h-icon-md w-icon-md" />}
                     >
                       Télécharger
                     </Button>

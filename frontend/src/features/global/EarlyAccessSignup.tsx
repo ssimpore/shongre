@@ -56,7 +56,7 @@ export function EarlyAccessSignup({
         role="status"
       >
         <CheckCircle2
-          className="mt-0.5 h-5 w-5 shrink-0 text-success"
+          className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
           aria-hidden="true"
         />
         <div>
@@ -82,7 +82,7 @@ export function EarlyAccessSignup({
         <label className="relative flex-1">
           <span className="sr-only">Adresse email</span>
           <Mail
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500"
+            className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-500"
             aria-hidden="true"
           />
           <input

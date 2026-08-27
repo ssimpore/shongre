@@ -144,7 +144,7 @@ export const EmploymentApplyPage: React.FC = () => {
     return (
       <main>
         <Container width="content" className="py-10 sm:py-16">
-          <div className="rounded-card border border-success-border bg-success-surface p-6 text-center shadow-card sm:p-10">
+          <div className="rounded-card border border-success-border bg-success-surface p-6 text-center shadow-sm sm:p-10">
             <CheckCircle2
               className="mx-auto h-12 w-12 text-success"
               aria-hidden="true"
@@ -183,7 +183,7 @@ export const EmploymentApplyPage: React.FC = () => {
         <div className="mt-4 grid min-w-0 gap-5 lg:grid-cols-content-aside-xs">
           <form
             onSubmit={submit}
-            className="min-w-0 max-w-full overflow-hidden rounded-card border border-border-base bg-bg-surface p-5 shadow-card sm:p-7"
+            className="min-w-0 max-w-full overflow-hidden rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7"
           >
             <p className="text-xs font-black uppercase tracking-wide text-primary">
               Candidature directe

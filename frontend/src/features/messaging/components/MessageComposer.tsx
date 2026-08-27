@@ -101,7 +101,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   if (!capabilities.canSend) {
     return (
       <div className="p-4 bg-stone-100 border-t border-border-base text-center text-xs font-semibold text-stone-500 flex items-center justify-center gap-2 shrink-0">
-        <ShieldAlert className="w-4 h-4 text-stone-400" />
+        <ShieldAlert className="w-icon-md h-icon-md text-stone-400" />
         <span>
           {capabilities.disabledReason ||
             "Vous ne pouvez pas envoyer de message dans cette conversation."}

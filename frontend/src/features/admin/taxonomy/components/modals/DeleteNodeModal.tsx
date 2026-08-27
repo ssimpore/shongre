@@ -71,7 +71,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
         {!impact.isSafeToDelete ? (
           <div className="p-4 bg-danger-surface border border-danger-border rounded-xl space-y-3 text-xs text-danger">
             <div className="flex items-center gap-2 font-bold text-danger">
-              <AlertOctagon className="w-5 h-5 shrink-0" />
+              <AlertOctagon className="w-icon-lg h-icon-lg shrink-0" />
               <span>
                 {t("admin.deleteNodeModal.suppressionBloqueeParLesRegles")}
               </span>
@@ -108,7 +108,9 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
                   onClose();
                   onSwitchToDeprecate();
                 }}
-                leftIcon={<Archive className="w-4 h-4 text-warning" />}
+                leftIcon={
+                  <Archive className="w-icon-md h-icon-md text-warning" />
+                }
               >
                 {t("admin.deleteNodeModal.deprecierALaPlace")}
               </Button>
@@ -123,7 +125,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
               size="sm"
               onClick={handleDelete}
               disabled={!impact.isSafeToDelete || isSubmitting}
-              leftIcon={<Trash2 className="w-4 h-4" />}
+              leftIcon={<Trash2 className="w-icon-md h-icon-md" />}
             >
               {isSubmitting ? "Suppression..." : "Supprimer définitivement"}
             </Button>

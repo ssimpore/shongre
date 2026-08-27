@@ -80,7 +80,7 @@ export const FavoritesPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleClearAll}
-            leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+            leftIcon={<Trash2 className="w-icon-sm h-icon-sm" />}
           >
             {t("favorites.favoritesPage.viderLesFavoris")}
           </Button>
@@ -117,7 +117,7 @@ export const FavoritesPage: React.FC = () => {
             <Button
               to={routes.search()}
               variant="primary"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
             >
               {t("favorites.favoritesPage.explorerLesAnnonces")}
             </Button>

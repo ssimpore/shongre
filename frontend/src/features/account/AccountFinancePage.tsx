@@ -94,7 +94,7 @@ export const AccountFinancePage: React.FC<{
     return (
       <div className="flex min-h-80 items-center justify-center">
         <LoaderCircle
-          className="h-6 w-6 animate-spin text-primary"
+          className="h-icon-xl w-icon-xl animate-spin text-primary"
           aria-label="Chargement de vos finances"
         />
       </div>
@@ -129,7 +129,7 @@ export const AccountFinancePage: React.FC<{
             comprises lorsqu’indiqué.
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
-            <CheckCircle2 className="h-4 w-4" />
+            <CheckCircle2 className="h-icon-md w-icon-md" />
             Solde actualisé le {formatDateTime(dashboard.asOf)}
           </p>
         </div>
@@ -229,7 +229,7 @@ export const AccountFinancePage: React.FC<{
             size="sm"
             onClick={() => setInvoiceHistoryOpen(true)}
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-icon-md w-icon-md" />
             Factures et reçus{billing ? ` (${billing.invoices.length})` : ""}
           </Button>
         </div>
@@ -263,7 +263,7 @@ export const AccountFinancePage: React.FC<{
                   </td>
                   <td className="px-3 py-3">
                     <span className="inline-flex items-center gap-1 rounded-full border border-success-border bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                      <CheckCircle2 className="h-3 w-3" />
+                      <CheckCircle2 className="h-icon-xs w-icon-xs" />
                       Comptabilisé
                     </span>
                   </td>
@@ -274,7 +274,7 @@ export const AccountFinancePage: React.FC<{
         </ScrollableRegion>
       </section>
       <aside className="flex items-start gap-3 rounded-card border border-info-border bg-info-surface p-4 text-xs text-info">
-        <ReceiptText className="mt-0.5 h-4 w-4 shrink-0" />
+        <ReceiptText className="mt-0.5 h-icon-md w-icon-md shrink-0" />
         <div>
           <p className="font-bold">Définitions transparentes</p>
           <p className="mt-1 leading-relaxed">

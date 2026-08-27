@@ -121,7 +121,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
   if (loading && !configuration) {
     return (
       <div className="min-h-80 flex items-center justify-center" role="status">
-        <LoaderCircle className="w-5 h-5 animate-spin text-primary" />
+        <LoaderCircle className="w-icon-lg h-icon-lg animate-spin text-primary" />
         <span className="ml-2 text-xs font-semibold text-text-secondary">
           {t("admin.discovery.loading")}
         </span>
@@ -152,7 +152,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" />
+            <ShieldCheck className="w-icon-md h-icon-md text-primary" />
             <h2 className="text-sm font-black text-text-main">
               {t("admin.discovery.title")}
             </h2>
@@ -169,13 +169,14 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
             disabled={saving}
             onClick={() => save(false)}
           >
-            <Save className="w-4 h-4" /> {t("admin.discovery.saveDraft")}
+            <Save className="w-icon-md h-icon-md" />{" "}
+            {t("admin.discovery.saveDraft")}
           </Button>
           <Button size="sm" disabled={saving} onClick={() => save(true)}>
             {saving ? (
-              <LoaderCircle className="w-4 h-4 animate-spin" />
+              <LoaderCircle className="w-icon-md h-icon-md animate-spin" />
             ) : (
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-icon-md h-icon-md" />
             )}
             {t("admin.discovery.publish")}
           </Button>
@@ -192,9 +193,9 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
           }`}
         >
           {error ? (
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
           ) : (
-            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <ShieldCheck className="w-icon-md h-icon-md shrink-0" />
           )}
           <span>{error || notice}</span>
         </div>

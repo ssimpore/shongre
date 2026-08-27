@@ -158,7 +158,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               aria-label={t("listings.listingMediaGallery.photoPrecedente")}
               className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-icon-lg h-icon-lg" />
             </button>
             <button
               type="button"
@@ -169,14 +169,14 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               aria-label="Photo suivante"
               className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-icon-lg h-icon-lg" />
             </button>
           </>
         )}
 
         {/* Mobile Pagination Dots Indicator (if multiple photos) */}
         {photoList.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-raised sm:hidden bg-stone-900/70 backdrop-blur-xs px-2.5 py-1 rounded-full pointer-events-none">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-raised sm:hidden bg-overlay-scrim backdrop-blur-xs px-2.5 py-1 rounded-full pointer-events-none">
             {photoList.map((_, idx) => (
               <span
                 key={idx}
@@ -191,7 +191,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
         {/* Bottom controls bar: Counter & Fullscreen trigger */}
         <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none z-raised">
           <span className="hidden sm:inline-flex bg-stone-900/80 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full items-center gap-1.5 font-bold shadow-xs">
-            <Camera className="w-3.5 h-3.5" />
+            <Camera className="w-icon-sm h-icon-sm" />
             <span>
               {activeIndex + 1} / {photoList.length}
             </span>
@@ -203,7 +203,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             aria-label={t("listings.listingMediaGallery.agrandirEnPleinEcran")}
             className="pointer-events-auto ml-auto bg-stone-900/80 hover:bg-stone-900 backdrop-blur-md text-white text-xs p-1.5 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-xs"
           >
-            <Maximize2 className="w-4 h-4" />
+            <Maximize2 className="w-icon-md h-icon-md" />
           </button>
         </div>
       </div>
@@ -260,7 +260,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               aria-label={t("listings.listingMediaGallery.fermerLePleinEcran")}
               className="p-2 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white transition-colors cursor-pointer"
             >
-              <X className="w-6 h-6" />
+              <X className="w-icon-xl h-icon-xl" />
             </button>
           </div>
 
@@ -282,7 +282,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   aria-label={t("listings.listingMediaGallery.photoPrecedente")}
                   className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
-                  <ChevronLeft className="w-6 h-6" />
+                  <ChevronLeft className="w-icon-xl h-icon-xl" />
                 </button>
                 <button
                   type="button"
@@ -290,7 +290,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   aria-label="Photo suivante"
                   className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
-                  <ChevronRight className="w-6 h-6" />
+                  <ChevronRight className="w-icon-xl h-icon-xl" />
                 </button>
               </>
             )}

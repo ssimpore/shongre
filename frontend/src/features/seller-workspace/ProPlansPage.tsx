@@ -432,7 +432,7 @@ export const ProPlansPage: React.FC = () => {
       <section className="border-b border-border-subtle bg-bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary-border bg-primary-light px-3 py-1 text-xs font-bold text-primary">
-            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+            <Sparkles className="w-icon-sm h-icon-sm" aria-hidden="true" />
             Solutions Shongre Pro
           </div>
           <h1 className="mx-auto mt-4 max-w-4xl text-3xl sm:text-4xl font-black tracking-tight text-text-main">
@@ -657,7 +657,7 @@ export const ProPlansPage: React.FC = () => {
                               className="flex items-start gap-2.5"
                             >
                               <Check
-                                className="mt-0.5 h-4 w-4 shrink-0 text-success"
+                                className="mt-0.5 h-icon-md w-icon-md shrink-0 text-success"
                                 aria-hidden="true"
                               />
                               <span>
@@ -749,7 +749,10 @@ export const ProPlansPage: React.FC = () => {
                     Les droits sont versionnés avec le forfait souscrit.
                   </p>
                 </div>
-                <Layers3 className="h-6 w-6 text-primary" aria-hidden="true" />
+                <Layers3
+                  className="h-icon-xl w-icon-xl text-primary"
+                  aria-hidden="true"
+                />
               </div>
               <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface shadow-xs">
                 <table className="w-full min-w-190 border-collapse text-xs">
@@ -827,7 +830,10 @@ export const ProPlansPage: React.FC = () => {
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="mb-4 flex items-start gap-3">
                           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-light text-primary">
-                            <Zap className="h-5 w-5" aria-hidden="true" />
+                            <Zap
+                              className="h-icon-lg w-icon-lg"
+                              aria-hidden="true"
+                            />
                           </span>
                           <div className="min-w-0">
                             <h3 className="font-black text-text-main">
@@ -859,7 +865,9 @@ export const ProPlansPage: React.FC = () => {
                             }
                             variant="outline"
                             size="sm"
-                            rightIcon={<ChevronRight className="h-4 w-4" />}
+                            rightIcon={
+                              <ChevronRight className="h-icon-md w-icon-md" />
+                            }
                           >
                             Choisir l’annonce
                           </Button>
@@ -1024,10 +1032,16 @@ export const ProPlansPage: React.FC = () => {
                     className="flex w-full items-center justify-between rounded-control px-2 py-2 text-left text-xs font-semibold text-text-secondary hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <span className="inline-flex items-center gap-2">
-                      <FileText className="h-4 w-4" aria-hidden="true" />{" "}
+                      <FileText
+                        className="h-icon-md w-icon-md"
+                        aria-hidden="true"
+                      />{" "}
                       Factures ({billing?.invoices.length || 0})
                     </span>
-                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    <ChevronRight
+                      className="h-icon-md w-icon-md"
+                      aria-hidden="true"
+                    />
                   </button>
                   <Button
                     to="/compte"
@@ -1035,7 +1049,7 @@ export const ProPlansPage: React.FC = () => {
                     size="sm"
                     fullWidth
                     className="justify-between"
-                    rightIcon={<ChevronRight className="h-4 w-4" />}
+                    rightIcon={<ChevronRight className="h-icon-md w-icon-md" />}
                   >
                     Gérer le profil de facturation
                   </Button>
@@ -1049,7 +1063,7 @@ export const ProPlansPage: React.FC = () => {
                       size="sm"
                       fullWidth
                       onClick={() => void toggleCancellation()}
-                      leftIcon={<RotateCcw className="h-4 w-4" />}
+                      leftIcon={<RotateCcw className="h-icon-md w-icon-md" />}
                     >
                       {currentSubscription.cancelAtPeriodEnd
                         ? "Réactiver le forfait"
@@ -1063,7 +1077,7 @@ export const ProPlansPage: React.FC = () => {
             <section aria-labelledby="faq-title" className="py-10">
               <div className="mb-4 flex items-center gap-2">
                 <CircleHelp
-                  className="h-5 w-5 text-primary"
+                  className="h-icon-lg w-icon-lg text-primary"
                   aria-hidden="true"
                 />
                 <h2
@@ -1100,7 +1114,7 @@ export const ProPlansPage: React.FC = () => {
                       <span className="flex items-center justify-between gap-3">
                         {question}
                         <ChevronRight
-                          className="h-4 w-4 shrink-0 transition-transform group-open:rotate-90"
+                          className="h-icon-md w-icon-md shrink-0 transition-transform group-open:rotate-90"
                           aria-hidden="true"
                         />
                       </span>
@@ -1113,18 +1127,24 @@ export const ProPlansPage: React.FC = () => {
               </div>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 border-t border-border-subtle pt-6 text-xs text-text-muted">
                 <span className="inline-flex items-center gap-2">
-                  <LockKeyhole className="h-4 w-4" aria-hidden="true" />{" "}
+                  <LockKeyhole
+                    className="h-icon-md w-icon-md"
+                    aria-hidden="true"
+                  />{" "}
                   Paiement sécurisé par le prestataire configuré
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" aria-hidden="true" /> Aucun
-                  achat présélectionné
+                  <CreditCard
+                    className="h-icon-md w-icon-md"
+                    aria-hidden="true"
+                  />{" "}
+                  Aucun achat présélectionné
                 </span>
                 <Button
                   to="/support"
                   variant="ghost"
                   size="sm"
-                  rightIcon={<ArrowRight className="h-4 w-4" />}
+                  rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
                 >
                   Contacter le support
                 </Button>
@@ -1148,7 +1168,7 @@ export const ProPlansPage: React.FC = () => {
         {completedMessage ? (
           <div className="space-y-5 text-center">
             <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-surface text-success">
-              <Check className="h-6 w-6" aria-hidden="true" />
+              <Check className="h-icon-xl w-icon-xl" aria-hidden="true" />
             </span>
             <p className="font-bold text-text-main">{completedMessage}</p>
             <Button onClick={closeCheckout} fullWidth>
@@ -1339,7 +1359,7 @@ export const ProPlansPage: React.FC = () => {
               <Button
                 onClick={() => void confirmOffer()}
                 isLoading={isConfirming}
-                leftIcon={<CreditCard className="h-4 w-4" />}
+                leftIcon={<CreditCard className="h-icon-md w-icon-md" />}
               >
                 {changePreview?.effectiveAt === "period_end"
                   ? "Programmer le changement"

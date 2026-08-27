@@ -95,7 +95,7 @@ export const AdminVerificationsPage: React.FC = () => {
       <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
-            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+            <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-success">
@@ -124,19 +124,21 @@ export const AdminVerificationsPage: React.FC = () => {
             id: "queue",
             label: "Revue manuelle",
             count: queue.length,
-            icon: <Clock3 className="h-4 w-4" aria-hidden="true" />,
+            icon: <Clock3 className="h-icon-md w-icon-md" aria-hidden="true" />,
           },
           {
             id: "policies",
             label: "Registre des règles",
             count: policies.length,
-            icon: <Scale className="h-4 w-4" aria-hidden="true" />,
+            icon: <Scale className="h-icon-md w-icon-md" aria-hidden="true" />,
           },
           {
             id: "audit",
             label: "Audit",
             count: auditLogs.length,
-            icon: <History className="h-4 w-4" aria-hidden="true" />,
+            icon: (
+              <History className="h-icon-md w-icon-md" aria-hidden="true" />
+            ),
           },
         ]}
       />
@@ -166,9 +168,15 @@ export const AdminVerificationsPage: React.FC = () => {
                     <div className="flex items-start gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
                         {review.dimension === "identity" ? (
-                          <FileKey2 className="h-5 w-5" aria-hidden="true" />
+                          <FileKey2
+                            className="h-icon-lg w-icon-lg"
+                            aria-hidden="true"
+                          />
                         ) : (
-                          <Building2 className="h-5 w-5" aria-hidden="true" />
+                          <Building2
+                            className="h-icon-lg w-icon-lg"
+                            aria-hidden="true"
+                          />
                         )}
                       </div>
                       <div>
@@ -185,7 +193,12 @@ export const AdminVerificationsPage: React.FC = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        leftIcon={<X className="h-4 w-4" aria-hidden="true" />}
+                        leftIcon={
+                          <X
+                            className="h-icon-md w-icon-md"
+                            aria-hidden="true"
+                          />
+                        }
                         onClick={() =>
                           setDecision({ review, outcome: "reject" })
                         }
@@ -195,7 +208,10 @@ export const AdminVerificationsPage: React.FC = () => {
                       <Button
                         size="sm"
                         leftIcon={
-                          <Check className="h-4 w-4" aria-hidden="true" />
+                          <Check
+                            className="h-icon-md w-icon-md"
+                            aria-hidden="true"
+                          />
                         }
                         onClick={() =>
                           setDecision({ review, outcome: "approve" })
@@ -215,7 +231,7 @@ export const AdminVerificationsPage: React.FC = () => {
           <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs sm:p-5">
             <div className="mb-4 flex items-start gap-3">
               <BookOpenCheck
-                className="mt-0.5 h-5 w-5 text-success"
+                className="mt-0.5 h-icon-lg w-icon-lg text-success"
                 aria-hidden="true"
               />
               <div>

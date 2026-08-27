@@ -138,7 +138,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
       )}
       headerIcon={
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
-          <Smartphone className="h-5 w-5" />
+          <Smartphone className="h-icon-lg w-icon-lg" />
         </div>
       }
     >
@@ -255,7 +255,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               onClick={handleResend}
               disabled={countdown > 0}
               className={countdown > 0 ? "text-stone-500" : "text-primary"}
-              leftIcon={<RefreshCw className="w-3 h-3" />}
+              leftIcon={<RefreshCw className="w-icon-xs h-icon-xs" />}
             >
               {countdown > 0
                 ? t("auth.phoneVerificationModal.resendCountdown", {

@@ -232,7 +232,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           to="/admin/crm/entreprises"
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Entreprises
+          <ArrowLeft className="h-icon-sm w-icon-sm" /> Entreprises
         </Link>
         <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex min-w-0 items-start gap-4">
@@ -246,7 +246,8 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 </h1>
                 {account.fitScore !== undefined && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-violet-950 px-2 py-1 text-micro font-bold text-violet-300">
-                    <Sparkles className="h-3 w-3" /> Fit {account.fitScore}
+                    <Sparkles className="h-icon-xs w-icon-xs" /> Fit{" "}
+                    {account.fitScore}
                   </span>
                 )}
               </div>
@@ -263,17 +264,17 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     className="inline-flex items-center gap-1 hover:text-white"
                   >
                     {account.domain ?? account.website}
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-icon-xs w-icon-xs" />
                   </a>
                 )}
                 {account.email && (
                   <span className="inline-flex items-center gap-1">
-                    <Mail className="h-3 w-3" /> {account.email}
+                    <Mail className="h-icon-xs w-icon-xs" /> {account.email}
                   </span>
                 )}
                 {account.phone && (
                   <span className="inline-flex items-center gap-1">
-                    <Phone className="h-3 w-3" /> {account.phone}
+                    <Phone className="h-icon-xs w-icon-xs" /> {account.phone}
                   </span>
                 )}
               </div>
@@ -314,7 +315,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
               onClick={() => setNoteOpen(true)}
             >
-              <MessageSquareText className="h-4 w-4" /> Note
+              <MessageSquareText className="h-icon-md w-icon-md" /> Note
             </Button>
             <Button
               variant="outline"
@@ -325,7 +326,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 setTagsOpen(true);
               }}
             >
-              <Tags className="h-4 w-4" /> Tags
+              <Tags className="h-icon-md w-icon-md" /> Tags
             </Button>
           </div>
         </div>
@@ -371,12 +372,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
-                <Boxes className="h-4 w-4" />
+                <Boxes className="h-icon-md w-icon-md" />
               </span>
               <h2 className="text-sm font-black">Intelligence Shongre</h2>
               {shongre?.organization?.verified && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                  <BadgeCheck className="h-3 w-3" /> Professionnel vérifié
+                  <BadgeCheck className="h-icon-xs w-icon-xs" /> Professionnel
+                  vérifié
                 </span>
               )}
             </div>
@@ -397,7 +399,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         </div>
         {!shongre?.linked ? (
           <div className="flex items-start gap-3 p-5 text-xs text-stone-600">
-            <Unplug className="mt-0.5 h-4 w-4 shrink-0 text-stone-400" />
+            <Unplug className="mt-0.5 h-icon-md w-icon-md shrink-0 text-stone-400" />
             <div>
               <strong className="block text-stone-900">
                 Aucune organisation Shongre liée
@@ -410,7 +412,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           <div className="grid gap-0 divide-y divide-border-subtle md:grid-cols-3 md:divide-x md:divide-y-0">
             <article className="p-5">
               <div className="flex items-center gap-2 text-stone-500">
-                <Building2 className="h-4 w-4" />
+                <Building2 className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   Profil Pro
                 </span>
@@ -431,7 +433,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </article>
             <article className="p-5">
               <div className="flex items-center gap-2 text-stone-500">
-                <Boxes className="h-4 w-4" />
+                <Boxes className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   Annonces
                 </span>
@@ -456,7 +458,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </article>
             <article className="p-5">
               <div className="flex items-center gap-2 text-stone-500">
-                <CreditCard className="h-4 w-4" />
+                <CreditCard className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   Abonnement
                 </span>
@@ -515,7 +517,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 </p>
               </div>
               <Button to="/admin/crm/pipeline" variant="outline" size="sm">
-                <Plus className="h-4 w-4" /> Ajouter
+                <Plus className="h-icon-md w-icon-md" /> Ajouter
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
@@ -530,7 +532,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     className="flex items-center gap-3 py-3"
                   >
                     <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-light text-primary">
-                      <Target className="h-4 w-4" />
+                      <Target className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <Link
@@ -568,7 +570,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 size="sm"
                 onClick={() => setNoteOpen(true)}
               >
-                <Plus className="h-4 w-4" /> Note
+                <Plus className="h-icon-md w-icon-md" /> Note
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
@@ -580,7 +582,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600">
-                      <MessageSquareText className="h-3.5 w-3.5" />
+                      <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -612,7 +614,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 <h2 className="text-sm font-black">Contacts</h2>
                 <p className="text-micro text-stone-500">Personnes liées</p>
               </div>
-              <UsersRound className="h-4 w-4 text-primary" />
+              <UsersRound className="h-icon-md w-icon-md text-primary" />
             </div>
             <div className="divide-y divide-border-subtle px-4">
               {contacts.length === 0 ? (
@@ -668,8 +670,8 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </dl>
             {account.city && (
               <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-stone-500">
-                <MapPin className="h-3.5 w-3.5" /> Donnée déclarative · aucune
-                géolocalisation implicite
+                <MapPin className="h-icon-sm w-icon-sm" /> Donnée déclarative ·
+                aucune géolocalisation implicite
               </div>
             )}
           </section>

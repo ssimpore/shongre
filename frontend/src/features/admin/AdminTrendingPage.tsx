@@ -142,7 +142,7 @@ export const AdminTrendingPage: React.FC = () => {
   if (isLoading || !config) {
     return (
       <div className="flex min-h-64 items-center justify-center text-sm font-medium text-stone-500">
-        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+        <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
         Chargement de la configuration…
       </div>
     );
@@ -153,7 +153,7 @@ export const AdminTrendingPage: React.FC = () => {
       <div className="flex flex-col justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <Flame className="h-4 w-4" /> Découverte éditoriale
+            <Flame className="h-icon-md w-icon-md" /> Découverte éditoriale
           </div>
           <h1 className="text-2xl font-black tracking-tight text-stone-900">
             En ce moment sur Shongre
@@ -170,7 +170,7 @@ export const AdminTrendingPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => void load()}
-            leftIcon={<RefreshCw className="h-4 w-4" />}
+            leftIcon={<RefreshCw className="h-icon-md w-icon-md" />}
           >
             Actualiser
           </Button>
@@ -179,7 +179,7 @@ export const AdminTrendingPage: React.FC = () => {
             size="sm"
             onClick={() => void save()}
             disabled={isSaving}
-            leftIcon={<Save className="h-4 w-4" />}
+            leftIcon={<Save className="h-icon-md w-icon-md" />}
           >
             {isSaving ? "Enregistrement…" : "Enregistrer"}
           </Button>
@@ -192,7 +192,7 @@ export const AdminTrendingPage: React.FC = () => {
           aria-labelledby="trending-settings-title"
         >
           <div className="mb-5 flex items-center gap-2">
-            <Settings2 className="h-4 w-4 text-primary" />
+            <Settings2 className="h-icon-md w-icon-md text-primary" />
             <h2
               id="trending-settings-title"
               className="text-sm font-bold text-stone-900"
@@ -325,7 +325,7 @@ export const AdminTrendingPage: React.FC = () => {
         >
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-success" />
+              <TrendingUp className="h-icon-md w-icon-md text-success" />
               <h2
                 id="trending-preview-title"
                 className="text-sm font-bold text-stone-900"
@@ -369,7 +369,7 @@ export const AdminTrendingPage: React.FC = () => {
                     className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <Pin
-                      className={`h-4 w-4 ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
+                      className={`h-icon-md w-icon-md ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
                     />
                   </button>
                   <button
@@ -379,7 +379,7 @@ export const AdminTrendingPage: React.FC = () => {
                     className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <EyeOff
-                      className={`h-4 w-4 ${hidden.has(topicKey) ? "text-danger" : ""}`}
+                      className={`h-icon-md w-icon-md ${hidden.has(topicKey) ? "text-danger" : ""}`}
                     />
                   </button>
                 </div>
@@ -393,10 +393,12 @@ export const AdminTrendingPage: React.FC = () => {
           </div>
           <div className="mt-5 flex flex-wrap gap-2 text-xs text-stone-500">
             <span className="inline-flex items-center gap-1">
-              <Check className="h-3.5 w-3.5 text-success" /> scoring dynamique
+              <Check className="h-icon-sm w-icon-sm text-success" /> scoring
+              dynamique
             </span>
             <span className="inline-flex items-center gap-1">
-              <Pin className="h-3.5 w-3.5 text-primary" /> overrides sans code
+              <Pin className="h-icon-sm w-icon-sm text-primary" /> overrides
+              sans code
             </span>
           </div>
         </section>

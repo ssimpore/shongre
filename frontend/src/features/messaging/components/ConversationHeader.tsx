@@ -55,7 +55,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               "messaging.conversationHeader.retourAuxConversations",
             )}
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-icon-lg h-icon-lg" />
           </button>
         )}
 
@@ -75,7 +75,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             </span>
             {counterpart.isVerified && (
               <span title={t("messaging.conversationHeader.identiteVerifiee")}>
-                <ShieldCheck className="w-4 h-4 text-success shrink-0" />
+                <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
               </span>
             )}
             {counterpart.accountType === "pro" && (
@@ -88,7 +88,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
           <div className="flex items-center gap-2 text-micro text-stone-500 font-medium">
             {counterpart.rating !== undefined && (
               <span className="flex items-center gap-0.5 text-warning font-bold">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <Star className="w-icon-xs h-icon-xs fill-amber-400 text-amber-400" />
                 <span>{counterpart.rating.toFixed(1)}</span>
                 {counterpart.reviewCount !== undefined && (
                   <span>({counterpart.reviewCount})</span>
@@ -116,7 +116,9 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             variant="outline"
             size="sm"
             onClick={onSimulateReply}
-            leftIcon={<Sparkles className="w-3.5 h-3.5 text-amber-500" />}
+            leftIcon={
+              <Sparkles className="w-icon-sm h-icon-sm text-amber-500" />
+            }
             className="hidden sm:inline-flex text-xs"
           >
             {t("messaging.conversationHeader.simulerReponse")}
@@ -133,7 +135,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               "messaging.conversationHeader.optionsDeLaConversation",
             )}
           >
-            <MoreVertical className="w-4 h-4" />
+            <MoreVertical className="w-icon-md h-icon-md" />
           </button>
 
           {isMenuOpen && (
@@ -149,7 +151,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-100 transition-colors"
                   >
-                    <ExternalLink className="w-4 h-4 text-stone-400" />
+                    <ExternalLink className="w-icon-md h-icon-md text-stone-400" />
                     <span>
                       {t("messaging.conversationHeader.voirLeProfilPublic")}
                     </span>
@@ -170,7 +172,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                 >
                   {capabilities.isBlockedByViewer ? (
                     <>
-                      <UserCheck className="w-4 h-4 text-success" />
+                      <UserCheck className="w-icon-md h-icon-md text-success" />
                       <span>
                         {t(
                           "messaging.conversationHeader.debloquerLUtilisateur",
@@ -179,7 +181,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                     </>
                   ) : (
                     <>
-                      <UserX className="w-4 h-4 text-stone-500" />
+                      <UserX className="w-icon-md h-icon-md text-stone-500" />
                       <span>Bloquer cet utilisateur</span>
                     </>
                   )}
@@ -193,7 +195,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-danger hover:bg-danger-surface text-left transition-colors"
                 >
-                  <Flag className="w-4 h-4 text-danger" />
+                  <Flag className="w-icon-md h-icon-md text-danger" />
                   <span>
                     {t("messaging.conversationHeader.signalerLaConversation")}
                   </span>

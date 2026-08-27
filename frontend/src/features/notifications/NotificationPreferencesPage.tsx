@@ -186,7 +186,7 @@ export const NotificationPreferencesPage: React.FC = () => {
             to="/compte/notifications"
             className="text-xs font-bold text-stone-500 hover:text-stone-900 inline-flex items-center gap-1.5 mb-2 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-icon-sm h-icon-sm" />
             <span>
               {t(
                 "notifications.notificationPreferencesPage.retourAuCentreDeNotifications",
@@ -210,7 +210,7 @@ export const NotificationPreferencesPage: React.FC = () => {
           size="md"
           onClick={handleSave}
           isLoading={isSaving}
-          leftIcon={<Save className="w-4 h-4" />}
+          leftIcon={<Save className="w-icon-md h-icon-md" />}
           className="shrink-0"
         >
           Enregistrer
@@ -224,15 +224,15 @@ export const NotificationPreferencesPage: React.FC = () => {
             {t("notifications.notificationPreferencesPage.categorieDAlerte")}
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Bell className="w-3.5 h-3.5 text-stone-500" />
+            <Bell className="w-icon-sm h-icon-sm text-stone-500" />
             <span>Application</span>
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Mail className="w-3.5 h-3.5 text-stone-500" />
+            <Mail className="w-icon-sm h-icon-sm text-stone-500" />
             <span>Email</span>
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Smartphone className="w-3.5 h-3.5 text-stone-500" />
+            <Smartphone className="w-icon-sm h-icon-sm text-stone-500" />
             <span>Push</span>
           </div>
         </div>

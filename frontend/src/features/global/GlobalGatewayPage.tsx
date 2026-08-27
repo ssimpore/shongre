@@ -75,7 +75,7 @@ export function GlobalGatewayPage({
                       </span>
                       {available ? (
                         <ArrowRight
-                          className="h-5 w-5 text-primary transition-transform group-hover:translate-x-1"
+                          className="h-icon-lg w-icon-lg text-primary transition-transform group-hover:translate-x-1"
                           aria-hidden="true"
                         />
                       ) : (
