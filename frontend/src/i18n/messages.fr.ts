@@ -1580,7 +1580,16 @@ export const messagesFr = {
   "admin.enrichmentDiffModal.100ValideHumain": "100% Validé humain",
 
   // --- admin.evidenceDrawer ---
+  "admin.evidenceDrawer.title": "Sources et justification : {company}",
   "admin.evidenceDrawer.fitShongreEstime": "Fit Shongre estimé",
+  "admin.evidenceDrawer.scoreCompatibilite":
+    "Score de compatibilité Shongre",
+  "admin.evidenceDrawer.pointsAttention": "Points d'attention",
+  "admin.evidenceDrawer.sourcesPubliquesAnalysees_one":
+    "{count} source publique analysée",
+  "admin.evidenceDrawer.sourcesPubliquesAnalysees_other":
+    "{count} sources publiques analysées",
+  "admin.evidenceDrawer.url": "URL",
   "admin.evidenceDrawer.consulterLaSource": "Consulter la source",
 
   // --- admin.adminProviderDetailPage ---

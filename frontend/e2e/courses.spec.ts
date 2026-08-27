@@ -31,8 +31,11 @@ test.describe("Shongre Education", () => {
     await expect(cards.first()).toBeVisible();
 
     await page
-      .getByRole("combobox", { name: "Matière" })
-      .selectOption("subject_mathematics");
+      .getByRole("button", { name: "Matière", exact: true })
+      .click();
+    await page
+      .getByRole("option", { name: "Mathématiques", exact: true })
+      .click();
     await expect(page).toHaveURL(/subject=subject_mathematics/);
     await expect(cards.first()).toContainText("Mathématiques");
 

@@ -284,6 +284,74 @@ test.describe("listbox keyboard contract", () => {
   });
 });
 
+test.describe("drawer presentation", () => {
+  test("the CRM evidence drawer is a full-height right side sheet", async ({
+    page,
+  }) => {
+    await usePersona(page, "commercial");
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/admin/crm/prospection", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const query = page.getByRole("textbox", {
+      name: /décrivez les prospects/i,
+    });
+    await query.fill("Boutiques de mobilier design vintage en France");
+    await page
+      .getByRole("button", { name: /lancer la prospection/i })
+      .click();
+
+    const sourceAction = page
+      .getByRole("button", { name: /source/i })
+      .first();
+    await expect(sourceAction).toBeVisible();
+    await sourceAction.click();
+
+    const drawer = page.getByRole("dialog");
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toContainText(/sources et justification/i);
+    await expect
+      .poll(() =>
+        drawer.evaluate((element) =>
+          Math.round(
+            element.getBoundingClientRect().right - window.innerWidth,
+          ),
+        ),
+      )
+      .toBe(0);
+
+    const measured = await drawer.evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      return {
+        top: Math.round(bounds.top),
+        right: Math.round(bounds.right),
+        bottom: Math.round(bounds.bottom),
+        width: Math.round(bounds.width),
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        focusInside: element.contains(document.activeElement),
+        overflowX: document.documentElement.scrollWidth - window.innerWidth,
+      };
+    });
+
+    expect(measured).toMatchObject({
+      top: 0,
+      right: measured.viewportWidth,
+      bottom: measured.viewportHeight,
+      focusInside: true,
+      overflowX: 0,
+    });
+    expect(measured.width).toBeGreaterThanOrEqual(400);
+    expect(measured.width).toBeLessThanOrEqual(512);
+
+    await page.keyboard.press("Escape");
+    await expect(drawer).toHaveCount(0);
+    await expect(sourceAction).toBeFocused();
+  });
+});
+
 test.describe("declared-token classes", () => {
   /* `shadow-card` was referenced by 14 call sites and never declared, so every
      employment/immo/auto card rendered with no elevation and three `hover:`

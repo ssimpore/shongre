@@ -429,11 +429,12 @@ export const Switch: React.FC<SwitchProps> = ({
 }) => {
   const generatedId = useId();
   const inputId = id ?? `switch-${generatedId}`;
+  const descriptionId = description ? `${inputId}-description` : undefined;
 
   return (
     <label
       htmlFor={inputId}
-      className={`flex min-h-control-touch items-center justify-between gap-4 select-none ${
+      className={`relative flex min-h-control-touch items-center justify-between gap-4 select-none ${
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
       }`}
     >
@@ -443,7 +444,9 @@ export const Switch: React.FC<SwitchProps> = ({
             <span className="text-sm font-medium text-text-main">{label}</span>
           )}
           {description && (
-            <span className="text-xs text-text-muted">{description}</span>
+            <span id={descriptionId} className="text-xs text-text-muted">
+              {description}
+            </span>
           )}
         </div>
       )}
@@ -451,10 +454,11 @@ export const Switch: React.FC<SwitchProps> = ({
         id={inputId}
         type="checkbox"
         role="switch"
-        className="peer sr-only"
+        className="peer absolute inset-0 z-raised h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
         checked={checked}
         disabled={disabled}
         aria-label={ariaLabel ?? label}
+        aria-describedby={descriptionId}
         onChange={(event) => onChange(event.currentTarget.checked)}
       />
       <span

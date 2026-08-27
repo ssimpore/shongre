@@ -26,8 +26,8 @@ import {
   Button,
   Container,
   Drawer,
+  DropdownMenu,
   FilterPanel,
-  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -98,21 +98,20 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Matière
         </legend>
-        <Select
-          className="w-full"
-          aria-label="Matière"
+        <DropdownMenu
+          ariaLabel="Matière"
+          headerTitle="Matière"
+          fullWidth
           value={params.get("subject") || ""}
-          onChange={(event) =>
-            updateParam("subject", event.target.value || undefined)
-          }
-        >
-          <option value="">Toutes les matières</option>
-          {catalog.subjects.map((subject) => (
-            <option key={subject.id} value={subject.id}>
-              {subject.label}
-            </option>
-          ))}
-        </Select>
+          onChange={(value) => updateParam("subject", value || undefined)}
+          options={[
+            { value: "", label: "Toutes les matières" },
+            ...catalog.subjects.map((subject) => ({
+              value: subject.id,
+              label: subject.label,
+            })),
+          ]}
+        />
       </fieldset>
 
       <fieldset>
@@ -208,65 +207,65 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Prix par heure
         </legend>
-        <Select
-          className="w-full"
-          aria-label="Prix maximum par heure"
+        <DropdownMenu
+          ariaLabel="Prix maximum par heure"
+          headerTitle="Prix maximum par heure"
+          fullWidth
           value={params.get("maxPrice") || ""}
-          onChange={(event) =>
-            updateParam("maxPrice", event.target.value || undefined)
-          }
-        >
-          <option value="">Sans maximum</option>
-          {[2_500, 3_000, 4_000, 6_000].map((amountMinor) => (
-            <option key={amountMinor} value={amountMinor}>
-              {formatMoney(
+          onChange={(value) => updateParam("maxPrice", value || undefined)}
+          options={[
+            { value: "", label: "Sans maximum" },
+            ...[2_500, 3_000, 4_000, 6_000].map((amountMinor) => ({
+              value: String(amountMinor),
+              label: `${formatMoney(
                 { amountMinor, currency: catalog.config.currency },
                 { locale },
-              )}{" "}
-              maximum
-            </option>
-          ))}
-        </Select>
+              )} maximum`,
+            })),
+          ]}
+        />
       </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Langue
         </legend>
-        <Select
-          className="w-full"
-          aria-label="Langue"
+        <DropdownMenu
+          ariaLabel="Langue"
+          headerTitle="Langue"
+          fullWidth
           value={params.get("language") || ""}
-          onChange={(event) =>
-            updateParam("language", event.target.value || undefined)
-          }
-        >
-          <option value="">Toutes les langues</option>
-          <option value="fr">Français</option>
-          <option value="en">Anglais</option>
-          <option value="es">Espagnol</option>
-        </Select>
+          onChange={(value) => updateParam("language", value || undefined)}
+          options={[
+            { value: "", label: "Toutes les langues" },
+            { value: "fr", label: "Français" },
+            { value: "en", label: "Anglais" },
+            { value: "es", label: "Espagnol" },
+          ]}
+        />
       </fieldset>
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Type de professeur
         </legend>
-        <Select
-          className="w-full"
-          aria-label="Type de professeur"
+        <DropdownMenu
+          ariaLabel="Type de professeur"
+          headerTitle="Type de professeur"
+          fullWidth
           value={params.get("tutorType") || "all"}
-          onChange={(event) =>
+          onChange={(value) =>
             updateParam(
               "tutorType",
-              event.target.value === "all" ? undefined : event.target.value,
+              value === "all" ? undefined : value,
             )
           }
-        >
-          <option value="all">Tous les profils</option>
-          <option value="individual">Professeur indépendant</option>
-          <option value="organization">École ou organisme</option>
-        </Select>
+          options={[
+            { value: "all", label: "Tous les profils" },
+            { value: "individual", label: "Professeur indépendant" },
+            { value: "organization", label: "École ou organisme" },
+          ]}
+        />
       </fieldset>
 
       <fieldset className="space-y-2 border-t border-border-subtle pt-4">
@@ -281,21 +280,22 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
             }
           />
         </label>
-        <label className="block text-xs font-bold text-text-main">
-          Note moyenne
-          <Select
-            className="mt-2 w-full"
-            labelledByAncestor
+        <div className="text-xs font-bold text-text-main">
+          <span className="block">Note moyenne</span>
+          <DropdownMenu
+            className="mt-2"
+            ariaLabel="Note moyenne"
+            headerTitle="Note moyenne"
+            fullWidth
             value={params.get("rating") || ""}
-            onChange={(event) =>
-              updateParam("rating", event.target.value || undefined)
-            }
-          >
-            <option value="">Toutes les notes</option>
-            <option value="4">4 et plus, avec assez d’avis</option>
-            <option value="4.5">4,5 et plus, avec assez d’avis</option>
-          </Select>
-        </label>
+            onChange={(value) => updateParam("rating", value || undefined)}
+            options={[
+              { value: "", label: "Toutes les notes" },
+              { value: "4", label: "4 et plus, avec assez d’avis" },
+              { value: "4.5", label: "4,5 et plus, avec assez d’avis" },
+            ]}
+          />
+        </div>
       </fieldset>
     </FilterPanel>
   );
@@ -548,23 +548,25 @@ export const CoursesSearchPage: React.FC = () => {
                   : `${total} professeur${total > 1 ? "s" : ""}`}
               </p>
             </div>
-            <label className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
+            <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
               <ArrowUpDown className="h-icon-sm w-icon-sm" aria-hidden="true" />
               <span className="sr-only sm:not-sr-only">Trier par</span>
-              <Select
+              <DropdownMenu
+                ariaLabel="Trier les professeurs"
+                headerTitle="Trier par"
+                placement="bottom-right"
                 size="sm"
-                className="pl-3 pr-8 w-auto"
-                labelledByAncestor
                 value={query.sort}
-                onChange={(event) => updateParam("sort", event.target.value)}
-              >
-                <option value="relevance">Pertinence</option>
-                <option value="price_asc">Prix croissant</option>
-                <option value="price_desc">Prix décroissant</option>
-                <option value="rating">Avis vérifiés</option>
-                <option value="response_time">Temps de réponse</option>
-              </Select>
-            </label>
+                onChange={(value) => updateParam("sort", value)}
+                options={[
+                  { value: "relevance", label: "Pertinence" },
+                  { value: "price_asc", label: "Prix croissant" },
+                  { value: "price_desc", label: "Prix décroissant" },
+                  { value: "rating", label: "Avis vérifiés" },
+                  { value: "response_time", label: "Temps de réponse" },
+                ]}
+              />
+            </div>
           </div>
 
           {isLoading ? (

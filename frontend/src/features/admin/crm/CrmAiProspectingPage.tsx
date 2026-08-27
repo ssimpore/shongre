@@ -404,14 +404,14 @@ export const CrmAiProspectingPage: React.FC = () => {
 
                   {/* Actions Bar */}
                   <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-2">
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      leftIcon={<Eye className="h-icon-sm w-icon-sm" />}
                       onClick={() => setSelectedCandidateForEvidence(cand)}
-                      className="text-xs text-stone-600 hover:text-stone-900 font-bold flex items-center gap-1 cursor-pointer"
                     >
-                      <Eye className="w-icon-sm h-icon-sm" />
                       <span>{plural(cand.sources.length, "source")}</span>
-                    </button>
+                    </Button>
 
                     {isImported ? (
                       <span className="text-xs text-success font-bold flex items-center gap-1">

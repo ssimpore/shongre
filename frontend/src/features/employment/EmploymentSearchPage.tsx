@@ -21,9 +21,9 @@ import {
   Button,
   Container,
   Drawer,
+  DropdownMenu,
   FilterPanel,
   Input,
-  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -105,68 +105,67 @@ const EmploymentFilters: React.FC<{
         ["schedule", "Horaires", "work_schedule"],
         ["employerType", "Type d’employeur", "employer_type"],
       ].map(([param, label, kind]) => (
-        <label key={param} className="block">
+        <div key={param}>
           <span className="mb-2 block text-xs font-bold text-text-main">
             {label}
           </span>
-          <Select
-            className="w-full"
-            labelledByAncestor
+          <DropdownMenu
+            ariaLabel={label}
+            headerTitle={label}
+            fullWidth
             value={params.get(param) || ""}
-            onChange={(event) =>
-              setParam(param, event.target.value || undefined)
-            }
-          >
-            <option value="">Tous</option>
-            {dictionaries(
-              kind as EmploymentCatalog["dictionaries"][number]["kind"],
-            ).map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.label}
-              </option>
-            ))}
-          </Select>
-        </label>
+            onChange={(value) => setParam(param, value || undefined)}
+            options={[
+              { value: "", label: "Tous" },
+              ...dictionaries(
+                kind as EmploymentCatalog["dictionaries"][number]["kind"],
+              ).map((entry) => ({
+                value: entry.id,
+                label: entry.label,
+              })),
+            ]}
+          />
+        </div>
       ))}
-      <label className="block">
+      <div>
         <span className="mb-2 block text-xs font-bold text-text-main">
           Rayon autour du lieu
         </span>
-        <Select
-          className="w-full"
-          labelledByAncestor
+        <DropdownMenu
+          ariaLabel="Rayon autour du lieu"
+          headerTitle="Rayon autour du lieu"
+          fullWidth
           value={params.get("radius") || ""}
           disabled={!params.get("location")}
-          onChange={(event) =>
-            setParam("radius", event.target.value || undefined)
-          }
-        >
-          <option value="">Zone exacte</option>
-          <option value="5">5 km</option>
-          <option value="10">10 km</option>
-          <option value="25">25 km</option>
-          <option value="50">50 km</option>
-          <option value="100">100 km</option>
-        </Select>
-      </label>
-      <label className="block">
+          onChange={(value) => setParam("radius", value || undefined)}
+          options={[
+            { value: "", label: "Zone exacte" },
+            { value: "5", label: "5 km" },
+            { value: "10", label: "10 km" },
+            { value: "25", label: "25 km" },
+            { value: "50", label: "50 km" },
+            { value: "100", label: "100 km" },
+          ]}
+        />
+      </div>
+      <div>
         <span className="mb-2 block text-xs font-bold text-text-main">
           Date de publication
         </span>
-        <Select
-          className="w-full"
-          labelledByAncestor
+        <DropdownMenu
+          ariaLabel="Date de publication"
+          headerTitle="Date de publication"
+          fullWidth
           value={params.get("published") || ""}
-          onChange={(event) =>
-            setParam("published", event.target.value || undefined)
-          }
-        >
-          <option value="">Toutes les dates</option>
-          <option value="1">Depuis 24 heures</option>
-          <option value="7">Depuis 7 jours</option>
-          <option value="30">Depuis 30 jours</option>
-        </Select>
-      </label>
+          onChange={(value) => setParam("published", value || undefined)}
+          options={[
+            { value: "", label: "Toutes les dates" },
+            { value: "1", label: "Depuis 24 heures" },
+            { value: "7", label: "Depuis 7 jours" },
+            { value: "30", label: "Depuis 30 jours" },
+          ]}
+        />
+      </div>
       <div>
         <label
           className="mb-2 block text-xs font-bold text-text-main"
@@ -185,26 +184,27 @@ const EmploymentFilters: React.FC<{
           }
         />
       </div>
-      <label className="block">
+      <div>
         <span className="mb-2 block text-xs font-bold text-text-main">
           Période de rémunération
         </span>
-        <Select
-          className="w-full"
-          labelledByAncestor
+        <DropdownMenu
+          ariaLabel="Période de rémunération"
+          headerTitle="Période de rémunération"
+          fullWidth
           value={params.get("salaryFrequency") || ""}
-          onChange={(event) =>
-            setParam("salaryFrequency", event.target.value || undefined)
+          onChange={(value) =>
+            setParam("salaryFrequency", value || undefined)
           }
-        >
-          <option value="">Toutes</option>
-          {dictionaries("salary_frequency").map((entry) => (
-            <option key={entry.id} value={entry.id}>
-              {entry.label}
-            </option>
-          ))}
-        </Select>
-      </label>
+          options={[
+            { value: "", label: "Toutes" },
+            ...dictionaries("salary_frequency").map((entry) => ({
+              value: entry.id,
+              label: entry.label,
+            })),
+          ]}
+        />
+      </div>
       <label className="flex min-h-8 cursor-pointer items-center gap-2 text-xs text-text-main">
         <input
           type="checkbox"
@@ -533,19 +533,23 @@ export const EmploymentSearchPage: React.FC = () => {
             >
               Filtres
             </Button>
-            <Select
-              className="w-full hidden w-auto sm:block"
-              aria-label="Trier les offres"
+            <DropdownMenu
+              className="hidden sm:block"
+              ariaLabel="Trier les offres"
+              headerTitle="Trier par"
+              placement="bottom-right"
+              size="sm"
               value={query.sort}
-              onChange={(event) => setParam("sort", event.target.value)}
-            >
-              <option value="relevance">Pertinence</option>
-              <option value="newest">Plus récentes</option>
-              <option value="salary">Rémunération</option>
-              <option value="distance">Distance</option>
-              <option value="deadline">Date limite</option>
-              <option value="promoted">Placements sponsorisés</option>
-            </Select>
+              onChange={(value) => setParam("sort", value)}
+              options={[
+                { value: "relevance", label: "Pertinence" },
+                { value: "newest", label: "Plus récentes" },
+                { value: "salary", label: "Rémunération" },
+                { value: "distance", label: "Distance" },
+                { value: "deadline", label: "Date limite" },
+                { value: "promoted", label: "Placements sponsorisés" },
+              ]}
+            />
           </div>
         </div>
 

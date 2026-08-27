@@ -10,6 +10,7 @@ export * from "./forms/FormField.web";
 export * from "./layout/Layout.web";
 export * from "./feedback/Modal.web";
 export * from "./feedback/Skeleton.web";
+export * from "./feedback/StatePanel.web";
 export * from "./hooks/useDialogBehavior.web";
 export * from "./utils/variants";
 export * from "./utils/controlMetrics";

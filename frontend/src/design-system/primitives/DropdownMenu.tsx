@@ -60,6 +60,8 @@ export interface DropdownMenuProps<T = string> {
    * keeping compact toolbars from wrapping or overflowing.
    */
   mobileIcon?: React.ReactNode;
+  /** Prevents interaction while preserving the selected value and label. */
+  disabled?: boolean;
 }
 
 /**
@@ -106,6 +108,7 @@ export function DropdownMenu<T extends string | number = string>({
   ariaLabel,
   size = "md",
   mobileIcon,
+  disabled = false,
 }: DropdownMenuProps<T>) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -306,6 +309,10 @@ export function DropdownMenu<T extends string | number = string>({
   const activeDescendant =
     isOpen && activeIndex >= 0 ? optionId(activeIndex) : undefined;
 
+  useEffect(() => {
+    if (disabled && isOpen) setIsOpen(false);
+  }, [disabled, isOpen]);
+
   const placementClasses = {
     "bottom-left": "left-0 top-full mt-1.5",
     "bottom-right": "right-0 top-full mt-1.5",
@@ -337,6 +344,7 @@ export function DropdownMenu<T extends string | number = string>({
           id={id}
           ref={triggerRef}
           type="button"
+          disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
@@ -346,8 +354,8 @@ export function DropdownMenu<T extends string | number = string>({
           aria-label={ariaLabel}
           className={
             fullWidth
-              ? "w-full text-left cursor-pointer"
-              : "text-left cursor-pointer"
+              ? "w-full text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              : "text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           }
         >
           {renderTrigger(selectedOption, isOpen)}
@@ -357,6 +365,7 @@ export function DropdownMenu<T extends string | number = string>({
           id={id}
           ref={triggerRef}
           type="button"
+          disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           aria-expanded={isOpen}
@@ -364,7 +373,7 @@ export function DropdownMenu<T extends string | number = string>({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={searchable ? undefined : activeDescendant}
           aria-label={ariaLabel}
-          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 ${CONTROL_FOCUS_CLASS} ${
+          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
             fullWidth ? "w-full" : ""
           } ${
             isOpen ? "border-primary ring-2 ring-primary/20 bg-bg-surface" : ""

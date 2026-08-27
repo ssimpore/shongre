@@ -20,17 +20,23 @@ const FOCUSABLE = [
  * on every engine.
  */
 let lastPressedControl: HTMLElement | null = null;
+let lastPressedAt = 0;
 if (typeof document !== "undefined") {
-  document.addEventListener(
-    "pointerdown",
-    (event) => {
-      const control = (event.target as HTMLElement | null)?.closest?.(
-        'button, a[href], [role="button"], summary',
-      );
-      if (control) lastPressedControl = control as HTMLElement;
-    },
-    true,
-  );
+  const rememberPressedControl = (event: Event) => {
+    const control = (event.target as HTMLElement | null)?.closest?.(
+      'button, a[href], [role="button"], summary',
+    );
+    if (control) {
+      lastPressedControl = control as HTMLElement;
+      lastPressedAt = Date.now();
+    }
+  };
+
+  document.addEventListener("pointerdown", rememberPressedControl, true);
+  // Safari does not focus buttons on click, and synthetic WebKit activation
+  // is not required to expose a PointerEvent. Capture `click` as the reliable
+  // semantic fallback before React's bubbling handler opens the overlay.
+  document.addEventListener("click", rememberPressedControl, true);
 }
 
 /**
@@ -48,14 +54,24 @@ export function useDialogBehavior(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   const titleId = useId();
 
   useEffect(() => {
     if (!isOpen) return;
 
     const active = document.activeElement as HTMLElement | null;
+    /* Safari may leave focus on the field edited before a button click rather
+       than moving it to the clicked button. Prefer the freshly activated,
+       still-connected control in that case. The short freshness window keeps
+       a programmatically opened dialog from inheriting an unrelated old click. */
+    const recentlyPressed =
+      lastPressedControl?.isConnected && Date.now() - lastPressedAt < 1_000
+        ? lastPressedControl
+        : null;
     previouslyFocused.current =
-      active && active !== document.body ? active : lastPressedControl;
+      recentlyPressed ?? (active && active !== document.body ? active : null);
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -79,7 +95,7 @@ export function useDialogBehavior(
            An open popup marks itself, and then owns the key. */
         if (container?.querySelector("[data-popover-open]")) return;
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !container) return;
@@ -126,7 +142,7 @@ export function useDialogBehavior(
         });
       }
     };
-  }, [isOpen, onClose, dismissOnEscape]);
+  }, [isOpen, dismissOnEscape]);
 
   return { containerRef, titleId };
 }

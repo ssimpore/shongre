@@ -28,6 +28,8 @@ describe("design-system representative states", () => {
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain('role="switch"');
+    expect(html).toContain("absolute inset-0");
+    expect(html).toContain("min-h-control-touch");
   });
 
   it("renders shared surface, feedback, empty, and loading states", () => {

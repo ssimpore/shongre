@@ -1,10 +1,10 @@
 # Shongre platform-wide experience implementation
 
-Status: implemented and verified on 25 August 2026.
+Status: implemented and re-verified on 27 August 2026.
 
 This document records the assessment, changes, and acceptance evidence for the
-platform-wide simplification and consistency pass. It covers the 120 registered
-routes and 244 statically referenced destinations in the current frontend. The
+platform-wide simplification and consistency pass. It covers the 132 registered
+routes and 263 statically referenced destinations in the current frontend. The
 working application remained the baseline: existing flows were consolidated
 and strengthened rather than replaced.
 
@@ -38,6 +38,37 @@ The main experience problems found at the start of the pass were:
 
 The implementation resolves those issues without connecting the frontend to a
 production API or Supabase business data.
+
+## 27 August verification delta
+
+Market impact classification: `MULTI_MARKET_SHARED`. No schema, market policy,
+currency, locale, or country-routing behavior changed; localized copy continues
+to resolve through the existing market/location and i18n providers.
+
+The follow-up audit inventoried 282 frontend TSX files, including 57 local
+design-system files, 191 feature files, and 24 shared UI renderer files. The
+rendered regression matrix covers 62 representative public, account, seller,
+professional, staff, and admin routes at 11 widths from 320 to 1440 pixels;
+navigation and metadata integrity continue to cover every registered route.
+
+Four ownership gaps were corrected at their shared source:
+
+- whole-page error, missing, restricted, and offline presentation moved from a
+  frontend-only implementation into `packages/ui`; the frontend file is now a
+  thin localization adapter, so 34 existing render sites inherit one renderer;
+- `Drawer position="right"` now renders a full-height side sheet instead of
+  silently using the bottom-sheet recipe; the CRM evidence surface no longer
+  overrides the drawer width locally;
+- consent preferences now compose the canonical `Switch`, semantic surface
+  tokens, and modal spacing instead of owning a second checkbox/switch style;
+- the shared switch's native checkbox spans its full labelled row. This keeps
+  the real input, focus behavior, and 44-pixel target aligned and prevents
+  descriptive text from intercepting direct pointer activation.
+
+The affected CRM evidence surface also moved its remaining fixed French copy
+into the market-aware translation catalogue and now uses semantic color,
+surface, radius, and text tokens. It is registered as a migrated i18n surface,
+so hardcoded copy cannot silently return.
 
 ## Priorities and implemented global improvements
 
@@ -121,11 +152,11 @@ control targets, and motion durations.
 
 | Repeated pattern               | Canonical implementation                                                    |
 | ------------------------------ | --------------------------------------------------------------------------- |
-| Actions and links              | `Button`, `ActionLink`, `BackLink`, `IconButton`                            |
-| Form controls and feedback     | `FormField`, `Input`, `Select`, `Textarea`, `Checkbox`, shared field errors |
-| Status and guidance            | `Badge`, `Notice`, `StatePanel`, `Skeleton`, toast/live region              |
-| Overlays                       | `Modal`, `Sheet`, `ConfirmModal`, `PromptModal`, focus restoration helpers  |
-| Navigation and disclosure      | `Tabs`, `DropdownMenu`, `Popover`, `Tooltip`, `ScrollableRegion`            |
+| Actions and links              | `Button` (button/router/external-link modes), `IconButton`                  |
+| Form controls and feedback     | `FormField`, `Input`, `Select`, `Textarea`, `Checkbox`, `Switch`            |
+| Status and guidance            | `Badge`, `Notice`, shared `StatePanel`, `Skeleton`, toast/live region       |
+| Overlays                       | shared `Modal`/bottom-right `Drawer`, `ConfirmModal`, `PromptModal`         |
+| Navigation and disclosure      | `Tabs`, `DropdownMenu`, `ScrollableRegion`, dialog behavior                 |
 | Marketplace content            | `ListingCard`, `ListingGrid`, `ListingRail`, seller/card primitives         |
 | Search and filtering           | `GlobalSearchBar`, `FilterChip`, `CategoryFilterRail`, `PriceRangeSlider`   |
 | Progress and asynchronous work | `ProgressBar`, shared loading/empty/error states                            |
@@ -255,7 +286,7 @@ The implementation is accepted when all of the following stay true:
 3. `make ui-check` passes shared UI, frontend, mobile, production build, and
    Expo checks.
 4. `make cross-platform-check` passes the repository-wide quality matrix.
-5. all 120 registered routes and 244 static destinations pass navigation
+5. all 132 registered routes and 263 static destinations pass navigation
    integrity.
 6. browser checks at 320, 375, 390, 430, 768, 1024, 1280, and 1440+ show no
    horizontal overflow or obstructed pinned actions.
@@ -268,14 +299,22 @@ The implementation is accepted when all of the following stay true:
 10. the source scan finds no `Math.random`, browser alert/confirm/prompt, or
     direct UI storage access.
 
-The final broad Chromium/WebKit acceptance run executed 745 checks: 700 passed,
-38 were intentional capability skips and seven initially failed. All seven
-passed focused reruns after correcting a stale Support-persona destination and
-making the search journey wait for its visible focus expansion; the remaining
-four were isolated WebKit navigation timeouts. Five newly inventoried operational
-routes then passed another 31 focused checks with four intentional internal-shell
-navigation skips. The frontend unit suite passes 602 tests across 90 files, and
-the shared contract suite passes all 71 tests.
+Current environment note: the shared packages, generated tokens, frontend
+typecheck/build, and mobile TypeScript stages of `make ui-check` pass. The root
+target then stops in Expo Doctor because 12 installed Expo/React Native packages
+are one patch behind the versions required by SDK 57. That dependency-alignment
+task predates this Web UI pass and is recorded as an environment blocker rather
+than hidden as a frontend visual failure.
+
+The final 27 August isolated production run executed 850 browser checks across
+Chromium and WebKit. Phase one passed 743 checks with 50 intentional hosted or
+internal-shell capability skips; phase two passed all 57 serial multi-route,
+17-persona, design-token, typography, and responsive-matrix checks. There were
+zero browser failures. The frontend unit suite passes 655 tests across 99 files,
+the shared UI suite passes 8 focused primitive tests, and the contracts package
+passes 109 tests across 15 files. The production build completed before the
+browser matrix, and the route/navigation gate verified all 132 registered routes
+and 263 static destinations.
 
 ## Explicit exceptions and confirmation
 
@@ -293,8 +332,8 @@ The following are intentional and verified, not unresolved hardcoding:
   dimensions, and motion, and the value is validated by the taxonomy contract;
 - realistic prices, dates, places, statuses, and identities remain in demo
   fixtures/adapters, where deterministic scenario data belongs;
-- only French is currently declared shipped. The i18n audit records 2,682
-  French strings in 162 files that must enter the message catalogue before an
+- only French is currently declared shipped. The i18n audit records 3,088
+  French strings in 178 files that must enter the message catalogue before an
   additional locale can be exposed. This does not create a partially translated
   production mode.
 

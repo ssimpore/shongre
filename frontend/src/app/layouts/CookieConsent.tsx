@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Cookie } from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
+import { Switch } from "../../design-system/primitives/FormField";
 import { useConsent } from "../providers/ConsentProvider";
 import { CONSENT_CATEGORIES } from "../../domains/consent/consent.service";
 import { ConsentCategories } from "../../domains/consent/consent.types";
@@ -49,9 +50,9 @@ const CookieBanner: React.FC = () => {
       aria-labelledby="cookie-banner-title"
       className="fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-0 z-header p-3 sm:p-4 pointer-events-none"
     >
-      <div className="pointer-events-auto mx-auto max-w-4xl bg-white rounded-2xl border border-border-base shadow-xl p-4 sm:p-5">
+      <div className="pointer-events-auto mx-auto max-w-4xl rounded-overlay border border-border-base bg-bg-surface p-4 shadow-overlay sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="hidden sm:flex w-9 h-9 shrink-0 rounded-xl bg-primary-light text-primary items-center justify-center">
+          <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary sm:flex">
             <Cookie className="w-4.5 h-4.5" aria-hidden="true" />
           </div>
 
@@ -59,11 +60,11 @@ const CookieBanner: React.FC = () => {
             <div className="space-y-1">
               <h2
                 id="cookie-banner-title"
-                className="text-sm font-bold text-stone-900"
+                className="text-sm font-bold text-text-main"
               >
                 {t("consent.title")}
               </h2>
-              <p className="text-xs text-stone-600 leading-relaxed">
+              <p className="text-xs leading-relaxed text-text-secondary">
                 {t("consent.body")}{" "}
                 <Link
                   to="/confidentialite"
@@ -75,21 +76,19 @@ const CookieBanner: React.FC = () => {
               </p>
             </div>
 
-            {/* Accept and refuse share a row and a visual weight on purpose. */}
+            {/* Accept and refuse use the same variant and size on purpose. */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <Button
-                variant="primary"
+                variant="secondary"
                 size={isCompact ? "md" : "sm"}
                 onClick={acceptAll}
-                className="font-bold"
               >
                 {t("consent.acceptAll")}
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size={isCompact ? "md" : "sm"}
                 onClick={rejectOptional}
-                className="font-bold"
               >
                 {t("consent.rejectAll")}
               </Button>
@@ -143,73 +142,53 @@ const CookiePreferencesModal: React.FC = () => {
       maxWidth="lg"
       dismissible={!needsDecision}
     >
-      <div className="p-5 sm:p-6 space-y-4">
-        {CONSENT_CATEGORIES.map((category) => {
-          const checked = category.required ? true : draft[category.id];
-          return (
-            <div
-              key={category.id}
-              className="flex items-start justify-between gap-4 p-4 rounded-xl border border-border-base bg-bg-subtle/50"
-            >
-              <div className="min-w-0">
-                <label
-                  htmlFor={`consent-${category.id}`}
-                  className="text-sm font-bold text-stone-900"
-                >
-                  {t(category.labelKey)}
-                </label>
-                <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                  {t(category.descriptionKey)}
-                </p>
-                {category.required && (
-                  <p className="text-xs text-stone-500 mt-1 font-semibold">
-                    {t("consent.alwaysOn")}
-                  </p>
-                )}
-              </div>
+      <div className="space-y-5">
+        <div className="space-y-3">
+          {CONSENT_CATEGORIES.map((category) => {
+            const checked = category.required ? true : draft[category.id];
+            const description = category.required
+              ? `${t(category.descriptionKey)} ${t("consent.alwaysOn")}`
+              : t(category.descriptionKey);
 
-              <input
-                id={`consent-${category.id}`}
-                type="checkbox"
-                role="switch"
-                checked={checked}
-                disabled={category.required}
-                aria-describedby={`consent-${category.id}-description`}
-                onChange={(e) =>
-                  setDraft((previous) => ({
-                    ...previous,
-                    [category.id]: e.target.checked,
-                  }))
-                }
-                className="mt-1 shrink-0 w-control-target h-control-target rounded accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <span
-                id={`consent-${category.id}-description`}
-                className="sr-only"
+            return (
+              <div
+                key={category.id}
+                className="rounded-card border border-border-base bg-bg-subtle p-4"
               >
-                {t(category.descriptionKey)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+                <Switch
+                  id={`consent-${category.id}`}
+                  label={t(category.labelKey)}
+                  description={description}
+                  checked={checked}
+                  disabled={category.required}
+                  onChange={(nextChecked) =>
+                    setDraft((previous) => ({
+                      ...previous,
+                      [category.id]: nextChecked,
+                    }))
+                  }
+                />
+              </div>
+            );
+          })}
+        </div>
 
-      <div className="flex flex-col sm:flex-row sm:justify-end gap-2 p-5 sm:p-6 border-t border-border-subtle">
-        <Button
-          variant="outline"
-          size={isCompact ? "md" : "sm"}
-          onClick={() => savePreferences(draft)}
-        >
-          {t("consent.saveChoices")}
-        </Button>
-        <Button
-          variant="primary"
-          size={isCompact ? "md" : "sm"}
-          onClick={acceptAll}
-          className="font-bold"
-        >
-          {t("consent.acceptAll")}
-        </Button>
+        <div className="flex flex-col gap-2 border-t border-border-subtle pt-5 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
+            size={isCompact ? "md" : "sm"}
+            onClick={() => savePreferences(draft)}
+          >
+            {t("consent.saveChoices")}
+          </Button>
+          <Button
+            variant="primary"
+            size={isCompact ? "md" : "sm"}
+            onClick={acceptAll}
+          >
+            {t("consent.acceptAll")}
+          </Button>
+        </div>
       </div>
     </Modal>
   );

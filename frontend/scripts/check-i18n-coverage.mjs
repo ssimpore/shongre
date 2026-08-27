@@ -30,6 +30,7 @@ const MIGRATED = [
   "src/app/layouts/Footer.tsx",
   "src/app/layouts/CookieConsent.tsx",
   "src/design-system/primitives/LanguageSelector.tsx",
+  "src/features/admin/crm/components/EvidenceDrawer.tsx",
 ];
 
 /** Directories with no user-facing copy of their own. */

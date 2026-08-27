@@ -7,25 +7,43 @@ recreating controls or page geometry locally.
 ## Architecture
 
 ```text
-index.css @theme
-  -> tokens/theme.ts (parity-checked programmatic mirror)
-  -> primitives
-  -> shared components
+packages/design-tokens/src/theme.ts
+  -> generated tokens.css
+  -> frontend/index.css (base behaviour and named utilities only)
+  -> packages/ui (canonical cross-platform primitives)
+  -> frontend thin adapters and web-only compositions
   -> marketplace patterns
   -> features and layouts
   -> routes
 ```
 
-`src/index.css` is the rendered source of truth. `tokens/theme.ts` mirrors values
-needed by TypeScript, charts, or inline geometry; `tokens.parity.test.ts` fails
-if the two drift.
+`packages/design-tokens` is the only authoritative token source. The frontend
+imports its generated Tailwind adapter from `src/index.css`; the stylesheet may
+define base browser behaviour and named interaction utilities, but it must not
+introduce a competing visual scale.
+
+`packages/ui` owns a concept whenever web and native can share its contract.
+Files such as `Button.tsx`, `FormField.tsx`, `Modal.tsx`, and `StatePanel.tsx` in
+this directory are intentionally thin web adapters: they re-export the shared
+implementation or add frontend-only context such as localized copy. Product
+features must never fork their visual implementation.
+
+| Semantic role | Canonical owner | Frontend adapter responsibility |
+| --- | --- | --- |
+| Buttons and icon buttons | `packages/ui/src/primitives` | Re-export only |
+| Inputs, selects, checkboxes, switches | `packages/ui/src/forms` | Re-export only |
+| Modal and bottom/right drawer | `packages/ui/src/feedback/Modal.web.tsx` | Re-export only |
+| Page error/not-found/restricted/offline state | `packages/ui/src/feedback/StatePanel.web.tsx` | Inject localized technical-detail label |
+| Tokens, motion, elevation, breakpoints | `packages/design-tokens/src/theme.ts` | Consume generated CSS |
 
 ## Layers
 
-- `tokens/`: semantic color, typography, spacing, size, radius, elevation,
-  breakpoint, motion, and stacking contracts.
-- `primitives/`: generic controls and structure—Button, IconButton, FormField,
-  Modal/Drawer, Layout, Typography, Image, DataTable, and interaction helpers.
+- `packages/design-tokens/`: semantic color, typography, spacing, size, radius,
+  elevation, breakpoint, motion, and stacking contracts.
+- `packages/ui/`: generic cross-platform controls and structure—Button,
+  IconButton, FormField, Modal/Drawer, StatePanel, Layout, Typography, and Card.
+- `primitives/`: thin adapters plus web-only concepts such as Image, DataTable,
+  and interaction helpers that have no shared package implementation yet.
 - `components/`: shared product-neutral compositions—Breadcrumbs, feedback,
   Price/Rating, skeleton families, and Tabs.
 - marketplace patterns: ListingCard/Rail, GlobalSearchBar, category filters,
@@ -85,6 +103,9 @@ that merely rename a `div`.
 - Interactive state cannot rely on color alone. Preserve focus-visible outlines.
 - Controls must meet the 24px WCAG 2.2 AA target floor; primary touch controls
   use `control-touch` (44px).
+- A shared `Switch` keeps its native checkbox stretched across the whole
+  labelled row. Do not replace it with a 1px visually-hidden input: direct
+  pointer activation then lands on the descriptive copy instead of the control.
 - Loading placeholders are `aria-hidden`; the owning region announces loading.
 
 ## Responsive and density strategy

@@ -22,8 +22,8 @@ import {
   Button,
   Container,
   Drawer,
+  DropdownMenu,
   FilterPanel,
-  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -106,37 +106,39 @@ const AutoFilters: React.FC<FiltersProps> = ({
         ) : undefined
       }
     >
-      <label className="block text-xs font-bold text-text-main">
-        Type de véhicule
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Type de véhicule</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Type de véhicule"
+          headerTitle="Type de véhicule"
+          fullWidth
           value={params.get("type") || "car"}
-          onChange={(event) => update("type", event.target.value)}
-        >
-          {catalog.vehicleTypes.map((type) => (
-            <option key={type.type} value={type.type}>
-              {type.label}
-            </option>
-          ))}
-        </Select>
-      </label>
-      <label className="block text-xs font-bold text-text-main">
-        Carrosserie
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+          onChange={(value) => update("type", value)}
+          options={catalog.vehicleTypes.map((type) => ({
+            value: type.type,
+            label: type.label,
+          }))}
+        />
+      </div>
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Carrosserie</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Carrosserie"
+          headerTitle="Carrosserie"
+          fullWidth
           value={params.get("body") || ""}
-          onChange={(event) => update("body", event.target.value || undefined)}
-        >
-          <option value="">Toutes</option>
-          {bodyTypeOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
-      </label>
+          onChange={(value) => update("body", value || undefined)}
+          options={[
+            { value: "", label: "Toutes" },
+            ...bodyTypeOptions.map((option) => ({
+              value: option.value,
+              label: option.label,
+            })),
+          ]}
+        />
+      </div>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Puissance
@@ -205,63 +207,65 @@ const AutoFilters: React.FC<FiltersProps> = ({
             placeholder="Ville"
             className="h-control-touch min-w-0 rounded-control border border-border-base px-3 text-xs"
           />
-          <Select
-            className="w-auto"
-            aria-label="Rayon"
+          <DropdownMenu
+            ariaLabel="Rayon"
+            headerTitle="Rayon"
+            placement="bottom-right"
             value={
               params.get("radius") ||
               String(catalog.config.defaultSearchRadiusKm)
             }
-            onChange={(event) => update("radius", event.target.value)}
-          >
-            {[10, 25, 50, 100, 200].map((radius) => (
-              <option key={radius} value={radius}>
-                {radius} km
-              </option>
-            ))}
-          </Select>
+            onChange={(value) => update("radius", value)}
+            options={[10, 25, 50, 100, 200].map((radius) => ({
+              value: String(radius),
+              label: `${radius} km`,
+            }))}
+          />
         </div>
       </fieldset>
-      <label className="block text-xs font-bold text-text-main">
-        Marque
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Marque</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Marque"
+          headerTitle="Marque"
+          fullWidth
+          searchable
+          searchPlaceholder="Rechercher une marque"
           value={params.get("make") || ""}
-          onChange={(event) => update("make", event.target.value || undefined)}
-        >
-          <option value="">Toutes les marques</option>
-          {catalog.vehicleCatalog
-            .filter((entry) => entry.kind === "make")
-            .map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.label}
-              </option>
-            ))}
-        </Select>
-      </label>
-      <label className="block text-xs font-bold text-text-main">
-        Modèle
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+          onChange={(value) => update("make", value || undefined)}
+          options={[
+            { value: "", label: "Toutes les marques" },
+            ...catalog.vehicleCatalog
+              .filter((entry) => entry.kind === "make")
+              .map((entry) => ({ value: entry.id, label: entry.label })),
+          ]}
+        />
+      </div>
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Modèle</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Modèle"
+          headerTitle="Modèle"
+          fullWidth
+          searchable
+          searchPlaceholder="Rechercher un modèle"
           value={params.get("model") || ""}
-          onChange={(event) => update("model", event.target.value || undefined)}
-        >
-          <option value="">Tous les modèles</option>
-          {catalog.vehicleCatalog
-            .filter(
-              (entry) =>
-                entry.kind === "model" &&
-                (!params.get("make") || entry.parentId === params.get("make")),
-            )
-            .map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                {entry.label}
-              </option>
-            ))}
-        </Select>
-      </label>
+          onChange={(value) => update("model", value || undefined)}
+          options={[
+            { value: "", label: "Tous les modèles" },
+            ...catalog.vehicleCatalog
+              .filter(
+                (entry) =>
+                  entry.kind === "model" &&
+                  (!params.get("make") ||
+                    entry.parentId === params.get("make")),
+              )
+              .map((entry) => ({ value: entry.id, label: entry.label })),
+          ]}
+        />
+      </div>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">Prix</legend>
         <div className="grid grid-cols-2 gap-2">
@@ -312,23 +316,24 @@ const AutoFilters: React.FC<FiltersProps> = ({
           />
         </div>
       </fieldset>
-      <label className="block text-xs font-bold text-text-main">
-        Kilométrage maximum
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Kilométrage maximum</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Kilométrage maximum"
+          headerTitle="Kilométrage maximum"
+          fullWidth
           value={params.get("maxMileage") || ""}
-          onChange={(event) =>
-            update("maxMileage", event.target.value || undefined)
-          }
-        >
-          <option value="">Sans maximum</option>
-          <option value="30000">30 000 km</option>
-          <option value="60000">60 000 km</option>
-          <option value="100000">100 000 km</option>
-          <option value="150000">150 000 km</option>
-        </Select>
-      </label>
+          onChange={(value) => update("maxMileage", value || undefined)}
+          options={[
+            { value: "", label: "Sans maximum" },
+            { value: "30000", label: "30 000 km" },
+            { value: "60000", label: "60 000 km" },
+            { value: "100000", label: "100 000 km" },
+            { value: "150000", label: "150 000 km" },
+          ]}
+        />
+      </div>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Énergie
@@ -357,36 +362,38 @@ const AutoFilters: React.FC<FiltersProps> = ({
           ))}
         </div>
       </fieldset>
-      <label className="block text-xs font-bold text-text-main">
-        Boîte de vitesses
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Boîte de vitesses</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Boîte de vitesses"
+          headerTitle="Boîte de vitesses"
+          fullWidth
           value={params.get("transmission") || ""}
-          onChange={(event) =>
-            update("transmission", event.target.value || undefined)
-          }
-        >
-          <option value="">Toutes</option>
-          <option value="manual">Manuelle</option>
-          <option value="automatic">Automatique</option>
-        </Select>
-      </label>
-      <label className="block text-xs font-bold text-text-main">
-        Vendeur
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+          onChange={(value) => update("transmission", value || undefined)}
+          options={[
+            { value: "", label: "Toutes" },
+            { value: "manual", label: "Manuelle" },
+            { value: "automatic", label: "Automatique" },
+          ]}
+        />
+      </div>
+      <div className="text-xs font-bold text-text-main">
+        <span className="block">Vendeur</span>
+        <DropdownMenu
+          className="mt-2"
+          ariaLabel="Vendeur"
+          headerTitle="Vendeur"
+          fullWidth
           value={params.get("seller") || ""}
-          onChange={(event) =>
-            update("seller", event.target.value || undefined)
-          }
-        >
-          <option value="">Tous</option>
-          <option value="individual">Particulier</option>
-          <option value="dealer">Professionnel</option>
-        </Select>
-      </label>
+          onChange={(value) => update("seller", value || undefined)}
+          options={[
+            { value: "", label: "Tous" },
+            { value: "individual", label: "Particulier" },
+            { value: "dealer", label: "Professionnel" },
+          ]}
+        />
+      </div>
       <fieldset className="space-y-1 border-t border-border-subtle pt-4">
         <legend className="sr-only">Services</legend>
         <label className="flex min-h-control-target items-center gap-2 text-xs text-text-secondary">
@@ -682,25 +689,24 @@ export const AutoSearchPage: React.FC = () => {
               />{" "}
               Affiner
             </button>
-            <label className="ml-auto text-xs text-text-secondary">
-              Trier par{" "}
-              <Select
-                /* Sizes to its content so the label stays on one line: fields
-                   fill their container by default, which is right in a form
-                   column and wrong for an inline toolbar control. */
-                className="ml-2 w-auto"
-                labelledByAncestor
+            <div className="ml-auto flex items-center gap-2 text-xs text-text-secondary">
+              <span>Trier par</span>
+              <DropdownMenu
+                ariaLabel="Trier les véhicules"
+                headerTitle="Trier par"
+                placement="bottom-right"
                 value={query.sort}
-                onChange={(event) => update("sort", event.target.value)}
-              >
-                <option value="relevance">Pertinence</option>
-                <option value="price_asc">Prix croissant</option>
-                <option value="price_desc">Prix décroissant</option>
-                <option value="year_desc">Année récente</option>
-                <option value="mileage_asc">Kilométrage</option>
-                <option value="newest">Plus récentes</option>
-              </Select>
-            </label>
+                onChange={(value) => update("sort", value)}
+                options={[
+                  { value: "relevance", label: "Pertinence" },
+                  { value: "price_asc", label: "Prix croissant" },
+                  { value: "price_desc", label: "Prix décroissant" },
+                  { value: "year_desc", label: "Année récente" },
+                  { value: "mileage_asc", label: "Kilométrage" },
+                  { value: "newest", label: "Plus récentes" },
+                ]}
+              />
+            </div>
           </div>
           {loading ? (
             <div className="space-y-3">

@@ -1302,7 +1302,15 @@ export const messagesEn: MessageCatalogue = {
   "admin.enrichmentDiffModal.secteurDActivite": "Sector",
   "admin.enrichmentDiffModal.syntheseCommercialeIa": "AI sales summary",
   "admin.enrichmentDiffModal.100ValideHumain": "100% human-approved",
+  "admin.evidenceDrawer.title": "Sources and rationale: {company}",
   "admin.evidenceDrawer.fitShongreEstime": "Estimated Shongre fit",
+  "admin.evidenceDrawer.scoreCompatibilite": "Shongre compatibility score",
+  "admin.evidenceDrawer.pointsAttention": "Points to review",
+  "admin.evidenceDrawer.sourcesPubliquesAnalysees_one":
+    "{count} public source reviewed",
+  "admin.evidenceDrawer.sourcesPubliquesAnalysees_other":
+    "{count} public sources reviewed",
+  "admin.evidenceDrawer.url": "URL",
   "admin.evidenceDrawer.consulterLaSource": "View the source",
   "admin.adminProviderDetailPage.cetIdentifiantDePrestataireN":
     "This provider identifier is not listed in the canonical Shongre registry. It may have been removed or renamed.",

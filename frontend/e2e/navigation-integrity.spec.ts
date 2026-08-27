@@ -9,6 +9,10 @@ test.describe("navigation integrity", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto("/");
+    // WebKit can expose the server-rendered input before hydration replaces it.
+    // Focusing that short-lived node never reaches React's onFocus handler, so
+    // the test would blame the expansion state for a pre-interaction race.
+    await waitForStableLayout(page);
 
     const search = page
       .getByRole("combobox", { name: /rechercher une annonce/i })

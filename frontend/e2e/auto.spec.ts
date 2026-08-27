@@ -31,7 +31,10 @@ test.describe("Shongre Auto", () => {
     ).toBeVisible();
     const cards = page.getByRole("article");
     await expect(cards).toHaveCount(4);
-    await page.getByLabel("Marque").selectOption("peugeot");
+    await page.getByRole("button", { name: "Marque", exact: true }).click();
+    await page
+      .getByRole("option", { name: "Peugeot", exact: true })
+      .click();
     await expect(page).toHaveURL(/make=peugeot/);
     await expect(cards).toHaveCount(3);
 

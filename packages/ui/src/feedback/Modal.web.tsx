@@ -107,9 +107,15 @@ export const Drawer: React.FC<DrawerProps> = ({
 
   if (!isOpen) return null;
 
+  const isRight = position === "right";
+
   return (
     <div
-      className="fixed inset-0 z-modal bg-overlay backdrop-blur-xs flex items-end justify-center sm:items-center p-0 sm:p-4"
+      className={`fixed inset-0 z-modal flex bg-overlay backdrop-blur-xs ${
+        isRight
+          ? "items-stretch justify-end"
+          : "items-end justify-center p-0 sm:items-center sm:p-4"
+      }`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -120,7 +126,11 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`w-full max-w-lg bg-bg-surface rounded-t-overlay sm:rounded-overlay shadow-overlay border border-border-base max-h-dialog-drawer-max-height flex flex-col overflow-hidden animate-in slide-in-from-bottom pb-safe sm:pb-0 ${className}`}
+        className={`flex w-full flex-col overflow-hidden bg-bg-surface shadow-overlay animate-in ${
+          isRight
+            ? "h-side-sheet-height sm:w-side-sheet-width sm:max-w-lg sm:border-l border-border-base slide-in-from-right pb-safe"
+            : "max-w-lg max-h-dialog-drawer-max-height rounded-t-overlay border border-border-base slide-in-from-bottom pb-safe sm:rounded-overlay sm:pb-0"
+        } ${className}`}
       >
         <div className="flex items-center justify-between p-5 border-b border-border-subtle shrink-0">
           {title ? (
