@@ -10,7 +10,9 @@ import {
 import { MainLayout } from "../layouts/MainLayout";
 import { AccountLayout } from "../layouts/AccountLayout";
 import { FocusedLayout } from "../layouts/FocusedLayout";
+import { ProductLayout } from "../layouts/ProductLayout";
 import { PageSuspense } from "../layouts/PageSuspense";
+import { routes } from "../../configuration/routes";
 
 // Security & RBAC Guards
 import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
@@ -226,6 +228,21 @@ const ProStorefrontEditorPage = lazy(() =>
 const ProPlansPage = lazy(() =>
   import("../../features/seller-workspace/ProPlansPage").then((m) => ({
     default: m.ProPlansPage,
+  })),
+);
+const ProspectsProductPage = lazy(() =>
+  import("../../features/prospecting/ProspectsProductPage").then((m) => ({
+    default: m.ProspectsProductPage,
+  })),
+);
+const ProspectsStandaloneWorkspacePage = lazy(() =>
+  import("../../features/prospecting/ProspectsStandaloneWorkspacePage").then(
+    (m) => ({ default: m.ProspectsStandaloneWorkspacePage }),
+  ),
+);
+const ProspectsProWorkspacePage = lazy(() =>
+  import("../../features/prospecting/ProspectingWorkspacePage").then((m) => ({
+    default: m.ProspectingWorkspacePage,
   })),
 );
 const ProDirectoryPage = lazy(() =>
@@ -579,6 +596,12 @@ const OrganizationFinancePage: React.FC = () => (
   <AccountFinancePage scope="organization" />
 );
 
+const prospectsProductNavigation = [
+  { label: "Fonctionnalités", to: "/prospects#prospects-proof" },
+  { label: "Comment ça marche", to: "/prospects#parcours" },
+  { label: "Offres", to: "/prospects#prospects-packaging" },
+] as const;
+
 /** Client-side fallback for old deep links; Next serves the permanent redirects. */
 const LegacyEducationRedirect: React.FC = () => {
   const location = useLocation();
@@ -593,6 +616,31 @@ const LegacyEducationRedirect: React.FC = () => {
 };
 
 export const APP_ROUTES: RouteObject[] = [
+  // Public Shongre products have their own quiet acquisition shell. Marketplace
+  // search and publication controls distract from the product story and are
+  // still one explicit link away when a visitor wants to return.
+  {
+    path: "/",
+    element: (
+      <ProductLayout
+        productName="Prospects"
+        productPath={routes.prospects.product()}
+        workspacePath={routes.prospects.workspace()}
+        navigation={prospectsProductNavigation}
+      />
+    ),
+    children: [
+      { path: "prospects", element: withSuspense(ProspectsProductPage) },
+      {
+        path: "prospects/app",
+        element: (
+          <RequireRoutePolicy policyId="standaloneProspects">
+            {withSuspense(ProspectsStandaloneWorkspacePage)}
+          </RequireRoutePolicy>
+        ),
+      },
+    ],
+  },
   // Task-completion flows get a focused shell rather than the marketplace one.
   {
     path: "/",
@@ -997,6 +1045,14 @@ export const APP_ROUTES: RouteObject[] = [
             element: (
               <RequireRoutePolicy policyId="accountProDashboard">
                 {withSuspense(ProDashboardPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "pro/prospects",
+            element: (
+              <RequireRoutePolicy policyId="accountProProspects">
+                {withSuspense(ProspectsProWorkspacePage)}
               </RequireRoutePolicy>
             ),
           },

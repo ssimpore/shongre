@@ -157,25 +157,25 @@ function upsertMeta(
   value?: string,
 ) {
   if (typeof document === "undefined") return;
-  // App Router streams route metadata through the body before browsers hoist
-  // it. Search the whole document so the client updater adopts/removes those
-  // nodes instead of creating a second head tag beside them.
   const matches = Array.from(
-    document.querySelectorAll<HTMLMetaElement>(selector),
+    document.head.querySelectorAll<HTMLMetaElement>(selector),
   );
-  const existing = matches[0];
-
-  // Next.js can stream its static metadata into the head after the client app
-  // has mounted. Keep the first canonical tag and remove later duplicates so
-  // route metadata still has one unambiguous owner after hydration.
-  matches.slice(1).forEach((duplicate) => duplicate.remove());
-  if (existing && existing.parentElement !== document.head) {
-    document.head.appendChild(existing);
-  }
+  // Prefer the node Next owns. If our earlier client pass created a temporary
+  // fallback before App Router installed its tag, retract only that fallback.
+  // Removing or moving an unmarked React-owned node breaks Fast Refresh's DOM
+  // bookkeeping and surfaces as `removeChild` on a null parent.
+  const existing =
+    matches.find((node) => !node.hasAttribute(MANAGED)) ?? matches[0];
+  matches
+    .filter(
+      (duplicate) => duplicate !== existing && duplicate.hasAttribute(MANAGED),
+    )
+    .forEach((duplicate) => duplicate.remove());
 
   if (!value) {
-    // Only retract what this module added; static tags are left as authored.
-    if (existing?.hasAttribute(MANAGED)) existing.remove();
+    matches
+      .filter((node) => node.hasAttribute(MANAGED))
+      .forEach((node) => node.remove());
     return;
   }
 
@@ -194,13 +194,14 @@ function upsertMeta(
 function upsertCanonical(url: string) {
   if (typeof document === "undefined") return;
   const links = Array.from(
-    document.querySelectorAll<HTMLLinkElement>('link[rel="canonical"]'),
+    document.head.querySelectorAll<HTMLLinkElement>('link[rel="canonical"]'),
   );
-  let link = links[0];
-  links.slice(1).forEach((duplicate) => duplicate.remove());
-  if (link && link.parentElement !== document.head) {
-    document.head.appendChild(link);
-  }
+  let link = links.find((node) => !node.hasAttribute(MANAGED)) ?? links[0];
+  links
+    .filter(
+      (duplicate) => duplicate !== link && duplicate.hasAttribute(MANAGED),
+    )
+    .forEach((duplicate) => duplicate.remove());
   if (!link) {
     link = document.createElement("link");
     link.setAttribute("rel", "canonical");
@@ -216,10 +217,17 @@ function applyAlternateLinks(
   marketContext?: MarketContext | null,
 ) {
   if (typeof document === "undefined") return;
-  document.head
-    .querySelectorAll('link[rel="alternate"][hreflang]')
-    .forEach((node) => node.remove());
-  if (meta.noIndex || !marketContext?.countryCode) return;
+  const existingLinks = Array.from(
+    document.head.querySelectorAll<HTMLLinkElement>(
+      'link[rel="alternate"][hreflang]',
+    ),
+  );
+  if (meta.noIndex || !marketContext?.countryCode) {
+    existingLinks
+      .filter((node) => node.hasAttribute(MANAGED))
+      .forEach((node) => node.remove());
+    return;
+  }
 
   const allowed = meta.alternateCountries
     ? new Set(meta.alternateCountries.map((code) => code.toUpperCase()))
@@ -232,25 +240,48 @@ function applyAlternateLinks(
       ["active", "beta"].includes(country.launchStatus) &&
       (!allowed || allowed.has(country.code)),
   );
-  for (const country of countries) {
-    const link = document.createElement("link");
-    link.rel = "alternate";
-    link.hreflang = country.seo.hreflang;
-    link.href = buildPublicUrl({
+  const desired = countries.map((country) => ({
+    hreflang: country.seo.hreflang,
+    href: buildPublicUrl({
       country: country.code,
       route: canonicalPath,
       infrastructure: marketContext.infrastructure,
-    });
-    link.setAttribute(MANAGED, "");
-    document.head.appendChild(link);
-  }
+    }),
+  }));
   if (countries.length > 0) {
-    const fallback = document.createElement("link");
-    fallback.rel = "alternate";
-    fallback.hreflang = "x-default";
-    fallback.href = `${marketContext.infrastructure.canonicalProtocol}://${marketContext.infrastructure.globalDomain}/`;
-    fallback.setAttribute(MANAGED, "");
-    document.head.appendChild(fallback);
+    desired.push({
+      hreflang: "x-default",
+      href: `${marketContext.infrastructure.canonicalProtocol}://${marketContext.infrastructure.globalDomain}/`,
+    });
+  }
+
+  const desiredLanguages = new Set(desired.map(({ hreflang }) => hreflang));
+  existingLinks
+    .filter(
+      (node) =>
+        node.hasAttribute(MANAGED) && !desiredLanguages.has(node.hreflang),
+    )
+    .forEach((node) => node.remove());
+
+  for (const entry of desired) {
+    const matches = existingLinks.filter(
+      (node) => node.hreflang === entry.hreflang,
+    );
+    let link =
+      matches.find((node) => !node.hasAttribute(MANAGED)) ?? matches[0];
+    matches
+      .filter(
+        (duplicate) => duplicate !== link && duplicate.hasAttribute(MANAGED),
+      )
+      .forEach((duplicate) => duplicate.remove());
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "alternate";
+      link.hreflang = entry.hreflang;
+      link.setAttribute(MANAGED, "");
+      document.head.appendChild(link);
+    }
+    link.href = entry.href;
   }
 }
 

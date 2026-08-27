@@ -114,7 +114,7 @@ export const Drawer: React.FC<DrawerProps> = ({
       className={`fixed inset-0 z-modal flex bg-overlay backdrop-blur-xs ${
         isRight
           ? "items-stretch justify-end"
-          : "items-end justify-center p-0 sm:items-center sm:p-4"
+          : "items-end justify-center pb-mobile-nav-clearance-gutter sm:items-center sm:p-4"
       }`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

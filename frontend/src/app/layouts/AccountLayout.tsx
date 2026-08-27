@@ -29,6 +29,7 @@ import {
   Users,
   BadgeEuro,
   Scale,
+  Target,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -213,6 +214,12 @@ export const AccountLayout: React.FC = () => {
       label: "Dashboard Pro",
       icon: <BarChart3 className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountProDashboard"),
+    },
+    {
+      to: routes.workspace.pro.prospects(),
+      label: "Prospects B2B",
+      icon: <Target className="w-icon-md h-icon-md text-primary" />,
+      visible: canAccessRoute("accountProProspects"),
     },
     {
       to: routes.workspace.pro.storefront(),

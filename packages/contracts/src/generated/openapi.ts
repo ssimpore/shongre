@@ -2704,6 +2704,118 @@ export interface paths {
         readonly patch: operations["updateCrmProduct"];
         readonly trace?: never;
     };
+    readonly "/crm/prospecting/candidates/{candidateId}/brief": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Generate an evidence-linked opportunity brief
+         * @description Uses the shared AI gateway when authorized and degrades to deterministic rules without blocking ordinary prospect management.
+         */
+        readonly get: operations["getProspectOpportunityBrief"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/prospecting/discover": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Discover tenant-scoped B2B company candidates
+         * @description Only approved adapters for the explicit market and operating context may execute. The response requires human review before CRM import.
+         */
+        readonly post: operations["discoverProspects"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/prospecting/imports": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Approve and idempotently import a candidate into CRM Core */
+        readonly post: operations["importProspectCandidate"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/prospecting/profiles": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List the tenant's ideal-customer profiles
+         * @description Returns only profiles belonging to the organization derived from the authenticated principal.
+         */
+        readonly get: operations["listProspectingProfiles"];
+        readonly put?: never;
+        /** Create a market-aware ideal-customer profile */
+        readonly post: operations["createProspectingProfile"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/prospecting/sources": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List lawful source definitions and market availability */
+        readonly get: operations["listProspectingSources"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/crm/prospecting/usage": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get backend-authoritative prospecting entitlements and usage */
+        readonly get: operations["getProspectingUsage"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/crm/quotes": {
         readonly parameters: {
             readonly query?: never;
@@ -8601,6 +8713,229 @@ export interface components {
             /** Format: uri */
             readonly url: string;
         };
+        readonly ProspectCandidate: {
+            readonly company: {
+                readonly canonicalName: string;
+                readonly countryCode: components["schemas"]["MarketCode"];
+                /** Format: date-time */
+                readonly discoveredAt: string;
+                /** Format: uuid */
+                readonly id: string;
+                readonly marketCodes: readonly components["schemas"]["MarketCode"][];
+                /** Format: date-time */
+                readonly refreshedAt: string;
+                /** @enum {string} */
+                readonly reviewState: "UNREVIEWED" | "APPROVED" | "DISMISSED" | "DUPLICATE_REVIEW" | "SUPPRESSED";
+                readonly sourceIds: readonly string[];
+            } & {
+                readonly [key: string]: unknown;
+            };
+            readonly evidence: readonly components["schemas"]["ProspectEvidence"][];
+            /** @enum {boolean} */
+            readonly humanReviewRequired: true;
+            readonly score: components["schemas"]["ProspectScore"];
+            /** @enum {string} */
+            readonly status: "DISCOVERED" | "IMPORTED" | "DISMISSED";
+        };
+        readonly ProspectDiscoveryFilters: {
+            /** @default [] */
+            readonly companyTypes: readonly string[];
+            readonly countryCode: components["schemas"]["MarketCode"];
+            readonly currency: string;
+            readonly cursor?: string;
+            /** @default [] */
+            readonly freshness: readonly ("CURRENT" | "AGING" | "STALE" | "UNKNOWN")[];
+            readonly geographicArea?: string;
+            /** @default [] */
+            readonly industries: readonly string[];
+            /** @default 25 */
+            readonly limit: number;
+            readonly locale: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly minimumFitScore?: number;
+            /** Format: uuid */
+            readonly profileId?: string;
+            readonly query?: string;
+            readonly radiusKm?: number;
+            readonly requireWebsite?: boolean;
+            /** @default [] */
+            readonly sourceIds: readonly string[];
+            /** @default [] */
+            readonly taxonomySlugs: readonly string[];
+            readonly timezone: string;
+        };
+        readonly ProspectDiscoveryRequest: {
+            /**
+             * @default SUBSCRIBER
+             * @enum {string}
+             */
+            readonly context: "INTERNAL_SHONGRE" | "SUBSCRIBER" | "AGGREGATED_OPPORTUNITY";
+            readonly filters: components["schemas"]["ProspectDiscoveryFilters"];
+            /** Format: uuid */
+            readonly idempotencyKey: string;
+        };
+        readonly ProspectDiscoveryResult: {
+            readonly appliedFilters: components["schemas"]["ProspectDiscoveryFilters"];
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly items: readonly components["schemas"]["ProspectCandidate"][];
+            readonly measuredTotal: number;
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly sourceIds: readonly string[];
+        };
+        readonly ProspectEvidence: {
+            readonly attributionRequired: boolean;
+            readonly confidence: number;
+            readonly excerpt?: string;
+            /** @enum {string} */
+            readonly freshness: "CURRENT" | "AGING" | "STALE" | "UNKNOWN";
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly observedAt: string;
+            readonly sourceCategory: string;
+            readonly sourceId: string;
+            readonly title: string;
+            /** Format: uri */
+            readonly url?: string;
+        };
+        readonly ProspectImportRequest: {
+            /** Format: uuid */
+            readonly companyId: string;
+            readonly expectedEvidenceIds: readonly string[];
+            /** Format: uuid */
+            readonly idempotencyKey: string;
+            /** @enum {string} */
+            readonly reviewDecision: "APPROVED";
+            /** Format: uuid */
+            readonly targetListId?: string;
+        };
+        readonly ProspectImportResult: {
+            /** Format: uuid */
+            readonly companyId: string;
+            /** Format: uuid */
+            readonly crmAccountId: string;
+            /** Format: uuid */
+            readonly duplicateCrmAccountId?: string;
+            readonly duplicateDetected: boolean;
+            /** Format: date-time */
+            readonly importedAt: string;
+            /** @enum {boolean} */
+            readonly provenancePreserved: true;
+        };
+        readonly ProspectingProfile: components["schemas"]["ProspectingProfileInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly ProspectingProfileInput: {
+            readonly businessMaturity: readonly string[];
+            readonly companyTypes: readonly string[];
+            /** @enum {string} */
+            readonly context: "INTERNAL_SHONGRE" | "SUBSCRIBER" | "AGGREGATED_OPPORTUNITY";
+            readonly currency: string;
+            readonly description?: string;
+            readonly estimatedSizeMax?: number;
+            readonly estimatedSizeMin?: number;
+            readonly exclusionRules: readonly string[];
+            readonly fitRules: readonly string[];
+            readonly geographicAreas: readonly string[];
+            readonly industries: readonly string[];
+            readonly isDefault: boolean;
+            readonly locale: string;
+            readonly marketCodes: readonly components["schemas"]["MarketCode"][];
+            readonly name: string;
+            readonly onlinePresence: readonly string[];
+            readonly optionalSignals: readonly string[];
+            readonly radiusKm?: number;
+            readonly requiredSignals: readonly string[];
+            readonly targetRoles: readonly string[];
+            readonly taxonomySlugs: readonly string[];
+            readonly timezone: string;
+        };
+        readonly ProspectingSource: {
+            /** @enum {string} */
+            readonly category: "USER_PROVIDED" | "FIRST_PARTY_AUTHORIZED" | "OFFICIAL_REGISTRY" | "OPEN_DATA" | "PUBLIC_PROFESSIONAL_WEB" | "LICENSED_PROVIDER" | "PARTNER" | "INBOUND_ATTRIBUTION" | "AGGREGATED_MARKET_SIGNAL";
+            readonly dataFreshnessLabel: string;
+            readonly description: string;
+            readonly healthMessage: string;
+            readonly id: string;
+            /** Format: date-time */
+            readonly lastHealthCheckAt?: string;
+            /** @enum {string} */
+            readonly lifecycle: "ACTIVE" | "DEGRADED" | "INACTIVE_REVIEW_REQUIRED" | "DISCONNECTED";
+            readonly name: string;
+            readonly operations: readonly ("SEARCH" | "ENRICHMENT" | "IMPORT" | "REFRESH" | "DELETE")[];
+            readonly providerId: string;
+            readonly restrictions: {
+                readonly [key: string]: unknown;
+            };
+            readonly supportedMarketCodes: readonly components["schemas"]["MarketCode"][];
+        };
+        readonly ProspectingUsage: {
+            /** @enum {string} */
+            readonly accessMode: "STANDALONE" | "SHONGRE_PRO" | "INTERNAL";
+            readonly aiCreditsUsed: number;
+            readonly discoveriesUsed: number;
+            readonly enrichmentsUsed: number;
+            readonly entitlements: {
+                readonly [key: string]: unknown;
+            };
+            readonly outreachUsed: number;
+            readonly period: string;
+            readonly planName: string;
+            readonly prospectRecords: number;
+            /** @enum {string} */
+            readonly status: "AVAILABLE" | "NEAR_LIMIT" | "EXHAUSTED" | "EXPIRED";
+        };
+        readonly ProspectOpportunityBrief: {
+            /** Format: uuid */
+            readonly companyId: string;
+            readonly estimates: readonly string[];
+            readonly evidence: readonly components["schemas"]["ProspectEvidence"][];
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly headline: string;
+            /** @enum {boolean} */
+            readonly humanReviewRequired: true;
+            readonly knownFacts: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly missingInformation: readonly string[];
+            readonly model: string;
+            readonly promptVersion: string;
+            readonly score: components["schemas"]["ProspectScore"];
+            readonly suggestions: readonly string[];
+            readonly summary: string;
+        };
+        readonly ProspectScore: {
+            readonly confidence: number;
+            readonly dataConfidence: number;
+            /** Format: date-time */
+            readonly evaluatedAt: string;
+            readonly evidenceIds: readonly string[];
+            readonly fitScore: number;
+            readonly missingInformation: readonly string[];
+            readonly model?: string;
+            readonly negativeFactors: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly opportunityScore: number;
+            readonly positiveFactors: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly promptVersion?: string;
+            readonly recommendedNextAction: string;
+            readonly ruleVersion: string;
+            readonly totalScore: number;
+        };
         readonly ProviderConnection: {
             readonly capabilities: readonly string[];
             readonly configuration: {
@@ -14226,6 +14561,227 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getProspectOpportunityBrief: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly candidateId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Known facts, suggestions, evidence and explainable score. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProspectOpportunityBrief"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly discoverProspects: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProspectDiscoveryRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Evidence-linked discovery candidates with cursor-shaped pagination. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProspectDiscoveryResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly importProspectCandidate: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProspectImportRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Candidate linked to one CRM account with evidence preserved. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProspectImportResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listProspectingProfiles: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Tenant-scoped prospecting profiles. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["ProspectingProfile"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createProspectingProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProspectingProfileInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Profile created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProspectingProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listProspectingSources: {
+        readonly parameters: {
+            readonly query: {
+                readonly marketCode: components["schemas"]["MarketCode"];
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Source catalogue with inactive contracts included explicitly. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["ProspectingSource"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getProspectingUsage: {
+        readonly parameters: {
+            readonly query: {
+                readonly marketCode: components["schemas"]["MarketCode"];
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current period usage and effective entitlements. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ProspectingUsage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 500: components["responses"]["InternalError"];
         };
     };

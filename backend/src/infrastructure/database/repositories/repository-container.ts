@@ -125,6 +125,11 @@ import {
   DemoMarketingRepository,
   PostgresMarketingRepository,
 } from "./marketing.repository.js";
+import {
+  IProspectingRepository,
+  DemoProspectingRepository,
+  PostgresProspectingRepository,
+} from "./prospecting.repository.js";
 
 export interface RepositoryContainer {
   users: IUserRepository;
@@ -152,6 +157,7 @@ export interface RepositoryContainer {
   crm: ICrmRepository;
   crmShongre: ICrmShongreIntegrationRepository;
   marketing: IMarketingRepository;
+  prospecting: IProspectingRepository;
 }
 
 export function createRepositoryContainer(
@@ -189,6 +195,7 @@ export function createRepositoryContainer(
       crm: new PostgresCrmRepository(),
       crmShongre: new PostgresCrmShongreIntegrationRepository(),
       marketing: new PostgresMarketingRepository(),
+      prospecting: new PostgresProspectingRepository(),
     };
   }
 
@@ -219,6 +226,7 @@ export function createRepositoryContainer(
     crm: new DemoCrmRepository(),
     crmShongre: new DemoCrmShongreIntegrationRepository(),
     marketing: new DemoMarketingRepository(),
+    prospecting: new DemoProspectingRepository(),
   };
 }
 

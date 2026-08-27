@@ -27,7 +27,7 @@ export * from "./demo-feature-flag.service";
 export * from "./demo-moderation.service";
 export * from "./demo-crm.service";
 export {
-  DemoProspectResearchService,
+  DemoProspectingService,
   demoCrmProspectingService,
-} from "../../../services/prospect-research.service";
+} from "./demo-prospecting.service";
 export * from "./demo-marketing.service";

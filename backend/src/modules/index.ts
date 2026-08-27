@@ -33,6 +33,7 @@ export * from "./feature-flags/index.js";
 export * from "./moderation/moderation.service.js";
 export * from "./crm/crm.service.js";
 export * from "./crm/crm-shongre.service.js";
+export * from "./crm/prospecting/prospecting.service.js";
 export * from "./marketing/index.js";
 export * from "./automation/index.js";
 export * from "./analytics/index.js";

@@ -103,6 +103,10 @@ export const ROUTE_POLICIES = {
     "/compte/pro/tableau-de-bord",
     "store.analytics.read.own",
   ),
+  accountProProspects: professional(
+    "/compte/pro/prospects",
+    "crm.prospecting.read",
+  ),
   accountProStorefront: professional(
     "/compte/pro/vitrine",
     "store.customization.manage",
@@ -115,6 +119,7 @@ export const ROUTE_POLICIES = {
     "/compte/pro/finances",
     "finance.organization.read.own",
   ),
+  standaloneProspects: professional("/prospects/app", "crm.prospecting.read"),
 
   adminOverview: staff("/admin", "admin.access"),
   adminAnalytics: {
@@ -173,10 +178,7 @@ export const ROUTE_POLICIES = {
     "/admin/crm/opportunites/:id",
     "crm.opportunities.read",
   ),
-  adminCrmProspecting: staff(
-    "/admin/crm/prospection",
-    "crm.ai_prospecting.use",
-  ),
+  adminCrmProspecting: staff("/admin/crm/prospection", "crm.prospecting.read"),
   adminCrmTasks: staff("/admin/crm/taches", "crm.access"),
   adminCrmProducts: staff("/admin/crm/produits", "crm.products.read"),
   adminCrmAutomations: staff("/admin/crm/automations", "crm.automation.manage"),

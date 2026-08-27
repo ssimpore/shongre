@@ -21,8 +21,7 @@ export const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-page-bottom-inset">
       <SkipLink />
       <AppScrollRestoration />
-      <AnalyticsRuntime />
-      <DemoRoleSwitcher />
+      <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
       <Header />
       {/* Clearance for the fixed tab bar comes from the same token the bar
           is built from, so it tracks the bar (and the iOS home indicator,

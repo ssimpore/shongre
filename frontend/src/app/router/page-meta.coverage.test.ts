@@ -47,6 +47,15 @@ const SERVER_METADATA_PAGES = new Set([
   "global/MarketLaunchPage.tsx",
 ]);
 
+/** Thin route wrappers whose shared page owns entry-point-aware metadata. */
+const DELEGATED_CLIENT_METADATA_PAGES = new Map([
+  ["admin/crm/CrmAiProspectingPage.tsx", "<ProspectingWorkspacePage"],
+  [
+    "prospecting/ProspectsStandaloneWorkspacePage.tsx",
+    "<ProspectingWorkspacePage",
+  ],
+]);
+
 const clientMetadataPages = pageFiles.filter(
   (file) => !SERVER_METADATA_PAGES.has(relative(FEATURES, file)),
 );
@@ -71,9 +80,16 @@ describe("page metadata coverage", () => {
   });
 
   it.each(clientMetadataPages.map((f) => [relative(FEATURES, f), f]))(
-    "%s declares usePageMeta",
-    (_name, file) => {
-      expect(readFileSync(file as string, "utf8")).toContain("usePageMeta(");
+    "%s declares or delegates usePageMeta",
+    (name, file) => {
+      const source = readFileSync(file as string, "utf8");
+      const delegatedOwner = DELEGATED_CLIENT_METADATA_PAGES.get(
+        name as string,
+      );
+      expect(
+        source.includes("usePageMeta(") ||
+          Boolean(delegatedOwner && source.includes(delegatedOwner)),
+      ).toBe(true);
     },
   );
 });

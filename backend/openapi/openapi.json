@@ -12505,6 +12505,267 @@
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
+    "/crm/prospecting/profiles": {
+      "get": {
+        "operationId": "listProspectingProfiles",
+        "tags": ["crm", "prospecting"],
+        "summary": "List the tenant's ideal-customer profiles",
+        "description": "Returns only profiles belonging to the organization derived from the authenticated principal.",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Tenant-scoped prospecting profiles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ProspectingProfile" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "post": {
+        "operationId": "createProspectingProfile",
+        "tags": ["crm", "prospecting"],
+        "summary": "Create a market-aware ideal-customer profile",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProspectingProfileInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Profile created.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProspectingProfile" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.profiles.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/crm/prospecting/sources": {
+      "get": {
+        "operationId": "listProspectingSources",
+        "tags": ["crm", "prospecting"],
+        "summary": "List lawful source definitions and market availability",
+        "parameters": [
+          {
+            "name": "marketCode",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/MarketCode" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Source catalogue with inactive contracts included explicitly.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/ProspectingSource" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/crm/prospecting/discover": {
+      "post": {
+        "operationId": "discoverProspects",
+        "tags": ["crm", "prospecting"],
+        "summary": "Discover tenant-scoped B2B company candidates",
+        "description": "Only approved adapters for the explicit market and operating context may execute. The response requires human review before CRM import.",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProspectDiscoveryRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Evidence-linked discovery candidates with cursor-shaped pagination.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProspectDiscoveryResult" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.discover",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/crm/prospecting/candidates/{candidateId}/brief": {
+      "get": {
+        "operationId": "getProspectOpportunityBrief",
+        "tags": ["crm", "prospecting"],
+        "summary": "Generate an evidence-linked opportunity brief",
+        "description": "Uses the shared AI gateway when authorized and degrades to deterministic rules without blocking ordinary prospect management.",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Known facts, suggestions, evidence and explainable score.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProspectOpportunityBrief" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.score",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/crm/prospecting/imports": {
+      "post": {
+        "operationId": "importProspectCandidate",
+        "tags": ["crm", "prospecting"],
+        "summary": "Approve and idempotently import a candidate into CRM Core",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProspectImportRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Candidate linked to one CRM account with evidence preserved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProspectImportResult" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.import",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/crm/prospecting/usage": {
+      "get": {
+        "operationId": "getProspectingUsage",
+        "tags": ["crm", "prospecting"],
+        "summary": "Get backend-authoritative prospecting entitlements and usage",
+        "parameters": [
+          {
+            "name": "marketCode",
+            "in": "query",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/MarketCode" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current period usage and effective entitlements.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProspectingUsage" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "crm.prospecting.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/crm/dashboard": {
       "get": {
         "operationId": "getCrmDashboard",
@@ -30455,6 +30716,294 @@
             "type": "object",
             "additionalProperties": true
           }
+        }
+      },
+      "ProspectingProfileInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "context",
+          "marketCodes",
+          "locale",
+          "currency",
+          "timezone",
+          "geographicAreas",
+          "industries",
+          "taxonomySlugs",
+          "companyTypes",
+          "businessMaturity",
+          "onlinePresence",
+          "targetRoles",
+          "fitRules",
+          "exclusionRules",
+          "requiredSignals",
+          "optionalSignals",
+          "isDefault"
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "description": { "type": "string", "maxLength": 2000 },
+          "context": {
+            "type": "string",
+            "enum": ["INTERNAL_SHONGRE", "SUBSCRIBER", "AGGREGATED_OPPORTUNITY"]
+          },
+          "marketCodes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": { "$ref": "#/components/schemas/MarketCode" }
+          },
+          "locale": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "timezone": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "geographicAreas": { "type": "array", "items": { "type": "string" }, "maxItems": 50 },
+          "radiusKm": { "type": "integer", "minimum": 1, "maximum": 1000 },
+          "industries": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "taxonomySlugs": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "companyTypes": { "type": "array", "items": { "type": "string" }, "maxItems": 50 },
+          "estimatedSizeMin": { "type": "integer", "minimum": 0 },
+          "estimatedSizeMax": { "type": "integer", "minimum": 1 },
+          "businessMaturity": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
+          "onlinePresence": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
+          "targetRoles": { "type": "array", "items": { "type": "string" }, "maxItems": 50 },
+          "fitRules": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "exclusionRules": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "requiredSignals": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "optionalSignals": { "type": "array", "items": { "type": "string" }, "maxItems": 100 },
+          "isDefault": { "type": "boolean" }
+        }
+      },
+      "ProspectingProfile": {
+        "allOf": [
+          { "$ref": "#/components/schemas/ProspectingProfileInput" },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "version", "createdAt", "updatedAt"],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "version": { "type": "integer", "minimum": 1 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "ProspectingSource": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "providerId",
+          "name",
+          "category",
+          "description",
+          "supportedMarketCodes",
+          "operations",
+          "restrictions",
+          "lifecycle",
+          "healthMessage",
+          "dataFreshnessLabel"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "providerId": { "type": "string" },
+          "name": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["USER_PROVIDED", "FIRST_PARTY_AUTHORIZED", "OFFICIAL_REGISTRY", "OPEN_DATA", "PUBLIC_PROFESSIONAL_WEB", "LICENSED_PROVIDER", "PARTNER", "INBOUND_ATTRIBUTION", "AGGREGATED_MARKET_SIGNAL"]
+          },
+          "description": { "type": "string" },
+          "supportedMarketCodes": { "type": "array", "items": { "$ref": "#/components/schemas/MarketCode" } },
+          "operations": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["SEARCH", "ENRICHMENT", "IMPORT", "REFRESH", "DELETE"] }
+          },
+          "restrictions": { "type": "object", "additionalProperties": true },
+          "lifecycle": { "type": "string", "enum": ["ACTIVE", "DEGRADED", "INACTIVE_REVIEW_REQUIRED", "DISCONNECTED"] },
+          "healthMessage": { "type": "string" },
+          "dataFreshnessLabel": { "type": "string" },
+          "lastHealthCheckAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProspectEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "sourceId", "sourceCategory", "title", "observedAt", "freshness", "attributionRequired", "confidence"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "sourceId": { "type": "string" },
+          "sourceCategory": { "type": "string" },
+          "title": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "excerpt": { "type": "string", "maxLength": 1000 },
+          "observedAt": { "type": "string", "format": "date-time" },
+          "freshness": { "type": "string", "enum": ["CURRENT", "AGING", "STALE", "UNKNOWN"] },
+          "attributionRequired": { "type": "boolean" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      },
+      "ProspectScore": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["totalScore", "fitScore", "opportunityScore", "dataConfidence", "positiveFactors", "negativeFactors", "missingInformation", "evidenceIds", "ruleVersion", "confidence", "evaluatedAt", "recommendedNextAction"],
+        "properties": {
+          "totalScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "fitScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "opportunityScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "dataConfidence": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "positiveFactors": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "negativeFactors": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "missingInformation": { "type": "array", "items": { "type": "string" } },
+          "evidenceIds": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+          "ruleVersion": { "type": "string" },
+          "model": { "type": "string" },
+          "promptVersion": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evaluatedAt": { "type": "string", "format": "date-time" },
+          "recommendedNextAction": { "type": "string" }
+        }
+      },
+      "ProspectCandidate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["company", "score", "evidence", "status", "humanReviewRequired"],
+        "properties": {
+          "company": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["id", "canonicalName", "marketCodes", "countryCode", "sourceIds", "discoveredAt", "refreshedAt", "reviewState"],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "canonicalName": { "type": "string" },
+              "marketCodes": { "type": "array", "items": { "$ref": "#/components/schemas/MarketCode" } },
+              "countryCode": { "$ref": "#/components/schemas/MarketCode" },
+              "sourceIds": { "type": "array", "items": { "type": "string" } },
+              "discoveredAt": { "type": "string", "format": "date-time" },
+              "refreshedAt": { "type": "string", "format": "date-time" },
+              "reviewState": { "type": "string", "enum": ["UNREVIEWED", "APPROVED", "DISMISSED", "DUPLICATE_REVIEW", "SUPPRESSED"] }
+            }
+          },
+          "score": { "$ref": "#/components/schemas/ProspectScore" },
+          "evidence": { "type": "array", "items": { "$ref": "#/components/schemas/ProspectEvidence" } },
+          "status": { "type": "string", "enum": ["DISCOVERED", "IMPORTED", "DISMISSED"] },
+          "humanReviewRequired": { "type": "boolean", "enum": [true] }
+        }
+      },
+      "ProspectDiscoveryFilters": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["marketCode", "countryCode", "locale", "currency", "timezone"],
+        "properties": {
+          "profileId": { "type": "string", "format": "uuid" },
+          "query": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "countryCode": { "$ref": "#/components/schemas/MarketCode" },
+          "locale": { "type": "string" },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "timezone": { "type": "string" },
+          "industries": { "type": "array", "items": { "type": "string" }, "default": [] },
+          "taxonomySlugs": { "type": "array", "items": { "type": "string" }, "default": [] },
+          "companyTypes": { "type": "array", "items": { "type": "string" }, "default": [] },
+          "geographicArea": { "type": "string" },
+          "radiusKm": { "type": "integer", "minimum": 1, "maximum": 1000 },
+          "requireWebsite": { "type": "boolean" },
+          "sourceIds": { "type": "array", "items": { "type": "string" }, "default": [] },
+          "minimumFitScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "freshness": { "type": "array", "items": { "type": "string", "enum": ["CURRENT", "AGING", "STALE", "UNKNOWN"] }, "default": [] },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "default": 25 },
+          "cursor": { "type": "string" }
+        }
+      },
+      "ProspectDiscoveryRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["filters", "idempotencyKey"],
+        "properties": {
+          "context": { "type": "string", "enum": ["INTERNAL_SHONGRE", "SUBSCRIBER", "AGGREGATED_OPPORTUNITY"], "default": "SUBSCRIBER" },
+          "filters": { "$ref": "#/components/schemas/ProspectDiscoveryFilters" },
+          "idempotencyKey": { "type": "string", "format": "uuid" }
+        }
+      },
+      "ProspectDiscoveryResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "pageInfo", "appliedFilters", "sourceIds", "measuredTotal", "generatedAt"],
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/ProspectCandidate" } },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": { "hasNextPage": { "type": "boolean" }, "nextCursor": { "type": "string" } }
+          },
+          "appliedFilters": { "$ref": "#/components/schemas/ProspectDiscoveryFilters" },
+          "sourceIds": { "type": "array", "items": { "type": "string" } },
+          "measuredTotal": { "type": "integer", "minimum": 0 },
+          "generatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ProspectOpportunityBrief": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["companyId", "headline", "summary", "knownFacts", "estimates", "suggestions", "missingInformation", "score", "evidence", "model", "promptVersion", "generatedAt", "humanReviewRequired"],
+        "properties": {
+          "companyId": { "type": "string", "format": "uuid" },
+          "headline": { "type": "string" },
+          "summary": { "type": "string" },
+          "knownFacts": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "estimates": { "type": "array", "items": { "type": "string" } },
+          "suggestions": { "type": "array", "items": { "type": "string" } },
+          "missingInformation": { "type": "array", "items": { "type": "string" } },
+          "score": { "$ref": "#/components/schemas/ProspectScore" },
+          "evidence": { "type": "array", "items": { "$ref": "#/components/schemas/ProspectEvidence" } },
+          "model": { "type": "string" },
+          "promptVersion": { "type": "string" },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "humanReviewRequired": { "type": "boolean", "enum": [true] }
+        }
+      },
+      "ProspectImportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["companyId", "expectedEvidenceIds", "reviewDecision", "idempotencyKey"],
+        "properties": {
+          "companyId": { "type": "string", "format": "uuid" },
+          "expectedEvidenceIds": { "type": "array", "minItems": 1, "items": { "type": "string", "format": "uuid" } },
+          "reviewDecision": { "type": "string", "enum": ["APPROVED"] },
+          "targetListId": { "type": "string", "format": "uuid" },
+          "idempotencyKey": { "type": "string", "format": "uuid" }
+        }
+      },
+      "ProspectImportResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["companyId", "crmAccountId", "duplicateDetected", "importedAt", "provenancePreserved"],
+        "properties": {
+          "companyId": { "type": "string", "format": "uuid" },
+          "crmAccountId": { "type": "string", "format": "uuid" },
+          "duplicateDetected": { "type": "boolean" },
+          "duplicateCrmAccountId": { "type": "string", "format": "uuid" },
+          "importedAt": { "type": "string", "format": "date-time" },
+          "provenancePreserved": { "type": "boolean", "enum": [true] }
+        }
+      },
+      "ProspectingUsage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["period", "accessMode", "planName", "discoveriesUsed", "enrichmentsUsed", "aiCreditsUsed", "prospectRecords", "outreachUsed", "entitlements", "status"],
+        "properties": {
+          "period": { "type": "string", "pattern": "^\\d{4}-\\d{2}$" },
+          "accessMode": { "type": "string", "enum": ["STANDALONE", "SHONGRE_PRO", "INTERNAL"] },
+          "planName": { "type": "string" },
+          "discoveriesUsed": { "type": "integer", "minimum": 0 },
+          "enrichmentsUsed": { "type": "integer", "minimum": 0 },
+          "aiCreditsUsed": { "type": "integer", "minimum": 0 },
+          "prospectRecords": { "type": "integer", "minimum": 0 },
+          "outreachUsed": { "type": "integer", "minimum": 0 },
+          "entitlements": { "type": "object", "additionalProperties": true },
+          "status": { "type": "string", "enum": ["AVAILABLE", "NEAR_LIMIT", "EXHAUSTED", "EXPIRED"] }
         }
       },
       "CrmAccountDuplicateCheck": {

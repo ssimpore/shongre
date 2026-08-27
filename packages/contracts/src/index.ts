@@ -21,6 +21,7 @@ export * from "./schemas/compliance";
 export * from "./schemas/support";
 export * from "./schemas/feature-flags";
 export * from "./schemas/crm";
+export * from "./schemas/prospecting";
 export * from "./schemas/marketing";
 export * from "./schemas/analytics";
 export * from "./schemas/provider-connections";

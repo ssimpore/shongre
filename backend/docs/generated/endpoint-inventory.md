@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **414**
-- Specification SHA-256: `ac2264df63e8d0e5`
+- Operations: **421**
+- Specification SHA-256: `4621e6531e0fee35`
 
 ## account
 
@@ -255,6 +255,13 @@
 | `PATCH` | `/crm/products/{productId}` | `updateCrmProduct` | `permission` | `crm.products.manage` | `200` |
 | `GET` | `/crm/products` | `listCrmProducts` | `permission` | `crm.products.read` | `200` |
 | `POST` | `/crm/products` | `createCrmProduct` | `permission` | `crm.products.manage` | `201` |
+| `GET` | `/crm/prospecting/candidates/{candidateId}/brief` | `getProspectOpportunityBrief` | `permission` | `crm.prospecting.score` | `200` |
+| `POST` | `/crm/prospecting/discover` | `discoverProspects` | `permission` | `crm.prospecting.discover` | `200` |
+| `POST` | `/crm/prospecting/imports` | `importProspectCandidate` | `permission` | `crm.prospecting.import` | `201` |
+| `GET` | `/crm/prospecting/profiles` | `listProspectingProfiles` | `permission` | `crm.prospecting.read` | `200` |
+| `POST` | `/crm/prospecting/profiles` | `createProspectingProfile` | `permission` | `crm.prospecting.profiles.manage` | `201` |
+| `GET` | `/crm/prospecting/sources` | `listProspectingSources` | `permission` | `crm.prospecting.read` | `200` |
+| `GET` | `/crm/prospecting/usage` | `getProspectingUsage` | `permission` | `crm.prospecting.read` | `200` |
 | `GET` | `/crm/quotes` | `listCrmQuotes` | `permission` | `crm.quotes.read` | `200` |
 | `POST` | `/crm/quotes` | `createCrmQuote` | `permission` | `crm.quotes.create` | `201` |
 | `DELETE` | `/crm/saved-views/{savedViewId}` | `deleteCrmSavedView` | `permission` | `crm.access` | `200` |

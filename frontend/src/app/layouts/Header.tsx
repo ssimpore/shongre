@@ -947,11 +947,14 @@ export const Header: React.FC = () => {
                   )}
 
                   {/* Mobile Language Selector */}
-                  <div className="pt-4 border-t border-border-subtle mt-4">
-                    <div className="text-micro font-bold uppercase tracking-wider text-stone-500 mb-2 px-1">
+                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-4">
+                    <div className="min-w-0 px-1 text-micro font-bold uppercase tracking-wider text-stone-500">
                       Langue d'affichage
                     </div>
-                    <LanguageSelector idPrefix="header-mobile-lang" />
+                    <LanguageSelector
+                      idPrefix="header-mobile-lang"
+                      className="shrink-0"
+                    />
                   </div>
                 </div>
               </div>

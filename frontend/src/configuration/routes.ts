@@ -162,6 +162,10 @@ export const routes = {
     list: () => "/collections",
     detail: (slug: string) => `/collections/${pathSegment(slug)}`,
   },
+  prospects: {
+    product: () => "/prospects",
+    workspace: () => "/prospects/app",
+  },
   listing: {
     detail: (id: string) => `/annonce/${pathSegment(id)}`,
     publish: (params: { edit?: string } = {}) => withQuery("/deposer", params),
@@ -193,6 +197,7 @@ export const routes = {
     newsletter: () => "/compte/newsletter",
     pro: {
       dashboard: () => `/compte/pro/tableau-de-bord`,
+      prospects: () => "/compte/pro/prospects",
       storefront: () => "/compte/pro/vitrine",
       subscriptions: () => "/compte/pro/abonnements",
       finances: () => "/compte/pro/finances",

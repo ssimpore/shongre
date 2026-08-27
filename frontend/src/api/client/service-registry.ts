@@ -61,7 +61,7 @@ import { httpTaxonomyService } from "../adapters/http/http-taxonomy.service";
 import { httpTrendingService } from "../adapters/http/http-trending.service";
 import { httpVerificationService } from "../adapters/http/http-verification.service";
 import { httpWorkspaceService } from "../adapters/http/http-workspace.service";
-import { demoCrmProspectingService } from "../../services/prospect-research.service";
+import { demoCrmProspectingService } from "../adapters/demo/demo-prospecting.service";
 import type { AdminServiceContract } from "../contracts/admin.contract";
 import type { AnalyticsServiceContract } from "../contracts/analytics.contract";
 import type { AiServiceContract } from "../contracts/ai.contract";

@@ -1,66 +1,46 @@
-export interface ProspectResearchQuery {
-  naturalLanguageQuery: string;
-  marketCode?: string;
-  region?: string;
-  taxonomySlugs?: string[];
-  industry?: string;
-  requireWebsite?: boolean;
-  limit?: number;
-}
+import type {
+  LeadSourceDefinition,
+  ProspectDiscoveryRequest,
+  ProspectDiscoveryResult,
+  ProspectImportRequest,
+  ProspectImportResult,
+  ProspectOpportunityBrief,
+  ProspectingProfile,
+  ProspectingProfileInput,
+  ProspectingUsage,
+} from "@shongre/contracts/prospecting";
 
-export interface ProspectSource {
-  id: string;
-  url: string;
-  title: string;
-  snippet?: string;
-  sourceType: string;
-  retrievedAt: string;
-}
+export type ProspectingDemoScenario =
+  | "prospects_default"
+  | "empty_discovery"
+  | "discovery_error"
+  | "duplicates_found"
+  | "ai_unavailable"
+  | "quota_near_limit"
+  | "quota_exhausted"
+  | "source_disconnected"
+  | "subscription_expired"
+  | "permission_denied";
 
-export interface ProspectResearchCandidate {
-  id: string;
-  company: {
-    name: string;
-    website?: string;
-    domain?: string;
-    location?: string;
-    industry?: string;
-    description?: string;
-    estimatedSize?: string;
-  };
-  suggestedTaxonomySlugs?: string[];
-  fit: {
-    score: number;
-    level: "high" | "medium" | "low";
-    reasons: string[];
-    caveats?: string[];
-  };
-  sources: ProspectSource[];
-  possibleExistingEntityId?: string;
-  isDuplicate?: boolean;
-  status: "discovered" | "imported" | "dismissed";
-}
-
-export interface ProspectResearchResult {
-  query: ProspectResearchQuery;
-  candidates: ProspectResearchCandidate[];
-  totalFound: number;
-  researchedAt: string;
-}
-
-export interface CompanyEnrichmentDiff {
-  companyId: string;
-  suggestedIndustry?: string;
-  suggestedWebsite?: string;
-  suggestedCatalogSize?: number;
-  suggestedSummary?: string;
-  suggestedTaxonomySlugs?: string[];
-  sources: ProspectSource[];
-}
-
+/** Shared UI boundary for the standalone, Pro and internal entry points. */
 export interface CrmProspectingServiceContract {
-  searchProspects(
-    query: ProspectResearchQuery,
-  ): Promise<ProspectResearchResult>;
-  enrichCompany(companyId: string): Promise<CompanyEnrichmentDiff>;
+  listProfiles(): Promise<ProspectingProfile[]>;
+  createProfile(input: ProspectingProfileInput): Promise<ProspectingProfile>;
+  listSources(marketCode: string): Promise<LeadSourceDefinition[]>;
+  discover(input: ProspectDiscoveryRequest): Promise<ProspectDiscoveryResult>;
+  getOpportunityBrief(candidateId: string): Promise<ProspectOpportunityBrief>;
+  importCandidate(input: ProspectImportRequest): Promise<ProspectImportResult>;
+  getUsage(marketCode: string): Promise<ProspectingUsage>;
 }
+
+export type {
+  LeadSourceDefinition,
+  ProspectDiscoveryRequest,
+  ProspectDiscoveryResult,
+  ProspectImportRequest,
+  ProspectImportResult,
+  ProspectOpportunityBrief,
+  ProspectingProfile,
+  ProspectingProfileInput,
+  ProspectingUsage,
+};

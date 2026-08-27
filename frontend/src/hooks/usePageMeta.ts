@@ -27,7 +27,6 @@ export function usePageMeta(meta: PageMeta): void {
 
     const observeMetadata = () => {
       metadataObserver.observe(document.head, { childList: true });
-      metadataObserver.observe(document.body, { childList: true });
     };
     const metadataObserver = new MutationObserver(() => {
       // Disconnect while applying: structured data is replaced intentionally
@@ -38,9 +37,11 @@ export function usePageMeta(meta: PageMeta): void {
     });
     observeMetadata();
 
-    // App Router metadata may be hoisted from the streamed body after the
-    // first effect. A second paint-time pass updates that tag and collapses any
-    // transient duplicate created during hydration.
+    // App Router can add route metadata to `<head>` after the first client
+    // effect. A second paint-time pass updates that tag. Never observe or move
+    // nodes from `<body>`: those nodes belong to React's streamed tree, and
+    // taking ownership of them makes Fast Refresh delete a child that is no
+    // longer attached to the parent React recorded.
     let secondFrame = 0;
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(() =>

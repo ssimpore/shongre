@@ -4,6 +4,8 @@ import {
   isProSeller,
   isInternalAccount,
   isPubliclyListableProSeller,
+  hasProductAccess,
+  isProspectsOnlyAccount,
 } from "./user.domain";
 import { DEMO_USERS } from "../../mocks/initialDemoData";
 
@@ -144,5 +146,28 @@ describe("isPubliclyListableProSeller", () => {
 
     expect(listed).toContain("atelier-nordique");
     expect(listed).toContain("optique-des-arts");
+  });
+});
+
+describe("product access", () => {
+  it("keeps legacy and signed-out product discovery available", () => {
+    expect(hasProductAccess(null, "marketplace")).toBe(true);
+    expect(hasProductAccess({}, "marketplace")).toBe(true);
+  });
+
+  it("recognises an account provisioned only for Shongre Prospects", () => {
+    const prospectsOnly = { enabledProducts: ["prospects"] };
+
+    expect(hasProductAccess(prospectsOnly, "prospects")).toBe(true);
+    expect(hasProductAccess(prospectsOnly, "marketplace")).toBe(false);
+    expect(isProspectsOnlyAccount(prospectsOnly)).toBe(true);
+  });
+
+  it("does not restrict a multi-product account", () => {
+    const multiProduct = {
+      enabledProducts: ["marketplace", "prospects"],
+    };
+
+    expect(isProspectsOnlyAccount(multiProduct)).toBe(false);
   });
 });

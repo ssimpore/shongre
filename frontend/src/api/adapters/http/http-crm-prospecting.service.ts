@@ -1,28 +1,52 @@
 import type {
-  CompanyEnrichmentDiff,
   CrmProspectingServiceContract,
-  ProspectResearchQuery,
-  ProspectResearchResult,
+  LeadSourceDefinition,
+  ProspectDiscoveryRequest,
+  ProspectDiscoveryResult,
+  ProspectImportRequest,
+  ProspectImportResult,
+  ProspectOpportunityBrief,
+  ProspectingProfile,
+  ProspectingProfileInput,
+  ProspectingUsage,
 } from "../../contracts/crm-prospecting.contract";
 
-/**
- * AI prospecting is intentionally unavailable until its reviewed backend
- * orchestration endpoint is enabled. API mode must fail closed rather than run
- * browser-side provider calls or silently substitute demo research.
- */
-export class HttpCrmProspectingService implements CrmProspectingServiceContract {
-  async searchProspects(
-    _query: ProspectResearchQuery,
-  ): Promise<ProspectResearchResult> {
-    throw new Error(
-      "La prospection IA doit être configurée côté serveur avant utilisation.",
-    );
-  }
+function unavailable(): never {
+  throw new Error(
+    "L’adaptateur HTTP Shongre Prospects est réservé mais n’est pas activé dans le frontend. Utilisez le mode démo.",
+  );
+}
 
-  async enrichCompany(_companyId: string): Promise<CompanyEnrichmentDiff> {
-    throw new Error(
-      "L’enrichissement IA doit être configuré côté serveur avant utilisation.",
-    );
+/** Future adapter kept fail-closed until frontend connectivity is authorized. */
+export class HttpCrmProspectingService implements CrmProspectingServiceContract {
+  async listProfiles(): Promise<ProspectingProfile[]> {
+    return unavailable();
+  }
+  async createProfile(
+    _input: ProspectingProfileInput,
+  ): Promise<ProspectingProfile> {
+    return unavailable();
+  }
+  async listSources(_marketCode: string): Promise<LeadSourceDefinition[]> {
+    return unavailable();
+  }
+  async discover(
+    _input: ProspectDiscoveryRequest,
+  ): Promise<ProspectDiscoveryResult> {
+    return unavailable();
+  }
+  async getOpportunityBrief(
+    _candidateId: string,
+  ): Promise<ProspectOpportunityBrief> {
+    return unavailable();
+  }
+  async importCandidate(
+    _input: ProspectImportRequest,
+  ): Promise<ProspectImportResult> {
+    return unavailable();
+  }
+  async getUsage(_marketCode: string): Promise<ProspectingUsage> {
+    return unavailable();
   }
 }
 

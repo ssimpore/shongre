@@ -37,6 +37,7 @@ import {
   moderationService,
   crmService,
   crmShongreService,
+  prospectingService,
   marketingService,
   marketingOperationsService,
   marketingTrackingService,
@@ -3590,6 +3591,57 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // CRM ROUTES — tenant context is derived by CrmService from the principal.
     // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/crm/prospecting/profiles",
+      permission("crm.prospecting.read"),
+      async ({ principal }) => prospectingService.listProfiles(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/prospecting/profiles",
+      permission("crm.prospecting.profiles.manage"),
+      async ({ principal, body }) =>
+        prospectingService.createProfile(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/prospecting/sources",
+      permission("crm.prospecting.read"),
+      async ({ principal, query }) =>
+        prospectingService.listSources(
+          principal,
+          query.get("marketCode") ?? "",
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/prospecting/discover",
+      permission("crm.prospecting.discover"),
+      async ({ principal, body }) =>
+        prospectingService.discover(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/prospecting/candidates/:candidateId/brief",
+      permission("crm.prospecting.score"),
+      async ({ principal, params }) =>
+        prospectingService.opportunityBrief(principal, params.candidateId),
+    );
+    this.addRoute(
+      "POST",
+      "/crm/prospecting/imports",
+      permission("crm.prospecting.import"),
+      async ({ principal, body }) =>
+        prospectingService.importCandidate(principal, body),
+    );
+    this.addRoute(
+      "GET",
+      "/crm/prospecting/usage",
+      permission("crm.prospecting.read"),
+      async ({ principal, query }) =>
+        prospectingService.usage(principal, query.get("marketCode") ?? ""),
+    );
     this.addRoute(
       "GET",
       "/crm/dashboard",

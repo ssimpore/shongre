@@ -49,6 +49,13 @@ export class DemoGenerativeAiGateway implements AiGateway {
       "crm.account_enrichment": `Aucune source externe n’a été consultée en mode démonstration pour ${accountName}.`,
       "crm.next_action": `Prochaine action : ${nextStep}.`,
       "crm.duplicate_assistance": `Vérifiez le domaine, l’email et le téléphone avant de fusionner ${accountName}.`,
+      "prospecting.icp_copilot": `Profil cible déterministe pour ${accountName}, à valider avant activation.`,
+      "prospecting.filter_translation": `Filtres déterministes validés pour ${accountName}.`,
+      "prospecting.classification": `${accountName} est classé uniquement à partir des preuves fournies.`,
+      "prospecting.score_explanation": `Le score de ${accountName} combine des règles configurées et des preuves citées.`,
+      "prospecting.opportunity_brief": `Synthèse déterministe de ${accountName}. Les faits connus sont séparés des suggestions.`,
+      "prospecting.outreach_draft": `Brouillon pour ${accountName} — validation humaine obligatoire avant envoi.`,
+      "prospecting.reply_classification": `Réponse de ${accountName} à classer manuellement en cas de doute.`,
       "marketing.campaign_draft":
         "Proposition déterministe : une introduction concise, une preuve concrète et un appel à l’action unique.",
       "marketing.subject_generation":

@@ -103,6 +103,7 @@ export const messagesEn: MessageCatalogue = {
   "footer.sectionProfessionals": "For professionals",
   "footer.sectionHelp": "Help & trust",
   "footer.proSolutions": "Pro solutions & pricing",
+  "footer.shongreProspects": "Shongre Prospects",
   "footer.helpCenter": "Help center & FAQ",
   "footer.newsletterHeading": "Shongre newsletter",
   "footer.marketLabel": "{market} market",
@@ -2887,9 +2888,9 @@ export const messagesEn: MessageCatalogue = {
   "meta.crmPipeline.title": "Sales pipeline & Pro plans",
   "meta.crmPipeline.description":
     "Tracking of negotiations and professional subscriptions.",
-  "meta.crmAiProspecting.title": "AI-assisted prospecting",
+  "meta.crmAiProspecting.title": "Shongre Prospects — sales CRM",
   "meta.crmAiProspecting.description":
-    "Find qualified future professional sellers.",
+    "Discover companies, qualify opportunities and manage sales follow-up in one workspace.",
   "meta.crmTasks.title": "Tasks & sales follow-ups",
   "meta.crmTasks.description": "Reminders, demos and scheduled follow-ups.",
 

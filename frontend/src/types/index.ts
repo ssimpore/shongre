@@ -201,6 +201,12 @@ export interface UserProfile {
   customPermissions?: Permission[];
   revokedPermissions?: Permission[];
 
+  /**
+   * Product surfaces provisioned for this account. Older profiles omit this
+   * field and retain the historical marketplace access by default.
+   */
+  enabledProducts?: readonly ShongreProductId[];
+
   // Profile Details
   slug?: string;
   avatarUrl?: string;
@@ -237,6 +243,8 @@ export interface UserProfile {
   featuredListingIds?: string[];
   defaultPublicationMarkets?: string[];
 }
+
+export type ShongreProductId = "marketplace" | "prospects";
 
 export type ListingCondition =
   | "new_with_tag"

@@ -108,6 +108,7 @@ export const messagesFr = {
   "footer.sectionProfessionals": "Espace professionnels",
   "footer.sectionHelp": "Aide & Confiance",
   "footer.proSolutions": "Solutions & Tarifs Pro",
+  "footer.shongreProspects": "Shongre Prospects",
   "footer.helpCenter": "Centre d’aide & FAQ",
   "footer.newsletterHeading": "Newsletter Shongre",
   "footer.marketLabel": "Marché {market}",
@@ -1582,8 +1583,7 @@ export const messagesFr = {
   // --- admin.evidenceDrawer ---
   "admin.evidenceDrawer.title": "Sources et justification : {company}",
   "admin.evidenceDrawer.fitShongreEstime": "Fit Shongre estimé",
-  "admin.evidenceDrawer.scoreCompatibilite":
-    "Score de compatibilité Shongre",
+  "admin.evidenceDrawer.scoreCompatibilite": "Score de compatibilité Shongre",
   "admin.evidenceDrawer.pointsAttention": "Points d'attention",
   "admin.evidenceDrawer.sourcesPubliquesAnalysees_one":
     "{count} source publique analysée",
@@ -3550,9 +3550,9 @@ export const messagesFr = {
   "meta.crmPipeline.title": "Pipeline des ventes & forfaits Pro",
   "meta.crmPipeline.description":
     "Suivi des négociations et des abonnements professionnels.",
-  "meta.crmAiProspecting.title": "Prospection assistée par IA",
+  "meta.crmAiProspecting.title": "Shongre Prospects — CRM commercial",
   "meta.crmAiProspecting.description":
-    "Recherche de futurs vendeurs professionnels qualifiés.",
+    "Découverte d’entreprises, qualification des opportunités et suivi commercial dans un seul espace.",
   "meta.crmTasks.title": "Tâches & relances commerciales",
   "meta.crmTasks.description": "Rappels, démos et relances planifiées.",
 

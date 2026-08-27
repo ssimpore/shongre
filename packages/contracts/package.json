@@ -24,6 +24,7 @@
     "./support": "./src/schemas/support.ts",
     "./feature-flags": "./src/schemas/feature-flags.ts",
     "./crm": "./src/schemas/crm.ts",
+    "./prospecting": "./src/schemas/prospecting.ts",
     "./marketing": "./src/schemas/marketing.ts",
     "./analytics": "./src/schemas/analytics.ts",
     "./provider-connections": "./src/schemas/provider-connections.ts",

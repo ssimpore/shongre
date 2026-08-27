@@ -43,7 +43,7 @@ import {
   DemoBusinessRulesService,
   DemoCommissionService,
   DemoCrmService,
-  DemoProspectResearchService,
+  DemoProspectingService,
 } from "../adapters/demo";
 
 describe("Service Registry & API Adapter Boundary", () => {
@@ -76,7 +76,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     );
     expect(registry.commissions instanceof DemoCommissionService).toBe(true);
     expect(registry.crm instanceof DemoCrmService).toBe(true);
-    expect(registry.crmProspecting instanceof DemoProspectResearchService).toBe(
+    expect(registry.crmProspecting instanceof DemoProspectingService).toBe(
       true,
     );
   });
@@ -129,7 +129,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(services.auth instanceof DemoAuthService).toBe(true);
     expect(services.listings instanceof DemoListingsService).toBe(true);
     expect(services.crm instanceof DemoCrmService).toBe(true);
-    expect(services.crmProspecting instanceof DemoProspectResearchService).toBe(
+    expect(services.crmProspecting instanceof DemoProspectingService).toBe(
       true,
     );
   });

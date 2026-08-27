@@ -15,6 +15,25 @@ export interface UserClassification {
   isDeactivated?: boolean;
   isVerified?: boolean;
   sellerIsVerified?: boolean;
+  enabledProducts?: readonly string[];
+}
+
+export function hasProductAccess(
+  user: UserClassification | null | undefined,
+  productId: "marketplace" | "prospects",
+): boolean {
+  if (!user || user.enabledProducts === undefined) return true;
+  return user.enabledProducts.includes(productId);
+}
+
+export function isProspectsOnlyAccount(
+  user: UserClassification | null | undefined,
+): boolean {
+  return Boolean(
+    user &&
+      hasProductAccess(user, "prospects") &&
+      !hasProductAccess(user, "marketplace"),
+  );
 }
 
 export function isInternalAccount(

@@ -29,6 +29,7 @@ import type {
   CrmPage,
   CrmServiceContract,
 } from "../../contracts/crm.contract";
+import { storageService } from "../../../services/storage.service";
 
 const TENANT_ID = "10000000-0000-4000-8000-000000000001";
 const WORKSPACE_ID = "10000000-0000-4000-8000-000000000002";
@@ -36,6 +37,7 @@ const PIPELINE_ID = "10000000-0000-4000-8000-000000000003";
 const OWNER_ID = "10000000-0000-4000-8000-000000000004";
 const TEAM_ID = "10000000-0000-4000-8000-000000000005";
 const SEEDED_AT = "2026-08-25T08:00:00.000Z";
+const ACTION_AT = "2026-08-27T10:00:00.000Z";
 
 const stageSeeds = [
   ["10000000-0000-4000-8000-000000000010", "Nouveau", 10, "blue"],
@@ -350,6 +352,46 @@ const activitySeeds: CrmActivity[] = [
     isAiGenerated: false,
     createdAt: "2026-08-24T14:30:00.000Z",
   },
+  {
+    id: "60000000-0000-4000-8000-000000000002",
+    ...context,
+    actorName: "Léa Bertin",
+    entityType: "account",
+    entityId: accountSeeds[1].id,
+    activityType: "AI_ENRICHMENT",
+    title: "Prospect ajouté depuis Découvrir",
+    description:
+      "Les preuves professionnelles ont été validées avant l’ajout au CRM.",
+    occurredAt: "2026-08-25T10:42:00.000Z",
+    isAiGenerated: false,
+    createdAt: "2026-08-25T10:42:00.000Z",
+  },
+  {
+    id: "60000000-0000-4000-8000-000000000003",
+    ...context,
+    actorName: "Léa Bertin",
+    entityType: "opportunity",
+    entityId: opportunitySeeds[4].id,
+    activityType: "OPPORTUNITY_CREATED",
+    title: "Opportunité créée",
+    description: "Qualification commerciale ouverte depuis Shongre Prospects.",
+    occurredAt: "2026-08-25T09:18:00.000Z",
+    isAiGenerated: false,
+    createdAt: "2026-08-25T09:18:00.000Z",
+  },
+  {
+    id: "60000000-0000-4000-8000-000000000004",
+    ...context,
+    actorName: "Léa Bertin",
+    entityType: "opportunity",
+    entityId: opportunitySeeds[2].id,
+    activityType: "STAGE_CHANGED",
+    title: "Étape modifiée",
+    description: "Nouveau → Qualifié",
+    occurredAt: "2026-08-24T16:27:00.000Z",
+    isAiGenerated: false,
+    createdAt: "2026-08-24T16:27:00.000Z",
+  },
 ];
 
 const productSeeds: CrmProduct[] = [
@@ -520,17 +562,97 @@ function normalizeTags(tags: string[] = []) {
   );
 }
 
+interface DemoCrmState {
+  pipelines: CrmPipeline[];
+  accounts: CrmAccount[];
+  contacts: CrmContact[];
+  opportunities: CrmOpportunity[];
+  tasks: CrmTask[];
+  activities: CrmActivity[];
+  products: CrmProduct[];
+  quotes: CrmQuote[];
+  customFields: CrmCustomField[];
+  savedViews: CrmSavedView[];
+}
+
+function createDemoCrmState(): DemoCrmState {
+  return {
+    pipelines: [structuredClone(pipeline)],
+    accounts: structuredClone(accountSeeds),
+    contacts: structuredClone(contactSeeds),
+    opportunities: structuredClone(opportunitySeeds),
+    tasks: structuredClone(taskSeeds),
+    activities: structuredClone(activitySeeds),
+    products: structuredClone(productSeeds),
+    quotes: structuredClone(quoteSeeds),
+    customFields: structuredClone(customFieldSeeds),
+    savedViews: structuredClone(savedViewSeeds),
+  };
+}
+
 export class DemoCrmService implements CrmServiceContract {
-  private pipelines = [structuredClone(pipeline)];
-  private accounts = structuredClone(accountSeeds);
-  private contacts = structuredClone(contactSeeds);
-  private opportunities = structuredClone(opportunitySeeds);
-  private tasks = structuredClone(taskSeeds);
-  private activities = structuredClone(activitySeeds);
-  private products = structuredClone(productSeeds);
-  private quotes = structuredClone(quoteSeeds);
-  private customFields = structuredClone(customFieldSeeds);
-  private savedViews = structuredClone(savedViewSeeds);
+  private readonly states = new Map<string, DemoCrmState>();
+
+  private get state(): DemoCrmState {
+    const key = storageService.getCurrentUser()?.id || "guest";
+    const current = this.states.get(key);
+    if (current) return current;
+    const created = createDemoCrmState();
+    this.states.set(key, created);
+    return created;
+  }
+
+  private get pipelines() {
+    return this.state.pipelines;
+  }
+  private get accounts() {
+    return this.state.accounts;
+  }
+  private get contacts() {
+    return this.state.contacts;
+  }
+  private get opportunities() {
+    return this.state.opportunities;
+  }
+  private get tasks() {
+    return this.state.tasks;
+  }
+  private get activities() {
+    return this.state.activities;
+  }
+  private get products() {
+    return this.state.products;
+  }
+  private get quotes() {
+    return this.state.quotes;
+  }
+  private get customFields() {
+    return this.state.customFields;
+  }
+  private get savedViews() {
+    return this.state.savedViews;
+  }
+
+  private appendActivity(
+    input: Pick<
+      CrmActivity,
+      "entityType" | "entityId" | "activityType" | "title"
+    > &
+      Partial<Pick<CrmActivity, "description" | "occurredAt">>,
+  ): CrmActivity {
+    const occurredAt = input.occurredAt ?? ACTION_AT;
+    const value: CrmActivity = {
+      id: nextId(6),
+      ...context,
+      ...input,
+      actorName: "Léa Bertin",
+      occurredAt,
+      isAiGenerated: false,
+      createdAt: occurredAt,
+    };
+    this.activities.unshift(value);
+    return value;
+  }
 
   async getDashboard(): Promise<CrmDashboard> {
     const defaultPipeline =
@@ -725,7 +847,7 @@ export class DemoCrmService implements CrmServiceContract {
     };
   }
   async createAccount(input: CrmAccountInput) {
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     const value: CrmAccount = {
       id: nextId(2),
       ...context,
@@ -741,6 +863,14 @@ export class DemoCrmService implements CrmServiceContract {
       updatedAt: now,
     };
     this.accounts.unshift(value);
+    this.appendActivity({
+      entityType: "account",
+      entityId: value.id,
+      activityType: "ACCOUNT_CREATED",
+      title: "Entreprise ajoutée au CRM",
+      description: value.sourceDetail,
+      occurredAt: now,
+    });
     return structuredClone(value);
   }
   async updateAccount(
@@ -752,7 +882,7 @@ export class DemoCrmService implements CrmServiceContract {
     Object.assign(value, changes, {
       ...(changes.tags ? { tags: normalizeTags(changes.tags) } : {}),
       version: value.version + 1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: ACTION_AT,
     });
     return structuredClone(value);
   }
@@ -767,7 +897,7 @@ export class DemoCrmService implements CrmServiceContract {
     );
   }
   async createContact(input: CrmContactInput) {
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     const value: CrmContact = {
       id: nextId(3),
       ...context,
@@ -785,6 +915,13 @@ export class DemoCrmService implements CrmServiceContract {
       updatedAt: now,
     };
     this.contacts.unshift(value);
+    this.appendActivity({
+      entityType: "contact",
+      entityId: value.id,
+      activityType: "CONTACT_CREATED",
+      title: "Contact ajouté au CRM",
+      occurredAt: now,
+    });
     return structuredClone(value);
   }
   async updateContact(
@@ -798,7 +935,7 @@ export class DemoCrmService implements CrmServiceContract {
       fullName:
         `${changes.firstName ?? value.firstName} ${changes.lastName ?? value.lastName}`.trim(),
       version: value.version + 1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: ACTION_AT,
     });
     return structuredClone(value);
   }
@@ -807,7 +944,7 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(this.pipelines);
   }
   async createPipeline(input: CrmPipelineInput) {
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     const id = nextId(8);
     const created: CrmPipeline = {
       id,
@@ -867,7 +1004,7 @@ export class DemoCrmService implements CrmServiceContract {
           ((stage.id ? existingStageVersions.get(stage.id) : 0) ?? 0) + 1,
       })),
       version: current.version + 1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: ACTION_AT,
     };
     this.pipelines[pipelineIndex] = updated;
     return structuredClone(updated);
@@ -882,7 +1019,7 @@ export class DemoCrmService implements CrmServiceContract {
     );
   }
   async createOpportunity(input: CrmOpportunityInput) {
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     const selectedPipeline = this.required(
       this.pipelines.find((item) => item.id === input.pipelineId),
       "Pipeline introuvable.",
@@ -913,10 +1050,21 @@ export class DemoCrmService implements CrmServiceContract {
       updatedAt: now,
     };
     this.opportunities.unshift(value);
+    this.appendActivity({
+      entityType: "opportunity",
+      entityId: value.id,
+      activityType: "OPPORTUNITY_CREATED",
+      title: "Opportunité créée",
+      description: value.accountName
+        ? `${value.accountName} · ${value.stageName}`
+        : value.stageName,
+      occurredAt: now,
+    });
     return structuredClone(value);
   }
   async transitionOpportunity(id: string, input: CrmOpportunityTransition) {
     const value = this.versioned(this.opportunities, id, input.expectedVersion);
+    const previousStageName = value.stageName;
     const selectedPipeline = this.required(
       this.pipelines.find((item) => item.id === value.pipelineId),
       "Pipeline introuvable.",
@@ -927,7 +1075,7 @@ export class DemoCrmService implements CrmServiceContract {
     );
     if (stage.isLost && !input.lossReason)
       throw new Error("Le motif de perte est obligatoire.");
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     Object.assign(value, {
       stageId: stage.id,
       stageName: stage.name,
@@ -946,6 +1094,22 @@ export class DemoCrmService implements CrmServiceContract {
       version: value.version + 1,
       updatedAt: now,
     });
+    this.appendActivity({
+      entityType: "opportunity",
+      entityId: value.id,
+      activityType: stage.isWon
+        ? "OPPORTUNITY_WON"
+        : stage.isLost
+          ? "OPPORTUNITY_LOST"
+          : "STAGE_CHANGED",
+      title: stage.isWon
+        ? "Opportunité gagnée"
+        : stage.isLost
+          ? "Opportunité perdue"
+          : "Étape modifiée",
+      description: `${previousStageName} → ${value.stageName}`,
+      occurredAt: now,
+    });
     return structuredClone(value);
   }
 
@@ -953,7 +1117,7 @@ export class DemoCrmService implements CrmServiceContract {
     return page(this.tasks, options);
   }
   async createTask(input: CrmTaskInput) {
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     const value: CrmTask = {
       id: nextId(5),
       ...context,
@@ -966,17 +1130,33 @@ export class DemoCrmService implements CrmServiceContract {
       updatedAt: now,
     };
     this.tasks.unshift(value);
+    this.appendActivity({
+      entityType: "task",
+      entityId: value.id,
+      activityType: "TASK_CREATED",
+      title: "Tâche créée",
+      description: value.title,
+      occurredAt: now,
+    });
     return structuredClone(value);
   }
   async completeTask(id: string, expectedVersion: number, result?: string) {
     const value = this.versioned(this.tasks, id, expectedVersion);
-    const now = new Date().toISOString();
+    const now = ACTION_AT;
     Object.assign(value, {
       status: "completed",
       completedAt: now,
       completionResult: result,
       version: value.version + 1,
       updatedAt: now,
+    });
+    this.appendActivity({
+      entityType: "task",
+      entityId: value.id,
+      activityType: "TASK_COMPLETED",
+      title: "Tâche terminée",
+      description: result ?? value.title,
+      occurredAt: now,
     });
     return structuredClone(value);
   }
@@ -1002,18 +1182,7 @@ export class DemoCrmService implements CrmServiceContract {
     > &
       Partial<Pick<CrmActivity, "description" | "occurredAt">>,
   ) {
-    const now = input.occurredAt ?? new Date().toISOString();
-    const value: CrmActivity = {
-      id: nextId(6),
-      ...context,
-      ...input,
-      actorName: "Léa Bertin",
-      occurredAt: now,
-      isAiGenerated: false,
-      createdAt: now,
-    };
-    this.activities.unshift(value);
-    return structuredClone(value);
+    return structuredClone(this.appendActivity(input));
   }
 
   async listProducts(options?: CrmListOptions) {
@@ -1214,7 +1383,8 @@ export class DemoCrmService implements CrmServiceContract {
   }
   async deleteSavedView(id: string, expectedVersion: number) {
     const value = this.versioned(this.savedViews, id, expectedVersion);
-    this.savedViews = this.savedViews.filter((item) => item.id !== value.id);
+    const index = this.savedViews.findIndex((item) => item.id === value.id);
+    if (index >= 0) this.savedViews.splice(index, 1);
   }
 
   private required<T>(value: T | undefined, message: string): T {
