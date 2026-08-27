@@ -1,6 +1,7 @@
 import { apiClientConfig, type DataMode } from "./api-client.config";
 import { dataModeService } from "./data-mode.service";
 import { demoAdminService } from "../adapters/demo/demo-admin.service";
+import { demoAnalyticsService } from "../adapters/demo/demo-analytics.service";
 import { demoAiService } from "../adapters/demo/demo-ai.service";
 import { demoAuthService } from "../adapters/demo/demo-auth.service";
 import { demoAutoService } from "../adapters/demo/demo-auto.service";
@@ -30,6 +31,7 @@ import { demoTrendingService } from "../adapters/demo/demo-trending.service";
 import { demoVerificationService } from "../adapters/demo/demo-verification.service";
 import { demoWorkspaceService } from "../adapters/demo/demo-workspace.service";
 import { httpAdminService } from "../adapters/http/http-admin.service";
+import { httpAnalyticsService } from "../adapters/http/http-analytics.service";
 import { httpAiService } from "../adapters/http/http-ai.service";
 import { httpAuthService } from "../adapters/http/http-auth.service";
 import { httpAutoService } from "../adapters/http/http-auto.service";
@@ -61,6 +63,7 @@ import { httpVerificationService } from "../adapters/http/http-verification.serv
 import { httpWorkspaceService } from "../adapters/http/http-workspace.service";
 import { demoCrmProspectingService } from "../../services/prospect-research.service";
 import type { AdminServiceContract } from "../contracts/admin.contract";
+import type { AnalyticsServiceContract } from "../contracts/analytics.contract";
 import type { AiServiceContract } from "../contracts/ai.contract";
 import type { AuthServiceContract } from "../contracts/auth.contract";
 import type { AutoServiceContract } from "../contracts/auto.contract";
@@ -122,6 +125,7 @@ export interface ServiceRegistry {
   crm: CrmServiceContract;
   crmProspecting: CrmProspectingServiceContract;
   marketing: MarketingServiceContract;
+  analytics: AnalyticsServiceContract;
 }
 
 export function createServiceRegistry(
@@ -168,6 +172,7 @@ export function createServiceRegistry(
       ? demoCrmProspectingService
       : httpCrmProspectingService,
     marketing: useDemo ? demoMarketingService : httpMarketingService,
+    analytics: useDemo ? demoAnalyticsService : httpAnalyticsService,
   };
 }
 

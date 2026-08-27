@@ -35,6 +35,7 @@ import {
   CommissionService,
   commissionService,
 } from "../commission/commission.service.js";
+import { analyticsService } from "../analytics/analytics.service.js";
 
 const DEFAULT_HOME_DELIVERY_MINOR =
   BASELINE_MONETIZATION_CATALOG.products.find(
@@ -610,6 +611,14 @@ export class OrdersService {
       const finalized = await this.finalizeRefund(pending);
       finalizedOrder = finalized.order;
       commissionReversal = finalized.commissionReversal;
+      void this.emitFinancialAnalytics("refund_completed", order, {
+        listingId: order.listingId,
+        sellerId: order.sellerId,
+        orderId: order.id,
+        transactionId: refund.id,
+        amountMinor: totalMinor,
+        currency: order.currency,
+      });
     }
     return {
       order: this.toParticipantOrder(finalizedOrder),
@@ -975,12 +984,29 @@ export class OrdersService {
       saved = raced;
     }
     await this.setListingStatus(input.listing.id, "reserved");
-    return this.ensureProviderCheckout(
+    const checkout = await this.ensureProviderCheckout(
       saved,
       input.listing,
       market.code,
       idempotencyKey,
     );
+    void analyticsService
+      .captureAuthoritative({
+        name: "checkout_started",
+        marketCode: market.code,
+        eventId: `evt_checkout_started_${saved.id}`,
+        userId: input.buyerId,
+        userType: "buyer",
+        properties: {
+          listingId: input.listing.id,
+          sellerId: input.listing.sellerId,
+          orderId: saved.id,
+          amountMinor: breakdown.totalChargedMinor,
+          currency: market.currency,
+        },
+      })
+      .catch(() => undefined);
+    return checkout;
   }
 
   private async recordSuccessfulPayment(
@@ -1018,7 +1044,45 @@ export class OrdersService {
       commissionSnapshotHash: commission.snapshotHash,
     });
     await this.setListingStatus(order.listingId, "reserved");
+    void this.emitFinancialAnalytics("transaction_completed", order, {
+      listingId: order.listingId,
+      sellerId: order.sellerId,
+      orderId: order.id,
+      transactionId: checkout.paymentIntentId,
+      amountMinor: expectedMinor,
+      currency: order.currency,
+    });
     return updated;
+  }
+
+  private async emitFinancialAnalytics(
+    name: "transaction_completed" | "refund_completed",
+    order: OrderRecord,
+    properties: {
+      listingId: string;
+      sellerId: string;
+      orderId: string;
+      transactionId: string;
+      amountMinor: number;
+      currency: string;
+    },
+  ): Promise<void> {
+    try {
+      const marketCode =
+        order.listing?.marketCode ||
+        (await this.listingRepo.findById(order.listingId))?.marketCode;
+      if (!marketCode) return;
+      await analyticsService.captureAuthoritative({
+        name,
+        marketCode,
+        eventId: `evt_${name}_${properties.transactionId}`,
+        userId: order.buyerId,
+        userType: "buyer",
+        properties,
+      });
+    } catch {
+      // Analytics is non-blocking and cannot change the financial outcome.
+    }
   }
 
   private async cancelReconciledOrder(order: OrderRecord): Promise<boolean> {

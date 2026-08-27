@@ -27,13 +27,39 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
     "https://api.stripe.com",
     "https://m.stripe.network",
   ];
+  const scriptSources = ["'self'", "'unsafe-inline'", "https://js.stripe.com"];
+  const configuredAnalyticsOrigins = [
+    process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    process.env.NEXT_PUBLIC_MATOMO_URL,
+  ]
+    .filter(Boolean)
+    .flatMap((value) => {
+      try {
+        return [new URL(value!).origin];
+      } catch {
+        return [];
+      }
+    });
+  connectSources.push(...configuredAnalyticsOrigins);
+  scriptSources.push(...configuredAnalyticsOrigins);
+  if (process.env.NEXT_PUBLIC_GA4_ENABLED === "true") {
+    scriptSources.push("https://www.googletagmanager.com");
+    connectSources.push(
+      "https://www.google-analytics.com",
+      "https://region1.google-analytics.com",
+    );
+  }
+  if (process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_ENABLED === "true") {
+    scriptSources.push("https://static.cloudflareinsights.com");
+    connectSources.push("https://cloudflareinsights.com");
+  }
   if (localDevelopment) {
     connectSources.push("http:", "ws:", "wss:");
   }
 
   const directives = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline'${localDevelopment ? " 'unsafe-eval'" : ""} https://js.stripe.com`,
+    `script-src ${scriptSources.join(" ")}${localDevelopment ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' blob: data: https:",
     "font-src 'self' data:",

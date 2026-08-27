@@ -1,12 +1,13 @@
-/**
- * Central production-safe error reporting boundary.
- *
- * Shongre has no remote telemetry integration yet. Development diagnostics
- * stay local, while production avoids leaking raw exceptions to the console.
- * A future reporter must be wired here and pass the consent gate first.
- */
+import { sentryClient } from "../analytics/sentry.client";
+
+/** Central, consent-gated production-safe error reporting boundary. */
 class TelemetryService {
-  captureException(error: unknown, context: string): void {
+  captureException(
+    error: unknown,
+    context: string,
+    technical?: { requestId?: string; route?: string; statusCode?: number },
+  ): void {
+    sentryClient.captureException(error, context, technical);
     if (process.env.NODE_ENV !== "production") {
       console.error(`[${context}]`, error);
     }

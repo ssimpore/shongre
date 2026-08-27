@@ -11,13 +11,20 @@ import type {
   FeatureFlagServiceContract,
 } from "../../contracts/feature-flags.contract";
 import { httpClient } from "./http-client";
+import { analyticsService } from "../../../services/analytics.service";
 
 export class HttpFeatureFlagService implements FeatureFlagServiceContract {
-  evaluate(key: string, context: FeatureFlagContext = {}) {
-    return httpClient.get<FeatureFlagEvaluation>(
+  async evaluate(key: string, context: FeatureFlagContext = {}) {
+    const result = await httpClient.get<FeatureFlagEvaluation>(
       `/feature-flags/${encodeURIComponent(key)}`,
       { params: context },
     );
+    analyticsService.track("feature_flag_evaluated", {
+      flagKey: result.key,
+      enabled: result.enabled,
+      variant: result.source,
+    });
+    return result;
   }
 
   getAdminSnapshot() {

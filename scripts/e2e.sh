@@ -57,6 +57,13 @@ cp "$SHONGRE_ROOT/.env.example" "$e2e_root/.env.example"
 shongre_info "building an isolated Webpack production checkout"
 node "$SHONGRE_ROOT/node_modules/next/dist/bin/next" build "$e2e_root/frontend" --webpack
 
+source_map_count="$({ find "$e2e_root/frontend/.next/static" -type f -name '*.map' -print 2>/dev/null || true; } | wc -l | tr -d ' ')"
+if [[ "$source_map_count" -eq 0 ]]; then
+  shongre_fail "production browser source maps were not generated"
+  exit 1
+fi
+shongre_info "verified $source_map_count production browser source maps before runtime packaging"
+
 standalone_output="$e2e_root/frontend/.next/standalone"
 standalone_server="$(
   find "$standalone_output" -path '*/node_modules' -prune -o \

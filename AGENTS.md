@@ -5052,3 +5052,33 @@ The complete matrix, external DNS/Supabase/Vercel/provider actions, commands,
 health endpoints, backup and rollback rules are in
 `docs/architecture/environments.md`. Update that document, `.env.example`, CI,
 mobile build profiles and tests whenever the environment contract changes.
+
+---
+
+# 161. Canonical analytics and observability
+
+All product and business analytics use the typed, provider-neutral event
+contract from `@shongre/contracts/analytics`. Web features emit through the
+central analytics service; backend domain services emit authoritative events
+through `backend/src/modules/analytics`. Direct PostHog, GA4, Matomo,
+Cloudflare or Sentry calls outside their owned adapters are forbidden.
+
+Optional browser providers must remain behind the existing consent system and
+the analytics sanitizer. Do Not Track/Global Privacy Control are honored.
+Never collect private messages, contact details, credentials, payment/banking
+data, KYC/KYB data, request bodies or full query strings. Identity always comes
+from the authenticated backend principal; logout/withdrawal must prevent
+cross-user linkage.
+
+The append-only internal event ledger owns marketplace/product reporting.
+Revenue and other financial truth come only from posted/reconciled Shongre
+finance records in integer minor units. Server provider delivery uses the
+existing scheduled worker, durable idempotent delivery rows and bounded retry;
+analytics failure never changes a marketplace outcome.
+
+Every report is market-aware and backend-authorized. Marketing, finance,
+platform, technical and seller-own views have distinct capabilities. New
+events, providers, retention changes or dashboard dimensions must update the
+shared schema, canonical OpenAPI where applicable, privacy tests, migration or
+worker tests, environment documentation and
+`docs/architecture/analytics.md`.

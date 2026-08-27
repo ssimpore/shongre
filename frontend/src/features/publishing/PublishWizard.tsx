@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Select } from "../../design-system";
 import { scrollToTop } from "../../utilities/motion";
 import { useNavigate } from "react-router-dom";
@@ -68,6 +68,7 @@ import {
 } from "../../design-system/utils/controlMetrics";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts";
+import { analyticsService } from "../../services/analytics.service";
 
 /**
  * Publication is three phases, not ten steps.
@@ -153,6 +154,7 @@ export const PublishWizard: React.FC = () => {
   >("loading");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const publicationStarted = useRef(false);
 
   // Draft State initialized with default or restored values
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
@@ -217,6 +219,18 @@ export const PublishWizard: React.FC = () => {
       updatedAt: new Date().toISOString(),
     };
   });
+
+  useEffect(() => {
+    if (publicationStarted.current) return;
+    publicationStarted.current = true;
+    analyticsService.track("publication_started", {
+      selectedMarketCodes: draft.selectedMarkets,
+      source: "publish_wizard",
+    });
+    // A mount represents one publication attempt; draft mutations must not
+    // create a second start event.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -562,6 +576,11 @@ export const PublishWizard: React.FC = () => {
       return;
     }
 
+    analyticsService.track("publication_step_completed", {
+      step: PHASES[currentStep - 1]?.label,
+      stepIndex: currentStep,
+      selectedMarketCodes: draft.selectedMarkets,
+    });
     setCurrentStep((prev) => Math.min(prev + 1, PHASES.length));
     scrollToTop();
   };
@@ -639,6 +658,11 @@ export const PublishWizard: React.FC = () => {
         draft,
         currentUser.id,
       );
+      analyticsService.track("publication_completed", {
+        listingId: published.id,
+        categoryId: draft.taxonomyNodeId,
+        selectedMarketCodes: draft.selectedMarkets,
+      });
       toast.success(
         published.status === "active"
           ? "Votre annonce est publiée."

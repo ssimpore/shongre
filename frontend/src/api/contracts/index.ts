@@ -28,3 +28,4 @@ export * from "./moderation.contract";
 export * from "./crm.contract";
 export * from "./crm-prospecting.contract";
 export * from "./marketing.contract";
+export * from "./analytics.contract";

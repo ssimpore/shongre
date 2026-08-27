@@ -40,6 +40,7 @@ import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { storageService } from "../../services/storage.service";
+import { analyticsService } from "../../services/analytics.service";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { FilterChip } from "../../design-system/primitives/FilterChip";
 import { GlobalSearchBar } from "../../design-system/primitives/GlobalSearchBar";
@@ -116,6 +117,7 @@ export const SearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchError, setSearchError] = useState(false);
   const [searchAttempt, setSearchAttempt] = useState(0);
+  const lastStartedSearchKey = useRef<string | null>(null);
 
   /* `/categorie/:categorySlug` is the pretty, linkable form of a category
      search. The route was registered but nothing ever read its parameter, so
@@ -248,6 +250,23 @@ export const SearchPage: React.FC = () => {
       limit: PAGE_SIZES.marketplaceSearch,
     };
 
+    const startedSearchKey = JSON.stringify({ filters, searchAttempt });
+    if (lastStartedSearchKey.current !== startedSearchKey) {
+      lastStartedSearchKey.current = startedSearchKey;
+      analyticsService.track("search_started", {
+        query: query || undefined,
+        categoryId: categorySlug || undefined,
+        filterKeys: [
+          minPrice !== undefined ? "minPrice" : "",
+          maxPrice !== undefined ? "maxPrice" : "",
+          sellerType ? "sellerType" : "",
+          delivery ? "delivery" : "",
+        ].filter(Boolean),
+        sort: sortBy,
+        radiusKm,
+      });
+    }
+
     services.search
       .search(filters)
       .then((res) => {
@@ -256,6 +275,14 @@ export const SearchPage: React.FC = () => {
         setTotalCount(res.total);
         setTotalPages(res.totalPages);
         setAttributeFacetValues(res.facets?.attributes || {});
+        analyticsService.track("search_performed", {
+          query: query || undefined,
+          categoryId: categorySlug || undefined,
+          resultCount: res.total,
+          zeroResults: res.total === 0,
+          sort: sortBy,
+          radiusKm,
+        });
 
         if (page > res.totalPages) {
           setSearchParams(

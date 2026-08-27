@@ -1,6 +1,6 @@
 # Shongre Provider & Integration Platform
 
-Last audited: 2026-08-25
+Last audited: 2026-08-27
 
 ## Purpose and source of truth
 
@@ -23,28 +23,28 @@ health evidence. Provider health cannot be edited manually.
 
 ## Audited implementation inventory
 
-| Domain                            | Actual runtime owner                     | Code state           | Production conclusion                                                                                               |
-| --------------------------------- | ---------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Email/password auth and sessions  | Shongre auth services                    | Implemented          | Internal service exists; email delivery is a separate dependency.                                                   |
-| Google OAuth                      | OAuth provider client                    | Implemented          | Requires environment configuration and E2E evidence.                                                                |
-| Apple OAuth                       | OAuth provider client                    | Implemented          | Account-change server notifications remain missing.                                                                 |
-| Facebook OAuth/data deletion      | OAuth client and deletion service        | Implemented          | Requires app review/configuration and E2E evidence.                                                                 |
-| Checkout/refunds/subscriptions    | Stripe Checkout adapter                  | Implemented          | Idempotent Checkout, refunds, subscriptions and signed webhooks require sandbox/live certification.                 |
-| Marketplace funds/payouts         | Stripe Connect adapters                  | Implemented          | Accounts v2 onboarding, fulfilment-gated transfers and connected payouts require legal and reconciliation evidence. |
-| Individual KYC                    | Stripe Identity adapter                  | Implemented          | Hosted sessions and signed idempotent webhooks require sandbox certification.                                       |
-| French business registry          | Authenticated SIRENE adapter             | Implemented          | Bounded SIRET lookup requires production credentials, rate-limit and live evidence.                                 |
-| Relay/home/express/bulky shipping | Frontend deterministic quotes            | Demo only            | No carrier API, label, tracking webhook or reconciliation.                                                          |
-| Transactional email               | Vendor-neutral authenticated HTTP sender | Implemented boundary | Vendor identity, bounce/delivery webhook and live evidence are missing. Resend/Brevo are catalogue entries only.    |
-| Phone OTP/SMS                     | None                                     | Missing P1           | Twilio is a catalogue entry only.                                                                                   |
-| In-app notifications              | Shongre notification service             | Implemented          | Push delivery (APNS/FCM/Web Push) is not implemented.                                                               |
-| Marketplace search                | PostgreSQL/Supabase search provider      | Implemented          | Meilisearch is intentionally not needed now.                                                                        |
-| Media/private documents           | Supabase Storage adapter                 | Implemented          | Deployment bucket/RLS health evidence remains environment-specific.                                                 |
-| Maps                              | Leaflet with external OSM/Carto tiles    | Partial              | Display exists; backend BAN geocoding/autocomplete/caching is missing.                                              |
-| AI moderation/assistance          | Gemini safety adapter                    | Implemented subset   | Bounded schema-validated moderation exists; assistance/enrichment capabilities remain separately gated.             |
-| Analytics                         | None                                     | Optional missing     | Consent gate exists first; Plausible is not installed.                                                              |
-| Error tracking                    | Structured logs only                     | P1 gap               | Sentry is a catalogue entry only.                                                                                   |
-| CAPTCHA                           | Rate limits only                         | P1 gap               | Turnstile is a catalogue entry only.                                                                                |
-| Electronic invoicing              | Internal finance domain only             | P2 gap               | Pennylane is a catalogue entry only.                                                                                |
+| Domain                            | Actual runtime owner                     | Code state           | Production conclusion                                                                                                           |
+| --------------------------------- | ---------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Email/password auth and sessions  | Shongre auth services                    | Implemented          | Internal service exists; email delivery is a separate dependency.                                                               |
+| Google OAuth                      | OAuth provider client                    | Implemented          | Requires environment configuration and E2E evidence.                                                                            |
+| Apple OAuth                       | OAuth provider client                    | Implemented          | Account-change server notifications remain missing.                                                                             |
+| Facebook OAuth/data deletion      | OAuth client and deletion service        | Implemented          | Requires app review/configuration and E2E evidence.                                                                             |
+| Checkout/refunds/subscriptions    | Stripe Checkout adapter                  | Implemented          | Idempotent Checkout, refunds, subscriptions and signed webhooks require sandbox/live certification.                             |
+| Marketplace funds/payouts         | Stripe Connect adapters                  | Implemented          | Accounts v2 onboarding, fulfilment-gated transfers and connected payouts require legal and reconciliation evidence.             |
+| Individual KYC                    | Stripe Identity adapter                  | Implemented          | Hosted sessions and signed idempotent webhooks require sandbox certification.                                                   |
+| French business registry          | Authenticated SIRENE adapter             | Implemented          | Bounded SIRET lookup requires production credentials, rate-limit and live evidence.                                             |
+| Relay/home/express/bulky shipping | Frontend deterministic quotes            | Demo only            | No carrier API, label, tracking webhook or reconciliation.                                                                      |
+| Transactional email               | Vendor-neutral authenticated HTTP sender | Implemented boundary | Vendor identity, bounce/delivery webhook and live evidence are missing. Resend/Brevo are catalogue entries only.                |
+| Phone OTP/SMS                     | None                                     | Missing P1           | Twilio is a catalogue entry only.                                                                                               |
+| In-app notifications              | Shongre notification service             | Implemented          | Push delivery (APNS/FCM/Web Push) is not implemented.                                                                           |
+| Marketplace search                | PostgreSQL/Supabase search provider      | Implemented          | Meilisearch is intentionally not needed now.                                                                                    |
+| Media/private documents           | Supabase Storage adapter                 | Implemented          | Deployment bucket/RLS health evidence remains environment-specific.                                                             |
+| Maps                              | Leaflet with external OSM/Carto tiles    | Partial              | Display exists; backend BAN geocoding/autocomplete/caching is missing.                                                          |
+| AI moderation/assistance          | Gemini safety adapter                    | Implemented subset   | Bounded schema-validated moderation exists; assistance/enrichment capabilities remain separately gated.                         |
+| Analytics                         | Shongre ledger plus optional providers   | Implemented          | Consent-aware Web SDK, append-only internal reports, PostHog EU, GA4, Matomo, Cloudflare RUM and Search Console adapters exist. |
+| Error tracking                    | Sentry plus structured logs              | Implemented boundary | Privacy-safe browser/backend reporters require environment credentials, source-map and alert validation.                        |
+| CAPTCHA                           | Rate limits only                         | P1 gap               | Turnstile is a catalogue entry only.                                                                                            |
+| Electronic invoicing              | Internal finance domain only             | P2 gap               | Pennylane is a catalogue entry only.                                                                                            |
 
 The complete vendor inventory and the capability requirement matrix are
 executable data in `@shongre/contracts/provider-platform`, with unit tests for
@@ -52,16 +52,15 @@ unique ownership and demo/production separation.
 
 ## Current P0/P1 gaps
 
-| Priority | Capability                             | Risk                                                   | Required next gate                                                                                                                    |
-| -------- | -------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| P0       | Marketplace payment and seller payouts | Implemented money movement is not yet certified.       | Complete legal/MoR analysis and certify Stripe Connect sandbox webhooks, fulfilment transfers, payouts and reconciliation end-to-end. |
-| P0       | Transactional email observability      | Verification/recovery delivery cannot be proven.       | Select one delivery vendor behind the existing HTTP contract; implement delivery/bounce events, retry/DLQ and smoke test.             |
-| P0       | Contextual KYC/payment KYC             | Implemented Stripe Identity flows are uncertified.     | Certify sessions, signed webhooks, replay/idempotency and manual-review fallback in staging.                                          |
-| P0       | French KYB                             | Implemented SIRENE lookup is uncertified.              | Certify credentials, rate-limit behavior, audit mapping and provider outage handling.                                                 |
-| P0       | Carrier delivery                       | Quotes/labels/tracking are simulations.                | Implement a carrier-neutral shipping contract, one FR primary carrier, signed events where available and reconciliation.              |
-| P1       | Durable provider queue                 | Process-local `setImmediate` jobs are lost on restart. | Back jobs with PostgreSQL/Supabase Queue, attempts, visibility timeout and dead-letter state.                                         |
-| P1       | Provider evidence persistence          | Diagnostics currently survive only in process.         | Apply migration `00032`, persist control-plane configuration/evidence through a service-role repository, and add retention.           |
-| P1       | Error/availability alerts              | Structured logs do not provide alert routing.          | Choose an observability sink, add redaction, sampling, alert ownership and runbooks.                                                  |
+| Priority | Capability                             | Risk                                                               | Required next gate                                                                                                                    |
+| -------- | -------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| P0       | Marketplace payment and seller payouts | Implemented money movement is not yet certified.                   | Complete legal/MoR analysis and certify Stripe Connect sandbox webhooks, fulfilment transfers, payouts and reconciliation end-to-end. |
+| P0       | Transactional email observability      | Verification/recovery delivery cannot be proven.                   | Select one delivery vendor behind the existing HTTP contract; implement delivery/bounce events, retry/DLQ and smoke test.             |
+| P0       | Contextual KYC/payment KYC             | Implemented Stripe Identity flows are uncertified.                 | Certify sessions, signed webhooks, replay/idempotency and manual-review fallback in staging.                                          |
+| P0       | French KYB                             | Implemented SIRENE lookup is uncertified.                          | Certify credentials, rate-limit behavior, audit mapping and provider outage handling.                                                 |
+| P0       | Carrier delivery                       | Quotes/labels/tracking are simulations.                            | Implement a carrier-neutral shipping contract, one FR primary carrier, signed events where available and reconciliation.              |
+| P1       | Provider evidence persistence          | Diagnostics currently survive only in process.                     | Apply migration `00032`, persist control-plane configuration/evidence through a service-role repository, and add retention.           |
+| P1       | Error/availability alert certification | Sentry adapters exist but production routing is environment-owned. | Configure credentials, source maps, alert ownership and staging incident evidence.                                                    |
 
 No vendor should be purchased merely to make this table green. Existing
 internal owners (PostgreSQL search, Supabase Storage, in-app notifications and
@@ -152,6 +151,9 @@ create a vendor-specific duplicate adapter.
 - AI unavailable: retain the complete manual listing/moderation journey.
 - Maps unavailable: retain text location and list search.
 - Analytics unavailable: core product behavior remains unaffected.
+
+Analytics-specific architecture and provider delivery reliability are in
+[`../../docs/architecture/analytics.md`](../../docs/architecture/analytics.md).
 
 ## Environment and secrets
 

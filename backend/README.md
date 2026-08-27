@@ -8,6 +8,9 @@ consume public contracts; they never import this implementation.
 The six-environment URL, fingerprint, Supabase, provider and deployment model is
 documented in
 [`docs/architecture/environments.md`](../docs/architecture/environments.md).
+Analytics ingestion, finance-backed reporting, provider delivery, retention,
+Search Console and operational rollout are documented in
+[`docs/analytics.md`](docs/analytics.md).
 
 ## Layout
 

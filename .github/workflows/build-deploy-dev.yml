@@ -86,6 +86,11 @@ jobs:
             VCS_REF=${{ steps.release.outputs.sha }}
             VERSION=${{ steps.images.outputs.tag }}
             SOURCE_URL=${{ github.server_url }}/${{ github.repository }}
+          secrets: |
+            "sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "sentry_org=${{ vars.SENTRY_ORG }}"
+            "sentry_frontend_project=${{ vars.SENTRY_FRONTEND_PROJECT }}"
+            "sentry_url=${{ vars.SENTRY_URL }}"
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
           sbom: true
@@ -104,6 +109,11 @@ jobs:
             VCS_REF=${{ steps.release.outputs.sha }}
             VERSION=${{ steps.images.outputs.tag }}
             SOURCE_URL=${{ github.server_url }}/${{ github.repository }}
+          secrets: |
+            "sentry_auth_token=${{ secrets.SENTRY_AUTH_TOKEN }}"
+            "sentry_org=${{ vars.SENTRY_ORG }}"
+            "sentry_backend_project=${{ vars.SENTRY_BACKEND_PROJECT }}"
+            "sentry_url=${{ vars.SENTRY_URL }}"
           cache-from: type=gha,scope=backend
           cache-to: type=gha,mode=max,scope=backend
           sbom: true

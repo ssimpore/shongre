@@ -2,8 +2,10 @@ import { logger } from "../../infrastructure/logging/logger.js";
 import { db } from "../../infrastructure/database/db-client.js";
 import { seedDemoCredentials } from "./seed-demo-credentials.js";
 import { config } from "../config/index.js";
+import { initializeSentry } from "../../infrastructure/observability/sentry.js";
 
 export async function bootstrapApp(): Promise<void> {
+  initializeSentry();
   logger.info("Bootstrapping Shongre Backend Services...");
 
   // Demo personas must never be materialized by a production process.

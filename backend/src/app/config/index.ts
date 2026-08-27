@@ -76,6 +76,18 @@ export interface AppConfig {
   emailMode: EmailEnvironmentMode;
   aiMode: AiEnvironmentMode;
   analyticsMode: AnalyticsEnvironmentMode;
+  analyticsProviders: {
+    posthog: { enabled: boolean; key: string; host: string };
+    ga4: { enabled: boolean; measurementId: string; apiSecret: string };
+    matomo: { enabled: boolean; url: string; siteId: string; token: string };
+    cloudflare: { enabled: boolean; siteTag: string };
+    sentry: { enabled: boolean; dsn: string; tracesSampleRate: number };
+    searchConsole: {
+      enabled: boolean;
+      serviceAccountJson: string;
+      siteUrls: string[];
+    };
+  };
   emailRecipientAllowlist: string[];
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
@@ -636,6 +648,41 @@ const candidateConfig: AppConfig = {
     ["off", "test", "development", "staging", "production"] as const,
     "off",
   ),
+  analyticsProviders: {
+    posthog: {
+      enabled: envFlag("POSTHOG_ENABLED", false),
+      key: process.env.POSTHOG_PROJECT_KEY || "",
+      host: process.env.POSTHOG_HOST || "https://eu.i.posthog.com",
+    },
+    ga4: {
+      enabled: envFlag("GA4_ENABLED", false),
+      measurementId: process.env.GA4_MEASUREMENT_ID || "",
+      apiSecret: process.env.GA4_API_SECRET || "",
+    },
+    matomo: {
+      enabled: envFlag("MATOMO_ENABLED", false),
+      url: process.env.MATOMO_URL || "",
+      siteId: process.env.MATOMO_SITE_ID || "",
+      token: process.env.MATOMO_AUTH_TOKEN || "",
+    },
+    cloudflare: {
+      enabled: envFlag("NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_ENABLED", false),
+      siteTag: process.env.NEXT_PUBLIC_CLOUDFLARE_ANALYTICS_SITE_TAG || "",
+    },
+    sentry: {
+      enabled: envFlag("SENTRY_ENABLED", false),
+      dsn: process.env.SENTRY_DSN || "",
+      tracesSampleRate: Math.min(
+        1,
+        Math.max(0, Number(process.env.SENTRY_TRACES_SAMPLE_RATE || "0")),
+      ),
+    },
+    searchConsole: {
+      enabled: envFlag("SEARCH_CONSOLE_ENABLED", false),
+      serviceAccountJson: process.env.SEARCH_CONSOLE_SERVICE_ACCOUNT_JSON || "",
+      siteUrls: envList("SEARCH_CONSOLE_SITE_URLS"),
+    },
+  },
   emailRecipientAllowlist: envList("EMAIL_RECIPIENT_ALLOWLIST"),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,

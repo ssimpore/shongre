@@ -11,7 +11,7 @@ SHELL := /bin/bash
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
-	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check crm-check marketing-check contracts generate check check-all ci build \
+	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check analytics-check crm-check marketing-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
@@ -423,6 +423,11 @@ taxonomy-check: ## Validate canonical taxonomy coverage and publication schemas
 	@npm run check:taxonomy --workspace=frontend
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:providers --workspace=backend'
+analytics-check: ## Validate analytics privacy, consent, services, migration, and API contracts
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend -- src/analytics src/services/analytics.service.test.ts src/api/adapters/demo/demo-analytics.service.test.ts src/app/layouts/DataModeSettingsControl.test.ts'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=backend -- tests/unit/analytics-service.test.ts tests/unit/search-console-worker.test.ts tests/rls/analytics-migration.test.ts tests/rls/commission-earned-analytics-migration.test.ts tests/contracts/analytics-openapi.test.ts'
+	@$(MAKE) migrations-check
+	@$(MAKE) openapi-check
 crm-check: ## Run focused CRM contracts, services, RLS, SSRF, and demo-adapter tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=backend'
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=frontend'

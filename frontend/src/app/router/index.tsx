@@ -417,6 +417,11 @@ const AdminOverviewPage = lazy(() =>
     default: m.AdminOverviewPage,
   })),
 );
+const AdminAnalyticsPage = lazy(() =>
+  import("../../features/admin/AdminAnalyticsPage").then((m) => ({
+    default: m.AdminAnalyticsPage,
+  })),
+);
 const AdminModerationPage = lazy(() =>
   import("../../features/admin/AdminModerationPage").then((m) => ({
     default: m.AdminModerationPage,
@@ -1039,6 +1044,14 @@ export const APP_ROUTES: RouteObject[] = [
     ),
     children: [
       { index: true, element: withSuspense(AdminOverviewPage) },
+      {
+        path: "analytics",
+        element: (
+          <RequireRoutePolicy policyId="adminAnalytics">
+            {withSuspense(AdminAnalyticsPage)}
+          </RequireRoutePolicy>
+        ),
+      },
       {
         path: "support",
         element: (

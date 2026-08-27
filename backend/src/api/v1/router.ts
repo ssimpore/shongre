@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
+import { createHash } from "node:crypto";
 import { ZodError } from "zod";
 import { getCountryConfig } from "@shongre/contracts";
 import {
@@ -40,9 +41,11 @@ import {
   marketingOperationsService,
   marketingTrackingService,
   marketingProviderWebhookService,
+  analyticsService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { captureServerException } from "../../infrastructure/observability/sentry.js";
 import { storageService } from "../../infrastructure/storage/storage-service.js";
 import { Permission } from "../../shared/auth/rbac.js";
 import {
@@ -108,6 +111,7 @@ export interface RouteContext {
   principal: Principal;
   query: URLSearchParams;
   marketCode: string | null;
+  requestId: string;
 }
 
 export type RouteHandler = (ctx: RouteContext) => Promise<any>;
@@ -237,6 +241,81 @@ export class ApiV1Router {
   }
 
   private registerRoutes() {
+    // --------------------------------------------------------------------------
+    // ANALYTICS — provider-neutral ingestion and role-separated intelligence.
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "POST",
+      "/analytics/events",
+      PUBLIC,
+      async ({ body, principal, marketCode, requestId, req }) => {
+        const requestInfo = requestMetadata(req);
+        return analyticsService.ingest(body, principal, {
+          marketCode: requireApiRequestMarket(marketCode),
+          requestId,
+          userAgent: String(req.headers["user-agent"] || ""),
+          rateLimitKey: createHash("sha256")
+            .update(
+              `${requestInfo.ipPrefix || "unknown"}:${requestInfo.userAgentFamily}`,
+            )
+            .digest("hex"),
+        });
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/overview",
+      permission("analytics.platform.read"),
+      async ({ query }) =>
+        analyticsService.overview(analyticsService.parseQuery(query)),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/acquisition",
+      permission("analytics.marketing.read"),
+      async ({ query }) =>
+        analyticsService.acquisition(analyticsService.parseQuery(query)),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/search",
+      permission("analytics.marketing.read"),
+      async ({ query }) =>
+        analyticsService.search(analyticsService.parseQuery(query)),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/monetization",
+      permission("analytics.finance.read"),
+      async ({ query }) =>
+        analyticsService.monetization(analyticsService.parseQuery(query)),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/seo",
+      permission("analytics.marketing.read"),
+      async ({ query }) =>
+        analyticsService.seo(analyticsService.parseQuery(query)),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/providers",
+      permission("analytics.technical.read"),
+      async () => analyticsService.providerHealth(),
+    );
+    this.addRoute(
+      "GET",
+      "/analytics/sellers/:sellerId",
+      permission("store.analytics.read.own"),
+      async ({ principal, params, query }) => {
+        requireOwnership(principal, params.sellerId);
+        return analyticsService.seller(
+          params.sellerId,
+          analyticsService.parseQuery(query),
+        );
+      },
+    );
+
     // --------------------------------------------------------------------------
     // AUTH ROUTES
     // --------------------------------------------------------------------------
@@ -4435,6 +4514,7 @@ export class ApiV1Router {
           principal,
           query: parsedUrl.searchParams,
           marketCode,
+          requestId: String(res.getHeader("X-Request-Id") || ""),
         });
 
         if (res.writableEnded) return;
@@ -4509,6 +4589,10 @@ export class ApiV1Router {
       logger.error(
         `Unhandled error on ${method} ${pathname}: ${normalizedError?.stack || normalizedError?.message || normalizedError}`,
       );
+      captureServerException(normalizedError, {
+        requestId: String(res.getHeader("X-Request-Id") || ""),
+        operation: `${method} ${pathname}`,
+      });
     }
 
     const payload = isAppError

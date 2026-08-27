@@ -107,6 +107,20 @@ EXPO_PUBLIC_APP_ENV, EXPO_PUBLIC_ENVIRONMENT_ID
 EXPO_PUBLIC_FR_URL, EXPO_PUBLIC_INTL_URL, EXPO_PUBLIC_API_URL
 ```
 
+Analytics provider flags follow the same runtime-only model. Browser-safe
+project/site identifiers use `NEXT_PUBLIC_*`; PostHog/GA4/Matomo delivery
+secrets, the Search Console service-account JSON and backend Sentry settings are
+server-only. Tracked profiles keep optional providers disabled and credential
+slots empty. The complete provider matrix and activation sequence are in
+[`analytics.md`](analytics.md).
+
+Sentry source-map publication is build-only. Configure the repository secret
+`SENTRY_AUTH_TOKEN` and repository variables `SENTRY_ORG`,
+`SENTRY_FRONTEND_PROJECT`, `SENTRY_BACKEND_PROJECT`, plus `SENTRY_URL` only for
+a non-default Sentry API endpoint. BuildKit mounts them ephemerally while the
+single immutable image pair is built; runtime images contain neither those
+values nor source-map files.
+
 Database URLs, service-role keys, Stripe secret/webhook keys, provider API keys,
 OAuth client secrets, private keys, email tokens, KYC credentials, and BYOK
 material are server-only. BYOK credentials remain encrypted and tenant-scoped;

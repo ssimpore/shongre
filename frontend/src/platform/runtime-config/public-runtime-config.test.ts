@@ -11,6 +11,20 @@ const injected: PublicRuntimeConfig = {
   mockStorageEnabled: false,
   stripePublishableKey: "pk_test_staging",
   release: "a".repeat(40),
+  analytics: {
+    mode: "staging",
+    internalEnabled: true,
+    posthog: {
+      enabled: false,
+      key: "",
+      host: "https://eu.i.posthog.com",
+      sessionReplayEnabled: false,
+    },
+    ga4: { enabled: false, measurementId: "" },
+    matomo: { enabled: false, url: "", siteId: "" },
+    cloudflare: { enabled: false, token: "" },
+    sentry: { enabled: false, dsn: "", tracesSampleRate: 0 },
+  },
   externalLinks: {
     appStore: "",
     googlePlay: "",

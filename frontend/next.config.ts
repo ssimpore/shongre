@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins,
   output: "standalone",
   poweredByHeader: false,
+  productionBrowserSourceMaps: true,
   reactStrictMode: true,
   transpilePackages: [
     "@shongre/brand",

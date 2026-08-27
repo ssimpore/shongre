@@ -3,6 +3,7 @@ import { AppError, AppErrorCode } from "../../errors/app-error";
 import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
 import { currentBrowserMarketCode } from "../../../domains/market/market-routing";
+import { telemetryService } from "../../../services/telemetry.service";
 
 export interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -80,13 +81,14 @@ export class HttpClient {
     const method = String(customConfig.method || "GET").toUpperCase();
     const csrfToken = this.getCsrfToken();
     const marketCode = currentBrowserMarketCode();
+    const requestId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : deterministicRuntimeId("req", [method, endpoint]);
     const defaultHeaders: HeadersInit = {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "X-Request-Id":
-        typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : deterministicRuntimeId("req", [method, endpoint]),
+      "X-Request-Id": requestId,
       ...(csrfToken && !["GET", "HEAD", "OPTIONS"].includes(method)
         ? { "X-CSRF-Token": csrfToken }
         : {}),
@@ -122,6 +124,11 @@ export class HttpClient {
       }
 
       if (!response.ok) {
+        telemetryService.captureException(
+          new Error("Shongre API request failed"),
+          "api-request",
+          { requestId, route: endpoint, statusCode: response.status },
+        );
         let errorData: any = {};
         try {
           errorData = await response.json();
@@ -159,12 +166,22 @@ export class HttpClient {
       clearTimeout(timeoutId);
       if (err instanceof AppError) throw err;
       if (err.name === "AbortError") {
+        telemetryService.captureException(
+          new Error("Shongre API request timed out"),
+          "api-timeout",
+          { requestId, route: endpoint },
+        );
         throw new AppError({
           code: "TIMEOUT",
           message:
             "Délai d’attente dépassé lors de la communication avec le serveur.",
         });
       }
+      telemetryService.captureException(
+        new Error("Shongre API network request failed"),
+        "api-network",
+        { requestId, route: endpoint },
+      );
       throw new AppError({
         code: "NETWORK_ERROR",
         message: err.message || "Impossible de contacter le serveur Shongre.",

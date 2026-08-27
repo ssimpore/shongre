@@ -14,8 +14,10 @@ import { Button } from "../../design-system/primitives/Button";
 import { Modal } from "../../design-system/primitives/Modal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import { useAuth } from "../providers/AuthProvider";
 import { useDataMode } from "../providers/DataModeProvider";
+import { allowsLocalDataModeRecovery } from "./data-mode-recovery";
 
 function switchErrorKey(error: unknown): MessageKey {
   if (
@@ -38,7 +40,9 @@ export const DataModeSettingsControl: React.FC = () => {
   const [pendingMode, setPendingMode] = useState<DataMode>(mode);
   const [error, setError] = useState("");
 
-  const authorized = can("admin.configuration.manage");
+  const environment = getPublicRuntimeConfig().appEnvironment;
+  const localRecovery = allowsLocalDataModeRecovery(mode, environment);
+  const authorized = can("admin.configuration.manage") || localRecovery;
   if (!authorized) return null;
 
   const openSettings = () => {

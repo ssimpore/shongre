@@ -1,47 +1,8 @@
-import { consentService } from "../domains/consent/consent.service";
-import { getCountryConfig } from "@shongre/contracts";
-
-export type MarketplaceAnalyticsEvent =
-  | "trending_section_view"
-  | "trending_topic_impression"
-  | "trending_topic_click"
-  | "trending_topic_change"
-  | "trending_listing_impression"
-  | "trending_listing_click"
-  | "trending_see_all_click";
-
-export interface MarketplaceAnalyticsPayload {
-  market?: string;
-  topic?: string;
-  topicType?: string;
-  position?: number;
-  listingId?: string;
-  source?: "trending_now";
-}
-
-export interface AnalyticsEventRecord {
-  name: MarketplaceAnalyticsEvent;
-  payload: MarketplaceAnalyticsPayload;
-  country: string;
-  locale: string;
-  domain: string;
-  market: string;
-  currency: string;
-  occurredAt: string;
-}
-
-const memoryEvents: AnalyticsEventRecord[] = [];
-const france = getCountryConfig("FR")!;
-let activeMarketContext: Omit<
-  AnalyticsEventRecord,
-  "name" | "payload" | "occurredAt"
-> = {
-  country: france.code,
-  locale: france.defaultLocale,
-  domain: france.canonicalDomainMode,
-  market: france.code,
-  currency: france.currency,
-};
+import type {
+  AnalyticsEventName,
+  AnalyticsEventProperties,
+} from "@shongre/contracts/analytics";
+import { analyticsClient } from "../analytics/analytics.client";
 
 /**
  * Small provider-neutral analytics boundary. The consent gate is intentional:
@@ -56,31 +17,27 @@ export const analyticsService = {
     market: string;
     currency: string;
   }): void {
-    activeMarketContext = {
-      country: context.country.toUpperCase(),
-      locale: context.locale,
-      domain: context.domain.toLowerCase(),
-      market: context.market.toUpperCase(),
-      currency: context.currency.toUpperCase(),
-    };
+    analyticsClient.setMarketContext(context);
   },
-  track(
-    name: MarketplaceAnalyticsEvent,
-    payload: MarketplaceAnalyticsPayload = {},
+  track<Name extends AnalyticsEventName>(
+    name: Name,
+    payload: AnalyticsEventProperties<Name> = {} as AnalyticsEventProperties<Name>,
   ): void {
-    if (!consentService.hasConsent("analytics")) return;
-    memoryEvents.push({
-      name,
-      payload,
-      ...activeMarketContext,
-      occurredAt: new Date().toISOString(),
-    });
-    if (memoryEvents.length > 100) memoryEvents.shift();
+    analyticsClient.track(name, payload);
   },
-  getRecentEvents(): AnalyticsEventRecord[] {
-    return [...memoryEvents];
+  getRecentEvents() {
+    return analyticsClient.recentEvents().map((event) => ({
+      ...event,
+      payload: event.properties,
+      country: event.context.countryCode,
+      market: event.context.marketCode,
+      locale: event.context.locale,
+      currency: event.context.currency,
+      domain: event.context.canonicalDomain,
+      occurredAt: event.context.timestamp,
+    }));
   },
   reset(): void {
-    memoryEvents.length = 0;
+    analyticsClient.clearMemory();
   },
 };

@@ -9,6 +9,7 @@ import { PreferencesModal } from "./PreferencesModal";
 import { CookieConsent } from "./CookieConsent";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { SkipLink } from "../../design-system";
+import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 
 export const MainLayout: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ export const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-page-bottom-inset">
       <SkipLink />
       <AppScrollRestoration />
+      <AnalyticsRuntime />
       <DemoRoleSwitcher />
       <Header />
       {/* Clearance for the fixed tab bar comes from the same token the bar

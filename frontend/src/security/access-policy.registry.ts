@@ -117,6 +117,14 @@ export const ROUTE_POLICIES = {
   ),
 
   adminOverview: staff("/admin", "admin.access"),
+  adminAnalytics: {
+    ...staff("/admin/analytics", "analytics.platform.read"),
+    alternativeCapabilities: [
+      "analytics.marketing.read",
+      "analytics.finance.read",
+      "analytics.technical.read",
+    ],
+  },
   adminSupport: staff("/admin/support", "support.case.read"),
   adminModeration: {
     ...staff("/admin/moderation", "moderation.review"),

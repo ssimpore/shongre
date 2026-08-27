@@ -12,6 +12,9 @@ import { crmShongreSyncWorker } from "./crm/crm-shongre-sync-worker.js";
 import { marketingCampaignWorker } from "./marketing/marketing-campaign-worker.js";
 import { marketingWebhookWorker } from "./marketing/marketing-webhook-worker.js";
 import { marketingJourneyWorker } from "./marketing/marketing-journey-worker.js";
+import { analyticsService } from "../modules/analytics/analytics.service.js";
+import { searchConsoleWorker } from "./analytics/search-console-worker.js";
+import { captureServerException } from "../infrastructure/observability/sentry.js";
 
 interface ScheduledJob {
   name: string;
@@ -20,6 +23,26 @@ interface ScheduledJob {
 }
 
 const jobs: ScheduledJob[] = [
+  {
+    name: "analytics_provider_delivery",
+    intervalSeconds: 15,
+    run: () => analyticsService.retryProviderDeliveries(),
+  },
+  {
+    name: "analytics_aggregate_refresh",
+    intervalSeconds: 3_600,
+    run: () => analyticsService.refreshAggregates(),
+  },
+  {
+    name: "analytics_retention",
+    intervalSeconds: 86_400,
+    run: () => analyticsService.applyRetention(),
+  },
+  {
+    name: "search_console_ingestion",
+    intervalSeconds: 86_400,
+    run: () => searchConsoleWorker.run(),
+  },
   {
     name: "marketing_outgoing_webhook",
     intervalSeconds: 10,
@@ -145,12 +168,14 @@ export class ScheduledWorkerRuntime {
           jobName: job.name,
           error: message,
         });
+        captureServerException(error, { operation: job.name });
       }
     } catch (error: any) {
       logger.error("scheduled_job_coordination_failed", {
         jobName: job.name,
         error: String(error?.message || error),
       });
+      captureServerException(error, { operation: job.name });
     }
   }
 }

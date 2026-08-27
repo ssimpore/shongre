@@ -12,6 +12,7 @@ import type {
 } from "../../contracts/feature-flags.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
+import { analyticsService } from "../../../services/analytics.service";
 
 const DEFINITIONS_KEY = "shongre_demo_feature_flags_v1";
 const RULES_KEY = "shongre_demo_feature_flag_rules_v1";
@@ -98,32 +99,40 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
     await simulateNetworkDelay();
     const evaluatedAt = new Date().toISOString();
     const definition = definitions().find((value) => value.key === key);
+    let result: FeatureFlagEvaluation;
     if (
       !definition ||
       definition.exposure !== "public" ||
       definition.lifecycle !== "active" ||
       (definition.expiresAt && definition.expiresAt <= evaluatedAt)
     ) {
-      return { key, enabled: false, source: "safe_default", evaluatedAt };
+      result = { key, enabled: false, source: "safe_default", evaluatedAt };
+    } else {
+      const rule = rules()
+        .filter((value) => value.flagKey === key)
+        .sort((left, right) => right.priority - left.priority)
+        .find((value) => matches(value, context, evaluatedAt));
+      result = rule
+        ? {
+            key,
+            enabled: rule.enabled,
+            source: "rule",
+            ruleId: rule.id,
+            evaluatedAt,
+          }
+        : {
+            key,
+            enabled: definition.defaultEnabled,
+            source: "default",
+            evaluatedAt,
+          };
     }
-    const rule = rules()
-      .filter((value) => value.flagKey === key)
-      .sort((left, right) => right.priority - left.priority)
-      .find((value) => matches(value, context, evaluatedAt));
-    return rule
-      ? {
-          key,
-          enabled: rule.enabled,
-          source: "rule",
-          ruleId: rule.id,
-          evaluatedAt,
-        }
-      : {
-          key,
-          enabled: definition.defaultEnabled,
-          source: "default",
-          evaluatedAt,
-        };
+    analyticsService.track("feature_flag_evaluated", {
+      flagKey: result.key,
+      enabled: result.enabled,
+      variant: result.source,
+    });
+    return result;
   }
 
   async getAdminSnapshot(): Promise<FeatureFlagAdminEntry[]> {

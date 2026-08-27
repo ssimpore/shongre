@@ -33,6 +33,7 @@ import {
 } from "../discovery/discovery.service.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
 import { getCurrencyMinorUnitDigits } from "@shongre/shared";
+import { analyticsService } from "../analytics/analytics.service.js";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -640,6 +641,26 @@ export class ListingsService {
     }
     const hydrated = await this.listingRepo.findById(saved.id);
     logger.info("Listing publication completed", { listingId: saved.id });
+    void analyticsService
+      .captureAuthoritative({
+        name: "listing_published",
+        marketCode,
+        eventId: `evt_listing_published_${saved.id}`,
+        userId: sellerId,
+        userType: publicationPolicy.publisher.type,
+        properties: {
+          listingId: saved.id,
+          sellerId,
+          categoryId: draft.categoryId,
+          selectedMarketCodes,
+        },
+      })
+      .catch((error) =>
+        logger.warn("analytics_listing_publication_failed", {
+          listingId: saved.id,
+          errorCode: error instanceof Error ? error.name : "unknown",
+        }),
+      );
     return toPublicListing(hydrated || saved);
   }
 

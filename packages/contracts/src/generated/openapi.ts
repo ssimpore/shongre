@@ -1010,6 +1010,142 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/analytics/acquisition": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Acquisition and attribution intelligence */
+        readonly get: operations["getAnalyticsAcquisition"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/events": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Ingest a consented, provider-neutral analytics batch */
+        readonly post: operations["postAnalyticsEvents"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/monetization": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Ledger-backed monetization intelligence */
+        readonly get: operations["getAnalyticsMonetization"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/overview": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Platform product intelligence overview */
+        readonly get: operations["getAnalyticsOverview"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/providers": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Analytics and observability provider health */
+        readonly get: operations["getAnalyticsProviders"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/search": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Search demand and supply-gap intelligence */
+        readonly get: operations["getAnalyticsSearch"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/sellers/{sellerId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Seller-owned listing performance */
+        readonly get: operations["getAnalyticsSeller"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/analytics/seo": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Google Search Console SEO intelligence */
+        readonly get: operations["getAnalyticsSeo"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/health": {
         readonly parameters: {
             readonly query?: never;
@@ -7165,6 +7301,169 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        readonly AnalyticsAcquisition: {
+            readonly channels: readonly {
+                readonly conversionRate: number;
+                readonly medium: string;
+                readonly payingUsers: number;
+                readonly registrations: number;
+                readonly source: string;
+                readonly visitors: number;
+            }[];
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly scope: components["schemas"]["AnalyticsScope"];
+        };
+        readonly AnalyticsContext: {
+            readonly anonymousId?: string;
+            readonly campaign?: string;
+            readonly canonicalDomain?: string;
+            readonly content?: string;
+            readonly countryCode: components["schemas"]["MarketCode"];
+            readonly currency: string;
+            /** @enum {string} */
+            readonly deviceType?: "desktop" | "tablet" | "mobile" | "bot" | "unknown";
+            /** @enum {string} */
+            readonly environment: "local" | "test" | "preview" | "development" | "staging" | "production";
+            readonly eventId: string;
+            readonly firstCampaign?: string;
+            readonly firstMedium?: string;
+            readonly firstSource?: string;
+            readonly isTestTraffic?: boolean;
+            readonly locale: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly medium?: string;
+            /** @enum {string} */
+            readonly platform: "web" | "ios" | "android" | "backend";
+            readonly release?: string;
+            readonly requestId?: string;
+            /** @constant */
+            readonly schemaVersion: 1;
+            readonly sessionId?: string;
+            readonly source?: string;
+            readonly term?: string;
+            /** Format: date-time */
+            readonly timestamp: string;
+            readonly timezone?: string;
+            /** @description Ignored for unauthenticated ingestion; the server derives authenticated identity. */
+            readonly userId?: string;
+            readonly userType?: string;
+        };
+        /** @enum {string} */
+        readonly AnalyticsDateRange: "today" | "yesterday" | "7d" | "30d" | "90d" | "month" | "quarter" | "year" | "custom";
+        readonly AnalyticsEvent: {
+            readonly context: components["schemas"]["AnalyticsContext"];
+            readonly name: components["schemas"]["AnalyticsEventName"];
+            readonly properties: {
+                readonly [key: string]: string | number | boolean | null | readonly string[] | readonly number[];
+            };
+        };
+        readonly AnalyticsEventBatch: {
+            readonly events: readonly components["schemas"]["AnalyticsEvent"][];
+        };
+        /** @enum {string} */
+        readonly AnalyticsEventName: "session_started" | "page_viewed" | "navigation_performed" | "signup_started" | "signup_completed" | "login_started" | "login_completed" | "logout_completed" | "verification_started" | "verification_completed" | "password_reset_requested" | "onboarding_started" | "onboarding_step_completed" | "onboarding_completed" | "search_started" | "search_performed" | "search_result_clicked" | "filter_applied" | "filter_removed" | "sort_changed" | "category_viewed" | "subcategory_viewed" | "recommendation_viewed" | "listing_viewed" | "listing_shared" | "listing_favorited" | "listing_unfavorited" | "publication_started" | "publication_step_completed" | "publication_abandoned" | "publication_completed" | "listing_published" | "listing_updated" | "listing_paused" | "listing_reactivated" | "listing_deleted" | "seller_profile_viewed" | "seller_followed" | "seller_contacted" | "conversation_started" | "message_sent" | "message_received" | "contact_revealed" | "offer_started" | "offer_sent" | "offer_accepted" | "offer_rejected" | "checkout_started" | "checkout_completed" | "transaction_started" | "transaction_completed" | "transaction_cancelled" | "refund_requested" | "refund_completed" | "plan_viewed" | "subscription_checkout_started" | "subscription_started" | "subscription_upgraded" | "subscription_downgraded" | "subscription_cancelled" | "promotion_viewed" | "promotion_checkout_started" | "promotion_purchased" | "boost_purchased" | "featured_listing_purchased" | "lead_received" | "lead_viewed" | "lead_contacted" | "lead_converted" | "crm_contact_created" | "crm_opportunity_created" | "crm_opportunity_converted" | "newsletter_campaign_created" | "newsletter_campaign_scheduled" | "newsletter_campaign_sent" | "report_started" | "report_submitted" | "kyc_started" | "kyc_completed" | "moderation_action_performed" | "support_request_created" | "support_request_resolved" | "web_vital_measured" | "feature_flag_evaluated" | "experiment_exposure_recorded" | "trending_section_view" | "trending_topic_impression" | "trending_topic_click" | "trending_topic_change" | "trending_listing_impression" | "trending_listing_click" | "trending_see_all_click";
+        readonly AnalyticsIngestionResult: {
+            readonly accepted: number;
+        };
+        readonly AnalyticsMetric: {
+            readonly currency?: string;
+            readonly id: string;
+            readonly label: string;
+            readonly previousValue?: number;
+            /** @enum {string} */
+            readonly unit: "count" | "percent" | "currency_minor" | "duration_ms";
+            readonly value: number;
+        };
+        readonly AnalyticsMonetization: {
+            readonly currency: string;
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
+            /** @enum {string} */
+            readonly reconciliationStatus: "reconciled" | "partial" | "unavailable";
+            readonly revenue: readonly components["schemas"]["AnalyticsTimeSeriesPoint"][];
+            readonly scope: components["schemas"]["AnalyticsScope"];
+        };
+        readonly AnalyticsOverview: {
+            readonly activity: readonly components["schemas"]["AnalyticsTimeSeriesPoint"][];
+            readonly funnel: readonly {
+                readonly conversionFromPrevious?: number;
+                readonly count: number;
+                readonly label: string;
+                readonly step: string;
+            }[];
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
+            readonly scope: components["schemas"]["AnalyticsScope"];
+        };
+        readonly AnalyticsProviderHealth: {
+            readonly enabled: boolean;
+            readonly failedEvents: number;
+            /** Format: date-time */
+            readonly lastFailureAt?: string;
+            /** Format: date-time */
+            readonly lastSuccessfulAt?: string;
+            readonly message: string;
+            /** @enum {string} */
+            readonly provider: "internal" | "posthog" | "ga4" | "matomo" | "cloudflare" | "search_console" | "sentry";
+            readonly queueBacklog: number;
+            /** @enum {string} */
+            readonly status: "connected" | "disabled" | "degraded" | "misconfigured";
+        };
+        readonly AnalyticsScope: {
+            readonly campaign?: string;
+            readonly categoryId?: string;
+            /** Format: date */
+            readonly from?: string;
+            readonly marketCode: components["schemas"]["MarketCode"] | "ALL";
+            readonly range: components["schemas"]["AnalyticsDateRange"];
+            /** @enum {string} */
+            readonly sellerType?: "individual" | "professional";
+            readonly source?: string;
+            /** Format: date */
+            readonly to?: string;
+        };
+        readonly AnalyticsSearch: {
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
+            readonly opportunities: readonly {
+                readonly clickThroughRate: number;
+                readonly marketCode: components["schemas"]["MarketCode"];
+                readonly query: string;
+                readonly resultSupply: number;
+                readonly searches: number;
+                readonly zeroResultRate: number;
+            }[];
+            readonly scope: components["schemas"]["AnalyticsScope"];
+        };
+        readonly AnalyticsSeo: {
+            /** Format: date-time */
+            readonly generatedAt: string;
+            /** Format: date-time */
+            readonly lastSuccessfulSyncAt?: string;
+            readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
+            readonly queries: readonly {
+                readonly clicks: number;
+                readonly country: string;
+                readonly ctr: number;
+                readonly device: string;
+                readonly impressions: number;
+                readonly page: string;
+                readonly position: number;
+                readonly query: string;
+            }[];
+            readonly scope: components["schemas"]["AnalyticsScope"];
+            readonly trend: readonly components["schemas"]["AnalyticsTimeSeriesPoint"][];
+        };
+        readonly AnalyticsTimeSeriesPoint: {
+            /** Format: date */
+            readonly date: string;
+            readonly primary: number;
+            readonly secondary?: number;
+        };
         readonly CountryConfig: {
             readonly addressFormat?: string;
             readonly basePath: string;
@@ -8350,6 +8649,21 @@ export interface components {
         readonly ProviderCredentialRotation: {
             readonly credential: string;
             readonly expectedVersion: number;
+        };
+        readonly SellerAnalytics: {
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly listingPerformance: readonly {
+                readonly contacts: number;
+                readonly conversionRate: number;
+                readonly favorites: number;
+                readonly listingId: string;
+                readonly title: string;
+                readonly views: number;
+            }[];
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
+            readonly sellerId: string;
         };
     };
     responses: {
@@ -10407,6 +10721,290 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsAcquisition: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaign?: string;
+                readonly categoryId?: string;
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly sellerType?: "individual" | "professional";
+                readonly source?: string;
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Acquisition analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsAcquisition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAnalyticsEvents: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["AnalyticsEventBatch"];
+            };
+        };
+        readonly responses: {
+            /** @description Batch accepted idempotently. */
+            readonly 202: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsIngestionResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsMonetization: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaign?: string;
+                readonly categoryId?: string;
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly sellerType?: "individual" | "professional";
+                readonly source?: string;
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Monetization analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsMonetization"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsOverview: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaign?: string;
+                readonly categoryId?: string;
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly sellerType?: "individual" | "professional";
+                readonly source?: string;
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Platform analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsOverview"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsProviders: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Provider health without credentials. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["AnalyticsProviderHealth"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsSearch: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaign?: string;
+                readonly categoryId?: string;
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly sellerType?: "individual" | "professional";
+                readonly source?: string;
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Search analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsSearch"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsSeller: {
+        readonly parameters: {
+            readonly query?: {
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly sellerId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Seller analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SellerAnalytics"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAnalyticsSeo: {
+        readonly parameters: {
+            readonly query?: {
+                readonly campaign?: string;
+                readonly categoryId?: string;
+                readonly from?: string;
+                readonly marketCode?: components["schemas"]["MarketCode"] | "ALL";
+                readonly range?: components["schemas"]["AnalyticsDateRange"];
+                readonly sellerType?: "individual" | "professional";
+                readonly source?: string;
+                readonly to?: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description SEO analytics. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AnalyticsSeo"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 500: components["responses"]["InternalError"];
         };
     };

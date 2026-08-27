@@ -69,6 +69,7 @@ import {
   StructuredData,
 } from "../../services/seo.service";
 import { storageService } from "../../services/storage.service";
+import { analyticsService } from "../../services/analytics.service";
 import { isProSeller } from "../../domains/user/user.domain";
 import { DirectPurchaseCheckoutModal } from "../transactions/DirectPurchaseCheckoutModal";
 import { ReservationCheckoutModal } from "../transactions/components/ReservationCheckoutModal";
@@ -118,6 +119,7 @@ export const ListingDetailPage: React.FC = () => {
   const [offerPrice, setOfferPrice] = useState("");
   const [reportReason, setReportReason] = useState("suspicious");
   const [reportDetails, setReportDetails] = useState("");
+  const trackedListingId = useRef<string | null>(null);
 
   // 1. Data Fetching
   useEffect(() => {
@@ -132,6 +134,14 @@ export const ListingDetailPage: React.FC = () => {
            capped at ten — but nothing ever called it, so the history it handed
            back was the seeded fixture and never the visitor's own browsing. */
         storageService.addRecentlyViewed(item.id);
+        if (trackedListingId.current !== item.id) {
+          trackedListingId.current = item.id;
+          analyticsService.track("listing_viewed", {
+            listingId: item.id,
+            sellerId: item.sellerId,
+            categoryId: item.categorySlug,
+          });
+        }
 
         userRepository.getUserById(item.sellerId).then((sellerUser) => {
           if (sellerUser) setSeller(sellerUser);

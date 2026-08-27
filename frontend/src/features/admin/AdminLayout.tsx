@@ -24,6 +24,7 @@ import {
   Landmark,
   Headphones,
   Flag,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -98,6 +99,12 @@ export const AdminLayout: React.FC = () => {
       label: "Vue d'ensemble",
       icon: LayoutDashboard,
       show: canAccessRoute("adminOverview"),
+    },
+    {
+      to: "/admin/analytics",
+      label: "Analytics & Intelligence",
+      icon: BarChart3,
+      show: canAccessRoute("adminAnalytics"),
     },
     {
       to: "/admin/support",

@@ -10,6 +10,7 @@ import React, {
 import { services } from "../../api/client/service-registry";
 import { storageService } from "../../services/storage.service";
 import { useAuth } from "./AuthProvider";
+import { analyticsService } from "../../services/analytics.service";
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
@@ -143,6 +144,10 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           const without = previous.filter((id) => id !== listingId);
           return confirmed ? [...without, listingId] : without;
         });
+        analyticsService.track(
+          confirmed ? "listing_favorited" : "listing_unfavorited",
+          { listingId },
+        );
         return confirmed;
       } catch {
         // Put the set back the way it was rather than leaving a lie on screen.

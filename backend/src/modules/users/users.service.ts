@@ -15,6 +15,7 @@ import {
   type IAuthRepository,
 } from "../../infrastructure/database/repositories/auth.repository.js";
 import type { AuthProvider } from "../../shared/auth/identity.js";
+import { analyticsService } from "../analytics/analytics.service.js";
 
 export class UsersService {
   constructor(
@@ -120,6 +121,7 @@ export class UsersService {
       });
     }
 
+    await analyticsService.anonymizeSubject(userId);
     await this.userRepo.anonymize(userId, reason);
     await Promise.all([
       this.authRepo.revokeSessions(userId, "account_deleted"),

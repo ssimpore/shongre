@@ -3,6 +3,9 @@
 Authentication architecture, provider-console setup, session lifecycle and
 rollout instructions are documented in
 [`docs/architecture/authentication.md`](docs/architecture/authentication.md).
+The provider-neutral analytics, product intelligence, SEO ingestion,
+consent/privacy, reporting and observability architecture is documented in
+[`docs/architecture/analytics.md`](docs/architecture/analytics.md).
 The six-environment deployment, domain, Supabase, provider, CI/CD, DNS and
 rollback model is documented in
 [`docs/architecture/environments.md`](docs/architecture/environments.md).

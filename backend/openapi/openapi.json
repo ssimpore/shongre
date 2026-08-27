@@ -4359,6 +4359,504 @@
         }
       }
     },
+    "/analytics/events": {
+      "post": {
+        "operationId": "postAnalyticsEvents",
+        "tags": ["analytics"],
+        "summary": "Ingest a consented, provider-neutral analytics batch",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AnalyticsEventBatch" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch accepted idempotently.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsIngestionResult"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/overview": {
+      "get": {
+        "operationId": "getAnalyticsOverview",
+        "tags": ["analytics"],
+        "summary": "Platform product intelligence overview",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sellerType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          { "name": "source", "in": "query", "schema": { "type": "string" } },
+          { "name": "campaign", "in": "query", "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Platform analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnalyticsOverview" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.platform.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/acquisition": {
+      "get": {
+        "operationId": "getAnalyticsAcquisition",
+        "tags": ["analytics"],
+        "summary": "Acquisition and attribution intelligence",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sellerType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          { "name": "source", "in": "query", "schema": { "type": "string" } },
+          { "name": "campaign", "in": "query", "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Acquisition analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsAcquisition"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.marketing.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/search": {
+      "get": {
+        "operationId": "getAnalyticsSearch",
+        "tags": ["analytics"],
+        "summary": "Search demand and supply-gap intelligence",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sellerType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          { "name": "source", "in": "query", "schema": { "type": "string" } },
+          { "name": "campaign", "in": "query", "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnalyticsSearch" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.marketing.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/monetization": {
+      "get": {
+        "operationId": "getAnalyticsMonetization",
+        "tags": ["analytics"],
+        "summary": "Ledger-backed monetization intelligence",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sellerType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          { "name": "source", "in": "query", "schema": { "type": "string" } },
+          { "name": "campaign", "in": "query", "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monetization analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsMonetization"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.finance.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/seo": {
+      "get": {
+        "operationId": "getAnalyticsSeo",
+        "tags": ["analytics"],
+        "summary": "Google Search Console SEO intelligence",
+        "parameters": [
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sellerType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          { "name": "source", "in": "query", "schema": { "type": "string" } },
+          { "name": "campaign", "in": "query", "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "SEO analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnalyticsSeo" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.marketing.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/providers": {
+      "get": {
+        "operationId": "getAnalyticsProviders",
+        "tags": ["analytics"],
+        "summary": "Analytics and observability provider health",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Provider health without credentials.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnalyticsProviderHealth"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "analytics.technical.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/analytics/sellers/{sellerId}": {
+      "get": {
+        "operationId": "getAnalyticsSeller",
+        "tags": ["analytics"],
+        "summary": "Seller-owned listing performance",
+        "parameters": [
+          {
+            "name": "sellerId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "schema": { "$ref": "#/components/schemas/AnalyticsDateRange" }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "marketCode",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                { "$ref": "#/components/schemas/MarketCode" },
+                { "const": "ALL" }
+              ]
+            }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seller analytics.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SellerAnalytics" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "store.analytics.read.own",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/auth/domain-handoff/exchange": {
       "post": {
         "operationId": "postAuthDomainHandoffExchange",
@@ -28974,6 +29472,538 @@
         "type": "string",
         "pattern": "^[A-Z]{2}$",
         "examples": ["FR", "BE", "CH", "SN", "BF"]
+      },
+      "AnalyticsDateRange": {
+        "type": "string",
+        "enum": [
+          "today",
+          "yesterday",
+          "7d",
+          "30d",
+          "90d",
+          "month",
+          "quarter",
+          "year",
+          "custom"
+        ]
+      },
+      "AnalyticsEventName": {
+        "type": "string",
+        "enum": [
+          "session_started",
+          "page_viewed",
+          "navigation_performed",
+          "signup_started",
+          "signup_completed",
+          "login_started",
+          "login_completed",
+          "logout_completed",
+          "verification_started",
+          "verification_completed",
+          "password_reset_requested",
+          "onboarding_started",
+          "onboarding_step_completed",
+          "onboarding_completed",
+          "search_started",
+          "search_performed",
+          "search_result_clicked",
+          "filter_applied",
+          "filter_removed",
+          "sort_changed",
+          "category_viewed",
+          "subcategory_viewed",
+          "recommendation_viewed",
+          "listing_viewed",
+          "listing_shared",
+          "listing_favorited",
+          "listing_unfavorited",
+          "publication_started",
+          "publication_step_completed",
+          "publication_abandoned",
+          "publication_completed",
+          "listing_published",
+          "listing_updated",
+          "listing_paused",
+          "listing_reactivated",
+          "listing_deleted",
+          "seller_profile_viewed",
+          "seller_followed",
+          "seller_contacted",
+          "conversation_started",
+          "message_sent",
+          "message_received",
+          "contact_revealed",
+          "offer_started",
+          "offer_sent",
+          "offer_accepted",
+          "offer_rejected",
+          "checkout_started",
+          "checkout_completed",
+          "transaction_started",
+          "transaction_completed",
+          "transaction_cancelled",
+          "refund_requested",
+          "refund_completed",
+          "plan_viewed",
+          "subscription_checkout_started",
+          "subscription_started",
+          "subscription_upgraded",
+          "subscription_downgraded",
+          "subscription_cancelled",
+          "promotion_viewed",
+          "promotion_checkout_started",
+          "promotion_purchased",
+          "boost_purchased",
+          "featured_listing_purchased",
+          "lead_received",
+          "lead_viewed",
+          "lead_contacted",
+          "lead_converted",
+          "crm_contact_created",
+          "crm_opportunity_created",
+          "crm_opportunity_converted",
+          "newsletter_campaign_created",
+          "newsletter_campaign_scheduled",
+          "newsletter_campaign_sent",
+          "report_started",
+          "report_submitted",
+          "kyc_started",
+          "kyc_completed",
+          "moderation_action_performed",
+          "support_request_created",
+          "support_request_resolved",
+          "web_vital_measured",
+          "feature_flag_evaluated",
+          "experiment_exposure_recorded",
+          "trending_section_view",
+          "trending_topic_impression",
+          "trending_topic_click",
+          "trending_topic_change",
+          "trending_listing_impression",
+          "trending_listing_click",
+          "trending_see_all_click"
+        ]
+      },
+      "AnalyticsContext": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "eventId",
+          "timestamp",
+          "schemaVersion",
+          "environment",
+          "platform",
+          "countryCode",
+          "marketCode",
+          "locale",
+          "currency"
+        ],
+        "properties": {
+          "eventId": { "type": "string", "minLength": 8, "maxLength": 160 },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "schemaVersion": { "type": "integer", "const": 1 },
+          "environment": {
+            "type": "string",
+            "enum": [
+              "local",
+              "test",
+              "preview",
+              "development",
+              "staging",
+              "production"
+            ]
+          },
+          "platform": {
+            "type": "string",
+            "enum": ["web", "ios", "android", "backend"]
+          },
+          "countryCode": { "$ref": "#/components/schemas/MarketCode" },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "locale": { "type": "string", "maxLength": 32 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "timezone": { "type": "string", "maxLength": 80 },
+          "canonicalDomain": { "type": "string", "maxLength": 255 },
+          "anonymousId": { "type": "string", "maxLength": 160 },
+          "sessionId": { "type": "string", "maxLength": 160 },
+          "userId": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "Ignored for unauthenticated ingestion; the server derives authenticated identity."
+          },
+          "userType": { "type": "string", "maxLength": 80 },
+          "source": { "type": "string", "maxLength": 160 },
+          "medium": { "type": "string", "maxLength": 160 },
+          "campaign": { "type": "string", "maxLength": 240 },
+          "term": { "type": "string", "maxLength": 240 },
+          "content": { "type": "string", "maxLength": 240 },
+          "firstSource": { "type": "string", "maxLength": 160 },
+          "firstMedium": { "type": "string", "maxLength": 160 },
+          "firstCampaign": { "type": "string", "maxLength": 240 },
+          "deviceType": {
+            "type": "string",
+            "enum": ["desktop", "tablet", "mobile", "bot", "unknown"]
+          },
+          "release": { "type": "string", "maxLength": 160 },
+          "requestId": { "type": "string", "maxLength": 160 },
+          "isTestTraffic": { "type": "boolean" }
+        }
+      },
+      "AnalyticsEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "context", "properties"],
+        "properties": {
+          "name": { "$ref": "#/components/schemas/AnalyticsEventName" },
+          "context": { "$ref": "#/components/schemas/AnalyticsContext" },
+          "properties": {
+            "type": "object",
+            "maxProperties": 80,
+            "additionalProperties": {
+              "oneOf": [
+                { "type": "string", "maxLength": 512 },
+                { "type": "number" },
+                { "type": "boolean" },
+                { "type": "null" },
+                {
+                  "type": "array",
+                  "maxItems": 50,
+                  "items": { "type": "string", "maxLength": 160 }
+                },
+                {
+                  "type": "array",
+                  "maxItems": 50,
+                  "items": { "type": "number" }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "AnalyticsEventBatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["events"],
+        "properties": {
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": { "$ref": "#/components/schemas/AnalyticsEvent" }
+          }
+        }
+      },
+      "AnalyticsIngestionResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["accepted"],
+        "properties": {
+          "accepted": { "type": "integer", "minimum": 0, "maximum": 50 }
+        }
+      },
+      "AnalyticsScope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["range", "marketCode"],
+        "properties": {
+          "range": { "$ref": "#/components/schemas/AnalyticsDateRange" },
+          "from": { "type": "string", "format": "date" },
+          "to": { "type": "string", "format": "date" },
+          "marketCode": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/MarketCode" },
+              { "const": "ALL" }
+            ]
+          },
+          "categoryId": { "type": "string" },
+          "sellerType": {
+            "type": "string",
+            "enum": ["individual", "professional"]
+          },
+          "source": { "type": "string" },
+          "campaign": { "type": "string" }
+        }
+      },
+      "AnalyticsMetric": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "value", "unit"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "value": { "type": "number" },
+          "previousValue": { "type": "number" },
+          "unit": {
+            "type": "string",
+            "enum": ["count", "percent", "currency_minor", "duration_ms"]
+          },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+        }
+      },
+      "AnalyticsTimeSeriesPoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "primary"],
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "primary": { "type": "number" },
+          "secondary": { "type": "number" }
+        }
+      },
+      "AnalyticsOverview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generatedAt", "scope", "metrics", "activity", "funnel"],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "scope": { "$ref": "#/components/schemas/AnalyticsScope" },
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsMetric" }
+          },
+          "activity": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsTimeSeriesPoint" }
+          },
+          "funnel": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["step", "label", "count"],
+              "properties": {
+                "step": { "type": "string" },
+                "label": { "type": "string" },
+                "count": { "type": "integer", "minimum": 0 },
+                "conversionFromPrevious": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            }
+          }
+        }
+      },
+      "AnalyticsAcquisition": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generatedAt", "scope", "channels"],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "scope": { "$ref": "#/components/schemas/AnalyticsScope" },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "source",
+                "medium",
+                "visitors",
+                "registrations",
+                "payingUsers",
+                "conversionRate"
+              ],
+              "properties": {
+                "source": { "type": "string" },
+                "medium": { "type": "string" },
+                "visitors": { "type": "integer" },
+                "registrations": { "type": "integer" },
+                "payingUsers": { "type": "integer" },
+                "conversionRate": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "AnalyticsSearch": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generatedAt", "scope", "metrics", "opportunities"],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "scope": { "$ref": "#/components/schemas/AnalyticsScope" },
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsMetric" }
+          },
+          "opportunities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "query",
+                "marketCode",
+                "searches",
+                "resultSupply",
+                "zeroResultRate",
+                "clickThroughRate"
+              ],
+              "properties": {
+                "query": { "type": "string" },
+                "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+                "searches": { "type": "integer" },
+                "resultSupply": { "type": "integer" },
+                "zeroResultRate": { "type": "number" },
+                "clickThroughRate": { "type": "number" }
+              }
+            }
+          }
+        }
+      },
+      "AnalyticsMonetization": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "scope",
+          "currency",
+          "metrics",
+          "revenue",
+          "reconciliationStatus"
+        ],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "scope": { "$ref": "#/components/schemas/AnalyticsScope" },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsMetric" }
+          },
+          "revenue": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsTimeSeriesPoint" }
+          },
+          "reconciliationStatus": {
+            "type": "string",
+            "enum": ["reconciled", "partial", "unavailable"]
+          }
+        }
+      },
+      "AnalyticsSeo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generatedAt", "scope", "metrics", "trend", "queries"],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "scope": { "$ref": "#/components/schemas/AnalyticsScope" },
+          "lastSuccessfulSyncAt": { "type": "string", "format": "date-time" },
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsMetric" }
+          },
+          "trend": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsTimeSeriesPoint" }
+          },
+          "queries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "query",
+                "clicks",
+                "impressions",
+                "ctr",
+                "position",
+                "page",
+                "country",
+                "device"
+              ],
+              "properties": {
+                "query": { "type": "string" },
+                "clicks": { "type": "integer" },
+                "impressions": { "type": "integer" },
+                "ctr": { "type": "number" },
+                "position": { "type": "number" },
+                "page": { "type": "string" },
+                "country": { "type": "string" },
+                "device": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "AnalyticsProviderHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "enabled",
+          "status",
+          "failedEvents",
+          "queueBacklog",
+          "message"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "internal",
+              "posthog",
+              "ga4",
+              "matomo",
+              "cloudflare",
+              "search_console",
+              "sentry"
+            ]
+          },
+          "enabled": { "type": "boolean" },
+          "status": {
+            "type": "string",
+            "enum": ["connected", "disabled", "degraded", "misconfigured"]
+          },
+          "lastSuccessfulAt": { "type": "string", "format": "date-time" },
+          "lastFailureAt": { "type": "string", "format": "date-time" },
+          "failedEvents": { "type": "integer" },
+          "queueBacklog": { "type": "integer" },
+          "message": { "type": "string" }
+        }
+      },
+      "SellerAnalytics": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "generatedAt",
+          "sellerId",
+          "marketCode",
+          "metrics",
+          "listingPerformance"
+        ],
+        "properties": {
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "sellerId": { "type": "string" },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AnalyticsMetric" }
+          },
+          "listingPerformance": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "listingId",
+                "title",
+                "views",
+                "favorites",
+                "contacts",
+                "conversionRate"
+              ],
+              "properties": {
+                "listingId": { "type": "string" },
+                "title": { "type": "string" },
+                "views": { "type": "integer" },
+                "favorites": { "type": "integer" },
+                "contacts": { "type": "integer" },
+                "conversionRate": { "type": "number" }
+              }
+            }
+          }
+        }
       },
       "CountryConfig": {
         "type": "object",

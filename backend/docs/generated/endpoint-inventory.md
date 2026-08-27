@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **406**
-- Specification SHA-256: `af86da362505e55d`
+- Operations: **414**
+- Specification SHA-256: `ac2264df63e8d0e5`
 
 ## account
 
@@ -130,6 +130,19 @@
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/ai/listing-assistance` | `postAiListingAssistance` | `permission` | `listing.create` | `200` |
 | `POST` | `/ai/listing-safety` | `postAiListingSafety` | `permission` | `listing.create` | `200` |
+
+## analytics
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/analytics/acquisition` | `getAnalyticsAcquisition` | `permission` | `analytics.marketing.read` | `200` |
+| `POST` | `/analytics/events` | `postAnalyticsEvents` | `public` | — | `202` |
+| `GET` | `/analytics/monetization` | `getAnalyticsMonetization` | `permission` | `analytics.finance.read` | `200` |
+| `GET` | `/analytics/overview` | `getAnalyticsOverview` | `permission` | `analytics.platform.read` | `200` |
+| `GET` | `/analytics/providers` | `getAnalyticsProviders` | `permission` | `analytics.technical.read` | `200` |
+| `GET` | `/analytics/search` | `getAnalyticsSearch` | `permission` | `analytics.marketing.read` | `200` |
+| `GET` | `/analytics/sellers/{sellerId}` | `getAnalyticsSeller` | `permission` | `store.analytics.read.own` | `200` |
+| `GET` | `/analytics/seo` | `getAnalyticsSeo` | `permission` | `analytics.marketing.read` | `200` |
 
 ## auth
 

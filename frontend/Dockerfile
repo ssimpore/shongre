@@ -18,13 +18,22 @@ COPY packages/ui/package.json ./packages/ui/package.json
 
 FROM workspace AS builder
 
+ARG VCS_REF=""
+
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --workspace=frontend --include-workspace-root=false
 
 COPY frontend ./frontend
 COPY packages ./packages
+COPY scripts/upload-sentry-sourcemaps.sh ./scripts/upload-sentry-sourcemaps.sh
 
 RUN npm run build --workspace=frontend
+RUN --mount=type=secret,id=sentry_auth_token \
+    --mount=type=secret,id=sentry_org \
+    --mount=type=secret,id=sentry_frontend_project \
+    --mount=type=secret,id=sentry_url \
+    VCS_REF="$VCS_REF" sh ./scripts/upload-sentry-sourcemaps.sh \
+      /app/frontend/.next /run/secrets/sentry_frontend_project
 
 FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
 

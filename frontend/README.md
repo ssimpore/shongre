@@ -36,6 +36,10 @@ HTTP contract. The sole wire contract is
 types from `@shongre/contracts/openapi` and map responses into those frontend
 interfaces. New URLs or wire DTO registries must not be handwritten here.
 
+The single consent-aware Web analytics SDK, provider mapping, sanitization,
+identity lifecycle and local debug panel are documented in
+[`docs/analytics.md`](docs/analytics.md).
+
 ---
 
 ## 2. Directory Structure

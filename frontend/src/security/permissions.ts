@@ -1158,6 +1158,38 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
       "Activer une version approuvée des règles commerciales sur les marchés ciblés.",
     isSensitive: true,
   },
+  {
+    id: "analytics.platform.read",
+    name: "Consulter les analytics plateforme",
+    category: "Administration Système",
+    description:
+      "Consulter les indicateurs agrégés d’activité, de conversion et de liquidité de la plateforme.",
+    isSensitive: true,
+  },
+  {
+    id: "analytics.marketing.read",
+    name: "Consulter les analytics marketing",
+    category: "Marketing & Communication",
+    description:
+      "Consulter les acquisitions, campagnes, recherches et performances SEO agrégées.",
+    isSensitive: true,
+  },
+  {
+    id: "analytics.finance.read",
+    name: "Consulter les analytics financières",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter les revenus, remboursements, abonnements et rapprochements financiers agrégés.",
+    isSensitive: true,
+  },
+  {
+    id: "analytics.technical.read",
+    name: "Consulter la santé des analytics",
+    category: "Administration Système",
+    description:
+      "Consulter l’état des fournisseurs, synchronisations, files et échecs techniques sans révéler de secret.",
+    isSensitive: true,
+  },
 ];
 
 const describedById = new Map(

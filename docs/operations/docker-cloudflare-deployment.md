@@ -37,6 +37,18 @@ is short-lived per workflow. Database, Supabase service role, provider, OAuth,
 payment and Tunnel secrets remain in host/managed-secret storage—not Compose,
 Git, image layers, build arguments, GitHub variables, or logs.
 
+## Analytics provider activation
+
+Analytics values are runtime configuration and are never image build arguments.
+Keep optional providers disabled until their environment-specific project/site,
+consent behavior and sanitized payloads have been validated in development and
+then on the exact staging release. Cloudflare Web Analytics is a browser module
+beacon configured with a public site tag; it does not change Tunnel or DNS
+infrastructure. Search Console credentials and provider delivery secrets remain
+only in the backend runtime file/secret store. See
+[`../architecture/analytics.md`](../architecture/analytics.md) for the full
+activation and rollback runbook.
+
 ## Delivery sequence
 
 1. `CI` gates PR/main source, migrations, contracts, critical tests, all browser

@@ -36,6 +36,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import type { MessageComposerOptions } from "../../api/contracts/messaging.contract";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { analyticsService } from "../../services/analytics.service";
 
 const EMPTY_COMPOSER_OPTIONS: MessageComposerOptions = {
   attachmentOptions: [],
@@ -286,6 +287,10 @@ export const MessagingPage: React.FC = () => {
         senderId: currentUserId,
         text: text || (attachmentUrl ? "Photo partagée" : ""),
         attachments: attachmentUrl ? [attachmentUrl] : undefined,
+      });
+      analyticsService.track("message_sent", {
+        conversationId: activeConvId,
+        attachmentCount: attachmentUrl ? 1 : 0,
       });
 
       // Upgrade status to delivered

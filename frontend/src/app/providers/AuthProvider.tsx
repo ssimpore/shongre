@@ -29,6 +29,7 @@ import {
   isAccountSuspended,
   isAccountLimited,
 } from "../../domains/user/user.domain";
+import { analyticsService } from "../../services/analytics.service";
 
 interface AuthContextType {
   currentUser: UserProfile | null;
@@ -185,6 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     password: string,
     options?: { rememberMe?: boolean },
   ): Promise<AuthResult> => {
+    analyticsService.track("login_started", { source: "email_password" });
     const result = await services.auth.login({
       email,
       password,
@@ -193,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (result.success && result.user) {
       setCurrentUser(result.user);
       announceAuthChange("login");
+      analyticsService.track("login_completed", { source: "email_password" });
     }
     return result;
   };
@@ -201,10 +204,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     tempToken: string,
     code: string,
   ): Promise<AuthResult> => {
+    analyticsService.track("login_started", { source: "mfa" });
     const result = await services.auth.loginWithMFA(tempToken, code);
     if (result.success && result.user) {
       setCurrentUser(result.user);
       announceAuthChange("login");
+      analyticsService.track("login_completed", { source: "mfa" });
     }
     return result;
   };
@@ -219,10 +224,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     termsAccepted: boolean;
     marketingConsent?: boolean;
   }): Promise<AuthResult> => {
+    analyticsService.track("signup_started", { source: "individual" });
     const result = await services.auth.registerIndividual(data);
     if (result.success && result.user) {
       setCurrentUser(result.user);
       announceAuthChange("login");
+      analyticsService.track("signup_completed", { source: "individual" });
     }
     return result;
   };
@@ -244,10 +251,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     termsAccepted: boolean;
     marketingConsent?: boolean;
   }): Promise<AuthResult> => {
+    analyticsService.track("signup_started", { source: "professional" });
     const result = await services.auth.registerProfessional(data);
     if (result.success && result.user) {
       setCurrentUser(result.user);
       announceAuthChange("login");
+      analyticsService.track("signup_completed", { source: "professional" });
     }
     return result;
   };
@@ -317,6 +326,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = async () => {
+    analyticsService.track("logout_completed");
     await services.auth.logout();
     setCurrentUser(null);
     announceAuthChange("logout");

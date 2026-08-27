@@ -17,13 +17,23 @@ COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/ui/package.json ./packages/ui/package.json
 
 FROM workspace AS builder
+
+ARG VCS_REF=""
+
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --workspace=backend --include-workspace-root=false
 
 COPY backend ./backend
 COPY packages ./packages
+COPY scripts/upload-sentry-sourcemaps.sh ./scripts/upload-sentry-sourcemaps.sh
 
 RUN npm run build --workspace=backend
+RUN --mount=type=secret,id=sentry_auth_token \
+    --mount=type=secret,id=sentry_org \
+    --mount=type=secret,id=sentry_backend_project \
+    --mount=type=secret,id=sentry_url \
+    VCS_REF="$VCS_REF" sh ./scripts/upload-sentry-sourcemaps.sh \
+      /app/backend/dist /run/secrets/sentry_backend_project
 
 FROM workspace AS runner
 

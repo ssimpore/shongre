@@ -25,6 +25,7 @@
     "./feature-flags": "./src/schemas/feature-flags.ts",
     "./crm": "./src/schemas/crm.ts",
     "./marketing": "./src/schemas/marketing.ts",
+    "./analytics": "./src/schemas/analytics.ts",
     "./provider-connections": "./src/schemas/provider-connections.ts",
     "./provider-gateways": "./src/provider-gateways.ts",
     "./finance-demo": "./src/fixtures/finance-demo.ts",
