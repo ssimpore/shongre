@@ -91,6 +91,9 @@ export function ProspectsProductPage() {
   const workspaceDestination = currentUser
     ? routes.prospects.workspace()
     : routes.auth.registerProfessional(routes.prospects.workspace());
+  const workspaceCtaLabel = currentUser
+    ? "Ouvrir Shongre Prospects"
+    : "Créer mon espace Prospects";
 
   return (
     <div className="overflow-hidden bg-bg-surface pb-14">
@@ -108,7 +111,7 @@ export function ProspectsProductPage() {
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <Link to={workspaceDestination} className={primaryCtaClass}>
-                  Essayer la démonstration
+                  {workspaceCtaLabel}
                   <ArrowRight
                     className="h-icon-sm w-icon-sm"
                     aria-hidden="true"
@@ -329,7 +332,7 @@ export function ProspectsProductPage() {
                 to={workspaceDestination}
                 className={`${secondaryCtaClass} mt-6 w-full sm:w-auto`}
               >
-                Choisir le produit autonome
+                {workspaceCtaLabel}
               </Link>
             </article>
             <article className="py-7 md:py-2 md:pl-12">
@@ -417,7 +420,7 @@ export function ProspectsProductPage() {
           </h2>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link to={workspaceDestination} className={primaryCtaClass}>
-              Essayer la démonstration
+              {workspaceCtaLabel}
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </Link>
             <Link

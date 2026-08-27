@@ -6,6 +6,10 @@ const countryCodeSchema = z.string().regex(/^[A-Z]{2}$/);
 const localeSchema = z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/);
 const timezoneSchema = z.string().trim().min(1).max(80);
 
+export const PROSPECTING_FIELD_CONSTRAINTS = {
+  discoveryQueryMaxLength: 1_000,
+} as const;
+
 export const prospectingContextSchema = z.enum([
   "INTERNAL_SHONGRE",
   "SUBSCRIBER",
@@ -201,7 +205,12 @@ export const prospectCandidateSchema = z.object({
 
 export const prospectDiscoveryFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),
-  query: z.string().trim().min(1).max(1_000).optional(),
+  query: z
+    .string()
+    .trim()
+    .min(1)
+    .max(PROSPECTING_FIELD_CONSTRAINTS.discoveryQueryMaxLength)
+    .optional(),
   marketCode: marketCodeSchema,
   countryCode: countryCodeSchema,
   locale: localeSchema,

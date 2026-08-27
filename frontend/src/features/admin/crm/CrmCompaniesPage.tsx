@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Bookmark,
@@ -62,6 +62,9 @@ export const CrmCompaniesPage: React.FC = () => {
   const toast = useToast();
   const { can } = useAuth();
   const crmPaths = useCrmSurface();
+  const location = useLocation();
+  const isListsSurface =
+    crmPaths.kind === "prospects" && location.pathname === crmPaths.lists;
   const canManageSharedViews = can("crm.configuration.manage");
   const [accounts, setAccounts] = useState<CrmAccount[]>([]);
   const [savedViews, setSavedViews] = useState<CrmSavedView[]>([]);
@@ -87,7 +90,7 @@ export const CrmCompaniesPage: React.FC = () => {
   usePageMeta({
     title: t("meta.crmCompanies.title"),
     description: t("meta.crmCompanies.description"),
-    canonicalPath: crmPaths.companies,
+    canonicalPath: isListsSurface ? crmPaths.lists : crmPaths.companies,
     noIndex: true,
   });
 
@@ -263,10 +266,13 @@ export const CrmCompaniesPage: React.FC = () => {
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-              Entreprises
+              {isListsSurface ? "Listes d’entreprises" : "Entreprises"}
             </h1>
             <p className="mt-1 text-sm text-stone-400">
-              Comptes, prospects et clients du tenant · {accounts.length} fiches
+              {isListsSurface
+                ? "Vues personnelles et partagées de l’organisation"
+                : "Comptes, prospects et clients de l’organisation"}{" "}
+              · {accounts.length} fiches
             </p>
           </div>
           <Button size="sm" onClick={() => setCreateOpen(true)}>

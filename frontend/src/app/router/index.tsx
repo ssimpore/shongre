@@ -17,8 +17,10 @@ import { routes } from "../../configuration/routes";
 // Security & RBAC Guards
 import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
 import { RequireRoutePolicy } from "../../security/components/RequireRoutePolicy";
+import { RequirePermission } from "../../security/components/RequirePermission";
 import { RequireStaffMfa } from "../../security/components/RequireStaffMfa";
 import { AdminLayout } from "../../features/admin/AdminLayout";
+import type { Permission } from "../../types";
 
 // Lazy Loaded Features
 const HomePage = lazy(() =>
@@ -612,6 +614,14 @@ const withSuspense = (Component: React.ComponentType) => (
     <Component />
   </Suspense>
 );
+const prospectsRoute = (
+  permission: Permission,
+  Component: React.ComponentType,
+) => (
+  <RequirePermission permission={permission}>
+    {withSuspense(Component)}
+  </RequirePermission>
+);
 const OrganizationFinancePage: React.FC = () => (
   <AccountFinancePage scope="organization" />
 );
@@ -663,46 +673,97 @@ export const APP_ROUTES: RouteObject[] = [
           </RequireRoutePolicy>
         ),
         children: [
-          { index: true, element: withSuspense(CrmOverviewPage) },
+          {
+            index: true,
+            element: prospectsRoute("crm.dashboard.read", CrmOverviewPage),
+          },
           {
             path: "discover",
-            element: withSuspense(ProspectsAppWorkspacePage),
+            element: prospectsRoute(
+              "crm.prospecting.read",
+              ProspectsAppWorkspacePage,
+            ),
           },
-          { path: "companies", element: withSuspense(CrmCompaniesPage) },
+          {
+            path: "companies",
+            element: prospectsRoute("crm.accounts.read", CrmCompaniesPage),
+          },
           {
             path: "companies/:id",
-            element: withSuspense(CrmCompanyDetailPage),
+            element: prospectsRoute("crm.accounts.read", CrmCompanyDetailPage),
           },
-          { path: "contacts", element: withSuspense(CrmContactsPage) },
+          {
+            path: "contacts",
+            element: prospectsRoute("crm.contacts.read", CrmContactsPage),
+          },
           {
             path: "contacts/:id",
-            element: withSuspense(CrmContactDetailPage),
+            element: prospectsRoute("crm.contacts.read", CrmContactDetailPage),
           },
-          { path: "lists", element: withSuspense(CrmCompaniesPage) },
-          { path: "pipeline", element: withSuspense(CrmPipelinePage) },
+          {
+            path: "lists",
+            element: prospectsRoute("crm.accounts.read", CrmCompaniesPage),
+          },
+          {
+            path: "pipeline",
+            element: prospectsRoute("crm.opportunities.read", CrmPipelinePage),
+          },
           {
             path: "opportunities/:id",
-            element: withSuspense(CrmOpportunityDetailPage),
+            element: prospectsRoute(
+              "crm.opportunities.read",
+              CrmOpportunityDetailPage,
+            ),
           },
-          { path: "tasks", element: withSuspense(CrmTasksPage) },
+          {
+            path: "tasks",
+            element: prospectsRoute("crm.tasks.read", CrmTasksPage),
+          },
           {
             path: "activities",
-            element: withSuspense(ProspectsActivitiesPage),
+            element: prospectsRoute(
+              "crm.activities.read",
+              ProspectsActivitiesPage,
+            ),
           },
           {
             path: "campaigns",
-            element: withSuspense(ProspectsAppWorkspacePage),
+            element: prospectsRoute(
+              "marketing.campaigns.read",
+              ProspectsAppWorkspacePage,
+            ),
           },
-          { path: "analytics", element: withSuspense(CrmReportsPage) },
+          {
+            path: "analytics",
+            element: prospectsRoute("crm.analytics.read", CrmReportsPage),
+          },
           {
             path: "sources",
-            element: withSuspense(ProspectsAppWorkspacePage),
+            element: prospectsRoute(
+              "crm.prospecting.read",
+              ProspectsAppWorkspacePage,
+            ),
           },
-          { path: "team", element: withSuspense(ProspectsTeamPage) },
-          { path: "billing", element: withSuspense(ProspectsBillingPage) },
+          {
+            path: "team",
+            element: prospectsRoute(
+              "crm.configuration.manage",
+              ProspectsTeamPage,
+            ),
+          },
+          {
+            path: "billing",
+            element: prospectsRoute(
+              "subscription.manage.own",
+              ProspectsBillingPage,
+            ),
+          },
           {
             path: "settings",
-            element: withSuspense(ProspectsAppWorkspacePage),
+            element: prospectsRoute(
+              "crm.configuration.manage",
+              ProspectsAppWorkspacePage,
+            ),
           },
         ],
       },

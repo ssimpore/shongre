@@ -43,8 +43,12 @@ by the current account, so switching personas reloads isolated state.
 - country-aware ICP and discovery request contracts;
 - deterministic multi-market candidates and source provenance;
 - evidence-backed score, confidence, missing information and next action;
+- explicit organization context, grouped desktop navigation and a compact
+  mobile section selector;
 - AI-unavailable rules fallback;
 - duplicate review and idempotent CRM import;
+- a human confirmation step before CRM creation or duplicate linking, with no
+  external message sent by the demo;
 - one idempotent conversion path that creates or links the CRM account, opens a
   qualification opportunity, schedules the next task and preserves provenance
   in the shared activity journal;
@@ -57,7 +61,8 @@ by the current account, so switching personas reloads isolated state.
   inactive;
 - responsive table/detail drawer composition using the existing design system.
 
-The product navigation is capability-driven. Customer CRM users inherit the
+The product navigation and each standalone deep link are capability-driven.
+Customer CRM users inherit the
 shared commercial CRM and Marketing editor permissions, while approval,
 platform configuration, administration and internal first-party access remain
 separate grants. Backend permission checks and RLS remain authoritative even

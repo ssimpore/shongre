@@ -104,7 +104,6 @@ interface PipelineBoardProps {
   locale: string;
   pendingActionId: string | null;
   onMove: (opportunityId: string, stageId: string) => Promise<void>;
-  expanded?: boolean;
 }
 
 function OpportunityCard({
@@ -164,7 +163,6 @@ export function PipelineBoard({
   locale,
   pendingActionId,
   onMove,
-  expanded = false,
 }: PipelineBoardProps) {
   const openStages = useMemo(
     () => pipeline?.stages.filter((stage) => stage.isOpen) ?? [],
@@ -260,11 +258,7 @@ export function PipelineBoard({
       </div>
 
       <div className="hidden overflow-x-auto lg:block">
-        <div
-          className={`grid grid-cols-5 divide-x divide-border-subtle ${
-            expanded ? "min-w-225" : "min-w-190"
-          }`}
-        >
+        <div className="flex divide-x divide-border-subtle">
           {openStages.map((stage, stageIndex) => {
             const stageOpportunities = opportunitiesForStage(stage.id);
             const stageTotal = stageOpportunities.reduce(
@@ -273,7 +267,10 @@ export function PipelineBoard({
             );
             const nextStage = openStages[stageIndex + 1];
             return (
-              <section key={stage.id} className="min-w-0 bg-bg-subtle/40 p-2.5">
+              <section
+                key={stage.id}
+                className="min-w-40 flex-1 bg-bg-subtle/40 p-2.5"
+              >
                 <div className="mb-2.5 flex items-center justify-between gap-2 px-1">
                   <h3 className="truncate text-xs font-black text-text-main">
                     {stage.name}
@@ -477,14 +474,14 @@ function CampaignCard({
 }: CampaignCardProps) {
   const canSend = preflight?.canSend === true;
   return (
-    <article className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
+    <article className="min-w-0 rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
       <div className="flex items-start gap-3">
         <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border-base bg-bg-subtle text-text-main">
           <MailCheck className="h-icon-md w-icon-md" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-black text-text-main">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h3 className="min-w-0 truncate text-sm font-black text-text-main">
               {campaign.name}
             </h3>
             <Badge
@@ -499,7 +496,7 @@ function CampaignCard({
         </div>
       </div>
       <div className="mt-4 rounded-control border border-border-subtle bg-bg-subtle p-3">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <span className="inline-flex items-center gap-1.5 text-micro font-bold text-text-secondary">
             <ShieldCheck className="h-icon-sm w-icon-sm" aria-hidden="true" />
             Pré-vol conformité
@@ -629,7 +626,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
     campaigns.find((item) => item.status === "DRAFT") ?? campaigns[0];
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <section
         aria-label="Indicateurs commerciaux"
         className="grid grid-cols-2 gap-3 xl:grid-cols-4"
@@ -899,7 +896,6 @@ export function FullPipelinePanel(props: SharedPanelProps) {
         locale={props.locale}
         pendingActionId={props.pendingActionId}
         onMove={props.onMoveOpportunity}
-        expanded
       />
       <p className="border-t border-border-subtle px-4 py-3 text-micro text-text-muted">
         Chaque transition valide l’étape, la version optimiste et ajoute une
@@ -997,7 +993,7 @@ export function CampaignsPanel(
           </Badge>
         </div>
       </section>
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid min-w-0 gap-4 lg:grid-cols-2">
         {props.campaigns.map((campaign) => (
           <CampaignCard
             key={campaign.id}

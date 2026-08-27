@@ -436,11 +436,15 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
     return account.id;
   }
 
-  private assertAvailable(): void {
+  private assertPermitted(): void {
     if (this.scenario === "permission_denied")
       throw new Error(
         "Vous n’avez pas les droits nécessaires pour cette action.",
       );
+  }
+
+  private assertAvailable(): void {
+    this.assertPermitted();
     if (this.scenario === "subscription_expired")
       throw new Error("L’abonnement Shongre Prospects a expiré.");
   }
@@ -596,10 +600,12 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
       (item) => item.company.id === input.companyId,
     );
     if (!candidate) throw new Error("Prospect introuvable.");
+    const currentEvidenceIds = new Set(
+      candidate.evidence.map((evidence) => evidence.id),
+    );
     if (
-      input.expectedEvidenceIds.some(
-        (id) => !candidate.evidence.some((evidence) => evidence.id === id),
-      )
+      input.expectedEvidenceIds.length !== currentEvidenceIds.size ||
+      input.expectedEvidenceIds.some((id) => !currentEvidenceIds.has(id))
     )
       throw new Error("Les preuves ont changé. Réexaminez le prospect.");
     const duplicateId = candidate.company.duplicateOfCrmAccountId;
@@ -636,6 +642,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   }
 
   async getUsage(_marketCode: string): Promise<ProspectingUsage> {
+    this.assertPermitted();
     const expired = this.scenario === "subscription_expired";
     const exhausted = this.scenario === "quota_exhausted";
     const nearLimit = this.scenario === "quota_near_limit";

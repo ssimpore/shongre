@@ -7,7 +7,6 @@ import {
   CircleAlert,
   Database,
   FileCheck2,
-  Filter,
   Gauge,
   ListFilter,
   MailCheck,
@@ -17,10 +16,12 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
-import type {
-  ProspectCandidate,
-  ProspectOpportunityBrief,
-  ProspectingUsage,
+import {
+  PROSPECTING_FIELD_CONSTRAINTS,
+  type LeadSourceDefinition,
+  type ProspectCandidate,
+  type ProspectOpportunityBrief,
+  type ProspectingUsage,
 } from "@shongre/contracts/prospecting";
 import {
   Badge,
@@ -36,11 +37,15 @@ import {
   Tabs,
   type DataTableColumn,
 } from "../../design-system";
+import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { useProspectingWorkspaceController } from "./useProspectingWorkspaceController";
+import {
+  useProspectingWorkspaceController,
+  type ProspectingWorkspaceView,
+} from "./useProspectingWorkspaceController";
 import {
   CampaignsPanel,
   CompaniesPanel,
@@ -56,6 +61,7 @@ export type ProspectingEntryPoint =
 export interface ProspectingWorkspacePageProps {
   entryPoint?: ProspectingEntryPoint;
   routeBasePath?: string;
+  defaultView?: ProspectingWorkspaceView;
 }
 
 const workspaceTabs = [
@@ -108,7 +114,43 @@ const workspaceTabs = [
 
 function ScoreBadge({ score }: { score: number }) {
   const variant = score >= 85 ? "success" : score >= 70 ? "warning" : "neutral";
-  return <Badge variant={variant}>{score}/100</Badge>;
+  return <Badge variant={variant}>Adéquation {score}/100</Badge>;
+}
+
+const freshnessPresentation = {
+  CURRENT: { label: "Actuelle", variant: "success" as const },
+  AGING: { label: "À actualiser bientôt", variant: "warning" as const },
+  STALE: { label: "Obsolète", variant: "warning" as const },
+  UNKNOWN: { label: "Fraîcheur inconnue", variant: "neutral" as const },
+};
+
+const sourceLifecyclePresentation = {
+  ACTIVE: { label: "Active", variant: "success" as const },
+  DEGRADED: { label: "Dégradée", variant: "warning" as const },
+  INACTIVE_REVIEW_REQUIRED: {
+    label: "Approbation requise",
+    variant: "warning" as const,
+  },
+  DISCONNECTED: { label: "Déconnectée", variant: "warning" as const },
+};
+
+const sourceOperationLabels: Record<
+  LeadSourceDefinition["operations"][number],
+  string
+> = {
+  SEARCH: "Recherche",
+  ENRICHMENT: "Enrichissement",
+  IMPORT: "Import",
+  REFRESH: "Actualisation",
+  DELETE: "Suppression",
+};
+
+function formatEvidenceDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
 }
 
 function UsageMeter({
@@ -147,12 +189,16 @@ function BriefContent({
   brief,
   loading,
   importing,
+  sources,
+  locale,
   onImport,
 }: {
   candidate: ProspectCandidate;
   brief: ProspectOpportunityBrief | null;
   loading: boolean;
   importing: boolean;
+  sources: LeadSourceDefinition[];
+  locale: string;
   onImport: () => void;
 }) {
   return (
@@ -161,7 +207,7 @@ function BriefContent({
         <div className="flex flex-wrap items-center gap-2">
           <ScoreBadge score={candidate.score.totalScore} />
           <Badge variant="neutral">
-            Confiance {candidate.score.dataConfidence}%
+            Qualité des données {candidate.score.dataConfidence}%
           </Badge>
           {candidate.company.reviewState === "DUPLICATE_REVIEW" && (
             <Badge variant="warning">Doublon à confirmer</Badge>
@@ -175,6 +221,11 @@ function BriefContent({
         </p>
       </div>
 
+      <Notice variant="info" title="Aide à la décision">
+        Le score, la synthèse et la prochaine action sont indicatifs. Aucune
+        action externe n’est déclenchée sans votre confirmation.
+      </Notice>
+
       {loading ? (
         <div className="flex items-center gap-2 rounded-control bg-bg-subtle p-4 text-xs text-text-secondary">
           <Spinner size="sm" />
@@ -183,15 +234,18 @@ function BriefContent({
       ) : brief ? (
         <>
           <section aria-labelledby="brief-known-facts" className="space-y-2">
+            <h4 className="text-xs font-black uppercase tracking-wider text-text-muted">
+              Synthèse proposée
+            </h4>
+            <p className="text-xs leading-relaxed text-text-secondary">
+              {brief.summary}
+            </p>
             <h4
               id="brief-known-facts"
               className="text-xs font-black uppercase tracking-wider text-text-muted"
             >
               Faits connus
             </h4>
-            <p className="text-xs leading-relaxed text-text-secondary">
-              {brief.summary}
-            </p>
             <ul className="space-y-2">
               {brief.knownFacts.map((fact, index) => (
                 <li
@@ -206,6 +260,29 @@ function BriefContent({
                 </li>
               ))}
             </ul>
+          </section>
+          <section aria-labelledby="brief-score-factors" className="space-y-2">
+            <h4
+              id="brief-score-factors"
+              className="text-xs font-black uppercase tracking-wider text-text-muted"
+            >
+              Pourquoi ce score
+            </h4>
+            <ul className="space-y-1.5 text-xs text-text-secondary">
+              {candidate.score.positiveFactors.map((factor) => (
+                <li key={factor.code} className="flex justify-between gap-3">
+                  <span>{factor.label}</span>
+                  <span className="shrink-0 font-bold tabular-nums text-success">
+                    +{factor.impact}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {candidate.score.missingInformation.length > 0 && (
+              <p className="rounded-control bg-warning-surface p-3 text-micro leading-relaxed text-warning">
+                À vérifier : {candidate.score.missingInformation.join(", ")}.
+              </p>
+            )}
           </section>
           <section
             aria-labelledby="brief-next-step"
@@ -233,28 +310,38 @@ function BriefContent({
         >
           Preuves et provenance
         </h4>
-        {candidate.evidence.map((evidence) => (
-          <div
-            key={evidence.id}
-            className="rounded-control border border-border-base p-3"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-xs font-bold text-text-main">
-                {evidence.title}
+        {candidate.evidence.map((evidence) => {
+          const source = sources.find((item) => item.id === evidence.sourceId);
+          const freshness = freshnessPresentation[evidence.freshness];
+          return (
+            <div
+              key={evidence.id}
+              className="rounded-control border border-border-base p-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xs font-bold text-text-main">
+                  {evidence.title}
+                </p>
+                <Badge variant={freshness.variant}>{freshness.label}</Badge>
+              </div>
+              <p className="mt-1 text-micro font-semibold text-text-secondary">
+                {source?.name ?? evidence.sourceId} · observée le{" "}
+                <time dateTime={evidence.observedAt}>
+                  {formatEvidenceDate(evidence.observedAt, locale)}
+                </time>
               </p>
-              <Badge variant="success">Actuelle</Badge>
+              {evidence.excerpt && (
+                <p className="mt-1.5 text-micro leading-relaxed text-text-muted">
+                  {evidence.excerpt}
+                </p>
+              )}
+              <p className="mt-2 text-micro text-text-muted">
+                Confiance de la preuve {Math.round(evidence.confidence * 100)} %
+                · attribution conservée
+              </p>
             </div>
-            {evidence.excerpt && (
-              <p className="mt-1.5 text-micro leading-relaxed text-text-muted">
-                {evidence.excerpt}
-              </p>
-            )}
-            <p className="mt-2 text-micro text-text-muted">
-              Confiance {Math.round(evidence.confidence * 100)} % · attribution
-              conservée
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       <Button
@@ -370,14 +457,17 @@ function UsagePanel({ usage }: { usage: ProspectingUsage | null }) {
 
 export const ProspectingWorkspacePage: React.FC<
   ProspectingWorkspacePageProps
-> = ({ entryPoint = "PRO_WORKSPACE", routeBasePath }) => {
+> = ({ entryPoint = "PRO_WORKSPACE", routeBasePath, defaultView }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const isWide = useMediaQuery("(min-width: 1024px)");
   const controller = useProspectingWorkspaceController(
     entryPoint === "INTERNAL_SHONGRE" ? "INTERNAL_SHONGRE" : "SUBSCRIBER",
     routeBasePath,
+    defaultView,
   );
+  const [pendingImportCandidate, setPendingImportCandidate] =
+    React.useState<ProspectCandidate | null>(null);
   usePageMeta({
     title: t("meta.crmAiProspecting.title"),
     description: t("meta.crmAiProspecting.description"),
@@ -474,11 +564,10 @@ export const ProspectingWorkspacePage: React.FC<
   ];
 
   const handleImport = async () => {
-    if (!controller.selectedCandidate) return;
+    if (!pendingImportCandidate) return;
     try {
-      const result = await controller.importCandidate(
-        controller.selectedCandidate,
-      );
+      const result = await controller.importCandidate(pendingImportCandidate);
+      setPendingImportCandidate(null);
       toast.success(
         result.duplicateDetected
           ? "Le prospect a été relié au compte CRM existant."
@@ -487,6 +576,19 @@ export const ProspectingWorkspacePage: React.FC<
       );
     } catch {
       toast.error("L’import n’a pas pu être finalisé.");
+    }
+  };
+
+  const requestImport = (candidate: ProspectCandidate) => {
+    setPendingImportCandidate(candidate);
+    if (!isWide) void controller.selectCandidate(null);
+  };
+
+  const closeImportConfirmation = () => {
+    const candidate = pendingImportCandidate;
+    setPendingImportCandidate(null);
+    if (!isWide && candidate) {
+      void controller.selectCandidate(candidate.company.id);
     }
   };
 
@@ -678,6 +780,9 @@ export const ProspectingWorkspacePage: React.FC<
                     <input
                       id="prospecting-query"
                       value={controller.query}
+                      maxLength={
+                        PROSPECTING_FIELD_CONSTRAINTS.discoveryQueryMaxLength
+                      }
                       onChange={(event) =>
                         controller.setQuery(event.target.value)
                       }
@@ -690,13 +795,6 @@ export const ProspectingWorkspacePage: React.FC<
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" type="button">
-                    <Filter
-                      className="h-icon-sm w-icon-sm"
-                      aria-hidden="true"
-                    />
-                    Filtres
-                  </Button>
                   <Button
                     variant="primary"
                     type="button"
@@ -715,6 +813,49 @@ export const ProspectingWorkspacePage: React.FC<
                   </Button>
                 </div>
               </div>
+              <details className="mt-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2 text-micro text-text-secondary">
+                <summary className="cursor-pointer list-none font-bold text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                  <span className="inline-flex items-center gap-2">
+                    <ListFilter
+                      className="h-icon-sm w-icon-sm text-text-muted"
+                      aria-hidden="true"
+                    />
+                    Critères appliqués
+                  </span>
+                </summary>
+                <dl className="mt-3 grid gap-2 border-t border-border-subtle pt-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <dt className="text-text-muted">Marché</dt>
+                    <dd className="font-bold text-text-main">
+                      {controller.activeMarket.name}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Profil de ciblage</dt>
+                    <dd className="font-bold text-text-main">
+                      {controller.profiles[0]?.name ?? "Profil par défaut"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Sources recherchables</dt>
+                    <dd className="font-bold text-text-main">
+                      {
+                        controller.sources.filter(
+                          (source) =>
+                            source.lifecycle === "ACTIVE" &&
+                            source.operations.includes("SEARCH"),
+                        ).length
+                      }
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-text-muted">Qualité minimale</dt>
+                    <dd className="font-bold text-text-main">
+                      Site professionnel · données actuelles
+                    </dd>
+                  </div>
+                </dl>
+              </details>
               <div
                 className="mt-3 flex flex-wrap gap-2"
                 aria-label="Exemples de recherche"
@@ -755,19 +896,44 @@ export const ProspectingWorkspacePage: React.FC<
                     >
                       Entreprises découvertes
                     </h2>
-                    <p className="mt-0.5 text-micro text-text-muted">
-                      {controller.candidates.length} résultat
-                      {controller.candidates.length > 1 ? "s" : ""} · revue
-                      humaine requise
+                    <p
+                      className="mt-0.5 text-micro text-text-muted"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {controller.hasSearched
+                        ? `${controller.discoverySummary?.measuredTotal ?? controller.candidates.length} résultat${(controller.discoverySummary?.measuredTotal ?? controller.candidates.length) > 1 ? "s" : ""} · revue humaine requise`
+                        : "Aucune découverte lancée"}
                     </p>
+                    {controller.discoverySummary && (
+                      <p className="mt-1 text-micro text-text-muted">
+                        Instantané de démonstration généré le{" "}
+                        <time
+                          dateTime={controller.discoverySummary.generatedAt}
+                        >
+                          {new Intl.DateTimeFormat(controller.currentLocale, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }).format(
+                            new Date(controller.discoverySummary.generatedAt),
+                          )}
+                        </time>{" "}
+                        · {controller.discoverySummary.sourceIds.length} source
+                        {controller.discoverySummary.sourceIds.length > 1
+                          ? "s"
+                          : ""}
+                      </p>
+                    )}
                   </div>
-                  <Badge variant="neutral">
-                    <ListFilter
-                      className="mr-1 h-icon-xs w-icon-xs"
-                      aria-hidden="true"
-                    />
-                    Score décroissant
-                  </Badge>
+                  {controller.candidates.length > 0 && (
+                    <Badge variant="neutral">
+                      <ListFilter
+                        className="mr-1 h-icon-xs w-icon-xs"
+                        aria-hidden="true"
+                      />
+                      Score décroissant
+                    </Badge>
+                  )}
                 </div>
                 {controller.searching ? (
                   <div
@@ -791,16 +957,30 @@ export const ProspectingWorkspacePage: React.FC<
                             aria-hidden="true"
                           />
                         }
-                        title="Lancez votre première découverte"
-                        description="Décrivez un type d’entreprise pour lancer une recherche sur les sources autorisées de votre organisation."
+                        title={
+                          controller.hasSearched
+                            ? "Aucun résultat vérifiable"
+                            : "Lancez votre première découverte"
+                        }
+                        description={
+                          controller.hasSearched
+                            ? "Aucune entreprise ne correspond à ces termes dans le marché et les sources actuellement autorisés. Élargissez la requête ou consultez l’exemple."
+                            : "Décrivez un type d’entreprise pour lancer une recherche sur les sources autorisées de votre organisation."
+                        }
                         action={
                           <Button
                             variant="primary"
                             onClick={() =>
-                              void controller.discover("Ateliers automobiles")
+                              void controller.discover(
+                                controller.hasSearched
+                                  ? ""
+                                  : "Ateliers automobiles",
+                              )
                             }
                           >
-                            Voir un exemple
+                            {controller.hasSearched
+                              ? "Élargir à toutes les entreprises"
+                              : "Voir un exemple"}
                           </Button>
                         }
                       />
@@ -822,7 +1002,12 @@ export const ProspectingWorkspacePage: React.FC<
                       controller.importingId ===
                       controller.selectedCandidate.company.id
                     }
-                    onImport={() => void handleImport()}
+                    sources={controller.sources}
+                    locale={controller.currentLocale}
+                    onImport={() => {
+                      const candidate = controller.selectedCandidate;
+                      if (candidate) requestImport(candidate);
+                    }}
                   />
                 </aside>
               )}
@@ -830,90 +1015,169 @@ export const ProspectingWorkspacePage: React.FC<
           </div>
         )}
 
-        {controller.view === "sources" && (
-          <div className="grid gap-3 lg:grid-cols-2">
-            {controller.sources.map((source) => (
-              <article
-                key={source.id}
-                className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-black text-text-main">
-                      {source.name}
-                    </h2>
-                    <p className="mt-1 text-xs leading-relaxed text-text-muted">
-                      {source.description}
+        {controller.view === "sources" &&
+          (controller.sources.length > 0 ? (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {controller.sources.map((source) => (
+                <article
+                  key={source.id}
+                  className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-sm font-black text-text-main">
+                        {source.name}
+                      </h2>
+                      <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                        {source.description}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={
+                        sourceLifecyclePresentation[source.lifecycle].variant
+                      }
+                    >
+                      {sourceLifecyclePresentation[source.lifecycle].label}
+                    </Badge>
+                  </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
+                    <div>
+                      <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
+                        Marchés
+                      </dt>
+                      <dd className="mt-1 font-bold text-text-main">
+                        {source.supportedMarketCodes.join(", ")}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
+                        Rétention
+                      </dt>
+                      <dd className="mt-1 font-bold text-text-main">
+                        {source.restrictions.retentionDays
+                          ? `${source.restrictions.retentionDays} jours`
+                          : "Selon contrat"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
+                        Opérations
+                      </dt>
+                      <dd className="mt-1 font-bold text-text-main">
+                        {source.operations
+                          .map((operation) => sourceOperationLabels[operation])
+                          .join(", ")}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 space-y-1 border-t border-border-subtle pt-3 text-micro leading-relaxed text-text-muted">
+                    <p>{source.healthMessage}</p>
+                    <p>
+                      Fraîcheur déclarée : {source.dataFreshnessLabel}.
+                      {source.lastHealthCheckAt && (
+                        <>
+                          {" "}
+                          Dernier contrôle le{" "}
+                          <time dateTime={source.lastHealthCheckAt}>
+                            {formatEvidenceDate(
+                              source.lastHealthCheckAt,
+                              controller.currentLocale,
+                            )}
+                          </time>
+                          .
+                        </>
+                      )}
                     </p>
                   </div>
-                  <Badge
-                    variant={
-                      source.lifecycle === "ACTIVE" ? "success" : "warning"
-                    }
-                  >
-                    {source.lifecycle === "ACTIVE"
-                      ? "Active"
-                      : "Approbation requise"}
-                  </Badge>
-                </div>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
-                      Marchés
-                    </dt>
-                    <dd className="mt-1 font-bold text-text-main">
-                      {source.supportedMarketCodes.join(", ")}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
-                      Rétention
-                    </dt>
-                    <dd className="mt-1 font-bold text-text-main">
-                      {source.restrictions.retentionDays || "Selon contrat"}{" "}
-                      jours
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-4 border-t border-border-subtle pt-3 text-micro leading-relaxed text-text-muted">
-                  {source.healthMessage}
-                </p>
-              </article>
-            ))}
-          </div>
-        )}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={
+                <Database
+                  className="h-8 w-8 text-text-muted"
+                  aria-hidden="true"
+                />
+              }
+              title="Aucune source disponible"
+              description="Aucune source de prospection n’est autorisée pour le marché actif. Aucune découverte ne sera lancée."
+              action={null}
+            />
+          ))}
 
         {controller.view === "usage" && <UsagePanel usage={controller.usage} />}
 
         {controller.view === "compliance" && (
-          <div className="grid gap-4 lg:grid-cols-2">
-            <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-              <ShieldCheck
-                className="h-6 w-6 text-success"
-                aria-hidden="true"
-              />
-              <h2 className="mt-4 text-base font-black text-text-main">
-                Contrôles avant outreach
-              </h2>
-              <ul className="mt-4 space-y-3 text-xs text-text-secondary">
-                {[
-                  "Finalité professionnelle et autorisation du tenant",
-                  "Source éligible et provenance conservée",
-                  "Quota et droits actifs",
-                  "Objections et suppressions",
-                  "Identité d’envoi vérifiée",
-                  "Lien de désinscription et fréquence",
-                ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <Check
-                      className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success"
-                      aria-hidden="true"
-                    />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </section>
+          <div className="space-y-4">
+            <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-success-surface text-success">
+                  <ShieldCheck
+                    className="h-icon-md w-icon-md"
+                    aria-hidden="true"
+                  />
+                </span>
+                <div>
+                  <h2 className="text-base font-black text-text-main">
+                    Paramètres et conformité
+                  </h2>
+                  <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                    Configuration en lecture seule dans la démonstration. Les
+                    droits du tenant et du marché restent appliqués à chaque
+                    opération.
+                  </p>
+                </div>
+              </div>
+            </header>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
+                <h3 className="text-sm font-black text-text-main">
+                  Contrôles avant prise de contact
+                </h3>
+                <ul className="mt-4 space-y-3 text-xs text-text-secondary">
+                  {[
+                    "Finalité professionnelle et autorisation du tenant",
+                    "Source éligible et provenance conservée",
+                    "Quota et droits actifs",
+                    "Objections et suppressions",
+                    "Identité d’envoi vérifiée",
+                    "Lien de désinscription et fréquence",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-2">
+                      <Check
+                        className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success"
+                        aria-hidden="true"
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
+                <h3 className="text-sm font-black text-text-main">
+                  État des intégrations
+                </h3>
+                <dl className="mt-4 divide-y divide-border-subtle text-xs">
+                  {[
+                    ["Sources externes", "Inactives"],
+                    ["Fournisseur IA", "Moteur déterministe local"],
+                    ["Envoi e-mail", "Inactif"],
+                    ["Webhooks", "Inactifs"],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between gap-3 py-3"
+                    >
+                      <dt className="text-text-muted">{label}</dt>
+                      <dd className="text-right font-bold text-text-main">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            </div>
             <Notice
               variant="warning"
               title="Activation de production distincte"
@@ -964,11 +1228,40 @@ export const ProspectingWorkspacePage: React.FC<
                 controller.importingId ===
                 controller.selectedCandidate.company.id
               }
-              onImport={() => void handleImport()}
+              sources={controller.sources}
+              locale={controller.currentLocale}
+              onImport={() => {
+                const candidate = controller.selectedCandidate;
+                if (candidate) requestImport(candidate);
+              }}
             />
           )}
         </Drawer>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(pendingImportCandidate)}
+        onClose={closeImportConfirmation}
+        onConfirm={() => void handleImport()}
+        title={
+          pendingImportCandidate?.company.reviewState === "DUPLICATE_REVIEW"
+            ? "Relier ce prospect au compte existant ?"
+            : "Ajouter ce prospect au CRM ?"
+        }
+        message={
+          pendingImportCandidate?.company.reviewState === "DUPLICATE_REVIEW"
+            ? "Cette confirmation relie l’entreprise au doublon détecté, conserve les preuves et crée le suivi commercial prévu. Aucun message externe n’est envoyé."
+            : "Cette confirmation crée l’entreprise, son opportunité de qualification et sa prochaine tâche en conservant les preuves. Aucun message externe n’est envoyé."
+        }
+        confirmText={
+          pendingImportCandidate?.company.reviewState === "DUPLICATE_REVIEW"
+            ? "Confirmer le rapprochement"
+            : "Ajouter au CRM"
+        }
+        cancelText="Revenir aux preuves"
+        variant="primary"
+        isLoading={Boolean(controller.importingId)}
+      />
 
       <footer className="flex flex-wrap items-center gap-2 text-micro leading-relaxed text-text-muted">
         <CircleAlert

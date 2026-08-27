@@ -246,6 +246,7 @@ export const DEMO_USERS: Record<string, UserProfile> = {
     bio: "Agence B2B utilisant Shongre Prospects sans activité marketplace.",
     activePlanId: "pro_business",
     enabledProducts: ["prospects"],
+    customPermissions: ["crm.configuration.manage"],
   },
   pro_immo_clara: {
     id: "user_immo_clara",

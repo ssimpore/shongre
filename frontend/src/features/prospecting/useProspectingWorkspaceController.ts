@@ -101,6 +101,7 @@ function deterministicCommandId(value: string): string {
 export function useProspectingWorkspaceController(
   operatingContext: ProspectingContext = "SUBSCRIBER",
   routeBasePath?: string,
+  defaultView: ProspectingWorkspaceView = "overview",
 ) {
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, currentCurrency } = useMarketLocation();
@@ -108,10 +109,11 @@ export function useProspectingWorkspaceController(
   const location = useLocation();
   const navigate = useNavigate();
   const rawView = params.get("view") as ProspectingWorkspaceView | null;
+  const queryParam = params.get("q") || "";
   const routedView = viewFromPathname(location.pathname, routeBasePath);
   const view =
-    routedView ?? (rawView && VIEWS.has(rawView) ? rawView : "overview");
-  const [query, setQuery] = useState(params.get("q") || "");
+    routedView ?? (rawView && VIEWS.has(rawView) ? rawView : defaultView);
+  const [query, setQuery] = useState(queryParam);
   const [profiles, setProfiles] = useState<ProspectingProfile[]>([]);
   const [sources, setSources] = useState<LeadSourceDefinition[]>([]);
   const [usage, setUsage] = useState<ProspectingUsage | null>(null);
@@ -130,6 +132,13 @@ export function useProspectingWorkspaceController(
   const [campaignPreflights, setCampaignPreflights] = useState<
     Record<string, MarketingPreflight>
   >({});
+  const [hasSearched, setHasSearched] = useState(false);
+  const [discoverySummary, setDiscoverySummary] = useState<{
+    generatedAt: string;
+    sourceIds: string[];
+    measuredTotal: number;
+    query: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [briefLoading, setBriefLoading] = useState(false);
@@ -214,6 +223,8 @@ export function useProspectingWorkspaceController(
     setSelectedCandidateId(null);
     setBrief(null);
     setCampaignPreflights({});
+    setHasSearched(false);
+    setDiscoverySummary(null);
     try {
       const operationsPromise = refreshOperations();
       const [nextProfiles, nextSources, nextUsage] = await Promise.all([
@@ -235,6 +246,17 @@ export function useProspectingWorkspaceController(
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  useEffect(() => {
+    setQuery(queryParam);
+    if (discoverySummary && discoverySummary.query !== queryParam.trim()) {
+      setCandidates([]);
+      setSelectedCandidateId(null);
+      setBrief(null);
+      setHasSearched(false);
+      setDiscoverySummary(null);
+    }
+  }, [discoverySummary, queryParam]);
 
   const setView = useCallback(
     (next: string) => {
@@ -263,6 +285,8 @@ export function useProspectingWorkspaceController(
     async (overrideQuery?: string) => {
       const activeQuery = (overrideQuery ?? query).trim();
       setSearching(true);
+      setHasSearched(true);
+      setDiscoverySummary(null);
       setError(null);
       if (overrideQuery !== undefined) setQuery(overrideQuery);
       const updated = new URLSearchParams(params);
@@ -313,11 +337,18 @@ export function useProspectingWorkspaceController(
           },
         });
         setCandidates(result.items);
+        setDiscoverySummary({
+          generatedAt: result.generatedAt,
+          sourceIds: result.sourceIds,
+          measuredTotal: result.measuredTotal,
+          query: result.appliedFilters.query ?? "",
+        });
         setSelectedCandidateId(null);
         setBrief(null);
         setUsage(await services.crmProspecting.getUsage(activeMarket.code));
       } catch (cause) {
         setCandidates([]);
+        setDiscoverySummary(null);
         setSelectedCandidateId(null);
         setError(message(cause));
       } finally {
@@ -497,6 +528,8 @@ export function useProspectingWorkspaceController(
     campaigns,
     suppressions,
     campaignPreflights,
+    hasSearched,
+    discoverySummary,
     weightedPipelineMinor,
     loading,
     searching,

@@ -123,7 +123,7 @@ export function ProspectsTeamPage() {
             </p>
           </div>
         </div>
-        <article className="mt-5 flex items-center justify-between gap-4 rounded-control border border-border-base p-4">
+        <article className="mt-5 flex min-w-0 flex-col items-start gap-3 rounded-control border border-border-base p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="min-w-0">
             <p className="truncate text-sm font-black text-text-main">
               {currentUser?.name ?? "Membre connecté"}

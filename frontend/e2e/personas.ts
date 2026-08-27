@@ -12,6 +12,7 @@ export const PERSONAS = {
   individual_buyer: { key: 'buyer_thomas', role: 'individual_buyer' },
   individual_seller: { key: 'seller_camille', role: 'individual_seller' },
   pro_seller: { key: 'pro_atelier', role: 'pro_seller' },
+  standalone_prospects: { key: 'standalone_trial_owner', role: 'pro_seller' },
   pro_immo: { key: 'pro_immo_clara', role: 'pro_seller' },
   pro_auto: { key: 'pro_auto_michel', role: 'pro_seller' },
   pro_courses: { key: 'pro_courses_sophie', role: 'pro_seller' },

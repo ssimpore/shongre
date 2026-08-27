@@ -122,6 +122,29 @@ describe("DemoProspectingService", () => {
     );
   });
 
+  it("fails closed for permission-restricted usage and discovery reads", async () => {
+    const service = new DemoProspectingService("permission_denied");
+
+    await expect(service.getUsage("FR")).rejects.toThrow("droits nécessaires");
+    await expect(service.discover(discoveryRequest)).rejects.toThrow(
+      "droits nécessaires",
+    );
+  });
+
+  it("rejects an import when the reviewed evidence snapshot is incomplete", async () => {
+    const service = new DemoProspectingService();
+    const result = await service.discover(discoveryRequest);
+
+    await expect(
+      service.importCandidate({
+        companyId: result.items[0].company.id,
+        expectedEvidenceIds: [],
+        reviewDecision: "APPROVED",
+        idempotencyKey: "d0000000-0000-4000-8000-000000000007",
+      }),
+    ).rejects.toThrow("preuves ont changé");
+  });
+
   it("converts an approved discovery into the shared CRM account, pipeline, task and activity stores", async () => {
     const crm = new DemoCrmService();
     const service = new DemoProspectingService("prospects_default", { crm });

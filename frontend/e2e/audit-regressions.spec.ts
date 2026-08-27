@@ -284,8 +284,8 @@ test.describe("listbox keyboard contract", () => {
   });
 });
 
-test.describe("drawer presentation", () => {
-  test("the CRM evidence drawer is a full-height right side sheet", async ({
+test.describe("prospect evidence presentation", () => {
+  test("keeps evidence beside results on desktop and in a mobile sheet", async ({
     page,
   }) => {
     await usePersona(page, "commercial");
@@ -296,59 +296,76 @@ test.describe("drawer presentation", () => {
     await waitForStableLayout(page);
 
     const query = page.getByRole("textbox", {
-      name: /décrivez les prospects/i,
+      name: /décrivez les entreprises recherchées/i,
     });
-    await query.fill("Boutiques de mobilier design vintage en France");
-    await page
-      .getByRole("button", { name: /lancer la prospection/i })
-      .click();
+    await query.fill("Mobilier reconditionné");
+    await page.getByRole("button", { name: "Découvrir", exact: true }).click();
 
-    const sourceAction = page
-      .getByRole("button", { name: /source/i })
-      .first();
-    await expect(sourceAction).toBeVisible();
-    await sourceAction.click();
+    const examine = page.getByRole("button", {
+      name: "Examiner Maison Seconde Vie",
+    });
+    await expect(examine).toBeVisible();
+    await examine.click();
 
-    const drawer = page.getByRole("dialog");
-    await expect(drawer).toBeVisible();
-    await expect(drawer).toContainText(/sources et justification/i);
-    await expect
-      .poll(() =>
-        drawer.evaluate((element) =>
-          Math.round(
-            element.getBoundingClientRect().right - window.innerWidth,
-          ),
-        ),
-      )
-      .toBe(0);
+    const desktopEvidence = page.getByLabel("Brief du prospect sélectionné");
+    await expect(desktopEvidence).toBeVisible();
+    await expect(desktopEvidence).toContainText("Preuves et provenance");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
 
-    const measured = await drawer.evaluate((element) => {
+    const desktopMeasured = await desktopEvidence.evaluate((element) => {
       const bounds = element.getBoundingClientRect();
       return {
         top: Math.round(bounds.top),
+        left: Math.round(bounds.left),
+        right: Math.round(bounds.right),
+        viewportWidth: window.innerWidth,
+        overflowX: document.documentElement.scrollWidth - window.innerWidth,
+      };
+    });
+
+    expect(desktopMeasured).toMatchObject({
+      overflowX: 0,
+    });
+    expect(desktopMeasured.left).toBeGreaterThanOrEqual(0);
+    expect(desktopMeasured.right).toBeLessThanOrEqual(
+      desktopMeasured.viewportWidth,
+    );
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const drawer = page.getByRole("dialog", { name: "Brief et preuves" });
+    await expect(drawer).toBeVisible();
+    await expect(drawer).toContainText("Preuves et provenance");
+
+    const mobileMeasured = await drawer.evaluate((element) => {
+      const bounds = element.getBoundingClientRect();
+      const mobileNav = document.querySelector<HTMLElement>(
+        'nav[aria-label="Navigation mobile"]',
+      );
+      return {
+        left: Math.round(bounds.left),
         right: Math.round(bounds.right),
         bottom: Math.round(bounds.bottom),
-        width: Math.round(bounds.width),
+        mobileNavTop: mobileNav
+          ? Math.round(mobileNav.getBoundingClientRect().top)
+          : window.innerHeight,
         viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
         focusInside: element.contains(document.activeElement),
         overflowX: document.documentElement.scrollWidth - window.innerWidth,
       };
     });
 
-    expect(measured).toMatchObject({
-      top: 0,
-      right: measured.viewportWidth,
-      bottom: measured.viewportHeight,
+    expect(mobileMeasured).toMatchObject({
+      left: 0,
+      right: mobileMeasured.viewportWidth,
       focusInside: true,
       overflowX: 0,
     });
-    expect(measured.width).toBeGreaterThanOrEqual(400);
-    expect(measured.width).toBeLessThanOrEqual(512);
+    expect(mobileMeasured.bottom).toBeLessThanOrEqual(
+      mobileMeasured.mobileNavTop,
+    );
 
     await page.keyboard.press("Escape");
     await expect(drawer).toHaveCount(0);
-    await expect(sourceAction).toBeFocused();
   });
 });
 
