@@ -12,6 +12,7 @@ import { demoCrmService } from "../adapters/demo/demo-crm.service";
 import { demoEmploymentService } from "../adapters/demo/demo-employment.service";
 import { demoFeatureFlagService } from "../adapters/demo/demo-feature-flag.service";
 import { demoFinanceService } from "../adapters/demo/demo-finance.service";
+import { demoInvoicingService } from "../adapters/demo/demo-invoicing.service";
 import { demoListingsService } from "../adapters/demo/demo-listings.service";
 import { demoMarketingService } from "../adapters/demo/demo-marketing.service";
 import { demoMarketsService } from "../adapters/demo/demo-markets.service";
@@ -43,6 +44,7 @@ import { httpCrmService } from "../adapters/http/http-crm.service";
 import { httpEmploymentService } from "../adapters/http/http-employment.service";
 import { httpFeatureFlagService } from "../adapters/http/http-feature-flag.service";
 import { httpFinanceService } from "../adapters/http/http-finance.service";
+import { httpInvoicingService } from "../adapters/http/http-invoicing.service";
 import { httpListingsService } from "../adapters/http/http-listings.service";
 import { httpMarketingService } from "../adapters/http/http-marketing.service";
 import { httpMarketsService } from "../adapters/http/http-markets.service";
@@ -75,6 +77,7 @@ import type { CrmServiceContract } from "../contracts/crm.contract";
 import type { EmploymentServiceContract } from "../contracts/employment.contract";
 import type { FeatureFlagServiceContract } from "../contracts/feature-flags.contract";
 import type { FinanceServiceContract } from "../contracts/finance.contract";
+import type { InvoicingServiceContract } from "../contracts/invoicing.contract";
 import type { ListingsServiceContract } from "../contracts/listings.contract";
 import type { MarketingServiceContract } from "../contracts/marketing.contract";
 import type { MarketsServiceContract } from "../contracts/markets.contract";
@@ -126,6 +129,7 @@ export interface ServiceRegistry {
   crmProspecting: CrmProspectingServiceContract;
   marketing: MarketingServiceContract;
   analytics: AnalyticsServiceContract;
+  invoicing: InvoicingServiceContract;
 }
 
 export function createServiceRegistry(
@@ -173,6 +177,7 @@ export function createServiceRegistry(
       : httpCrmProspectingService,
     marketing: useDemo ? demoMarketingService : httpMarketingService,
     analytics: useDemo ? demoAnalyticsService : httpAnalyticsService,
+    invoicing: useDemo ? demoInvoicingService : httpInvoicingService,
   };
 }
 

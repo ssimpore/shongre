@@ -24,6 +24,8 @@ export * from "./schemas/crm";
 export * from "./schemas/prospecting";
 export * from "./schemas/marketing";
 export * from "./schemas/analytics";
+export * from "./schemas/invoicing";
+export * from "./schemas/product-access";
 export * from "./schemas/provider-connections";
 export * from "./provider-gateways";
 export * from "./market-country";

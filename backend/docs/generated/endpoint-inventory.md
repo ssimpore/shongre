@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **421**
-- Specification SHA-256: `1a81d0834c986eb0`
+- Operations: **434**
+- Specification SHA-256: `44b5712d893f0bdc`
 
 ## account
 
@@ -371,6 +371,24 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/home/trending` | `getHomeTrending` | `public` | — | `200` |
+
+## invoicing
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/invoicing/activation` | `activateInvoicingForCurrentOrganization` | `permission` | `subscription.manage.own` | `200` |
+| `GET` | `/invoicing/invoices/{invoiceId}/document` | `getInvoicingDocument` | `permission` | `invoice.read` | `200` |
+| `POST` | `/invoicing/invoices/{invoiceId}/finalize` | `finalizeInvoicingInvoice` | `permission` | `invoice.finalize` | `200` |
+| `GET` | `/invoicing/invoices/{invoiceId}` | `getInvoicingInvoice` | `permission` | `invoice.read` | `200` |
+| `PUT` | `/invoicing/invoices/{invoiceId}` | `updateInvoicingInvoiceDraft` | `permission` | `invoice.create` | `200` |
+| `GET` | `/invoicing/invoices` | `listInvoicingInvoices` | `permission` | `invoice.read` | `200` |
+| `POST` | `/invoicing/invoices` | `createInvoicingInvoice` | `permission` | `invoice.create` | `201` |
+| `POST` | `/invoicing/legal-entities/from-organization` | `bootstrapInvoicingLegalEntityFromOrganization` | `permission` | `invoicing.tenant.manage` | `200` |
+| `GET` | `/invoicing/legal-entities` | `listInvoicingLegalEntities` | `permission` | `invoice.read` | `200` |
+| `POST` | `/invoicing/legal-entities` | `createInvoicingLegalEntity` | `permission` | `invoicing.tenant.manage` | `201` |
+| `GET` | `/invoicing/parties` | `listInvoicingParties` | `permission` | `invoice.read` | `200` |
+| `POST` | `/invoicing/parties` | `createInvoicingParty` | `permission` | `invoice.party.manage` | `201` |
+| `GET` | `/invoicing/workspace` | `getInvoicingWorkspace` | `permission` | `invoice.read` | `200` |
 
 ## listing-drafts
 

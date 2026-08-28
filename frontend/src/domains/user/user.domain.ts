@@ -20,20 +20,38 @@ export interface UserClassification {
 
 export function hasProductAccess(
   user: UserClassification | null | undefined,
-  productId: "marketplace" | "prospects",
+  productId: "marketplace" | "prospects" | "facturation",
 ): boolean {
-  if (!user || user.enabledProducts === undefined) return true;
+  if (!user) return true;
+  // Legacy authenticated profiles keep only their historical marketplace
+  // surface. Separately sold products always require an explicit projection.
+  if (user.enabledProducts === undefined) return productId === "marketplace";
   return user.enabledProducts.includes(productId);
+}
+
+export function isProductOnlyAccount(
+  user: UserClassification | null | undefined,
+  productId: "marketplace" | "prospects" | "facturation",
+): boolean {
+  return Boolean(
+    user?.enabledProducts &&
+    hasProductAccess(user, productId) &&
+    user.enabledProducts.every(
+      (enabledProduct) => enabledProduct === productId,
+    ),
+  );
 }
 
 export function isProspectsOnlyAccount(
   user: UserClassification | null | undefined,
 ): boolean {
-  return Boolean(
-    user &&
-      hasProductAccess(user, "prospects") &&
-      !hasProductAccess(user, "marketplace"),
-  );
+  return isProductOnlyAccount(user, "prospects");
+}
+
+export function isFacturationOnlyAccount(
+  user: UserClassification | null | undefined,
+): boolean {
+  return isProductOnlyAccount(user, "facturation");
 }
 
 export function isInternalAccount(

@@ -126,6 +126,10 @@
       "description": "Operations owned by the finance API domain."
     },
     {
+      "name": "invoicing",
+      "description": "Tenant-isolated, market-scoped invoice authoring, finalization and immutable document access. Electronic transport remains configuration-gated."
+    },
+    {
       "name": "home",
       "description": "Operations owned by the home API domain."
     },
@@ -515,9 +519,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "$ref": "#/components/schemas/RegistrationInput"
               }
             }
           }
@@ -29578,6 +29580,233 @@
         "x-shongre-permission": "store.manage.own"
       }
     },
+    "/invoicing/activation": {
+      "post": {
+        "operationId": "activateInvoicingForCurrentOrganization",
+        "tags": ["invoicing"],
+        "summary": "Complete Facturation provisioning for an entitled organization",
+        "description": "Never grants commercial access. It succeeds only when the shared monetization system already exposes an active invoicing.enabled entitlement.",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false } } } },
+        "responses": {
+          "200": { "description": "Active Facturation product access.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingProductAccess" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "subscription.manage.own", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/workspace": {
+      "get": {
+        "operationId": "getInvoicingWorkspace",
+        "tags": ["invoicing"],
+        "summary": "Get the invoicing workspace for the active market",
+        "description": "Returns only tenants visible to the principal. Production and electronic-transport readiness fail closed when external configuration is missing.",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Workspace projection.", "headers": { "X-Request-Id": { "$ref": "#/components/headers/RequestId" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingWorkspace" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "invoice.read",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/legal-entities": {
+      "get": {
+        "operationId": "listInvoicingLegalEntities",
+        "tags": ["invoicing"],
+        "summary": "List legal entities in an accessible tenant",
+        "parameters": [
+          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } },
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Legal entities.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingLegalEntity" } } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "post": {
+        "operationId": "createInvoicingLegalEntity",
+        "tags": ["invoicing"],
+        "summary": "Create a legal entity",
+        "parameters": [{ "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingLegalEntityInput" } } } },
+        "responses": {
+          "201": { "description": "Legal entity created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingLegalEntity" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoicing.tenant.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/legal-entities/from-organization": {
+      "post": {
+        "operationId": "bootstrapInvoicingLegalEntityFromOrganization",
+        "tags": ["invoicing"],
+        "summary": "Create the first legal entity from shared organization facts",
+        "description": "Idempotently reuses the organization legal name, address and country-aware business identifier. Requires an active Facturation entitlement and never grants product access.",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingLegalEntityBootstrapInput" } } } },
+        "responses": {
+          "200": { "description": "Existing or newly bootstrapped legal entity.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingLegalEntity" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoicing.tenant.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/parties": {
+      "get": {
+        "operationId": "listInvoicingParties",
+        "tags": ["invoicing"],
+        "summary": "List customer and supplier profiles",
+        "parameters": [
+          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } },
+          { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Parties.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingParty" } } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "post": {
+        "operationId": "createInvoicingParty",
+        "tags": ["invoicing"],
+        "summary": "Create a customer or supplier profile",
+        "parameters": [{ "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingPartyInput" } } } },
+        "responses": {
+          "201": { "description": "Party created.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingParty" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.party.manage", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/invoices": {
+      "get": {
+        "operationId": "listInvoicingInvoices",
+        "tags": ["invoicing"],
+        "summary": "List invoices in an accessible tenant",
+        "parameters": [
+          { "name": "tenantId", "in": "query", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 50 } },
+          { "name": "cursor", "in": "query", "required": false, "schema": { "type": "string", "minLength": 1 } },
+          { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Cursor page of invoices.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoicePage" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "post": {
+        "operationId": "createInvoicingInvoice",
+        "tags": ["invoicing"],
+        "summary": "Create an invoice draft",
+        "description": "Creates a market-scoped draft. Tax and total computation is authoritative in the invoicing service.",
+        "parameters": [
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "minLength": 8, "maxLength": 255 } },
+          { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoiceInput" } } } },
+        "responses": {
+          "201": { "description": "Invoice draft created or idempotently replayed.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoice" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.create", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/invoices/{invoiceId}": {
+      "get": {
+        "operationId": "getInvoicingInvoice",
+        "tags": ["invoicing"],
+        "summary": "Get an invoice",
+        "parameters": [{ "name": "invoiceId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } }, { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": { "description": "Invoice.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoice" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "put": {
+        "operationId": "updateInvoicingInvoiceDraft",
+        "tags": ["invoicing"],
+        "summary": "Update an editable invoice draft",
+        "description": "Replaces editable draft fields and lines with optimistic version control. Finalized invoices remain immutable.",
+        "parameters": [
+          { "name": "invoiceId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } },
+          { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoiceUpdateInput" } } } },
+        "responses": {
+          "200": { "description": "Updated invoice draft.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoice" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.create", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/invoices/{invoiceId}/finalize": {
+      "post": {
+        "operationId": "finalizeInvoicingInvoice",
+        "tags": ["invoicing"],
+        "summary": "Finalize an invoice and assign its immutable legal number",
+        "description": "Runs the one-writer short transaction. It does not call a provider or claim electronic acceptance.",
+        "parameters": [
+          { "name": "invoiceId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "minLength": 8, "maxLength": 255 } },
+          { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingFinalizeInput" } } } },
+        "responses": {
+          "200": { "description": "Finalized invoice or idempotent replay.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingInvoice" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "409": { "$ref": "#/components/responses/Conflict" }, "422": { "$ref": "#/components/responses/UnprocessableEntity" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.finalize", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/invoicing/invoices/{invoiceId}/document": {
+      "get": {
+        "operationId": "getInvoicingDocument",
+        "tags": ["invoicing"],
+        "summary": "Get the immutable human-readable invoice derivative",
+        "description": "Phase 1 returns a digest-bound text derivative. It is explicitly not represented as a legal PDF or electronic original.",
+        "parameters": [{ "name": "invoiceId", "in": "path", "required": true, "schema": { "type": "string", "minLength": 1, "maxLength": 160 } }, { "$ref": "#/components/parameters/MarketContext" }, { "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": { "description": "Immutable human-readable derivative and provenance.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InvoicingDocument" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "404": { "$ref": "#/components/responses/NotFound" }, "429": { "$ref": "#/components/responses/TooManyRequests" }, "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission", "x-shongre-permission": "invoice.read", "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/workspace/summary/{userId}": {
       "get": {
         "operationId": "getWorkspaceSummaryByUserId",
@@ -29742,6 +29971,384 @@
             "additionalProperties": true
           }
         ]
+      },
+      "InvoicingMoney": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["amountMinor", "currency"],
+        "properties": {
+          "amountMinor": { "type": "integer" },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+        }
+      },
+      "RegistrationInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["email", "name", "role", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "role": { "type": "string", "enum": ["individual_buyer", "individual_seller", "pro_seller"] },
+          "password": { "type": "string", "format": "password", "minLength": 8, "writeOnly": true },
+          "companyName": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "professionalVertical": { "type": "string", "enum": ["generic", "real_estate", "automotive", "education", "employment"] },
+          "siret": { "type": "string", "minLength": 1, "maxLength": 180, "description": "Country-specific business registration identifier; legacy field name retained for compatibility." },
+          "phone": { "type": "string", "maxLength": 50 },
+          "legalForm": { "type": "string", "maxLength": 120 },
+          "vatNumber": { "type": "string", "maxLength": 30 },
+          "businessAddress": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "city": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "postalCode": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "country": { "$ref": "#/components/schemas/MarketCode" },
+          "productIntent": { "type": "string", "enum": ["prospects", "facturation"], "description": "Acquisition attribution only. It never grants a product entitlement." }
+        }
+      },
+      "InvoicingPostalAddress": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["line1", "postalCode", "city", "countryCode"],
+        "properties": {
+          "line1": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "line2": { "type": "string", "maxLength": 240 },
+          "postalCode": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "city": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" }
+        }
+      },
+      "InvoicingIdentifierInput": {
+        "type": "object",
+        "required": ["type", "countryCode", "value"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "value": { "type": "string", "minLength": 1, "maxLength": 180 },
+          "issuingAuthority": { "type": "string", "maxLength": 180 }
+        }
+      },
+      "InvoicingIdentifier": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvoicingIdentifierInput" },
+          {
+            "type": "object",
+            "required": ["id", "verificationStatus"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "rejected", "expired"] },
+              "verifiedAt": { "type": "string", "format": "date-time" },
+              "verificationSource": { "type": "string", "maxLength": 160 }
+            }
+          }
+        ]
+      },
+      "InvoicingLegalEntityInput": {
+        "type": "object",
+        "required": ["tenantId", "legalName", "countryCode", "defaultMarketCode", "defaultCurrency", "defaultLocale", "timezone", "registeredAddress", "identifiers"],
+        "properties": {
+          "tenantId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "legalName": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "tradingName": { "type": "string", "maxLength": 240 },
+          "legalForm": { "type": "string", "maxLength": 120 },
+          "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "defaultMarketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "defaultCurrency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "defaultLocale": { "type": "string", "minLength": 2, "maxLength": 32 },
+          "timezone": { "type": "string", "minLength": 3, "maxLength": 80 },
+          "registeredAddress": { "$ref": "#/components/schemas/InvoicingPostalAddress" },
+          "identifiers": { "type": "array", "maxItems": 20, "items": { "$ref": "#/components/schemas/InvoicingIdentifierInput" } }
+        }
+      },
+      "InvoicingLegalEntityBootstrapInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tenantId", "marketCode"],
+        "properties": {
+          "tenantId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" }
+        }
+      },
+      "InvoicingLegalEntity": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvoicingLegalEntityInput" },
+          {
+            "type": "object",
+            "required": ["id", "scope", "verificationStatus", "createdAt", "updatedAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "scope": { "type": "string", "const": "MULTI_MARKET_SHARED" },
+              "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "rejected"] },
+              "identifiers": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingIdentifier" } },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "InvoicingPartyInput": {
+        "type": "object",
+        "required": ["tenantId", "kind", "roles", "legalName", "billingAddress", "locale", "preferredCurrency", "paymentTermsDays", "identifiers"],
+        "properties": {
+          "tenantId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "kind": { "type": "string", "enum": ["company", "association", "sole_proprietor", "public_body", "individual", "foreign_entity"] },
+          "roles": { "type": "array", "minItems": 1, "items": { "type": "string", "enum": ["customer", "supplier"] } },
+          "legalName": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "tradingName": { "type": "string", "maxLength": 240 },
+          "billingAddress": { "$ref": "#/components/schemas/InvoicingPostalAddress" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string", "maxLength": 40 },
+          "locale": { "type": "string", "minLength": 2, "maxLength": 32 },
+          "preferredCurrency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "paymentTermsDays": { "type": "integer", "minimum": 0, "maximum": 365, "default": 30 },
+          "identifiers": { "type": "array", "maxItems": 20, "items": { "$ref": "#/components/schemas/InvoicingIdentifierInput" } }
+        }
+      },
+      "InvoicingParty": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvoicingPartyInput" },
+          {
+            "type": "object",
+            "required": ["id", "scope", "createdAt", "updatedAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "scope": { "type": "string", "const": "MULTI_MARKET_SHARED" },
+              "identifiers": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingIdentifier" } },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "InvoicingLineInput": {
+        "type": "object",
+        "required": ["description", "quantity", "unit", "unitPriceMinorDecimal", "taxRateBps", "taxCategory"],
+        "properties": {
+          "description": { "type": "string", "minLength": 1, "maxLength": 1000 },
+          "quantity": { "type": "string", "pattern": "^(0|[1-9]\\d{0,17})(\\.\\d{1,6})?$" },
+          "unit": { "type": "string", "minLength": 1, "maxLength": 40 },
+          "unitPriceMinorDecimal": { "type": "string", "pattern": "^(0|[1-9]\\d{0,17})(\\.\\d{1,6})?$" },
+          "taxRateBps": { "type": "integer", "minimum": 0, "maximum": 100000 },
+          "taxCategory": { "type": "string", "enum": ["STANDARD", "REDUCED", "ZERO", "EXEMPT", "REVERSE_CHARGE", "OUT_OF_SCOPE"] },
+          "exemptionReasonCode": { "type": "string", "maxLength": 80 },
+          "exemptionReason": { "type": "string", "maxLength": 500 }
+        }
+      },
+      "InvoicingLine": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvoicingLineInput" },
+          {
+            "type": "object",
+            "required": ["id", "position", "netAmountMinor", "taxAmountMinor", "grossAmountMinor"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "position": { "type": "integer", "minimum": 1 },
+              "netAmountMinor": { "type": "integer" },
+              "taxAmountMinor": { "type": "integer" },
+              "grossAmountMinor": { "type": "integer" }
+            }
+          }
+        ]
+      },
+      "InvoicingTaxBreakdown": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["taxRateBps", "taxCategory", "taxableAmountMinor", "taxAmountMinor"],
+        "properties": {
+          "taxRateBps": { "type": "integer", "minimum": 0, "maximum": 100000 },
+          "taxCategory": { "type": "string", "enum": ["STANDARD", "REDUCED", "ZERO", "EXEMPT", "REVERSE_CHARGE", "OUT_OF_SCOPE"] },
+          "taxableAmountMinor": { "type": "integer" },
+          "taxAmountMinor": { "type": "integer" }
+        }
+      },
+      "InvoicingInvoiceInput": {
+        "type": "object",
+        "required": ["tenantId", "legalEntityId", "customerPartyId", "documentType", "marketCode", "countryCode", "locale", "timezone", "currency", "issueDate", "dueDate", "origin", "lines"],
+        "properties": {
+          "tenantId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "legalEntityId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "customerPartyId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "documentType": { "type": "string", "enum": ["standard_invoice", "deposit_invoice", "final_invoice", "recurring_invoice", "credit_note", "supplier_invoice"] },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "locale": { "type": "string", "minLength": 2, "maxLength": 32 },
+          "timezone": { "type": "string", "minLength": 3, "maxLength": 80 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "issueDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date" },
+          "servicePeriodStart": { "type": "string", "format": "date" },
+          "servicePeriodEnd": { "type": "string", "format": "date" },
+          "purchaseOrderReference": { "type": "string", "maxLength": 160 },
+          "customerReference": { "type": "string", "maxLength": 160 },
+          "notes": { "type": "string", "maxLength": 4000 },
+          "origin": { "type": "string", "enum": ["MANUAL", "SHONGRE_SUBSCRIPTION", "MARKETPLACE_COMMISSION", "API", "RECURRING", "IMPORT", "EXTERNAL_INTEGRATION"] },
+          "relatedInvoiceId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "lines": { "type": "array", "minItems": 1, "maxItems": 500, "items": { "$ref": "#/components/schemas/InvoicingLineInput" } }
+        }
+      },
+      "InvoicingProductAccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["organizationId", "productId", "entitlementKey", "status", "accessMode", "planName", "source", "cancelAtPeriodEnd", "seats", "capabilities"],
+        "properties": {
+          "organizationId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "productId": { "type": "string", "const": "facturation" },
+          "entitlementKey": { "type": "string", "const": "invoicing.enabled" },
+          "status": { "type": "string", "enum": ["trialing", "active", "past_due", "paused", "cancellation_pending", "cancelled", "expired", "not_entitled"] },
+          "accessMode": { "type": "string", "enum": ["STANDALONE", "ADD_ON", "BUNDLED", "INTERNAL_SHONGRE"] },
+          "planName": { "type": "string", "minLength": 1, "maxLength": 180 },
+          "source": { "type": "string", "enum": ["subscription", "trial", "complimentary_grant", "bundle", "internal"] },
+          "activatedAt": { "type": "string", "format": "date-time" },
+          "currentPeriodEndsAt": { "type": "string", "format": "date-time" },
+          "cancelAtPeriodEnd": { "type": "boolean" },
+          "seats": { "type": "integer", "minimum": 1 },
+          "capabilities": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "InvoicingInvoiceUpdateInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expectedVersion", "customerPartyId", "issueDate", "dueDate", "lines"],
+        "properties": {
+          "expectedVersion": { "type": "integer", "minimum": 1 },
+          "customerPartyId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "issueDate": { "type": "string", "format": "date" },
+          "dueDate": { "type": "string", "format": "date" },
+          "servicePeriodStart": { "type": "string", "format": "date" },
+          "servicePeriodEnd": { "type": "string", "format": "date" },
+          "purchaseOrderReference": { "type": "string", "maxLength": 160 },
+          "customerReference": { "type": "string", "maxLength": 160 },
+          "notes": { "type": "string", "maxLength": 4000 },
+          "lines": { "type": "array", "minItems": 1, "maxItems": 500, "items": { "$ref": "#/components/schemas/InvoicingLineInput" } }
+        }
+      },
+      "InvoicingInvoice": {
+        "allOf": [
+          { "$ref": "#/components/schemas/InvoicingInvoiceInput" },
+          {
+            "type": "object",
+            "required": ["id", "scope", "commercialState", "electronicState", "paymentState", "accountingExportState", "customerReviewState", "lines", "taxBreakdowns", "subtotal", "taxTotal", "total", "outstanding", "version", "createdAt", "updatedAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "scope": { "type": "string", "const": "MARKET_SCOPED" },
+              "number": { "type": "string", "maxLength": 120 },
+              "commercialState": { "type": "string", "enum": ["DRAFT", "VALIDATION_REQUIRED", "READY_TO_FINALIZE", "FINALIZED", "FINALIZATION_FAILED", "CREDITED"] },
+              "electronicState": { "type": "string", "enum": ["NOT_APPLICABLE", "NOT_REQUESTED", "CONFIGURATION_REQUIRED", "VALIDATION_PENDING", "VALIDATION_FAILED", "READY_TO_SUBMIT", "SUBMISSION_PENDING", "SUBMITTED_UNCONFIRMED", "ACCEPTED", "REJECTED", "REFUSED", "MANUAL_RECONCILIATION"] },
+              "paymentState": { "type": "string", "enum": ["UNPAID", "PARTIALLY_PAID", "PAID", "OVERPAID", "PARTIALLY_REFUNDED", "REFUNDED"] },
+              "accountingExportState": { "type": "string", "enum": ["NOT_EXPORTED", "EXPORT_PENDING", "EXPORTED"] },
+              "customerReviewState": { "type": "string", "enum": ["NOT_REQUESTED", "PENDING", "ACCEPTED", "DISPUTED"] },
+              "lines": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingLine" } },
+              "taxBreakdowns": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingTaxBreakdown" } },
+              "subtotal": { "$ref": "#/components/schemas/InvoicingMoney" },
+              "taxTotal": { "$ref": "#/components/schemas/InvoicingMoney" },
+              "total": { "$ref": "#/components/schemas/InvoicingMoney" },
+              "outstanding": { "$ref": "#/components/schemas/InvoicingMoney" },
+              "version": { "type": "integer", "minimum": 1 },
+              "snapshotDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "finalizedAt": { "type": "string", "format": "date-time" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ]
+      },
+      "InvoicingInvoicePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "pageInfo"],
+        "properties": {
+          "items": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingInvoice" } },
+          "pageInfo": {
+            "type": "object", "additionalProperties": false, "required": ["hasNextPage"],
+            "properties": { "hasNextPage": { "type": "boolean" }, "nextCursor": { "type": "string" } }
+          }
+        }
+      },
+      "InvoicingFinalizeInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expectedVersion"],
+        "properties": { "expectedVersion": { "type": "integer", "minimum": 1 } }
+      },
+      "InvoicingDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "invoiceId", "fileName", "mediaType", "format", "legalOriginal", "digestAlgorithm", "digest", "generatorVersion", "templateVersion", "complianceRulesetVersion", "generatedAt", "content"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "invoiceId": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "fileName": { "type": "string", "minLength": 1, "maxLength": 240 },
+          "mediaType": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "format": { "type": "string", "enum": ["TEXT_V1", "PDF", "FACTUR_X", "UBL", "CII"] },
+          "legalOriginal": { "type": "boolean" },
+          "digestAlgorithm": { "type": "string", "const": "SHA-256" },
+          "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "generatorVersion": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "templateVersion": { "type": "string", "minLength": 1, "maxLength": 80 },
+          "complianceRulesetVersion": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "content": { "type": "string" }
+        }
+      },
+      "InvoicingWorkspace": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scope", "activeMarketCode", "tenants", "legalEntities", "recentInvoices", "readiness", "electronicTransport"],
+        "properties": {
+          "scope": { "type": "string", "const": "MULTI_MARKET_SHARED" },
+          "activeMarketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "tenants": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false, "required": ["id", "legalName", "countryCode", "membershipRole", "capabilities", "productAccess"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+                "legalName": { "type": "string", "minLength": 1, "maxLength": 240 },
+                "countryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+                "membershipRole": { "type": "string", "minLength": 1, "maxLength": 40 },
+                "capabilities": { "type": "array", "items": { "type": "string" } },
+                "productAccess": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["organizationId", "productId", "entitlementKey", "status", "accessMode", "planName", "source", "cancelAtPeriodEnd", "seats", "capabilities"],
+                  "properties": {
+                    "organizationId": { "type": "string", "minLength": 1, "maxLength": 160 },
+                    "productId": { "type": "string", "const": "facturation" },
+                    "entitlementKey": { "type": "string", "const": "invoicing.enabled" },
+                    "status": { "type": "string", "enum": ["trialing", "active", "past_due", "paused", "cancellation_pending", "cancelled", "expired", "not_entitled"] },
+                    "accessMode": { "type": "string", "enum": ["STANDALONE", "ADD_ON", "BUNDLED", "INTERNAL_SHONGRE"] },
+                    "planName": { "type": "string", "minLength": 1, "maxLength": 180 },
+                    "source": { "type": "string", "enum": ["subscription", "trial", "complimentary_grant", "bundle", "internal"] },
+                    "activatedAt": { "type": "string", "format": "date-time" },
+                    "currentPeriodEndsAt": { "type": "string", "format": "date-time" },
+                    "cancelAtPeriodEnd": { "type": "boolean" },
+                    "seats": { "type": "integer", "minimum": 1 },
+                    "capabilities": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "legalEntities": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingLegalEntity" } },
+          "recentInvoices": { "type": "array", "items": { "$ref": "#/components/schemas/InvoicingInvoice" } },
+          "readiness": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false, "required": ["key", "label", "status", "blocking"],
+              "properties": {
+                "key": { "type": "string", "minLength": 1, "maxLength": 100 },
+                "label": { "type": "string", "minLength": 1, "maxLength": 240 },
+                "status": { "type": "string", "enum": ["missing", "configured", "externally_verified", "sandbox_tested", "production_tested", "legally_reviewed", "not_applicable"] },
+                "blocking": { "type": "boolean" }
+              }
+            }
+          },
+          "electronicTransport": {
+            "type": "object", "additionalProperties": false, "required": ["mode", "status"],
+            "properties": {
+              "mode": { "type": "string", "const": "COMPATIBLE_SOLUTION" },
+              "status": { "type": "string", "enum": ["CONFIGURATION_REQUIRED", "SANDBOX_ONLY", "COMING_SOON", "SUPPORTED"] },
+              "providerId": { "type": "string" }
+            }
+          }
+        }
       },
       "MarketCode": {
         "type": "string",

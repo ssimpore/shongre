@@ -24,6 +24,7 @@ import {
   HttpCommissionService,
   HttpCrmService,
   HttpCrmProspectingService,
+  HttpInvoicingService,
 } from "../adapters/http";
 import {
   DemoListingsService,
@@ -44,6 +45,7 @@ import {
   DemoCommissionService,
   DemoCrmService,
   DemoProspectingService,
+  DemoInvoicingService,
 } from "../adapters/demo";
 
 describe("Service Registry & API Adapter Boundary", () => {
@@ -79,6 +81,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(registry.crmProspecting instanceof DemoProspectingService).toBe(
       true,
     );
+    expect(registry.invoicing instanceof DemoInvoicingService).toBe(true);
   });
 
   it("instantiates the service registry in api mode when configured", () => {
@@ -110,6 +113,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(
       apiRegistry.crmProspecting instanceof HttpCrmProspectingService,
     ).toBe(true);
+    expect(apiRegistry.invoicing instanceof HttpInvoicingService).toBe(true);
   });
 
   it("rebinds the stable registry object when the central mode changes", () => {
@@ -123,6 +127,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(services.crmProspecting instanceof HttpCrmProspectingService).toBe(
       true,
     );
+    expect(services.invoicing instanceof HttpInvoicingService).toBe(true);
 
     activateServiceRegistry("demo");
     expect(services).toBe(stableRegistry);
@@ -132,6 +137,7 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(services.crmProspecting instanceof DemoProspectingService).toBe(
       true,
     );
+    expect(services.invoicing instanceof DemoInvoicingService).toBe(true);
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {

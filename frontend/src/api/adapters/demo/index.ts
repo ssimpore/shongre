@@ -31,3 +31,4 @@ export {
   demoCrmProspectingService,
 } from "./demo-prospecting.service";
 export * from "./demo-marketing.service";
+export * from "./demo-invoicing.service";

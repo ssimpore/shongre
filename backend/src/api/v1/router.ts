@@ -43,6 +43,7 @@ import {
   marketingTrackingService,
   marketingProviderWebhookService,
   analyticsService,
+  invoicingService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -320,9 +321,30 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // AUTH ROUTES
     // --------------------------------------------------------------------------
-    this.addRoute("GET", "/auth/me", PUBLIC, async ({ principal }) =>
-      authService.getCurrentUser(principal),
-    );
+    this.addRoute("GET", "/auth/me", PUBLIC, async ({ principal }) => {
+      const user = await authService.getCurrentUser(principal);
+      if (!user) return null;
+      const facturationAccess =
+        await invoicingService.productAccessForUser(user.id);
+      const facturationEnabled = facturationAccess.length > 0;
+      const facturationOnly =
+        facturationEnabled &&
+        facturationAccess.every(
+          (access) => access.accessMode === "STANDALONE",
+        );
+      const baselineProducts =
+        user.enabledProducts ??
+        (facturationOnly ? ([] as const) : (["marketplace"] as const));
+      return {
+        ...user,
+        enabledProducts: Array.from(
+          new Set([
+            ...baselineProducts,
+            ...(facturationEnabled ? (["facturation"] as const) : []),
+          ]),
+        ),
+      };
+    });
     this.addRoute(
       "POST",
       "/auth/domain-handoff/start",
@@ -3586,6 +3608,225 @@ export class ApiV1Router {
       permission("marketing.campaigns.create"),
       async ({ principal, body }) =>
         marketingOperationsService.aiAssist(principal, body),
+    );
+
+    // --------------------------------------------------------------------------
+    // INVOICING — tenant-isolated authoring; transport remains fail-closed.
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "POST",
+      "/invoicing/activation",
+      permission("subscription.manage.own"),
+      async ({ principal, marketCode }) => {
+        const workspace = await invoicingService.getWorkspace(
+          principal,
+          requireApiRequestMarket(marketCode),
+        );
+        const access = workspace.tenants[0]?.productAccess;
+        if (!access) {
+          throw new AppError({
+            code: "FORBIDDEN",
+            message: "Un droit actif Shongre Facturation est requis.",
+          });
+        }
+        return access;
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/workspace",
+      permission("invoice.read"),
+      async ({ principal, marketCode }) =>
+        invoicingService.getWorkspace(
+          principal,
+          requireApiRequestMarket(marketCode),
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/legal-entities",
+      permission("invoice.read"),
+      async ({ principal, marketCode, query }) =>
+        invoicingService.listLegalEntities(
+          principal,
+          requireApiRequestMarket(marketCode),
+          query.get("tenantId") ?? "",
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/invoicing/legal-entities",
+      permission("invoicing.tenant.manage"),
+      async ({ principal, marketCode, body }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.defaultMarketCode !== activeMarket) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le marché de l’entité ne correspond pas à la requête.",
+          });
+        }
+        return invoicingService.createLegalEntity(principal, body);
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/invoicing/legal-entities/from-organization",
+      permission("invoicing.tenant.manage"),
+      async ({ principal, marketCode, body }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le marché de l’entité ne correspond pas à la requête.",
+          });
+        }
+        return invoicingService.bootstrapLegalEntityFromOrganization(
+          principal,
+          body,
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/parties",
+      permission("invoice.read"),
+      async ({ principal, marketCode, query }) => {
+        requireApiRequestMarket(marketCode);
+        return invoicingService.listParties(
+          principal,
+          query.get("tenantId") ?? "",
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/invoicing/parties",
+      permission("invoice.party.manage"),
+      async ({ principal, marketCode, body }) => {
+        requireApiRequestMarket(marketCode);
+        return invoicingService.createParty(principal, body);
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/invoices",
+      permission("invoice.read"),
+      async ({ principal, marketCode, query }) =>
+        invoicingService.listInvoices(principal, {
+          tenantId: query.get("tenantId") ?? "",
+          marketCode: requireApiRequestMarket(marketCode),
+          limit: query.has("limit") ? Number(query.get("limit")) : undefined,
+          cursor: query.get("cursor") ?? undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/invoicing/invoices",
+      permission("invoice.create"),
+      async ({ principal, marketCode, body, req, requestId }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le marché de la facture ne correspond pas à la requête.",
+          });
+        }
+        return invoicingService.createInvoice(
+          principal,
+          body,
+          String(req.headers["idempotency-key"] ?? ""),
+          requestId,
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/invoices/:invoiceId",
+      permission("invoice.read"),
+      async ({ principal, marketCode, params }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        const invoice = await invoicingService.getInvoice(
+          principal,
+          params.invoiceId,
+        );
+        if (invoice.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Facture introuvable.",
+          });
+        }
+        return invoice;
+      },
+    );
+    this.addRoute(
+      "PUT",
+      "/invoicing/invoices/:invoiceId",
+      permission("invoice.create"),
+      async ({ principal, marketCode, params, body, requestId }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        const invoice = await invoicingService.getInvoice(
+          principal,
+          params.invoiceId,
+        );
+        if (invoice.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Facture introuvable.",
+          });
+        }
+        return invoicingService.updateInvoiceDraft(
+          principal,
+          params.invoiceId,
+          body,
+          requestId,
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/invoicing/invoices/:invoiceId/finalize",
+      permission("invoice.finalize"),
+      async ({ principal, marketCode, params, body, req, requestId }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        const invoice = await invoicingService.getInvoice(
+          principal,
+          params.invoiceId,
+        );
+        if (invoice.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Facture introuvable.",
+          });
+        }
+        return invoicingService.finalizeInvoice(
+          principal,
+          params.invoiceId,
+          {
+            expectedVersion: body?.expectedVersion,
+            idempotencyKey: String(req.headers["idempotency-key"] ?? ""),
+          },
+          requestId,
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/invoicing/invoices/:invoiceId/document",
+      permission("invoice.read"),
+      async ({ principal, marketCode, params }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        const invoice = await invoicingService.getInvoice(
+          principal,
+          params.invoiceId,
+        );
+        if (invoice.marketCode !== activeMarket) {
+          throw new AppError({
+            code: "NOT_FOUND",
+            message: "Document introuvable.",
+          });
+        }
+        return invoicingService.getDocument(principal, params.invoiceId);
+      },
     );
 
     // --------------------------------------------------------------------------

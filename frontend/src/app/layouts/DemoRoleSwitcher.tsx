@@ -16,6 +16,7 @@ import {
   LoaderCircle,
   Database,
   Target,
+  ReceiptText,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
@@ -88,6 +89,16 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     group: "marketplace",
     destination: routes.prospects.workspace(),
     Icon: Target,
+    iconClassName: "text-primary",
+  },
+  {
+    userKey: "standalone_facturation_owner",
+    userId: "user_standalone_facturation_owner",
+    label: "6. Facturation autonome (Léa · Studio Rivage)",
+    desc: "Compte et organisation dédiés uniquement à la facturation",
+    group: "marketplace",
+    destination: routes.facturation.workspace(),
+    Icon: ReceiptText,
     iconClassName: "text-primary",
   },
   {

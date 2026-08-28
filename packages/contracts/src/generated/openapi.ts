@@ -4224,6 +4224,184 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/invoicing/activation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Complete Facturation provisioning for an entitled organization
+         * @description Never grants commercial access. It succeeds only when the shared monetization system already exposes an active invoicing.enabled entitlement.
+         */
+        readonly post: operations["activateInvoicingForCurrentOrganization"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/invoices": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List invoices in an accessible tenant */
+        readonly get: operations["listInvoicingInvoices"];
+        readonly put?: never;
+        /**
+         * Create an invoice draft
+         * @description Creates a market-scoped draft. Tax and total computation is authoritative in the invoicing service.
+         */
+        readonly post: operations["createInvoicingInvoice"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/invoices/{invoiceId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get an invoice */
+        readonly get: operations["getInvoicingInvoice"];
+        /**
+         * Update an editable invoice draft
+         * @description Replaces editable draft fields and lines with optimistic version control. Finalized invoices remain immutable.
+         */
+        readonly put: operations["updateInvoicingInvoiceDraft"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/invoices/{invoiceId}/document": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get the immutable human-readable invoice derivative
+         * @description Phase 1 returns a digest-bound text derivative. It is explicitly not represented as a legal PDF or electronic original.
+         */
+        readonly get: operations["getInvoicingDocument"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/invoices/{invoiceId}/finalize": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Finalize an invoice and assign its immutable legal number
+         * @description Runs the one-writer short transaction. It does not call a provider or claim electronic acceptance.
+         */
+        readonly post: operations["finalizeInvoicingInvoice"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/legal-entities": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List legal entities in an accessible tenant */
+        readonly get: operations["listInvoicingLegalEntities"];
+        readonly put?: never;
+        /** Create a legal entity */
+        readonly post: operations["createInvoicingLegalEntity"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/legal-entities/from-organization": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Create the first legal entity from shared organization facts
+         * @description Idempotently reuses the organization legal name, address and country-aware business identifier. Requires an active Facturation entitlement and never grants product access.
+         */
+        readonly post: operations["bootstrapInvoicingLegalEntityFromOrganization"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/parties": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List customer and supplier profiles */
+        readonly get: operations["listInvoicingParties"];
+        readonly put?: never;
+        /** Create a customer or supplier profile */
+        readonly post: operations["createInvoicingParty"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/invoicing/workspace": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get the invoicing workspace for the active market
+         * @description Returns only tenants visible to the principal. Production and electronic-transport readiness fail closed when external configuration is missing.
+         */
+        readonly get: operations["getInvoicingWorkspace"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/listing-drafts": {
         readonly parameters: {
             readonly query?: never;
@@ -8177,6 +8355,283 @@ export interface components {
         readonly ErrorResponse: {
             readonly error: components["schemas"]["ErrorDetail"];
         };
+        readonly InvoicingDocument: {
+            readonly complianceRulesetVersion: string;
+            readonly content: string;
+            readonly digest: string;
+            /** @constant */
+            readonly digestAlgorithm: "SHA-256";
+            readonly fileName: string;
+            /** @enum {string} */
+            readonly format: "TEXT_V1" | "PDF" | "FACTUR_X" | "UBL" | "CII";
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly generatorVersion: string;
+            readonly id: string;
+            readonly invoiceId: string;
+            readonly legalOriginal: boolean;
+            readonly mediaType: string;
+            readonly templateVersion: string;
+        };
+        readonly InvoicingFinalizeInput: {
+            readonly expectedVersion: number;
+        };
+        readonly InvoicingIdentifier: components["schemas"]["InvoicingIdentifierInput"] & {
+            readonly id: string;
+            readonly verificationSource?: string;
+            /** @enum {string} */
+            readonly verificationStatus: "unverified" | "pending" | "verified" | "rejected" | "expired";
+            /** Format: date-time */
+            readonly verifiedAt?: string;
+        };
+        readonly InvoicingIdentifierInput: {
+            readonly countryCode: string;
+            readonly issuingAuthority?: string;
+            readonly type: string;
+            readonly value: string;
+        };
+        readonly InvoicingInvoice: components["schemas"]["InvoicingInvoiceInput"] & {
+            /** @enum {string} */
+            readonly accountingExportState: "NOT_EXPORTED" | "EXPORT_PENDING" | "EXPORTED";
+            /** @enum {string} */
+            readonly commercialState: "DRAFT" | "VALIDATION_REQUIRED" | "READY_TO_FINALIZE" | "FINALIZED" | "FINALIZATION_FAILED" | "CREDITED";
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** @enum {string} */
+            readonly customerReviewState: "NOT_REQUESTED" | "PENDING" | "ACCEPTED" | "DISPUTED";
+            /** @enum {string} */
+            readonly electronicState: "NOT_APPLICABLE" | "NOT_REQUESTED" | "CONFIGURATION_REQUIRED" | "VALIDATION_PENDING" | "VALIDATION_FAILED" | "READY_TO_SUBMIT" | "SUBMISSION_PENDING" | "SUBMITTED_UNCONFIRMED" | "ACCEPTED" | "REJECTED" | "REFUSED" | "MANUAL_RECONCILIATION";
+            /** Format: date-time */
+            readonly finalizedAt?: string;
+            readonly id: string;
+            readonly lines: readonly components["schemas"]["InvoicingLine"][];
+            readonly number?: string;
+            readonly outstanding: components["schemas"]["InvoicingMoney"];
+            /** @enum {string} */
+            readonly paymentState: "UNPAID" | "PARTIALLY_PAID" | "PAID" | "OVERPAID" | "PARTIALLY_REFUNDED" | "REFUNDED";
+            /** @constant */
+            readonly scope: "MARKET_SCOPED";
+            readonly snapshotDigest?: string;
+            readonly subtotal: components["schemas"]["InvoicingMoney"];
+            readonly taxBreakdowns: readonly components["schemas"]["InvoicingTaxBreakdown"][];
+            readonly taxTotal: components["schemas"]["InvoicingMoney"];
+            readonly total: components["schemas"]["InvoicingMoney"];
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly InvoicingInvoiceInput: {
+            readonly countryCode: string;
+            readonly currency: string;
+            readonly customerPartyId: string;
+            readonly customerReference?: string;
+            /** @enum {string} */
+            readonly documentType: "standard_invoice" | "deposit_invoice" | "final_invoice" | "recurring_invoice" | "credit_note" | "supplier_invoice";
+            /** Format: date */
+            readonly dueDate: string;
+            /** Format: date */
+            readonly issueDate: string;
+            readonly legalEntityId: string;
+            readonly lines: readonly components["schemas"]["InvoicingLineInput"][];
+            readonly locale: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly notes?: string;
+            /** @enum {string} */
+            readonly origin: "MANUAL" | "SHONGRE_SUBSCRIPTION" | "MARKETPLACE_COMMISSION" | "API" | "RECURRING" | "IMPORT" | "EXTERNAL_INTEGRATION";
+            readonly purchaseOrderReference?: string;
+            readonly relatedInvoiceId?: string;
+            /** Format: date */
+            readonly servicePeriodEnd?: string;
+            /** Format: date */
+            readonly servicePeriodStart?: string;
+            readonly tenantId: string;
+            readonly timezone: string;
+        };
+        readonly InvoicingInvoicePage: {
+            readonly items: readonly components["schemas"]["InvoicingInvoice"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+        };
+        readonly InvoicingInvoiceUpdateInput: {
+            readonly customerPartyId: string;
+            readonly customerReference?: string;
+            /** Format: date */
+            readonly dueDate: string;
+            readonly expectedVersion: number;
+            /** Format: date */
+            readonly issueDate: string;
+            readonly lines: readonly components["schemas"]["InvoicingLineInput"][];
+            readonly notes?: string;
+            readonly purchaseOrderReference?: string;
+            /** Format: date */
+            readonly servicePeriodEnd?: string;
+            /** Format: date */
+            readonly servicePeriodStart?: string;
+        };
+        readonly InvoicingLegalEntity: components["schemas"]["InvoicingLegalEntityInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly id: string;
+            readonly identifiers?: readonly components["schemas"]["InvoicingIdentifier"][];
+            /** @constant */
+            readonly scope: "MULTI_MARKET_SHARED";
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** @enum {string} */
+            readonly verificationStatus: "unverified" | "pending" | "verified" | "rejected";
+        };
+        readonly InvoicingLegalEntityBootstrapInput: {
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly tenantId: string;
+        };
+        readonly InvoicingLegalEntityInput: {
+            readonly countryCode: string;
+            readonly defaultCurrency: string;
+            readonly defaultLocale: string;
+            readonly defaultMarketCode: components["schemas"]["MarketCode"];
+            readonly identifiers: readonly components["schemas"]["InvoicingIdentifierInput"][];
+            readonly legalForm?: string;
+            readonly legalName: string;
+            readonly registeredAddress: components["schemas"]["InvoicingPostalAddress"];
+            readonly tenantId: string;
+            readonly timezone: string;
+            readonly tradingName?: string;
+        };
+        readonly InvoicingLine: components["schemas"]["InvoicingLineInput"] & {
+            readonly grossAmountMinor: number;
+            readonly id: string;
+            readonly netAmountMinor: number;
+            readonly position: number;
+            readonly taxAmountMinor: number;
+        };
+        readonly InvoicingLineInput: {
+            readonly description: string;
+            readonly exemptionReason?: string;
+            readonly exemptionReasonCode?: string;
+            readonly quantity: string;
+            /** @enum {string} */
+            readonly taxCategory: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+            readonly taxRateBps: number;
+            readonly unit: string;
+            readonly unitPriceMinorDecimal: string;
+        };
+        readonly InvoicingMoney: {
+            readonly amountMinor: number;
+            readonly currency: string;
+        };
+        readonly InvoicingParty: components["schemas"]["InvoicingPartyInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly id: string;
+            readonly identifiers?: readonly components["schemas"]["InvoicingIdentifier"][];
+            /** @constant */
+            readonly scope: "MULTI_MARKET_SHARED";
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly InvoicingPartyInput: {
+            readonly billingAddress: components["schemas"]["InvoicingPostalAddress"];
+            /** Format: email */
+            readonly email?: string;
+            readonly identifiers: readonly components["schemas"]["InvoicingIdentifierInput"][];
+            /** @enum {string} */
+            readonly kind: "company" | "association" | "sole_proprietor" | "public_body" | "individual" | "foreign_entity";
+            readonly legalName: string;
+            readonly locale: string;
+            /** @default 30 */
+            readonly paymentTermsDays: number;
+            readonly phone?: string;
+            readonly preferredCurrency: string;
+            readonly roles: readonly ("customer" | "supplier")[];
+            readonly tenantId: string;
+            readonly tradingName?: string;
+        };
+        readonly InvoicingPostalAddress: {
+            readonly city: string;
+            readonly countryCode: string;
+            readonly line1: string;
+            readonly line2?: string;
+            readonly postalCode: string;
+        };
+        readonly InvoicingProductAccess: {
+            /** @enum {string} */
+            readonly accessMode: "STANDALONE" | "ADD_ON" | "BUNDLED" | "INTERNAL_SHONGRE";
+            /** Format: date-time */
+            readonly activatedAt?: string;
+            readonly cancelAtPeriodEnd: boolean;
+            readonly capabilities: readonly string[];
+            /** Format: date-time */
+            readonly currentPeriodEndsAt?: string;
+            /** @constant */
+            readonly entitlementKey: "invoicing.enabled";
+            readonly organizationId: string;
+            readonly planName: string;
+            /** @constant */
+            readonly productId: "facturation";
+            readonly seats: number;
+            /** @enum {string} */
+            readonly source: "subscription" | "trial" | "complimentary_grant" | "bundle" | "internal";
+            /** @enum {string} */
+            readonly status: "trialing" | "active" | "past_due" | "paused" | "cancellation_pending" | "cancelled" | "expired" | "not_entitled";
+        };
+        readonly InvoicingTaxBreakdown: {
+            readonly taxableAmountMinor: number;
+            readonly taxAmountMinor: number;
+            /** @enum {string} */
+            readonly taxCategory: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+            readonly taxRateBps: number;
+        };
+        readonly InvoicingWorkspace: {
+            readonly activeMarketCode: components["schemas"]["MarketCode"];
+            readonly electronicTransport: {
+                /** @constant */
+                readonly mode: "COMPATIBLE_SOLUTION";
+                readonly providerId?: string;
+                /** @enum {string} */
+                readonly status: "CONFIGURATION_REQUIRED" | "SANDBOX_ONLY" | "COMING_SOON" | "SUPPORTED";
+            };
+            readonly legalEntities: readonly components["schemas"]["InvoicingLegalEntity"][];
+            readonly readiness: readonly {
+                readonly blocking: boolean;
+                readonly key: string;
+                readonly label: string;
+                /** @enum {string} */
+                readonly status: "missing" | "configured" | "externally_verified" | "sandbox_tested" | "production_tested" | "legally_reviewed" | "not_applicable";
+            }[];
+            readonly recentInvoices: readonly components["schemas"]["InvoicingInvoice"][];
+            /** @constant */
+            readonly scope: "MULTI_MARKET_SHARED";
+            readonly tenants: readonly {
+                readonly capabilities: readonly string[];
+                readonly countryCode: string;
+                readonly id: string;
+                readonly legalName: string;
+                readonly membershipRole: string;
+                readonly productAccess: {
+                    /** @enum {string} */
+                    readonly accessMode: "STANDALONE" | "ADD_ON" | "BUNDLED" | "INTERNAL_SHONGRE";
+                    /** Format: date-time */
+                    readonly activatedAt?: string;
+                    readonly cancelAtPeriodEnd: boolean;
+                    readonly capabilities: readonly string[];
+                    /** Format: date-time */
+                    readonly currentPeriodEndsAt?: string;
+                    /** @constant */
+                    readonly entitlementKey: "invoicing.enabled";
+                    readonly organizationId: string;
+                    readonly planName: string;
+                    /** @constant */
+                    readonly productId: "facturation";
+                    readonly seats: number;
+                    /** @enum {string} */
+                    readonly source: "subscription" | "trial" | "complimentary_grant" | "bundle" | "internal";
+                    /** @enum {string} */
+                    readonly status: "trialing" | "active" | "past_due" | "paused" | "cancellation_pending" | "cancelled" | "expired" | "not_entitled";
+                };
+            }[];
+        };
         /** @description A JSON-compatible payload whose domain representation is mapped by the owning service adapter. */
         readonly JsonValue: null | boolean | number | string | readonly unknown[] | {
             readonly [key: string]: unknown;
@@ -8985,6 +9440,32 @@ export interface components {
             readonly credential: string;
             readonly expectedVersion: number;
         };
+        readonly RegistrationInput: {
+            readonly businessAddress?: string;
+            readonly city?: string;
+            readonly companyName?: string;
+            readonly country?: components["schemas"]["MarketCode"];
+            /** Format: email */
+            readonly email: string;
+            readonly legalForm?: string;
+            readonly name: string;
+            /** Format: password */
+            readonly password: string;
+            readonly phone?: string;
+            readonly postalCode?: string;
+            /**
+             * @description Acquisition attribution only. It never grants a product entitlement.
+             * @enum {string}
+             */
+            readonly productIntent?: "prospects" | "facturation";
+            /** @enum {string} */
+            readonly professionalVertical?: "generic" | "real_estate" | "automotive" | "education" | "employment";
+            /** @enum {string} */
+            readonly role: "individual_buyer" | "individual_seller" | "pro_seller";
+            /** @description Country-specific business registration identifier; legacy field name retained for compatibility. */
+            readonly siret?: string;
+            readonly vatNumber?: string;
+        };
         readonly SellerAnalytics: {
             /** Format: date-time */
             readonly generatedAt: string;
@@ -9223,9 +9704,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["RegistrationInput"];
             };
         };
         readonly responses: {
@@ -17666,6 +18145,470 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly activateInvoicingForCurrentOrganization: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": Record<string, never>;
+            };
+        };
+        readonly responses: {
+            /** @description Active Facturation product access. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingProductAccess"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listInvoicingInvoices: {
+        readonly parameters: {
+            readonly query: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly tenantId: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Cursor page of invoices. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingInvoicePage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createInvoicingInvoice: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                readonly "Idempotency-Key": string;
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingInvoiceInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Invoice draft created or idempotently replayed. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingInvoice"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getInvoicingInvoice: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly invoiceId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Invoice. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingInvoice"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateInvoicingInvoiceDraft: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly invoiceId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingInvoiceUpdateInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated invoice draft. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingInvoice"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getInvoicingDocument: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly invoiceId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Immutable human-readable derivative and provenance. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingDocument"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly finalizeInvoicingInvoice: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                readonly "Idempotency-Key": string;
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly invoiceId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingFinalizeInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Finalized invoice or idempotent replay. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingInvoice"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listInvoicingLegalEntities: {
+        readonly parameters: {
+            readonly query: {
+                readonly tenantId: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Legal entities. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["InvoicingLegalEntity"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createInvoicingLegalEntity: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingLegalEntityInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Legal entity created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingLegalEntity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly bootstrapInvoicingLegalEntityFromOrganization: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingLegalEntityBootstrapInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Existing or newly bootstrapped legal entity. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingLegalEntity"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly listInvoicingParties: {
+        readonly parameters: {
+            readonly query: {
+                readonly tenantId: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Parties. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["InvoicingParty"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly createInvoicingParty: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["InvoicingPartyInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Party created. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingParty"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getInvoicingWorkspace: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Workspace projection. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["InvoicingWorkspace"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };

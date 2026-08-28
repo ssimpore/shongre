@@ -261,6 +261,9 @@ export const Footer: React.FC = () => {
               <FooterLink to={routes.prospects.product()}>
                 {t("footer.shongreProspects")}
               </FooterLink>
+              <FooterLink to={routes.facturation.product()}>
+                {t("footer.shongreFacturation")}
+              </FooterLink>
               <FooterLink to="/professionnels">
                 {t("footer.storeDirectory")}
               </FooterLink>

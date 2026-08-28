@@ -130,8 +130,8 @@ export interface Database {
         owner_id: string;
         legal_name: string;
         trade_name: string | null;
-        siren: string;
-        siret: string;
+        siren: string | null;
+        siret: string | null;
         vat_number: string | null;
         legal_form: string | null;
         registered_address: string;
@@ -141,6 +141,12 @@ export interface Database {
         is_verified: boolean;
         verification_date: string | null;
         status: "active" | "suspended" | "deleted";
+        professional_vertical:
+          | "generic"
+          | "real_estate"
+          | "automotive"
+          | "education"
+          | "employment";
         created_at: string;
         updated_at: string;
       }>;
@@ -165,6 +171,292 @@ export interface Database {
         permissions: string[];
         created_at: string;
         updated_at: string;
+      }>;
+      organization_business_identifiers: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        country_code: string;
+        identifier_type: string;
+        identifier_value: string;
+        verification_status:
+          | "unverified"
+          | "pending"
+          | "verified"
+          | "rejected"
+          | "expired";
+        verified_at: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      invoicing_legal_entities: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_name: string;
+        trading_name: string | null;
+        legal_form: string | null;
+        country_code: string;
+        default_market_code: string;
+        default_currency: string;
+        default_locale: string;
+        timezone: string;
+        address_line_1: string;
+        address_line_2: string | null;
+        postal_code: string;
+        city: string;
+        address_country_code: string;
+        verification_status: "unverified" | "pending" | "verified" | "rejected";
+        created_at: string;
+        updated_at: string;
+      }>;
+      invoicing_legal_identifiers: GeneratedTable<{
+        id: string;
+        legal_entity_id: string;
+        identifier_type: string;
+        country_code: string;
+        identifier_value: string;
+        issuing_authority: string | null;
+        verification_status:
+          | "unverified"
+          | "pending"
+          | "verified"
+          | "rejected"
+          | "expired";
+        verified_at: string | null;
+        verification_source: string | null;
+        created_at: string;
+      }>;
+      invoicing_parties: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        party_kind:
+          | "company"
+          | "association"
+          | "sole_proprietor"
+          | "public_body"
+          | "individual"
+          | "foreign_entity";
+        roles: Array<"customer" | "supplier">;
+        legal_name: string;
+        trading_name: string | null;
+        billing_address_line_1: string;
+        billing_address_line_2: string | null;
+        billing_postal_code: string;
+        billing_city: string;
+        billing_country_code: string;
+        email: string | null;
+        phone: string | null;
+        locale: string;
+        preferred_currency: string;
+        payment_terms_days: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+      invoicing_party_identifiers: GeneratedTable<{
+        id: string;
+        party_id: string;
+        identifier_type: string;
+        country_code: string;
+        identifier_value: string;
+        issuing_authority: string | null;
+        verification_status:
+          | "unverified"
+          | "pending"
+          | "verified"
+          | "rejected"
+          | "expired";
+        verified_at: string | null;
+        verification_source: string | null;
+        created_at: string;
+      }>;
+      invoicing_number_series: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_entity_id: string;
+        market_code: string;
+        environment_id: string;
+        document_type:
+          | "standard_invoice"
+          | "deposit_invoice"
+          | "final_invoice"
+          | "recurring_invoice"
+          | "credit_note"
+          | "supplier_invoice";
+        fiscal_year: number;
+        prefix: string;
+        next_value: number;
+        review_status: "unreviewed" | "approved" | "retired";
+        approved_by: string | null;
+        approved_at: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      invoicing_invoices: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_entity_id: string;
+        customer_party_id: string;
+        related_invoice_id: string | null;
+        document_type:
+          | "standard_invoice"
+          | "deposit_invoice"
+          | "final_invoice"
+          | "recurring_invoice"
+          | "credit_note"
+          | "supplier_invoice";
+        document_origin:
+          | "MANUAL"
+          | "SHONGRE_SUBSCRIPTION"
+          | "MARKETPLACE_COMMISSION"
+          | "API"
+          | "RECURRING"
+          | "IMPORT"
+          | "EXTERNAL_INTEGRATION";
+        legal_number: string | null;
+        market_code: string;
+        country_code: string;
+        locale: string;
+        timezone: string;
+        environment_id: string;
+        currency: string;
+        issue_date: string;
+        due_date: string;
+        service_period_start: string | null;
+        service_period_end: string | null;
+        purchase_order_reference: string | null;
+        customer_reference: string | null;
+        notes: string | null;
+        commercial_state:
+          | "DRAFT"
+          | "VALIDATION_REQUIRED"
+          | "READY_TO_FINALIZE"
+          | "FINALIZED"
+          | "FINALIZATION_FAILED"
+          | "CREDITED";
+        electronic_state:
+          | "NOT_APPLICABLE"
+          | "NOT_REQUESTED"
+          | "CONFIGURATION_REQUIRED"
+          | "VALIDATION_PENDING"
+          | "VALIDATION_FAILED"
+          | "READY_TO_SUBMIT"
+          | "SUBMISSION_PENDING"
+          | "SUBMITTED_UNCONFIRMED"
+          | "ACCEPTED"
+          | "REJECTED"
+          | "REFUSED"
+          | "MANUAL_RECONCILIATION";
+        payment_state:
+          | "UNPAID"
+          | "PARTIALLY_PAID"
+          | "PAID"
+          | "OVERPAID"
+          | "PARTIALLY_REFUNDED"
+          | "REFUNDED";
+        accounting_export_state: "NOT_EXPORTED" | "EXPORT_PENDING" | "EXPORTED";
+        customer_review_state: "NOT_REQUESTED" | "PENDING" | "ACCEPTED" | "DISPUTED";
+        subtotal_minor: number;
+        tax_total_minor: number;
+        total_minor: number;
+        outstanding_minor: number;
+        issuer_snapshot: Json | null;
+        recipient_snapshot: Json | null;
+        canonical_snapshot: Json | null;
+        snapshot_digest: string | null;
+        version: number;
+        draft_idempotency_key: string;
+        finalization_idempotency_key: string | null;
+        finalized_at: string | null;
+        finalized_by: string | null;
+        created_by: string;
+        created_at: string;
+        updated_at: string;
+      }>;
+      invoicing_invoice_lines: GeneratedTable<{
+        id: string;
+        invoice_id: string;
+        position: number;
+        description: string;
+        quantity_decimal: string;
+        unit: string;
+        unit_price_minor_decimal: string;
+        tax_rate_bps: number;
+        tax_category: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+        exemption_reason_code: string | null;
+        exemption_reason: string | null;
+        net_amount_minor: number;
+        tax_amount_minor: number;
+        gross_amount_minor: number;
+        created_at: string;
+      }>;
+      invoicing_tax_breakdowns: GeneratedTable<{
+        invoice_id: string;
+        tax_rate_bps: number;
+        tax_category: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+        taxable_amount_minor: number;
+        tax_amount_minor: number;
+        created_at: string;
+      }>;
+      invoicing_documents: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_entity_id: string;
+        invoice_id: string;
+        market_code: string;
+        environment_id: string;
+        file_name: string;
+        media_type: string;
+        document_format: "TEXT_V1" | "PDF" | "FACTUR_X" | "UBL" | "CII";
+        legal_original: boolean;
+        content_text: string | null;
+        storage_reference: string | null;
+        size_bytes: number;
+        digest_algorithm: "SHA-256";
+        digest: string;
+        generator_version: string;
+        template_version: string;
+        compliance_ruleset_version: string;
+        generated_at: string;
+        created_by: string;
+      }>;
+      invoicing_outbox: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_entity_id: string;
+        invoice_id: string | null;
+        market_code: string;
+        country_code: string;
+        environment_id: string;
+        event_type: string;
+        schema_version: number;
+        idempotency_key: string;
+        correlation_id: string;
+        payload: Json;
+        status: "pending" | "processing" | "completed" | "failed" | "dead_letter";
+        attempt_count: number;
+        available_at: string;
+        claimed_at: string | null;
+        claimed_by: string | null;
+        completed_at: string | null;
+        last_error_code: string | null;
+        created_at: string;
+      }>;
+      invoicing_audit_events: GeneratedTable<{
+        id: string;
+        organization_id: string;
+        legal_entity_id: string | null;
+        invoice_id: string | null;
+        market_code: string;
+        country_code: string;
+        environment_id: string;
+        actor_id: string | null;
+        action: string;
+        resource_type: string;
+        resource_id: string;
+        request_id: string | null;
+        correlation_id: string;
+        reason_code: string | null;
+        safe_metadata: Json;
+        occurred_at: string;
       }>;
       listings: {
         Row: {
@@ -2087,6 +2379,60 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      ensure_owned_organization: {
+        Args: {
+          p_owner_id: string;
+          p_legal_name: string;
+          p_trading_name: string | null;
+          p_business_identifier: string;
+          p_vat_number: string | null;
+          p_legal_form: string | null;
+          p_registered_address: string;
+          p_city: string;
+          p_postal_code: string;
+          p_country_code: string;
+          p_professional_vertical: string;
+        };
+        Returns: Database["public"]["Tables"]["organizations"]["Row"][];
+      };
+      bootstrap_invoicing_legal_entity_from_organization: {
+        Args: {
+          p_organization_id: string;
+          p_actor_id: string;
+          p_market_code: string;
+          p_currency: string;
+          p_locale: string;
+          p_timezone: string;
+        };
+        Returns: Database["public"]["Tables"]["invoicing_legal_entities"]["Row"];
+      };
+      organization_has_active_product_entitlement: {
+        Args: {
+          p_organization_id: string;
+          p_entitlement_key: string;
+        };
+        Returns: boolean;
+      };
+      update_invoicing_invoice_draft: {
+        Args: {
+          p_invoice_id: string;
+          p_actor_id: string;
+          p_expected_version: number;
+          p_invoice: Json;
+          p_request_id?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["invoicing_invoices"]["Row"];
+      };
+      finalize_invoicing_invoice: {
+        Args: {
+          p_invoice_id: string;
+          p_actor_id: string;
+          p_expected_version: number;
+          p_idempotency_key: string;
+          p_request_id?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["invoicing_invoices"]["Row"];
+      };
       complete_account_deletion: {
         Args: { p_user_id: string; p_reason?: string | null };
         Returns: Database["public"]["Tables"]["profiles"]["Row"][];

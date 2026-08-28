@@ -29,3 +29,4 @@ export * from "./http-moderation.service";
 export * from "./http-crm.service";
 export * from "./http-crm-prospecting.service";
 export * from "./http-marketing.service";
+export * from "./http-invoicing.service";

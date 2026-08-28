@@ -61,6 +61,20 @@ describe("canonical access-control policy", () => {
     expect(professional.has("admin.access")).toBe(false);
   });
 
+  it("grants tenant invoicing work without granting regulated transmission", () => {
+    const professional = capabilities({
+      accountType: "professional",
+      professionalVertical: "generic",
+    });
+
+    expect(professional.has("invoice.read")).toBe(true);
+    expect(professional.has("invoice.create")).toBe(true);
+    expect(professional.has("invoice.finalize")).toBe(true);
+    expect(professional.has("invoice.party.manage")).toBe(true);
+    expect(professional.has("invoice.transmit")).toBe(false);
+    expect(professional.has("invoicing.audit.read")).toBe(false);
+  });
+
   it.each(STAFF_ROLES)(
     "never grants customer capabilities implicitly to %s staff",
     (staffRole) => {

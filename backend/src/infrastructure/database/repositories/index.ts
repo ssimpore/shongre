@@ -11,6 +11,7 @@ export * from "./notification.repository.js";
 export * from "./review.repository.js";
 export * from "./admin.repository.js";
 export * from "./workspace.repository.js";
+export * from "./organization-provisioning.repository.js";
 export * from "./trending.repository.js";
 export * from "./courses.repository.js";
 export * from "./auto.repository.js";

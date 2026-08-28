@@ -244,7 +244,7 @@ export interface UserProfile {
   defaultPublicationMarkets?: string[];
 }
 
-export type ShongreProductId = "marketplace" | "prospects";
+export type ShongreProductId = "marketplace" | "prospects" | "facturation";
 
 export type ListingCondition =
   | "new_with_tag"

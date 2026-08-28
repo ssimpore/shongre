@@ -14,6 +14,7 @@ import {
   AccountType,
   Permission,
   AuthResult,
+  ShongreProductId,
 } from "../../types";
 import { userRepository } from "../../repositories/user.repository";
 import { services } from "../../api/client/service-registry";
@@ -77,6 +78,7 @@ interface AuthContextType {
     phone?: string;
     termsAccepted: boolean;
     marketingConsent?: boolean;
+    requestedProduct?: ShongreProductId;
   }) => Promise<AuthResult>;
   upgradeToPro: (proData: {
     companyName: string;
@@ -181,6 +183,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isPhoneVerified = Boolean(currentUser?.isPhoneVerified);
   const isIdentityVerified = Boolean(currentUser?.isIdentityVerified);
 
+  const hydrateProductProjection = async (fallback: UserProfile) => {
+    try {
+      return (await services.auth.getCurrentUser()) ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   const login = async (
     email: string,
     password: string,
@@ -193,7 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       rememberMe: options?.rememberMe,
     });
     if (result.success && result.user) {
-      setCurrentUser(result.user);
+      setCurrentUser(await hydrateProductProjection(result.user));
       announceAuthChange("login");
       analyticsService.track("login_completed", { source: "email_password" });
     }
@@ -207,7 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     analyticsService.track("login_started", { source: "mfa" });
     const result = await services.auth.loginWithMFA(tempToken, code);
     if (result.success && result.user) {
-      setCurrentUser(result.user);
+      setCurrentUser(await hydrateProductProjection(result.user));
       announceAuthChange("login");
       analyticsService.track("login_completed", { source: "mfa" });
     }
@@ -227,7 +237,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     analyticsService.track("signup_started", { source: "individual" });
     const result = await services.auth.registerIndividual(data);
     if (result.success && result.user) {
-      setCurrentUser(result.user);
+      setCurrentUser(await hydrateProductProjection(result.user));
       announceAuthChange("login");
       analyticsService.track("signup_completed", { source: "individual" });
     }
@@ -250,11 +260,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     phone?: string;
     termsAccepted: boolean;
     marketingConsent?: boolean;
+    requestedProduct?: ShongreProductId;
   }): Promise<AuthResult> => {
     analyticsService.track("signup_started", { source: "professional" });
     const result = await services.auth.registerProfessional(data);
     if (result.success && result.user) {
-      setCurrentUser(result.user);
+      setCurrentUser(await hydrateProductProjection(result.user));
       announceAuthChange("login");
       analyticsService.track("signup_completed", { source: "professional" });
     }

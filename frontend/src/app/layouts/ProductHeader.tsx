@@ -3,8 +3,11 @@ import { ArrowRight, Menu, Store, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
-import { isProspectsOnlyAccount } from "../../domains/user/user.domain";
+import { isProductOnlyAccount } from "../../domains/user/user.domain";
 import { useAuth } from "../providers/AuthProvider";
+import type { RoutePolicyId } from "../../security/access-policy.registry";
+import { useAuthorization } from "../../security/useAuthorization";
+import type { ShongreProductId } from "../../types";
 
 export interface ProductNavigationItem {
   label: string;
@@ -12,42 +15,51 @@ export interface ProductNavigationItem {
 }
 
 interface ProductHeaderProps {
+  productId: ShongreProductId;
   productName: string;
   productPath: string;
   workspacePath: string;
   navigation: readonly ProductNavigationItem[];
+  workspacePolicyId?: RoutePolicyId;
 }
 
 const navigationLinkClass =
   "inline-flex min-h-control-touch items-center text-xs font-bold text-text-secondary transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 export const ProductHeader: React.FC<ProductHeaderProps> = ({
+  productId,
   productName,
   productPath,
   workspacePath,
   navigation,
+  workspacePolicyId,
 }) => {
   const { currentUser, isAuthenticated } = useAuth();
+  const { canAccessRoute } = useAuthorization();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isWorkspaceRoute =
     location.pathname === workspacePath ||
     location.pathname.startsWith(`${workspacePath}/`);
-  const isProspectsOnly = isProspectsOnlyAccount(currentUser);
+  const isProductOnly = isProductOnlyAccount(currentUser, productId);
+  const canOpenWorkspace = workspacePolicyId
+    ? canAccessRoute(workspacePolicyId)
+    : isAuthenticated;
   const showProductNavigation = !isWorkspaceRoute;
-  const showPlatformNavigation = true;
-  const showAccountNavigation = !isProspectsOnly;
+  const showPlatformNavigation = !isProductOnly;
+  const showAccountNavigation = !isProductOnly;
   const showWorkspaceAction = !isWorkspaceRoute;
   const hasMobileNavigation =
     showProductNavigation ||
     showPlatformNavigation ||
     showAccountNavigation ||
     showWorkspaceAction;
-  const productDestination = isProspectsOnly ? workspacePath : productPath;
+  const productDestination =
+    isProductOnly && canOpenWorkspace ? workspacePath : productPath;
 
   useEffect(() => {
     setIsMenuOpen(false);
-  }, [isProspectsOnly, location.pathname]);
+  }, [isProductOnly, location.pathname]);
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -60,9 +72,15 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMenuOpen]);
 
-  const workspaceDestination = isAuthenticated
+  const workspaceDestination = canOpenWorkspace
     ? workspacePath
-    : routes.auth.registerProfessional(workspacePath);
+    : isAuthenticated
+      ? productId === "facturation"
+        ? routes.facturation.activation()
+        : routes.proPlans()
+      : productId === "facturation"
+        ? routes.facturation.registration()
+        : routes.auth.registerProfessional(workspacePath);
   const accountDestination = isAuthenticated
     ? routes.workspace.overview()
     : routes.auth.login(workspacePath);
@@ -73,9 +91,13 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
       <Container className="flex h-16 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link
-            to={routes.home()}
+            to={isProductOnly ? productDestination : routes.home()}
             className="group flex shrink-0 items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label="Accéder à la plateforme Shongre"
+            aria-label={
+              isProductOnly
+                ? `Accéder à ${productName}`
+                : "Accéder à la plateforme Shongre"
+            }
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-lg font-black text-white transition-colors group-hover:bg-primary-hover">
               S
@@ -94,7 +116,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             to={productDestination}
             className="truncate rounded-control text-sm font-black text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
             aria-label={`${productName}, ${
-              isProspectsOnly ? "ouvrir l’application" : "accueil du produit"
+              isProductOnly ? "ouvrir l’application" : "accueil du produit"
             }`}
           >
             {productName}
@@ -118,13 +140,15 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
         showAccountNavigation ||
         showWorkspaceAction ? (
           <div className="hidden shrink-0 items-center gap-4 md:flex">
-            <Link
-              to={routes.home()}
-              className="inline-flex min-h-control-touch items-center gap-2 rounded-control px-2 text-xs font-bold text-text-secondary transition-colors hover:bg-bg-subtle hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
-              Plateforme Shongre
-            </Link>
+            {showPlatformNavigation ? (
+              <Link
+                to={routes.home()}
+                className="inline-flex min-h-control-touch items-center gap-2 rounded-control px-2 text-xs font-bold text-text-secondary transition-colors hover:bg-bg-subtle hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                Plateforme Shongre
+              </Link>
+            ) : null}
             {showAccountNavigation ? (
               <>
                 <Link to={accountDestination} className={navigationLinkClass}>
@@ -137,9 +161,11 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                 to={workspaceDestination}
                 className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
-                {isAuthenticated
+                {canOpenWorkspace
                   ? "Ouvrir l’application"
-                  : "Essayer gratuitement"}
+                  : isAuthenticated
+                    ? "Découvrir l’accès Pro"
+                    : "Essayer gratuitement"}
                 <ArrowRight
                   className="h-icon-sm w-icon-sm"
                   aria-hidden="true"
@@ -194,13 +220,15 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                       </a>
                     ))
                   : null}
-                <Link
-                  to={routes.home()}
-                  className="inline-flex min-h-control-touch items-center gap-2 py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-                >
-                  <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
-                  Plateforme Shongre
-                </Link>
+                {showPlatformNavigation ? (
+                  <Link
+                    to={routes.home()}
+                    className="inline-flex min-h-control-touch items-center gap-2 py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                    Plateforme Shongre
+                  </Link>
+                ) : null}
                 {showAccountNavigation ? (
                   <>
                     <Link

@@ -123,6 +123,9 @@ export class HttpAuthService implements AuthServiceContract {
           name: input.name,
           password: input.password,
           role: "individual_buyer",
+          city: input.city,
+          postalCode: input.postalCode,
+          country: input.country,
         },
       );
       return { success: true, user: response.user };
@@ -150,6 +153,13 @@ export class HttpAuthService implements AuthServiceContract {
           professionalVertical: input.professionalVertical,
           siret: input.sirenSiret,
           phone: input.phone,
+          legalForm: input.legalForm,
+          vatNumber: input.vatNumber,
+          businessAddress: input.businessAddress,
+          city: input.city,
+          postalCode: input.postalCode,
+          country: input.country,
+          productIntent: input.requestedProduct,
         },
       );
       return { success: true, user: response.user };

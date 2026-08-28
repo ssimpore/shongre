@@ -4,6 +4,7 @@ import {
   AuthSecurityEvent,
   AuthResult,
   PlatformRole,
+  ShongreProductId,
 } from "../../types";
 import {
   deterministicCode,
@@ -702,6 +703,7 @@ class AuthService {
     phone?: string;
     termsAccepted: boolean;
     marketingConsent?: boolean;
+    requestedProduct?: ShongreProductId;
   }): Promise<AuthResult> {
     const normalizedEmail = data.email.trim().toLowerCase();
 
@@ -759,7 +761,9 @@ class AuthService {
       role: "pro_seller",
       roles: ["pro_seller", "seller", "buyer"],
       sellerType: "pro",
-      status: "pending", // Pending professional review or onboarding
+      // Facturation onboarding is progressive: account access is active while
+      // the separate professionalVerification dimension remains pending.
+      status: data.requestedProduct === "facturation" ? "active" : "pending",
       city: data.city.trim(),
       postalCode: data.postalCode.trim(),
       country,
@@ -780,6 +784,9 @@ class AuthService {
         notes: "Dossier d'immatriculation professionnelle en cours d'analyse.",
       },
       activePlanId: "pro_starter",
+      enabledProducts: data.requestedProduct
+        ? [data.requestedProduct]
+        : undefined,
       rating: 5.0,
       reviewCount: 0,
       responseRatePercent: 100,

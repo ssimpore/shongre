@@ -419,10 +419,19 @@ export const RegisterIndividualPage: React.FC = () => {
 
 export const RegisterProPage: React.FC = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const requestedProduct =
+    searchParams.get("product") === "facturation"
+      ? ("facturation" as const)
+      : undefined;
+  const isFacturationRegistration = requestedProduct === "facturation";
   usePageMeta({
-    title: "Créer un compte professionnel",
-    description:
-      "Ouvrez un compte professionnel Shongre : vitrine personnalisée, quotas d'annonces étendus, statistiques et facturation.",
+    title: isFacturationRegistration
+      ? "Créer votre espace Shongre Facturation"
+      : "Créer un compte professionnel",
+    description: isFacturationRegistration
+      ? "Créez votre compte et votre organisation Shongre pour utiliser Facturation indépendamment des autres produits."
+      : "Ouvrez un compte professionnel Shongre : vitrine personnalisée, quotas d'annonces étendus, statistiques et facturation.",
     canonicalPath: "/inscription/professionnel",
   });
 
@@ -517,16 +526,21 @@ export const RegisterProPage: React.FC = () => {
         country,
         phone: phone.trim() || undefined,
         termsAccepted,
+        requestedProduct,
       });
 
       if (result.success) {
         toast.success(
-          "Compte Professionnel créé ! Bienvenue dans votre espace Pro.",
+          isFacturationRegistration
+            ? "Compte créé. Terminons la configuration de Facturation."
+            : "Compte Professionnel créé ! Bienvenue dans votre espace Pro.",
         );
         navigate(
-          result.user?.status === "pending"
-            ? routes.workspace.verification()
-            : returnTo,
+          isFacturationRegistration
+            ? returnTo
+            : result.user?.status === "pending"
+              ? routes.workspace.verification()
+              : returnTo,
           { replace: true },
         );
       } else {
@@ -548,14 +562,22 @@ export const RegisterProPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">
             <Briefcase className="w-icon-sm h-icon-sm" />
-            <span>{t("auth.registerPages.vendeurProfessionnel")}</span>
+            <span>
+              {isFacturationRegistration
+                ? "Shongre Facturation"
+                : t("auth.registerPages.vendeurProfessionnel")}
+            </span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
-            {t("auth.registerPages.ouvrirUnCompteProfessionnel")}
+            {isFacturationRegistration
+              ? "Créez votre espace Facturation"
+              : t("auth.registerPages.ouvrirUnCompteProfessionnel")}
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
-            {t("auth.registerPages.accedezALaVitrineOfficielle")}
+            {isFacturationRegistration
+              ? "Un compte Shongre partagé, une organisation et uniquement les outils de facturation dont vous avez besoin."
+              : t("auth.registerPages.accedezALaVitrineOfficielle")}
           </p>
         </div>
 
@@ -720,8 +742,9 @@ export const RegisterProPage: React.FC = () => {
                   ))}
                 </Select>
                 <p className="mt-1.5 text-xs text-stone-500">
-                  Ce choix active uniquement les outils métier correspondant à
-                  votre activité. Il pourra être vérifié lors de l'onboarding.
+                  {isFacturationRegistration
+                    ? "Ce renseignement adapte la configuration de votre organisation. Il ne vous inscrit à aucun autre produit Shongre."
+                    : "Ce choix active uniquement les outils métier correspondant à votre activité. Il pourra être vérifié lors de l'onboarding."}
                 </p>
               </div>
 

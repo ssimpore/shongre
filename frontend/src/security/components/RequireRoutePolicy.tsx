@@ -10,6 +10,8 @@ import {
 } from "../access-policy.registry";
 import { RequireAuth } from "./RequireAuth";
 import { RequirePermission } from "./RequirePermission";
+import { hasProductAccess } from "../../domains/user/user.domain";
+import type { RoutePolicy } from "../access-policy.registry";
 
 /**
  * Enforces the same named route policy used to build workspace navigation.
@@ -23,7 +25,7 @@ export const RequireRoutePolicy: React.FC<{
 }> = ({ policyId, standalone, children }) => {
   const { currentUser, isRestoring } = useAuth();
   const location = useLocation();
-  const policy = ROUTE_POLICIES[policyId];
+  const policy: RoutePolicy = ROUTE_POLICIES[policyId];
 
   if (isRestoring) return null;
   if (!currentUser) {
@@ -50,6 +52,18 @@ export const RequireRoutePolicy: React.FC<{
   }
 
   if (canAccessRoutePolicy(currentUser, policyId)) return <>{children}</>;
+  if (policy.productId && !hasProductAccess(currentUser, policy.productId)) {
+    return (
+      <Navigate
+        to={
+          policy.productId === "facturation"
+            ? routes.facturation.activation()
+            : routes.proPlans()
+        }
+        replace
+      />
+    );
+  }
   if (!policy.capability) return <>{children}</>;
 
   return (

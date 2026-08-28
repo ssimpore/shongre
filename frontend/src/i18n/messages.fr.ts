@@ -109,6 +109,7 @@ export const messagesFr = {
   "footer.sectionHelp": "Aide & Confiance",
   "footer.proSolutions": "Solutions & Tarifs Pro",
   "footer.shongreProspects": "Shongre Prospects",
+  "footer.shongreFacturation": "Shongre Facturation",
   "footer.helpCenter": "Centre d’aide & FAQ",
   "footer.newsletterHeading": "Newsletter Shongre",
   "footer.marketLabel": "Marché {market}",
@@ -3751,6 +3752,171 @@ export const messagesFr = {
   "admin.monetization.transitionReason": "Motif de la transition",
   "admin.monetization.transitionReasonDefault":
     "Validation du catalogue commercial",
+  "invoicing.product.nav.features": "Fonctionnalités",
+  "invoicing.product.nav.safety": "Contrôles",
+  "invoicing.product.nav.markets": "Multi-marché",
+  "invoicing.product.metaTitle":
+    "Shongre Facturation — Facturation structurée multi-marché",
+  "invoicing.product.eyebrow": "Shongre Facturation",
+  "invoicing.product.title":
+    "Facturez clairement. Gardez le contrôle à chaque étape.",
+  "invoicing.product.description":
+    "Centralisez vos clients, brouillons, factures et avoirs dans un espace conçu pour plusieurs marchés, avec des totaux exacts et une finalisation protégée.",
+  "invoicing.product.primaryCta": "Ouvrir l’espace de démonstration",
+  "invoicing.product.secondaryCta": "Découvrir le parcours",
+  "invoicing.product.openApp": "Ouvrir Shongre Facturation",
+  "invoicing.product.activatePro": "Découvrir l’accès Facturation Pro",
+  "invoicing.product.createWorkspace": "Créer mon espace Facturation",
+  "invoicing.product.demoNotice":
+    "Données locales déterministes · Aucun transport électronique activé",
+  "invoicing.product.previewAria":
+    "Ouvrir l’espace de démonstration Shongre Facturation",
+  "invoicing.product.previewTitle": "Facturation",
+  "invoicing.product.previewOrganization": "Organisation",
+  "invoicing.product.previewNumber": "Numéro",
+  "invoicing.product.previewCustomer": "Client",
+  "invoicing.product.previewAmount": "Montant",
+  "invoicing.product.previewFinalized": "Finalisée",
+  "invoicing.product.previewConfiguration": "Configuration requise",
+  "invoicing.product.previewSubtotal": "Sous-total HT",
+  "invoicing.product.previewTax": "Taxe",
+  "invoicing.product.previewMarket": "Marché",
+  "invoicing.product.previewMarketValue": "France · EUR",
+  "invoicing.product.previewDocument": "Document lisible",
+  "invoicing.product.previewDocumentNotice":
+    "Dérivé texte de démonstration — ce fichier n’est pas un original juridique.",
+  "invoicing.product.trustTitle": "Fondations de Shongre Facturation",
+  "invoicing.product.trustExact": "Totaux calculés exactement",
+  "invoicing.product.trustMarkets": "Contexte multi-marché",
+  "invoicing.product.trustFinalization": "Finalisation protégée",
+  "invoicing.product.trustDemo": "Démo sans transmission",
+  "invoicing.product.workflowTitle":
+    "De votre organisation à une facture finalisée.",
+  "invoicing.product.workflowBody":
+    "Chaque étape conserve son propre rôle : configuration, création, finalisation et suivi ne sont jamais confondus.",
+  "invoicing.product.stepConfigureTitle": "Configurer",
+  "invoicing.product.stepConfigureBody":
+    "Choisissez l’entité juridique, le marché, la devise, la langue et le fuseau.",
+  "invoicing.product.stepCreateTitle": "Créer",
+  "invoicing.product.stepCreateBody":
+    "Ajoutez le client et les lignes avec quantités, prix et traitement fiscal explicites.",
+  "invoicing.product.stepFinalizeTitle": "Finaliser",
+  "invoicing.product.stepFinalizeBody":
+    "Attribuez un numéro et produisez un instantané immuable en une seule opération.",
+  "invoicing.product.stepFollowTitle": "Suivre",
+  "invoicing.product.stepFollowBody":
+    "Consultez séparément les états commercial, paiement, export et transport.",
+  "invoicing.product.finalizationTitle":
+    "Une finalisation qui ne réécrit pas l’histoire.",
+  "invoicing.product.finalizationBody":
+    "La facture finalisée conserve les informations de l’émetteur, du destinataire et de ses lignes. Toute correction passe par un document lié.",
+  "invoicing.product.finalizationNumber":
+    "Numéro attribué dans une série dédiée au marché et à l’entité",
+  "invoicing.product.finalizationSnapshot":
+    "Instantané et empreinte conservés avec le document",
+  "invoicing.product.finalizationDocument":
+    "Avoir relié à la facture d’origine sans modifier celle-ci",
+  "invoicing.product.marketsTitle":
+    "Le marché fait partie du document, pas du décor.",
+  "invoicing.product.marketsBody":
+    "Pays, devise, langue et fuseau sont contrôlés ensemble. Un contexte incomplet ou incohérent bloque l’opération au lieu de revenir silencieusement à la France.",
+  "invoicing.product.marketsDisclaimer":
+    "Le socle générique est démontré pour ces contextes actifs ; cela ne constitue pas une attestation de conformité fiscale ou électronique locale.",
+  "invoicing.product.marketFrance": "France",
+  "invoicing.product.marketBelgium": "Belgique",
+  "invoicing.product.marketSwitzerland": "Suisse",
+  "invoicing.product.guardrailsTitle":
+    "Les limites de production restent visibles.",
+  "invoicing.product.guardrailsBody":
+    "Shongre Facturation distingue ce qui fonctionne en démonstration de ce qui exige encore une configuration, une revue ou une certification externe.",
+  "invoicing.product.guardrailNoTransmission":
+    "Aucune transmission légale simulée comme réussie",
+  "invoicing.product.guardrailNoFallback":
+    "Aucun repli silencieux vers un autre marché",
+  "invoicing.product.guardrailIsolation":
+    "Données isolées par organisation et entité",
+  "invoicing.product.finalCtaTitle":
+    "Préparez votre première facture dans un espace sans dépendance backend.",
+  "invoicing.product.finalCtaBody":
+    "Explorez le parcours avec des données déterministes, sans connecter de fournisseur ni transmettre de document.",
+  "invoicing.product.explorePro": "Explorer Shongre Pro",
+  "invoicing.product.controlTitle": "Des états séparés et explicites",
+  "invoicing.product.controlBody":
+    "Cycle commercial, paiement, export comptable et transport électronique ne sont jamais confondus.",
+  "invoicing.product.marketTitle": "Le marché fait partie du document",
+  "invoicing.product.marketBody":
+    "Pays, devise, langue et fuseau sont validés ensemble, sans repli silencieux sur la France.",
+  "invoicing.product.immutabilityTitle": "Finalisation protégée",
+  "invoicing.product.immutabilityBody":
+    "La numérotation, l’instantané et le document lisible sont produits par une seule opération idempotente.",
+  "invoicing.workspace.title": "Facturation",
+  "invoicing.workspace.description": "Factures de vente de votre organisation",
+  "invoicing.workspace.demo": "Mode démonstration",
+  "invoicing.workspace.newInvoice": "Nouvelle facture",
+  "invoicing.workspace.configurationTitle":
+    "Configuration de production requise",
+  "invoicing.workspace.configurationBody":
+    "Le transport électronique n’est pas actif. Les brouillons et la finalisation locale restent disponibles dans ce scénario de démonstration.",
+  "invoicing.workspace.navigation": "Navigation de la facturation",
+  "invoicing.workspace.overview": "Vue d’ensemble",
+  "invoicing.workspace.invoices": "Factures",
+  "invoicing.workspace.customers": "Clients",
+  "invoicing.workspace.legalEntities": "Entités juridiques",
+  "invoicing.workspace.settings": "Paramètres",
+  "invoicing.workspace.market": "Marché actif",
+  "invoicing.workspace.organization": "Organisation active",
+  "invoicing.workspace.drafts": "brouillons",
+  "invoicing.workspace.finalized": "finalisée",
+  "invoicing.workspace.outstanding": "à encaisser",
+  "invoicing.workspace.transport": "Transport",
+  "invoicing.workspace.configurationRequired": "configuration requise",
+  "invoicing.workspace.readiness": "Préparation à l’émission",
+  "invoicing.workspace.recent": "Factures récentes",
+  "invoicing.workspace.number": "Numéro",
+  "invoicing.workspace.customer": "Client",
+  "invoicing.workspace.issueDate": "Émission",
+  "invoicing.workspace.dueDate": "Échéance",
+  "invoicing.workspace.total": "Total",
+  "invoicing.workspace.status": "Statut",
+  "invoicing.workspace.draft": "Brouillon",
+  "invoicing.workspace.finalizedStatus": "Finalisée",
+  "invoicing.workspace.creditedStatus": "Créditée",
+  "invoicing.workspace.unpaid": "Non payée",
+  "invoicing.workspace.noInvoices": "Aucune facture pour ce marché.",
+  "invoicing.workspace.draftPanel": "Brouillon de facture",
+  "invoicing.workspace.recipient": "Destinataire",
+  "invoicing.workspace.descriptionField": "Description",
+  "invoicing.workspace.quantity": "Quantité",
+  "invoicing.workspace.unit": "Unité",
+  "invoicing.workspace.unitPrice": "Prix unitaire HT",
+  "invoicing.workspace.taxRate": "TVA",
+  "invoicing.workspace.subtotal": "Sous-total HT",
+  "invoicing.workspace.tax": "Taxe",
+  "invoicing.workspace.totalIncludingTax": "Total TTC",
+  "invoicing.workspace.saveDraft": "Enregistrer le brouillon",
+  "invoicing.workspace.finalize": "Finaliser la facture",
+  "invoicing.workspace.finalizeWarning":
+    "La finalisation attribue un numéro et rend les champs juridiques immuables.",
+  "invoicing.workspace.saved": "Brouillon enregistré.",
+  "invoicing.workspace.finalizedMessage": "Facture finalisée localement.",
+  "invoicing.workspace.loadError":
+    "L’espace de facturation n’a pas pu être chargé.",
+  "invoicing.workspace.saveError": "Le brouillon n’a pas pu être enregistré.",
+  "invoicing.workspace.finalizeError": "La facture n’a pas pu être finalisée.",
+  "invoicing.workspace.viewDocument": "Voir le document",
+  "invoicing.workspace.downloadDocument": "Télécharger",
+  "invoicing.workspace.humanDerivative":
+    "Dérivé texte lisible — ce fichier n’est pas un original juridique.",
+  "invoicing.workspace.documentError":
+    "Le document lisible n’a pas pu être chargé.",
+  "invoicing.workspace.loading": "Chargement de la facturation…",
+  "invoicing.onboarding.bootstrapTitle":
+    "Reprendre les informations de l’organisation",
+  "invoicing.onboarding.bootstrapBody":
+    "Créez l’émetteur de facture à partir de la raison sociale, de l’adresse et de l’identifiant déjà enregistrés dans Shongre. Vous pourrez ensuite les vérifier dans les paramètres.",
+  "invoicing.onboarding.bootstrapAction": "Configurer l’émetteur",
+  "invoicing.onboarding.bootstrapError":
+    "Impossible de reprendre les informations de l’organisation.",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

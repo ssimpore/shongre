@@ -37,3 +37,4 @@ export * from "./crm/prospecting/prospecting.service.js";
 export * from "./marketing/index.js";
 export * from "./automation/index.js";
 export * from "./analytics/index.js";
+export * from "./invoicing/invoicing.service.js";

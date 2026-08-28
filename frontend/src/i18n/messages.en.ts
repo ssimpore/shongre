@@ -104,6 +104,7 @@ export const messagesEn: MessageCatalogue = {
   "footer.sectionHelp": "Help & trust",
   "footer.proSolutions": "Pro solutions & pricing",
   "footer.shongreProspects": "Shongre Prospects",
+  "footer.shongreFacturation": "Shongre Invoicing",
   "footer.helpCenter": "Help center & FAQ",
   "footer.newsletterHeading": "Shongre newsletter",
   "footer.marketLabel": "{market} market",
@@ -3079,4 +3080,165 @@ export const messagesEn: MessageCatalogue = {
   "admin.monetization.transitionReason": "Reason for the transition",
   "admin.monetization.transitionReasonDefault":
     "Commercial catalogue validation",
+  "invoicing.product.nav.features": "Features",
+  "invoicing.product.nav.safety": "Controls",
+  "invoicing.product.nav.markets": "Multi-market",
+  "invoicing.product.metaTitle":
+    "Shongre Invoicing — Structured multi-market invoicing",
+  "invoicing.product.eyebrow": "Shongre Invoicing",
+  "invoicing.product.title": "Invoice clearly. Stay in control at every step.",
+  "invoicing.product.description":
+    "Keep customers, drafts, invoices and credit notes together in a workspace designed for multiple markets, with exact totals and protected finalization.",
+  "invoicing.product.primaryCta": "Open the demo workspace",
+  "invoicing.product.secondaryCta": "Explore the workflow",
+  "invoicing.product.openApp": "Open Shongre Invoicing",
+  "invoicing.product.activatePro": "Explore Pro invoicing access",
+  "invoicing.product.createWorkspace": "Create my invoicing workspace",
+  "invoicing.product.demoNotice":
+    "Deterministic local data · No electronic transport enabled",
+  "invoicing.product.previewAria": "Open the Shongre Invoicing demo workspace",
+  "invoicing.product.previewTitle": "Invoicing",
+  "invoicing.product.previewOrganization": "Organization",
+  "invoicing.product.previewNumber": "Number",
+  "invoicing.product.previewCustomer": "Customer",
+  "invoicing.product.previewAmount": "Amount",
+  "invoicing.product.previewFinalized": "Finalized",
+  "invoicing.product.previewConfiguration": "Configuration required",
+  "invoicing.product.previewSubtotal": "Subtotal before tax",
+  "invoicing.product.previewTax": "Tax",
+  "invoicing.product.previewMarket": "Market",
+  "invoicing.product.previewMarketValue": "France · EUR",
+  "invoicing.product.previewDocument": "Readable document",
+  "invoicing.product.previewDocumentNotice":
+    "Demo text derivative — this file is not a legal original.",
+  "invoicing.product.trustTitle": "Shongre Invoicing foundations",
+  "invoicing.product.trustExact": "Exact totals",
+  "invoicing.product.trustMarkets": "Multi-market context",
+  "invoicing.product.trustFinalization": "Protected finalization",
+  "invoicing.product.trustDemo": "Demo without transmission",
+  "invoicing.product.workflowTitle":
+    "From your organization to a finalized invoice.",
+  "invoicing.product.workflowBody":
+    "Each step keeps its own role: configuration, creation, finalization and tracking are never conflated.",
+  "invoicing.product.stepConfigureTitle": "Configure",
+  "invoicing.product.stepConfigureBody":
+    "Choose the legal entity, market, currency, language and timezone.",
+  "invoicing.product.stepCreateTitle": "Create",
+  "invoicing.product.stepCreateBody":
+    "Add the customer and lines with explicit quantities, prices and tax treatment.",
+  "invoicing.product.stepFinalizeTitle": "Finalize",
+  "invoicing.product.stepFinalizeBody":
+    "Assign a number and produce an immutable snapshot in one operation.",
+  "invoicing.product.stepFollowTitle": "Track",
+  "invoicing.product.stepFollowBody":
+    "Review commercial, payment, export and transport states separately.",
+  "invoicing.product.finalizationTitle":
+    "Finalization that does not rewrite history.",
+  "invoicing.product.finalizationBody":
+    "A finalized invoice preserves issuer, recipient and line information. Any correction uses a related document.",
+  "invoicing.product.finalizationNumber":
+    "Number assigned within a series dedicated to the market and legal entity",
+  "invoicing.product.finalizationSnapshot":
+    "Snapshot and digest retained with the document",
+  "invoicing.product.finalizationDocument":
+    "Credit note linked to the original invoice without changing it",
+  "invoicing.product.marketsTitle":
+    "Market context belongs to the document, not the decoration.",
+  "invoicing.product.marketsBody":
+    "Country, currency, language and timezone are checked together. An incomplete or inconsistent context blocks the operation instead of silently falling back to France.",
+  "invoicing.product.marketsDisclaimer":
+    "The generic core is demonstrated for these active contexts; this is not evidence of local tax or electronic-invoicing compliance.",
+  "invoicing.product.marketFrance": "France",
+  "invoicing.product.marketBelgium": "Belgium",
+  "invoicing.product.marketSwitzerland": "Switzerland",
+  "invoicing.product.guardrailsTitle": "Production limits remain visible.",
+  "invoicing.product.guardrailsBody":
+    "Shongre Invoicing separates what works in the demo from what still requires external configuration, review or certification.",
+  "invoicing.product.guardrailNoTransmission":
+    "No legal transmission presented as successful",
+  "invoicing.product.guardrailNoFallback":
+    "No silent fallback to another market",
+  "invoicing.product.guardrailIsolation":
+    "Data isolated by organization and legal entity",
+  "invoicing.product.finalCtaTitle":
+    "Prepare your first invoice in a backend-independent workspace.",
+  "invoicing.product.finalCtaBody":
+    "Explore the workflow with deterministic data without connecting a provider or transmitting a document.",
+  "invoicing.product.explorePro": "Explore Shongre Pro",
+  "invoicing.product.controlTitle": "Separate, explicit states",
+  "invoicing.product.controlBody":
+    "Commercial lifecycle, payment, accounting export and electronic transport are never conflated.",
+  "invoicing.product.marketTitle": "Market context belongs to the document",
+  "invoicing.product.marketBody":
+    "Country, currency, language and timezone are validated together with no silent fallback to France.",
+  "invoicing.product.immutabilityTitle": "Protected finalization",
+  "invoicing.product.immutabilityBody":
+    "Numbering, snapshot and the readable document are produced by one idempotent operation.",
+  "invoicing.workspace.title": "Invoicing",
+  "invoicing.workspace.description": "Your organization’s sales invoices",
+  "invoicing.workspace.demo": "Demo mode",
+  "invoicing.workspace.newInvoice": "New invoice",
+  "invoicing.workspace.configurationTitle": "Production configuration required",
+  "invoicing.workspace.configurationBody":
+    "Electronic transport is not active. Drafting and local finalization remain available in this demo scenario.",
+  "invoicing.workspace.navigation": "Invoicing navigation",
+  "invoicing.workspace.overview": "Overview",
+  "invoicing.workspace.invoices": "Invoices",
+  "invoicing.workspace.customers": "Customers",
+  "invoicing.workspace.legalEntities": "Legal entities",
+  "invoicing.workspace.settings": "Settings",
+  "invoicing.workspace.market": "Active market",
+  "invoicing.workspace.organization": "Active organization",
+  "invoicing.workspace.drafts": "drafts",
+  "invoicing.workspace.finalized": "finalized",
+  "invoicing.workspace.outstanding": "outstanding",
+  "invoicing.workspace.transport": "Transport",
+  "invoicing.workspace.configurationRequired": "configuration required",
+  "invoicing.workspace.readiness": "Ready to issue",
+  "invoicing.workspace.recent": "Recent invoices",
+  "invoicing.workspace.number": "Number",
+  "invoicing.workspace.customer": "Customer",
+  "invoicing.workspace.issueDate": "Issued",
+  "invoicing.workspace.dueDate": "Due",
+  "invoicing.workspace.total": "Total",
+  "invoicing.workspace.status": "Status",
+  "invoicing.workspace.draft": "Draft",
+  "invoicing.workspace.finalizedStatus": "Finalized",
+  "invoicing.workspace.creditedStatus": "Credited",
+  "invoicing.workspace.unpaid": "Unpaid",
+  "invoicing.workspace.noInvoices": "No invoice for this market.",
+  "invoicing.workspace.draftPanel": "Invoice draft",
+  "invoicing.workspace.recipient": "Recipient",
+  "invoicing.workspace.descriptionField": "Description",
+  "invoicing.workspace.quantity": "Quantity",
+  "invoicing.workspace.unit": "Unit",
+  "invoicing.workspace.unitPrice": "Unit price before tax",
+  "invoicing.workspace.taxRate": "VAT",
+  "invoicing.workspace.subtotal": "Subtotal",
+  "invoicing.workspace.tax": "Tax",
+  "invoicing.workspace.totalIncludingTax": "Total including tax",
+  "invoicing.workspace.saveDraft": "Save draft",
+  "invoicing.workspace.finalize": "Finalize invoice",
+  "invoicing.workspace.finalizeWarning":
+    "Finalization assigns a number and makes legal fields immutable.",
+  "invoicing.workspace.saved": "Draft saved.",
+  "invoicing.workspace.finalizedMessage": "Invoice finalized locally.",
+  "invoicing.workspace.loadError":
+    "The invoicing workspace could not be loaded.",
+  "invoicing.workspace.saveError": "The draft could not be saved.",
+  "invoicing.workspace.finalizeError": "The invoice could not be finalized.",
+  "invoicing.workspace.viewDocument": "View document",
+  "invoicing.workspace.downloadDocument": "Download",
+  "invoicing.workspace.humanDerivative":
+    "Human-readable text derivative — this file is not a legal original.",
+  "invoicing.workspace.documentError":
+    "The human-readable document could not be loaded.",
+  "invoicing.workspace.loading": "Loading invoicing…",
+  "invoicing.onboarding.bootstrapTitle":
+    "Reuse organization information",
+  "invoicing.onboarding.bootstrapBody":
+    "Create the invoice issuer from the legal name, address and identifier already stored in Shongre. You can verify them in settings afterwards.",
+  "invoicing.onboarding.bootstrapAction": "Configure issuer",
+  "invoicing.onboarding.bootstrapError":
+    "The organization information could not be reused.",
 };

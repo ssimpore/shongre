@@ -4,22 +4,31 @@ import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { useConsent } from "../providers/ConsentProvider";
 import type { ProductNavigationItem } from "./ProductHeader";
+import { isProductOnlyAccount } from "../../domains/user/user.domain";
+import { useAuth } from "../providers/AuthProvider";
+import type { ShongreProductId } from "../../types";
 
 interface ProductFooterProps {
+  productId: ShongreProductId;
   productName: string;
   productPath: string;
   navigation: readonly ProductNavigationItem[];
+  description?: string;
 }
 
 const footerLinkClass =
   "inline-flex min-h-8 items-center text-xs font-semibold text-stone-400 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark";
 
 export const ProductFooter: React.FC<ProductFooterProps> = ({
+  productId,
   productName,
   productPath,
   navigation,
+  description = "La prospection B2B explicable, reliée au CRM et aux outils Shongre.",
 }) => {
   const { openPreferences } = useConsent();
+  const { currentUser } = useAuth();
+  const showEcosystem = !isProductOnlyAccount(currentUser, productId);
 
   return (
     <footer className="border-t border-stone-800 bg-stone-950 py-9 text-stone-300">
@@ -36,8 +45,7 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
               </span>
             </Link>
             <p className="mt-2 max-w-sm text-xs leading-relaxed text-stone-400">
-              La prospection B2B explicable, reliée au CRM et aux outils
-              Shongre.
+              {description}
             </p>
           </div>
 
@@ -52,13 +60,17 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
                 </a>
               ))}
             </nav>
-            <nav className="flex flex-col" aria-label="Écosystème Shongre">
-              <Link to={routes.home()} className={footerLinkClass}>
-                Marketplace
-              </Link>
-              <Link to={routes.proPlans()} className={footerLinkClass}>
-                Shongre Pro
-              </Link>
+            <nav className="flex flex-col" aria-label="Assistance Shongre">
+              {showEcosystem ? (
+                <>
+                  <Link to={routes.home()} className={footerLinkClass}>
+                    Marketplace
+                  </Link>
+                  <Link to={routes.proPlans()} className={footerLinkClass}>
+                    Shongre Pro
+                  </Link>
+                </>
+              ) : null}
               <Link to={routes.help()} className={footerLinkClass}>
                 Aide
               </Link>

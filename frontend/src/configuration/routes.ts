@@ -182,6 +182,17 @@ export const routes = {
     billing: () => "/app/billing",
     settings: () => "/app/settings",
   },
+  facturation: {
+    product: () => "/facturation",
+    workspace: () => "/facturation/app",
+    onboarding: () => "/facturation/onboarding",
+    activation: () => "/facturation/activation",
+    registration: () =>
+      withQuery("/inscription/professionnel", {
+        product: "facturation",
+        redirect: "/facturation/onboarding",
+      }),
+  },
   listing: {
     detail: (id: string) => `/annonce/${pathSegment(id)}`,
     publish: (params: { edit?: string } = {}) => withQuery("/deposer", params),

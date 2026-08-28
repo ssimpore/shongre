@@ -3,6 +3,7 @@ import {
   ProfessionalVertical,
   UserProfile,
   UserRole,
+  ShongreProductId,
 } from "../../types";
 
 export type AuthProviderId = "password" | "google" | "apple" | "facebook";
@@ -41,6 +42,8 @@ export interface RegisterProfessionalInput {
   phone?: string;
   termsAccepted: boolean;
   marketingConsent?: boolean;
+  /** Acquisition intent only. Production access still requires an active entitlement. */
+  requestedProduct?: ShongreProductId;
 }
 
 export interface RegisterInput {

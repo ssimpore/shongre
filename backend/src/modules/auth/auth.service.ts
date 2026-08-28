@@ -5,6 +5,10 @@ import {
   repositories,
   CANONICAL_DEMO_USERS,
 } from "../../infrastructure/database/repositories/index.js";
+import {
+  organizationProvisioningRepository,
+  type OrganizationProvisioningRepository,
+} from "../../infrastructure/database/repositories/organization-provisioning.repository.js";
 import { IKYCProvider, providers } from "../../integrations/providers/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { config } from "../../app/config/index.js";
@@ -68,6 +72,14 @@ export interface RegisterInput {
   professionalVertical?: ProfessionalVertical;
   siret?: string;
   phone?: string;
+  legalForm?: string;
+  vatNumber?: string;
+  businessAddress?: string;
+  city?: string;
+  postalCode?: string;
+  country?: string;
+  /** Acquisition attribution only; never grants product access. */
+  productIntent?: "prospects" | "facturation";
 }
 
 export interface AuthResult {
@@ -119,6 +131,8 @@ export class AuthService {
     private sessions: SessionService = sessionService,
     private authRepo: IAuthRepository = authRepository,
     private emailSender: AuthEmailSender = authEmailSender,
+    private organizationProvisioner: OrganizationProvisioningRepository =
+      organizationProvisioningRepository,
   ) {}
 
   /**
@@ -670,6 +684,17 @@ export class AuthService {
       });
     }
 
+    if (
+      input.productIntent !== undefined &&
+      input.productIntent !== "prospects" &&
+      input.productIntent !== "facturation"
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Produit demandé invalide.",
+      });
+    }
+
     const registrationLimit = await this.authRepo.consumeRateLimit(
       sha256(`${email}:${metadata.ipPrefix || "unknown"}`),
       "registration",
@@ -736,6 +761,37 @@ export class AuthService {
       });
     }
 
+    if (
+      input.productIntent === "facturation" &&
+      (!input.siret ||
+        !input.companyName?.trim() ||
+        !input.businessAddress?.trim() ||
+        !input.city?.trim() ||
+        !input.postalCode?.trim() ||
+        !input.country?.trim())
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Les informations légales de l’organisation sont requises pour Shongre Facturation.",
+      });
+    }
+
+    const registrationCountry = input.country?.trim().toUpperCase() || "FR";
+    const registrationMarket = getCountryConfig(registrationCountry);
+    if (
+      !countryCodeSchema.safeParse(registrationCountry).success ||
+      !registrationMarket?.enabled ||
+      !["active", "beta", "private_beta"].includes(
+        registrationMarket.launchStatus,
+      )
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le marché d’inscription n’est pas disponible.",
+      });
+    }
+
     const newUser: UserProfile = {
       id: randomUUID(),
       slug: input.name.toLowerCase().replace(/\s+/g, "-"),
@@ -748,7 +804,9 @@ export class AuthService {
       sellerType: input.siret ? "pro" : "individual",
       status: "active",
       phone: input.phone,
-      country: "FR",
+      city: input.city?.trim() || undefined,
+      postalCode: input.postalCode?.trim() || undefined,
+      country: registrationCountry,
       isVerified: false,
       isIdentityVerified: false,
       isPhoneVerified: false,
@@ -764,6 +822,22 @@ export class AuthService {
 
     const saved = await this.userRepo.save(newUser);
     await this.userRepo.saveCredential({ userId: saved.id, passwordHash });
+
+    if (input.productIntent === "facturation") {
+      await this.organizationProvisioner.ensureOwnedOrganization({
+        ownerId: saved.id,
+        legalName: input.companyName!.trim(),
+        tradingName: input.companyName!.trim(),
+        businessIdentifier: input.siret!.trim(),
+        vatNumber: input.vatNumber?.trim() || undefined,
+        legalForm: input.legalForm?.trim() || undefined,
+        registeredAddress: input.businessAddress!.trim(),
+        city: input.city!.trim(),
+        postalCode: input.postalCode!.trim(),
+        countryCode: registrationCountry,
+        professionalVertical: professionalVertical ?? "generic",
+      });
+    }
 
     // Demo repositories do not run the SQL backfill migration, so register the
     // password method explicitly. Do not swallow storage outages: an auth
@@ -789,6 +863,9 @@ export class AuthService {
       eventType: "registered",
       provider: "password",
       ipPrefix: metadata.ipPrefix,
+      metadata: input.productIntent
+        ? { productIntent: input.productIntent }
+        : undefined,
     });
     try {
       await this.sendEmailVerification(saved.email, metadata, true);

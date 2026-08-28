@@ -237,6 +237,26 @@ const ProspectsProductPage = lazy(() =>
     default: m.ProspectsProductPage,
   })),
 );
+const FacturationProductPage = lazy(() =>
+  import("../../features/invoicing/FacturationProductPage").then((m) => ({
+    default: m.FacturationProductPage,
+  })),
+);
+const InvoicingWorkspacePage = lazy(() =>
+  import("../../features/invoicing/InvoicingWorkspacePage").then((m) => ({
+    default: m.InvoicingWorkspacePage,
+  })),
+);
+const InvoicingActivationPage = lazy(() =>
+  import("../../features/invoicing/InvoicingActivationPage").then((m) => ({
+    default: m.InvoicingActivationPage,
+  })),
+);
+const InvoicingOnboardingPage = lazy(() =>
+  import("../../features/invoicing/InvoicingOnboardingPage").then((m) => ({
+    default: m.InvoicingOnboardingPage,
+  })),
+);
 const ProspectsAppWorkspacePage = lazy(() =>
   import("../../features/prospecting/ProspectsStandaloneWorkspacePage").then(
     (m) => ({ default: m.ProspectsAppWorkspacePage }),
@@ -632,6 +652,12 @@ const prospectsProductNavigation = [
   { label: "Offres", to: "/prospects#prospects-packaging" },
 ] as const;
 
+const invoicingProductNavigation = [
+  { label: "Fonctionnalités", to: "/facturation#facturation-controls" },
+  { label: "Contrôles", to: "/facturation#facturation-finalization" },
+  { label: "Multi-marché", to: "/facturation#facturation-markets" },
+] as const;
+
 /** Client-side fallback for old deep links; Next serves the permanent redirects. */
 const LegacyEducationRedirect: React.FC = () => {
   const location = useLocation();
@@ -650,13 +676,56 @@ export const APP_ROUTES: RouteObject[] = [
   // search and publication controls distract from the product story and are
   // still one explicit link away when a visitor wants to return.
   {
+    path: "/facturation",
+    element: (
+      <ProductLayout
+        productId="facturation"
+        productName="Facturation"
+        productPath={routes.facturation.product()}
+        workspacePath={routes.facturation.workspace()}
+        navigation={invoicingProductNavigation}
+        workspacePolicyId="standaloneInvoicing"
+        footerDescription="La facturation multi-marché de votre organisation, avec des contrôles de production explicites."
+      />
+    ),
+    children: [
+      { index: true, element: withSuspense(FacturationProductPage) },
+      {
+        path: "activation",
+        element: (
+          <RequirePermission permission="subscription.manage.own">
+            {withSuspense(InvoicingActivationPage)}
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "onboarding",
+        element: (
+          <RequireRoutePolicy policyId="standaloneInvoicing">
+            {withSuspense(InvoicingOnboardingPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
+        path: "app",
+        element: (
+          <RequireRoutePolicy policyId="standaloneInvoicing">
+            {withSuspense(InvoicingWorkspacePage)}
+          </RequireRoutePolicy>
+        ),
+      },
+    ],
+  },
+  {
     path: "/",
     element: (
       <ProductLayout
+        productId="prospects"
         productName="Prospects"
         productPath={routes.prospects.product()}
         workspacePath={routes.prospects.workspace()}
         navigation={prospectsProductNavigation}
+        workspacePolicyId="standaloneProspects"
       />
     ),
     children: [

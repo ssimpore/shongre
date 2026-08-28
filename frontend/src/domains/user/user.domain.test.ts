@@ -5,6 +5,7 @@ import {
   isInternalAccount,
   isPubliclyListableProSeller,
   hasProductAccess,
+  isFacturationOnlyAccount,
   isProspectsOnlyAccount,
 } from "./user.domain";
 import { DEMO_USERS } from "../../mocks/initialDemoData";
@@ -150,9 +151,11 @@ describe("isPubliclyListableProSeller", () => {
 });
 
 describe("product access", () => {
-  it("keeps legacy and signed-out product discovery available", () => {
+  it("keeps public discovery available but fails closed for legacy product grants", () => {
     expect(hasProductAccess(null, "marketplace")).toBe(true);
     expect(hasProductAccess({}, "marketplace")).toBe(true);
+    expect(hasProductAccess({}, "prospects")).toBe(false);
+    expect(hasProductAccess({}, "facturation")).toBe(false);
   });
 
   it("recognises an account provisioned only for Shongre Prospects", () => {
@@ -169,5 +172,17 @@ describe("product access", () => {
     };
 
     expect(isProspectsOnlyAccount(multiProduct)).toBe(false);
+  });
+
+  it("recognises Facturation-only and multi-product accounts", () => {
+    const facturationOnly = { enabledProducts: ["facturation"] };
+    const facturationAndProspects = {
+      enabledProducts: ["facturation", "prospects"],
+    };
+
+    expect(hasProductAccess(facturationOnly, "facturation")).toBe(true);
+    expect(hasProductAccess(facturationOnly, "marketplace")).toBe(false);
+    expect(isFacturationOnlyAccount(facturationOnly)).toBe(true);
+    expect(isFacturationOnlyAccount(facturationAndProspects)).toBe(false);
   });
 });

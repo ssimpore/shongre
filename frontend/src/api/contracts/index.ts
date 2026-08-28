@@ -29,3 +29,4 @@ export * from "./crm.contract";
 export * from "./crm-prospecting.contract";
 export * from "./marketing.contract";
 export * from "./analytics.contract";
+export * from "./invoicing.contract";

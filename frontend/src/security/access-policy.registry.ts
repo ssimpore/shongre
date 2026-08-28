@@ -5,6 +5,8 @@ import {
   type Capability,
 } from "@shongre/contracts/access-control";
 import type { UserProfile } from "../types";
+import type { ShongreProductId } from "../types";
+import { hasProductAccess } from "../domains/user/user.domain";
 
 export type RouteAccessClass =
   "authenticated" | "customer" | "professional" | "staff_capability";
@@ -15,6 +17,7 @@ export interface RoutePolicy {
   capability?: Capability;
   alternativeCapabilities?: readonly Capability[];
   accountTypes: readonly AccountType[];
+  productId?: ShongreProductId;
 }
 
 const customer = (path: string, capability?: Capability): RoutePolicy => ({
@@ -119,7 +122,14 @@ export const ROUTE_POLICIES = {
     "/compte/pro/finances",
     "finance.organization.read.own",
   ),
-  standaloneProspects: professional("/app", "crm.prospecting.read"),
+  standaloneProspects: {
+    ...professional("/app", "crm.prospecting.read"),
+    productId: "prospects",
+  },
+  standaloneInvoicing: {
+    ...professional("/facturation/app", "invoice.read"),
+    productId: "facturation",
+  },
 
   adminOverview: staff("/admin", "admin.access"),
   adminAnalytics: {
@@ -211,10 +221,13 @@ export function canAccessRoutePolicy(
   user: UserProfile | null,
   id: RoutePolicyId,
 ): boolean {
-  const policy = ROUTE_POLICIES[id];
+  const policy: RoutePolicy = ROUTE_POLICIES[id];
   const access = canonicalAccessContext(user);
   if (access.accountType === "guest") return false;
   if (!policy.accountTypes.some((type) => type === access.accountType)) {
+    return false;
+  }
+  if (policy.productId && !hasProductAccess(user, policy.productId)) {
     return false;
   }
   if (!policy.capability) return true;

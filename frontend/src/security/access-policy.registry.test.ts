@@ -70,6 +70,42 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(generic, "accountRealEstate")).toBe(false);
   });
 
+  it("requires the commercial product entitlement as well as the functional permission", () => {
+    const prospectsOnly = persona({
+      accountType: "professional",
+      role: "pro_seller",
+      primaryRole: "pro_seller",
+      professionalVertical: "generic",
+      enabledProducts: ["prospects"],
+    });
+    const facturationOnly = persona({
+      accountType: "professional",
+      role: "pro_seller",
+      primaryRole: "pro_seller",
+      professionalVertical: "generic",
+      enabledProducts: ["facturation"],
+    });
+    const both = persona({
+      accountType: "professional",
+      role: "pro_seller",
+      primaryRole: "pro_seller",
+      professionalVertical: "generic",
+      enabledProducts: ["prospects", "facturation"],
+    });
+
+    expect(canAccessRoutePolicy(prospectsOnly, "standaloneInvoicing")).toBe(
+      false,
+    );
+    expect(canAccessRoutePolicy(facturationOnly, "standaloneInvoicing")).toBe(
+      true,
+    );
+    expect(canAccessRoutePolicy(facturationOnly, "standaloneProspects")).toBe(
+      false,
+    );
+    expect(canAccessRoutePolicy(both, "standaloneInvoicing")).toBe(true);
+    expect(canAccessRoutePolicy(both, "standaloneProspects")).toBe(true);
+  });
+
   it("keeps admin, moderation and finance routes least-privilege", () => {
     const admin = persona({
       accountType: "staff",

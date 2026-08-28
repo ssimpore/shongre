@@ -74,4 +74,20 @@ describe("route builders", () => {
     );
     expect(routes.prospects.analytics()).toBe("/app/analytics");
   });
+
+  it("builds the standalone invoicing product and workspace routes", () => {
+    expect(routes.facturation.product()).toBe("/facturation");
+    expect(routes.facturation.workspace()).toBe("/facturation/app");
+    expect(routes.facturation.onboarding()).toBe("/facturation/onboarding");
+    expect(routes.facturation.activation()).toBe("/facturation/activation");
+    const registration = new URL(
+      routes.facturation.registration(),
+      "https://shongre.invalid",
+    );
+    expect(registration.pathname).toBe("/inscription/professionnel");
+    expect(registration.searchParams.get("product")).toBe("facturation");
+    expect(registration.searchParams.get("redirect")).toBe(
+      "/facturation/onboarding",
+    );
+  });
 });
