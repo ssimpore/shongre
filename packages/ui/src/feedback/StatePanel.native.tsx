@@ -11,6 +11,8 @@ export interface StatePanelProps {
   onAction?: () => void;
   variant?: "error" | "notFound" | "restricted" | "offline";
   tone?: "neutral" | "error";
+  /** Web maps this to a semantic heading; native keeps the shared API shape. */
+  headingLevel?: 1 | 2 | 3;
 }
 export function StatePanel({
   title,

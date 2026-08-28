@@ -34,4 +34,18 @@ describe("StatePanel", () => {
     expect(markup).toContain("Détails techniques");
     expect(markup).toContain("request_id: demo");
   });
+
+  it("can provide the page heading when it replaces a routed view", () => {
+    const markup = renderToStaticMarkup(
+      <StatePanel
+        variant="notFound"
+        headingLevel={1}
+        title="Collection introuvable"
+        description="Revenez aux collections."
+      />,
+    );
+
+    expect(markup).toContain("<h1");
+    expect(markup).not.toContain("<h2");
+  });
 });

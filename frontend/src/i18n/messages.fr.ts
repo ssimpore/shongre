@@ -491,6 +491,14 @@ export const messagesFr = {
   "collections.collectionsPage.aucuneAnnonceTrouvee": "Aucune annonce trouvée",
   "collections.collectionsPage.decouvrirDAutresCollections":
     "Découvrir d’autres collections",
+  "collections.collectionsPage.notFoundTitle": "Collection introuvable",
+  "collections.collectionsPage.notFoundDescription":
+    "Cette sélection n’existe pas ou n’est plus disponible dans ce marché.",
+  "collections.collectionsPage.returnToCollections": "Retour aux collections",
+  "collections.collectionsPage.loadErrorTitle":
+    "Sélection momentanément indisponible",
+  "collections.collectionsPage.loadErrorDescription":
+    "Les annonces de cette collection n’ont pas pu être chargées. Réessayez dans un instant.",
 
   // --- favorites.favoritesPage ---
   "favorites.favoritesPage.aucunFavoriPourLeMoment":

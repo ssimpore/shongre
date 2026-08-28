@@ -147,11 +147,13 @@ test.describe("Shongre Prospects CRM", () => {
     });
     await expect(confirmation).toBeVisible();
     await expect(page.getByRole("dialog")).toHaveCount(1);
-    expect(
-      await confirmation.evaluate((element) =>
-        element.contains(document.activeElement),
-      ),
-    ).toBe(true);
+    await expect
+      .poll(() =>
+        confirmation.evaluate((element) =>
+          element.contains(document.activeElement),
+        ),
+      )
+      .toBe(true);
     await confirmation
       .getByRole("button", { name: "Revenir aux preuves" })
       .click();

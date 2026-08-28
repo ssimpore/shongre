@@ -422,7 +422,7 @@ export function AdminSolutionsPage() {
             return (
               <li
                 key={solution.id}
-                className="flex min-h-control-touch items-center gap-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2"
+                className="flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2"
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-black text-primary shadow-xs">
                   {index + 1}
@@ -431,7 +431,7 @@ export function AdminSolutionsPage() {
                   <span className="block truncate text-xs font-bold text-text-main">
                     {solution.name}
                   </span>
-                  <span className="text-micro text-text-muted">
+                  <span className="text-micro text-text-secondary">
                     {SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle].label}
                     {" · "}
                     {t(

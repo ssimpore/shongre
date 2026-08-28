@@ -28,6 +28,17 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
     name: "listing-detail",
     persona: "guest",
   },
+  { path: "/collections", name: "collections", persona: "guest" },
+  {
+    path: "/collections/pepites-semaine",
+    name: "collection-detail",
+    persona: "guest",
+  },
+  {
+    path: "/collections/selection-inconnue",
+    name: "collection-not-found",
+    persona: "guest",
+  },
   {
     path: "/boutique/atelier-nordique",
     name: "pro-storefront",

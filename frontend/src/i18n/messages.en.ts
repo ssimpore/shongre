@@ -424,6 +424,14 @@ export const messagesEn: MessageCatalogue = {
   "collections.collectionsPage.aucuneAnnonceTrouvee": "No listing found",
   "collections.collectionsPage.decouvrirDAutresCollections":
     "Discover other collections",
+  "collections.collectionsPage.notFoundTitle": "Collection not found",
+  "collections.collectionsPage.notFoundDescription":
+    "This selection does not exist or is no longer available in this market.",
+  "collections.collectionsPage.returnToCollections": "Back to collections",
+  "collections.collectionsPage.loadErrorTitle":
+    "Selection temporarily unavailable",
+  "collections.collectionsPage.loadErrorDescription":
+    "The listings in this collection could not be loaded. Please try again shortly.",
   "favorites.favoritesPage.aucunFavoriPourLeMoment": "No favourites yet",
   "favorites.favoritesPage.cliquezSurLeCUr":
     "Tap the heart on a listing to save it and find it again here.",

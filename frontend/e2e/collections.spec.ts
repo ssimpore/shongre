@@ -1,8 +1,33 @@
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
+
+test.beforeEach(async ({ page }) => {
+  await useEstablishedConsent(page);
+});
 
 test.describe("Collections catalog density", () => {
+  test("exposes filter selection to assistive technology", async ({ page }) => {
+    await usePersona(page, "guest");
+    await page.goto("/collections", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const filters = page.getByRole("group", { name: "Toutes les collections" });
+    const all = filters.getByRole("button", {
+      name: "Toutes les collections",
+      exact: true,
+    });
+    const editorial = filters.getByRole("button", {
+      name: "Tendances & Éditoriales",
+      exact: true,
+    });
+
+    await expect(all).toHaveAttribute("aria-pressed", "true");
+    await editorial.click();
+    await expect(editorial).toHaveAttribute("aria-pressed", "true");
+    await expect(all).toHaveAttribute("aria-pressed", "false");
+  });
+
   test("matches the homepage collection-card size on desktop and keeps navigation working", async ({
     page,
   }) => {
@@ -64,5 +89,57 @@ test.describe("Collections catalog density", () => {
     expect(positions[0].left).toBeLessThan(positions[1].left);
     expect(positions[2].top).toBeGreaterThan(positions[0].top);
     await expectNoHorizontalOverflow(page, "collections compact grid");
+  });
+
+  test("renders an unknown collection as a recoverable missing resource", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/collections/selection-inconnue", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Collection introuvable",
+      }),
+    ).toBeVisible();
+    await expect(page).toHaveTitle(/Collection introuvable/i);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex/i,
+    );
+    await page
+      .getByRole("link", { name: "Retour aux collections", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/collections$/);
+  });
+
+  test("clears detail filters when navigating to another collection", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/collections/pepites-semaine", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const tag = page.getByRole("button", {
+      name: "Sélection hebdo",
+      exact: true,
+    });
+    await tag.click();
+    await expect(tag).toHaveAttribute("aria-pressed", "true");
+
+    await page.locator('a[href="/collections/bons-plans"]').click();
+    await expect(page).toHaveURL(/\/collections\/bons-plans$/);
+    await expect(
+      page.getByRole("button", { name: /^Tout/ }).first(),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      page.getByRole("textbox", { name: /filtrer dans la sélection/i }),
+    ).toHaveValue("");
   });
 });

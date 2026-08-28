@@ -27,16 +27,21 @@ import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../design-system/primitives/ListingRail";
 import {
   Breadcrumbs,
+  Button,
   Container,
+  EmptyState,
+  FilterChip,
   Heading,
   Input,
   ListingCardSkeleton,
+  StatePanel,
 } from "../../design-system";
 import { Image } from "../../design-system/primitives/Image";
 import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
 import { ScrollRail } from "../../design-system/primitives/ScrollRail";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { routes } from "../../configuration/routes";
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: "bg-primary-light text-primary border-primary-border",
@@ -73,11 +78,36 @@ export const CollectionsPage: React.FC = () => {
 
   const [activePillar, setActivePillar] = useState<CollectionPillarId>("all");
   const [collectionSearch, setCollectionSearch] = useState("");
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [, setAllListings] = useState<Listing[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [inCollectionSearch, setInCollectionSearch] = useState("");
+  const [detailFilters, setDetailFilters] = useState<{
+    collectionId: string;
+    activeTag: string | null;
+    search: string;
+  }>({ collectionId: "", activeTag: null, search: "" });
+  const [listingState, setListingState] = useState<{
+    collectionId: string;
+    status: "loading" | "success" | "error";
+    listings: Listing[];
+  } | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+
+  // React Router keeps this component mounted between slugs. Scope filters to
+  // their collection so the next detail view is correct on its first frame.
+  const activeTag =
+    detailFilters.collectionId === selectedCollection?.id
+      ? detailFilters.activeTag
+      : null;
+  const inCollectionSearch =
+    detailFilters.collectionId === selectedCollection?.id
+      ? detailFilters.search
+      : "";
+  const currentListingState =
+    listingState?.collectionId === selectedCollection?.id ? listingState : null;
+  const listings = currentListingState?.listings ?? [];
+  const isLoading = Boolean(
+    selectedCollection &&
+      (!currentListingState || currentListingState.status === "loading"),
+  );
+  const loadError = currentListingState?.status === "error";
 
   const pillars = useMemo(() => collectionService.getPillars(), []);
 
@@ -94,7 +124,11 @@ export const CollectionsPage: React.FC = () => {
           image: selectedCollection.coverImageUrl,
         }
       : slug
-        ? { title: "Collection introuvable", noIndex: true }
+        ? {
+            title: t("collections.collectionsPage.notFoundTitle"),
+            description: t("collections.collectionsPage.notFoundDescription"),
+            noIndex: true,
+          }
         : {
             title: "Collections & sélections",
             description:
@@ -104,10 +138,22 @@ export const CollectionsPage: React.FC = () => {
           },
   );
 
-  // Fetch base listings
+  const isUnknownCollection = Boolean(slug && !selectedCollection);
+
+  // The catalogue landing page renders collection definitions, not listings.
+  // Fetch only for a real detail route so the overview has no unused request.
   useEffect(() => {
+    if (!selectedCollection) {
+      setListingState(null);
+      return;
+    }
+
     let isMounted = true;
-    setIsLoading(true);
+    setListingState({
+      collectionId: selectedCollection.id,
+      status: "loading",
+      listings: [],
+    });
 
     listingRepository
       .getListings({
@@ -117,35 +163,31 @@ export const CollectionsPage: React.FC = () => {
       .then((res) => {
         if (!isMounted) return;
         const fetched = res.listings || [];
-        setAllListings(fetched);
-
-        if (selectedCollection) {
-          const matched = collectionService.filterListingsForCollection(
-            selectedCollection,
-            fetched,
-            {
-              allowFallback: true,
-            },
-          );
-          setListings(matched);
-        } else {
-          setListings(fetched.slice(0, 12));
-        }
+        const matched = collectionService.filterListingsForCollection(
+          selectedCollection,
+          fetched,
+          { allowFallback: true },
+        );
+        setListingState({
+          collectionId: selectedCollection.id,
+          status: "success",
+          listings: matched,
+        });
       })
       .catch(() => {
         if (isMounted) {
-          setAllListings([]);
-          setListings([]);
+          setListingState({
+            collectionId: selectedCollection.id,
+            status: "error",
+            listings: [],
+          });
         }
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false);
       });
 
     return () => {
       isMounted = false;
     };
-  }, [selectedCollection]);
+  }, [loadAttempt, selectedCollection]);
 
   // Collections filtered by active pillar tab and keyword search
   const visibleCollections = useMemo(() => {
@@ -186,6 +228,45 @@ export const CollectionsPage: React.FC = () => {
     return res;
   }, [listings, activeTag, inCollectionSearch]);
 
+  if (isUnknownCollection) {
+    return (
+      <div className="min-h-screen bg-bg-base">
+        <div className="border-b border-border-base bg-bg-surface">
+          <Container className="py-3">
+            <Breadcrumbs
+              items={[
+                { label: "Accueil", href: routes.home() },
+                {
+                  label: t("collections.collectionsPage.toutesLesCollections"),
+                  href: routes.collections.list(),
+                },
+                { label: t("collections.collectionsPage.notFoundTitle") },
+              ]}
+            />
+          </Container>
+        </div>
+        <Container className="py-10 sm:py-16">
+          <StatePanel
+            variant="notFound"
+            headingLevel={1}
+            title={t("collections.collectionsPage.notFoundTitle")}
+            description={t("collections.collectionsPage.notFoundDescription")}
+            action={
+              <Button to={routes.collections.list()} variant="primary">
+                {t("collections.collectionsPage.returnToCollections")}
+              </Button>
+            }
+            secondaryAction={
+              <Button to={routes.search()} variant="outline">
+                {t("errors.notFoundPage.rechercherUneAnnonce")}
+              </Button>
+            }
+          />
+        </Container>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg-base pb-20">
       {/* 1. Breadcrumbs */}
@@ -193,9 +274,9 @@ export const CollectionsPage: React.FC = () => {
         <Container className="py-3">
           <Breadcrumbs
             items={[
-              { label: "Accueil", href: "/" },
+              { label: "Accueil", href: routes.home() },
               selectedCollection
-                ? { label: "Collections", href: "/collections" }
+                ? { label: "Collections", href: routes.collections.list() }
                 : { label: "Collections" },
               ...(selectedCollection
                 ? [{ label: selectedCollection.title }]
@@ -215,7 +296,7 @@ export const CollectionsPage: React.FC = () => {
               {/* Left Column: Title, description, curator note */}
               <div className="lg:col-span-7 space-y-4">
                 <Link
-                  to="/collections"
+                  to={routes.collections.list()}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors mb-2"
                 >
                   <ArrowLeft className="w-icon-md h-icon-md" />
@@ -329,7 +410,11 @@ export const CollectionsPage: React.FC = () => {
         {!selectedCollection && (
           <div className="space-y-8">
             {/* Pillar Navigation Tabs */}
-            <div className="bg-white rounded-2xl border border-stone-200/80 p-2 shadow-2xs">
+            <div
+              className="rounded-card border border-border-base bg-bg-surface p-2 shadow-2xs"
+              role="group"
+              aria-label={t("collections.collectionsPage.toutesLesCollections")}
+            >
               <ScrollRail
                 label="piliers"
                 className="-mx-2 px-2 sm:mx-0 sm:px-0"
@@ -341,21 +426,18 @@ export const CollectionsPage: React.FC = () => {
                       PILLAR_ICONS[pillar.iconName] || Sparkles;
 
                     return (
-                      <button
+                      <FilterChip
                         key={pillar.id}
-                        type="button"
-                        onClick={() => setActivePillar(pillar.id)}
-                        className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer select-none ${
-                          isSelected
-                            ? "bg-stone-900 text-white shadow-xs"
-                            : "bg-stone-50 hover:bg-stone-100 text-stone-700 hover:text-stone-900"
-                        }`}
+                        onSelect={() => setActivePillar(pillar.id)}
+                        selected={isSelected}
+                        className="min-h-control-md gap-2 px-4 text-xs font-bold sm:text-sm"
                       >
                         <IconComponent
-                          className={`w-4 h-4 ${isSelected ? "text-primary" : "text-stone-400"}`}
+                          aria-hidden="true"
+                          className={`h-icon-sm w-icon-sm ${isSelected ? "text-primary" : "text-text-muted"}`}
                         />
                         <span>{pillar.label}</span>
-                      </button>
+                      </FilterChip>
                     );
                   })}
                 </div>
@@ -376,13 +458,13 @@ export const CollectionsPage: React.FC = () => {
             {/* Collections Grid */}
             {visibleCollections.length > 0 ? (
               <div
-                className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+                className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
                 data-testid="collections-grid"
               >
                 {visibleCollections.map((col) => (
                   <Link
                     key={col.id}
-                    to={`/collections/${col.slug}`}
+                    to={routes.collections.detail(col.slug)}
                     aria-label={col.title}
                     className="group relative flex h-48 min-w-0 flex-col justify-between overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-95"
                   >
@@ -435,28 +517,25 @@ export const CollectionsPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-md mx-auto space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-                  <Search className="w-icon-xl h-icon-xl" />
-                </div>
-                <h3 className="text-base font-bold text-stone-900">
-                  {t("collections.collectionsPage.aucuneCollectionTrouvee")}
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Aucune collection ne correspond à votre recherche "
-                  {collectionSearch}".
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCollectionSearch("");
-                    setActivePillar("all");
-                  }}
-                  className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                >
-                  {t("collections.collectionsPage.voirToutesLesCollections")}
-                </button>
-              </div>
+              <EmptyState
+                className="mx-auto max-w-md"
+                icon={<Search className="h-icon-xl w-icon-xl" aria-hidden="true" />}
+                title={t("collections.collectionsPage.aucuneCollectionTrouvee")}
+                description={`Aucune collection ne correspond à votre recherche « ${collectionSearch} ».`}
+                action={
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="compact"
+                    onClick={() => {
+                      setCollectionSearch("");
+                      setActivePillar("all");
+                    }}
+                  >
+                    {t("collections.collectionsPage.voirToutesLesCollections")}
+                  </Button>
+                }
+              />
             )}
           </div>
         )}
@@ -469,50 +548,61 @@ export const CollectionsPage: React.FC = () => {
             {/* Filter Bar with sub-tags & local search */}
             <div className="bg-white rounded-2xl border border-border-base p-4 shadow-2xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTag(null)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      activeTag === null
-                        ? "bg-stone-900 text-white shadow-xs"
-                        : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                    }`}
+                <div
+                  className="flex items-center gap-2 flex-wrap"
+                  role="group"
+                  aria-label={t("collections.collectionsPage.filtrerDansLaSelection")}
+                >
+                  <FilterChip
+                    onSelect={() =>
+                      setDetailFilters({
+                        collectionId: selectedCollection.id,
+                        activeTag: null,
+                        search: inCollectionSearch,
+                      })
+                    }
+                    selected={activeTag === null}
+                    count={listings.length}
                   >
-                    Tout ({listings.length})
-                  </button>
+                    Tout
+                  </FilterChip>
                   {selectedCollection.tags.map((tag) => (
-                    <button
+                    <FilterChip
                       key={tag}
-                      type="button"
-                      onClick={() =>
-                        setActiveTag(activeTag === tag ? null : tag)
+                      onSelect={() =>
+                        setDetailFilters({
+                          collectionId: selectedCollection.id,
+                          activeTag: activeTag === tag ? null : tag,
+                          search: inCollectionSearch,
+                        })
                       }
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
-                        activeTag === tag
-                          ? "bg-primary text-white font-bold shadow-xs"
-                          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                      }`}
+                      selected={activeTag === tag}
                     >
                       {tag}
-                    </button>
+                    </FilterChip>
                   ))}
                 </div>
 
                 {/* In-collection search input */}
-                <div className="relative w-full sm:w-64">
-                  <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
+                <div className="w-full sm:w-64">
+                  <Input
                     type="text"
                     value={inCollectionSearch}
-                    onChange={(e) => setInCollectionSearch(e.target.value)}
+                    onChange={(e) =>
+                      setDetailFilters({
+                        collectionId: selectedCollection.id,
+                        activeTag,
+                        search: e.target.value,
+                      })
+                    }
                     placeholder={t(
                       "collections.collectionsPage.filtrerDansLaSelection",
                     )}
                     aria-label={t(
                       "collections.collectionsPage.filtrerDansLaSelection",
                     )}
-                    className="w-full h-control-md pl-9 pr-3 text-xs rounded-control bg-stone-50 border border-stone-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all"
+                    leftIcon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
+                    className="h-control-md bg-bg-subtle text-xs"
                   />
                 </div>
               </div>
@@ -521,15 +611,15 @@ export const CollectionsPage: React.FC = () => {
             {/* Listings Grid */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-4">
-                <h3 className="text-base sm:text-lg font-bold text-stone-900">
+                <h2 className="text-base sm:text-lg font-bold text-stone-900">
                   {activeTag
                     ? `Sélection filtrée par "${activeTag}"`
                     : "Pièces sélectionnées"}
-                  <span className="text-xs text-stone-400 font-normal ml-2">
+                  <span className="text-xs text-text-secondary font-normal ml-2">
                     ({displayedListings.length} annonce
                     {displayedListings.length > 1 ? "s" : ""})
                   </span>
-                </h3>
+                </h2>
               </div>
 
               {isLoading ? (
@@ -545,6 +635,22 @@ export const CollectionsPage: React.FC = () => {
                     />
                   ))}
                 </ListingRail>
+              ) : loadError ? (
+                <StatePanel
+                  variant="error"
+                  title={t("collections.collectionsPage.loadErrorTitle")}
+                  description={t("collections.collectionsPage.loadErrorDescription")}
+                  action={
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="compact"
+                      onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+                    >
+                      {t("common.retry")}
+                    </Button>
+                  }
+                />
               ) : displayedListings.length > 0 ? (
                 <ListingRail
                   label={t(
@@ -556,42 +662,39 @@ export const CollectionsPage: React.FC = () => {
                   ))}
                 </ListingRail>
               ) : (
-                <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-12 text-center max-w-lg mx-auto space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
-                    <Filter className="w-icon-xl h-icon-xl" />
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-base font-bold text-stone-900">
-                      {t("collections.collectionsPage.aucuneAnnonceTrouvee")}
-                    </h4>
-                    <p className="text-xs text-stone-500">
-                      {t(
-                        "collections.collectionsPage.aucuneAnnonceNeCorrespondAux",
-                      )}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTag(null);
-                      setInCollectionSearch("");
-                    }}
-                    className="h-control-md px-4 rounded-control bg-stone-900 text-white font-bold text-xs hover:bg-stone-800 transition-colors"
-                  >
-                    {t("collections.collectionsPage.reinitialiserLesFiltres")}
-                  </button>
-                </div>
+                <EmptyState
+                  className="mx-auto max-w-lg"
+                  icon={<Filter className="h-icon-xl w-icon-xl" aria-hidden="true" />}
+                  title={t("collections.collectionsPage.aucuneAnnonceTrouvee")}
+                  description={t("collections.collectionsPage.aucuneAnnonceNeCorrespondAux")}
+                  action={
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="compact"
+                      onClick={() =>
+                        setDetailFilters({
+                          collectionId: selectedCollection.id,
+                          activeTag: null,
+                          search: "",
+                        })
+                      }
+                    >
+                      {t("collections.collectionsPage.reinitialiserLesFiltres")}
+                    </Button>
+                  }
+                />
               )}
             </div>
 
             {/* Other Collections Rail */}
             <div className="pt-10 border-t border-border-base space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-stone-900">
+                <h2 className="text-lg font-bold text-stone-900">
                   {t("collections.collectionsPage.decouvrirDAutresCollections")}
-                </h3>
+                </h2>
                 <Link
-                  to="/collections"
+                  to={routes.collections.list()}
                   className="text-xs font-bold text-primary hover:underline"
                 >
                   Voir tout ({collectionService.getCollections("all").length})
@@ -610,7 +713,7 @@ export const CollectionsPage: React.FC = () => {
                     .map((c) => (
                       <Link
                         key={c.id}
-                        to={`/collections/${c.slug}`}
+                        to={routes.collections.detail(c.slug)}
                         className="group flex items-center gap-3.5 p-3 rounded-2xl bg-white border border-stone-200 hover:border-stone-300 w-72 shrink-0 shadow-2xs hover:shadow-md transition-all"
                       >
                         <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-stone-100">
@@ -625,10 +728,10 @@ export const CollectionsPage: React.FC = () => {
                           <span className="text-micro font-bold text-primary uppercase block truncate">
                             {c.badge.label}
                           </span>
-                          <h4 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
+                          <h3 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
                             {c.title}
-                          </h4>
-                          <p className="text-micro text-stone-400 mt-0.5">
+                          </h3>
+                          <p className="text-micro text-text-secondary mt-0.5">
                             {c.itemCountLabel}
                           </p>
                         </div>

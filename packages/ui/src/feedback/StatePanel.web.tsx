@@ -21,6 +21,8 @@ export interface StatePanelProps {
   technicalDetail?: string;
   /** Localized label for the optional technical-detail disclosure. */
   technicalDetailLabel?: string;
+  /** Use level 1 when the panel replaces an entire routed page. */
+  headingLevel?: 1 | 2 | 3;
   className?: string;
 }
 
@@ -61,9 +63,11 @@ export function StatePanel({
   secondaryAction,
   technicalDetail,
   technicalDetailLabel = "Technical details",
+  headingLevel = 2,
   className,
 }: StatePanelProps) {
   const { Icon, tone } = VARIANT_META[variant];
+  const Title = headingLevel === 1 ? "h1" : headingLevel === 3 ? "h3" : "h2";
 
   return (
     <div
@@ -82,7 +86,9 @@ export function StatePanel({
         <Icon className="h-6 w-6" aria-hidden={true} />
       </div>
 
-      <h2 className="text-base font-bold text-text-main sm:text-lg">{title}</h2>
+      <Title className="text-base font-bold text-text-main sm:text-lg">
+        {title}
+      </Title>
       <p className="mt-1.5 max-w-md text-xs leading-relaxed text-text-secondary sm:text-sm">
         {description}
       </p>
