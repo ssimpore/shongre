@@ -8,6 +8,7 @@ import { useAuth } from "../providers/AuthProvider";
 import type { RoutePolicyId } from "../../security/access-policy.registry";
 import { useAuthorization } from "../../security/useAuthorization";
 import type { ShongreProductId } from "../../types";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 export interface ProductNavigationItem {
   label: string;
@@ -76,14 +77,18 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
     ? workspacePath
     : isAuthenticated
       ? productId === "facturation"
-        ? routes.facturation.activation()
-        : routes.proPlans()
+        ? applicationHref("facturation", "/activation")
+        : applicationHref("marketplace", routes.proPlans())
       : productId === "facturation"
-        ? routes.facturation.registration()
-        : routes.auth.registerProfessional(workspacePath);
+        ? applicationHref("marketplace", routes.facturation.registration())
+        : applicationHref(
+            "marketplace",
+            routes.auth.registerProfessional(workspacePath),
+          );
   const accountDestination = isAuthenticated
-    ? routes.workspace.overview()
-    : routes.auth.login(workspacePath);
+    ? applicationHref("marketplace", routes.workspace.overview())
+    : applicationHref("marketplace", routes.auth.login(workspacePath));
+  const platformDestination = applicationHref("marketplace");
   const accountLabel = isAuthenticated ? "Mon compte" : "Se connecter";
 
   return (
@@ -142,7 +147,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
           <div className="hidden shrink-0 items-center gap-4 md:flex">
             {showPlatformNavigation ? (
               <Link
-                to={routes.home()}
+                to={platformDestination}
                 className="inline-flex min-h-control-touch items-center gap-2 rounded-control px-2 text-xs font-bold text-text-secondary transition-colors hover:bg-bg-subtle hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
@@ -222,7 +227,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                   : null}
                 {showPlatformNavigation ? (
                   <Link
-                    to={routes.home()}
+                    to={platformDestination}
                     className="inline-flex min-h-control-touch items-center gap-2 py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />

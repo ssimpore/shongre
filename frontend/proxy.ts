@@ -9,6 +9,10 @@ import {
   marketInfrastructureFromEnvironment,
   webEnvironmentFromEnvironment,
 } from "./src/platform/market/market-infrastructure";
+import {
+  applicationIdForHostname,
+  createApplicationRegistry,
+} from "./src/platform/applications/application-registry";
 
 function requestHostname(request: NextRequest): string {
   const trustProxy = process.env.SHONGRE_TRUST_PROXY_HOST === "true";
@@ -107,6 +111,30 @@ function applyRuntimeHeaders(
 export function proxy(request: NextRequest) {
   const environment = webEnvironmentFromEnvironment();
   const hostname = requestHostname(request);
+  const applications = createApplicationRegistry({
+    environment: environment.environment,
+    marketplaceOrigin:
+      process.env.SHONGRE_MARKETPLACE_ORIGIN ||
+      environment.urls.franceApp.origin,
+    origins: {
+      solutions: process.env.SHONGRE_SOLUTIONS_ORIGIN,
+      prospects: process.env.SHONGRE_PROSPECTS_ORIGIN,
+      facturation: process.env.SHONGRE_FACTURATION_ORIGIN,
+    },
+  });
+  const applicationId = applicationIdForHostname(hostname, applications);
+  if (applicationId && applicationId !== "marketplace") {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-shongre-resolved-host", hostname);
+    requestHeaders.set("x-shongre-application-id", applicationId);
+    requestHeaders.set("x-shongre-market-code", "FR");
+    requestHeaders.set("x-shongre-market-locale", "fr-FR");
+    requestHeaders.set("x-shongre-market-currency", "EUR");
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    response.headers.set("Vary", "Host");
+    response.headers.set("x-shongre-application", applicationId);
+    return applyRuntimeHeaders(response, environment);
+  }
   const allowLocalE2EHost = process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
   let context: ReturnType<typeof resolveMarketContext>;
   try {

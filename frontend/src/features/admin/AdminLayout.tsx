@@ -25,6 +25,7 @@ import {
   Headphones,
   Flag,
   BarChart3,
+  Grid2X2,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -213,6 +214,12 @@ export const AdminLayout: React.FC = () => {
       label: "Fonctionnalités",
       icon: Flag,
       show: canAccessRoute("adminFeatureFlags"),
+    },
+    {
+      to: routes.admin.solutions(),
+      label: "Solutions",
+      icon: Grid2X2,
+      show: canAccessRoute("adminSolutions"),
     },
     {
       to: "/admin/roles",

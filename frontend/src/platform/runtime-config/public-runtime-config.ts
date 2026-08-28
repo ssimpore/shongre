@@ -1,5 +1,9 @@
 import type { AppEnvironment } from "@shongre/contracts/environment";
 import type { AnalyticsEnvironmentMode } from "@shongre/contracts/environment";
+import {
+  createApplicationRegistry,
+  type ShongreApplicationRegistry,
+} from "../applications/application-registry";
 
 export type PublicDataMode = "demo" | "api";
 
@@ -13,6 +17,7 @@ export interface PublicRuntimeConfig {
   mockStorageEnabled: boolean;
   stripePublishableKey: string;
   release: string;
+  applications: ShongreApplicationRegistry;
   analytics: {
     mode: AnalyticsEnvironmentMode;
     internalEnabled: boolean;
@@ -69,10 +74,25 @@ function nodeFallback(): PublicRuntimeConfig {
     );
   }
 
+  const franceUrl = nodeEnvironmentValue("NEXT_PUBLIC_FR_URL");
+  const applications = createApplicationRegistry({
+    environment: appEnvironment as AppEnvironment,
+    marketplaceOrigin:
+      nodeEnvironmentValue("SHONGRE_MARKETPLACE_ORIGIN") ||
+      franceUrl ||
+      "http://localhost:3000",
+    origins: {
+      solutions: nodeEnvironmentValue("SHONGRE_SOLUTIONS_ORIGIN") || undefined,
+      prospects: nodeEnvironmentValue("SHONGRE_PROSPECTS_ORIGIN") || undefined,
+      facturation:
+        nodeEnvironmentValue("SHONGRE_FACTURATION_ORIGIN") || undefined,
+    },
+  });
+
   return {
     appEnvironment: appEnvironment as AppEnvironment,
     environmentId: nodeEnvironmentValue("NEXT_PUBLIC_ENVIRONMENT_ID"),
-    franceUrl: nodeEnvironmentValue("NEXT_PUBLIC_FR_URL"),
+    franceUrl,
     internationalUrl: nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL"),
     apiBaseUrl: nodeEnvironmentValue("NEXT_PUBLIC_API_URL"),
     dataMode,
@@ -82,6 +102,7 @@ function nodeFallback(): PublicRuntimeConfig {
       "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     ),
     release: nodeEnvironmentValue("RELEASE_SHA") || "unreleased",
+    applications,
     analytics: {
       mode: (nodeEnvironmentValue("ANALYTICS_MODE") ||
         (appEnvironment === "test"

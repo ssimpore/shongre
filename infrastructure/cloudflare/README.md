@@ -21,10 +21,19 @@ Create these once in Cloudflare Zero Trust, never during an application release:
 | PRODUCTION  | `shongre-production` | `shongre.com`            | `http://frontend:3000` |
 | PRODUCTION  | `shongre-production` | `www.shongre.com`        | `http://frontend:3000` |
 | PRODUCTION  | `shongre-production` | `api.shongre.fr`         | `http://backend:4000`  |
+| PRODUCTION  | `shongre-production` | `solutions.shongre.fr`   | `http://frontend:3000` |
+| PRODUCTION  | `shongre-production` | `prospects.shongre.fr`   | `http://frontend:3000` |
+| PRODUCTION  | `shongre-production` | `facturation.shongre.fr` | `http://frontend:3000` |
 
 Cloudflare creates the proxied DNS routes for these hostnames. Keep access to
 the dashboard restricted and audited. Do not give an application host a broad
 Cloudflare API token; normal deployment changes only image digests.
+
+The three product hostnames above are operator-managed mappings to the existing
+frontend service. Application releases must not create them, recreate the
+Tunnel, or publish port 3000. Configure equivalent environment-specific names
+for DEV/STAGING and inject their origins with `SHONGRE_SOLUTIONS_ORIGIN`,
+`SHONGRE_PROSPECTS_ORIGIN`, and `SHONGRE_FACTURATION_ORIGIN` at runtime.
 
 ## Host token boundary
 

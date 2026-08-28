@@ -104,6 +104,7 @@ export const messagesEn: MessageCatalogue = {
   "footer.sectionHelp": "Help & trust",
   "footer.proSolutions": "Pro solutions & pricing",
   "footer.shongreProspects": "Shongre Prospects",
+  "footer.shongreSolutions": "All Shongre solutions",
   "footer.shongreFacturation": "Shongre Invoicing",
   "footer.helpCenter": "Help center & FAQ",
   "footer.newsletterHeading": "Shongre newsletter",

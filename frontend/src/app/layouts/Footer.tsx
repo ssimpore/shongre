@@ -255,6 +255,9 @@ export const Footer: React.FC = () => {
               isOpen={isDesktop || openSections.professionals}
               onToggle={toggleSection}
             >
+              <FooterLink to={routes.solutions.home()}>
+                {t("footer.shongreSolutions")}
+              </FooterLink>
               <FooterLink to="/solutions-pro">
                 {t("footer.proSolutions")}
               </FooterLink>

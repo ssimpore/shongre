@@ -4,6 +4,7 @@ import {
   isProduction,
 } from "@shongre/contracts/environment";
 import type { PublicRuntimeConfig } from "./public-runtime-config";
+import { createApplicationRegistry } from "../applications/application-registry";
 
 function enabled(name: string): boolean {
   return process.env[name] === "true";
@@ -69,6 +70,18 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     }
   }
 
+  const applications = createApplicationRegistry({
+    environment: environment.environment,
+    marketplaceOrigin:
+      process.env.SHONGRE_MARKETPLACE_ORIGIN ||
+      environment.urls.franceApp.origin,
+    origins: {
+      solutions: process.env.SHONGRE_SOLUTIONS_ORIGIN,
+      prospects: process.env.SHONGRE_PROSPECTS_ORIGIN,
+      facturation: process.env.SHONGRE_FACTURATION_ORIGIN,
+    },
+  });
+
   return {
     appEnvironment: environment.environment,
     environmentId: environment.environmentId,
@@ -83,6 +96,7 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
       process.env.GIT_SHA ||
       process.env.IMAGE_DIGEST ||
       "unreleased",
+    applications,
     analytics: {
       mode: analyticsMode,
       internalEnabled: enabled("NEXT_PUBLIC_INTERNAL_ANALYTICS_ENABLED"),

@@ -36,6 +36,12 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/profil/camille-martin", name: "seller-profile", persona: "guest" },
   { path: "/professionnels", name: "pro-directory", persona: "guest" },
   { path: "/solutions-pro", name: "pro-plans", persona: "guest" },
+  { path: "/solutions", name: "solutions-catalog", persona: "guest" },
+  {
+    path: "/solutions/facturation",
+    name: "solutions-facturation-detail",
+    persona: "guest",
+  },
   { path: "/emploi", name: "employment-search", persona: "guest" },
   {
     path: "/emploi/metier/frontend_engineer",
@@ -188,6 +194,7 @@ export const ADMIN_ROUTES: RouteUnderTest[] = [
     name: "admin-feature-flags",
     persona: "admin",
   },
+  { path: "/admin/solutions", name: "admin-solutions", persona: "admin" },
   { path: "/securite-interne", name: "staff-mfa", persona: "admin" },
   { path: "/admin/moderation", name: "admin-moderation", persona: "moderator" },
   { path: "/admin/utilisateurs", name: "admin-users", persona: "admin" },

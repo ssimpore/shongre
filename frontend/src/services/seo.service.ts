@@ -52,6 +52,8 @@ export interface PageMeta {
   description?: string;
   /** Path only, e.g. `/recherche`. Query and hash are dropped — see below. */
   canonicalPath?: string;
+  /** Explicit environment-aware canonical, used by non-marketplace applications. */
+  canonicalUrl?: string;
   /** Absolute URL. Omitted rather than faked when a page has no image. */
   image?: string;
   type?: "website" | "article" | "product" | "profile";
@@ -313,7 +315,11 @@ export function applyPageMeta(
     meta.canonicalPath ??
     marketContext?.internalPath ??
     window.location.pathname;
-  const canonical = marketContext?.countryCode
+  const canonical = meta.canonicalUrl
+    ? new URL(meta.canonicalUrl, origin).toString().replace(/\/$/, (match) =>
+        new URL(meta.canonicalUrl!, origin).pathname === "/" ? match : "",
+      )
+    : marketContext?.countryCode
     ? buildPublicUrl({
         country: marketContext.countryCode,
         route: canonicalPath,
@@ -325,7 +331,11 @@ export function applyPageMeta(
 
   upsertMeta('meta[name="description"]', "name", "description", description);
   upsertCanonical(canonical);
-  applyAlternateLinks(meta, canonicalPath, marketContext);
+  applyAlternateLinks(
+    meta,
+    canonicalPath,
+    meta.canonicalUrl ? null : marketContext,
+  );
 
   upsertMeta('meta[property="og:title"]', "property", "og:title", title);
   upsertMeta(

@@ -20,6 +20,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { ProspectsLandingPreview } from "./components/ProspectsLandingPreview";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 const primaryCtaClass =
   "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -85,12 +86,16 @@ export function ProspectsProductPage() {
     title: "Shongre Prospects — Trouvez et qualifiez vos prospects B2B",
     description:
       "Transformez un profil cible en entreprises qualifiées avec score explicable, preuves sourcées et validation humaine.",
-    canonicalPath: routes.prospects.product(),
+    canonicalUrl: applicationHref("prospects"),
+    alternateCountries: [],
   });
 
   const workspaceDestination = currentUser
-    ? routes.prospects.workspace()
-    : routes.auth.registerProfessional(routes.prospects.workspace());
+    ? applicationHref("prospects", "/app")
+    : applicationHref(
+        "marketplace",
+        routes.auth.registerProfessional(routes.prospects.workspace()),
+      );
   const workspaceCtaLabel = currentUser
     ? "Ouvrir Shongre Prospects"
     : "Créer mon espace Prospects";

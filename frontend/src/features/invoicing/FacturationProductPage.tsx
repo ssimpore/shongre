@@ -17,6 +17,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
 import { hasProductAccess } from "../../domains/user/user.domain";
 import { InvoicingLandingPreview } from "./components/InvoicingLandingPreview";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 const primaryCtaClass =
   "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -32,16 +33,17 @@ export function FacturationProductPage() {
   usePageMeta({
     title: t("invoicing.product.metaTitle"),
     description: t("invoicing.product.description"),
-    canonicalPath: routes.facturation.product(),
+    canonicalUrl: applicationHref("facturation"),
+    alternateCountries: [],
   });
 
   const canOpenWorkspace = canAccessRoute("standaloneInvoicing");
   const hasFacturation = hasProductAccess(currentUser, "facturation");
   const workspaceDestination = canOpenWorkspace
-    ? routes.facturation.workspace()
+    ? applicationHref("facturation", "/app")
     : currentUser
-      ? routes.facturation.activation()
-      : routes.facturation.registration();
+      ? applicationHref("facturation", "/activation")
+      : applicationHref("marketplace", routes.facturation.registration());
   const workspaceCtaLabel = canOpenWorkspace
     ? t("invoicing.product.openApp")
     : currentUser && !hasFacturation

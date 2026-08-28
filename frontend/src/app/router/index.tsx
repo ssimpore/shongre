@@ -11,6 +11,7 @@ import { MainLayout } from "../layouts/MainLayout";
 import { AccountLayout } from "../layouts/AccountLayout";
 import { FocusedLayout } from "../layouts/FocusedLayout";
 import { ProductLayout } from "../layouts/ProductLayout";
+import { SolutionsLayout } from "../../features/solutions/SolutionsLayout";
 import { PageSuspense } from "../layouts/PageSuspense";
 import { routes } from "../../configuration/routes";
 
@@ -21,6 +22,7 @@ import { RequirePermission } from "../../security/components/RequirePermission";
 import { RequireStaffMfa } from "../../security/components/RequireStaffMfa";
 import { AdminLayout } from "../../features/admin/AdminLayout";
 import type { Permission } from "../../types";
+import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
 // Lazy Loaded Features
 const HomePage = lazy(() =>
@@ -242,6 +244,16 @@ const FacturationProductPage = lazy(() =>
     default: m.FacturationProductPage,
   })),
 );
+const SolutionsPage = lazy(() =>
+  import("../../features/solutions/SolutionsPage").then((m) => ({
+    default: m.SolutionsPage,
+  })),
+);
+const SolutionDetailPage = lazy(() =>
+  import("../../features/solutions/SolutionDetailPage").then((m) => ({
+    default: m.SolutionDetailPage,
+  })),
+);
 const InvoicingWorkspacePage = lazy(() =>
   import("../../features/invoicing/InvoicingWorkspacePage").then((m) => ({
     default: m.InvoicingWorkspacePage,
@@ -410,6 +422,11 @@ const AdminSupportPage = lazy(() =>
 const AdminFeatureFlagsPage = lazy(() =>
   import("../../features/admin/AdminFeatureFlagsPage").then((m) => ({
     default: m.AdminFeatureFlagsPage,
+  })),
+);
+const AdminSolutionsPage = lazy(() =>
+  import("../../features/admin/AdminSolutionsPage").then((m) => ({
+    default: m.AdminSolutionsPage,
   })),
 );
 const StaffMfaPage = lazy(() =>
@@ -672,6 +689,14 @@ const LegacyEducationRedirect: React.FC = () => {
 };
 
 export const APP_ROUTES: RouteObject[] = [
+  {
+    path: "/solutions",
+    element: <SolutionsLayout />,
+    children: [
+      { index: true, element: withSuspense(SolutionsPage) },
+      { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },
+    ],
+  },
   // Public Shongre products have their own quiet acquisition shell. Marketplace
   // search and publication controls distract from the product story and are
   // still one explicit link away when a visitor wants to return.
@@ -1322,6 +1347,14 @@ export const APP_ROUTES: RouteObject[] = [
         ),
       },
       {
+        path: "solutions",
+        element: (
+          <RequireRoutePolicy policyId="adminSolutions">
+            {withSuspense(AdminSolutionsPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
         path: "moderation",
         element: (
           <RequireRoutePolicy policyId="adminModeration">
@@ -1615,10 +1648,92 @@ export const APP_ROUTES: RouteObject[] = [
   },
 ];
 
+function routesForApplication(
+  applicationId: ShongreApplicationId,
+): RouteObject[] {
+  if (applicationId === "marketplace") return APP_ROUTES;
+
+  if (applicationId === "solutions") {
+    return [
+      {
+        path: "/",
+        element: <SolutionsLayout />,
+        children: [
+          { index: true, element: withSuspense(SolutionsPage) },
+          { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },
+          { path: "*", element: withSuspense(NotFoundPage) },
+        ],
+      },
+    ];
+  }
+
+  if (applicationId === "facturation") {
+    const localRoute = APP_ROUTES.find((route) => route.path === "/facturation");
+    return [
+      {
+        path: "/",
+        element: (
+          <ProductLayout
+            productId="facturation"
+            productName="Facturation"
+            productPath="/"
+            workspacePath="/app"
+            navigation={invoicingProductNavigation.map((item) => ({
+              ...item,
+              to: item.to.replace("/facturation", ""),
+            }))}
+            workspacePolicyId="standaloneInvoicing"
+            footerDescription="La facturation multi-marché de votre organisation, avec des contrôles de production explicites."
+          />
+        ),
+        children: [
+          ...(localRoute?.children || []),
+          { path: "*", element: withSuspense(NotFoundPage) },
+        ],
+      },
+    ];
+  }
+
+  const localRoute = APP_ROUTES.find(
+    (route) =>
+      route.path === "/" &&
+      route.children?.some((child) => child.path === "prospects"),
+  );
+  const workspace = localRoute?.children?.find((child) => child.path === "app");
+  return [
+    {
+      path: "/",
+      element: (
+        <ProductLayout
+          productId="prospects"
+          productName="Prospects"
+          productPath="/"
+          workspacePath="/app"
+          navigation={prospectsProductNavigation.map((item) => ({
+            ...item,
+            to: item.to.replace("/prospects", ""),
+          }))}
+          workspacePolicyId="standaloneProspects"
+        />
+      ),
+      children: [
+        { index: true, element: withSuspense(ProspectsProductPage) },
+        ...(workspace ? [workspace] : []),
+        { path: "*", element: withSuspense(NotFoundPage) },
+      ],
+    },
+  ];
+}
+
 export const AppRouter: React.FC<{
   initialPath?: string;
   basename?: string;
-}> = ({ initialPath = "/", basename = "/" }) => {
+  applicationId?: ShongreApplicationId;
+}> = ({
+  initialPath = "/",
+  basename = "/",
+  applicationId = "marketplace",
+}) => {
   const router = useRef<
     | ReturnType<typeof createBrowserRouter>
     | ReturnType<typeof createMemoryRouter>
@@ -1627,11 +1742,11 @@ export const AppRouter: React.FC<{
   if (!router.current) {
     router.current =
       typeof window === "undefined"
-        ? createMemoryRouter(APP_ROUTES, {
+        ? createMemoryRouter(routesForApplication(applicationId), {
             basename,
             initialEntries: [initialPath],
           })
-        : createBrowserRouter(APP_ROUTES, { basename });
+        : createBrowserRouter(routesForApplication(applicationId), { basename });
   }
   return <RouterProvider router={router.current} />;
 };

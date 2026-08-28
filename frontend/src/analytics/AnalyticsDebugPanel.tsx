@@ -48,7 +48,7 @@ export function AnalyticsDebugPanel({
           aria-hidden="true"
         />
       </summary>
-      <div className="absolute right-0 top-full z-popover mt-1 w-viewport-popover-max rounded-control border border-stone-700 bg-stone-950 p-3 shadow-dropdown">
+      <div className="fixed inset-x-3 top-9 z-popover w-auto rounded-control border border-stone-700 bg-stone-950 p-3 shadow-dropdown sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-1 sm:w-viewport-popover-max">
         <p className="font-bold">Diagnostic Analytics</p>
         <dl className="mt-3 grid grid-cols-action-content gap-x-3 gap-y-1 text-micro">
           <dt className="text-stone-400">Consentement</dt>

@@ -4,6 +4,23 @@ const apiUrl = process.env.PLAYWRIGHT_API_URL;
 const franceUrl = process.env.PLAYWRIGHT_FR_URL;
 const expectedEnvironment = process.env.PLAYWRIGHT_EXPECTED_ENVIRONMENT;
 const expectedRelease = process.env.PLAYWRIGHT_EXPECTED_RELEASE;
+const applicationHosts = [
+  {
+    id: "solutions",
+    url: process.env.PLAYWRIGHT_SOLUTIONS_URL,
+    title: /Shongre Solutions/i,
+  },
+  {
+    id: "prospects",
+    url: process.env.PLAYWRIGHT_PROSPECTS_URL,
+    title: /Shongre Prospects/i,
+  },
+  {
+    id: "facturation",
+    url: process.env.PLAYWRIGHT_FACTURATION_URL,
+    title: /Shongre Facturation/i,
+  },
+] as const;
 
 function expectSecurityHeaders(headers: Record<string, string>) {
   expect(headers["x-content-type-options"]).toBe("nosniff");
@@ -37,6 +54,24 @@ test.describe("hosted Cloudflare path", () => {
     expect(response.ok()).toBe(true);
     expect(await response.text()).toMatch(/Shongre/i);
     expectSecurityHeaders(response.headers());
+  });
+
+  test("serves each canonical Shongre application hostname", async ({ request }) => {
+    test.skip(
+      applicationHosts.some((application) => !application.url),
+      "Hosted application URLs are required.",
+    );
+    for (const application of applicationHosts) {
+      const response = await request.get(application.url!);
+      expect(response.ok()).toBe(true);
+      expect(response.headers()["x-shongre-application"]).toBe(application.id);
+      expectSecurityHeaders(response.headers());
+      const html = await response.text();
+      expect(html).toMatch(application.title);
+      expect(html).toContain(
+        `<link rel="canonical" href="${new URL(application.url!).origin}"`,
+      );
+    }
   });
 
   test("serves live and ready API probes through the Tunnel", async ({

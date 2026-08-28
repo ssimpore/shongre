@@ -109,6 +109,7 @@ export const messagesFr = {
   "footer.sectionHelp": "Aide & Confiance",
   "footer.proSolutions": "Solutions & Tarifs Pro",
   "footer.shongreProspects": "Shongre Prospects",
+  "footer.shongreSolutions": "Toutes les solutions Shongre",
   "footer.shongreFacturation": "Shongre Facturation",
   "footer.helpCenter": "Centre d’aide & FAQ",
   "footer.newsletterHeading": "Newsletter Shongre",

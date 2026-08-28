@@ -11,6 +11,28 @@ const injected: PublicRuntimeConfig = {
   mockStorageEnabled: false,
   stripePublishableKey: "pk_test_staging",
   release: "a".repeat(40),
+  applications: {
+    marketplace: {
+      applicationId: "marketplace",
+      origin: "https://staging.shongre.fr",
+      fallbackPath: "/",
+    },
+    solutions: {
+      applicationId: "solutions",
+      origin: "https://solutions.staging.shongre.fr",
+      fallbackPath: "/solutions",
+    },
+    prospects: {
+      applicationId: "prospects",
+      origin: "https://prospects.staging.shongre.fr",
+      fallbackPath: "/prospects",
+    },
+    facturation: {
+      applicationId: "facturation",
+      origin: "https://facturation.staging.shongre.fr",
+      fallbackPath: "/facturation",
+    },
+  },
   analytics: {
     mode: "staging",
     internalEnabled: true,

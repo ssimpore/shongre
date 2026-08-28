@@ -12,6 +12,9 @@ import {
 import { GlobalGatewayPage } from "../../src/features/global/GlobalGatewayPage";
 import { MarketLaunchPage } from "../../src/features/global/MarketLaunchPage";
 import { WebApplication } from "../WebApplication";
+import { resolveServerApplicationContext } from "../../src/platform/applications/server-application-context";
+import { DEMO_SOLUTIONS } from "../../src/api/adapters/demo/demo-solutions.data";
+import { PUBLIC_SOLUTION_LIFECYCLES } from "../../src/domains/solutions/solutions.presentation";
 
 interface PageProps {
   params: Promise<{ segments?: string[] }>;
@@ -29,6 +32,66 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const [{ segments = [] }, query] = await Promise.all([params, searchParams]);
   const pathname = normalizePathname(segments);
+  const applicationContext = await resolveServerApplicationContext();
+  if (applicationContext) {
+    const { applicationId, canonicalOrigin } = applicationContext;
+    const rootCanonical = `${canonicalOrigin}/`;
+    let title = "Shongre";
+    let description = "Les applications professionnelles Shongre.";
+    let canonical = rootCanonical;
+    let noIndex = pathname !== "/";
+
+    if (applicationId === "solutions") {
+      const slug = pathname.split("/").filter(Boolean)[0];
+      const candidate = slug
+        ? DEMO_SOLUTIONS.find((value) => value.slug === slug)
+        : null;
+      const solution =
+        candidate && PUBLIC_SOLUTION_LIFECYCLES.includes(candidate.lifecycle)
+          ? candidate
+          : null;
+      const unknownSolution = Boolean(slug && !solution);
+      title = unknownSolution
+        ? "Solution introuvable — Shongre Solutions"
+        : solution
+          ? `${solution.name} — Shongre Solutions`
+          : "Shongre Solutions — Toutes vos applications professionnelles";
+      description = unknownSolution
+        ? "Cette adresse ne correspond à aucune solution publique du catalogue Shongre."
+        : solution?.description ||
+          "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.";
+      canonical = new URL(pathname, rootCanonical).toString();
+      noIndex = unknownSolution || Boolean(
+        solution &&
+          ["MAINTENANCE", "DEPRECATED"].includes(solution.lifecycle),
+      );
+    } else if (applicationId === "prospects") {
+      title = "Shongre Prospects — Trouvez et qualifiez vos prospects B2B";
+      description =
+        "Transformez un profil cible en entreprises qualifiées avec score explicable, preuves sourcées et validation humaine.";
+    } else {
+      title = "Shongre Facturation — Facturez avec confiance";
+      description =
+        "Créez, finalisez et suivez vos factures au sein de votre organisation Shongre.";
+    }
+
+    return {
+      title,
+      description,
+      alternates: { canonical },
+      robots: noIndex
+        ? { index: false, follow: false }
+        : { index: true, follow: true },
+      openGraph: {
+        title,
+        description,
+        type: "website",
+        locale: "fr_FR",
+        siteName: "Shongre",
+        url: canonical,
+      },
+    };
+  }
   const context = await resolveServerMarketContext(pathname);
   if (context.kind === "global_gateway") {
     return {
@@ -76,6 +139,16 @@ export async function generateMetadata({
 export default async function Page({ params }: PageProps) {
   const { segments = [] } = await params;
   const pathname = normalizePathname(segments);
+  const applicationContext = await resolveServerApplicationContext();
+  if (applicationContext) {
+    return (
+      <WebApplication
+        pathname={pathname}
+        marketContext={applicationContext.marketContext}
+        applicationId={applicationContext.applicationId}
+      />
+    );
+  }
   const context = await resolveServerMarketContext(pathname);
   const infrastructure = marketInfrastructureFromEnvironment();
 

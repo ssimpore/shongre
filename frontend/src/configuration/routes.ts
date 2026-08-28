@@ -162,6 +162,10 @@ export const routes = {
     list: () => "/collections",
     detail: (slug: string) => `/collections/${pathSegment(slug)}`,
   },
+  solutions: {
+    home: () => "/solutions",
+    detail: (slug: string) => `/solutions/${pathSegment(slug)}`,
+  },
   prospects: {
     product: () => "/prospects",
     workspace: () => "/app",
@@ -255,6 +259,7 @@ export const routes = {
   deals: () => "/bons-plans",
   admin: {
     overview: () => `/admin`,
+    solutions: () => `/admin/solutions`,
     moderation: () => `/admin/moderation`,
     verifications: () => `/admin/verifications`,
     providers: () => `/admin/fournisseurs`,

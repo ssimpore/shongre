@@ -164,6 +164,7 @@ export const ROUTE_POLICIES = {
     "/admin/fonctionnalites",
     "admin.configuration.manage",
   ),
+  adminSolutions: staff("/admin/solutions", "admin.configuration.manage"),
   adminRoles: {
     ...staff("/admin/roles", "role.manage"),
     alternativeCapabilities: ["permission.manage"],
