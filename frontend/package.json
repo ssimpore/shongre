@@ -34,7 +34,8 @@
     "check:i18n": "node scripts/check-i18n-coverage.mjs",
     "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts",
     "check:navigation": "node scripts/check-navigation-integrity.mjs",
-    "check:routes": "node scripts/check-route-coverage.mjs"
+    "check:routes": "node scripts/check-route-coverage.mjs",
+    "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

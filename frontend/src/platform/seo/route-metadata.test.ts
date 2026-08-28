@@ -59,11 +59,10 @@ describe("country-aware route metadata", () => {
     const languages = metadata.alternates?.languages as
       Record<string, string> | undefined;
 
-    expect(languages).toMatchObject({
+    expect(languages).toEqual({
       "fr-FR": "https://shongre.fr/categories",
       "fr-BE": "https://shongre.com/be/categories",
       "fr-CH": "https://shongre.com/ch/categories",
-      "x-default": "https://shongre.com/",
     });
     expect(Object.values(languages || {})).not.toContain(
       "https://shongre.com/sn/categories",
@@ -80,6 +79,19 @@ describe("country-aware route metadata", () => {
     expect(String(metadata.alternates?.canonical)).toBe(
       "https://shongre.com/ch/recherche",
     );
-    expect(metadata.robots).toMatchObject({ index: false, follow: false });
+    expect(metadata.robots).toMatchObject({ index: false, follow: true });
+  });
+
+  it("uses the global gateway as x-default only for equivalent market homes", () => {
+    const metadata = metadataForRoute({
+      pathname: "/",
+      marketContext: contextFor("shongre.fr", "/"),
+    });
+    expect(metadata.alternates?.languages).toMatchObject({
+      "fr-FR": "https://shongre.fr/",
+      "fr-BE": "https://shongre.com/be",
+      "fr-CH": "https://shongre.com/ch",
+      "x-default": "https://shongre.com/",
+    });
   });
 });

@@ -3,21 +3,23 @@ import {
   renderMarketSitemap,
   resolveSitemapMarketContext,
   sitemapNotFound,
-} from "../../../src/platform/seo/sitemap-route.server";
+} from "../../../../src/platform/seo/sitemap-route.server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  routeContext: { params: Promise<{ country: string }> },
+  routeContext: { params: Promise<{ country: string; shard: string }> },
 ): Promise<Response> {
-  const { country: slug } = await routeContext.params;
+  const { country: slug, shard } = await routeContext.params;
   const country = getCountryConfigBySlug(slug);
   if (!country || country.canonicalDomainMode !== "international") {
     return sitemapNotFound();
   }
-  const pathname = `/${country.slug}/sitemap.xml`;
-  const context = resolveSitemapMarketContext(request, pathname);
+  const context = resolveSitemapMarketContext(
+    request,
+    `/${country.slug}/sitemaps/${shard}.xml`,
+  );
   if (
     context.kind !== "market" ||
     context.countryCode !== country.code ||
@@ -25,5 +27,5 @@ export async function GET(
   ) {
     return sitemapNotFound();
   }
-  return renderMarketSitemap(context);
+  return renderMarketSitemap(context, shard);
 }

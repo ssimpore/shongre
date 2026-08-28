@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   isLocal,
   isTest,
+  buildPublicUrl,
   resolveMarketContext,
   type EnvironmentConfig,
 } from "@shongre/contracts";
@@ -13,6 +14,8 @@ import {
   applicationIdForHostname,
   createApplicationRegistry,
 } from "./src/platform/applications/application-registry";
+import { resolveServerPublicRouteData } from "./src/platform/seo/server-public-route-data";
+import { resolveSeoPolicy } from "./src/platform/seo/seo-policy";
 
 function requestHostname(request: NextRequest): string {
   const trustProxy = process.env.SHONGRE_TRUST_PROXY_HOST === "true";
@@ -108,7 +111,58 @@ function applyRuntimeHeaders(
   return response;
 }
 
-export function proxy(request: NextRequest) {
+function isDirectHtmlNavigation(request: NextRequest): boolean {
+  if (request.method !== "GET" && request.method !== "HEAD") return false;
+  if (request.headers.has("rsc") || request.nextUrl.searchParams.has("_rsc")) {
+    return false;
+  }
+  const pathname = request.nextUrl.pathname;
+  if (
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname.includes("/sitemap") ||
+    /\.[a-z0-9]+$/i.test(pathname)
+  ) {
+    return false;
+  }
+  const accept = request.headers.get("accept") || "*/*";
+  return accept.includes("text/html") || accept.includes("*/*");
+}
+
+function needsResourceExistenceResolution(pathname: string): boolean {
+  return (
+    /^\/annonce\/[^/]+$/.test(pathname) ||
+    /^\/(?:boutique|profil|vendeur|u)\/[^/]+$/.test(pathname) ||
+    /^\/emploi\/offre\/[^/]+$/.test(pathname) ||
+    /^\/auto\/vehicule\/[^/]+$/.test(pathname) ||
+    /^\/immo\/bien\/[^/]+$/.test(pathname) ||
+    /^\/education\/professeur\/[^/]+$/.test(pathname) ||
+    /^\/collections\/[^/]+$/.test(pathname)
+  );
+}
+
+function notFoundResponse(environment: EnvironmentConfig): NextResponse {
+  const body =
+    '<!doctype html><html lang="fr"><head><meta charset="utf-8">' +
+    '<meta name="robots" content="noindex, nofollow">' +
+    "<title>Page introuvable | Shongre</title></head><body>" +
+    "<main><h1>Page introuvable</h1>" +
+    "<p>Cette adresse ne correspond à aucune page publique Shongre.</p>" +
+    '<a href="/">Retour à l’accueil</a></main></body></html>';
+  const response = new NextResponse(body, {
+    status: 404,
+    headers: {
+      "Cache-Control": "no-store",
+      "Content-Type": "text/html; charset=utf-8",
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
+    },
+  });
+  return applyRuntimeHeaders(response, environment);
+}
+
+export async function proxy(request: NextRequest) {
   const environment = webEnvironmentFromEnvironment();
   const hostname = requestHostname(request);
   const applications = createApplicationRegistry({
@@ -130,17 +184,24 @@ export function proxy(request: NextRequest) {
     requestHeaders.set("x-shongre-market-code", "FR");
     requestHeaders.set("x-shongre-market-locale", "fr-FR");
     requestHeaders.set("x-shongre-market-currency", "EUR");
-    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
     response.headers.set("Vary", "Host");
     response.headers.set("x-shongre-application", applicationId);
     return applyRuntimeHeaders(response, environment);
   }
   const allowLocalE2EHost = process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
+  const hostLevelMetadataPath = [
+    "/robots.txt",
+    "/sitemap.xml",
+    "/gateway-sitemap.xml",
+  ].includes(request.nextUrl.pathname);
   let context: ReturnType<typeof resolveMarketContext>;
   try {
     context = resolveMarketContext({
       hostname,
-      pathname: request.nextUrl.pathname,
+      pathname: hostLevelMetadataPath ? "/" : request.nextUrl.pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
       allowDevelopmentHosts:
         isLocal(environment.environment) ||
@@ -239,6 +300,45 @@ export function proxy(request: NextRequest) {
         reason: context.reason,
       }),
     );
+    return notFoundResponse(environment);
+  }
+
+  if (
+    context.kind === "market" &&
+    context.countryCode &&
+    isDirectHtmlNavigation(request)
+  ) {
+    const routeData = needsResourceExistenceResolution(context.internalPath)
+      ? await resolveServerPublicRouteData(
+          context.internalPath,
+          context.countryCode,
+          request.nextUrl.searchParams.toString(),
+        )
+      : ({ status: "not_applicable", data: null } as const);
+    const query = Object.fromEntries(request.nextUrl.searchParams.entries());
+    const policy = resolveSeoPolicy({
+      pathname: context.internalPath,
+      query,
+      marketContext: context,
+      routeData,
+    });
+    if (routeData.status === "not_found" || !policy.knownRoute) {
+      return notFoundResponse(environment);
+    }
+    if (policy.redirectPath) {
+      const destination = new URL(
+        buildPublicUrl({
+          country: context.countryCode,
+          route: policy.redirectPath,
+          infrastructure: context.infrastructure,
+        }),
+      );
+      destination.search = request.nextUrl.search;
+      return applyRuntimeHeaders(
+        NextResponse.redirect(destination, 308),
+        environment,
+      );
+    }
   }
 
   const requestHeaders = new Headers(request.headers);

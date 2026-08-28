@@ -599,6 +599,9 @@ function originFor(
 }
 
 function publicPathFor(country: CountryConfig, internalPath: string): string {
+  if (normalizePathname(internalPath) === "/") {
+    return country.basePath === "/" ? "/" : normalizePathname(country.basePath);
+  }
   return joinBasePath(country.basePath, internalPath);
 }
 

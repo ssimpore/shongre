@@ -32,6 +32,11 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { storageService } from "../../services/storage.service";
 import { JobCard } from "./components/JobCard";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+} from "../../platform/seo/seo-policy";
 
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 
@@ -232,7 +237,7 @@ const EmploymentFilters: React.FC<{
 export const EmploymentSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, marketContext } = useMarketLocation();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const { professionSlug, sectorSlug, locationSlug } = useParams<{
@@ -240,13 +245,21 @@ export const EmploymentSearchPage: React.FC = () => {
     sectorSlug?: string;
     locationSlug?: string;
   }>();
-  const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
-  const [items, setItems] = useState<JobPostingCard[]>([]);
-  const [total, setTotal] = useState(0);
-  const [recommendationFactors, setRecommendationFactors] = useState<string[]>(
-    [],
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "employment_search" ? publicRouteData : null;
+  const initialDataPending = React.useRef(Boolean(initialData));
+  const [catalog, setCatalog] = useState<EmploymentCatalog | null>(
+    initialData?.catalog ?? null,
   );
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<JobPostingCard[]>(
+    initialData?.items ?? [],
+  );
+  const [total, setTotal] = useState(initialData?.total ?? 0);
+  const [recommendationFactors, setRecommendationFactors] = useState<string[]>(
+    initialData?.recommendationFactors ?? [],
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [savingAlert, setSavingAlert] = useState(false);
@@ -296,6 +309,10 @@ export const EmploymentSearchPage: React.FC = () => {
   );
 
   useEffect(() => {
+    if (initialDataPending.current) {
+      initialDataPending.current = false;
+      return;
+    }
     let active = true;
     setLoading(true);
     setError(false);
@@ -350,23 +367,51 @@ export const EmploymentSearchPage: React.FC = () => {
       setParams(next, { replace: true });
   }, [catalog, locationSlug, params, professionSlug, sectorSlug, setParams]);
 
-  const landingCanonical = professionSlug
+  const routePath = professionSlug
     ? `/emploi/metier/${professionSlug}`
     : sectorSlug
       ? `/emploi/secteur/${sectorSlug}`
       : locationSlug
         ? `/emploi/lieu/${locationSlug}`
         : "/emploi";
-
-  usePageMeta({
-    title: query.keywords
-      ? `${query.keywords} — offres d’emploi`
-      : "Emploi & Recrutement",
-    description:
-      "Recherchez des offres d’emploi par métier, secteur, localisation, contrat et organisation du travail.",
-    canonicalPath: landingCanonical,
-    noIndex: Boolean(query.keywords),
-  });
+  const pageMeta = React.useMemo(() => {
+    if (!marketContext) {
+      return { title: "Emploi & Recrutement", noIndex: true, follow: true };
+    }
+    const routeData = catalog
+      ? {
+          status: "found" as const,
+          data: {
+            kind: "employment_search" as const,
+            catalog,
+            items,
+            total,
+            recommendationFactors,
+            availableCountryCodes:
+              initialData?.availableCountryCodes ||
+              (total > 0 ? [activeMarket.code] : []),
+          },
+        }
+      : ({ status: "not_applicable", data: null } as const);
+    const policy = resolveSeoPolicy({
+      pathname: routePath,
+      query: Object.fromEntries(params.entries()),
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(policy);
+  }, [
+    activeMarket.code,
+    catalog,
+    initialData?.availableCountryCodes,
+    items,
+    marketContext,
+    params,
+    recommendationFactors,
+    routePath,
+    total,
+  ]);
+  usePageMeta(pageMeta);
 
   const setParam = (key: string, value?: string) => {
     const next = new URLSearchParams(params);

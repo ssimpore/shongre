@@ -11,6 +11,8 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { DataModeProvider } from "./DataModeProvider";
 import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
 import type { MarketContext } from "@shongre/contracts";
+import type { PublicRouteData } from "../../platform/seo/public-route-data";
+import { PublicRouteDataProvider } from "./PublicRouteDataProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,22 +27,25 @@ const queryClient = new QueryClient({
 export const AppProviders: React.FC<{
   children: React.ReactNode;
   marketContext?: MarketContext;
-}> = ({ children, marketContext }) => {
+  initialPublicRouteData?: PublicRouteData | null;
+}> = ({ children, marketContext, initialPublicRouteData }) => {
   return (
     <ErrorBoundary>
       <DataModeProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ConsentProvider>
-              <MarketLocationProvider initialMarketContext={marketContext}>
-                <I18nProvider>
-                  <ToastProvider>
-                    <NotificationProvider>
-                      <FavoritesProvider>{children}</FavoritesProvider>
-                    </NotificationProvider>
-                  </ToastProvider>
-                </I18nProvider>
-              </MarketLocationProvider>
+              <PublicRouteDataProvider initialData={initialPublicRouteData}>
+                <MarketLocationProvider initialMarketContext={marketContext}>
+                  <I18nProvider>
+                    <ToastProvider>
+                      <NotificationProvider>
+                        <FavoritesProvider>{children}</FavoritesProvider>
+                      </NotificationProvider>
+                    </ToastProvider>
+                  </I18nProvider>
+                </MarketLocationProvider>
+              </PublicRouteDataProvider>
             </ConsentProvider>
           </AuthProvider>
         </QueryClientProvider>

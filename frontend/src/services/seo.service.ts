@@ -59,10 +59,14 @@ export interface PageMeta {
   type?: "website" | "article" | "product" | "profile";
   /** Keeps a page out of the index. Use for anything behind auth or transient. */
   noIndex?: boolean;
+  /** Deliberate link-following policy for a noindex page. */
+  follow?: boolean;
   /** BCP 47 locale from the active market, e.g. `fr-FR` or `en-US`. */
   locale?: string;
   /** Restricts reciprocal alternates when an equivalent page is not global. */
   alternateCountries?: string[];
+  /** Only true when the global country gateway is a genuine default alternate. */
+  includeXDefault?: boolean;
   structuredData?: StructuredData[];
 }
 
@@ -250,7 +254,7 @@ function applyAlternateLinks(
       infrastructure: marketContext.infrastructure,
     }),
   }));
-  if (countries.length > 0) {
+  if (meta.includeXDefault && countries.length > 0) {
     desired.push({
       hreflang: "x-default",
       href: `${marketContext.infrastructure.canonicalProtocol}://${marketContext.infrastructure.globalDomain}/`,
@@ -289,16 +293,41 @@ function applyAlternateLinks(
 
 function applyStructuredData(entries: StructuredData[]) {
   if (typeof document === "undefined") return;
-  document.head
-    .querySelectorAll(`script[${LD_MARKER}]`)
-    .forEach((node) => node.remove());
-  for (const entry of entries) {
-    const script = document.createElement("script");
+  const serverScripts = Array.from(
+    document.querySelectorAll<HTMLScriptElement>(
+      `script[${LD_MARKER}="server"]`,
+    ),
+  );
+  const managedScripts = Array.from(
+    document.head.querySelectorAll<HTMLScriptElement>(
+      `script[${LD_MARKER}="client"]`,
+    ),
+  );
+  const usedScripts = new Set<HTMLScriptElement>();
+
+  entries.forEach((entry, index) => {
+    let script =
+      serverScripts[index] ||
+      managedScripts.find((candidate) => !usedScripts.has(candidate));
+    if (!script) {
+      script = document.createElement("script");
+      script.setAttribute(LD_MARKER, "client");
+      document.head.appendChild(script);
+    }
     script.type = "application/ld+json";
-    script.setAttribute(LD_MARKER, "");
     script.textContent = JSON.stringify(entry);
-    document.head.appendChild(script);
-  }
+    usedScripts.add(script);
+  });
+
+  serverScripts.slice(entries.length).forEach((script) => {
+    // Server Component nodes remain in place so React retains ownership. An
+    // inert MIME type prevents stale schema after a client-side route change.
+    script.type = "application/json";
+    script.textContent = "";
+  });
+  managedScripts
+    .filter((script) => !usedScripts.has(script))
+    .forEach((script) => script.remove());
 }
 
 /** Writes one page's metadata over whatever the previous route left behind. */
@@ -316,16 +345,18 @@ export function applyPageMeta(
     marketContext?.internalPath ??
     window.location.pathname;
   const canonical = meta.canonicalUrl
-    ? new URL(meta.canonicalUrl, origin).toString().replace(/\/$/, (match) =>
-        new URL(meta.canonicalUrl!, origin).pathname === "/" ? match : "",
-      )
+    ? new URL(meta.canonicalUrl, origin)
+        .toString()
+        .replace(/\/$/, (match) =>
+          new URL(meta.canonicalUrl!, origin).pathname === "/" ? match : "",
+        )
     : marketContext?.countryCode
-    ? buildPublicUrl({
-        country: marketContext.countryCode,
-        route: canonicalPath,
-        infrastructure: marketContext.infrastructure,
-      })
-    : resolveCanonical(canonicalPath, origin);
+      ? buildPublicUrl({
+          country: marketContext.countryCode,
+          route: canonicalPath,
+          infrastructure: marketContext.infrastructure,
+        })
+      : resolveCanonical(canonicalPath, origin);
 
   document.title = title;
 
@@ -386,7 +417,9 @@ export function applyPageMeta(
     'meta[name="robots"]',
     "name",
     "robots",
-    meta.noIndex ? "noindex, nofollow" : undefined,
+    meta.noIndex
+      ? `noindex, ${meta.follow === true ? "follow" : "nofollow"}`
+      : "index, follow",
   );
 
   applyStructuredData(meta.structuredData ?? []);

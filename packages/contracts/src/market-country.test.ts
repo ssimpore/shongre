@@ -132,6 +132,13 @@ describe("canonical Shongre country routing", () => {
     expect(
       buildPublicUrl({
         country: "BE",
+        route: "/",
+        infrastructure,
+      }),
+    ).toBe("https://shongre.com/be");
+    expect(
+      buildPublicUrl({
+        country: "BE",
         route: "/annonce/123",
         infrastructure,
       }),

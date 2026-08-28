@@ -63,9 +63,13 @@ function nodeRate(name: string): number {
 }
 
 function nodeFallback(): PublicRuntimeConfig {
+  const serverAppEnvironment = nodeEnvironmentValue("APP_ENV");
+  const publicAppEnvironment = nodeEnvironmentValue("NEXT_PUBLIC_APP_ENV");
+  const preferServerRuntime =
+    Boolean(serverAppEnvironment) && serverAppEnvironment !== "test";
   const appEnvironment =
-    nodeEnvironmentValue("NEXT_PUBLIC_APP_ENV") ||
-    nodeEnvironmentValue("APP_ENV") ||
+    (preferServerRuntime ? serverAppEnvironment : publicAppEnvironment) ||
+    serverAppEnvironment ||
     (nodeEnvironmentValue("NODE_ENV") === "test" ? "test" : "local");
   const dataMode = nodeEnvironmentValue("NEXT_PUBLIC_DATA_MODE") || "demo";
   if (dataMode !== "demo" && dataMode !== "api") {
@@ -76,13 +80,28 @@ function nodeFallback(): PublicRuntimeConfig {
 
   const allowsLocalDefaults =
     appEnvironment === "local" || appEnvironment === "test";
+  const serverFranceUrl = nodeEnvironmentValue("PUBLIC_FR_URL");
+  const publicFranceUrl = nodeEnvironmentValue("NEXT_PUBLIC_FR_URL");
   const franceUrl =
-    nodeEnvironmentValue("NEXT_PUBLIC_FR_URL") ||
+    (preferServerRuntime ? serverFranceUrl : publicFranceUrl) ||
+    serverFranceUrl ||
     (allowsLocalDefaults ? "http://localhost:3000" : "");
+  const serverInternationalUrl = nodeEnvironmentValue("PUBLIC_INTL_URL");
+  const publicInternationalUrl = nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL");
   const internationalUrl =
-    nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL") ||
+    (preferServerRuntime ? serverInternationalUrl : publicInternationalUrl) ||
+    serverInternationalUrl ||
     (allowsLocalDefaults ? "http://localhost:3001" : "");
-  const apiBaseUrl = nodeEnvironmentValue("NEXT_PUBLIC_API_URL");
+  const publicApiBaseUrl = nodeEnvironmentValue("NEXT_PUBLIC_API_URL");
+  const serverApiOrigin = nodeEnvironmentValue("API_URL");
+  const serverApiBaseUrl = dataMode === "api" && serverApiOrigin
+    ? new URL("/api/v1", serverApiOrigin).toString().replace(/\/$/, "")
+    : "";
+  const apiBaseUrl =
+    dataMode === "api"
+      ? (preferServerRuntime ? serverApiBaseUrl : publicApiBaseUrl) ||
+        serverApiBaseUrl
+      : "";
   const applications = createApplicationRegistry({
     environment: appEnvironment as AppEnvironment,
     marketplaceOrigin:
@@ -100,7 +119,10 @@ function nodeFallback(): PublicRuntimeConfig {
   return {
     appEnvironment: appEnvironment as AppEnvironment,
     environmentId:
-      nodeEnvironmentValue("NEXT_PUBLIC_ENVIRONMENT_ID") ||
+      (preferServerRuntime
+        ? nodeEnvironmentValue("ENVIRONMENT_ID")
+        : nodeEnvironmentValue("NEXT_PUBLIC_ENVIRONMENT_ID")) ||
+      nodeEnvironmentValue("ENVIRONMENT_ID") ||
       (allowsLocalDefaults ? `shongre-${appEnvironment}` : ""),
     franceUrl,
     internationalUrl,

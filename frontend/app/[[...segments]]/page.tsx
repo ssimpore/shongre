@@ -5,6 +5,8 @@ import {
   metadataForRoute,
   structuredDataForRoute,
 } from "../../src/platform/seo/route-metadata";
+import { resolveSeoPolicy } from "../../src/platform/seo/seo-policy";
+import { resolveServerPublicRouteData } from "../../src/platform/seo/server-public-route-data";
 import {
   marketInfrastructureFromEnvironment,
   resolveServerMarketContext,
@@ -24,6 +26,20 @@ interface PageProps {
 function normalizePathname(segments: string[]): string {
   const pathname = `/${segments.join("/")}`;
   return pathname === "/" ? "/" : pathname.replace(/\/+$/, "");
+}
+
+function serializeQuery(
+  query: Record<string, string | string[] | undefined>,
+): string {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach((entry) => params.append(key, entry));
+    } else if (value !== undefined) {
+      params.set(key, value);
+    }
+  });
+  return params.toString();
 }
 
 export async function generateMetadata({
@@ -61,10 +77,12 @@ export async function generateMetadata({
         : solution?.description ||
           "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.";
       canonical = new URL(pathname, rootCanonical).toString();
-      noIndex = unknownSolution || Boolean(
-        solution &&
+      noIndex =
+        unknownSolution ||
+        Boolean(
+          solution &&
           ["MAINTENANCE", "DEPRECATED"].includes(solution.lifecycle),
-      );
+        );
     } else if (applicationId === "prospects") {
       title = "Shongre Prospects — Trouvez et qualifiez vos prospects B2B";
       description =
@@ -129,16 +147,33 @@ export async function generateMetadata({
     };
   }
   if (context.kind !== "market") return {};
+  const routeData = await resolveServerPublicRouteData(
+    context.internalPath,
+    context.countryCode!,
+    serializeQuery(query),
+  );
+  const policy = resolveSeoPolicy({
+    pathname: context.internalPath,
+    query,
+    marketContext: context,
+    routeData,
+  });
+  // Resolve absence before the page starts streaming. Next can only change a
+  // non-streamed response to 404; a late notFound() would otherwise produce a
+  // soft 404 with a 200 status and only a noindex tag.
+  if (routeData.status === "not_found" || !policy.knownRoute) notFound();
   return metadataForRoute({
     pathname: context.internalPath,
     query,
     marketContext: context,
+    routeData,
   });
 }
 
-export default async function Page({ params }: PageProps) {
-  const { segments = [] } = await params;
+export default async function Page({ params, searchParams }: PageProps) {
+  const [{ segments = [] }, query] = await Promise.all([params, searchParams]);
   const pathname = normalizePathname(segments);
+  const queryString = serializeQuery(query);
   const applicationContext = await resolveServerApplicationContext();
   if (applicationContext) {
     return (
@@ -163,6 +198,14 @@ export default async function Page({ params }: PageProps) {
       country,
       href: buildPublicUrl({ country: country.code, infrastructure }),
     }));
+    const indexableCountries = countries.filter(
+      ({ country }) =>
+        country.enabled &&
+        country.marketplace.enabled &&
+        country.seo.indexable &&
+        country.compliance.legalReviewStatus === "approved" &&
+        ["active", "beta"].includes(country.launchStatus),
+    );
     const franceOrigin = buildPublicUrl({
       country: "FR",
       infrastructure,
@@ -172,7 +215,7 @@ export default async function Page({ params }: PageProps) {
       "@type": "WebSite",
       name: "Shongre",
       url: context.canonicalUrl,
-      potentialAction: countries.map(({ country, href }) => ({
+      potentialAction: indexableCountries.map(({ country, href }) => ({
         "@type": "ChooseAction",
         name: country.name,
         target: href,
@@ -198,22 +241,47 @@ export default async function Page({ params }: PageProps) {
   }
   if (context.kind !== "market") notFound();
 
-  /* Rendered on the server so a crawler sees the Product/ProfilePage schema in
-     the initial HTML. The SPA emits the same shape after hydration, which is
-     too late for anything that never runs the bundle. */
-  const structuredData = structuredDataForRoute(context.internalPath, context);
+  const routeData = await resolveServerPublicRouteData(
+    context.internalPath,
+    context.countryCode!,
+    queryString,
+  );
+  const policy = resolveSeoPolicy({
+    pathname: context.internalPath,
+    query,
+    marketContext: context,
+    routeData,
+  });
+  if (routeData.status === "not_found" || !policy.knownRoute) notFound();
+  if (policy.redirectPath) {
+    const target = buildPublicUrl({
+      country: context.countryCode!,
+      route: policy.redirectPath,
+      infrastructure: context.infrastructure,
+    });
+    permanentRedirect(queryString ? `${target}?${queryString}` : target);
+  }
+
+  const structuredData = structuredDataForRoute(policy, context, routeData);
+  const initialPath = `${context.publicPath}${queryString ? `?${queryString}` : ""}`;
 
   return (
     <>
-      {structuredData && (
+      {structuredData.map((entry, index) => (
         <script
+          key={`${policy.resourceType}-${index}`}
           type="application/ld+json"
-          // Serialised ahead of time; `<` is escaped so the payload can never
-          // close the script element early.
-          dangerouslySetInnerHTML={{ __html: structuredData }}
+          data-seo-ld="server"
+          dangerouslySetInnerHTML={{ __html: entry }}
         />
-      )}
-      <WebApplication pathname={context.publicPath} marketContext={context} />
+      ))}
+      <WebApplication
+        pathname={initialPath}
+        marketContext={context}
+        initialPublicRouteData={
+          routeData.status === "found" ? routeData.data : null
+        }
+      />
     </>
   );
 }

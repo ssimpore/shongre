@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 .PHONY: help setup doctor info env-info env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
-	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs \
+	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
@@ -177,6 +177,9 @@ frontend-test: ## Run Web unit and component tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
 	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
+seo-audit: ## Audit a public origin (SEO_ORIGIN=https://example.test)
+	@test -n "$(SEO_ORIGIN)" || { echo "SEO_ORIGIN is required"; exit 2; }
+	@node frontend/scripts/seo-audit.mjs "$(SEO_ORIGIN)" $(SEO_AUDIT_ARGS)
 frontend-check:
 	@source scripts/env.sh && SKIP_E2E="$${SKIP_E2E:-0}" npm run check --workspace=frontend
 frontend-clean:

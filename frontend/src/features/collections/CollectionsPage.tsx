@@ -1,5 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Sparkles,
@@ -42,6 +42,13 @@ import { ScrollRail } from "../../design-system/primitives/ScrollRail";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "../../platform/seo/seo-policy";
 
 const BADGE_STYLES: Record<string, string> = {
   terracotta: "bg-primary-light text-primary border-primary-border",
@@ -71,6 +78,14 @@ const PILLAR_ICONS: Record<string, React.FC<{ className?: string }>> = {
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
+  const { activeMarket, marketContext } = useMarketLocation();
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "collection" &&
+    publicRouteData.collection.slug === slug
+      ? publicRouteData
+      : null;
+  const initialDataPending = useRef(Boolean(initialData));
 
   const selectedCollection: Collection | undefined = useMemo(() => {
     return slug ? collectionService.getCollection(slug) : undefined;
@@ -87,7 +102,15 @@ export const CollectionsPage: React.FC = () => {
     collectionId: string;
     status: "loading" | "success" | "error";
     listings: Listing[];
-  } | null>(null);
+  } | null>(() =>
+    initialData
+      ? {
+          collectionId: initialData.collection.id,
+          status: "success",
+          listings: initialData.listings,
+        }
+      : null,
+  );
   const [loadAttempt, setLoadAttempt] = useState(0);
 
   // React Router keeps this component mounted between slugs. Scope filters to
@@ -105,38 +128,51 @@ export const CollectionsPage: React.FC = () => {
   const listings = currentListingState?.listings ?? [];
   const isLoading = Boolean(
     selectedCollection &&
-      (!currentListingState || currentListingState.status === "loading"),
+    (!currentListingState || currentListingState.status === "loading"),
   );
   const loadError = currentListingState?.status === "error";
 
   const pillars = useMemo(() => collectionService.getPillars(), []);
 
-  /* The landing page and each collection are distinct indexable pages, so they
-     describe themselves separately. An unknown slug is noindexed rather than
-     silently inheriting the landing page's metadata. */
-  usePageMeta(
-    selectedCollection
+  const pageMeta = useMemo(() => {
+    if (!marketContext) {
+      return { title: "Collections", noIndex: true, follow: true };
+    }
+    const routeData = selectedCollection
       ? {
-          title: selectedCollection.title,
-          description:
-            selectedCollection.subtitle || selectedCollection.description,
-          canonicalPath: `/collections/${selectedCollection.slug}`,
-          image: selectedCollection.coverImageUrl,
-        }
-      : slug
-        ? {
-            title: t("collections.collectionsPage.notFoundTitle"),
-            description: t("collections.collectionsPage.notFoundDescription"),
-            noIndex: true,
-          }
-        : {
-            title: "Collections & sélections",
-            description:
-              "Les sélections Shongre : rentrée, maison, mobilité, seconde main, " +
-              "bonnes affaires et matériel professionnel, mises à jour au fil des saisons.",
-            canonicalPath: "/collections",
+          status: "found" as const,
+          data: {
+            kind: "collection" as const,
+            collection: selectedCollection,
+            listings,
+            availableCountryCodes:
+              initialData?.availableCountryCodes ||
+              (listings.length ? [activeMarket.code] : []),
           },
-  );
+        }
+      : ({ status: "not_applicable", data: null } as const);
+    const policy = resolveSeoPolicy({
+      pathname: selectedCollection
+        ? `/collections/${selectedCollection.slug}`
+        : slug
+          ? `/collections/${slug}`
+          : "/collections",
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
+  }, [
+    activeMarket.code,
+    initialData?.availableCountryCodes,
+    listings,
+    marketContext,
+    selectedCollection,
+    slug,
+  ]);
+  usePageMeta(pageMeta);
 
   const isUnknownCollection = Boolean(slug && !selectedCollection);
 
@@ -145,6 +181,13 @@ export const CollectionsPage: React.FC = () => {
   useEffect(() => {
     if (!selectedCollection) {
       setListingState(null);
+      return;
+    }
+    if (
+      initialDataPending.current &&
+      initialData?.collection.id === selectedCollection.id
+    ) {
+      initialDataPending.current = false;
       return;
     }
 
@@ -157,6 +200,7 @@ export const CollectionsPage: React.FC = () => {
 
     listingRepository
       .getListings({
+        marketCode: activeMarket.code,
         limit: PAGE_SIZES.collectionListings,
         sortBy: "date_desc",
       })
@@ -166,7 +210,6 @@ export const CollectionsPage: React.FC = () => {
         const matched = collectionService.filterListingsForCollection(
           selectedCollection,
           fetched,
-          { allowFallback: true },
         );
         setListingState({
           collectionId: selectedCollection.id,
@@ -187,7 +230,7 @@ export const CollectionsPage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [loadAttempt, selectedCollection]);
+  }, [activeMarket.code, initialData, loadAttempt, selectedCollection]);
 
   // Collections filtered by active pillar tab and keyword search
   const visibleCollections = useMemo(() => {
@@ -519,7 +562,9 @@ export const CollectionsPage: React.FC = () => {
             ) : (
               <EmptyState
                 className="mx-auto max-w-md"
-                icon={<Search className="h-icon-xl w-icon-xl" aria-hidden="true" />}
+                icon={
+                  <Search className="h-icon-xl w-icon-xl" aria-hidden="true" />
+                }
                 title={t("collections.collectionsPage.aucuneCollectionTrouvee")}
                 description={`Aucune collection ne correspond à votre recherche « ${collectionSearch} ».`}
                 action={
@@ -551,7 +596,9 @@ export const CollectionsPage: React.FC = () => {
                 <div
                   className="flex items-center gap-2 flex-wrap"
                   role="group"
-                  aria-label={t("collections.collectionsPage.filtrerDansLaSelection")}
+                  aria-label={t(
+                    "collections.collectionsPage.filtrerDansLaSelection",
+                  )}
                 >
                   <FilterChip
                     onSelect={() =>
@@ -601,7 +648,12 @@ export const CollectionsPage: React.FC = () => {
                     aria-label={t(
                       "collections.collectionsPage.filtrerDansLaSelection",
                     )}
-                    leftIcon={<Search aria-hidden="true" className="h-icon-md w-icon-md" />}
+                    leftIcon={
+                      <Search
+                        aria-hidden="true"
+                        className="h-icon-md w-icon-md"
+                      />
+                    }
                     className="h-control-md bg-bg-subtle text-xs"
                   />
                 </div>
@@ -639,7 +691,9 @@ export const CollectionsPage: React.FC = () => {
                 <StatePanel
                   variant="error"
                   title={t("collections.collectionsPage.loadErrorTitle")}
-                  description={t("collections.collectionsPage.loadErrorDescription")}
+                  description={t(
+                    "collections.collectionsPage.loadErrorDescription",
+                  )}
                   action={
                     <Button
                       type="button"
@@ -664,9 +718,16 @@ export const CollectionsPage: React.FC = () => {
               ) : (
                 <EmptyState
                   className="mx-auto max-w-lg"
-                  icon={<Filter className="h-icon-xl w-icon-xl" aria-hidden="true" />}
+                  icon={
+                    <Filter
+                      className="h-icon-xl w-icon-xl"
+                      aria-hidden="true"
+                    />
+                  }
                   title={t("collections.collectionsPage.aucuneAnnonceTrouvee")}
-                  description={t("collections.collectionsPage.aucuneAnnonceNeCorrespondAux")}
+                  description={t(
+                    "collections.collectionsPage.aucuneAnnonceNeCorrespondAux",
+                  )}
                   action={
                     <Button
                       type="button"

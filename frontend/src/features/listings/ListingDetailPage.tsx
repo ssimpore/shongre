@@ -36,7 +36,6 @@ import { services } from "../../api/client/service-registry";
 import { Listing, UserProfile, Transaction } from "../../types";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
-import { marketService } from "../../domains/market/market.service";
 import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
@@ -64,10 +63,6 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import {
-  buildBreadcrumbSchema,
-  StructuredData,
-} from "../../services/seo.service";
 import { storageService } from "../../services/storage.service";
 import { analyticsService } from "../../services/analytics.service";
 import { isProSeller } from "../../domains/user/user.domain";
@@ -84,10 +79,13 @@ import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
 } from "../../domains/taxonomy/taxonomy.display";
+import { publicListingUrl } from "../../domains/market/market-routing";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
-  publicListingUrl,
-  publicRouteUrl,
-} from "../../domains/market/market-routing";
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "../../platform/seo/seo-policy";
 
 export const ListingDetailPage: React.FC = () => {
   const { activeMarket, marketContext } = useMarketLocation();
@@ -99,12 +97,23 @@ export const ListingDetailPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
   const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "listing" && publicRouteData.listing.id === id
+      ? publicRouteData
+      : null;
 
-  const [listing, setListing] = useState<Listing | null>(null);
-  const [seller, setSeller] = useState<UserProfile | null>(null);
-  const [similarListings, setSimilarListings] = useState<Listing[]>([]);
+  const [listing, setListing] = useState<Listing | null>(
+    initialData?.listing ?? null,
+  );
+  const [seller, setSeller] = useState<UserProfile | null>(
+    initialData?.seller ?? null,
+  );
+  const [similarListings, setSimilarListings] = useState<Listing[]>(
+    initialData?.similarListings ?? [],
+  );
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
 
   // Modal Dialog States
   const [isDirectPurchaseModalOpen, setIsDirectPurchaseModalOpen] =
@@ -124,6 +133,19 @@ export const ListingDetailPage: React.FC = () => {
   // 1. Data Fetching
   useEffect(() => {
     if (!id) return;
+    if (initialData?.listing.id === id) {
+      storageService.addRecentlyViewed(initialData.listing.id);
+      if (trackedListingId.current !== initialData.listing.id) {
+        trackedListingId.current = initialData.listing.id;
+        analyticsService.track("listing_viewed", {
+          listingId: initialData.listing.id,
+          sellerId: initialData.listing.sellerId,
+          categoryId: initialData.listing.categorySlug,
+        });
+      }
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     listingRepository.getListingById(id).then((item) => {
       if (item) {
@@ -161,7 +183,7 @@ export const ListingDetailPage: React.FC = () => {
       }
       setIsLoading(false);
     });
-  }, [id]);
+  }, [id, initialData]);
 
   // 2. Taxonomy & Market resolution
   const taxonomyNode = useMemo(() => {
@@ -175,14 +197,6 @@ export const ListingDetailPage: React.FC = () => {
       taxonomyService.getNodeBySlug(listing.categorySlug)
     );
   }, [listing]);
-
-  const effectiveMarket = useMemo(() => {
-    const marketCode =
-      listing?.marketCode ||
-      storageService.getActiveMarketCode() ||
-      activeMarket.code;
-    return marketService.getEffectiveConfig(marketCode);
-  }, [activeMarket.code, listing]);
 
   const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : "";
   const displaySubCategoryLabel = listing
@@ -339,62 +353,29 @@ export const ListingDetailPage: React.FC = () => {
     );
   }, [listing, taxonomyNode]);
 
-  // 5. SEO metadata
-  //
-  // The resolver already produced a description and a canonical URL that this
-  // page computed and then discarded, publishing only the title and the JSON-LD.
-  // Everything it returns now reaches the document, through the same hook every
-  // other route uses, plus the breadcrumb trail the page already renders.
   const pageMeta = useMemo(() => {
-    if (!listing) return { title: undefined, noIndex: true };
-
-    const meta = listingDisplayResolver.generateListingSeoMeta(
-      listing,
-      taxonomyNode,
-      effectiveMarket,
-    );
-    const canonicalUrl = publicListingUrl({
-      listingId: listing.id,
-      countryCode,
-    });
-    const marketBaseUrl = publicRouteUrl({
-      route: "/",
-      countryCode,
-    });
-    const trail = [
-      { name: "Accueil", path: "/" },
-      ...(listing.categoryLabel
-        ? [
-            {
-              name: listing.categoryLabel,
-              path: `/categorie/${listing.categorySlug}`,
-            },
-          ]
-        : []),
-      { name: listing.title },
-    ];
-
-    return {
-      title: meta.title,
-      description: meta.description,
-      canonicalPath: `/annonce/${listing.id}`,
-      image: listing.coverImageUrl,
-      type: "product" as const,
-      // A sold or expired listing should stop competing in search results.
-      noIndex: listing.status !== "active",
-      structuredData: [
-        {
-          ...(meta.jsonLd as unknown as StructuredData),
-          offers: {
-            ...((meta.jsonLd.offers as Record<string, unknown>) ?? {}),
-            url: canonicalUrl,
-          },
-        },
-        buildBreadcrumbSchema(trail, marketBaseUrl),
-      ],
-      alternateCountries: listing.marketCodes ?? [countryCode],
+    if (!listing || !marketContext) {
+      return { title: undefined, noIndex: true, follow: false };
+    }
+    const routeData = {
+      status: "found" as const,
+      data: {
+        kind: "listing" as const,
+        listing,
+        seller,
+        similarListings,
+      },
     };
-  }, [listing, taxonomyNode, effectiveMarket, countryCode]);
+    const policy = resolveSeoPolicy({
+      pathname: `/annonce/${listing.id}`,
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
+  }, [listing, marketContext, seller, similarListings]);
 
   usePageMeta(pageMeta);
 

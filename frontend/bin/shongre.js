@@ -77,6 +77,7 @@ ${colors.bright}Available Commands:${colors.reset}
   ${colors.green}lint${colors.reset}            Type-check (tsc --noEmit) + design-token guard
   ${colors.green}check${colors.reset}           Run complete CI pipeline (lint + unit + e2e + build)
   ${colors.green}test-e2e${colors.reset}        Playwright: responsive overflow, axe a11y, journey matrix
+  ${colors.green}seo-audit <origin>${colors.reset} Audit robots, sitemaps, metadata, initial HTML and public links
   ${colors.green}info${colors.reset}            Display platform environment, versions & configuration
   ${colors.green}ai-test [prompt]${colors.reset} Exercise the AI listing-assistance adapter (demo, deterministic)
   ${colors.green}clean${colors.reset}           Remove build artifacts and cache
@@ -248,6 +249,9 @@ switch (command) {
     break;
   case "ai-test":
     runAiTest(args.slice(1).join(" "));
+    break;
+  case "seo-audit":
+    runNpmCommand("seo:audit", ["--", ...args.slice(1)]);
     break;
   case "help":
   case "--help":

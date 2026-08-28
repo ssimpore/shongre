@@ -45,6 +45,12 @@ import { storageService } from "../../services/storage.service";
 import { JobCard } from "./components/JobCard";
 import { formatEmploymentDate, formatSalary } from "./employment-format";
 import { publicRouteUrl } from "../../domains/market/market-routing";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "../../platform/seo/seo-policy";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
@@ -52,10 +58,21 @@ export const EmploymentJobDetailPage: React.FC = () => {
   const { currentLocale, marketContext, activeMarket } = useMarketLocation();
   const navigate = useNavigate();
   const toast = useToast();
-  const [job, setJob] = useState<JobPostingDetail | null>(null);
-  const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
-  const [similar, setSimilar] = useState<JobPostingCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "job" && publicRouteData.job.slug === slug
+      ? publicRouteData
+      : null;
+  const [job, setJob] = useState<JobPostingDetail | null>(
+    initialData?.job ?? null,
+  );
+  const [catalog, setCatalog] = useState<EmploymentCatalog | null>(
+    initialData?.catalog ?? null,
+  );
+  const [similar, setSimilar] = useState<JobPostingCard[]>(
+    initialData?.similarJobs ?? [],
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] =
@@ -64,6 +81,10 @@ export const EmploymentJobDetailPage: React.FC = () => {
   const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
+    if (initialData) {
+      setLoading(false);
+      return;
+    }
     let active = true;
     setLoading(true);
     setError(false);
@@ -90,44 +111,38 @@ export const EmploymentJobDetailPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [currentUser?.id, slug]);
+  }, [currentUser?.id, initialData, slug]);
 
-  usePageMeta({
-    title: job ? `${job.title} — ${job.employer.name}` : "Offre d’emploi",
-    description: job
-      ? `${job.title} chez ${job.employer.name}, ${job.primaryLocation.label}. ${job.contractTypeLabel}, ${job.workingArrangementLabel}.`
-      : "Consultez cette offre d’emploi et postulez gratuitement sur Shongre.",
-    canonicalPath: `/emploi/offre/${slug}`,
-    type: "article",
-    structuredData: job
-      ? [
-          {
-            "@context": "https://schema.org",
-            "@type": "JobPosting",
-            title: job.title,
-            datePosted: job.publishedAt,
-            validThrough: job.expiresAt,
-            employmentType: job.contractTypeLabel,
-            hiringOrganization: {
-              "@type": "Organization",
-              name: job.employer.name,
-            },
-            jobLocationType: job.workingArrangementId.endsWith(".remote")
-              ? "TELECOMMUTE"
-              : undefined,
-            jobLocation: {
-              "@type": "Place",
-              address: {
-                "@type": "PostalAddress",
-                addressLocality: job.primaryLocation.city,
-                postalCode: job.primaryLocation.postalCode,
-                addressCountry: job.primaryLocation.countryCode,
-              },
-            },
-          },
-        ]
-      : undefined,
-  });
+  const pageMeta = React.useMemo(() => {
+    if (!job || !catalog || !marketContext) {
+      return {
+        title: "Offre d’emploi indisponible",
+        description: "Cette offre d’emploi n’est pas disponible sur Shongre.",
+        canonicalPath: `/emploi/offre/${slug}`,
+        noIndex: true,
+        follow: false,
+      };
+    }
+    const routeData = {
+      status: "found" as const,
+      data: {
+        kind: "job" as const,
+        job,
+        catalog,
+        similarJobs: similar,
+      },
+    };
+    const policy = resolveSeoPolicy({
+      pathname: `/emploi/offre/${slug}`,
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
+  }, [catalog, job, marketContext, similar, slug]);
+  usePageMeta(pageMeta);
 
   if (loading) {
     return (

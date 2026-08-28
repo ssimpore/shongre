@@ -60,6 +60,7 @@ const injected: PublicRuntimeConfig = {
 describe("public runtime configuration", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("uses the configuration injected into HTML instead of build-time values", async () => {
@@ -72,5 +73,27 @@ describe("public runtime configuration", () => {
     vi.stubGlobal("window", {});
     const { getPublicRuntimeConfig } = await import("./public-runtime-config");
     expect(() => getPublicRuntimeConfig()).toThrow(/was not injected/);
+  });
+
+  it("uses validated runtime-only server origins while rendering client components on the server", async () => {
+    vi.stubGlobal("window", undefined);
+    vi.stubEnv("APP_ENV", "production");
+    vi.stubEnv("ENVIRONMENT_ID", "shongre-production");
+    vi.stubEnv("PUBLIC_FR_URL", "https://shongre.fr");
+    vi.stubEnv("PUBLIC_INTL_URL", "https://shongre.com");
+    vi.stubEnv("API_URL", "https://api.shongre.com");
+    vi.stubEnv("SHONGRE_MARKETPLACE_ORIGIN", "https://shongre.fr");
+    vi.stubEnv("SHONGRE_SOLUTIONS_ORIGIN", "https://solutions.shongre.com");
+    vi.stubEnv("SHONGRE_PROSPECTS_ORIGIN", "https://prospects.shongre.com");
+    vi.stubEnv("SHONGRE_FACTURATION_ORIGIN", "https://facturation.shongre.com");
+    const { getPublicRuntimeConfig } = await import("./public-runtime-config");
+
+    expect(getPublicRuntimeConfig()).toMatchObject({
+      appEnvironment: "production",
+      environmentId: "shongre-production",
+      franceUrl: "https://shongre.fr",
+      internationalUrl: "https://shongre.com",
+      apiBaseUrl: "",
+    });
   });
 });

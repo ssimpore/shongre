@@ -55,6 +55,11 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+} from "../../platform/seo/seo-policy";
 
 // Leaflet is the heaviest optional frontend dependency. Keep it outside the
 // normal search bundle so grid/list browsing does not download a map engine or
@@ -96,8 +101,13 @@ export const SearchPage: React.FC = () => {
     activeMarket,
     currentLocale,
     currencySymbol,
+    marketContext,
   } = useMarketLocation();
   const toast = useToast();
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "listing_search" ? publicRouteData : null;
+  const initialDataPending = useRef(Boolean(initialData));
   const formatPriceBound = (value: number) =>
     `${value.toLocaleString(currentLocale)} ${currencySymbol}`;
 
@@ -108,13 +118,13 @@ export const SearchPage: React.FC = () => {
   );
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [showDesktopFilters, setShowDesktopFilters] = useState(false);
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [listings, setListings] = useState<Listing[]>(initialData?.items ?? []);
+  const [totalCount, setTotalCount] = useState(initialData?.total ?? 0);
+  const [totalPages, setTotalPages] = useState(initialData?.totalPages ?? 1);
   const [attributeFacetValues, setAttributeFacetValues] = useState<
     Record<string, SearchFacetValue[]>
   >({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [searchError, setSearchError] = useState(false);
   const [searchAttempt, setSearchAttempt] = useState(0);
   const lastStartedSearchKey = useRef<string | null>(null);
@@ -151,7 +161,11 @@ export const SearchPage: React.FC = () => {
 
   // Extract filter params from URL
   const query = searchParams.get("query") || "";
-  const categorySlug = searchParams.get("category") || "";
+  const categorySlug =
+    searchParams.get("category") ||
+    (seededCategoryFor.current !== categoryRouteSlug
+      ? categoryRouteSlug || ""
+      : "");
   const subCategorySlug = searchParams.get("subCategory") || "";
   const cityParam = searchParams.get("city");
   // Only filter by city if the URL specifically specifies an active, non-countrywide city query parameter
@@ -225,6 +239,10 @@ export const SearchPage: React.FC = () => {
   // Execute search query
   useEffect(() => {
     let cancelled = false;
+    if (initialDataPending.current) {
+      initialDataPending.current = false;
+      return;
+    }
     setIsLoading(true);
     setSearchError(false);
     const filters: MarketScopedSearchFilters = {
@@ -655,45 +673,44 @@ export const SearchPage: React.FC = () => {
     return "Toutes les annonces";
   }, [query, activeSubCat, activeCategory]);
 
-  /* Search metadata follows the same subject the heading does, so the tab, the
-     shared link and the crawler all describe the results actually on screen.
-
-     The canonical deliberately collapses to the category path (or to the bare
-     search route): filters, sort, view mode and pagination all live in the query
-     string, so every combination would otherwise present itself as a separate
-     indexable page competing with the one that should rank. A free-text query is
-     noindexed for the same reason — arbitrary user queries generate unbounded
-     thin pages, which is the classic classifieds index-bloat trap. */
   const searchMeta = useMemo(() => {
-    const place = city ? ` à ${city}` : "";
-    if (query) {
-      return {
-        title: `Recherche : ${query}${place}`,
-        description: `Annonces correspondant à « ${query} »${place} sur Shongre.`,
-        canonicalPath: "/recherche",
-        noIndex: true,
-      };
+    if (!marketContext) {
+      return { title: "Toutes les annonces", noIndex: true, follow: true };
     }
-    const subject = activeSubCat?.name || activeCategory?.name;
-    if (subject) {
-      return {
-        title: `${subject}${place} - Annonces d'occasion`,
-        description:
-          `Toutes les annonces ${subject.toLowerCase()}${place} sur Shongre : ` +
-          "particuliers et professionnels, paiement sécurisé et livraison disponible.",
-        canonicalPath: activeCategory
-          ? `/categorie/${activeCategory.slug}`
+    const routeData = {
+      status: "found" as const,
+      data: {
+        kind: "listing_search" as const,
+        pathname: categoryRouteSlug
+          ? `/categorie/${categoryRouteSlug}`
           : "/recherche",
-      };
-    }
-    return {
-      title: `Toutes les annonces${place}`,
-      description:
-        "Parcourez toutes les annonces Shongre : véhicules, immobilier, mode, maison, " +
-        `multimédia et loisirs, partout en ${activeMarket.name}.`,
-      canonicalPath: "/recherche",
+        items: listings,
+        total: totalCount,
+        page,
+        totalPages,
+        availableCountryCodes:
+          initialData?.availableCountryCodes ||
+          (totalCount > 0 ? [activeMarket.code] : []),
+      },
     };
-  }, [activeCategory, activeMarket.name, activeSubCat, city, query]);
+    const policy = resolveSeoPolicy({
+      pathname: routeData.data.pathname,
+      query: Object.fromEntries(searchParams.entries()),
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(policy);
+  }, [
+    activeMarket.code,
+    categoryRouteSlug,
+    initialData?.availableCountryCodes,
+    listings,
+    marketContext,
+    page,
+    searchParams,
+    totalCount,
+    totalPages,
+  ]);
 
   usePageMeta(searchMeta);
 

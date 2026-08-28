@@ -30,6 +30,11 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { PublishCtaButton } from "../../design-system/primitives/PublishCtaButton";
 import { HomeSectionHeading } from "./components/HomeSectionHeading";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "../../platform/seo/seo-policy";
 
 /**
  * How many cards each homepage rail shows.
@@ -44,15 +49,23 @@ const DEALS_COUNT = 6;
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    description:
-      "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.",
-    canonicalPath: "/",
-    type: "website",
-  });
+  const { activeMarket, marketContext } = useMarketLocation();
+  const pageMeta = React.useMemo(() => {
+    if (!marketContext) return { noIndex: true, follow: true };
+    const routeData = { status: "not_applicable", data: null } as const;
+    const policy = resolveSeoPolicy({
+      pathname: "/",
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
+  }, [marketContext]);
+  usePageMeta(pageMeta);
 
   const publishCta = usePublishCta();
-  const { activeMarket } = useMarketLocation();
   const [recentListings, setRecentListings] = useState<Listing[]>([]);
   const [dealsListings, setDealsListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);

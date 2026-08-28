@@ -6,6 +6,7 @@ import {
   useParams,
   useNavigate,
   useSearchParams,
+  useLocation,
   Link,
 } from "react-router-dom";
 import {
@@ -32,6 +33,13 @@ import { SellerReportModal } from "./components/SellerReportModal";
 import { Button } from "../../design-system/primitives/Button";
 import { Tabs, TabPanel } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import {
+  pageMetaForPolicy,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "../../platform/seo/seo-policy";
 
 export const SellerPublicPage: React.FC = () => {
   const { t } = useTranslation();
@@ -41,14 +49,32 @@ export const SellerPublicPage: React.FC = () => {
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
+  const { marketContext } = useMarketLocation();
 
   const activeSlug = slug || sellerSlug || "";
+  const publicRouteData = usePublicRouteData();
+  const initialData =
+    publicRouteData?.kind === "seller" &&
+    [
+      publicRouteData.seller.slug,
+      publicRouteData.seller.storeSlug,
+      publicRouteData.seller.id,
+    ].includes(activeSlug)
+      ? publicRouteData
+      : null;
 
-  const [seller, setSeller] = useState<UserProfile | null>(null);
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [seller, setSeller] = useState<UserProfile | null>(
+    initialData?.seller ?? null,
+  );
+  const [listings, setListings] = useState<Listing[]>(
+    initialData?.listings ?? [],
+  );
+  const [reviews, setReviews] = useState<ReviewItem[]>(
+    initialData?.reviews ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // Tab management: catalog | reviews | about
@@ -78,6 +104,10 @@ export const SellerPublicPage: React.FC = () => {
   };
 
   useEffect(() => {
+    if (initialData) {
+      setIsLoading(false);
+      return;
+    }
     const fetchProfileData = async () => {
       setIsLoading(true);
       try {
@@ -107,7 +137,7 @@ export const SellerPublicPage: React.FC = () => {
     };
 
     fetchProfileData();
-  }, [activeSlug]);
+  }, [activeSlug, initialData]);
 
   const handleContactClick = () => {
     if (!seller) return;
@@ -120,51 +150,46 @@ export const SellerPublicPage: React.FC = () => {
   /* Declared above the loading and not-found returns, because hooks cannot run
      after a conditional return — and because the not-found case needs metadata
      of its own rather than whatever the previous route left in the tab. */
-  const sellerIsPro = seller ? isProSeller(seller) : false;
-  const sellerDisplayName = seller ? seller.companyName || seller.name : "";
-  usePageMeta(
-    seller
-      ? {
-          title: `${sellerDisplayName} (${sellerIsPro ? "Boutique Pro" : "Vendeur particulier"}) - Annonces et avis`,
-          description:
-            `Découvrez les annonces de ${sellerDisplayName}` +
-            `${seller.city ? ` à ${seller.city}` : ""} sur Shongre : ` +
-            `${listings.filter((l) => l.status === "active").length} annonce(s) en ligne` +
-            `${reviews.length ? ` et ${reviews.length} avis vérifiés` : ""}.`,
-          canonicalPath: `/${sellerIsPro ? "boutique" : "profil"}/${seller.slug || seller.id}`,
-          image: seller.avatarUrl,
-          type: "profile",
-          structuredData: [
-            {
-              "@context": "https://schema.org",
-              "@type": sellerIsPro ? "LocalBusiness" : "Person",
-              name: sellerDisplayName,
-              ...(seller.city
-                ? {
-                    address: {
-                      "@type": "PostalAddress",
-                      addressLocality: seller.city,
-                    },
-                  }
-                : {}),
-              ...(seller.avatarUrl ? { image: seller.avatarUrl } : {}),
-              ...(seller.rating && seller.reviewCount
-                ? {
-                    aggregateRating: {
-                      "@type": "AggregateRating",
-                      ratingValue: seller.rating,
-                      reviewCount: seller.reviewCount,
-                    },
-                  }
-                : {}),
-            },
-          ],
-        }
-      : {
-          title: isLoading ? "Chargement du profil" : "Profil introuvable",
-          noIndex: true,
-        },
-  );
+  const pageMeta = React.useMemo(() => {
+    if (!seller || !marketContext) {
+      return {
+        title: isLoading ? "Chargement du profil" : "Profil introuvable",
+        noIndex: true,
+        follow: false,
+      };
+    }
+    const routeData = {
+      status: "found" as const,
+      data: {
+        kind: "seller" as const,
+        seller,
+        listings,
+        reviews,
+      },
+    };
+    const segment =
+      ["boutique", "profil", "vendeur", "u"].find((value) =>
+        location.pathname.split("/").includes(value),
+      ) || "profil";
+    const policy = resolveSeoPolicy({
+      pathname: `/${segment}/${activeSlug}`,
+      marketContext,
+      routeData,
+    });
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
+  }, [
+    activeSlug,
+    isLoading,
+    listings,
+    location.pathname,
+    marketContext,
+    reviews,
+    seller,
+  ]);
+  usePageMeta(pageMeta);
 
   if (isLoading) {
     return (
