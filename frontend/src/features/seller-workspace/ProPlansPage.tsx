@@ -34,6 +34,8 @@ import {
   Zap,
 } from "lucide-react";
 import { services } from "../../api";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { ScrollableRegion } from "../../design-system";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -122,6 +124,7 @@ function PriceDisplay({
 }
 
 export const ProPlansPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
   const { activeMarket } = useMarketLocation();
   const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
@@ -754,7 +757,10 @@ export const ProPlansPage: React.FC = () => {
                   aria-hidden="true"
                 />
               </div>
-              <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface shadow-xs">
+              <ScrollableRegion
+                aria-label={t("pro.plans.comparisonTableLabel")}
+                className="rounded-card border border-border-base bg-bg-surface shadow-xs"
+              >
                 <table className="w-full min-w-190 border-collapse text-xs">
                   <thead>
                     <tr className="bg-bg-subtle text-left text-text-main">
@@ -800,7 +806,7 @@ export const ProPlansPage: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </ScrollableRegion>
             </section>
 
             <section

@@ -81,7 +81,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             )}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-stone-400"
+            className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-text-muted"
           />
           {searchQuery && (
             <button

@@ -174,7 +174,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? resultsId : undefined}
           aria-busy={isLoading || undefined}
-          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-stone-400 focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-text-muted focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
         />
         {query && (
           <button

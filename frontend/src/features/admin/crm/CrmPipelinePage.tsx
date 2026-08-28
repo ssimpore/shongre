@@ -36,6 +36,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { forecastCategoryMessageKey } from "../../../domains/crm/crm.labels";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -78,6 +79,13 @@ export const CrmPipelinePage: React.FC = () => {
   const { activeMarket, currentLocale } = useMarketLocation();
   const crmPaths = useCrmSurface();
   const toast = useToast();
+  // The board previously mapped `commit` and labelled the other four forecast
+  // members "Pipeline", so a best-case, closed or omitted deal read as ordinary
+  // pipeline on the card an operator scans fastest.
+  const forecastLabel = (category: string) => {
+    const key = forecastCategoryMessageKey(category);
+    return key ? t(key) : category;
+  };
   const [pipelines, setPipelines] = useState<CrmPipeline[]>([]);
   const [selectedPipelineId, setSelectedPipelineId] = useState("");
   const [opportunities, setOpportunities] = useState<CrmOpportunity[]>([]);
@@ -458,9 +466,7 @@ export const CrmPipelinePage: React.FC = () => {
                           </strong>
                           <span className="text-micro text-stone-500">
                             {opportunity.probability}% ·{" "}
-                            {opportunity.forecastCategory === "commit"
-                              ? "Commit"
-                              : "Pipeline"}
+                            {forecastLabel(opportunity.forecastCategory)}
                           </span>
                         </div>
                         {opportunity.expectedCloseDate && (

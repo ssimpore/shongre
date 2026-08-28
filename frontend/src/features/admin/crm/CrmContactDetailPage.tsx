@@ -34,6 +34,8 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { sourceMessageKey } from "../../../domains/crm/crm.labels";
 
 const lifecycleOptions = [
   { value: "lead", label: "Lead" },
@@ -53,6 +55,7 @@ function tomorrowMorning() {
 
 export const CrmContactDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const crmPaths = useCrmSurface();
   const toast = useToast();
@@ -243,6 +246,10 @@ export const CrmContactDetailPage: React.FC = () => {
 
   const initials =
     `${contact.firstName[0] ?? ""}${contact.lastName[0] ?? ""}`.toUpperCase();
+  const contactSourceKey = sourceMessageKey(contact.source);
+  const contactSourceLabel = contactSourceKey
+    ? t(contactSourceKey)
+    : contact.source;
 
   return (
     <div className="space-y-4 pb-8">
@@ -359,7 +366,7 @@ export const CrmContactDetailPage: React.FC = () => {
         </article>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
@@ -456,7 +463,7 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
           </section>
         </div>
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
@@ -522,11 +529,11 @@ export const CrmContactDetailPage: React.FC = () => {
                   "Canal préféré",
                   contact.preferredContactMethod ?? "Non renseigné",
                 ],
-                ["Source", contact.source.replace("_", " ")],
+                ["Source", contactSourceLabel],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-3 py-2.5">
-                  <dt className="text-stone-500">{label}</dt>
-                  <dd className="text-right font-bold text-stone-800">
+                  <dt className="shrink-0 text-stone-500">{label}</dt>
+                  <dd className="min-w-0 break-words text-right font-bold text-stone-800">
                     {value}
                   </dd>
                 </div>

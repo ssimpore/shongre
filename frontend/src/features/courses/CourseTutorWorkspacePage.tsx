@@ -29,6 +29,7 @@ import {
   Badge,
   Button,
   Image,
+  ScrollableRegion,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -291,7 +292,9 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 Voir tous mes cours
               </Button>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollableRegion
+              aria-label={t("courses.tutorWorkspace.offersTableLabel")}
+            >
               <table className="w-full min-w-168 text-left text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-muted">
                   <tr>
@@ -382,7 +385,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableRegion>
           </section>
 
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
@@ -403,7 +406,11 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 Modifier
               </Button>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollableRegion
+              aria-label={t(
+                "courses.tutorWorkspace.availabilityTableLabel",
+              )}
+            >
               <table className="w-full min-w-176 text-center text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold text-text-muted">
                   <tr>
@@ -461,7 +468,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableRegion>
           </section>
 
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">

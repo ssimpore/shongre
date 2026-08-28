@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { ALL_ROUTES } from './routes';
+import { ALL_ROUTES, PUBLIC_ROUTES } from './routes';
 import { useEstablishedConsent, usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
@@ -236,4 +236,49 @@ test.describe('keyboard and focus', () => {
     // …and it comes back to the control that opened it.
     await expect(burger).toBeFocused();
   });
+});
+
+/**
+ * `truncate` has to be applied to something that can actually truncate.
+ *
+ * The utility sets `overflow: hidden`, `text-overflow: ellipsis` and
+ * `white-space: nowrap`. None of the three does anything on an inline box, so
+ * an inline element carrying it does not ellipsise — and, worse, its now
+ * unbreakable text contributes its full width to the parent's min-content. That
+ * is how one `<Link className="truncate">` on the CRM company panel stretched a
+ * 320px page to 375px: the label looked fine on a laptop and silently broke the
+ * layout on a phone, where nothing named the link as the cause.
+ *
+ * Elements with no layout box are skipped: a `hidden xl:flex` control reports
+ * `display: inline` for its children at phone width purely because the subtree
+ * is not rendered, and it truncates correctly once it is.
+ */
+test.describe("truncation actually truncates", () => {
+  for (const route of PUBLIC_ROUTES) {
+    test(`${route.name} applies truncate only to non-inline boxes`, async ({
+      page,
+    }) => {
+      await usePersona(page, route.persona);
+      await page.goto(route.path, { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const ineffective = await page.evaluate(() => {
+        const found: string[] = [];
+        document.querySelectorAll(".truncate").forEach((element) => {
+          const box = element.getBoundingClientRect();
+          if (box.width === 0 && box.height === 0) return;
+          if (getComputedStyle(element).display !== "inline") return;
+          found.push(
+            `<${element.tagName.toLowerCase()} class="${element.className}">`,
+          );
+        });
+        return [...new Set(found)];
+      });
+
+      expect(
+        ineffective,
+        `${route.name} (${route.path}) applies \`truncate\` to inline elements, where it has no effect:\n    ${ineffective.join("\n    ")}`,
+      ).toEqual([]);
+    });
+  }
 });

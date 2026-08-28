@@ -517,7 +517,7 @@ export const MyListingsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDeleteListing(listing.id)}
-                        className="p-1.5 rounded-lg hover:bg-danger-surface text-stone-400 hover:text-danger transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-danger-surface text-text-muted hover:text-danger transition-colors"
                         title={t(
                           "sellerworkspace.myListingsPage.supprimerLAnnonce",
                         )}

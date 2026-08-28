@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Image } from "../../../design-system";
 import type { MarketingCampaign } from "@shongre/contracts";
 import { Monitor, Smartphone } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
@@ -108,7 +109,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   );
                 if (block.type === "IMAGE")
                   return (
-                    <img
+                    <Image
                       key={block.id}
                       src={block.src}
                       alt={block.alt}

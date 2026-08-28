@@ -15,8 +15,16 @@ import type {
 import type { VerticalAddOn, VerticalOffer } from "@shongre/contracts/vertical";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Select, Skeleton, Switch } from "../../design-system";
+import {
+  Badge,
+  Button,
+  ScrollableRegion,
+  Select,
+  Skeleton,
+  Switch,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { formatImmoMoney } from "./immo-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { formatCurrencySymbol } from "../../utilities/formatters";
@@ -38,6 +46,7 @@ const featureFlagLabels: Record<string, string> = {
 };
 
 export const AdminImmoPage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<RealEstateAdminOverview | null>(
@@ -229,7 +238,7 @@ export const AdminImmoPage: React.FC = () => {
             </div>
             <CircleDollarSign className="h-icon-lg w-icon-lg text-primary" />
           </div>
-          <div className="mt-4 overflow-x-auto">
+          <ScrollableRegion aria-label={t("admin.immo.marketsTableLabel")} className="mt-4">
             <table className="w-full min-w-216 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
@@ -451,7 +460,7 @@ export const AdminImmoPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableRegion>
         </div>
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <Settings2 className="h-icon-xl w-icon-xl text-primary" />
@@ -489,7 +498,7 @@ export const AdminImmoPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
           <div className="border-b border-border-base p-5">
             <h2 className="text-sm font-black">Options de visibilité</h2>
@@ -497,7 +506,7 @@ export const AdminImmoPage: React.FC = () => {
               Prix, durée et activation par marché.
             </p>
           </div>
-          <div className="overflow-x-auto">
+          <ScrollableRegion aria-label={t("admin.immo.visibilityOptionsTableLabel")}>
             <table className="w-full min-w-140 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
@@ -578,7 +587,7 @@ export const AdminImmoPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableRegion>
         </div>
         <div className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
           <div className="border-b border-border-base p-5">
@@ -635,7 +644,7 @@ export const AdminImmoPage: React.FC = () => {
             condition propre à {activeMarket.name} dans l’interface.
           </p>
         </div>
-        <div className="overflow-x-auto">
+        <ScrollableRegion aria-label={t("admin.immo.listingsTableLabel")}>
           <table className="w-full min-w-168 text-left text-xs">
             <thead className="bg-bg-subtle text-text-muted">
               <tr>
@@ -688,7 +697,7 @@ export const AdminImmoPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollableRegion>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
@@ -704,8 +713,17 @@ export const AdminImmoPage: React.FC = () => {
                 className="rounded-control border border-border-base p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black">Bien {item.propertyId}</p>
+                  <div className="min-w-0">
+                    {/* The identifier is a technical reference, not a name: it
+                        is set in mono and allowed to break. Left as ordinary
+                        bold copy it was one unbreakable 190px token that pushed
+                        the admin console past a 320px viewport. */}
+                    <p className="text-xs font-black">
+                      Bien{" "}
+                      <span className="break-all font-mono font-bold">
+                        {item.propertyId}
+                      </span>
+                    </p>
                     <p className="mt-1 text-xs text-text-secondary">
                       {item.reasonLabel}
                     </p>

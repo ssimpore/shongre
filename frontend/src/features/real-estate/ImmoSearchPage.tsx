@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { useTranslation } from "../../i18n/I18nProvider";
 import React, { useEffect, useMemo, useState } from "react";
 import { Bell, Filter, List, Map, Search } from "lucide-react";
 import type {
@@ -25,7 +26,17 @@ import {
 import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
-import { ImmoMap } from "./components/ImmoMap";
+// Leaflet reads `window` when its module body runs, so a static import puts the
+// map engine in the server graph: every render of /immo threw
+// "window is not defined" and the route silently degraded to a client-only
+// shell — on a listings vertical that costs SSR, LCP and indexability. It is
+// also the heaviest optional dependency in the product, and list view does not
+// need it. `SearchPage` already loads its map this way; this route did not.
+const ImmoMap = React.lazy(() =>
+  import("./components/ImmoMap").then((module) => ({
+    default: module.ImmoMap,
+  })),
+);
 import { PropertyCard } from "./components/PropertyCard";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -324,6 +335,7 @@ const ImmoFilters: React.FC<{
 };
 
 export const ImmoSearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
   const toast = useToast();
@@ -724,12 +736,24 @@ export const ImmoSearchPage: React.FC = () => {
             </section>
             {view === "map" ? (
               <aside className="sticky top-24 hidden h-search-map-panel overflow-hidden rounded-card border border-border-base bg-bg-surface xl:block">
-                <ImmoMap
-                  properties={visibleItems}
-                  selectedId={selectedId}
-                  onSelect={(property) => setSelectedId(property.id)}
-                  onBoundsChange={setMapBounds}
-                />
+                <React.Suspense
+                  fallback={
+                    <div
+                      role="status"
+                      aria-label={t("common.loadingMap")}
+                      className="h-full w-full p-3"
+                    >
+                      <Skeleton className="h-full w-full rounded-card" />
+                    </div>
+                  }
+                >
+                  <ImmoMap
+                    properties={visibleItems}
+                    selectedId={selectedId}
+                    onSelect={(property) => setSelectedId(property.id)}
+                    onBoundsChange={setMapBounds}
+                  />
+                </React.Suspense>
               </aside>
             ) : null}
           </div>

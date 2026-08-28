@@ -358,7 +358,7 @@ export const CrmCompaniesPage: React.FC = () => {
                       null,
                   )
                 }
-                className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-stone-400 transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Supprimer la vue sélectionnée"
               >
                 <Trash2 className="h-icon-md w-icon-md" />

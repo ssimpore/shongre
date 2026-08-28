@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -46,6 +48,8 @@ import {
   SelectableCard,
   Skeleton,
   Textarea,
+  ScrollableRegion,
+  Image,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatAutoMoney } from "./auto-format";
@@ -85,6 +89,7 @@ const FIRST_STEP = AUTO_CONSTRAINTS.publication.firstStep;
 const TOTAL_STEPS = AUTO_CONSTRAINTS.publication.stepCount;
 
 export const AutoPublishWizardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale } = useMarketLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
@@ -876,7 +881,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 className="overflow-hidden rounded-card border border-border-base bg-bg-surface"
               >
                 <div className="relative aspect-4/3 overflow-hidden">
-                  <img
+                  <Image
                     src={url}
                     alt={`Photo ${index + 1} du véhicule`}
                     className="h-full w-full object-cover"
@@ -950,9 +955,10 @@ export const AutoPublishWizardPage: React.FC = () => {
             Relisez le titre et la description avant de choisir une offre.
           </p>
           <div className="mt-5 grid gap-5 sm:grid-cols-sidebar-compact">
-            <img
+            <Image
               src={(data.mediaUrls as string[])[0]}
               alt=""
+              sizes={IMAGE_SIZES.card}
               className="aspect-4/3 w-full rounded-card object-cover"
             />
             <div>
@@ -1118,7 +1124,10 @@ export const AutoPublishWizardPage: React.FC = () => {
         <h1 className="text-2xl font-black tracking-tight">
           Publier un véhicule
         </h1>
-        <div className="mt-5 overflow-x-auto pb-2">
+        <ScrollableRegion
+          aria-label={t("auto.publish.stepperLabel")}
+          className="mt-5 pb-2"
+        >
           <ol className="flex min-w-232 justify-between gap-2">
             {STEPS.map(([label], index) => {
               const number = index + FIRST_STEP;
@@ -1150,7 +1159,7 @@ export const AutoPublishWizardPage: React.FC = () => {
               );
             })}
           </ol>
-        </div>
+        </ScrollableRegion>
         <div className="mt-4 grid gap-5 lg:grid-cols-content-aside-xs">
           <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
             {stepContent}

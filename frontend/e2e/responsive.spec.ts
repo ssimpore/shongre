@@ -48,7 +48,13 @@ test.describe("horizontal overflow", () => {
     test(`public routes hold at ${viewport.name} @serial`, async ({ page }) => {
       // This one test intentionally performs a complete public-route sweep.
       // Keep the global single-route budget strict and widen only this audit.
-      test.setTimeout(90_000);
+      //
+      // The budget scales with the list rather than sitting at a constant: a
+      // flat 90s was sized for 26 public routes and silently became a timeout
+      // when the matrix grew to 61 — reported as a layout failure on whichever
+      // route the clock happened to run out on, which is a misleading way to
+      // learn that a list got longer.
+      test.setTimeout(Math.max(90_000, PUBLIC_ROUTES.length * 4_000));
       await page.setViewportSize({
         width: viewport.width,
         height: viewport.height,

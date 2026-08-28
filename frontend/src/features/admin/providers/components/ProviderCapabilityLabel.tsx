@@ -37,7 +37,12 @@ export const ProviderCapabilityLabel: React.FC<
       >
         {metadata.name}
       </span>
-      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-micro text-current/70">
+      {/* Hierarchy here comes from size and weight, not opacity. `text-current/70`
+          alpha-blended the inherited colour into its own surface — on the green
+          "implémentée" chip that put the technical code at 2.84:1, a serious
+          WCAG failure on the one line an administrator has to read character by
+          character. */}
+      <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-micro text-current">
         <span className="font-semibold">
           {t("admin.providerCapabilityLabel.codeCapacite")}
         </span>

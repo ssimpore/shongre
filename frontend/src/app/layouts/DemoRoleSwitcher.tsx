@@ -415,7 +415,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
                 onKeyDown={handleMenuKeyDown}
                 className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
               >
-                <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-stone-400">
+                <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted">
                   {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
                 </div>
                 {DEMO_PERSONAS.map((persona, index) => {

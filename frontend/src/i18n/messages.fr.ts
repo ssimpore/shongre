@@ -3936,6 +3936,53 @@ export const messagesFr = {
   "invoicing.onboarding.bootstrapAction": "Configurer l’émetteur",
   "invoicing.onboarding.bootstrapError":
     "Impossible de reprendre les informations de l’organisation.",
+  // --- CRM: forecast categories -------------------------------------------
+  // The API returns `pipeline | best_case | commit | closed | omitted`. These
+  // are enum keys, not copy: rendering them raw (or mapping only `commit` and
+  // calling everything else "Pipeline", as the pipeline board did) shows the
+  // operator a backend token and mislabels three of the five states.
+  "crm.forecast.pipeline": "Prévisionnel",
+  "crm.forecast.bestCase": "Meilleur scénario",
+  "crm.forecast.commit": "Engagé",
+  "crm.forecast.closed": "Clôturé",
+  "crm.forecast.omitted": "Exclu du prévisionnel",
+
+  // The same applies to `source`: eight enum members reached three detail
+  // panels as raw tokens ("ai_research", "shongre_adapter", "external_api").
+  "crm.source.manual": "Saisie manuelle",
+  "crm.source.import": "Import de fichier",
+  "crm.source.inbound": "Demande entrante",
+  "crm.source.referral": "Recommandation",
+  "crm.source.event": "Événement",
+  "crm.source.aiResearch": "Recherche assistée par IA",
+  "crm.source.shongreAdapter": "Marketplace Shongre",
+  "crm.source.externalApi": "API externe",
+
+  "common.loadingMap": "Chargement de la carte",
+  "courses.tutorWorkspace.offersTableLabel": "Tableau des cours publiés",
+  "courses.tutorWorkspace.availabilityTableLabel": "Tableau des disponibilités hebdomadaires",
+
+  "crm.opportunity.stageStepperLabel": "Étapes du pipeline",
+
+  "admin.immo.marketsTableLabel": "Tableau des marchés immobiliers",
+  "admin.immo.visibilityOptionsTableLabel": "Tableau des options de visibilité",
+  "admin.immo.listingsTableLabel": "Tableau des annonces immobilières",
+
+  "admin.solutions.catalogTableLabel": "Tableau du catalogue de solutions",
+  "admin.monetization.firstTableLabel": "Tableau des grilles de commission",
+  "admin.monetization.secondTableLabel": "Tableau des paliers de commission",
+  "admin.employment.tableLabel": "Tableau des offres d’emploi",
+  "employment.recruiter.tableLabel": "Tableau des candidatures",
+  "pro.plans.comparisonTableLabel": "Tableau comparatif des forfaits Pro",
+  "admin.auto.tableLabel": "Tableau des annonces automobiles",
+  "auto.publish.stepperLabel": "Étapes de publication du véhicule",
+  "auto.compare.tableLabel": "Tableau comparatif des véhicules",
+
+  "crm.taskPriority.low": "Basse",
+  "crm.taskPriority.medium": "Moyenne",
+  "crm.taskPriority.high": "Haute",
+  "crm.taskPriority.urgent": "Urgente",
+
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

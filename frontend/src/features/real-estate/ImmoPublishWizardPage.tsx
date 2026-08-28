@@ -41,10 +41,20 @@ import {
   Select,
   Skeleton,
   Textarea,
+  Image,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { formatImmoMoney } from "./immo-format";
-import { ImmoLocationPicker } from "./components/ImmoLocationPicker";
+// Same reason as ImmoSearchPage: the picker pulls in Leaflet, whose module body
+// touches `window`. Statically imported it reached the server graph through the
+// router and put the map engine in the first client chunk for every visitor,
+// including the ones who never open the publish wizard.
+const ImmoLocationPicker = React.lazy(() =>
+  import("./components/ImmoLocationPicker").then((module) => ({
+    default: module.ImmoLocationPicker,
+  })),
+);
 import { scrollToTop } from "../../utilities/motion";
 
 const STEPS = [
@@ -78,6 +88,7 @@ const TOTAL_STEPS = REAL_ESTATE_CONSTRAINTS.publication.stepCount;
 type DraftData = PropertyPublicationDraftData;
 
 export const ImmoPublishWizardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
@@ -588,19 +599,28 @@ export const ImmoPublishWizardPage: React.FC = () => {
               </label>
               <div>
                 <p className="mb-2 text-xs font-bold">Position de référence</p>
-                <ImmoLocationPicker
-                  value={{
-                    latitude: data.latitude,
-                    longitude: data.longitude,
-                  }}
-                  onChange={({ latitude, longitude }) =>
-                    setData((current) => ({
-                      ...current,
-                      latitude,
-                      longitude,
-                    }))
+                <React.Suspense
+                  fallback={
+                    <Skeleton
+                      className="h-64 w-full rounded-card"
+                      aria-label={t("common.loadingMap")}
+                    />
                   }
-                />
+                >
+                  <ImmoLocationPicker
+                    value={{
+                      latitude: data.latitude,
+                      longitude: data.longitude,
+                    }}
+                    onChange={({ latitude, longitude }) =>
+                      setData((current) => ({
+                        ...current,
+                        latitude,
+                        longitude,
+                      }))
+                    }
+                  />
+                </React.Suspense>
                 <p className="mt-2 text-micro text-text-muted">
                   Déplacez le repère. La position publique sera arrondie selon
                   le niveau choisi ; l’adresse exacte reste privée.
@@ -981,7 +1001,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               <div className="overflow-hidden rounded-card border border-border-base">
                 <div className="aspect-2/1 bg-bg-subtle">
                   {data.mediaUrls[0] ? (
-                    <img
+                    <Image
                       src={data.mediaUrls[0]}
                       alt="Aperçu du bien"
                       className="h-full w-full object-cover"

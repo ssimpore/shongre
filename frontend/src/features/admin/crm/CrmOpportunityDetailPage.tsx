@@ -39,11 +39,18 @@ import {
   Select,
   Textarea,
 } from "../../../design-system/primitives/FormField";
-import { Skeleton } from "../../../design-system";
+import { ScrollableRegion, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { taskPriorityToneClass } from "./crm.presentation";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import {
+  forecastCategoryMessageKey,
+  sourceMessageKey,
+  taskPriorityMessageKey,
+} from "../../../domains/crm/crm.labels";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -106,6 +113,7 @@ const activityPresentation: Record<
 export const CrmOpportunityDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const crmPaths = useCrmSurface();
   const { currentLocale } = useMarketLocation();
   const toast = useToast();
@@ -365,6 +373,20 @@ export const CrmOpportunityDetailPage: React.FC = () => {
     );
   }
 
+  // An unknown enum member falls back to the raw value rather than an empty
+  // cell: an operator seeing `some_new_state` can report it, an operator seeing
+  // nothing cannot.
+  const forecastKey = forecastCategoryMessageKey(opportunity.forecastCategory);
+  const forecastLabel = forecastKey
+    ? t(forecastKey)
+    : opportunity.forecastCategory;
+  const sourceKey = sourceMessageKey(opportunity.source);
+  const sourceLabel = sourceKey ? t(sourceKey) : opportunity.source;
+  const priorityLabel = (priority: string) => {
+    const key = taskPriorityMessageKey(priority);
+    return key ? t(key) : priority;
+  };
+
   return (
     <div className="space-y-4 pb-8">
       <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-white shadow-sm">
@@ -384,8 +406,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 >
                   {opportunity.stageName}
                 </span>
-                <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-                  {opportunity.forecastCategory.replace("_", " ")}
+                <span className="text-micro font-bold uppercase tracking-wider text-stone-400">
+                  {forecastLabel}
                 </span>
               </div>
               <h1 className="mt-2 max-w-3xl text-2xl font-black leading-tight tracking-tight sm:text-3xl">
@@ -467,7 +489,15 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto border-t border-stone-800 px-4 py-4 sm:px-6">
+        {/* `overflow-x-auto` alone does not stop a 768px child contributing its
+            intrinsic width to the document in Chromium: at 320px this stepper
+            widened the whole page. ScrollableRegion carries the
+            `contain: layout paint` that actually bounds it, and makes the strip
+            reachable by keyboard. */}
+        <ScrollableRegion
+          aria-label={t("crm.opportunity.stageStepperLabel")}
+          className="border-t border-stone-800 px-4 py-4 sm:px-6"
+        >
           <div className="flex min-w-3xl items-start">
             {pipeline.stages.map((stage, index) => {
               const complete = index <= currentStageIndex && !stage.isLost;
@@ -500,7 +530,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     )}
                   </span>
                   <span
-                    className={`text-micro font-bold ${current ? "text-white" : "text-stone-500 group-hover:text-stone-300"}`}
+                    className={`text-micro font-bold ${current ? "text-white" : "text-stone-400 group-hover:text-stone-200"}`}
                   >
                     {stage.name}
                   </span>
@@ -508,10 +538,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               );
             })}
           </div>
-        </div>
+        </ScrollableRegion>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
@@ -626,7 +656,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     </button>
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`truncate text-xs font-bold ${task.status === "completed" ? "text-stone-400 line-through" : "text-stone-900"}`}
+                        className={`truncate text-xs font-bold ${task.status === "completed" ? "text-text-muted line-through" : "text-stone-900"}`}
                       >
                         {task.title}
                       </p>
@@ -639,9 +669,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                       </p>
                     </div>
                     <span
-                      className={`rounded-full px-2 py-1 text-micro font-bold ${task.priority === "urgent" ? "bg-danger-surface text-danger" : task.priority === "high" ? "bg-primary-light text-primary" : "bg-stone-100 text-stone-600"}`}
+                      className={`shrink-0 rounded-full px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
                     >
-                      {task.priority}
+                      {priorityLabel(task.priority)}
                     </span>
                   </div>
                 ))
@@ -705,15 +735,15 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           </section>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
             <h2 className="text-sm font-black text-stone-950">Informations</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Pipeline", opportunity.pipelineName],
                 ["Étape", opportunity.stageName],
-                ["Prévision", opportunity.forecastCategory.replace("_", " ")],
-                ["Source", opportunity.source.replace("_", " ")],
+                ["Prévision", forecastLabel],
+                ["Source", sourceLabel],
                 ["Propriétaire", opportunity.ownerName ?? "Non assignée"],
                 ["Équipe", opportunity.teamName ?? "Non assignée"],
               ].map(([label, value]) => (

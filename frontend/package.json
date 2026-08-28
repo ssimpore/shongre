@@ -14,7 +14,7 @@
     "preview": "node scripts/next-cli.mjs start",
     "start": "node scripts/next-cli.mjs start",
     "clean": "rm -rf .next out server.js",
-    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node scripts/check-navigation-integrity.mjs",
+    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node scripts/check-navigation-integrity.mjs && node scripts/check-route-coverage.mjs",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build --workspace=@shongre/design-tokens",
     "test": "vitest run",
@@ -33,7 +33,8 @@
     "test:e2e:ui": "playwright test --ui",
     "check:i18n": "node scripts/check-i18n-coverage.mjs",
     "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts",
-    "check:navigation": "node scripts/check-navigation-integrity.mjs"
+    "check:navigation": "node scripts/check-navigation-integrity.mjs",
+    "check:routes": "node scripts/check-route-coverage.mjs"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

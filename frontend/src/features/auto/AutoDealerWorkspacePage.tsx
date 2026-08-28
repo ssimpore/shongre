@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
 import {
   BarChart3,
   ArrowRightLeft,
@@ -36,6 +37,7 @@ import {
   Select,
   Skeleton,
   StatePanel,
+  Image,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
@@ -330,9 +332,10 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <img
+                      <Image
                         src={vehicle.mediaUrls[0]}
                         alt=""
+                        sizes={IMAGE_SIZES.compact}
                         className="h-10 w-14 rounded-control object-cover"
                       />
                       <div>

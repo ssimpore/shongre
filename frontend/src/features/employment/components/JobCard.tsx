@@ -13,7 +13,7 @@ import type {
   EmploymentCatalog,
   JobPostingCard,
 } from "@shongre/contracts/employment";
-import { Badge, IconButton } from "../../../design-system";
+import { Badge, IconButton, Image } from "../../../design-system";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { formatSalary, relativeEmploymentDate } from "../employment-format";
 
@@ -30,7 +30,7 @@ export const JobCard: React.FC<{
       <div className="flex items-start gap-3 sm:gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-card border border-border-subtle bg-bg-subtle text-sm font-black text-text-main sm:h-14 sm:w-14">
           {job.employer.logoUrl ? (
-            <img
+            <Image
               src={job.employer.logoUrl}
               alt=""
               className="h-full w-full rounded-card object-cover"

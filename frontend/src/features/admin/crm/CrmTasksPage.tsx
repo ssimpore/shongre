@@ -28,22 +28,15 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import {
+  CRM_TASK_PRIORITIES,
+  taskPriorityMessageKey,
+} from "../../../domains/crm/crm.labels";
+import { taskPriorityToneClass } from "./crm.presentation";
 
 type TaskFilter = "pending" | "completed" | "all";
 type RelatedType = "none" | "account" | "contact" | "opportunity";
-
-const priorityLabels: Record<CrmTask["priority"], string> = {
-  low: "Basse",
-  medium: "Moyenne",
-  high: "Haute",
-  urgent: "Urgente",
-};
-const priorityClasses: Record<CrmTask["priority"], string> = {
-  low: "bg-stone-100 text-stone-600",
-  medium: "bg-info-surface text-info",
-  high: "bg-warning-surface text-warning",
-  urgent: "bg-danger-surface text-danger",
-};
 
 function defaultDueDate() {
   const date = new Date(Date.now() + 24 * 60 * 60 * 1_000);
@@ -52,7 +45,12 @@ function defaultDueDate() {
 }
 
 export const CrmTasksPage: React.FC = () => {
+  const { t } = useTranslation();
   const crmPaths = useCrmSurface();
+  const priorityLabel = (priority: string) => {
+    const key = taskPriorityMessageKey(priority);
+    return key ? t(key) : priority;
+  };
   usePageMeta({
     title: "Tâches CRM | Shongre",
     description: "Planification et suivi des relances commerciales.",
@@ -379,9 +377,9 @@ export const CrmTasksPage: React.FC = () => {
                     </time>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-1 text-micro font-bold ${priorityClasses[task.priority]}`}
+                    className={`shrink-0 rounded-full px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
                   >
-                    {priorityLabels[task.priority]}
+                    {priorityLabel(task.priority)}
                   </span>
                 </article>
               );
@@ -427,9 +425,10 @@ export const CrmTasksPage: React.FC = () => {
                 onChange={(event) =>
                   setPriority(event.target.value as CrmTask["priority"])
                 }
-                options={Object.entries(priorityLabels).map(
-                  ([value, label]) => ({ value, label }),
-                )}
+                options={CRM_TASK_PRIORITIES.map((value) => ({
+                  value,
+                  label: priorityLabel(value),
+                }))}
               />
             </FormField>
           </div>

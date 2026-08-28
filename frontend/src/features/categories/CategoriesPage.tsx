@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
@@ -13,6 +14,7 @@ import {
   EmptyState,
   Heading,
   Input,
+  Image,
 } from "../../design-system";
 
 const CATEGORY_VISUALS: Record<string, string> = {
@@ -66,11 +68,11 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
           category: categoryLabel,
         })}
       >
-        <img
+        <Image
           src={visualSrc}
           alt=""
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
+          priority={priority}
+          sizes={IMAGE_SIZES.card}
           className="h-full w-full object-cover transition duration-slow group-hover:scale-105 motion-reduce:transform-none"
         />
         <span className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent" />

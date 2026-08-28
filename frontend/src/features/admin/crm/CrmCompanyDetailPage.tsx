@@ -39,6 +39,8 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { sourceMessageKey } from "../../../domains/crm/crm.labels";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -60,6 +62,7 @@ const lifecycleOptions = [
 
 export const CrmCompanyDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const crmPaths = useCrmSurface();
   const { activeMarket, currentLocale } = useMarketLocation();
@@ -229,6 +232,10 @@ export const CrmCompanyDetailPage: React.FC = () => {
       </section>
     );
 
+  const accountSourceKey = sourceMessageKey(account.source);
+  const accountSourceLabel = accountSourceKey
+    ? t(accountSourceKey)
+    : account.source;
   const openValue = opportunities
     .filter((opportunity) => opportunity.status === "open")
     .reduce((sum, opportunity) => sum + opportunity.amount.amountMinor, 0);
@@ -449,7 +456,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </div>
               <strong className="mt-2 block text-2xl font-black">
                 {shongre.listings.published}
-                <span className="text-xs font-bold text-stone-400">
+                <span className="text-xs font-bold text-text-muted">
                   {" "}
                   / {shongre.listings.total} publiées
                 </span>
@@ -515,7 +522,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
         )}
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      {/* The explicit `grid-cols-1` is not cosmetic. Without it the single
+          column below `xl` is an *implicit* track sized `auto`, whose floor is
+          the content's min-content width — so this panel rendered 359px wide
+          inside a 320px viewport and took the whole document with it.
+          `grid-cols-1` compiles to `repeat(1, minmax(0, 1fr))`, which can
+          shrink; the `xl:` override already does. */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
@@ -544,9 +557,15 @@ export const CrmCompanyDetailPage: React.FC = () => {
                       <Target className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0 flex-1">
+                      {/* `block` is load-bearing: `truncate` sets
+                          `overflow:hidden` and `white-space:nowrap`, neither of
+                          which applies to an inline box. Without it the link
+                          never ellipsised and its full unbreakable width fed the
+                          grid's min-content, widening the whole page to 375px
+                          inside a 320px viewport. */}
                       <Link
                         to={crmPaths.opportunity(opportunity.id)}
-                        className="truncate text-xs font-black text-stone-900 hover:text-primary"
+                        className="block truncate text-xs font-black text-stone-900 hover:text-primary"
                       >
                         {opportunity.name}
                       </Link>
@@ -616,7 +635,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
           </section>
         </div>
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-white shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
@@ -667,11 +686,11 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 ],
                 ["Région", account.region ?? "Non renseignée"],
                 ["Pays", account.country],
-                ["Source", account.source.replace("_", " ")],
+                ["Source", accountSourceLabel],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-3 py-2.5">
-                  <dt className="text-stone-500">{label}</dt>
-                  <dd className="text-right font-bold text-stone-800">
+                  <dt className="shrink-0 text-stone-500">{label}</dt>
+                  <dd className="min-w-0 break-words text-right font-bold text-stone-800">
                     {value}
                   </dd>
                 </div>

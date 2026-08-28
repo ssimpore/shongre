@@ -26,7 +26,15 @@ export const themeColors = {
 
   "text-main": "#1C1917",
   "text-secondary": "#57534E",
-  "text-muted": "#78716C",
+  /* Muted body copy has to clear WCAG AA (4.5:1) on every surface token it can
+     sit on, not just `bg-surface`. The previous #78716C reached 4.79:1 on white
+     but only 4.25:1 on `bg-subtle` and 4.10:1 on `bg-muted`, so every muted
+     caption, table header and breadcrumb on a tinted panel was a failure — the
+     audit found them on the property detail, teacher profile, course table,
+     admin market and CRM prospecting surfaces. This value clears 4.5:1 against
+     `bg-surface`, `bg-base`, `bg-subtle` and `bg-muted` alike; the contrast
+     assertion in `check-design-tokens.mjs` keeps it that way. */
+  "text-muted": "#6A635E",
   "text-disabled": "#A8A29E",
   "text-inverse": "#FFFFFF",
   focus: "#C4431F",

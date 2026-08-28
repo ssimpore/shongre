@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check, Minus, ShieldCheck, X } from "lucide-react";
 import type { VehiclePublic } from "@shongre/contracts/auto";
@@ -9,6 +10,7 @@ import {
   Image,
   Skeleton,
   StatePanel,
+  ScrollableRegion,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -20,6 +22,7 @@ import {
 } from "./auto-format";
 
 export const AutoComparePage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentLocale } = useMarketLocation();
   const [params, setParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
@@ -124,7 +127,10 @@ export const AutoComparePage: React.FC = () => {
           Ajouter un véhicule
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface shadow-xs">
+      <ScrollableRegion
+        aria-label={t("auto.compare.tableLabel")}
+        className="rounded-card border border-border-base bg-bg-surface shadow-xs"
+      >
         <table className="w-full min-w-176 border-collapse text-left text-xs">
           <caption className="sr-only">
             Comparaison détaillée de {vehicles.length} véhicules
@@ -207,7 +213,7 @@ export const AutoComparePage: React.FC = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </ScrollableRegion>
       <p className="mt-4 text-micro leading-relaxed text-text-muted">
         Les mensualités et estimations de prix sont indicatives. Shongre ne
         présente pas de décision de crédit ni d’approbation partenaire sur cette

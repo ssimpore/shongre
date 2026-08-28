@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   AlertTriangle,
   BriefcaseBusiness,
@@ -24,6 +25,7 @@ import {
   Input,
   Skeleton,
   StatePanel,
+  ScrollableRegion,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentMoney } from "../employment/employment-format";
@@ -32,6 +34,7 @@ import { labelIdentifier } from "../../utilities/identifier-label";
 type FeatureFlag = keyof EmploymentMarketConfig["featureFlags"];
 
 export const EmploymentAdminPage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<EmploymentAdminOverview | null>(
@@ -393,7 +396,10 @@ export const EmploymentAdminPage: React.FC = () => {
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
         <h2 className="text-lg font-black">Catalogue des offres employeur</h2>
-        <div className="mt-4 overflow-x-auto">
+        <ScrollableRegion
+          aria-label={t("admin.employment.tableLabel")}
+          className="mt-4"
+        >
           <table className="w-full min-w-200 text-left text-xs">
             <thead className="bg-bg-subtle text-text-secondary">
               <tr>
@@ -450,7 +456,7 @@ export const EmploymentAdminPage: React.FC = () => {
               })}
             </tbody>
           </table>
-        </div>
+        </ScrollableRegion>
       </section>
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">

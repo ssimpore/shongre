@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -26,6 +27,7 @@ import {
   FilterPanel,
   Skeleton,
   StatePanel,
+  Image,
 } from "../../design-system";
 import type { FilterPanelPresentation } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -761,9 +763,10 @@ export const AutoSearchPage: React.FC = () => {
             <div className="divide-y divide-border-subtle">
               {compared.map((vehicle) => (
                 <div key={vehicle.id} className="flex gap-3 p-3">
-                  <img
+                  <Image
                     src={vehicle.mediaUrls[0]}
                     alt=""
+                    sizes={IMAGE_SIZES.compact}
                     className="h-16 w-20 rounded-control object-cover"
                   />
                   <div className="min-w-0 flex-1">

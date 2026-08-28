@@ -75,7 +75,7 @@ export const ImmoMap: React.FC<{
       const selected = property.id === selectedId;
       const icon = L.divIcon({
         className: "shongre-immo-marker",
-        html: `<button type="button" aria-label="Afficher le bien ${index + 1}" class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary text-xs font-black text-white shadow-md ${selected ? "ring-4 ring-primary-border scale-110" : ""}">${index + 1}</button>`,
+        html: `<button type="button" aria-label="Afficher le bien ${index + 1}" class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary text-xs font-black text-white shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected ? "ring-4 ring-primary-border scale-110" : ""}">${index + 1}</button>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
       });
@@ -84,7 +84,15 @@ export const ImmoMap: React.FC<{
         property.address.longitude,
       );
       bounds.extend(latLng);
-      const marker = L.marker(latLng, { icon }).addTo(map);
+      // `keyboard: false` because the icon's own markup is already a real
+      // <button>. Leaflet's keyboard support puts `role="button"` and
+      // `tabindex="0"` on the wrapper it creates, which nested one button
+      // inside another: axe reported `nested-interactive`, screen readers
+      // announced "button, button", and the wrapper answered Enter but not
+      // Space. Leaving the native control as the only interactive node gives
+      // both keys, a real focus ring and correct semantics; the click still
+      // bubbles from the button to this marker.
+      const marker = L.marker(latLng, { icon, keyboard: false }).addTo(map);
       marker.on("click", () => onSelectRef.current(property));
       markersRef.current.push(marker);
       if (selected) {

@@ -667,7 +667,7 @@ export const ListingDetailPage: React.FC = () => {
                     ? "Retirer des favoris"
                     : "Ajouter aux favoris"
                 }
-                className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-stone-400 hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
+                className="p-3.5 rounded-2xl bg-white hover:bg-primary/5 text-text-muted hover:text-primary transition-all duration-fast cursor-pointer shrink-0 border border-stone-200 shadow-xs hover:shadow-sm hover:-translate-y-0.5 group"
               >
                 <Heart
                   className={`w-icon-xl h-icon-xl transition-all duration-fast ${isListingFavorite(listing.id) ? "fill-primary text-primary scale-110" : "group-hover:scale-110"}`}

@@ -82,6 +82,109 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/contact", name: "contact", persona: "guest" },
   { path: "/newsletter", name: "newsletter", persona: "guest" },
   { path: "/une-page-qui-nexiste-pas", name: "not-found", persona: "guest" },
+  { path: "/categories", name: "categories", persona: "guest" },
+  {
+    path: "/categorie/vehicules",
+    name: "category-landing",
+    persona: "guest",
+  },
+  { path: "/auto", name: "auto-search", persona: "guest" },
+  {
+    path: "/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019",
+    name: "auto-vehicle-detail",
+    persona: "guest",
+  },
+  { path: "/auto/comparer", name: "auto-compare", persona: "guest" },
+  { path: "/immo", name: "immo-search", persona: "guest" },
+  {
+    path: "/immo/bien/appartement-lumineux-lyon-montchat",
+    name: "immo-property-detail",
+    persona: "guest",
+  },
+  { path: "/education", name: "courses-search", persona: "guest" },
+  {
+    path: "/education/professeur/thomas-bernard-mathematiques",
+    name: "course-teacher-detail",
+    persona: "guest",
+  },
+  {
+    path: "/education/demande",
+    name: "course-request",
+    persona: "guest",
+  },
+  // `/cours` is the pre-rename education path. It must keep resolving to a
+  // rendered page rather than a blank redirect frame.
+  { path: "/cours", name: "legacy-education-redirect", persona: "guest" },
+  { path: "/tarifs", name: "pro-pricing", persona: "guest" },
+  { path: "/publier", name: "publish-entry", persona: "guest" },
+  { path: "/prospects", name: "prospects-product", persona: "guest" },
+  {
+    path: "/solutions/prospects",
+    name: "solutions-prospects-detail",
+    persona: "guest",
+  },
+  {
+    path: "/solutions/marketplace",
+    name: "solutions-marketplace-detail",
+    persona: "guest",
+  },
+  // The three seller-profile aliases render the same page; each is linked from
+  // a different surface, so each has to stay routable.
+  { path: "/u/camille-martin", name: "seller-profile-u-alias", persona: "guest" },
+  {
+    path: "/vendeur/camille-martin",
+    name: "seller-profile-vendeur-alias",
+    persona: "guest",
+  },
+  {
+    path: "/inscription/particulier",
+    name: "register-individual",
+    persona: "guest",
+  },
+  {
+    path: "/inscription/professionnel",
+    name: "register-pro",
+    persona: "guest",
+  },
+  {
+    path: "/mot-de-passe-oublie",
+    name: "forgot-password",
+    persona: "guest",
+  },
+  {
+    path: "/reinitialisation-mot-de-passe",
+    name: "reset-password",
+    persona: "guest",
+  },
+  { path: "/verification-email", name: "verify-email", persona: "guest" },
+  {
+    path: "/newsletter/confirmer",
+    name: "newsletter-confirm",
+    persona: "guest",
+  },
+  {
+    path: "/newsletter/desabonnement",
+    name: "newsletter-unsubscribe",
+    persona: "guest",
+  },
+  {
+    path: "/newsletter/preferences",
+    name: "newsletter-preferences",
+    persona: "guest",
+  },
+  {
+    path: "/conditions-utilisation",
+    name: "legal-terms",
+    persona: "guest",
+  },
+  { path: "/confidentialite", name: "legal-privacy", persona: "guest" },
+  { path: "/cookies", name: "legal-cookies", persona: "guest" },
+  { path: "/mentions-legales", name: "legal-notices", persona: "guest" },
+  { path: "/accessibilite", name: "legal-accessibility", persona: "guest" },
+  { path: "/securite", name: "help-safety", persona: "guest" },
+  { path: "/support", name: "help-center-alias", persona: "guest" },
+  { path: "/terms", name: "legal-terms-en-alias", persona: "guest" },
+  { path: "/privacy", name: "legal-privacy-en-alias", persona: "guest" },
 ];
 
 export const BUYER_ROUTES: RouteUnderTest[] = [
@@ -128,6 +231,44 @@ export const BUYER_ROUTES: RouteUnderTest[] = [
     name: "employment-apply",
     persona: "individual_buyer",
   },
+  { path: "/compte", name: "account-index", persona: "individual_buyer" },
+  {
+    path: "/compte/type-de-compte",
+    name: "account-type",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/securite-compte",
+    name: "account-security",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/newsletter",
+    name: "account-newsletter",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/education",
+    name: "account-education",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/messages",
+    name: "messaging-standalone",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/account/delete",
+    name: "account-deletion",
+    persona: "individual_buyer",
+  },
+  // No demo fixture creates a support case, so this id exercises the
+  // not-found state of the detail route rather than a populated one.
+  {
+    path: "/compte/support/support-case-absent",
+    name: "support-request-detail-missing",
+    persona: "individual_buyer",
+  },
 ];
 
 export const SELLER_ROUTES: RouteUnderTest[] = [
@@ -150,6 +291,31 @@ export const SELLER_ROUTES: RouteUnderTest[] = [
   {
     path: "/deposer/emploi",
     name: "employment-publish",
+    persona: "individual_seller",
+  },
+  {
+    path: "/deposer/auto",
+    name: "auto-publish",
+    persona: "individual_seller",
+  },
+  {
+    path: "/deposer/immo",
+    name: "immo-publish",
+    persona: "individual_seller",
+  },
+  {
+    path: "/deposer/education",
+    name: "course-publish",
+    persona: "individual_seller",
+  },
+  {
+    path: "/compte/cours",
+    name: "account-legacy-education-redirect",
+    persona: "individual_seller",
+  },
+  {
+    path: "/deposer/cours",
+    name: "publish-legacy-education-redirect",
     persona: "individual_seller",
   },
 ];
@@ -210,6 +376,97 @@ export const PRO_ROUTES: RouteUnderTest[] = [
     name: "course-organization-workspace",
     persona: "pro_courses",
   },
+  {
+    path: "/compte/pro/prospects",
+    name: "pro-prospects",
+    persona: "pro_seller",
+  },
+  {
+    path: "/prospects/app",
+    name: "prospects-standalone-workspace",
+    persona: "standalone_prospects",
+  },
+  { path: "/app", name: "crm-app-overview", persona: "standalone_prospects" },
+  {
+    path: "/app/discover",
+    name: "crm-app-discover",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/companies",
+    name: "crm-app-companies",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/companies/20000000-0000-4000-8000-000000000001",
+    name: "crm-app-company-detail",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/contacts",
+    name: "crm-app-contacts",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/contacts/30000000-0000-4000-8000-000000000001",
+    name: "crm-app-contact-detail",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/lists",
+    name: "crm-app-lists",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/pipeline",
+    name: "crm-app-pipeline",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/opportunities/40000000-0000-4000-8000-000000000003",
+    name: "crm-app-opportunity-detail",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/tasks",
+    name: "crm-app-tasks",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/activities",
+    name: "crm-app-activities",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/campaigns",
+    name: "crm-app-campaigns",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/analytics",
+    name: "crm-app-analytics",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/sources",
+    name: "crm-app-sources",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/team",
+    name: "crm-app-team",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/billing",
+    name: "crm-app-billing",
+    persona: "standalone_prospects",
+  },
+  {
+    path: "/app/settings",
+    name: "crm-app-settings",
+    persona: "standalone_prospects",
+  },
 ];
 
 export const ADMIN_ROUTES: RouteUnderTest[] = [
@@ -248,6 +505,87 @@ export const ADMIN_ROUTES: RouteUnderTest[] = [
     persona: "commercial",
   },
   { path: "/admin/emploi", name: "employment-admin", persona: "admin" },
+  { path: "/admin/analytics", name: "admin-analytics", persona: "admin" },
+  { path: "/admin/marketing", name: "admin-marketing", persona: "admin" },
+  { path: "/admin/newsletter", name: "admin-newsletter", persona: "admin" },
+  { path: "/admin/tendances", name: "admin-trends", persona: "admin" },
+  { path: "/admin/education", name: "admin-education", persona: "admin" },
+  { path: "/admin/auto", name: "admin-auto", persona: "admin" },
+  { path: "/admin/immo", name: "admin-immo", persona: "admin" },
+  // `/admin/taxonomy` is the English alias of `/admin/taxonomie`.
+  {
+    path: "/admin/taxonomy",
+    name: "admin-taxonomy-alias",
+    persona: "admin",
+  },
+  {
+    path: "/admin/fournisseurs/stripe",
+    name: "admin-provider-detail",
+    persona: "admin",
+  },
+  {
+    path: "/admin/crm/entreprises",
+    name: "crm-companies",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/entreprises/20000000-0000-4000-8000-000000000001",
+    name: "crm-company-detail",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/contacts/30000000-0000-4000-8000-000000000001",
+    name: "crm-contact-detail",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/opportunites/40000000-0000-4000-8000-000000000003",
+    name: "crm-opportunity-detail",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/prospection",
+    name: "crm-ai-prospecting",
+    persona: "commercial",
+  },
+  { path: "/admin/crm/taches", name: "crm-tasks", persona: "commercial" },
+  { path: "/admin/crm/produits", name: "crm-products", persona: "commercial" },
+  {
+    path: "/admin/crm/automations",
+    name: "crm-automations",
+    persona: "commercial",
+  },
+  { path: "/admin/crm/rapports", name: "crm-reports", persona: "commercial" },
+  {
+    path: "/admin/crm/configuration",
+    name: "crm-settings",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/configuration/pipelines",
+    name: "crm-settings-pipelines",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/configuration/champs",
+    name: "crm-settings-fields",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/configuration/providers",
+    name: "crm-settings-providers",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/crm/configuration/ai",
+    name: "crm-settings-ai",
+    persona: "commercial",
+  },
+  {
+    path: "/admin/cours",
+    name: "admin-legacy-education-redirect",
+    persona: "admin",
+  },
 ];
 
 export const ALL_ROUTES: RouteUnderTest[] = [

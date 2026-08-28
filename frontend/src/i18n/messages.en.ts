@@ -3263,4 +3263,45 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.onboarding.bootstrapAction": "Configure issuer",
   "invoicing.onboarding.bootstrapError":
     "The organization information could not be reused.",
+  // --- CRM: forecast categories -------------------------------------------
+  "crm.forecast.pipeline": "Pipeline",
+  "crm.forecast.bestCase": "Best case",
+  "crm.forecast.commit": "Commit",
+  "crm.forecast.closed": "Closed",
+  "crm.forecast.omitted": "Omitted",
+
+  "crm.source.manual": "Manual entry",
+  "crm.source.import": "File import",
+  "crm.source.inbound": "Inbound enquiry",
+  "crm.source.referral": "Referral",
+  "crm.source.event": "Event",
+  "crm.source.aiResearch": "AI-assisted research",
+  "crm.source.shongreAdapter": "Shongre marketplace",
+  "crm.source.externalApi": "External API",
+
+  "common.loadingMap": "Loading the map",
+  "courses.tutorWorkspace.offersTableLabel": "Published courses table",
+  "courses.tutorWorkspace.availabilityTableLabel": "Weekly availability table",
+
+  "crm.opportunity.stageStepperLabel": "Pipeline stages",
+
+  "admin.immo.marketsTableLabel": "Real-estate markets table",
+  "admin.immo.visibilityOptionsTableLabel": "Visibility options table",
+  "admin.immo.listingsTableLabel": "Real-estate listings table",
+
+  "admin.solutions.catalogTableLabel": "Solutions catalogue table",
+  "admin.monetization.firstTableLabel": "Commission grid table",
+  "admin.monetization.secondTableLabel": "Commission tiers table",
+  "admin.employment.tableLabel": "Job offers table",
+  "employment.recruiter.tableLabel": "Applications table",
+  "pro.plans.comparisonTableLabel": "Pro plan comparison table",
+  "admin.auto.tableLabel": "Vehicle listings table",
+  "auto.publish.stepperLabel": "Vehicle publishing steps",
+  "auto.compare.tableLabel": "Vehicle comparison table",
+
+  "crm.taskPriority.low": "Low",
+  "crm.taskPriority.medium": "Medium",
+  "crm.taskPriority.high": "High",
+  "crm.taskPriority.urgent": "Urgent",
+
 };

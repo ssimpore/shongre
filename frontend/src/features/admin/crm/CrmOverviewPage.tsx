@@ -293,7 +293,7 @@ export const CrmOverviewPage: React.FC = () => {
         ))}
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
             <div>

@@ -390,6 +390,86 @@ for (const file of ALL_FILES) {
   }
 }
 
+/**
+ * Text tokens must clear WCAG AA against every surface they can sit on.
+ *
+ * A single ratio against `bg-surface` is not enough: `text-muted` reached
+ * 4.79:1 on white and shipped anyway, then failed at 4.25:1 on `bg-subtle` and
+ * 4.10:1 on `bg-muted`. That one token put a serious axe violation on the
+ * property detail, teacher profile, course table, admin market and CRM
+ * prospecting surfaces at once, and nothing in the pipeline could see it
+ * because the pages themselves were correct — the token was not.
+ *
+ * `text-disabled` is deliberately absent: WCAG 1.4.3 exempts inactive
+ * controls, and holding it to 4.5:1 would make disabled state indistinguishable
+ * from enabled.
+ */
+const AA_NORMAL_TEXT = 4.5;
+const TEXT_TOKENS_ON_LIGHT = ["text-main", "text-secondary", "text-muted"];
+const LIGHT_SURFACES = ["bg-surface", "bg-base", "bg-subtle", "bg-muted"];
+
+function readToken(name) {
+  const match = themeCss.match(
+    new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{3,8})`),
+  );
+  return match ? match[1] : null;
+}
+
+function channel(value) {
+  const c = value / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex) {
+  const full =
+    hex.length === 4
+      ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
+      : hex;
+  const r = parseInt(full.slice(1, 3), 16);
+  const g = parseInt(full.slice(3, 5), 16);
+  const b = parseInt(full.slice(5, 7), 16);
+  return (
+    0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+  );
+}
+
+function contrast(a, b) {
+  const la = luminance(a);
+  const lb = luminance(b);
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+const contrastFailures = [];
+for (const textToken of TEXT_TOKENS_ON_LIGHT) {
+  const fg = readToken(textToken);
+  if (!fg) continue;
+  for (const surfaceToken of LIGHT_SURFACES) {
+    const bg = readToken(surfaceToken);
+    if (!bg) continue;
+    const ratio = contrast(fg, bg);
+    if (ratio < AA_NORMAL_TEXT) {
+      contrastFailures.push({ textToken, surfaceToken, fg, bg, ratio });
+    }
+  }
+}
+
+if (contrastFailures.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${contrastFailures.length} text/surface pair(s) below WCAG AA.\n`,
+  );
+  console.error(
+    "  Body copy needs 4.5:1. A token that only passes on white fails the moment",
+  );
+  console.error("  it is placed on a tinted panel, which is most of the product.\n");
+  for (const f of contrastFailures) {
+    console.error(
+      `  --color-${f.textToken} (${f.fg}) on --color-${f.surfaceToken} (${f.bg})\n      ${f.ratio.toFixed(2)}:1  →  needs ${AA_NORMAL_TEXT}:1`,
+    );
+  }
+  console.error("");
+}
+
 if (inlineTypography.length > 0) {
   console.error(
     `\n✘ design tokens: ${inlineTypography.length} inline typography style(s).\n`,
@@ -449,17 +529,20 @@ if (
   violations.length === 0 &&
   undeclared.length === 0 &&
   namespaceMisses.length === 0 &&
-  inlineTypography.length === 0
+  inlineTypography.length === 0 &&
+  contrastFailures.length === 0
 ) {
   console.log(
-    "✔ design system: semantic colors, type, radii, elevation, motion and stacking checks passed",
+    "✔ design system: semantic colors, contrast, type, radii, elevation, motion and stacking checks passed",
   );
   process.exit(0);
 }
 
 if (
   violations.length === 0 &&
-  (inlineTypography.length > 0 || namespaceMisses.length > 0)
+  (inlineTypography.length > 0 ||
+    namespaceMisses.length > 0 ||
+    contrastFailures.length > 0)
 )
   process.exit(1);
 

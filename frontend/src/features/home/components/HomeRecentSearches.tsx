@@ -96,7 +96,7 @@ export const HomeRecentSearches: React.FC = () => {
               size="sm"
               onClick={() => handleDelete(item.id)}
               ariaLabel={`${t("home.homeRecentSearches.supprimerCetteRecherche")} : ${item.title}`}
-              className="mr-1 shrink-0 rounded-full text-stone-400 hover:bg-primary-light hover:text-primary"
+              className="mr-1 shrink-0 rounded-full text-text-muted hover:bg-primary-light hover:text-primary"
             >
               <X className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </IconButton>

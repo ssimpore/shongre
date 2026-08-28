@@ -20,6 +20,7 @@ import {
   Select,
   Skeleton,
   Switch,
+  ScrollableRegion,
 } from "../../design-system";
 import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import {
@@ -509,7 +510,7 @@ export function AdminSolutionsPage() {
                 </Select>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <ScrollableRegion aria-label={t("admin.solutions.catalogTableLabel")}>
               <table className="w-full min-w-120 text-left text-xs">
                 <thead className="border-b border-border-base bg-bg-subtle text-stone-500"><tr><th className="px-4 py-3">Solution</th><th className="px-3 py-3">Cycle de vie</th><th className="px-3 py-3">Marchés</th><th className="px-3 py-3">Destination</th></tr></thead>
                 <tbody className="divide-y divide-border-subtle">
@@ -525,7 +526,7 @@ export function AdminSolutionsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </ScrollableRegion>
           </section>
 
           {draft ? (

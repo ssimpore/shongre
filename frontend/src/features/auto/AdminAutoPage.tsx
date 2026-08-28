@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   AlertTriangle,
   CarFront,
@@ -20,7 +21,7 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { Badge, Button, Skeleton, StatePanel } from "../../design-system";
+import { ScrollableRegion, Badge, Button, Skeleton, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { routes } from "../../configuration/routes";
 import { formatAutoMoney } from "./auto-format";
@@ -40,6 +41,7 @@ const TABS = [
 type Tab = (typeof TABS)[number];
 
 export const AdminAutoPage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale } = useMarketLocation();
   const { formatNumber } = useRegionalFormatters();
   const toast = useToast();
@@ -180,7 +182,7 @@ export const AdminAutoPage: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
             <h2 className="text-base font-black">
               Configuration du marché {activeMarket.code}
@@ -305,7 +307,7 @@ export const AdminAutoPage: React.FC = () => {
             contiennent aucun prix commercial.
           </p>
         </div>
-        <div className="overflow-x-auto">
+        <ScrollableRegion aria-label={t("admin.auto.tableLabel")}>
           <table className="w-full min-w-208 text-left text-xs">
             <thead className="bg-bg-subtle text-micro uppercase text-text-muted">
               <tr>
@@ -366,7 +368,7 @@ export const AdminAutoPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollableRegion>
         <div className="border-t border-border-subtle p-4">
           <h3 className="text-sm font-black">Options et parrainages</h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">

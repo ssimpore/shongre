@@ -105,7 +105,7 @@ export const CrmReportsPage: React.FC = () => {
                 <div className="flex items-center justify-between gap-3 text-xs">
                   <span className="font-bold">
                     {stage.stageName}{" "}
-                    <span className="text-stone-400">
+                    <span className="text-text-muted">
                       ({stage.opportunityCount})
                     </span>
                   </span>
@@ -119,14 +119,14 @@ export const CrmReportsPage: React.FC = () => {
                   label={`${stage.stageName} dans l’entonnoir CRM`}
                   className="mt-1.5"
                 />
-                <p className="mt-1 text-micro text-stone-400">
+                <p className="mt-1 text-micro text-text-muted">
                   Pondéré : {format(stage.weightedAmountMinor)}
                 </p>
               </div>
             ))}
           </div>
         </section>
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
             <h2 className="text-sm font-black">Exécution</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">

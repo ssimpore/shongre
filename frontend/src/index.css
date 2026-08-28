@@ -437,7 +437,15 @@
 }
 
 .scrollable-region {
-  contain: layout paint;
+  /* `inline-size` is what actually detaches the region's width from its
+     contents. `layout paint` alone stops the child painting outside, but the
+     region still reports its content's min-content width upward — so a 864px
+     table inside a grid or flex item whose `min-width` is `auto` (the default)
+     still inflated the column and widened the document: /admin/immo measured
+     922px inside a 320px viewport. With `inline-size` the region takes its
+     width from its container and scrolls internally, which is the whole point
+     of it. Every ancestor no longer needs its own `min-w-0` to be safe. */
+  contain: layout paint inline-size;
 }
 
 .category-icon-tone {

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Select } from "../../design-system";
+import { ScrollableRegion, Select } from "../../design-system";
 import type {
   BusinessVertical,
   CommercialConfigurationVersion,
@@ -1496,7 +1496,10 @@ export const AdminMonetizationPage: React.FC = () => {
                   <h2 className="text-xs font-black text-stone-950">
                     Abonnements par compte
                   </h2>
-                  <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
+                  <ScrollableRegion
+                    aria-label={t("admin.monetization.firstTableLabel")}
+                    className="mt-2 rounded-lg border border-border-base"
+                  >
                     <table className="w-full min-w-190 text-xs">
                       <thead className="bg-bg-subtle text-left text-stone-600">
                         <tr>
@@ -1581,13 +1584,16 @@ export const AdminMonetizationPage: React.FC = () => {
                         )}
                       </tbody>
                     </table>
-                  </div>
+                  </ScrollableRegion>
                 </div>
                 <div>
                   <h2 className="text-xs font-black text-stone-950">
                     Registre financier
                   </h2>
-                  <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
+                  <ScrollableRegion
+                    aria-label={t("admin.monetization.secondTableLabel")}
+                    className="mt-2 rounded-lg border border-border-base"
+                  >
                     <table className="w-full min-w-155 text-xs">
                       <thead className="bg-bg-subtle text-left text-stone-600">
                         <tr>
@@ -1661,7 +1667,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           )}
                       </tbody>
                     </table>
-                  </div>
+                  </ScrollableRegion>
                 </div>
                 <div>
                   <h2 className="text-xs font-black text-stone-950">

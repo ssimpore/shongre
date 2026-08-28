@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -30,6 +31,7 @@ import {
   Skeleton,
   StatePanel,
   Textarea,
+  ScrollableRegion,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentDate } from "./employment-format";
@@ -56,6 +58,7 @@ const systemBadge = (
         : "neutral";
 
 export const EmploymentRecruiterWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
@@ -780,7 +783,10 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="overflow-x-auto rounded-card border border-border-base bg-bg-surface">
+          <ScrollableRegion
+            aria-label={t("employment.recruiter.tableLabel")}
+            className="rounded-card border border-border-base bg-bg-surface"
+          >
             <table className="w-full min-w-176 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
@@ -817,7 +823,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableRegion>
         </section>
       )}
 
