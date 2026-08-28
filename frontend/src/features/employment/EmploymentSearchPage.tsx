@@ -193,9 +193,7 @@ const EmploymentFilters: React.FC<{
           headerTitle="Période de rémunération"
           fullWidth
           value={params.get("salaryFrequency") || ""}
-          onChange={(value) =>
-            setParam("salaryFrequency", value || undefined)
-          }
+          onChange={(value) => setParam("salaryFrequency", value || undefined)}
           options={[
             { value: "", label: "Toutes" },
             ...dictionaries("salary_frequency").map((entry) => ({
@@ -533,23 +531,24 @@ export const EmploymentSearchPage: React.FC = () => {
             >
               Filtres
             </Button>
-            <DropdownMenu
-              className="hidden sm:block"
-              ariaLabel="Trier les offres"
-              headerTitle="Trier par"
-              placement="bottom-right"
-              size="sm"
-              value={query.sort}
-              onChange={(value) => setParam("sort", value)}
-              options={[
-                { value: "relevance", label: "Pertinence" },
-                { value: "newest", label: "Plus récentes" },
-                { value: "salary", label: "Rémunération" },
-                { value: "distance", label: "Distance" },
-                { value: "deadline", label: "Date limite" },
-                { value: "promoted", label: "Placements sponsorisés" },
-              ]}
-            />
+            <div className="hidden sm:block">
+              <DropdownMenu
+                ariaLabel="Trier les offres"
+                headerTitle="Trier par"
+                placement="bottom-right"
+                size="sm"
+                value={query.sort}
+                onChange={(value) => setParam("sort", value)}
+                options={[
+                  { value: "relevance", label: "Pertinence" },
+                  { value: "newest", label: "Plus récentes" },
+                  { value: "salary", label: "Rémunération" },
+                  { value: "distance", label: "Distance" },
+                  { value: "deadline", label: "Date limite" },
+                  { value: "promoted", label: "Placements sponsorisés" },
+                ]}
+              />
+            </div>
           </div>
         </div>
 

@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Archive,
+  ArrowDown,
+  ArrowUp,
   Eye,
   Globe2,
   Grid2X2,
   History,
+  ListOrdered,
   Plus,
   Save,
   Search,
@@ -12,9 +15,11 @@ import {
 import {
   Badge,
   Button,
+  IconButton,
   Modal,
   Select,
   Skeleton,
+  Switch,
 } from "../../design-system";
 import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import {
@@ -29,7 +34,6 @@ import {
   SOLUTION_LIFECYCLE_PRESENTATION,
 } from "../../domains/solutions/solutions.presentation";
 import {
-  MIN_SOLUTION_SORT_ORDER,
   SOLUTION_LIFECYCLES,
   type SolutionDefinition,
   type SolutionLifecycle,
@@ -37,6 +41,7 @@ import {
   type SolutionsAdminActor,
 } from "../../domains/solutions/solutions.types";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
@@ -75,6 +80,7 @@ function blankDraft(): Draft {
     requiresEntitlement: true,
     releaseNotes: [],
     sortOrder: 50,
+    catalogVisible: false,
     featured: false,
   };
 }
@@ -89,6 +95,7 @@ function lifecycleVariant(lifecycle: SolutionLifecycle) {
 export function AdminSolutionsPage() {
   const { currentUser, can } = useAuth();
   const toast = useToast();
+  const { t } = useTranslation();
   const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -102,6 +109,10 @@ export function AdminSolutionsPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<SolutionLifecycleHistoryEntry[]>([]);
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
+  const [visibilitySavingId, setVisibilitySavingId] = useState<string | null>(
+    null,
+  );
 
   usePageMeta({
     title: "Catalogue des solutions — Console Shongre",
@@ -155,11 +166,94 @@ export function AdminSolutionsPage() {
   );
 
   const counts = {
-    public: solutions.filter((value) =>
-      ["AVAILABLE", "BETA", "COMING_SOON", "MAINTENANCE", "DEPRECATED"].includes(value.lifecycle),
+    public: solutions.filter(
+      (value) =>
+        value.catalogVisible &&
+        [
+          "AVAILABLE",
+          "BETA",
+          "COMING_SOON",
+          "MAINTENANCE",
+          "DEPRECATED",
+        ].includes(value.lifecycle),
     ).length,
     draft: solutions.filter((value) => value.lifecycle === "DRAFT").length,
     retired: solutions.filter((value) => value.lifecycle === "RETIRED").length,
+  };
+
+  const hasUnsavedDraft = Boolean(
+    creating ||
+      (selected &&
+        draft &&
+        JSON.stringify(draft) !== JSON.stringify(toDraft(selected))),
+  );
+
+  const moveSolution = async (solutionId: string, direction: -1 | 1) => {
+    const currentIndex = solutions.findIndex(
+      (solution) => solution.id === solutionId,
+    );
+    const targetIndex = currentIndex + direction;
+    if (
+      currentIndex < 0 ||
+      targetIndex < 0 ||
+      targetIndex >= solutions.length ||
+      reorderingId ||
+      hasUnsavedDraft
+    ) {
+      return;
+    }
+
+    const reordered = [...solutions];
+    [reordered[currentIndex], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[currentIndex],
+    ];
+    setReorderingId(solutionId);
+    try {
+      const saved = await services.solutions.reorderSolutions(
+        reordered.map((solution) => solution.id),
+        actor,
+      );
+      setSolutions(saved);
+      toast.success(t("admin.solutions.order.saved"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error
+          ? reason.message
+          : t("admin.solutions.order.error"),
+      );
+    } finally {
+      setReorderingId(null);
+    }
+  };
+
+  const setCatalogVisibility = async (
+    solutionId: string,
+    catalogVisible: boolean,
+  ) => {
+    if (visibilitySavingId || reorderingId || hasUnsavedDraft) return;
+    setVisibilitySavingId(solutionId);
+    try {
+      const updated = await services.solutions.updateSolution(
+        solutionId,
+        { catalogVisible },
+        actor,
+      );
+      setSolutions((current) =>
+        current.map((solution) =>
+          solution.id === updated.id ? updated : solution,
+        ),
+      );
+      toast.success(t("admin.solutions.visibility.saved"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error
+          ? reason.message
+          : t("admin.solutions.visibility.error"),
+      );
+    } finally {
+      setVisibilitySavingId(null);
+    }
   };
 
   const save = async (event: React.FormEvent) => {
@@ -298,6 +392,104 @@ export function AdminSolutionsPage() {
         ))}
       </section>
 
+      {!loading && solutions.length > 0 ? (
+        <section
+          aria-labelledby="solutions-order-title"
+          className="rounded-xl border border-border-base bg-white p-4 shadow-xs"
+        >
+        <div className="flex items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
+            <ListOrdered className="h-icon-md w-icon-md" aria-hidden="true" />
+          </span>
+          <div>
+            <h2
+              id="solutions-order-title"
+              className="text-sm font-black text-text-main"
+            >
+              {t("admin.solutions.order.title")}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+              {t("admin.solutions.order.description")}
+            </p>
+          </div>
+        </div>
+
+        <ol className="mt-4 grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+          {solutions.map((solution, index) => {
+            const controlsDisabled = Boolean(
+              reorderingId || visibilitySavingId || hasUnsavedDraft,
+            );
+            return (
+              <li
+                key={solution.id}
+                className="flex min-h-control-touch items-center gap-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2"
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-black text-primary shadow-xs">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-xs font-bold text-text-main">
+                    {solution.name}
+                  </span>
+                  <span className="text-micro text-text-muted">
+                    {SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle].label}
+                    {" · "}
+                    {t(
+                      solution.catalogVisible
+                        ? "admin.solutions.visibility.enabled"
+                        : "admin.solutions.visibility.hidden",
+                    )}
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-1">
+                  <Switch
+                    checked={solution.catalogVisible}
+                    aria-label={t("admin.solutions.visibility.label", {
+                      name: solution.name,
+                    })}
+                    disabled={controlsDisabled}
+                    onChange={(checked) =>
+                      void setCatalogVisibility(solution.id, checked)
+                    }
+                  />
+                  <IconButton
+                    size="sm"
+                    variant="ghost"
+                    ariaLabel={t("admin.solutions.order.moveUp", {
+                      name: solution.name,
+                    })}
+                    disabled={controlsDisabled || index === 0}
+                    onClick={() => void moveSolution(solution.id, -1)}
+                  >
+                    <ArrowUp className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                  </IconButton>
+                  <IconButton
+                    size="sm"
+                    variant="ghost"
+                    ariaLabel={t("admin.solutions.order.moveDown", {
+                      name: solution.name,
+                    })}
+                    disabled={
+                      controlsDisabled || index === solutions.length - 1
+                    }
+                    onClick={() => void moveSolution(solution.id, 1)}
+                  >
+                    <ArrowDown className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                  </IconButton>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+
+        {hasUnsavedDraft ? (
+          <p className="mt-3 text-xs font-semibold text-warning" role="status">
+            {t("admin.solutions.order.saveDraftFirst")}
+          </p>
+        ) : null}
+        </section>
+      ) : null}
+
       {loading ? (
         <div className="grid gap-4 xl:grid-cols-5"><Skeleton className="h-160 rounded-xl xl:col-span-2" /><Skeleton className="h-160 rounded-xl xl:col-span-3" /></div>
       ) : (
@@ -348,7 +540,7 @@ export function AdminSolutionsPage() {
                   <FormField label="Slug" required><Input value={draft.slug} onChange={(event) => setDraft({ ...draft, slug: event.target.value.toLowerCase() })} /></FormField>
                   <FormField label="Description courte" required><Textarea value={draft.shortDescription} onChange={(event) => setDraft({ ...draft, shortDescription: event.target.value })} /></FormField>
                   <FormField label="Catégorie" required><Input value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} /></FormField>
-                  <FormField label="Icône"><Select labelledByAncestor value={draft.icon} onChange={(event) => setDraft({ ...draft, icon: event.target.value as SolutionDefinition["icon"] })}><option value="apps">Application</option><option value="prospects">Prospects</option><option value="facturation">Facturation</option><option value="pilotage">Pilotage</option></Select></FormField>
+                  <FormField label="Icône"><Select labelledByAncestor value={draft.icon} onChange={(event) => setDraft({ ...draft, icon: event.target.value as SolutionDefinition["icon"] })}><option value="apps">Application</option><option value="prospects">Prospects</option><option value="facturation">Facturation</option><option value="marketplace">Marketplace</option><option value="pilotage">Pilotage</option></Select></FormField>
                   <FormField label="Cycle de vie"><Select labelledByAncestor value={draft.lifecycle} disabled={!creating} onChange={(event) => setDraft({ ...draft, lifecycle: event.target.value as SolutionLifecycle })}>{SOLUTION_LIFECYCLES.map((value) => <option key={value} value={value}>{SOLUTION_LIFECYCLE_PRESENTATION[value].label}</option>)}</Select></FormField>
                   <FormField label="Disponible à partir du"><Input type="datetime-local" value={draft.availableFrom?.slice(0, 16) || ""} onChange={(event) => setDraft({ ...draft, availableFrom: event.target.value ? new Date(event.target.value).toISOString() : undefined })} /></FormField>
                   <FormField label="Disponible jusqu’au"><Input type="datetime-local" value={draft.availableUntil?.slice(0, 16) || ""} onChange={(event) => setDraft({ ...draft, availableUntil: event.target.value ? new Date(event.target.value).toISOString() : undefined })} /></FormField>
@@ -372,11 +564,10 @@ export function AdminSolutionsPage() {
                 <div className="rounded-control border border-info-border bg-info-surface px-3 py-2 text-xs text-info">
                   Les noms d’hôte sont résolus par la configuration d’exécution. Ils ne sont pas modifiables ici.
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold"><input type="checkbox" checked={draft.featured} onChange={(event) => setDraft({ ...draft, featured: event.target.checked })} className="h-4 w-4 accent-primary" /> Mise en avant</label>
                   <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold"><input type="checkbox" checked={draft.requiresAuthentication} onChange={(event) => setDraft({ ...draft, requiresAuthentication: event.target.checked })} className="h-4 w-4 accent-primary" /> Connexion requise</label>
                   <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold"><input type="checkbox" checked={draft.requiresEntitlement} onChange={(event) => setDraft({ ...draft, requiresEntitlement: event.target.checked })} className="h-4 w-4 accent-primary" /> Entitlement requis</label>
-                  <FormField label="Ordre"><Input type="number" min={MIN_SOLUTION_SORT_ORDER} value={draft.sortOrder} onChange={(event) => setDraft({ ...draft, sortOrder: Number(event.target.value) })} /></FormField>
                 </div>
                 <FormField label="Chemin de lancement" hint="Chemin local uniquement, par exemple /app"><Input value={draft.launchPath || "/"} onChange={(event) => setDraft({ ...draft, launchPath: event.target.value || "/" })} /></FormField>
 

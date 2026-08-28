@@ -194,7 +194,9 @@ export class ProspectingService {
         },
       };
     }
-    const active = await this.rules.getActiveEntitlements(accountId);
+    const active = await this.rules.getActiveEntitlementsForOrganization(
+      context.tenantId,
+    );
     const values = new Map(active.map((entry) => [entry.key, entry.value]));
     const accessMode =
       principal.accountType === "staff"

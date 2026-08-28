@@ -138,21 +138,31 @@ function TrendChart({
             data={data}
             margin={{ top: 8, right: 8, left: -18, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#78716c" />
-            <YAxis tick={{ fontSize: 11 }} stroke="#78716c" />
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="var(--color-border-subtle)"
+            />
+            <XAxis
+              dataKey="date"
+              tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+              stroke="var(--color-text-muted)"
+            />
+            <YAxis
+              tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+              stroke="var(--color-text-muted)"
+            />
             <Tooltip />
             <Line
               type="monotone"
               dataKey="primary"
-              stroke="#ea580c"
+              stroke="var(--color-primary)"
               strokeWidth={2.5}
               dot={false}
             />
             <Line
               type="monotone"
               dataKey="secondary"
-              stroke="#0f766e"
+              stroke="var(--color-success)"
               strokeWidth={2}
               dot={false}
             />

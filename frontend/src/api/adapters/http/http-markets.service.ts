@@ -1,4 +1,8 @@
-import { MarketsServiceContract } from "../../contracts/markets.contract";
+import {
+  MarketsServiceContract,
+  type CountryConfigChangeInput,
+  type MarketConfigurationChangeRequest,
+} from "../../contracts/markets.contract";
 import { httpClient } from "./http-client";
 import { CountryMarketDefinition } from "../../../configuration/market.config";
 import type { CountryConfig } from "@shongre/contracts";
@@ -32,11 +36,41 @@ export class HttpMarketsService implements MarketsServiceContract {
 
   updateCountryConfiguration(
     code: string,
-    patch: Partial<CountryConfig>,
-  ): Promise<CountryConfig> {
-    return httpClient.patch(
+    input: CountryConfigChangeInput,
+  ): Promise<MarketConfigurationChangeRequest> {
+    return httpClient.patch<MarketConfigurationChangeRequest>(
       `/admin/countries/${encodeURIComponent(code)}`,
-      patch,
+      input,
+    );
+  }
+
+  listCountryConfigurationChanges(
+    code: string,
+  ): Promise<readonly MarketConfigurationChangeRequest[]> {
+    return httpClient.get<readonly MarketConfigurationChangeRequest[]>(
+      `/admin/countries/${encodeURIComponent(code)}/changes`,
+    );
+  }
+
+  approveCountryConfigurationChange(
+    code: string,
+    requestId: string,
+    reason: string,
+  ): Promise<CountryConfig> {
+    return httpClient.post<CountryConfig>(
+      `/admin/countries/${encodeURIComponent(code)}/changes/${encodeURIComponent(requestId)}/approve`,
+      { reason },
+    );
+  }
+
+  rejectCountryConfigurationChange(
+    code: string,
+    requestId: string,
+    reason: string,
+  ): Promise<{ rejected: true }> {
+    return httpClient.post<{ rejected: true }>(
+      `/admin/countries/${encodeURIComponent(code)}/changes/${encodeURIComponent(requestId)}/reject`,
+      { reason },
     );
   }
 }

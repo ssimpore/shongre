@@ -24,7 +24,7 @@ import {
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { HeroBoostedScroll } from "./components/HeroBoostedScroll";
 import { HomeRecentSearches } from "./components/HomeRecentSearches";
-import { HomeCategoryExplorer } from "./components/HomeCategoryExplorer";
+import { HomeCollectionExplorer } from "./components/HomeCollectionExplorer";
 import { usePublishCta } from "../../security/usePublishCta";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -349,9 +349,9 @@ export const HomePage: React.FC = () => {
         </Container>
       )}
 
-      {/* 5. One compact, taxonomy-driven discovery surface replaces the former
-          repeated topic rails and the separate editorial collection rail. */}
-      <HomeCategoryExplorer />
+      {/* 5. Editorial collections complement the category navigation already
+          available in the global header without repeating the taxonomy. */}
+      <HomeCollectionExplorer />
 
       {/* 6. Pro banner CTA */}
       <Container as="section" aria-labelledby="home-pro-title">

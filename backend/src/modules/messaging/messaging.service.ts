@@ -1,5 +1,6 @@
 import {
   Conversation,
+  ConversationPage,
   Message,
   MessagePage,
 } from "../../shared/types/index.js";
@@ -29,8 +30,11 @@ export class MessagingService {
     private listingRepo: IListingRepository = repositories.listings,
   ) {}
 
-  async getUserConversations(userId: string): Promise<Conversation[]> {
-    return this.messagingRepo.getUserConversations(userId);
+  async getUserConversations(
+    userId: string,
+    options?: { cursor?: string; limit?: number },
+  ): Promise<ConversationPage> {
+    return this.messagingRepo.getUserConversations(userId, options);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {

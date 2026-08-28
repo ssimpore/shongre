@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
 /**
@@ -319,7 +319,10 @@ test.describe("prospect evidence presentation", () => {
         left: Math.round(bounds.left),
         right: Math.round(bounds.right),
         viewportWidth: window.innerWidth,
-        overflowX: document.documentElement.scrollWidth - window.innerWidth,
+        overflowX: Math.max(
+          0,
+          document.documentElement.scrollWidth - window.innerWidth,
+        ),
       };
     });
 
@@ -366,6 +369,46 @@ test.describe("prospect evidence presentation", () => {
 
     await page.keyboard.press("Escape");
     await expect(drawer).toHaveCount(0);
+  });
+});
+
+test.describe("permission-aware admin density", () => {
+  test("available cards use the full workspace instead of empty columns", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "admin");
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const metrics = page.getByRole("region", {
+      name: "Indicateurs de la console",
+    });
+    const metricCards = metrics.locator(":scope > div");
+    await expect(metricCards).toHaveCount(2);
+    const metricWidths = await metricCards.evaluateAll((cards) =>
+      cards.map((card) => Math.round(card.getBoundingClientRect().width)),
+    );
+    const metricsWidth = await metrics.evaluate((region) =>
+      Math.round(region.getBoundingClientRect().width),
+    );
+    expect(Math.min(...metricWidths)).toBeGreaterThan(metricsWidth * 0.4);
+
+    const operations = page.getByRole("region", {
+      name: "Files opérationnelles",
+    });
+    const operationPanels = operations.locator(":scope > div");
+    await expect(operationPanels).toHaveCount(1);
+    const [operationsWidth, panelWidth] = await Promise.all([
+      operations.evaluate((region) =>
+        Math.round(region.getBoundingClientRect().width),
+      ),
+      operationPanels.evaluate((panel) =>
+        Math.round(panel.getBoundingClientRect().width),
+      ),
+    ]);
+    expect(panelWidth).toBeGreaterThanOrEqual(operationsWidth - 2);
   });
 });
 

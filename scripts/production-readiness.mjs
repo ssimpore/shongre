@@ -2,6 +2,26 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { loadEnvFiles } from "./lib/env-file.mjs";
+
+function argumentValue(name) {
+  const index = process.argv.indexOf(name);
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
+
+const backendEnvFile = argumentValue("--backend-env-file");
+const frontendEnvFile = argumentValue("--frontend-env-file");
+if (Boolean(backendEnvFile) !== Boolean(frontendEnvFile)) {
+  throw new Error(
+    "--backend-env-file and --frontend-env-file must be supplied together",
+  );
+}
+if (backendEnvFile && frontendEnvFile) {
+  loadEnvFiles([
+    { path: backendEnvFile, label: "backend env" },
+    { path: frontendEnvFile, label: "frontend env" },
+  ]);
+}
 
 const requireEvidence = process.argv.includes("--require-evidence");
 const failures = [];
@@ -99,9 +119,9 @@ exact("NEXT_PUBLIC_APP_ENV", "production");
 exact("EXPO_PUBLIC_APP_ENV", "production");
 exact("BACKEND_DATA_MODE", "database");
 exact("DATABASE_INFRA_MODE", "hosted");
-exact("NEXT_PUBLIC_DATA_MODE", "api");
+exact("NEXT_PUBLIC_DATA_MODE", "demo");
 exact("EXPO_PUBLIC_DATA_MODE", "api");
-exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
+exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
 exact("NEXT_PUBLIC_ENABLE_AI_FEATURES", "false");
 exact("PAYMENT_MODE", "live");
 exact("EMAIL_MODE", "live");
@@ -114,6 +134,7 @@ check(
 );
 exact("BUSINESS_REGISTRY_PROVIDER", "siret");
 exact("AI_PROVIDER", "gemini");
+exact("MALWARE_SCAN_MODE", "http");
 exact("AUTH_COOKIE_SECURE", "true");
 exact("SHONGRE_TRUST_PROXY_HOST", "true");
 exact("SHONGRE_TRUST_PROXY_IP", "true");
@@ -231,14 +252,16 @@ required("GEMINI_API_KEY", 16);
 required("GEMINI_MODEL");
 required("BUSINESS_REGISTRY_API_TOKEN", 16);
 required("KYC_PROVIDER_API_TOKEN", 16);
+httpsUrl("MALWARE_SCAN_URL");
+required("MALWARE_SCAN_TOKEN", 24);
 
 check(
   /^sk_live_[A-Za-z0-9]+$/.test(value("STRIPE_SECRET_KEY")),
   "STRIPE_SECRET_KEY must be a live-mode secret key",
 );
 check(
-  /^pk_live_[A-Za-z0-9]+$/.test(value("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY")),
-  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live-mode publishable key",
+  !value("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
+  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be empty while the web frontend is demo-only",
 );
 for (const name of ["STRIPE_WEBHOOK_SECRET", "STRIPE_CONNECT_WEBHOOK_SECRET"]) {
   check(/^whsec_[A-Za-z0-9]+$/.test(value(name)), `${name} must be configured`);
@@ -282,6 +305,11 @@ if (requireEvidence) {
     "legal=APPROVED",
     "operations=APPROVED",
     "product=APPROVED",
+  ]);
+  evidenceFile("EDGE_FUNCTION_INVENTORY_EVIDENCE_FILE", 14, [
+    "environment=production",
+    "allowed=stripe-webhook",
+    "unexpected=0",
   ]);
   jsonEvidenceFile("STAGING_CERTIFICATION_EVIDENCE_FILE", 14, (evidence) => {
     if (

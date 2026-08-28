@@ -41,6 +41,20 @@ export class ScheduledJobCoordinator {
     );
     if (error) throw error;
   }
+
+  async renew(jobName: string, leaseSeconds: number): Promise<boolean> {
+    if (config.dataMode === "demo") return true;
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "renew_scheduled_job_lease",
+      {
+        p_job_name: jobName,
+        p_owner_id: this.ownerId,
+        p_lease_seconds: leaseSeconds,
+      },
+    );
+    if (error) throw error;
+    return data === true;
+  }
 }
 
 export const scheduledJobCoordinator = new ScheduledJobCoordinator();

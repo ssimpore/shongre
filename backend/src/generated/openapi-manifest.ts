@@ -224,6 +224,30 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /admin/countries/:code/changes": {
+    operationId: "getAdminCountriesByCodeChanges",
+    access: "permission",
+    permission: "market.manage",
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {},
+  },
+  "POST /admin/countries/:code/changes/:id/approve": {
+    operationId: "postAdminCountriesByCodeChangesByIdApprove",
+    access: "permission",
+    permission: "market.configure",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {},
+  },
+  "POST /admin/countries/:code/changes/:id/reject": {
+    operationId: "postAdminCountriesByCodeChangesByIdReject",
+    access: "permission",
+    permission: "market.configure",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {},
+  },
   "GET /admin/discovery/configuration": {
     operationId: "getAdminDiscoveryConfiguration",
     access: "permission",
@@ -2661,7 +2685,10 @@ export const OPENAPI_OPERATIONS = {
     permission: "message.read.own",
     requestBodyRequired: false,
     successStatus: 200,
-    queryParameters: {},
+    queryParameters: {
+      cursor: "string",
+      limit: "integer",
+    },
   },
   "POST /messaging/conversations": {
     operationId: "postMessagingConversations",

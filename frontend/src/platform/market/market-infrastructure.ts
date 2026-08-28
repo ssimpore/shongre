@@ -36,12 +36,18 @@ export function webEnvironmentFromEnvironment(): EnvironmentConfig {
 
 export function webEnvironmentFromPublicEnvironment(): EnvironmentConfig {
   const runtime = getPublicRuntimeConfig();
+  // Demo mode deliberately has no API deployment. This structural environment
+  // config still requires an origin, so use the already-validated web origin;
+  // no request is made to it by the market-routing helpers.
+  const apiOrigin = runtime.apiBaseUrl
+    ? new URL(runtime.apiBaseUrl).origin
+    : new URL(runtime.franceUrl).origin;
   return createEnvironmentConfig({
     appEnvironment: runtime.appEnvironment,
     environmentId: runtime.environmentId,
     publicFranceUrl: runtime.franceUrl,
     publicInternationalUrl: runtime.internationalUrl,
-    apiUrl: new URL(runtime.apiBaseUrl).origin,
+    apiUrl: apiOrigin,
   });
 }
 

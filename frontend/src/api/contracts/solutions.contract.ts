@@ -24,6 +24,10 @@ export interface SolutionsServiceContract {
     input: UpdateSolutionInput,
     actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition>;
+  reorderSolutions(
+    solutionIds: readonly string[],
+    actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition[]>;
   transitionLifecycle(
     solutionId: string,
     lifecycle: SolutionLifecycle,
@@ -34,4 +38,3 @@ export interface SolutionsServiceContract {
     actor: SolutionsAdminActor,
   ): Promise<SolutionLifecycleHistoryEntry[]>;
 }
-

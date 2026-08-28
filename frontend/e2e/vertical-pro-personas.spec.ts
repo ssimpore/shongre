@@ -31,7 +31,13 @@ test("the demo persona menu remains operable at the commented mobile viewport", 
     name: /Changer de profil utilisateur/i,
   });
   await expect(menu).toBeVisible();
-  await expect(menu.getByRole("menuitemradio")).toHaveCount(17);
+  const personas = menu.getByRole("menuitemradio");
+  await expect(personas).toHaveCount(19);
+  const personaLabels = await personas.allTextContents();
+  expect(new Set(personaLabels).size).toBe(personaLabels.length);
+  for (const [index, label] of personaLabels.entries()) {
+    expect(label.trim()).toMatch(new RegExp(`^${index + 1}\\.`));
+  }
   await page.keyboard.press("End");
   await expect(menu.getByRole("menuitemradio").last()).toBeFocused();
   await page.keyboard.press("Home");
@@ -43,7 +49,7 @@ test("the demo persona menu remains operable at the commented mobile viewport", 
   expect(box!.x + box!.width).toBeLessThanOrEqual(546);
   expect(box!.y + box!.height).toBeLessThanOrEqual(701);
 
-  await menu.getByRole("menuitemradio", { name: /8\. Pro Emploi/ }).click();
+  await menu.getByRole("menuitemradio", { name: /Pro Emploi/ }).click();
   await expect(page).toHaveURL(/\/compte\/emploi\/recruteur$/);
   await expect(page.getByRole("heading", { name: "TechNova" })).toBeVisible();
 });

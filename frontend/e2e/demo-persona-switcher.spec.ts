@@ -25,78 +25,88 @@ const PERSONA_STORAGE = {
     role: "pro_seller",
     label: "4. Vendeur Pro",
   },
+  prospects: {
+    key: "standalone_trial_owner",
+    role: "pro_seller",
+    label: "5. Prospects autonome",
+  },
+  facturation: {
+    key: "standalone_facturation_owner",
+    role: "pro_seller",
+    label: "6. Facturation autonome",
+  },
   immo: {
     key: "pro_immo_clara",
     role: "pro_seller",
-    label: "5. Pro Immobilier",
+    label: "7. Pro Immobilier",
   },
   auto: {
     key: "pro_auto_michel",
     role: "pro_seller",
-    label: "6. Pro Automobile",
+    label: "8. Pro Automobile",
   },
   courses: {
     key: "pro_courses_sophie",
     role: "pro_seller",
-    label: "7. Pro Éducation",
+    label: "9. Pro Éducation",
   },
   employment: {
     key: "pro_employment_clara",
     role: "pro_seller",
-    label: "8. Pro Emploi",
+    label: "10. Pro Emploi",
   },
   support: {
     key: "support_hugo",
     role: "support",
-    label: "9. Support Shongre",
+    label: "11. Support Shongre",
     staffPath: "/admin/support",
   },
   moderator: {
     key: "moderator_claire",
     role: "moderator",
-    label: "10. Modérateur Shongre",
+    label: "12. Modérateur Shongre",
     staffPath: "/admin/moderation",
   },
   trustSafety: {
     key: "trust_nadia",
     role: "operations",
-    label: "11. Trust & Safety",
+    label: "13. Trust & Safety",
     staffPath: "/admin/verifications",
   },
   compliance: {
     key: "compliance_samia",
     role: "operations",
-    label: "12. Conformité",
+    label: "14. Conformité",
     staffPath: "/admin/verifications",
   },
   finance: {
     key: "finance_marc",
     role: "finance",
-    label: "13. Finance Shongre",
+    label: "15. Finance Shongre",
     staffPath: "/admin/finance",
   },
   operations: {
     key: "ops_elena",
     role: "operations",
-    label: "14. Opérations Shongre",
+    label: "16. Opérations Shongre",
     staffPath: "/admin/fournisseurs",
   },
   commercial: {
     key: "commercial_lea",
     role: "commercial",
-    label: "15. Commercial Shongre",
+    label: "17. Commercial Shongre",
     staffPath: "/admin/crm",
   },
   admin: {
     key: "admin_antoine",
     role: "admin",
-    label: "16. Administrateur Système",
+    label: "18. Administrateur Système",
     staffPath: "/admin",
   },
   superAdmin: {
     key: "super_admin_alex",
     role: "super_admin",
-    label: "17. Propriétaire Gouvernance",
+    label: "19. Propriétaire Gouvernance",
     staffPath: "/admin/roles",
   },
 } as const;
@@ -139,7 +149,7 @@ async function selectPersona(page: Page, persona: Persona): Promise<void> {
   }
 }
 
-test("switches all 17 demo personas as real account sessions @serial", async ({
+test("switches all 19 demo personas as real account sessions @serial", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -174,6 +184,24 @@ test("switches all 17 demo personas as real account sessions @serial", async ({
   await expect(
     page.locator('button[aria-label^="Menu du compte"]'),
   ).toContainText("Atelier");
+
+  await selectPersona(page, PERSONA_STORAGE.prospects);
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Pilotez chaque relation commerciale",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Nova Croissance", { exact: true }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/app$/);
+
+  await selectPersona(page, PERSONA_STORAGE.facturation);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Facturation" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/facturation\/app$/);
 
   await selectPersona(page, PERSONA_STORAGE.immo);
   await expect(

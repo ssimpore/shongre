@@ -73,6 +73,23 @@ export const messagesEn: MessageCatalogue = {
   "nav.openMenu": "Open menu",
   "nav.closeMenu": "Close menu",
   "nav.mobileLabel": "Mobile navigation",
+  "solutions.header.chooseSolution": "Choose a Shongre solution",
+  "solutions.header.seeAll": "See all solutions",
+  "admin.solutions.order.title": "Order and visibility",
+  "admin.solutions.order.description":
+    "Enable the solutions to present, then use the arrows to set the order of the public catalogue and Solutions selector. Lifecycle continues to control publication.",
+  "admin.solutions.order.moveUp": "Move {name} up",
+  "admin.solutions.order.moveDown": "Move {name} down",
+  "admin.solutions.order.saved": "Solution order saved.",
+  "admin.solutions.order.error": "Unable to save the order.",
+  "admin.solutions.order.saveDraftFirst":
+    "Save or cancel the current changes before reordering.",
+  "admin.solutions.visibility.label": "Public visibility of {name}",
+  "admin.solutions.visibility.enabled": "Enabled",
+  "admin.solutions.visibility.hidden": "Hidden",
+  "admin.solutions.visibility.saved": "Catalogue visibility updated.",
+  "admin.solutions.visibility.error":
+    "Unable to update catalogue visibility.",
   "nav.categoryNavigation": "Category navigation",
   "nav.category.immobilier": "Property",
   "nav.category.vehicules": "Vehicles",
@@ -425,8 +442,6 @@ export const messagesEn: MessageCatalogue = {
   "home.trendingNow.voirTout": "See all",
   "home.trendingNow.annonces": "listings",
   "home.trendingNow.topicPosition": "topic {position}",
-  "home.homeCategoryExplorer.5CategoriesPrincipales": "5 main categories",
-  "home.homeCategoryExplorer.toutesLesCategories": "All categories",
   // --- home.homeRecentSearches ---
   "home.homeRecentSearches.recherchesRecentes": "Recent searches",
   "home.homeRecentSearches.touteLaFrance": "All France",
@@ -441,6 +456,8 @@ export const messagesEn: MessageCatalogue = {
   "home.homeCollectionsSection.thematiquesCollections": "themed collections",
   "home.homeCollectionsSection.toutesLesCollections": "All collections",
   "home.homeCollectionsSection.voirTout": "See all",
+  "home.homeCollectionsSection.explorerLaCollection":
+    "Explore the {name} collection",
   "legal.legalPages.conditionsGeneralesDUtilisationCgu": "Terms of Use",
   "legal.legalPages.derniereMiseAJourFevrier": "Last updated: February 2026",
   "legal.legalPages.1ObjetDeLaPlateforme": "1. Purpose of the platform",
@@ -1624,7 +1641,7 @@ export const messagesEn: MessageCatalogue = {
   // --- migrated surfaces ---
   "shell.demoRoleSwitcher.modeDemo": "Demo mode",
   "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
-    "Try the 17 profiles and journeys without a password:",
+    "Try the {count} profiles and journeys without a password:",
   "shell.demoRoleSwitcher.commercialLabel": "15. Shongre Sales (Léa)",
   "shell.demoRoleSwitcher.commercialDescription":
     "Prospects, opportunities, follow-ups, and partner relationships",
@@ -2190,11 +2207,8 @@ export const messagesEn: MessageCatalogue = {
     "Safety, reliability and quality assured.",
   "home.heroBoostedScroll.enSavoirPlus": "Learn more",
   "home.heroBoostedScroll.livraison": "Delivery",
-  "home.homeCategoryExplorer.explorerParCategorie": "Explore by category",
-  "home.homeCategoryExplorer.desMillionsDAnnoncesVerifiees":
-    "Millions of verified listings, sorted precisely to match your plans and interests.",
   "home.homeCollectionsSection.nosCollectionsDuMoment":
-    "Our collections right now",
+    "Explore by collection",
   "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour":
     "Themed selections put together to uncover unique, durable, verified finds.",
   "legal.legalPages.offresVerifieesAPrixReduits":
@@ -3235,8 +3249,7 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.workspace.documentError":
     "The human-readable document could not be loaded.",
   "invoicing.workspace.loading": "Loading invoicing…",
-  "invoicing.onboarding.bootstrapTitle":
-    "Reuse organization information",
+  "invoicing.onboarding.bootstrapTitle": "Reuse organization information",
   "invoicing.onboarding.bootstrapBody":
     "Create the invoice issuer from the legal name, address and identifier already stored in Shongre. You can verify them in settings afterwards.",
   "invoicing.onboarding.bootstrapAction": "Configure issuer",

@@ -12,6 +12,10 @@ on:
       evidence_run_id:
         required: true
         type: string
+      certification_run_id:
+        required: false
+        default: ""
+        type: string
       mode:
         required: false
         default: deploy
@@ -44,6 +48,16 @@ jobs:
           mkdir -p .release
           gh run download "$EVIDENCE_RUN_ID" --name "release-$RELEASE_SHA" --dir .release
           node scripts/release-manifest.mjs validate .release/release-manifest.json "$RELEASE_SHA"
+      - name: Download the staging certificate for production approval
+        if: inputs.environment == 'production' && inputs.mode == 'deploy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          CERTIFICATION_RUN_ID: ${{ inputs.certification_run_id }}
+        run: |
+          test "$CERTIFICATION_RUN_ID" != ""
+          gh run download "$CERTIFICATION_RUN_ID" \
+            --name "staging-certification-$RELEASE_SHA" --dir .release
       - name: Authenticate the host to GHCR
         env:
           GHCR_TOKEN: ${{ github.token }}
@@ -55,6 +69,11 @@ jobs:
           SHONGRE_FRONTEND_ENV_FILE: ${{ vars.SHONGRE_FRONTEND_ENV_FILE }}
           CLOUDFLARE_TUNNEL_TOKEN_FILE: ${{ vars.CLOUDFLARE_TUNNEL_TOKEN_FILE }}
           SHONGRE_DEPLOY_STATE_ROOT: ${{ vars.SHONGRE_DEPLOY_STATE_ROOT }}
+          BACKEND_REPLICAS: ${{ vars.BACKEND_REPLICAS }}
+          FRONTEND_REPLICAS: ${{ vars.FRONTEND_REPLICAS }}
+          WORKER_REPLICAS: ${{ vars.WORKER_REPLICAS }}
+          CLOUDFLARED_REPLICAS: ${{ vars.CLOUDFLARED_REPLICAS }}
+          STAGING_CERTIFICATION_EVIDENCE_FILE: ${{ github.workspace }}/.release/staging-certification.json
         run: scripts/host-deploy.sh "${{ inputs.environment }}" .release/release-manifest.json "${{ inputs.mode }}"
       - name: Verify the public Cloudflare route
         env:
@@ -68,4 +87,5 @@ jobs:
             echo "- Artifact run: \`${{ inputs.evidence_run_id }}\`"
             echo "- Images: exact digests from the validated release manifest"
             echo "- Tunnel: persistent, not recreated"
+            echo "- Hosted application replicas: defaults to 2 in staging/production; environment variables may raise the count"
           } >> "$GITHUB_STEP_SUMMARY"

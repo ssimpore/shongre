@@ -14,7 +14,12 @@ export const SOLUTION_LIFECYCLES = [
 export const MIN_SOLUTION_SORT_ORDER = 0;
 
 export type SolutionLifecycle = (typeof SOLUTION_LIFECYCLES)[number];
-export type SolutionIconId = "prospects" | "facturation" | "pilotage" | "apps";
+export type SolutionIconId =
+  | "prospects"
+  | "facturation"
+  | "marketplace"
+  | "pilotage"
+  | "apps";
 
 export interface SolutionReleaseNote {
   id: string;
@@ -49,6 +54,7 @@ export interface SolutionDefinition {
   maintenanceMessage?: string;
   replacementSlug?: string;
   sortOrder: number;
+  catalogVisible: boolean;
   featured: boolean;
   createdAt: string;
   updatedAt: string;

@@ -2,10 +2,13 @@ import { CountryMarketDefinition } from "../../shared/types/index.js";
 import { z } from "zod";
 import {
   countryCodeSchema,
+  MARKET_CONFIGURATION_REASON_MAX_LENGTH,
+  MARKET_CONFIGURATION_REASON_MIN_LENGTH,
   marketLaunchStatusSchema,
 } from "@shongre/contracts";
 import {
   IMarketRepository,
+  MarketConfigurationChangeRequest,
   repositories,
   CANONICAL_DEMO_MARKETS,
 } from "../../infrastructure/database/repositories/index.js";
@@ -115,6 +118,27 @@ const countryConfigurationPatchSchema = z
   })
   .strict();
 
+const marketConfigurationReasonSchema = z
+  .string()
+  .trim()
+  .min(MARKET_CONFIGURATION_REASON_MIN_LENGTH)
+  .max(MARKET_CONFIGURATION_REASON_MAX_LENGTH);
+
+const countryConfigurationChangeSchema = z
+  .object({
+    expectedVersion: z.number().int().positive(),
+    reason: marketConfigurationReasonSchema,
+    patch: countryConfigurationPatchSchema.refine(
+      (value) => Object.keys(value).length > 0,
+      "Au moins un champ doit être modifié.",
+    ),
+  })
+  .strict();
+
+const marketReviewSchema = z
+  .object({ reason: marketConfigurationReasonSchema })
+  .strict();
+
 export class MarketsService {
   constructor(private marketRepo: IMarketRepository = repositories.markets) {}
 
@@ -156,7 +180,7 @@ export class MarketsService {
     code: string,
     input: unknown,
     actorId: string,
-  ): Promise<CountryMarketDefinition> {
+  ): Promise<MarketConfigurationChangeRequest> {
     const normalizedCode = countryCodeSchema.parse(
       String(code || "").toUpperCase(),
     );
@@ -167,7 +191,15 @@ export class MarketsService {
         message: "Marché introuvable.",
       });
     }
-    const patch = countryConfigurationPatchSchema.parse(input || {});
+    const change = countryConfigurationChangeSchema.parse(input || {});
+    if ((current.version || 1) !== change.expectedVersion) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "La configuration du marché a changé. Rechargez-la avant de continuer.",
+      });
+    }
+    const patch = change.patch;
     const candidate = { ...current, ...patch } as CountryMarketDefinition;
 
     if (!candidate.supportedLocales.includes(candidate.defaultLocale)) {
@@ -241,26 +273,72 @@ export class MarketsService {
       });
     }
 
-    const updated = await this.marketRepo.updateConfiguration(
+    const request = await this.marketRepo.requestConfigurationChange(
       normalizedCode,
-      patch as Partial<CountryMarketDefinition>,
-    );
-    await this.marketRepo.recordConfigurationAudit({
-      marketCode: normalizedCode,
+      {
+        current,
+        candidate,
+        changedFields: Object.keys(patch),
+        expectedVersion: change.expectedVersion,
+        reason: change.reason,
+      },
       actorId,
-      changedFields: Object.keys(patch),
-      previousVersion: current.version || 1,
-      newVersion: updated.version || (current.version || 1) + 1,
-    });
+    );
     logger.info(
       JSON.stringify({
-        event: "market.configuration.updated",
+        event: "market.configuration.change_requested",
         country: normalizedCode,
         actorId,
-        version: updated.version,
+        requestId: request.id,
+        baseVersion: request.baseVersion,
       }),
     );
+    return request;
+  }
+
+  async listCountryConfigurationChanges(code: string) {
+    const normalizedCode = countryCodeSchema.parse(
+      String(code || "").toUpperCase(),
+    );
+    return this.marketRepo.listConfigurationChanges(normalizedCode);
+  }
+
+  async approveCountryConfigurationChange(
+    requestId: string,
+    actorId: string,
+    input: unknown,
+  ): Promise<CountryMarketDefinition> {
+    const review = marketReviewSchema.parse(input || {});
+    const updated = await this.marketRepo.approveConfigurationChange(
+      requestId,
+      actorId,
+      review.reason,
+    );
+    logger.info("market_configuration_change_approved", {
+      requestId,
+      actorId,
+      marketCode: updated.code,
+      version: updated.version,
+    });
     return updated;
+  }
+
+  async rejectCountryConfigurationChange(
+    requestId: string,
+    actorId: string,
+    input: unknown,
+  ): Promise<{ rejected: true }> {
+    const review = marketReviewSchema.parse(input || {});
+    await this.marketRepo.rejectConfigurationChange(
+      requestId,
+      actorId,
+      review.reason,
+    );
+    logger.info("market_configuration_change_rejected", {
+      requestId,
+      actorId,
+    });
+    return { rejected: true };
   }
 }
 

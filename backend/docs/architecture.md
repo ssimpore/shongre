@@ -2,14 +2,18 @@
 
 ## 1. System Overview
 
-Shongre is an enterprise-grade C2C & B2C marketplace designed for European multi-market transactions with integrated Escrow protection, automated progressive KYC/KYB verification, AI safety screening, structured taxonomy management, and full dual-mode support (deterministic demo vs live PostgreSQL).
+Shongre is a C2C and B2C multi-market modular monolith. The repository contains
+marketplace, professional-product, administration, payment, verification,
+moderation, provider, and background-processing capabilities at different
+maturity levels. Production readiness is established by release evidence, not
+by the presence of a module in this diagram.
 
 ```text
                     ┌────────────────────────┐
                     │       FRONTEND/        │
-                    │   React 19 / Vite SPA  │
+                    │   Next.js / React web  │
                     └───────────┬────────────┘
-                                │ HTTP / REST contracts
+                                │ typed service contracts
                                 ▼
                     ┌────────────────────────┐
                     │        BACKEND/        │
@@ -23,10 +27,15 @@ Shongre is an enterprise-grade C2C & B2C marketplace designed for European multi
                                 ▼
                     ┌────────────────────────┐
                     │        SUPABASE        │
-                    │   PostgreSQL 15        │
+                    │   PostgreSQL           │
                     │   Row-Level Security   │
                     │   Triggers & FTS       │
-                    │   Edge Functions       │
+                    │   Reviewed Edge ingress│
+                    └────────────────────────┘
+                                ▲
+                                │ durable leases and inboxes
+                    ┌───────────┴────────────┐
+                    │ backend worker runtime │
                     └────────────────────────┘
 ```
 
@@ -91,9 +100,9 @@ status and release gates are documented in
 
 ## 3. Directory Separation & Monorepo Boundaries
 
-1. **`backend/` Ownership**: 100% of server-side logic, database migrations, configuration, background jobs, external integrations, API routing, RLS policies, and tests reside in `backend/`.
-2. **`frontend/` Isolation**: The frontend is a pure client interacting with the backend solely via typed HTTP contracts. Zero secrets, service roles, or database connections exist in the frontend.
-3. **Multi-Market Engine**: France (`FR`) acts as the canonical base market. All foreign markets (`BE`, `CH`, `LU`, `DE`, `ES`) inherit defaults via `marketsService.getEffectiveMarketConfig()`.
+1. **`backend/` ownership**: Server-side logic, database migrations, configuration, background jobs, external integrations, API routing, RLS policies, and backend tests reside in `backend/`.
+2. **`frontend/` isolation**: The frontend consumes typed service contracts. Its current runtime selects deterministic demo adapters and works with the backend stopped. Future HTTP adapters preserve the same UI contracts. Secrets, service roles, and database connections never belong in the frontend.
+3. **Multi-market engine**: France (`FR`) is the initial/default market, but each market carries explicit country, locale, currency, timezone, availability, legal, payment, and commercial configuration. Missing non-default-market policy fails closed rather than inheriting a France business rule implicitly.
 4. **Escrow Workflows**:
    - `DIRECT_PURCHASE`: Full escrow hold (item + shipping + protection fee) with 4-digit PIN verification upon hand delivery.
    - `RESERVATION`: Down payment escrow hold with in-person balance settlement.

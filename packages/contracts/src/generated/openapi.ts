@@ -518,10 +518,61 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         /**
-         * Update one country configuration
-         * @description Updates launch, routing and policy configuration while preserving the stable ISO country identity.
+         * Request a country configuration change
+         * @description Creates an optimistically versioned change request. A different authorized actor must approve it before the configuration becomes active.
          */
         readonly patch: operations["patchAdminCountriesByCode"];
+        readonly trace?: never;
+    };
+    readonly "/admin/countries/{code}/changes": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List country configuration changes */
+        readonly get: operations["getAdminCountriesByCodeChanges"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/countries/{code}/changes/{id}/approve": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Approve and atomically apply a country configuration change */
+        readonly post: operations["postAdminCountriesByCodeChangesByIdApprove"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/countries/{code}/changes/{id}/reject": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Reject a country configuration change */
+        readonly post: operations["postAdminCountriesByCodeChangesByIdReject"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
         readonly trace?: never;
     };
     readonly "/admin/discovery/configuration": {
@@ -7789,6 +7840,11 @@ export interface components {
         } & {
             readonly [key: string]: unknown;
         };
+        readonly CountryConfigChangeInput: {
+            readonly expectedVersion: number;
+            readonly patch: components["schemas"]["CountryConfigPatch"];
+            readonly reason: string;
+        };
         readonly CountryConfigPatch: {
             readonly addressFormat?: string;
             readonly basePath?: string;
@@ -8644,6 +8700,27 @@ export interface components {
          * @example BF
          */
         readonly MarketCode: string;
+        readonly MarketConfigurationChangeRequest: {
+            readonly baseVersion: number;
+            readonly candidate: components["schemas"]["CountryConfig"];
+            readonly changedFields: readonly string[];
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly reason: string;
+            /** Format: uuid */
+            readonly requestedBy: string;
+            /** Format: uuid */
+            readonly reviewedBy?: string;
+            readonly reviewReason?: string;
+            /** @enum {string} */
+            readonly status: "pending" | "approved" | "rejected" | "stale";
+        };
+        readonly MarketConfigurationReview: {
+            readonly reason: string;
+        };
         readonly MarketingAccountPreferencesInput: {
             /** @default FR */
             readonly marketCode: string;
@@ -10558,11 +10635,78 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": components["schemas"]["CountryConfigPatch"];
+                readonly "application/json": components["schemas"]["CountryConfigChangeInput"];
             };
         };
         readonly responses: {
-            /** @description Updated country configuration. */
+            /** @description Pending country configuration change. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketConfigurationChangeRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminCountriesByCodeChanges: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly code: components["schemas"]["MarketCode"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Configuration change history. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["MarketConfigurationChangeRequest"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminCountriesByCodeChangesByIdApprove: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly code: components["schemas"]["MarketCode"];
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketConfigurationReview"];
+            };
+        };
+        readonly responses: {
+            /** @description Applied country configuration. */
             readonly 200: {
                 headers: {
                     readonly [name: string]: unknown;
@@ -10576,7 +10720,47 @@ export interface operations {
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminCountriesByCodeChangesByIdReject: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly code: components["schemas"]["MarketCode"];
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["MarketConfigurationReview"];
+            };
+        };
+        readonly responses: {
+            /** @description Rejected configuration change. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        /** @constant */
+                        readonly rejected: true;
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -21068,7 +21252,10 @@ export interface operations {
     };
     readonly getMessagingConversations: {
         readonly parameters: {
-            readonly query?: never;
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+            };
             readonly header?: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];

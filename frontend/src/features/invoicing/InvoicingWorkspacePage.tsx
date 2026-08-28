@@ -515,7 +515,7 @@ export function InvoicingWorkspacePage() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-screen-sm text-left text-xs">
-                  <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-muted">
+                  <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-secondary">
                     <tr>
                       {[
                         "number",

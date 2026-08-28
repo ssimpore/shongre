@@ -63,6 +63,12 @@ country-aware organization identifier boundary, idempotent organization/owner/
 market provisioning for direct product acquisition, and an entitlement-checked
 bootstrap that derives the first Facturation legal entity from shared business
 facts. It grants no product access.
+Migration `00071_organization_product_entitlements.sql` moves the commercial
+access subject from an inferred payer/owner relationship to an explicit
+`organization_id` on shared quotes, orders, subscriptions, and entitlements.
+It preserves `account_id` as the payer and audit subject, backfills only
+unambiguous legacy memberships, and fails closed for accounts managing several
+organizations.
 
 Canonical ownership is explicit: the invoicing service writes drafts and master
 data; the PostgreSQL finalization function alone assigns numbers, snapshots,
@@ -102,7 +108,7 @@ The canonical `/api/v1` contract contains:
 Each operation declares authentication, access metadata, market context where
 applicable, standard errors, and idempotency for commands. Generated OpenAPI
 types, the backend manifest, and the endpoint inventory are synchronized. The
-repository check reports 434 inventoried operations and full router/operational
+repository check reports 437 inventoried operations and full router/operational
 endpoint coverage.
 
 ## 6. Money, tax, numbering, and immutability evidence
@@ -188,6 +194,12 @@ grant created by the existing monetization flow; it cannot create one. Usage
 meters, public API keys/webhooks, recurring schedules, reminders, and real
 delivery orchestration remain deferred.
 
+The shared checkout now requires an explicit organization for Facturation and
+Prospects products and verifies that the payer can manage subscriptions for
+that organization. This permits a Facturation-only tenant, an add-on customer,
+and a multi-product tenant to share one identity and business record without
+leaking an entitlement between organizations controlled by the same account.
+
 ## 11. Frontend demo/API mode and live-cutover status
 
 The frontend adds a public `/facturation` acquisition page, direct
@@ -230,36 +242,29 @@ validation used the browser viewport override and DOM width measurements.
 
 ## 12. Exact tests and commands run
 
-All final commands passed:
+The code-level checks run after the architecture hardening changes passed:
 
 ```text
 npm run typecheck --workspace=@shongre/contracts
 npm run typecheck --workspace=backend
 npm run typecheck --workspace=frontend
 
-npm exec --workspace=@shongre/contracts -- vitest run src/schemas/product-access.test.ts src/schemas/invoicing.test.ts
-  2 files, 10 tests
+npm test --workspace=@shongre/contracts -- --run
+  17 files, 121 tests
 
-npm exec --workspace=backend -- vitest run tests/unit/auth-facturation-registration.test.ts tests/unit/invoicing-service.test.ts tests/unit/invoicing-exact-money.test.ts tests/rls/invoicing-foundation-migration.test.ts tests/rls/invoicing-product-access-migration.test.ts tests/rls/shared-product-organization-provisioning-migration.test.ts
-  6 files, 26 tests
+npm test --workspace=backend -- --run
+  117 files, 645 tests
 
-npm exec --workspace=frontend -- vitest run src/domains/user/user.domain.test.ts src/security/access-policy.registry.test.ts src/api/adapters/demo/demo-invoicing.service.test.ts src/configuration/routes.test.ts
-  4 files, 36 tests
-
-npm run lint --workspace=backend
-npm run lint --workspace=frontend
-  TypeScript, design-system tokens, control metrics, migrated i18n surfaces,
-  and navigation integrity passed
-
-make migrations-check
-  70 ordered migrations validated; DATABASE_URL absent, so no database changed
+npm test --workspace=frontend -- --run
+  112 files, 736 tests
 
 npm run openapi:check
-  OpenAPI valid; generated types/manifest/inventory current; 429 router plus 5 operational endpoints
+  OpenAPI valid; generated types/manifest/inventory current; 432 router plus 5 operational endpoints
 
-npm run build --workspace=backend
-npm run build --workspace=frontend
-  both production builds passed; taxonomy 45/45 complete
+node scripts/validate-deployment-env.test.mjs
+node scripts/production-readiness.test.mjs
+node scripts/release-manifest.test.mjs
+  deployment isolation, production launch scope, and build-once manifest invariants passed
 ```
 
 The tests cover exact/sub-minor calculations, date/tax contract validation,
@@ -267,10 +272,20 @@ permissions, tenant isolation, active non-FR contexts, fail-closed markets,
 idempotent creation/finalization, immutable document provenance, first-class
 credit notes, cumulative over-crediting, SQL locks/RLS/immutability markers,
 demo independence, product portfolios, entitlement denial, route isolation,
-atomic draft editing, activation routes, and the service registry.
+atomic draft editing, activation routes, and the service registry. The rendered
+`frontend/e2e/facturation.spec.ts` matrix additionally passes all six supported
+customer portfolios in Chromium and WebKit.
 It also covers direct-registration organization provisioning, preservation of
-country-aware legal facts, idempotent legal-entity bootstrap, and the invariant
-that signup never grants an entitlement.
+country-aware legal facts, idempotent legal-entity bootstrap, the invariant that
+signup never grants an entitlement, organization-scoped commercial access,
+durable webhook fan-out, renewable worker leases, market four-eyes governance,
+malware scanning, API throttling, messaging pagination, and multilingual search
+migration structure.
+
+Migrations `00071` through `00076` were applied successfully to a disposable
+PostgreSQL 17 database after stopping at and isolating the legacy replay defects
+described below. This validates the new SQL syntax and dependency order, but is
+not represented as a successful clean-chain migration or pgTAP run.
 
 ## 13. Staging, release, backup, rollback, and observability evidence
 
@@ -283,16 +298,24 @@ runtime-only environment configuration, digest promotion from staging,
 migrations once from the exact backend digest, expand/contract compatibility,
 and application rollback without reversing legal-data migrations.
 
-Code-level audit/outbox and proposed metrics exist. Staging certification,
-load/concurrency evidence against PostgreSQL, backup/restore proof, dashboards,
-alerts, runbooks, support drills, signed image digests, and rollback rehearsal do
-not exist yet.
+Code-level audit/outbox and proposed metrics exist. Signed provider webhooks now
+enter one durable worker inbox and private/listing uploads use the shared
+fail-closed malware scanner; the current inline Facturation derivative does not
+yet use object storage. Staging certification, load/concurrency evidence against
+PostgreSQL, backup/restore proof, dashboards, alerts, support drills, signed
+image digests, and rollback rehearsal do not exist yet.
 
 ## 14. Known limitations, risks, deferred non-goals, and follow-ups
 
-- The migration was syntax/order checked without a live PostgreSQL application;
-  a disposable-database migration and real concurrent finalization suite remain
-  mandatory.
+- A fresh replay stops in legacy migration `00030` because it updates columns
+  that prior migrations do not create, then encounters an incompatible view
+  replacement; `00032` references `public.users` although canonical identities
+  live in `public.profiles`; seeded compliance references prevent the direct
+  profile cleanup in `00040`. These pre-existing files cannot be edited safely
+  while deployed checksums are unknown. Clean Supabase reset, pgTAP execution,
+  generated database-type comparison, and production migration remain blocked
+  until an operator reconciles the migration ledger and approves a compatible
+  baseline repair.
 - Phase 1 offers create/edit/finalize/read and human-readable export, but not
   cancellation, deletion, duplicate detection, structured accounting export,
   quotes, supplier ingestion, or accounting posting.
@@ -301,12 +324,12 @@ not exist yet.
 - Payment allocation, refunds, recurring invoices, reminders, delivery,
   subscriptions, usage, external API/webhooks, receiving, e-reporting, B2G, and
   provider lifecycle work remain Phases 2–5.
-- `TEXT_V1` is not a legal original. Large/private artifacts need object storage,
-  malware controls where applicable, short-lived downloads, and retention/legal
-  hold policy.
+- `TEXT_V1` is not a legal original. The shared object-storage upload paths now
+  require malware scanning, but a future legal-original pipeline still needs
+  short-lived downloads and an approved retention/legal-hold policy.
 - France compliance fixtures and provider sandbox certification remain absent.
 - Legacy monetization cutover and production hardening remain Phases 6–7.
-- The repository-wide i18n migration checker reports 3357 strings in 194
+- The repository-wide i18n migration checker reports 3,468 strings in 203
   non-migrated files. Its enforcement baseline passes, but those surfaces still
   need progressive localization work.
 

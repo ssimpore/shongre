@@ -762,13 +762,13 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
     capabilitiesByOrganization: ReadonlyMap<string, readonly string[]>,
   ): Promise<Map<string, InvoicingProductAccess>> {
     if (!organizations.length) return new Map();
-    const ownerIds = [...new Set(organizations.map((item) => item.owner_id))];
+    const organizationIds = organizations.map((item) => item.id);
     const result = await this.client
       .from("monetization_entitlements")
       .select(
-        "account_id,product_id,entitlement_key,entitlement_value,source_order_id,starts_at,ends_at,status",
+        "id,account_id,organization_id,product_id,entitlement_key,entitlement_value,source_order_id,starts_at,ends_at,status",
       )
-      .in("account_id", ownerIds)
+      .in("organization_id", organizationIds)
       .eq("product_id", "product.facturation")
       .in("entitlement_key", [
         "invoicing.enabled",
@@ -792,7 +792,7 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
     const accessByOrganization = new Map<string, InvoicingProductAccess>();
     for (const organization of organizations) {
       const rows = activeRows.filter(
-        (row) => row.account_id === organization.owner_id,
+        (row) => row.organization_id === organization.id,
       );
       const values = new Map(
         rows.map((row) => [row.entitlement_key, row.entitlement_value]),
@@ -1055,10 +1055,7 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
         new Error("Legal entity bootstrap returned no row"),
       );
     }
-    return mapLegalEntity(
-      row,
-      await this.identifiersForEntities([row.id]),
-    );
+    return mapLegalEntity(row, await this.identifiersForEntities([row.id]));
   }
 
   private async identifiersForParties(ids: readonly string[]) {

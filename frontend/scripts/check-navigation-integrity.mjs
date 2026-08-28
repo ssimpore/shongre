@@ -292,6 +292,15 @@ if (errors.length) {
   process.exit(1);
 }
 
+if (process.argv.includes("--print-routes")) {
+  console.log("Registered route inventory:");
+  for (const route of [...routes].sort((left, right) =>
+    left.localeCompare(right),
+  )) {
+    console.log(`- ${route}`);
+  }
+}
+
 console.log(
   `Navigation integrity check passed: ${routes.size} registered routes and ${checked.length} static destinations verified.`,
 );

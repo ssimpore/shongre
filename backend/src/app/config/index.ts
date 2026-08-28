@@ -27,6 +27,7 @@ export type PaymentProviderMode = "demo" | "stripe";
 export type KYCProviderMode = "demo" | "stripe" | "live";
 export type BusinessRegistryProviderMode = "demo" | "siret";
 export type AIProviderMode = "demo" | "gemini";
+export type MalwareScannerMode = "disabled" | "http";
 
 export interface AppConfig {
   environment: EnvironmentConfig;
@@ -43,6 +44,10 @@ export interface AppConfig {
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
   shutdownGraceMs: number;
+  publicApiRateLimit: number;
+  authenticatedApiRateLimit: number;
+  apiRateLimitWindowSeconds: number;
+  apiRateLimitLockSeconds: number;
   corsOrigin: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
@@ -100,6 +105,10 @@ export interface AppConfig {
   businessRegistryApiToken: string;
   kycProviderBaseUrl: string;
   kycProviderApiToken: string;
+  malwareScannerMode: MalwareScannerMode;
+  malwareScannerUrl: string;
+  malwareScannerToken: string;
+  malwareScannerTimeoutMs: number;
 }
 
 export interface OAuthProviderConfig {
@@ -386,6 +395,10 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
   }
   if (!candidate.providerCredentialKeyVersion)
     missing.push("PROVIDER_CREDENTIAL_KEY_VERSION");
+  if (candidate.malwareScannerMode !== "http")
+    missing.push("MALWARE_SCAN_MODE=http");
+  requireHttpsUrl("MALWARE_SCAN_URL", candidate.malwareScannerUrl);
+  if (!candidate.malwareScannerToken) missing.push("MALWARE_SCAN_TOKEN");
 
   if (missing.length > 0) {
     throw new Error(
@@ -513,6 +526,16 @@ const candidateConfig: AppConfig = {
   maxRequestBodyBytes: positiveInteger("MAX_REQUEST_BODY_BYTES", 1_048_576),
   requestTimeoutMs: positiveInteger("REQUEST_TIMEOUT_MS", 30_000),
   shutdownGraceMs: positiveInteger("SHUTDOWN_GRACE_MS", 15_000),
+  publicApiRateLimit: positiveInteger("API_PUBLIC_RATE_LIMIT", 180),
+  authenticatedApiRateLimit: positiveInteger(
+    "API_AUTHENTICATED_RATE_LIMIT",
+    600,
+  ),
+  apiRateLimitWindowSeconds: positiveInteger(
+    "API_RATE_LIMIT_WINDOW_SECONDS",
+    60,
+  ),
+  apiRateLimitLockSeconds: positiveInteger("API_RATE_LIMIT_LOCK_SECONDS", 60),
   corsOrigin:
     process.env.CORS_ORIGIN ||
     [
@@ -697,6 +720,14 @@ const candidateConfig: AppConfig = {
   businessRegistryApiToken: process.env.BUSINESS_REGISTRY_API_TOKEN || "",
   kycProviderBaseUrl: process.env.KYC_PROVIDER_BASE_URL || "",
   kycProviderApiToken: process.env.KYC_PROVIDER_API_TOKEN || "",
+  malwareScannerMode: resolveEnumValue(
+    "MALWARE_SCAN_MODE",
+    ["disabled", "http"] as const,
+    "disabled",
+  ),
+  malwareScannerUrl: process.env.MALWARE_SCAN_URL || "",
+  malwareScannerToken: process.env.MALWARE_SCAN_TOKEN || "",
+  malwareScannerTimeoutMs: positiveInteger("MALWARE_SCAN_TIMEOUT_MS", 15_000),
 };
 
 validateSocialProviderConfiguration(candidateConfig);

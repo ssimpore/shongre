@@ -487,6 +487,81 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
   {
+    id: "invoice.read",
+    name: "Consulter les factures",
+    category: "Transactions & Paiements",
+    description:
+      "Consulter les factures de l’organisation dans les marchés autorisés.",
+  },
+  {
+    id: "invoice.create",
+    name: "Créer et modifier les factures",
+    category: "Transactions & Paiements",
+    description:
+      "Créer des brouillons et modifier les factures avant leur finalisation.",
+  },
+  {
+    id: "invoice.finalize",
+    name: "Finaliser les factures",
+    category: "Transactions & Paiements",
+    description:
+      "Valider définitivement une facture et lui attribuer sa numérotation légale.",
+    isSensitive: true,
+  },
+  {
+    id: "invoice.transmit",
+    name: "Transmettre les factures",
+    category: "Transactions & Paiements",
+    description:
+      "Envoyer les factures finalisées par les canaux autorisés pour l’organisation.",
+    isSensitive: true,
+  },
+  {
+    id: "invoice.export",
+    name: "Exporter les factures",
+    category: "Transactions & Paiements",
+    description:
+      "Télécharger les documents de facturation et les données comptables autorisées.",
+  },
+  {
+    id: "invoice.party.manage",
+    name: "Gérer les clients et fournisseurs de facturation",
+    category: "Transactions & Paiements",
+    description:
+      "Créer et mettre à jour les coordonnées de facturation des tiers de l’organisation.",
+  },
+  {
+    id: "invoice.received.manage",
+    name: "Gérer les factures reçues",
+    category: "Transactions & Paiements",
+    description:
+      "Importer, qualifier et suivre les factures fournisseurs reçues par l’organisation.",
+  },
+  {
+    id: "invoicing.tenant.manage",
+    name: "Configurer Shongre Facturation",
+    category: "Transactions & Paiements",
+    description:
+      "Gérer les paramètres légaux, fiscaux et de numérotation de l’organisation.",
+    isSensitive: true,
+  },
+  {
+    id: "invoicing.audit.read",
+    name: "Consulter l’audit de facturation",
+    category: "Transactions & Paiements",
+    description:
+      "Examiner l’historique protégé des opérations et transmissions de facturation.",
+    isSensitive: true,
+  },
+  {
+    id: "support.invoicing.inspect",
+    name: "Assister sur la facturation",
+    category: "Transactions & Paiements",
+    description:
+      "Inspecter les données de facturation strictement nécessaires au support autorisé.",
+    isSensitive: true,
+  },
+  {
     id: "payment.initiate",
     name: "Initier un paiement",
     category: "Transactions & Paiements",

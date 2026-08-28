@@ -605,6 +605,34 @@ export class BusinessRulesService {
       });
     }
     const selected = products as MonetizationProduct[];
+    const organizationScoped = selected.some(
+      (product) =>
+        product.id === "product.facturation" ||
+        product.entitlements.some(
+          (entitlement) =>
+            entitlement.key.startsWith("invoicing.") ||
+            entitlement.key.startsWith("prospecting."),
+        ),
+    );
+    if (organizationScoped && !request.organizationId) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une organisation cible est requise pour cette offre.",
+      });
+    }
+    if (
+      request.organizationId &&
+      !(await this.repository.canManageOrganization(
+        accountId,
+        request.organizationId,
+      ))
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "La gestion des abonnements de cette organisation est requise.",
+      });
+    }
     const selectedSubscriptions = selected.filter(
       (product) => product.kind === "subscription",
     );
@@ -812,6 +840,7 @@ export class BusinessRulesService {
     const totalMinor = lines.reduce((sum, line) => sum + line.totalMinor, 0);
     const quotePayload = {
       accountId,
+      organizationId: request.organizationId,
       configurationVersionId: catalog.configurationVersionId,
       marketCode: request.marketCode,
       currency: catalog.currency,
@@ -994,6 +1023,7 @@ export class BusinessRulesService {
         id: deterministicId("order", `${accountId}:${quote.id}`),
         quoteId: quote.id,
         accountId,
+        organizationId: quote.organizationId,
         snapshotHash: quote.snapshotHash,
         total: {
           amountMinor: quote.amountDueTodayMinor,
@@ -1076,6 +1106,19 @@ export class BusinessRulesService {
 
   async getActiveEntitlements(accountId: string) {
     const entitlements = await this.repository.listEntitlements(accountId, 200);
+    const at = Date.now();
+    return entitlements.filter(
+      (entry) =>
+        entry.status === "active" &&
+        (!entry.endsAt || new Date(entry.endsAt).getTime() > at),
+    );
+  }
+
+  async getActiveEntitlementsForOrganization(organizationId: string) {
+    const entitlements = await this.repository.listOrganizationEntitlements(
+      organizationId,
+      200,
+    );
     const at = Date.now();
     return entitlements.filter(
       (entry) =>

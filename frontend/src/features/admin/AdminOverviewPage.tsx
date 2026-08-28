@@ -51,6 +51,18 @@ export const AdminOverviewPage: React.FC = () => {
   const canReviewVerification = can("user.verify") || can("compliance.review");
   const canReviewReports = can("report.review");
   const canReadAudit = can("audit.read");
+  const visibleMetricCount =
+    Number(canReadPlatformStats) * 2 +
+    Number(canReviewVerification) +
+    Number(canReviewReports);
+  const metricGridColumns =
+    visibleMetricCount >= 4
+      ? "lg:grid-cols-4"
+      : visibleMetricCount === 3
+        ? "lg:grid-cols-3"
+        : "lg:grid-cols-2";
+  const visibleOperationalPanelCount =
+    Number(canReviewVerification) + Number(canReadAudit);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,7 +148,10 @@ export const AdminOverviewPage: React.FC = () => {
 
       {/* KPI Stats Cards */}
       {(canReadPlatformStats || canReviewVerification || canReviewReports) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section
+          aria-label="Indicateurs de la console"
+          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
+        >
           {canReadPlatformStats && (
             <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
               <div className="flex items-center justify-between text-stone-500 mb-2">
@@ -207,12 +222,17 @@ export const AdminOverviewPage: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* Grid: Pending Pro Dossiers & Recent Audit Log */}
       {(canReviewVerification || canReadAudit) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section
+          aria-label="Files opérationnelles"
+          className={`grid grid-cols-1 gap-6 ${
+            visibleOperationalPanelCount > 1 ? "lg:grid-cols-2" : ""
+          }`}
+        >
           {/* Pending Pro Verifications */}
           {canReviewVerification && (
             <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 flex flex-col">
@@ -338,7 +358,7 @@ export const AdminOverviewPage: React.FC = () => {
               </div>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

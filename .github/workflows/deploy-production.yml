@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       evidence_run_id: ${{ steps.release.outputs.run_id }}
+      certification_run_id: ${{ steps.certification.outputs.run_id }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -43,14 +44,16 @@ jobs:
           node scripts/release-manifest.mjs validate .evidence/release/release-manifest.json "$RELEASE_SHA"
           echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
       - name: Require successful certification of the same digests
+        id: certification
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_SHA: ${{ inputs.release_sha }}
         run: |
-          scripts/download-release-evidence.sh certification "$RELEASE_SHA" .evidence/certification >/dev/null
+          run_id="$(scripts/download-release-evidence.sh certification "$RELEASE_SHA" .evidence/certification)"
           node scripts/release-manifest.mjs verify-certification \
             .evidence/release/release-manifest.json \
             .evidence/certification/staging-certification.json
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
 
   deploy-production:
     needs: resolve
@@ -59,4 +62,5 @@ jobs:
       environment: production
       release_sha: ${{ inputs.release_sha }}
       evidence_run_id: ${{ needs.resolve.outputs.evidence_run_id }}
+      certification_run_id: ${{ needs.resolve.outputs.certification_run_id }}
       mode: deploy

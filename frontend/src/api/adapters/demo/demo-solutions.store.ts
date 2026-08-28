@@ -9,6 +9,15 @@ const STORAGE_KEY = "shongre_solutions_catalog_v1";
 const HISTORY_KEY = "shongre_solutions_history_v1";
 const clone = <T>(value: T): T => structuredClone(value);
 
+const legacyCatalogVisibility = (solution: SolutionDefinition): boolean => {
+  const seeded = DEMO_SOLUTIONS.find((value) => value.id === solution.id);
+  return (
+    solution.catalogVisible ??
+    seeded?.catalogVisible ??
+    !["DRAFT", "INTERNAL", "RETIRED"].includes(solution.lifecycle)
+  );
+};
+
 export class DemoSolutionsStore {
   list(): SolutionDefinition[] {
     const stored = storageService.get<SolutionDefinition[]>(
@@ -19,7 +28,12 @@ export class DemoSolutionsStore {
     const newlySeeded = DEMO_SOLUTIONS.filter(
       (solution) => !storedIds.has(solution.id),
     );
-    return clone([...stored, ...newlySeeded]);
+    return clone(
+      [...stored, ...newlySeeded].map((solution) => ({
+        ...solution,
+        catalogVisible: legacyCatalogVisibility(solution),
+      })),
+    );
   }
 
   save(solutions: SolutionDefinition[]): void {

@@ -24,14 +24,14 @@ max_client_conn = 100
 [realtime]
 enabled = true
 port = {{SUPABASE_REALTIME_PORT}}
-ip_version = "auto"
+ip_version = "IPv4"
 
 [studio]
 enabled = true
 port = {{SUPABASE_STUDIO_PORT}}
 api_url = "http://{{SUPABASE_HOST}}:{{SUPABASE_API_PORT}}"
 
-[inbucket]
+[local_smtp]
 enabled = true
 port = {{SUPABASE_INBUCKET_PORT}}
 smtp_port = {{SUPABASE_SMTP_PORT}}

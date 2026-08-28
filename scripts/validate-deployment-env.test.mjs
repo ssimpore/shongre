@@ -16,8 +16,8 @@ ENVIRONMENT_ID=${environmentId}
 PUBLIC_FR_URL=https://staging.shongre.example
 PUBLIC_INTL_URL=https://staging-intl.shongre.example
 API_URL=https://api-staging.shongre.example
-NEXT_PUBLIC_DATA_MODE=api
-NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
+NEXT_PUBLIC_DATA_MODE=demo
+NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true
 NEXT_PUBLIC_ENABLE_AI_FEATURES=false
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_ci
 `;
@@ -69,6 +69,9 @@ BUSINESS_REGISTRY_API_URL=https://registry.example
 BUSINESS_REGISTRY_API_TOKEN=ci-registry
 GEMINI_API_KEY=ci-gemini
 GEMINI_MODEL=gemini-test
+MALWARE_SCAN_MODE=http
+MALWARE_SCAN_URL=https://scanner.example/scan
+MALWARE_SCAN_TOKEN=ci-malware-scanner-token
 `;
 
 function writePrivate(path, value) {

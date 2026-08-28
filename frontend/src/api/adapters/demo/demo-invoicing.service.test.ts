@@ -5,6 +5,7 @@ import {
   DEMO_INVOICING_TENANT_ID,
   DemoInvoicingService,
 } from "./demo-invoicing.service";
+import { storageService } from "../../../services/storage.service";
 
 const input = {
   tenantId: DEMO_INVOICING_TENANT_ID,
@@ -32,6 +33,30 @@ const input = {
 };
 
 describe("DemoInvoicingService", () => {
+  it("isolates organization identity and records between demo accounts", async () => {
+    const previousUserKey = storageService.getCurrentUserKey();
+    const service = new DemoInvoicingService();
+    try {
+      storageService.setCurrentUserKey("standalone_facturation_owner");
+      const standalone = await service.getWorkspace("FR");
+      storageService.setCurrentUserKey("pro_atelier");
+      const multiProduct = await service.getWorkspace("FR");
+
+      expect(standalone.tenants[0].legalName).toBe("Studio Rivage");
+      expect(standalone.tenants[0].productAccess.accessMode).toBe("STANDALONE");
+      expect(multiProduct.tenants[0].legalName).toBe(
+        "Atelier Nordique SAS",
+      );
+      expect(multiProduct.tenants[0].productAccess.accessMode).toBe("ADD_ON");
+      expect(multiProduct.tenants[0].id).not.toBe(standalone.tenants[0].id);
+      expect(multiProduct.legalEntities[0].tenantId).not.toBe(
+        standalone.legalEntities[0].tenantId,
+      );
+    } finally {
+      storageService.setCurrentUserKey(previousUserKey);
+    }
+  });
+
   it("keeps exact deterministic totals and idempotent command results", async () => {
     const service = new DemoInvoicingService();
     const draft = await service.createInvoice(input, "demo-create-key");

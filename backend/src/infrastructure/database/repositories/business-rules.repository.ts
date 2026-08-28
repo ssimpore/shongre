@@ -26,6 +26,10 @@ export interface BusinessRulesRepository {
   getAccountAudience(
     accountId: string,
   ): Promise<"individual" | "professional" | "organization">;
+  canManageOrganization(
+    accountId: string,
+    organizationId: string,
+  ): Promise<boolean>;
   getActiveCatalog(marketCode: string): Promise<MonetizationCatalog | null>;
   getCatalogVersion(versionId: string): Promise<MonetizationCatalog | null>;
   listVersions(marketCode: string): Promise<CommercialConfigurationVersion[]>;
@@ -56,6 +60,10 @@ export interface BusinessRulesRepository {
   listOrders(limit?: number): Promise<MonetizationOrder[]>;
   listEntitlements(
     accountId?: string,
+    limit?: number,
+  ): Promise<ActiveEntitlement[]>;
+  listOrganizationEntitlements(
+    organizationId: string,
     limit?: number,
   ): Promise<ActiveEntitlement[]>;
   listSubscriptions(
@@ -241,6 +249,9 @@ const memory: MemoryState = {
 };
 
 export class DemoBusinessRulesRepository implements BusinessRulesRepository {
+  async canManageOrganization(_accountId: string, organizationId: string) {
+    return Boolean(organizationId);
+  }
   async getAccountAudience(accountId: string) {
     if (/org|organization|dealer|agency|school/i.test(accountId))
       return "organization" as const;
@@ -389,6 +400,7 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
             memory.entitlements.set(entitlementId, {
               id: entitlementId,
               accountId: order.accountId,
+              organizationId: order.organizationId,
               productId: line.productId,
               key: entitlement.key,
               value: entitlement.value,
@@ -407,6 +419,7 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
             memory.subscriptions.set(subscriptionId, {
               id: subscriptionId,
               accountId: order.accountId,
+              organizationId: order.organizationId,
               productId: line.productId,
               productVersionId: line.productVersionId,
               priceId: line.priceId,
@@ -470,6 +483,13 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     return [...memory.entitlements.values()]
       .filter((entry) => !accountId || entry.accountId === accountId)
       .sort((left, right) => right.startsAt.localeCompare(left.startsAt))
+      .slice(0, limit)
+      .map((entry) => structuredClone(entry));
+  }
+
+  async listOrganizationEntitlements(organizationId: string, limit = 100) {
+    return [...memory.entitlements.values()]
+      .filter((entry) => entry.organizationId === organizationId)
       .slice(0, limit)
       .map((entry) => structuredClone(entry));
   }
@@ -707,6 +727,7 @@ function subscriptionFromRow(row: any): MonetizationSubscription {
   return {
     id: String(row.id),
     accountId: String(row.account_id),
+    organizationId: row.organization_id || undefined,
     productId: String(row.product_id),
     productVersionId: row.product_version_id || undefined,
     priceId: row.price_id || undefined,
@@ -752,6 +773,23 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     return data?.account_type === "professional"
       ? ("professional" as const)
       : ("individual" as const);
+  }
+
+  async canManageOrganization(accountId: string, organizationId: string) {
+    const { data, error } = await this.client
+      .from("organization_members")
+      .select("role,status,permissions")
+      .eq("organization_id", organizationId)
+      .eq("user_id", accountId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (error) throw error;
+    return Boolean(
+      data &&
+      (data.role === "owner" ||
+        data.role === "admin" ||
+        data.permissions?.includes("subscription.manage.own")),
+    );
   }
 
   async getActiveCatalog(marketCode: string) {
@@ -869,6 +907,7 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         id: order.id,
         quote_id: order.quoteId,
         account_id: order.accountId,
+        organization_id: order.organizationId,
         snapshot_hash: order.snapshotHash,
         currency: order.total.currency,
         total_minor: order.total.amountMinor,
@@ -926,6 +965,31 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     return (data || []).map((row: any): ActiveEntitlement => ({
       id: String(row.id),
       accountId: String(row.account_id),
+      organizationId: row.organization_id || undefined,
+      productId: String(row.product_id),
+      key: normalizeEducationEntitlementKey(String(row.entitlement_key)),
+      value: row.entitlement_value,
+      sourceOrderId: row.source_order_id || undefined,
+      startsAt: String(row.starts_at),
+      endsAt: row.ends_at || undefined,
+      status: row.status,
+      verticalId: normalizeBusinessVerticalCode(row.vertical_id || undefined),
+      mergePolicy: row.merge_policy || undefined,
+    }));
+  }
+
+  async listOrganizationEntitlements(organizationId: string, limit = 100) {
+    const { data, error } = await this.client
+      .from("monetization_entitlements")
+      .select("*")
+      .eq("organization_id", organizationId)
+      .order("starts_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data || []).map((row: any): ActiveEntitlement => ({
+      id: String(row.id),
+      accountId: String(row.account_id),
+      organizationId,
       productId: String(row.product_id),
       key: normalizeEducationEntitlementKey(String(row.entitlement_key)),
       value: row.entitlement_value,

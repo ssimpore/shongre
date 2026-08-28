@@ -1995,6 +1995,7 @@ export interface Database {
       monetization_quotes: GeneratedTable<{
         id: string;
         account_id: string;
+        organization_id: string | null;
         configuration_version_id: string;
         market_code: string;
         currency: string;
@@ -2032,6 +2033,7 @@ export interface Database {
         id: string;
         quote_id: string;
         account_id: string;
+        organization_id: string | null;
         snapshot_hash: string;
         currency: string;
         total_minor: number;
@@ -2070,6 +2072,7 @@ export interface Database {
       monetization_entitlements: GeneratedTable<{
         id: string;
         account_id: string;
+        organization_id: string | null;
         product_id: string;
         entitlement_key: string;
         entitlement_value: Json;
@@ -2093,6 +2096,7 @@ export interface Database {
       monetization_subscriptions: GeneratedTable<{
         id: string;
         account_id: string;
+        organization_id: string | null;
         product_id: string;
         source_order_id: string;
         status:

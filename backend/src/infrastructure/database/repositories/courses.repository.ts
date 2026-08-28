@@ -1448,7 +1448,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     if (query.query)
       request = request.textSearch("search_vector", query.query, {
         type: "websearch",
-        config: "french",
+        config: "simple",
       });
     request = request
       .order(

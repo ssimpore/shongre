@@ -24,6 +24,9 @@ class HttpSolutionsService implements SolutionsServiceContract {
   updateSolution(): ReturnType<SolutionsServiceContract["updateSolution"]> {
     return Promise.reject(this.unavailable());
   }
+  reorderSolutions(): ReturnType<SolutionsServiceContract["reorderSolutions"]> {
+    return Promise.reject(this.unavailable());
+  }
   transitionLifecycle(): ReturnType<SolutionsServiceContract["transitionLifecycle"]> {
     return Promise.reject(this.unavailable());
   }
@@ -33,4 +36,3 @@ class HttpSolutionsService implements SolutionsServiceContract {
 }
 
 export const httpSolutionsService = new HttpSolutionsService();
-

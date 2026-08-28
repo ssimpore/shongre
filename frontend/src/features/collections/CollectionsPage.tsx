@@ -375,26 +375,30 @@ export const CollectionsPage: React.FC = () => {
 
             {/* Collections Grid */}
             {visibleCollections.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+              <div
+                className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5"
+                data-testid="collections-grid"
+              >
                 {visibleCollections.map((col) => (
                   <Link
                     key={col.id}
                     to={`/collections/${col.slug}`}
-                    className="group relative flex flex-col justify-between bg-white rounded-3xl border border-stone-200/90 hover:border-stone-300 shadow-sm hover:shadow-xl transition-all duration-normal overflow-hidden active:scale-95"
+                    aria-label={col.title}
+                    className="group relative flex h-48 min-w-0 flex-col justify-between overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-95"
                   >
                     {/* Media Well */}
-                    <div className="relative w-full h-52 overflow-hidden bg-stone-100 shrink-0">
+                    <div className="relative h-24 w-full shrink-0 overflow-hidden bg-bg-subtle">
                       <Image
                         src={col.coverImageUrl}
                         alt={col.title}
-                        sizes={IMAGE_SIZES.card}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow ease-out-soft"
+                        sizes={IMAGE_SIZES.compact}
+                        className="h-full w-full object-cover motion-surface group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
 
-                      <div className="absolute top-3 left-3 z-raised">
+                      <div className="absolute inset-x-2 top-2 z-raised">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border shadow-xs backdrop-blur-xs ${
+                          className={`inline-flex max-w-full items-center truncate rounded-pill border px-2 py-0.5 text-micro font-bold shadow-xs backdrop-blur-xs ${
                             BADGE_STYLES[col.badge.variant] ||
                             BADGE_STYLES.terracotta
                           }`}
@@ -403,39 +407,27 @@ export const CollectionsPage: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="absolute bottom-3 left-3 z-raised">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-black/65 backdrop-blur-xs text-white text-xs font-semibold">
-                          <Layers className="w-icon-sm h-icon-sm text-stone-300" />
-                          {col.itemCountLabel}
+                      <div className="absolute inset-x-2 bottom-2 z-raised">
+                        <span className="inline-flex max-w-full items-center gap-1 rounded-control bg-black/65 px-2 py-0.5 text-micro font-semibold text-white backdrop-blur-xs">
+                          <Layers className="h-icon-xs w-icon-xs shrink-0 text-stone-300" />
+                          <span className="truncate">{col.itemCountLabel}</span>
                         </span>
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                      <div className="space-y-2">
-                        <h2 className="text-lg font-bold text-stone-900 group-hover:text-primary transition-colors leading-snug">
-                          {col.title}
-                        </h2>
-                        <p className="text-xs sm:text-sm text-stone-500 line-clamp-2 leading-relaxed">
-                          {col.subtitle}
-                        </p>
-                      </div>
+                    <div className="flex flex-1 flex-col justify-between gap-3 p-3">
+                      <h2 className="line-clamp-2 text-sm font-bold leading-snug text-text-main motion-interactive group-hover:text-primary">
+                        {col.shortTitle}
+                      </h2>
 
-                      <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {col.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="text-xs font-medium text-stone-600 bg-stone-100 group-hover:bg-stone-200/80 px-2 py-0.5 rounded-md transition-colors"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                      <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2">
+                        <span className="min-w-0 flex-1 truncate rounded-control bg-bg-subtle px-2 py-0.5 text-micro font-medium text-text-secondary motion-interactive group-hover:bg-primary-light">
+                          {col.tags[0]}
+                        </span>
 
-                        <div className="w-8 h-8 rounded-full bg-stone-100 group-hover:bg-primary group-hover:text-white text-stone-600 flex items-center justify-center transition-colors shrink-0">
-                          <ChevronRight className="w-icon-md h-icon-md group-hover:translate-x-0.5 transition-transform" />
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-text-secondary motion-interactive group-hover:bg-primary group-hover:text-white">
+                          <ChevronRight className="h-icon-sm w-icon-sm motion-interactive group-hover:translate-x-0.5" />
                         </div>
                       </div>
                     </div>

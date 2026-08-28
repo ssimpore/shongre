@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import type {
   CrmAccount,
@@ -114,6 +114,7 @@ export function useProspectingWorkspaceController(
   const view =
     routedView ?? (rawView && VIEWS.has(rawView) ? rawView : defaultView);
   const [query, setQuery] = useState(queryParam);
+  const previousQueryParamRef = useRef(queryParam);
   const [profiles, setProfiles] = useState<ProspectingProfile[]>([]);
   const [sources, setSources] = useState<LeadSourceDefinition[]>([]);
   const [usage, setUsage] = useState<ProspectingUsage | null>(null);
@@ -248,15 +249,17 @@ export function useProspectingWorkspaceController(
   }, [reload]);
 
   useEffect(() => {
+    const queryParamChanged = previousQueryParamRef.current !== queryParam;
+    previousQueryParamRef.current = queryParam;
     setQuery(queryParam);
-    if (discoverySummary && discoverySummary.query !== queryParam.trim()) {
+    if (queryParamChanged) {
       setCandidates([]);
       setSelectedCandidateId(null);
       setBrief(null);
       setHasSearched(false);
       setDiscoverySummary(null);
     }
-  }, [discoverySummary, queryParam]);
+  }, [queryParam]);
 
   const setView = useCallback(
     (next: string) => {
@@ -292,6 +295,11 @@ export function useProspectingWorkspaceController(
       const updated = new URLSearchParams(params);
       if (activeQuery) updated.set("q", activeQuery);
       else updated.delete("q");
+      // The demo adapter can resolve before React Router commits the URL update.
+      // Mark this query as the controller's own navigation so the synchronization
+      // effect does not erase the just-returned discovery as if Back/Forward had
+      // changed the search externally.
+      previousQueryParamRef.current = activeQuery;
       if (routeBasePath) {
         updated.delete("view");
         const search = updated.toString();

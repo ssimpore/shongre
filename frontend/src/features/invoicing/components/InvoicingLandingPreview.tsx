@@ -164,7 +164,7 @@ export function InvoicingLandingPreview({
           </div>
 
           <div className="mt-4 overflow-hidden rounded-control border border-border-base">
-            <div className="grid grid-cols-3 gap-2 bg-bg-subtle px-3 py-2 text-micro font-bold uppercase tracking-wide text-text-muted">
+            <div className="grid grid-cols-3 gap-2 bg-bg-subtle px-3 py-2 text-micro font-bold uppercase tracking-wide text-text-secondary">
               <span>{labels.invoiceNumber}</span>
               <span>{labels.customer}</span>
               <span className="text-right">{labels.amount}</span>

@@ -37,6 +37,7 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/professionnels", name: "pro-directory", persona: "guest" },
   { path: "/solutions-pro", name: "pro-plans", persona: "guest" },
   { path: "/solutions", name: "solutions-catalog", persona: "guest" },
+  { path: "/facturation", name: "facturation-product", persona: "guest" },
   {
     path: "/solutions/facturation",
     name: "solutions-facturation-detail",
@@ -143,6 +144,21 @@ export const SELLER_ROUTES: RouteUnderTest[] = [
 ];
 
 export const PRO_ROUTES: RouteUnderTest[] = [
+  {
+    path: "/facturation/activation",
+    name: "facturation-activation",
+    persona: "pro_immo",
+  },
+  {
+    path: "/facturation/onboarding",
+    name: "facturation-onboarding",
+    persona: "standalone_facturation",
+  },
+  {
+    path: "/facturation/app",
+    name: "facturation-workspace",
+    persona: "standalone_facturation",
+  },
   {
     path: "/compte/pro/finances",
     name: "pro-organization-finance",

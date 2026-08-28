@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
-import { Menu, Store, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, Menu, Store, X } from "lucide-react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
+import { services } from "../../api/client/service-registry";
 import { Container, SkipLink } from "../../design-system";
+import { SOLUTION_LIFECYCLE_PRESENTATION } from "../../domains/solutions/solutions.presentation";
+import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { CookieConsent } from "../../app/layouts/CookieConsent";
@@ -10,6 +14,8 @@ import { DemoRoleSwitcher } from "../../app/layouts/DemoRoleSwitcher";
 import { PreferencesModal } from "../../app/layouts/PreferencesModal";
 import { useConsent } from "../../app/providers/ConsentProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { SolutionIcon } from "./SolutionIcon";
 import "./solutions.css";
 
 const navClass =
@@ -17,8 +23,14 @@ const navClass =
 
 function SolutionsHeader() {
   const location = useLocation();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const [open, setOpen] = useState(false);
+  const { activeMarket, currentLocale } = useMarketLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [solutionMenuOpen, setSolutionMenuOpen] = useState(false);
+  const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
+  const solutionMenuRef = useRef<HTMLDivElement>(null);
+  const solutionTriggerRef = useRef<HTMLButtonElement>(null);
   const rootHref = applicationHref("solutions");
   const marketplaceHref = applicationHref("marketplace");
   const accountHref = applicationHref(
@@ -26,15 +38,62 @@ function SolutionsHeader() {
     isAuthenticated ? "/compte" : "/connexion",
   );
 
-  useEffect(() => setOpen(false), [location.pathname]);
   useEffect(() => {
-    if (!open) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+    setMobileMenuOpen(false);
+    setSolutionMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void services.solutions
+      .listPublicSolutions({
+        marketCode: activeMarket.code,
+        language: currentLocale,
+      })
+      .then((values) => {
+        if (!cancelled) setSolutions(values);
+      })
+      .catch(() => {
+        if (!cancelled) setSolutions([]);
+      });
+    return () => {
+      cancelled = true;
     };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [open]);
+  }, [activeMarket.code, currentLocale]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen && !solutionMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setMobileMenuOpen(false);
+      setSolutionMenuOpen(false);
+      if (solutionMenuOpen) {
+        requestAnimationFrame(() => solutionTriggerRef.current?.focus());
+      }
+    };
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        solutionMenuRef.current &&
+        !solutionMenuRef.current.contains(event.target as Node)
+      ) {
+        setSolutionMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => {
+      window.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+    };
+  }, [mobileMenuOpen, solutionMenuOpen]);
+
+  const focusFirstSolution = () => {
+    requestAnimationFrame(() => {
+      solutionMenuRef.current
+        ?.querySelector<HTMLElement>("#solutions-product-menu a")
+        ?.focus();
+    });
+  };
 
   return (
     <header className="sticky top-0 z-header border-b border-border-base bg-white">
@@ -51,7 +110,95 @@ function SolutionsHeader() {
           </span>
         </a>
         <nav className="hidden items-center gap-7 md:flex" aria-label="Navigation Solutions">
-          <a href={`${rootHref}#catalogue`} className={navClass}>Solutions</a>
+          <div
+            ref={solutionMenuRef}
+            className="relative"
+            onMouseEnter={() => setSolutionMenuOpen(true)}
+            onMouseLeave={() => {
+              if (
+                !solutionMenuRef.current?.contains(document.activeElement)
+              ) {
+                setSolutionMenuOpen(false);
+              }
+            }}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) {
+                setSolutionMenuOpen(false);
+              }
+            }}
+          >
+            <button
+              ref={solutionTriggerRef}
+              type="button"
+              className={`${navClass} gap-1`}
+              aria-expanded={solutionMenuOpen}
+              aria-controls="solutions-product-menu"
+              onClick={() => setSolutionMenuOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  setSolutionMenuOpen(true);
+                  focusFirstSolution();
+                }
+              }}
+            >
+              Solutions
+              <ChevronDown
+                className={`h-icon-xs w-icon-xs transition-transform duration-fast ${solutionMenuOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            {solutionMenuOpen ? (
+              <div className="absolute left-1/2 top-full w-80 -translate-x-1/2 pt-2">
+                <div
+                  id="solutions-product-menu"
+                  aria-label={t("solutions.header.chooseSolution")}
+                  className="rounded-card border border-border-base bg-bg-surface p-2 shadow-dropdown"
+                >
+                  <div className="space-y-1">
+                    {solutions.map((solution) => {
+                      const lifecycle =
+                        SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle];
+                      return (
+                        <a
+                          key={solution.id}
+                          href={applicationHref("solutions", `/${solution.slug}`)}
+                          className="flex min-h-control-touch items-center gap-3 rounded-control px-3 py-2 text-left hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                        >
+                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
+                            <SolutionIcon
+                              icon={solution.icon}
+                              className="h-icon-md w-icon-md"
+                            />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center justify-between gap-3">
+                              <span className="truncate text-sm font-bold text-text-main">
+                                {solution.name.replace(/^Shongre\s+/, "")}
+                              </span>
+                              <span className="shrink-0 text-micro font-semibold text-text-muted">
+                                {lifecycle.label}
+                              </span>
+                            </span>
+                            <span className="mt-0.5 block truncate text-xs text-text-secondary">
+                              {solution.shortDescription}
+                            </span>
+                          </span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                  <a
+                    href={`${rootHref}#catalogue`}
+                    className="mt-2 flex min-h-control-touch items-center justify-center rounded-control border-t border-border-subtle px-3 pt-3 text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    {t("solutions.header.seeAll")}
+                  </a>
+                </div>
+              </div>
+            ) : null}
+          </div>
           <a href={`${rootHref}#ecosysteme`} className={navClass}>Écosystème</a>
         </nav>
         <div className="hidden items-center gap-5 md:flex">
@@ -76,18 +223,35 @@ function SolutionsHeader() {
           <button
             type="button"
             className="inline-flex h-control-touch w-control-touch items-center justify-center rounded-control border border-border-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-            aria-expanded={open}
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileMenuOpen}
             aria-controls="solutions-mobile-menu"
-            onClick={() => setOpen((value) => !value)}
+            onClick={() => setMobileMenuOpen((value) => !value)}
           >
-            {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </div>
       </Container>
-      <div id="solutions-mobile-menu" className={`${open ? "block" : "hidden"} border-t border-border-base bg-white md:hidden`}>
+      <div id="solutions-mobile-menu" className={`${mobileMenuOpen ? "block" : "hidden"} border-t border-border-base bg-white md:hidden`}>
         <Container className="flex flex-col divide-y divide-border-subtle py-2">
-          <a href={`${rootHref}#catalogue`} className="touch-row py-2 text-sm font-bold">Solutions</a>
+          <div className="py-2">
+            <a href={`${rootHref}#catalogue`} className="touch-row text-sm font-bold">Solutions</a>
+            <div className="mt-1 grid gap-1 pl-3">
+              {solutions.map((solution) => (
+                <a
+                  key={solution.id}
+                  href={applicationHref("solutions", `/${solution.slug}`)}
+                  className="touch-row flex items-center gap-2 rounded-control text-xs font-semibold text-text-secondary hover:bg-bg-subtle hover:text-primary"
+                >
+                  <SolutionIcon
+                    icon={solution.icon}
+                    className="h-icon-sm w-icon-sm text-primary"
+                  />
+                  {solution.name.replace(/^Shongre\s+/, "")}
+                </a>
+              ))}
+            </div>
+          </div>
           <a href={`${rootHref}#ecosysteme`} className="touch-row py-2 text-sm font-bold">Écosystème</a>
           <a href={marketplaceHref} className="touch-row py-2 text-sm font-bold">Plateforme Shongre</a>
         </Container>

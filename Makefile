@@ -16,7 +16,7 @@ SHELL := /bin/bash
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
 	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy-dev deploy-staging deploy-prod rollback remote-health \
-	operations-tooling-check performance-smoke storage-restore-test observability-evidence \
+	operations-tooling-check performance-smoke storage-restore-test observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
@@ -355,6 +355,8 @@ performance-smoke: ## Measure hosted API success-rate and p95 budgets and write 
 	@node scripts/load-smoke.mjs
 observability-evidence: ## Prove request IDs and record confirmed drain, trace, alert, and on-call evidence
 	@node scripts/verify-observability.mjs
+edge-functions-evidence: ## Prove only reviewed Supabase Edge Functions are deployed
+	@node scripts/verify-edge-functions.mjs
 secret-scan:
 	@node scripts/scan-tracked-secrets.mjs
 hostname-check: ## Reject environment-specific hostnames in runtime source

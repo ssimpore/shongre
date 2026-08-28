@@ -52,6 +52,12 @@ docker pull "$BACKEND_IMAGE"
 docker pull cloudflare/cloudflared:2026.5.2@sha256:12ff5c6992a9863db4da270746af7c244bcaee49353039af8104268a18d6c4f0
 
 if [[ "$mode" == "deploy" ]]; then
+  if [[ "$environment" == "production" ]]; then
+    shongre_info "validating production configuration and restricted release evidence"
+    node "$root/scripts/production-readiness.mjs" --require-evidence \
+      --backend-env-file "$SHONGRE_RUNTIME_ENV_FILE" \
+      --frontend-env-file "$SHONGRE_FRONTEND_ENV_FILE"
+  fi
   shongre_info "running the release-bundled forward migration exactly once"
   "${compose[@]}" run --rm --no-deps \
     -e "MIGRATION_APPROVAL=$expected_environment_id" \
@@ -60,7 +66,24 @@ else
   shongre_info "application rollback leaves the database schema forward-compatible and unchanged"
 fi
 
+default_replicas=1
+if [[ "$environment" == "staging" || "$environment" == "production" ]]; then
+  default_replicas=2
+fi
+backend_replicas="${BACKEND_REPLICAS:-$default_replicas}"
+frontend_replicas="${FRONTEND_REPLICAS:-$default_replicas}"
+worker_replicas="${WORKER_REPLICAS:-$default_replicas}"
+for replica_count in "$backend_replicas" "$frontend_replicas" "$worker_replicas"; do
+  [[ "$replica_count" =~ ^[1-9][0-9]*$ ]] || {
+    shongre_fail "application replica counts must be positive integers"
+    exit 1
+  }
+done
+
 "${compose[@]}" up --detach --no-build --remove-orphans --wait \
+  --scale "backend=$backend_replicas" \
+  --scale "worker=$worker_replicas" \
+  --scale "frontend=$frontend_replicas" \
   --scale "cloudflared=${CLOUDFLARED_REPLICAS:-2}" \
   backend worker frontend cloudflared
 "${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
@@ -72,5 +95,8 @@ COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME" SHONGRE_ENV="$environment" \
   "$root/scripts/tunnel.sh" health
 
 install -m 0644 "$manifest_path" "$state_root/current-release.json"
-printf '%s\t%s\t%s\t%s\n' "$(date -u +%FT%TZ)" "$mode" "$RELEASE_SHA" "${GITHUB_ACTOR:-local}" >> "$state_root/deployments.log"
+printf '%s\t%s\t%s\t%s\tbackend=%s\tworker=%s\tfrontend=%s\n' \
+  "$(date -u +%FT%TZ)" "$mode" "$RELEASE_SHA" "${GITHUB_ACTOR:-local}" \
+  "$backend_replicas" "$worker_replicas" "$frontend_replicas" \
+  >> "$state_root/deployments.log"
 shongre_pass "$mode completed for $environment at the exact release digests"

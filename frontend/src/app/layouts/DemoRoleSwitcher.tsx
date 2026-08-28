@@ -278,8 +278,13 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
    * personas fall back to their real platform label instead of appearing as a
    * signed-out visitor.
    */
-  const personaLabel = (persona: DemoPersona) =>
-    persona.labelKey ? t(persona.labelKey) : (persona.label ?? persona.userKey);
+  const personaLabel = (persona: DemoPersona) => {
+    const configuredLabel = persona.labelKey
+      ? t(persona.labelKey)
+      : (persona.label ?? persona.userKey);
+    const position = DEMO_PERSONAS.indexOf(persona) + 1;
+    return `${position}. ${configuredLabel.replace(/^\d+\.\s*/, "")}`;
+  };
   const personaDescription = (persona: DemoPersona) =>
     persona.descKey ? t(persona.descKey) : (persona.desc ?? "");
   const matchedRole = DEMO_PERSONAS.find((persona) =>
@@ -366,7 +371,9 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
           <span className="hidden sm:inline text-stone-400">
-            {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours")}
+            {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
+              count: DEMO_PERSONAS.length,
+            })}
           </span>
           <DataModeSettingsControl />
         </div>

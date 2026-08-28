@@ -343,6 +343,14 @@ export interface MessagePage {
   };
 }
 
+export interface ConversationPage {
+  items: Conversation[];
+  pageInfo: {
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
+}
+
 export interface NotificationItem {
   id: string;
   userId: string;

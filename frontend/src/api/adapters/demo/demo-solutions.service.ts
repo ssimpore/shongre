@@ -167,6 +167,7 @@ export class DemoSolutionsService implements SolutionsServiceContract {
     const language = options.language?.toLowerCase();
     return (await this.values())
       .filter((solution) => PUBLIC_SOLUTION_LIFECYCLES.includes(solution.lifecycle))
+      .filter((solution) => solution.catalogVisible)
       .filter((solution) => !market || solution.markets.includes(market))
       .filter(
         (solution) =>
@@ -255,6 +256,34 @@ export class DemoSolutionsService implements SolutionsServiceContract {
     values[index] = updated;
     this.store.save(values);
     return clone(updated);
+  }
+
+  async reorderSolutions(
+    solutionIds: readonly string[],
+    actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition[]> {
+    assertAdmin(actor);
+    const values = this.store.list();
+    const uniqueIds = new Set(solutionIds);
+    const knownIds = new Set(values.map((solution) => solution.id));
+    if (
+      solutionIds.length !== values.length ||
+      uniqueIds.size !== values.length ||
+      solutionIds.some((solutionId) => !knownIds.has(solutionId))
+    ) {
+      throw new Error(
+        "L’ordre doit référencer chaque solution exactement une fois.",
+      );
+    }
+
+    const byId = new Map(values.map((solution) => [solution.id, solution]));
+    const reordered = solutionIds.map((solutionId, index) => ({
+      ...byId.get(solutionId)!,
+      sortOrder: (index + 1) * 10,
+      updatedAt: DEMO_NOW,
+    }));
+    this.store.save(reordered);
+    return clone(reordered);
   }
 
   async transitionLifecycle(

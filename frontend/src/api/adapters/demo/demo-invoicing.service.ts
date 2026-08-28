@@ -215,6 +215,110 @@ function fixtureInvoice(options: {
   };
 }
 
+interface DemoInvoicingState {
+  legalEntities: Map<string, InvoicingLegalEntity>;
+  parties: Map<string, InvoicingParty>;
+  invoices: Map<string, InvoicingInvoice>;
+  documents: Map<string, InvoicingDocument>;
+  createKeys: Map<string, string>;
+  finalizeKeys: Map<string, string>;
+  counter: number;
+}
+
+function createStateForCurrentOrganization(): DemoInvoicingState {
+  const activeUser = storageService.getCurrentUser();
+  const currentUser =
+    activeUser?.accountType === "professional" ? activeUser : null;
+  const accountKey = currentUser?.id ?? "guest";
+  const tenantId = currentUser
+    ? `demo-invoicing-tenant-${accountKey}`
+    : DEMO_INVOICING_TENANT_ID;
+  const entityId = currentUser
+    ? `demo-invoicing-entity-${accountKey}`
+    : DEMO_INVOICING_ENTITY_ID;
+  const customerId = currentUser
+    ? `demo-invoicing-customer-${accountKey}`
+    : DEMO_INVOICING_CUSTOMER_ID;
+  const legalName = currentUser?.companyName ?? "Atelier Horizon";
+  const countryCode = currentUser?.country ?? entity.countryCode;
+  const scopedEntity: InvoicingLegalEntity = {
+    ...structuredClone(entity),
+    id: entityId,
+    tenantId,
+    legalName,
+    tradingName: legalName,
+    registeredAddress: {
+      ...entity.registeredAddress,
+      postalCode:
+        currentUser?.postalCode ?? entity.registeredAddress.postalCode,
+      city: currentUser?.city ?? entity.registeredAddress.city,
+      countryCode,
+    },
+  };
+  const scopedCustomer: InvoicingParty = {
+    ...structuredClone(customer),
+    id: customerId,
+    tenantId,
+  };
+  const scopedInvoice = (value: InvoicingInvoice): InvoicingInvoice => ({
+    ...value,
+    tenantId,
+    legalEntityId: entityId,
+    customerPartyId: customerId,
+  });
+
+  return {
+    legalEntities: new Map([[entityId, scopedEntity]]),
+    parties: new Map([[customerId, scopedCustomer]]),
+    invoices: new Map([
+      [
+        "demo-invoice-finalized",
+        scopedInvoice(
+          fixtureInvoice({
+            id: "demo-invoice-finalized",
+            number: "DEMO-FAC-2026-000001",
+            customerName: "Studio Mercure",
+            issueDate: "2026-08-19",
+            dueDate: "2026-09-18",
+            totalMinor: 180000,
+            state: "FINALIZED",
+          }),
+        ),
+      ],
+      [
+        "demo-invoice-draft-2",
+        scopedInvoice(
+          fixtureInvoice({
+            id: "demo-invoice-draft-2",
+            customerName: "Créations Alpines",
+            issueDate: "2026-08-20",
+            dueDate: "2026-09-19",
+            totalMinor: 120000,
+            state: "DRAFT",
+          }),
+        ),
+      ],
+      [
+        "demo-invoice-draft-3",
+        scopedInvoice(
+          fixtureInvoice({
+            id: "demo-invoice-draft-3",
+            customerName: "Studio Lumière",
+            issueDate: "2026-08-21",
+            dueDate: "2026-09-20",
+            totalMinor: 1800,
+            state: "DRAFT",
+          }),
+        ),
+      ],
+    ]),
+    documents: new Map(),
+    createKeys: new Map(),
+    finalizeKeys: new Map(),
+    counter: 4,
+  };
+}
+
 export class DemoInvoicingService implements InvoicingServiceContract {
   async activateForCurrentOrganization(marketCode: string) {
     await simulateNetworkDelay();
@@ -235,48 +339,50 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     return activatedWorkspace.tenants[0].productAccess;
   }
 
-  private legalEntities = new Map([[entity.id, structuredClone(entity)]]);
-  private parties = new Map([[customer.id, structuredClone(customer)]]);
-  private invoices = new Map<string, InvoicingInvoice>([
-    [
-      "demo-invoice-finalized",
-      fixtureInvoice({
-        id: "demo-invoice-finalized",
-        number: "DEMO-FAC-2026-000001",
-        customerName: "Studio Mercure",
-        issueDate: "2026-08-19",
-        dueDate: "2026-09-18",
-        totalMinor: 180000,
-        state: "FINALIZED",
-      }),
-    ],
-    [
-      "demo-invoice-draft-2",
-      fixtureInvoice({
-        id: "demo-invoice-draft-2",
-        customerName: "Créations Alpines",
-        issueDate: "2026-08-20",
-        dueDate: "2026-09-19",
-        totalMinor: 120000,
-        state: "DRAFT",
-      }),
-    ],
-    [
-      "demo-invoice-draft-3",
-      fixtureInvoice({
-        id: "demo-invoice-draft-3",
-        customerName: "Studio Lumière",
-        issueDate: "2026-08-21",
-        dueDate: "2026-09-20",
-        totalMinor: 1800,
-        state: "DRAFT",
-      }),
-    ],
-  ]);
-  private documents = new Map<string, InvoicingDocument>();
-  private createKeys = new Map<string, string>();
-  private finalizeKeys = new Map<string, string>();
-  private counter = 4;
+  private readonly organizationStates = new Map<string, DemoInvoicingState>();
+
+  private currentState(): DemoInvoicingState {
+    const currentUser = storageService.getCurrentUser();
+    const accountKey =
+      currentUser?.accountType === "professional" ? currentUser.id : "guest";
+    const existing = this.organizationStates.get(accountKey);
+    if (existing) return existing;
+    const created = createStateForCurrentOrganization();
+    this.organizationStates.set(accountKey, created);
+    return created;
+  }
+
+  private get legalEntities() {
+    return this.currentState().legalEntities;
+  }
+
+  private get parties() {
+    return this.currentState().parties;
+  }
+
+  private get invoices() {
+    return this.currentState().invoices;
+  }
+
+  private get documents() {
+    return this.currentState().documents;
+  }
+
+  private get createKeys() {
+    return this.currentState().createKeys;
+  }
+
+  private get finalizeKeys() {
+    return this.currentState().finalizeKeys;
+  }
+
+  private get counter() {
+    return this.currentState().counter;
+  }
+
+  private set counter(value: number) {
+    this.currentState().counter = value;
+  }
 
   async getWorkspace(marketCode: string): Promise<InvoicingWorkspace> {
     await simulateNetworkDelay(80);
@@ -291,22 +397,30 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     const recentInvoices = [...this.invoices.values()].filter(
       (invoice) => invoice.marketCode === marketCode,
     );
+    const currentUser = storageService.getCurrentUser();
+    const activeEntity = legalEntities[0];
+    const tenantId =
+      activeEntity?.tenantId ??
+      `demo-invoicing-tenant-${currentUser?.id ?? "guest"}`;
+    const productOnly =
+      currentUser?.enabledProducts?.length === 1 &&
+      currentUser.enabledProducts[0] === "facturation";
     return {
       scope: "MULTI_MARKET_SHARED",
       activeMarketCode: marketCode,
       tenants: [
         {
-          id: DEMO_INVOICING_TENANT_ID,
-          legalName: "Atelier Horizon",
-          countryCode: "FR",
+          id: tenantId,
+          legalName: currentUser?.companyName ?? "Atelier Horizon",
+          countryCode: currentUser?.country ?? "FR",
           membershipRole: "owner",
           capabilities: ["invoice.read", "invoice.create", "invoice.finalize"],
           productAccess: {
-            organizationId: DEMO_INVOICING_TENANT_ID,
+            organizationId: tenantId,
             productId: "facturation",
             entitlementKey: "invoicing.enabled",
             status: "trialing",
-            accessMode: "STANDALONE",
+            accessMode: productOnly ? "STANDALONE" : "ADD_ON",
             planName: "Shongre Facturation — démonstration",
             source: "trial",
             activatedAt: "2026-08-15T09:00:00.000Z",

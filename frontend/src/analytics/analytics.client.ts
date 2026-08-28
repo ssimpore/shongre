@@ -21,11 +21,12 @@ import { PostHogAnalyticsProvider } from "./providers/posthog.provider";
 
 const ANONYMOUS_ID_KEY = "shongre_analytics_anonymous_id_v1";
 const SESSION_ID_KEY = "shongre_analytics_session_id_v1";
+let fallbackIdSequence = 0;
 
 function randomId(prefix: string): string {
   const id =
     globalThis.crypto?.randomUUID?.() ??
-    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    `${Date.now().toString(36)}-${(++fallbackIdSequence).toString(36)}`;
   return `${prefix}_${id}`;
 }
 

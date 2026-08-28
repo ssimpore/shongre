@@ -49,6 +49,8 @@ import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { captureServerException } from "../../infrastructure/observability/sentry.js";
 import { storageService } from "../../infrastructure/storage/storage-service.js";
+import { apiRateLimiter } from "../../infrastructure/security/api-rate-limiter.js";
+import { providerWebhookInbox } from "../../infrastructure/queue/provider-webhook-inbox.js";
 import { Permission } from "../../shared/auth/rbac.js";
 import {
   Principal,
@@ -57,6 +59,7 @@ import {
   requirePermission,
   requireOwnership,
   resolveOwnerId,
+  isAuthenticated,
 } from "../../shared/auth/principal.js";
 import { extractBearerToken } from "../../shared/auth/tokens.js";
 import {
@@ -70,6 +73,7 @@ import {
   setSessionCookies,
 } from "../../shared/auth/http-session.js";
 import { verifyStripeSignature } from "../../integrations/stripe/webhook-signature.js";
+import { stripeWebhookDispatcher } from "../../integrations/stripe/stripe-webhook-dispatcher.js";
 import { verifyComplianceWebhookSignature } from "../../integrations/providers/compliance-webhook-signature.js";
 import { config } from "../../app/config/index.js";
 import type {
@@ -324,14 +328,13 @@ export class ApiV1Router {
     this.addRoute("GET", "/auth/me", PUBLIC, async ({ principal }) => {
       const user = await authService.getCurrentUser(principal);
       if (!user) return null;
-      const facturationAccess =
-        await invoicingService.productAccessForUser(user.id);
+      const facturationAccess = await invoicingService.productAccessForUser(
+        user.id,
+      );
       const facturationEnabled = facturationAccess.length > 0;
       const facturationOnly =
         facturationEnabled &&
-        facturationAccess.every(
-          (access) => access.accessMode === "STANDALONE",
-        );
+        facturationAccess.every((access) => access.accessMode === "STANDALONE");
       const baselineProducts =
         user.enabledProducts ??
         (facturationOnly ? ([] as const) : (["marketplace"] as const));
@@ -2102,6 +2105,35 @@ export class ApiV1Router {
           principal.userId,
         ),
     );
+    this.addRoute(
+      "GET",
+      "/admin/countries/:code/changes",
+      permission("market.manage"),
+      async ({ params }) =>
+        marketsService.listCountryConfigurationChanges(params.code),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/countries/:code/changes/:id/approve",
+      permission("market.configure"),
+      async ({ principal, params, body }) =>
+        marketsService.approveCountryConfigurationChange(
+          params.id,
+          principal.userId,
+          body,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/countries/:code/changes/:id/reject",
+      permission("market.configure"),
+      async ({ principal, params, body }) =>
+        marketsService.rejectCountryConfigurationChange(
+          params.id,
+          principal.userId,
+          body,
+        ),
+    );
 
     // --------------------------------------------------------------------------
     // ORDERS & PAYMENT LIFECYCLE ROUTES
@@ -2805,8 +2837,11 @@ export class ApiV1Router {
       "GET",
       "/messaging/conversations",
       permission("message.read.own"),
-      async ({ principal }) =>
-        messagingService.getUserConversations(principal.userId),
+      async ({ principal, query }) =>
+        messagingService.getUserConversations(principal.userId, {
+          cursor: query.get("cursor") || undefined,
+          limit: Number(query.get("limit") || 50),
+        }),
     );
     this.addRoute(
       "POST",
@@ -4468,50 +4503,37 @@ export class ApiV1Router {
         });
       }
 
-      const auto = await autoService.handleProviderWebhook(
-        "stripe",
+      const eventId = String(body?.id || "").trim();
+      const eventType = String(body?.type || "").trim();
+      if (!eventId || !eventType) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Événement Stripe incomplet.",
+        });
+      }
+      if (config.dataMode === "database") {
+        const status = await providerWebhookInbox.enqueue({
+          provider: "stripe",
+          eventId,
+          eventType,
+          payload: body,
+          rawBody: rawBody ?? "",
+        });
+        logger.info("stripe_webhook_enqueued", { eventId, eventType, status });
+        return { received: true, queued: true, status };
+      }
+
+      // Demo mode remains deterministic and self-contained: the API and worker
+      // are separate processes, so a process-local queue would lose events.
+      const result = await stripeWebhookDispatcher.dispatch(
         body,
         rawBody ?? "",
       );
-      const realEstate = await realEstateService.handleProviderWebhook(
-        "stripe",
-        body,
-        rawBody ?? "",
-      );
-      const monetization = await businessRulesService.handleStripeWebhook(
-        body,
-        rawBody ?? "",
-      );
-      const orders = await ordersService.handleStripeWebhook(
-        body,
-        rawBody ?? "",
-      );
-      const identityCompliance = String(body?.type || "").startsWith(
-        "identity.verification_session.",
-      )
-        ? await complianceService.handleProviderWebhook({
-            provider: "identity",
-            payload: body,
-            rawBody: rawBody ?? "",
-          })
-        : null;
-      const paymentCompliance =
-        body?.type === "account.updated"
-          ? await complianceService.handleProviderWebhook({
-              provider: "payment",
-              payload: body,
-              rawBody: rawBody ?? "",
-            })
-          : null;
       logger.info(`Stripe webhook accepted: ${body?.type || "unknown event"}`);
       return {
         received: true,
-        auto,
-        realEstate,
-        monetization,
-        orders,
-        identityCompliance,
-        paymentCompliance,
+        queued: false,
+        ...result,
       };
     });
     this.addRoute(
@@ -4535,6 +4557,19 @@ export class ApiV1Router {
         }
         if (!String(body?.type || "").startsWith("v2.core.account")) {
           return { received: true, ignored: true };
+        }
+        if (config.dataMode === "database") {
+          const eventId =
+            String(body?.id || "").trim() ||
+            createHash("sha256").update(rawBody).digest("hex");
+          const status = await providerWebhookInbox.enqueue({
+            provider: "stripe_connect_v2",
+            eventId,
+            eventType: String(body.type),
+            payload: body,
+            rawBody,
+          });
+          return { received: true, queued: true, status };
         }
         const paymentCompliance = await complianceService.handleProviderWebhook(
           {
@@ -4569,6 +4604,22 @@ export class ApiV1Router {
             code: "FORBIDDEN",
             message: "Signature de webhook invalide.",
           });
+        }
+        if (config.dataMode === "database") {
+          const eventId =
+            String(body?.id || body?.eventId || "").trim() ||
+            createHash("sha256").update(rawBody).digest("hex");
+          const eventType = String(
+            body?.type || body?.eventType || "compliance",
+          );
+          const status = await providerWebhookInbox.enqueue({
+            provider: `compliance_${params.provider}`,
+            eventId,
+            eventType,
+            payload: body,
+            rawBody,
+          });
+          return { received: true, queued: true, status };
         }
         return complianceService.handleProviderWebhook({
           provider: params.provider,
@@ -4768,6 +4819,20 @@ export class ApiV1Router {
         // Identity is resolved once per request, before the guard runs, so the
         // guard and the handler always agree on who the caller is.
         const principal = await this.resolvePrincipal(req);
+        if (
+          !pathname.startsWith("/webhooks/") &&
+          !pathname.startsWith("/auth/") &&
+          pathname !== "/analytics/events"
+        ) {
+          const metadata = requestMetadata(req);
+          const authenticated = isAuthenticated(principal);
+          await apiRateLimiter.consume({
+            subject: authenticated
+              ? principal.userId
+              : metadata.ipPrefix || "unknown",
+            authenticated,
+          });
+        }
         this.enforceAccess(route.access, principal);
 
         // Bearer-authenticated native clients are not vulnerable to browser
@@ -4898,7 +4963,19 @@ export class ApiV1Router {
           },
         };
 
-    res.writeHead(statusCode, { "Content-Type": "application/json" });
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (
+      isAppError &&
+      normalizedError.code === "RATE_LIMITED" &&
+      Number.isFinite(normalizedError.details?.retryAfterSeconds)
+    ) {
+      headers["Retry-After"] = String(
+        Math.max(1, Number(normalizedError.details?.retryAfterSeconds)),
+      );
+    }
+    res.writeHead(statusCode, headers);
     res.end(JSON.stringify(payload));
   }
 

@@ -1,10 +1,12 @@
 # Shongre platform-wide experience implementation
 
-Status: implemented and re-verified on 27 August 2026.
+Status: implementation complete and product verification passed on 28 August
+2026. The repository-wide release gate remains conditional on the two
+environment items recorded below.
 
 This document records the assessment, changes, and acceptance evidence for the
-platform-wide simplification and consistency pass. It covers the 132 registered
-routes and 263 statically referenced destinations in the current frontend. The
+platform-wide simplification and consistency pass. It covers the 160 registered
+routes and 238 statically referenced destinations in the current frontend. The
 working application remained the baseline: existing flows were consolidated
 and strengthened rather than replaced.
 
@@ -38,6 +40,47 @@ The main experience problems found at the start of the pass were:
 
 The implementation resolves those issues without connecting the frontend to a
 production API or Supabase business data.
+
+## 28 August Facturation and regression delta
+
+Market impact classification: `MULTI_MARKET_SHARED`. The changes preserve the
+existing market, locale, currency, timezone, and organization contracts. They
+add no live frontend API dependency: Facturation still runs through the same
+typed service boundary and deterministic demo adapter as the rest of the
+frontend.
+
+The route inventory is generated from the router itself instead of being
+maintained as a second list:
+
+```bash
+node frontend/scripts/check-navigation-integrity.mjs --print-routes
+```
+
+It currently reports 160 registered routes and verifies 238 statically
+referenced destinations. The representative E2E matrix includes Facturation's
+public landing page, activation, onboarding, and protected workspace alongside
+public marketplace, Prospects, account, seller, professional, staff, and admin
+surfaces.
+
+| Priority | Finding | Resolution and regression evidence |
+| -------- | ------- | ---------------------------------- |
+| P0 | A fast Prospects result could be erased when its own URL update committed. | The controller now distinguishes an internal URL synchronization from an external query change. Discovery, import, evidence, empty-state, and mobile cancellation tests cover the lifecycle. |
+| P0 | The Facturation demo singleton could expose one fixture organization's legal entity and customers to another persona. | Demo invoicing state is now keyed by the active organization/account. Legal entities, parties, invoices, documents, number counters, and idempotency records are isolated; a unit test switches tenants and proves the data boundary. |
+| P0 | Employment search actions overflowed the 320-pixel viewport because a hidden utility conflicted with the dropdown root's display class. | The desktop dropdown is now contained by a responsive wrapper. Profession, sector, location, and results routes have explicit 320-pixel coverage. |
+| P1 | Facturation's dense invoice table used a low-contrast muted header color. | The header uses the semantic secondary-text token. The product-only workspace passes an Axe WCAG 2.2 AA critical/serious scan. |
+| P1 | The demo persona menu announced 17 personas while the registry contained 19, and translated numeric prefixes were duplicated. | Count and prefixes now derive from the canonical persona registry. The browser test asserts 19 unique, sequentially numbered choices. |
+| P1 | Facturation's independent-product claims were not represented by one end-to-end customer-portfolio suite. | `facturation.spec.ts` covers footer discovery, a complete Facturation-only journey, existing-customer activation, Prospects-only denial, multi-product access, and accessibility. |
+| P2 | Permission-filtered admin metrics retained empty grid columns and left the dashboard visually underused. | Grid density now derives from the metrics and operational panels the role may see. The browser regression checks the resulting two-column geometry. |
+| P2 | The analytics event-ID fallback used `Math.random`. | The fallback is a deterministic module sequence combined with time; source gates now find no uncontrolled random business/demo behavior. |
+
+Facturation remains one Shongre product rather than a parallel application. A
+Facturation-only customer sees the dedicated product shell and relevant shared
+account, organization, team, settings, and subscription capabilities without
+Marketplace or Prospects navigation. An existing organization activates it as
+an add-on and reuses the same identity and business facts. Frontend visibility,
+route policy, service entitlements, backend authorization, and RLS share the
+same product boundary; the complete architecture and six supported portfolio
+configurations are recorded in `docs/architecture/invoicing.md`.
 
 ## 27 August verification delta
 
@@ -109,6 +152,7 @@ covered by one of these groups.
 | Purchases, reservations, orders, and payments           | Component-level price/scenario assumptions and native confirmations.                                                                | Typed order/payment contracts, deterministic scenario adapters, shared confirmation/prompt UI, minor-unit money, explicit pending/failure/action/refund states, and no claim of a real demo payment.                                      |
 | Individual workspace                                    | Dense pages reused Pro assumptions and inconsistent actions.                                                                        | Role-relevant navigation, shared listing/action patterns, account-scoped favorites/drafts, normalized finance/promotions/reviews/verification states, and responsive density.                                                             |
 | Professional workspace                                  | Team, store, billing, bulk import, and analytics had local limits and progress rendering.                                           | Entitlement-driven visibility, service analytics and bulk import, shared progress component, typed workspace contracts, minor-unit billing, and reusable modal/table states.                                                              |
+| Shongre Facturation                                     | Product flows existed, but browser acceptance did not prove independent purchase, product-only onboarding, tenant isolation, or all supported portfolio combinations. | Dedicated landing, activation, onboarding, and workspace routes; organization-scoped demo records; product-aware navigation; entitlement-enforced access; complete customer, invoice, document, team, settings, and subscription journeys; six-portfolio contract and browser coverage. |
 | Admin, moderation, finance, support, and Trust & Safety | Raw palettes, scattered numeric policies, large tables without consistent responsive treatment, and duplicated configuration logic. | Semantic states, shared table/mobile-card patterns, named constraints, schema-backed monetization/discovery/commission policy, permission-aware navigation, deterministic audit records, and consistent restricted/empty/error states.    |
 | Header, footer, and navigation                          | Search/navigation treatments diverged by viewport and the raised mobile control painted outside reserved space.                     | Compact shared header search, useful compact footer, one market/locale source, responsive account actions, safe-area-aware mobile nav, and measured raised-button clearance.                                                              |
 | Loading, empty, error, success, and restricted states   | Pages improvised copy, spacing, illustration size, and retry actions.                                                               | Shared skeleton/state/notice/feedback patterns with semantic headings, live feedback, consistent retry actions, and token-owned sizing.                                                                                                   |
@@ -184,10 +228,11 @@ could be composed or extended.
 | discovery/trending weights                                                | named discovery and trend policy contracts                                       |
 | monetization offers, prices, commission, entitlement limits               | versioned monetization catalogue and admin schemas                               |
 
-Two modules are allowed to touch browser persistence directly:
-`storage.service.ts`, the structured application-state gateway, and
-`data-mode.service.ts`, the isolated data-mode preference gateway. UI modules
-have no direct local/session storage access.
+Browser persistence is owned by explicit gateways: `storage.service.ts` for
+structured application state, `data-mode.service.ts` for the isolated data-mode
+preference, and the consent-gated analytics attribution/identity modules for
+their narrow records. Feature pages, layouts, and design-system components have
+no direct local/session storage access.
 
 ## Responsive findings and evidence
 
@@ -286,7 +331,7 @@ The implementation is accepted when all of the following stay true:
 3. `make ui-check` passes shared UI, frontend, mobile, production build, and
    Expo checks.
 4. `make cross-platform-check` passes the repository-wide quality matrix.
-5. all 132 registered routes and 263 static destinations pass navigation
+5. all 160 registered routes and 238 static destinations pass navigation
    integrity.
 6. browser checks at 320, 375, 390, 430, 768, 1024, 1280, and 1440+ show no
    horizontal overflow or obstructed pinned actions.
@@ -297,7 +342,7 @@ The implementation is accepted when all of the following stay true:
 9. the frontend starts and functions in `NEXT_PUBLIC_DATA_MODE=demo` with no
    backend, Supabase, Stripe, or identity provider running.
 10. the source scan finds no `Math.random`, browser alert/confirm/prompt, or
-    direct UI storage access.
+    direct feature/layout/design-system storage access.
 
 Current environment note: the shared packages, generated tokens, frontend
 typecheck/build, and mobile TypeScript stages of `make ui-check` pass. The root
@@ -316,6 +361,71 @@ passes 109 tests across 15 files. The production build completed before the
 browser matrix, and the route/navigation gate verified all 132 registered routes
 and 263 static destinations.
 
+## 28 August verification and release recommendation
+
+The post-change static and unit gates are green:
+
+- `make frontend-lint`: passed, including 160 registered routes and 238 static
+  destinations;
+- `make frontend-test`: 112 files and 736 tests passed;
+- `make contracts-check`: 17 files and 121 tests passed;
+- `make tokens-check`: passed across 624 source files;
+- frontend typecheck, production build, shared UI checks, and mobile TypeScript
+  checks passed;
+- the i18n audit passed its migrated-surface regression budget and reports the
+  current 3,468-string/203-file French migration backlog.
+
+The production E2E inventory contains 902 Chromium/WebKit checks. Its first
+complete run passed 825 checks with 66 intentional capability/host skips and
+reported 11 failures. Six were reproducible product assertions and were fixed:
+Facturation contrast and accessible-name defects, Prospects drawer focus
+restoration, and a WebKit width assertion that did not clamp negative spare
+space. The other five were page-navigation starvation after many WebKit
+contexts on this host.
+
+Post-fix evidence is intentionally separated from those first-pass totals:
+
+- all six Facturation product-boundary scenarios pass in Chromium and WebKit;
+- the affected 280-check regression group passed 276 checks; the four remaining
+  WebKit navigation timeouts moved to unrelated routes, and each exact route
+  passed when rerun in a fresh browser process;
+- a serial 57-check pass exposed four stale expectations after the persona and
+  listing-metadata corrections; both corrected tests pass in Chromium and
+  WebKit;
+- the complete 19-persona switcher oracle and the listing metadata overflow
+  audit pass in both engines;
+- no reproducible product assertion remains failing.
+
+Firefox is not counted as a product failure on this macOS 27 host: Playwright's
+`plugin-container` is denied by the host sandbox before application code runs.
+The responsive matrix still covers 320, 375, 390, 430, 768, 1024, 1280, and
+1440+ in Chromium/WebKit.
+
+The final in-app Browser review used the browser's native 1280×720 viewport at
+DPR 2. The homepage and admin dashboard rendered without console warnings or
+errors. Accepted concepts and final captures are retained in
+`frontend/docs/visual-audit/`:
+
+- `homepage-concept.png` and `homepage-final.jpg`;
+- `admin-dashboard-concept.png` and `admin-dashboard-final.jpg`.
+
+Visual fidelity is confirmed for the compact two-tier marketplace header, warm
+neutral canvas, editorial serif hero, terracotta brand/actions, real listing
+carousel, dark admin chrome, compact governance navigation, two-card metric
+grid, and full-width audit queue. The homepage keeps the accepted above-fold
+message verbatim: “Trouvez la perle rare, sans tracas.” followed by the payment,
+handover, and seller-status trust copy. Intentional deviations are limited to
+the live demo/persona diagnostic bar, the in-app Browser's narrower crop, the
+rotating real demo listing, and code-native responsive spacing. No fabricated
+dashboard metric or duplicate implementation was introduced.
+
+Release recommendation: **GO for the frontend demo/product scope and the
+independent Facturation capability. CONDITIONAL NO-GO for an unqualified
+repository-wide green release tag** until (1) the 12 Expo/React Native packages
+are aligned to the SDK 57 patch set and (2) the long-run WebKit host is given
+enough process capacity or the matrix is sharded. These are release-infrastructure
+conditions, not open product defects.
+
 ## Explicit exceptions and confirmation
 
 The following are intentional and verified, not unresolved hardcoding:
@@ -332,8 +442,8 @@ The following are intentional and verified, not unresolved hardcoding:
   dimensions, and motion, and the value is validated by the taxonomy contract;
 - realistic prices, dates, places, statuses, and identities remain in demo
   fixtures/adapters, where deterministic scenario data belongs;
-- only French is currently declared shipped. The i18n audit records 3,088
-  French strings in 178 files that must enter the message catalogue before an
+- only French is currently declared shipped. The i18n audit records 3,468
+  French strings in 203 files that must enter the message catalogue before an
   additional locale can be exposed. This does not create a partially translated
   production mode.
 

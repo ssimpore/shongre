@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs";
+import { assertPrivateFile, parseEnvFile } from "./lib/env-file.mjs";
 
 const [
   expectedEnvironment,
@@ -19,45 +19,6 @@ if (
   );
 }
 
-function assertPrivateFile(path, label) {
-  const stat = statSync(path);
-  if (!stat.isFile())
-    throw new Error(`[Deploy Config] ${label} must be a regular file.`);
-  if ((stat.mode & 0o007) !== 0) {
-    throw new Error(
-      `[Deploy Config] ${label} must not be accessible to other users.`,
-    );
-  }
-}
-
-function parse(path, label) {
-  assertPrivateFile(path, label);
-  const entries = new Map();
-  for (const sourceLine of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const line = sourceLine.trim();
-    if (!line || line.startsWith("#")) continue;
-    const normalized = line.startsWith("export ") ? line.slice(7) : line;
-    const separator = normalized.indexOf("=");
-    if (separator <= 0)
-      throw new Error(`[Deploy Config] ${label} has a malformed line.`);
-    const key = normalized.slice(0, separator).trim();
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
-      throw new Error(`[Deploy Config] ${label} has an invalid variable name.`);
-    }
-    if (entries.has(key))
-      throw new Error(`[Deploy Config] ${label} repeats ${key}.`);
-    let value = normalized.slice(separator + 1).trim();
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-    entries.set(key, value);
-  }
-  return entries;
-}
-
 function requireValue(entries, key, expected, label) {
   const value = entries.get(key);
   if (!value) throw new Error(`[Deploy Config] ${label} requires ${key}.`);
@@ -68,8 +29,8 @@ function requireValue(entries, key, expected, label) {
   }
 }
 
-const frontend = parse(frontendPath, "frontend env");
-const backend = parse(backendPath, "backend env");
+const frontend = parseEnvFile(frontendPath, "frontend env");
+const backend = parseEnvFile(backendPath, "backend env");
 assertPrivateFile(tunnelTokenPath, "Tunnel token");
 
 for (const [entries, label] of [
@@ -96,11 +57,11 @@ for (const key of [
 ]) {
   requireValue(frontend, key, undefined, "frontend env");
 }
-requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "api", "frontend env");
+requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "demo", "frontend env");
 requireValue(
   frontend,
   "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
-  "false",
+  "true",
   "frontend env",
 );
 requireValue(
@@ -142,6 +103,7 @@ if (expectedModes) {
     ["KYC_PROVIDER", "stripe"],
     ["BUSINESS_REGISTRY_PROVIDER", "siret"],
     ["AI_PROVIDER", "gemini"],
+    ["MALWARE_SCAN_MODE", "http"],
     ["AUTH_COOKIE_SECURE", "true"],
     ["SHONGRE_TRUST_PROXY_HOST", "true"],
     ["SHONGRE_TRUST_PROXY_IP", "true"],
@@ -176,6 +138,8 @@ if (expectedModes) {
     "BUSINESS_REGISTRY_API_TOKEN",
     "GEMINI_API_KEY",
     "GEMINI_MODEL",
+    "MALWARE_SCAN_URL",
+    "MALWARE_SCAN_TOKEN",
   ]) {
     requireValue(backend, key, undefined, "backend env");
   }

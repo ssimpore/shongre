@@ -59,12 +59,14 @@ organization membership/capability and a currently active
 `invoicing.enabled=true` entitlement. RLS calls the same entitlement predicate;
 hiding a menu is never the security boundary.
 
-As in Shongre Prospects, organization product access is resolved through the
-shared monetization account owned by the organization owner. This is an
-incremental compatibility choice for the current schema, not a permission grant
-to the owner alone: organization membership and role checks still govern each
-request. A future organization-native billing account may replace this mapping
-behind the same portfolio contract.
+As in Shongre Prospects, billing still records the paying account, but product
+access is explicitly scoped to `organization_id`. The payer is an audit and
+commercial subject, never an authorization shortcut. Quote, order,
+subscription, and entitlement records carry the target organization through the
+shared monetization flow; only an owner, administrator, or member with
+`subscription.manage.own` may purchase for it. Ambiguous legacy rows are not
+guessed: only a payer with exactly one active organization is backfilled, while
+multi-organization cases fail closed for operator-reviewed assignment.
 
 Statuses `trialing` and `active` are usable. Expired, cancelled, paused, or
 missing access fails closed. Revocation immediately removes the tenant from the
@@ -173,10 +175,19 @@ and Shongre design system.
 | User without Facturation entitlement         | No                     | Irrelevant              | Frontend guard denies the workspace; API and RLS fail closed               |
 
 The contract suite evaluates all six portfolios. Frontend route-policy tests
-verify product-plus-capability gating. Backend service tests remove the product
-grant while retaining invoice permissions and assert `FORBIDDEN` with the
+verify product-plus-capability gating, while
+`frontend/e2e/facturation.spec.ts` exercises footer discovery, direct
+Facturation-only onboarding and invoicing, existing-account add-on activation,
+Prospects-only denial, multi-product access, and accessibility in the rendered
+application. The demo adapter also has an account/organization switch test that
+proves legal entities, parties, invoices, documents, counters, and idempotency
+records do not cross tenants. Backend service tests remove the product grant
+while retaining invoice permissions and assert `FORBIDDEN` with the
 `INVOICING_ENTITLEMENT_REQUIRED` gate. Migration tests verify that RLS includes
-the active product predicate.
+the active organization product predicate. Migration
+`00071_organization_product_entitlements.sql` makes this scope explicit on the
+shared monetization quote, order, subscription, and entitlement records without
+duplicating accounts, organizations, or billing infrastructure.
 
 The existing `monetization_invoices` and HTML document endpoint remain the
 current Shongre subscription-billing compatibility path. They are not redefined

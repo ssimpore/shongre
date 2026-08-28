@@ -29,6 +29,7 @@
     "db:backfill:monetization": "tsx scripts/monetization/import-baseline.ts",
     "db:dry-run:unified-discovery": "tsx scripts/maintenance/unified-discovery-dry-run.ts",
     "db:types": "tsx scripts/generate-types/generate-types.ts",
+    "db:types:check": "tsx scripts/generate-types/generate-types.ts --check",
     "check:boundary": "node scripts/maintenance/check-boundary.js"
   },
   "dependencies": {

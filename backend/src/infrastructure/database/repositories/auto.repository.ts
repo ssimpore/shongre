@@ -1586,7 +1586,7 @@ export class PostgresAutoRepository implements IAutoRepository {
     if (query.query)
       q = q.textSearch("search_document", query.query, {
         type: "websearch",
-        config: "french",
+        config: "simple",
       });
     const offset = Number(query.cursor || 0);
     q = q.range(offset, offset + query.limit - 1);

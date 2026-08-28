@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const MARKET_CONFIGURATION_REASON_MIN_LENGTH = 8;
+export const MARKET_CONFIGURATION_REASON_MAX_LENGTH = 500;
+
 export const countryCodeSchema = z
   .string()
   .regex(/^[A-Z]{2}$/, "Le pays doit être un code ISO 3166-1 alpha-2.");

@@ -1,5 +1,11 @@
-import { BarChart3, FileText, Grid2X2, Search, Target } from "lucide-react";
+import { Search } from "lucide-react";
 import type { SolutionIconId } from "../../domains/solutions/solutions.types";
+import { SolutionIcon } from "./SolutionIcon";
+
+const marketplaceRows = [
+  ["Maison familiale", "Immobilier", "Écully", "À la une"],
+  ["Vélo cargo", "Mobilité", "Lyon", "Nouveau"],
+] as const;
 
 const rows = {
   prospects: [
@@ -11,12 +17,18 @@ const rows = {
     ["F-2026-0012", "Atelier Lumière", "1 250,00 €", "Émise"],
     ["F-2026-0011", "Maison Sève", "840,00 €", "Payée"],
   ],
+  marketplace: marketplaceRows,
   pilotage: [],
-  apps: [
-    ["Maison familiale", "Immobilier", "Écully", "À la une"],
-    ["Vélo cargo", "Mobilité", "Lyon", "Nouveau"],
-  ],
+  apps: marketplaceRows,
 } as const;
+
+const previewTitles: Record<SolutionIconId, string> = {
+  prospects: "Prospects",
+  facturation: "Factures",
+  marketplace: "Marketplace",
+  pilotage: "Pilotage",
+  apps: "Application",
+};
 
 export function SolutionPreview({
   icon,
@@ -25,7 +37,6 @@ export function SolutionPreview({
   icon: SolutionIconId;
   variant?: "catalog" | "detail";
 }) {
-  const isProspects = icon === "prospects";
   const detail = variant === "detail";
   return (
     <div
@@ -34,28 +45,17 @@ export function SolutionPreview({
     >
       <div className={`flex ${detail ? "min-h-64" : "min-h-28"}`}>
         <div className={`flex shrink-0 flex-col items-center border-r border-border-subtle bg-bg-subtle text-text-muted ${detail ? "w-24 gap-5 py-6" : "w-9 gap-3 py-3"}`}>
-          {isProspects ? (
-            <Target className="h-3.5 w-3.5 text-primary" />
-          ) : icon === "facturation" ? (
-            <FileText className="h-3.5 w-3.5 text-primary" />
-          ) : icon === "pilotage" ? (
-            <BarChart3 className="h-3.5 w-3.5 text-text-muted" />
-          ) : (
-            <Grid2X2 className="h-3.5 w-3.5 text-primary" />
-          )}
+          <SolutionIcon
+            icon={icon}
+            className={`h-3.5 w-3.5 ${icon === "pilotage" ? "text-text-muted" : "text-primary"}`}
+          />
           <span className="h-3.5 w-3.5 rounded border border-border-base" />
           <span className="h-3.5 w-3.5 rounded border border-border-base" />
         </div>
         <div className={`min-w-0 flex-1 ${detail ? "p-6" : "p-3"}`}>
           <div className="flex items-center justify-between gap-2">
             <span className={`${detail ? "text-base" : "text-micro"} font-black text-text-main`}>
-              {isProspects
-                ? "Prospects"
-                : icon === "facturation"
-                  ? "Factures"
-                  : icon === "pilotage"
-                    ? "Pilotage"
-                    : "Marketplace"}
+              {previewTitles[icon]}
             </span>
             {icon !== "pilotage" ? (
               <span className="rounded bg-primary px-2 py-1 text-micro font-bold text-white">

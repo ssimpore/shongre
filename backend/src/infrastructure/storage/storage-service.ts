@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { config } from "../../app/config/index.js";
+import { malwareScanner } from "../security/malware-scanner.js";
+import { logger } from "../logging/logger.js";
 
 const LISTING_MEDIA_MAX_BYTES = 10 * 1024 * 1024;
 const LISTING_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -64,6 +66,7 @@ export class StorageService {
     )
       .select("private_path")
       .eq("owner_user_id", ownerUserId)
+      .eq("malware_scan_status", "clean")
       .in("private_path", keys)
       .in("status", ["ready", "attached"]);
     const ownedKeys = new Set(
@@ -153,7 +156,39 @@ export class StorageService {
         message: "Téléversement privé introuvable.",
       });
     }
-    if (asset.status === "ready") {
+    if (
+      (asset.status === "ready" || asset.status === "attached") &&
+      asset.malware_scan_status === "clean"
+    ) {
+      return { assetId: asset.id, privateStorageKey: asset.private_path };
+    }
+    if (asset.status === "ready" || asset.status === "attached") {
+      const scan = await this.rescanStoredAsset({
+        table: "private_document_assets",
+        bucket: this.privateDocumentBucket,
+        objectPath: asset.private_path,
+        asset,
+        allowPdf: true,
+      });
+      const { error: updateError } = await (
+        supabase.from("private_document_assets" as any) as any
+      )
+        .update({
+          malware_scan_status: scan.verdict,
+          malware_scan_provider: scan.provider,
+          malware_scan_digest: scan.digest,
+          malware_scan_signature: scan.signature,
+          malware_scanned_at: new Date().toISOString(),
+        })
+        .eq("id", asset.id)
+        .eq("owner_user_id", ownerUserId);
+      if (updateError) {
+        throw new AppError({
+          code: "INTERNAL_ERROR",
+          message: "Impossible d’enregistrer le contrôle du document privé.",
+          originalError: updateError,
+        });
+      }
       return { assetId: asset.id, privateStorageKey: asset.private_path };
     }
     const { data: blob, error: downloadError } = await supabase.storage
@@ -187,6 +222,13 @@ export class StorageService {
         message: "Le contenu du document ne correspond pas au fichier annoncé.",
       });
     }
+    const scan = await this.scanOrQuarantine({
+      table: "private_document_assets",
+      bucket: this.stagingPrivateDocumentBucket,
+      asset,
+      buffer,
+      detectedType,
+    });
     const privatePath = `${ownerUserId}/${asset.id}.${extensionFor(detectedType)}`;
     const { error: uploadError } = await supabase.storage
       .from(this.privateDocumentBucket)
@@ -209,6 +251,11 @@ export class StorageService {
         private_path: privatePath,
         detected_content_type: detectedType,
         actual_size_bytes: buffer.byteLength,
+        malware_scan_status: scan.verdict,
+        malware_scan_provider: scan.provider,
+        malware_scan_digest: scan.digest,
+        malware_scan_signature: scan.signature,
+        malware_scanned_at: new Date().toISOString(),
         status: "ready",
         completed_at: new Date().toISOString(),
       })
@@ -313,7 +360,39 @@ export class StorageService {
         message: "Téléversement introuvable.",
       });
     }
+    if (
+      (asset.status === "ready" || asset.status === "attached") &&
+      asset.malware_scan_status === "clean"
+    ) {
+      return { assetId: asset.id, url: asset.public_url };
+    }
     if (asset.status === "ready" || asset.status === "attached") {
+      const scan = await this.rescanStoredAsset({
+        table: "listing_media_assets",
+        bucket: this.publicListingBucket,
+        objectPath: asset.public_path,
+        asset,
+        allowPdf: false,
+      });
+      const { error: updateError } = await (
+        supabase.from("listing_media_assets" as any) as any
+      )
+        .update({
+          malware_scan_status: scan.verdict,
+          malware_scan_provider: scan.provider,
+          malware_scan_digest: scan.digest,
+          malware_scan_signature: scan.signature,
+          malware_scanned_at: new Date().toISOString(),
+        })
+        .eq("id", asset.id)
+        .eq("owner_user_id", ownerUserId);
+      if (updateError) {
+        throw new AppError({
+          code: "INTERNAL_ERROR",
+          message: "Impossible d’enregistrer le contrôle de la photo.",
+          originalError: updateError,
+        });
+      }
       return { assetId: asset.id, url: asset.public_url };
     }
     const { data: blob, error: downloadError } = await supabase.storage
@@ -345,6 +424,14 @@ export class StorageService {
       });
     }
 
+    const scan = await this.scanOrQuarantine({
+      table: "listing_media_assets",
+      bucket: this.stagingListingBucket,
+      asset,
+      buffer,
+      detectedType,
+    });
+
     const publicPath = `${ownerUserId}/${asset.id}.${extensionFor(detectedType)}`;
     const { error: uploadError } = await supabase.storage
       .from(this.publicListingBucket)
@@ -371,6 +458,11 @@ export class StorageService {
         public_url: publicUrl,
         detected_content_type: detectedType,
         actual_size_bytes: buffer.byteLength,
+        malware_scan_status: scan.verdict,
+        malware_scan_provider: scan.provider,
+        malware_scan_digest: scan.digest,
+        malware_scan_signature: scan.signature,
+        malware_scanned_at: new Date().toISOString(),
         status: "ready",
         completed_at: new Date().toISOString(),
       })
@@ -407,6 +499,7 @@ export class StorageService {
       .select("public_url")
       .eq("owner_user_id", ownerUserId)
       .eq("status", "ready")
+      .eq("malware_scan_status", "clean")
       .in("public_url", urls);
     if (error || data?.length !== urls.length) {
       throw new AppError({
@@ -414,6 +507,124 @@ export class StorageService {
         message: "Une ou plusieurs photos ne vous appartiennent pas.",
       });
     }
+  }
+
+  private async scanOrQuarantine(input: {
+    table: "listing_media_assets" | "private_document_assets";
+    bucket: string;
+    asset: {
+      id: string;
+      staging_path: string;
+      original_file_name: string;
+    };
+    buffer: Buffer;
+    detectedType: string;
+  }) {
+    const supabase = getSupabaseAdminClient();
+    await (supabase.from(input.table as any) as any)
+      .update({ malware_scan_status: "scanning" })
+      .eq("id", input.asset.id);
+    try {
+      const result = await malwareScanner.scan({
+        buffer: input.buffer,
+        contentType: input.detectedType,
+        fileName: input.asset.original_file_name,
+      });
+      if (result.verdict === "malicious") {
+        await supabase.storage
+          .from(input.bucket)
+          .remove([input.asset.staging_path]);
+        await (supabase.from(input.table as any) as any)
+          .update({
+            status: "rejected",
+            malware_scan_status: "malicious",
+            malware_scan_provider: result.provider,
+            malware_scan_digest: result.digest,
+            malware_scan_signature: result.signature,
+            malware_scanned_at: new Date().toISOString(),
+          })
+          .eq("id", input.asset.id);
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Le fichier a été refusé par le contrôle de sécurité.",
+        });
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      await (supabase.from(input.table as any) as any)
+        .update({ malware_scan_status: "failed" })
+        .eq("id", input.asset.id);
+      throw new AppError({
+        code: "NETWORK_ERROR",
+        statusCode: 503,
+        message:
+          "Le contrôle de sécurité du fichier est temporairement indisponible.",
+        originalError: error,
+      });
+    }
+  }
+
+  private async rescanStoredAsset(input: {
+    table: "listing_media_assets" | "private_document_assets";
+    bucket: string;
+    objectPath: string | null;
+    asset: {
+      id: string;
+      original_file_name: string;
+      declared_content_type: string;
+      declared_size_bytes: number;
+    };
+    allowPdf: boolean;
+  }) {
+    if (!input.objectPath) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le fichier historique ne peut pas être contrôlé.",
+      });
+    }
+    const supabase = getSupabaseAdminClient();
+    const { data: blob, error } = await supabase.storage
+      .from(input.bucket)
+      .download(input.objectPath);
+    if (error || !blob) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le fichier historique est introuvable.",
+        originalError: error,
+      });
+    }
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const detectedType =
+      input.allowPdf && buffer.subarray(0, 5).toString("ascii") === "%PDF-"
+        ? "application/pdf"
+        : detectedImageType(buffer);
+    if (
+      !detectedType ||
+      detectedType !== input.asset.declared_content_type ||
+      buffer.byteLength !== Number(input.asset.declared_size_bytes) ||
+      buffer.byteLength > LISTING_MEDIA_MAX_BYTES
+    ) {
+      await supabase.storage.from(input.bucket).remove([input.objectPath]);
+      await (supabase.from(input.table as any) as any)
+        .update({ status: "rejected", malware_scan_status: "failed" })
+        .eq("id", input.asset.id);
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le fichier historique ne correspond pas à ses métadonnées.",
+      });
+    }
+    return this.scanOrQuarantine({
+      table: input.table,
+      bucket: input.bucket,
+      asset: {
+        id: input.asset.id,
+        staging_path: input.objectPath,
+        original_file_name: input.asset.original_file_name,
+      },
+      buffer,
+      detectedType,
+    });
   }
 
   async attachListingMedia(
@@ -488,33 +699,61 @@ export class StorageService {
     return { deleted };
   }
 
-  async uploadFile(path: string, fileBuffer: Buffer, contentType: string) {
+  async rescanLegacyReadyAssets(
+    limitPerType = 10,
+  ): Promise<{ scanned: number; failed: number }> {
+    if (config.dataMode === "demo") return { scanned: 0, failed: 0 };
+    const limit = Math.max(1, Math.min(50, limitPerType));
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase.storage
-      .from(this.publicListingBucket)
-      .upload(path, fileBuffer, { contentType, upsert: false });
-    if (error) {
-      throw new AppError({
-        code: "INTERNAL_ERROR",
-        message: `Failed to upload file to storage: ${error.message}`,
-      });
+    const [listingAssets, privateAssets] = await Promise.all([
+      (supabase.from("listing_media_assets" as any) as any)
+        .select("id,owner_user_id")
+        .in("status", ["ready", "attached"])
+        .in("malware_scan_status", ["pending", "failed"])
+        .order("created_at", { ascending: true })
+        .limit(limit),
+      (supabase.from("private_document_assets" as any) as any)
+        .select("id,owner_user_id")
+        .in("status", ["ready", "attached"])
+        .in("malware_scan_status", ["pending", "failed"])
+        .order("created_at", { ascending: true })
+        .limit(limit),
+    ]);
+    if (listingAssets.error) throw listingAssets.error;
+    if (privateAssets.error) throw privateAssets.error;
+    let scanned = 0;
+    let failed = 0;
+    const tasks = [
+      ...(listingAssets.data || []).map((asset: any) => ({
+        ...asset,
+        kind: "listing" as const,
+      })),
+      ...(privateAssets.data || []).map((asset: any) => ({
+        ...asset,
+        kind: "private" as const,
+      })),
+    ];
+    for (const asset of tasks) {
+      try {
+        if (asset.kind === "listing") {
+          await this.completeListingMediaUpload(asset.owner_user_id, asset.id);
+        } else {
+          await this.completePrivateDocumentUpload(
+            asset.owner_user_id,
+            asset.id,
+          );
+        }
+        scanned += 1;
+      } catch (error) {
+        failed += 1;
+        logger.error("legacy_upload_malware_rescan_failed", {
+          assetId: asset.id,
+          assetKind: asset.kind,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
-    return supabase.storage
-      .from(this.publicListingBucket)
-      .getPublicUrl(data.path).data.publicUrl;
-  }
-
-  async deleteFile(path: string): Promise<void> {
-    const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.storage
-      .from(this.publicListingBucket)
-      .remove([path]);
-    if (error) {
-      throw new AppError({
-        code: "INTERNAL_ERROR",
-        message: `Failed to delete file from storage: ${error.message}`,
-      });
-    }
+    return { scanned, failed };
   }
 
   async createPrivateSignedUrl(path: string, expiresInSeconds = 300) {
@@ -527,8 +766,23 @@ export class StorageService {
       };
     }
     const supabase = getSupabaseAdminClient();
+    const { data: asset, error: assetError } = await (
+      supabase.from("private_document_assets" as any) as any
+    )
+      .select("id")
+      .eq("private_path", path)
+      .eq("malware_scan_status", "clean")
+      .in("status", ["ready", "attached"])
+      .maybeSingle();
+    if (assetError || !asset) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Document privé introuvable ou non contrôlé.",
+        originalError: assetError,
+      });
+    }
     const { data, error } = await supabase.storage
-      .from("documents-private")
+      .from(this.privateDocumentBucket)
       .createSignedUrl(path, boundedExpiry);
     if (error || !data?.signedUrl) {
       throw new AppError({

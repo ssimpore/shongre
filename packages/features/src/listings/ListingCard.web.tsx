@@ -192,7 +192,7 @@ export function ListingCard({
           <span className="flex min-w-0 items-center gap-2">
             <span className="inline-flex min-w-0 flex-1 items-center gap-1">
               <SemanticIcon name="map-pin" size="xs" />
-              <span className="min-w-0 truncate">{listing.city}</span>
+              <span className="min-w-0 break-words">{listing.city}</span>
             </span>
             {!listing.deliveryAvailable ? (
               <span className="inline-flex shrink-0 items-center gap-1">

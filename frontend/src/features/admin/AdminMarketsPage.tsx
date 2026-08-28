@@ -44,7 +44,12 @@ import {
   RECENT_SEARCHES_LIMIT_MIN,
 } from "../../domains/market/market.constants";
 import { labelIdentifier } from "../../utilities/identifier-label";
-import { getCountryConfig, MARKET_CODE_LENGTH } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  MARKET_CODE_LENGTH,
+  MARKET_CONFIGURATION_REASON_MAX_LENGTH,
+  MARKET_CONFIGURATION_REASON_MIN_LENGTH,
+} from "@shongre/contracts";
 import { services } from "../../api/client/service-registry";
 
 type AdminTab = "overview" | "editor" | "matrix";
@@ -93,6 +98,7 @@ export const AdminMarketsPage: React.FC = () => {
   const [routingBasePath, setRoutingBasePath] = useState("");
   const [routingGatewayVisible, setRoutingGatewayVisible] = useState(false);
   const [routingSeoIndexable, setRoutingSeoIndexable] = useState(false);
+  const [routingChangeReason, setRoutingChangeReason] = useState("");
   const [isSavingRouting, setIsSavingRouting] = useState(false);
   const [pendingResetMarketCode, setPendingResetMarketCode] = useState<
     string | null
@@ -155,6 +161,7 @@ export const AdminMarketsPage: React.FC = () => {
     setRoutingSeoIndexable(
       routing?.seoIndexable ?? selectedCountryConfig?.seo.indexable ?? false,
     );
+    setRoutingChangeReason("");
     setIsRoutingModalOpen(true);
   };
 
@@ -163,33 +170,21 @@ export const AdminMarketsPage: React.FC = () => {
     setIsSavingRouting(true);
     try {
       await services.markets.updateCountryConfiguration(selectedMarket.code, {
-        canonicalDomainMode: routingDomainMode,
-        basePath: routingBasePath,
-        gatewayVisible: routingGatewayVisible,
-        seo: {
-          ...selectedCountryConfig.seo,
-          indexable: routingSeoIndexable,
-        },
-      });
-      marketService.updateMarketRouting(
-        selectedMarket.code,
-        {
+        expectedVersion: selectedMarket.version,
+        reason: routingChangeReason.trim(),
+        patch: {
           canonicalDomainMode: routingDomainMode,
           basePath: routingBasePath,
           gatewayVisible: routingGatewayVisible,
-          seoIndexable: routingSeoIndexable,
+          seo: {
+            ...selectedCountryConfig.seo,
+            indexable: routingSeoIndexable,
+          },
         },
-        currentUser
-          ? {
-              id: currentUser.id,
-              name: currentUser.name,
-              role: currentUser.role,
-            }
-          : undefined,
-      );
+      });
       setIsRoutingModalOpen(false);
       handleRefresh();
-      toast.success("Routage du marché enregistré.");
+      toast.success("Modification soumise à un second administrateur.");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Routage non enregistré.",
@@ -1708,6 +1703,19 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
+          <label className="block space-y-1 text-xs font-bold text-stone-700">
+            Motif de la modification
+            <textarea
+              value={routingChangeReason}
+              onChange={(event) => setRoutingChangeReason(event.target.value)}
+              minLength={MARKET_CONFIGURATION_REASON_MIN_LENGTH}
+              maxLength={MARKET_CONFIGURATION_REASON_MAX_LENGTH}
+              required
+              rows={3}
+              placeholder="Expliquez le changement et son impact opérationnel."
+              className="min-h-control-touch w-full resize-y rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-3">
             <Button
               variant="ghost"
@@ -1720,9 +1728,13 @@ export const AdminMarketsPage: React.FC = () => {
               variant="primary"
               size="sm"
               isLoading={isSavingRouting}
+              disabled={
+                routingChangeReason.trim().length <
+                MARKET_CONFIGURATION_REASON_MIN_LENGTH
+              }
               onClick={() => void saveRouting()}
             >
-              Enregistrer
+              Soumettre pour approbation
             </Button>
           </div>
         </div>

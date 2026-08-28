@@ -78,6 +78,23 @@ export const messagesFr = {
   "nav.openMenu": "Ouvrir le menu",
   "nav.closeMenu": "Fermer le menu",
   "nav.mobileLabel": "Navigation mobile",
+  "solutions.header.chooseSolution": "Choisir une solution Shongre",
+  "solutions.header.seeAll": "Voir toutes les solutions",
+  "admin.solutions.order.title": "Ordre et visibilité",
+  "admin.solutions.order.description":
+    "Activez les solutions à présenter, puis utilisez les flèches pour définir l’ordre du catalogue public et du sélecteur Solutions. Le cycle de vie continue de contrôler la publication.",
+  "admin.solutions.order.moveUp": "Monter {name}",
+  "admin.solutions.order.moveDown": "Descendre {name}",
+  "admin.solutions.order.saved": "Ordre des solutions enregistré.",
+  "admin.solutions.order.error": "Impossible d’enregistrer l’ordre.",
+  "admin.solutions.order.saveDraftFirst":
+    "Enregistrez ou annulez les modifications en cours avant de réordonner.",
+  "admin.solutions.visibility.label": "Visibilité publique de {name}",
+  "admin.solutions.visibility.enabled": "Activée",
+  "admin.solutions.visibility.hidden": "Masquée",
+  "admin.solutions.visibility.saved": "Visibilité du catalogue mise à jour.",
+  "admin.solutions.visibility.error":
+    "Impossible de modifier la visibilité du catalogue.",
   "nav.categoryNavigation": "Navigation par catégorie",
   "nav.category.immobilier": "Immobilier",
   "nav.category.vehicules": "Véhicules",
@@ -498,10 +515,6 @@ export const messagesFr = {
   "home.trendingNow.annonces": "annonces",
   "home.trendingNow.topicPosition": "thématique {position}",
 
-  // --- home.homeCategoryExplorer ---
-  "home.homeCategoryExplorer.5CategoriesPrincipales":
-    "5 catégories principales",
-  "home.homeCategoryExplorer.toutesLesCategories": "Toutes les catégories",
   // --- home.homeRecentSearches ---
   "home.homeRecentSearches.recherchesRecentes": "Recherches récentes",
   "home.homeRecentSearches.touteLaFrance": "Toute la France",
@@ -520,6 +533,8 @@ export const messagesFr = {
     "thématiques collections",
   "home.homeCollectionsSection.toutesLesCollections": "Toutes les collections",
   "home.homeCollectionsSection.voirTout": "Voir tout",
+  "home.homeCollectionsSection.explorerLaCollection":
+    "Explorer la collection {name}",
 
   // --- legal.legalPages ---
   "legal.legalPages.conditionsGeneralesDUtilisationCgu":
@@ -1965,7 +1980,7 @@ export const messagesFr = {
   // --- shell.demoRoleSwitcher ---
   "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
   "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
-    "Tester les 17 profils et parcours sans mot de passe :",
+    "Tester les {count} profils et parcours sans mot de passe :",
   "shell.demoRoleSwitcher.commercialLabel": "15. Commercial Shongre (Léa)",
   "shell.demoRoleSwitcher.commercialDescription":
     "Prospects, opportunités, relances et relation partenaires",
@@ -2706,14 +2721,9 @@ export const messagesFr = {
   "home.heroBoostedScroll.enSavoirPlus": "En savoir plus",
   "home.heroBoostedScroll.livraison": "Livraison",
 
-  // --- home.homeCategoryExplorer ---
-  "home.homeCategoryExplorer.explorerParCategorie": "Explorer par catégorie",
-  "home.homeCategoryExplorer.desMillionsDAnnoncesVerifiees":
-    "Des millions d’annonces vérifiées classées avec précision selon vos projets et vos envies.",
-
   // --- home.homeCollectionsSection ---
   "home.homeCollectionsSection.nosCollectionsDuMoment":
-    "Nos collections du moment",
+    "Explorer par collection",
   "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour":
     "Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.",
 

@@ -42,18 +42,28 @@ or restricted operations configuration; they never belong in Git.
    Stripe reconciliation point and current migration version.
 2. Apply forward-only migrations from the release artifact. The migrator checks
    SHA-256 history and refuses an edited applied migration. Do not run `db-seed`.
-3. Deploy API pods with zero unavailable capacity. Wait for `/readyz`; perform
-   read-only smoke checks from the released OpenAPI contract while old workers
-   remain active.
-4. Roll worker pods using the same backend image. Database leases prevent two
-   replicas from owning the same scheduled job.
-5. Deploy web pods, purge only the intended CDN release paths, then shift a small
-   traffic percentage. Watch availability, latency, auth email, webhooks,
-   scheduled jobs, database, and error-budget alerts before full traffic.
+3. Deploy at least two API and web replicas (the hosted script defaults to two
+   in staging and production). Compose waits for every declared health check;
+   perform read-only smoke checks from the released OpenAPI contract.
+4. Roll at least two worker replicas using the same backend image. Renewable
+   database leases prevent replicas from owning the same scheduled job, and
+   durable webhook claims recover work abandoned by a crashed worker.
+5. Verify the persistent Tunnel route after the Compose rollout. This
+   repository does not implement a blue/green traffic switch or percentage
+   canary, so do not describe the rollout as zero-downtime or gradual traffic
+   shifting. If uninterrupted replacement becomes a launch requirement, add
+   and exercise an externally routed blue/green slot before making that claim.
+   Watch availability, latency, auth email, webhooks, scheduled jobs, database,
+   and error-budget alerts throughout the rollout.
 6. Verify login/verification/reset, search, publication and media processing,
    messaging, favorite account isolation, quote/checkout, refund, confirmed
    delivery transfer, seller payout, KYC/KYB, moderation, admin authorization,
    consent reopening, SEO metadata, and mobile-navigation clearance.
+7. Before enabling public traffic after the malware-control migration, confirm
+   the bounded `legacy_upload_malware_rescan` job has drained every legacy
+   ready/attached asset from `pending` or `failed` to `clean` or `rejected`.
+   Never bypass this gate by marking historical rows clean without a scanner
+   verdict.
 
 The repository entrypoints are `make deploy-dev`, `make deploy-staging`, and
 `make deploy-prod`. They dispatch the distinct build, promotion, and protected

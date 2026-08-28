@@ -20,8 +20,8 @@ export interface ListingRailProps {
  * from whatever column the card happens to land in, which is what makes one row
  * possible: a rail has no columns to inherit from.
  *
- * The mobile bleed (`-mx-4 px-4`) is the house pattern from
- * `HomeCategoryExplorer` — it lets the row run to the screen edge on a phone
+ * The mobile bleed (`-mx-4 px-4`) is the shared homepage rail pattern — it
+ * lets the row run to the screen edge on a phone
  * while staying inside the page gutter from `sm` up. It is measured by the
  * overflow suite as content inside a scroll container, so it does not count as
  * page overflow.

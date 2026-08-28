@@ -25,6 +25,9 @@ describe("DemoSolutionsService", () => {
     ]);
     expect(publicSolutions.some((value) => value.lifecycle === "RETIRED")).toBe(false);
     expect(publicSolutions.some((value) => value.lifecycle === "DRAFT")).toBe(false);
+    expect(
+      publicSolutions.find((value) => value.slug === "marketplace"),
+    ).toMatchObject({ icon: "marketplace" });
   });
 
   it("keeps retired and draft entries visible to an authorized admin", async () => {
@@ -56,6 +59,7 @@ describe("DemoSolutionsService", () => {
           requiresAuthentication: false,
           requiresEntitlement: false,
           sortOrder: 80,
+          catalogVisible: false,
           featured: false,
         },
         admin,
@@ -83,6 +87,7 @@ describe("DemoSolutionsService", () => {
         entitlementKey: "solution.planning.access",
         releaseNotes: [],
         sortOrder: 60,
+        catalogVisible: false,
         featured: false,
       },
       admin,
@@ -103,6 +108,65 @@ describe("DemoSolutionsService", () => {
       documentationUrl: "https://docs.shongre.fr/planning",
     });
     expect(await service.getSolutionBySlug("planning")).toBeNull();
+  });
+
+  it("lets an authorized admin persist one deterministic catalog order", async () => {
+    const service = new DemoSolutionsService();
+    const initial = await service.listAdminSolutions(admin);
+    const marketplace = initial.find(
+      (solution) => solution.slug === "marketplace",
+    )!;
+    const orderedIds = [
+      marketplace.id,
+      ...initial
+        .filter((solution) => solution.id !== marketplace.id)
+        .map((solution) => solution.id),
+    ];
+
+    const reordered = await service.reorderSolutions(orderedIds, admin);
+    expect(reordered.map((solution) => solution.id)).toEqual(orderedIds);
+    expect(reordered.map((solution) => solution.sortOrder)).toEqual(
+      orderedIds.map((_, index) => (index + 1) * 10),
+    );
+    const publicSolutions = await service.listPublicSolutions({
+      marketCode: "FR",
+      language: "fr-FR",
+    });
+    expect(publicSolutions[0]?.slug).toBe("marketplace");
+
+    await expect(
+      service.reorderSolutions(orderedIds.slice(1), admin),
+    ).rejects.toThrow(/chaque solution/);
+    await expect(
+      service.reorderSolutions(orderedIds, { ...admin, canManage: false }),
+    ).rejects.toThrow(/capacité/);
+  });
+
+  it("hides a solution from discovery without removing its direct page", async () => {
+    const service = new DemoSolutionsService();
+    const facturation = (await service.listAdminSolutions(admin)).find(
+      (solution) => solution.slug === "facturation",
+    )!;
+
+    await service.updateSolution(
+      facturation.id,
+      { catalogVisible: false },
+      admin,
+    );
+
+    const publicSolutions = await service.listPublicSolutions({
+      marketCode: "FR",
+      language: "fr-FR",
+    });
+    expect(publicSolutions.map((solution) => solution.slug)).not.toContain(
+      "facturation",
+    );
+    await expect(service.getSolutionBySlug("facturation")).resolves.toMatchObject(
+      {
+        slug: "facturation",
+        catalogVisible: false,
+      },
+    );
   });
 
   it("rejects unsafe paths, incomplete entitlements and invalid availability", async () => {

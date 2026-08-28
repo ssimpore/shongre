@@ -53,12 +53,12 @@ jobs:
           API_URL: https://api.shongre.invalid
           BACKEND_DATA_MODE: database
           DATABASE_INFRA_MODE: hosted
-          NEXT_PUBLIC_DATA_MODE: api
+          NEXT_PUBLIC_DATA_MODE: demo
           NEXT_PUBLIC_APP_ENV: production
           NEXT_PUBLIC_ENVIRONMENT_ID: shongre-production
           NEXT_PUBLIC_FR_URL: https://fr.shongre.invalid
           NEXT_PUBLIC_INTL_URL: https://intl.shongre.invalid
-          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
+          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true"
           NEXT_PUBLIC_ENABLE_AI_FEATURES: "false"
           NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
           EXPO_PUBLIC_DATA_MODE: api
@@ -67,7 +67,7 @@ jobs:
           EXPO_PUBLIC_FR_URL: https://fr.shongre.invalid
           EXPO_PUBLIC_INTL_URL: https://intl.shongre.invalid
           EXPO_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_CIOnly123456789
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
           CORS_ORIGIN: https://fr.shongre.invalid,https://intl.shongre.invalid
           DATABASE_URL: postgresql://ci:ci@db.shongre.invalid:5432/shongre
           SUPABASE_PROJECT_REF: ci-production-ref
@@ -103,6 +103,9 @@ jobs:
           AI_PROVIDER: gemini
           GEMINI_API_KEY: ci-only-gemini-api-key
           GEMINI_MODEL: gemini-2.5-flash
+          MALWARE_SCAN_MODE: http
+          MALWARE_SCAN_URL: https://scanner.shongre.invalid/v1/scan
+          MALWARE_SCAN_TOKEN: ci-only-malware-scanner-token
           ENABLE_SOCIAL_AUTH: "false"
           ENABLE_ACCOUNT_LINKING: "false"
           ENABLE_GOOGLE_AUTH: "false"
@@ -129,6 +132,12 @@ jobs:
         run: |
           supabase start --workdir backend
           supabase db reset --workdir backend --no-seed
+      - name: Execute database RLS persona tests
+        run: supabase test db --workdir backend
+      - name: Verify generated database types match the migrated schema
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: npm run db:types:check --workspace=backend
       - name: Baseline and verify immutable migration checksums
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
@@ -194,8 +203,8 @@ jobs:
             -e PUBLIC_FR_URL=https://dev.shongre.invalid \
             -e PUBLIC_INTL_URL=https://dev-intl.shongre.invalid \
             -e API_URL=https://api-dev.shongre.invalid \
-            -e NEXT_PUBLIC_DATA_MODE=api \
-            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false \
+            -e NEXT_PUBLIC_DATA_MODE=demo \
+            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true \
             shongre-frontend:local)
           web_staging_id=$(docker run -d -p 3001:3000 \
             -e APP_ENV=staging \
@@ -203,8 +212,8 @@ jobs:
             -e PUBLIC_FR_URL=https://staging.shongre.invalid \
             -e PUBLIC_INTL_URL=https://staging-intl.shongre.invalid \
             -e API_URL=https://api-staging.shongre.invalid \
-            -e NEXT_PUBLIC_DATA_MODE=api \
-            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false \
+            -e NEXT_PUBLIC_DATA_MODE=demo \
+            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true \
             shongre-frontend:local)
           worker_id=$(docker run -d \
             -e NODE_ENV=development \

@@ -126,10 +126,11 @@ const mapConversation = (conversation: BackendConversation): Conversation => ({
 
 export class HttpMessagingService implements MessagingServiceContract {
   async getUserConversations(_userId: string): Promise<Conversation[]> {
-    const conversations = await httpClient.get<BackendConversation[]>(
-      "/messaging/conversations",
-    );
-    return conversations.map(mapConversation);
+    const page = await httpClient.get<{
+      items: BackendConversation[];
+      pageInfo: { hasNextPage: boolean; nextCursor?: string };
+    }>("/messaging/conversations", { params: { limit: 100 } });
+    return page.items.map(mapConversation);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {

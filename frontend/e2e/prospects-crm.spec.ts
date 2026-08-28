@@ -159,11 +159,13 @@ test.describe("Shongre Prospects CRM", () => {
       name: "Brief et preuves",
     });
     await expect(restoredEvidence).toBeVisible();
-    expect(
-      await restoredEvidence.evaluate((element) =>
-        element.contains(document.activeElement),
-      ),
-    ).toBe(true);
+    await expect
+      .poll(() =>
+        restoredEvidence.evaluate((element) =>
+          element.contains(document.activeElement),
+        ),
+      )
+      .toBe(true);
   });
 
   test("distinguishes an empty search from the initial discovery state", async ({

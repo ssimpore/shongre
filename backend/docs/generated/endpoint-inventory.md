@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **434**
-- Specification SHA-256: `44b5712d893f0bdc`
+- Operations: **437**
+- Specification SHA-256: `98f4ddc63fb4f02a`
 
 ## account
 
@@ -61,6 +61,9 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `POST` | `/admin/countries/{code}/changes/{id}/approve` | `postAdminCountriesByCodeChangesByIdApprove` | `permission` | `market.configure` | `200` |
+| `POST` | `/admin/countries/{code}/changes/{id}/reject` | `postAdminCountriesByCodeChangesByIdReject` | `permission` | `market.configure` | `200` |
+| `GET` | `/admin/countries/{code}/changes` | `getAdminCountriesByCodeChanges` | `permission` | `market.manage` | `200` |
 | `PATCH` | `/admin/countries/{code}` | `patchAdminCountriesByCode` | `permission` | `market.manage` | `200` |
 
 ## admin-discovery

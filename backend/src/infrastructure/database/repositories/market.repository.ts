@@ -10,7 +10,23 @@ import {
 } from "@shongre/contracts";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
-import type { Database, Json } from "../../../generated/database.types.js";
+import type { Json } from "../../../generated/database.types.js";
+import { randomUUID } from "node:crypto";
+import { AppError } from "../../../shared/errors/app-error.js";
+
+export interface MarketConfigurationChangeRequest {
+  id: string;
+  marketCode: string;
+  requestedBy: string;
+  baseVersion: number;
+  changedFields: string[];
+  reason: string;
+  candidate: CountryMarketDefinition;
+  status: "pending" | "approved" | "rejected" | "stale";
+  reviewedBy?: string;
+  reviewReason?: string;
+  createdAt: string;
+}
 
 export interface IMarketRepository {
   getAll(): Promise<CountryMarketDefinition[]>;
@@ -18,17 +34,66 @@ export interface IMarketRepository {
   getActive(): Promise<CountryMarketDefinition>;
   setActive(code: string): Promise<CountryMarketDefinition>;
   getEffective(code: string): Promise<CountryMarketDefinition>;
-  updateConfiguration(
+  requestConfigurationChange(
     code: string,
-    input: Partial<CountryMarketDefinition>,
+    input: {
+      current: CountryMarketDefinition;
+      candidate: CountryMarketDefinition;
+      changedFields: string[];
+      expectedVersion: number;
+      reason: string;
+    },
+    actorId: string,
+  ): Promise<MarketConfigurationChangeRequest>;
+  listConfigurationChanges(
+    code: string,
+  ): Promise<MarketConfigurationChangeRequest[]>;
+  approveConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
   ): Promise<CountryMarketDefinition>;
-  recordConfigurationAudit(input: {
-    marketCode: string;
-    actorId: string;
-    changedFields: string[];
-    previousVersion: number;
-    newVersion: number;
-  }): Promise<void>;
+  rejectConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<void>;
+}
+
+function marketGovernanceFailure(operation: string, error: unknown): never {
+  const message = String(
+    (error as { message?: unknown } | null)?.message || "",
+  );
+  if (/four-eyes|requester cannot|different administrator/i.test(message)) {
+    throw new AppError({
+      code: "FORBIDDEN",
+      statusCode: 403,
+      message: "La demande doit être examinée par un autre administrateur.",
+      originalError: error,
+    });
+  }
+  if (/stale|version conflict|configuration version/i.test(message)) {
+    throw new AppError({
+      code: "CONFLICT",
+      statusCode: 409,
+      message:
+        "La configuration du marché a changé. Créez une nouvelle demande.",
+      originalError: error,
+    });
+  }
+  if (
+    /pending market configuration request not found|request not found/i.test(
+      message,
+    )
+  ) {
+    throw new AppError({
+      code: "NOT_FOUND",
+      statusCode: 404,
+      message: "Demande de configuration introuvable.",
+      originalError: error,
+    });
+  }
+  databaseFailure(operation, error);
 }
 
 const SAFE_UNAVAILABLE_COMMERCIAL_POLICY = {
@@ -128,6 +193,7 @@ export const CANONICAL_DEMO_MARKETS: Record<string, CountryMarketDefinition> =
 
 export class DemoMarketRepository implements IMarketRepository {
   private markets: Map<string, CountryMarketDefinition> = new Map();
+  private changes = new Map<string, MarketConfigurationChangeRequest>();
   private activeCode = getDefaultCountryConfig().marketCode;
 
   constructor(
@@ -146,6 +212,7 @@ export class DemoMarketRepository implements IMarketRepository {
     > = CANONICAL_DEMO_MARKETS,
   ) {
     this.markets.clear();
+    this.changes.clear();
     Object.values(initialMarkets).forEach((m) =>
       this.markets.set(m.code, { ...m }),
     );
@@ -191,31 +258,84 @@ export class DemoMarketRepository implements IMarketRepository {
     };
   }
 
-  async updateConfiguration(
+  async requestConfigurationChange(
     code: string,
-    input: Partial<CountryMarketDefinition>,
-  ): Promise<CountryMarketDefinition> {
+    input: {
+      current: CountryMarketDefinition;
+      candidate: CountryMarketDefinition;
+      changedFields: string[];
+      expectedVersion: number;
+      reason: string;
+    },
+    actorId: string,
+  ): Promise<MarketConfigurationChangeRequest> {
     const current = await this.getByCode(code);
     if (!current) throw new Error(`Unknown market: ${code}`);
-    const next: CountryMarketDefinition = {
-      ...current,
-      ...input,
-      code: current.code,
-      supportedLocales: input.supportedLocales
-        ? [...input.supportedLocales]
-        : [...current.supportedLocales],
-      payments: input.payments
-        ? { ...input.payments, providerIds: [...input.payments.providerIds] }
-        : current.payments,
-      version: (current.version || 1) + 1,
-      updatedAt: new Date().toISOString(),
+    if ((current.version || 1) !== input.expectedVersion)
+      throw new Error("market configuration version conflict");
+    const request: MarketConfigurationChangeRequest = {
+      id: randomUUID(),
+      marketCode: current.code,
+      requestedBy: actorId,
+      baseVersion: input.expectedVersion,
+      changedFields: [...input.changedFields],
+      reason: input.reason,
+      candidate: structuredClone(input.candidate),
+      status: "pending",
+      createdAt: new Date().toISOString(),
     };
-    this.markets.set(current.code, next);
-    return { ...next };
+    this.changes.set(request.id, request);
+    return structuredClone(request);
   }
 
-  async recordConfigurationAudit(): Promise<void> {
-    return;
+  async listConfigurationChanges(
+    code: string,
+  ): Promise<MarketConfigurationChangeRequest[]> {
+    return [...this.changes.values()]
+      .filter((request) => request.marketCode === code.toUpperCase())
+      .map((request) => structuredClone(request));
+  }
+
+  async approveConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<CountryMarketDefinition> {
+    const request = this.changes.get(requestId);
+    if (!request || request.status !== "pending")
+      throw new Error("pending market configuration request not found");
+    if (request.requestedBy === reviewerId)
+      throw new Error("four-eyes approval required");
+    const current = await this.getByCode(request.marketCode);
+    if (!current || (current.version || 1) !== request.baseVersion) {
+      request.status = "stale";
+      throw new Error("market configuration version conflict");
+    }
+    const updated = {
+      ...structuredClone(request.candidate),
+      version: request.baseVersion + 1,
+      updatedAt: new Date().toISOString(),
+    };
+    this.markets.set(request.marketCode, updated);
+    request.status = "approved";
+    request.reviewedBy = reviewerId;
+    request.reviewReason = reason;
+    return structuredClone(updated);
+  }
+
+  async rejectConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<void> {
+    const request = this.changes.get(requestId);
+    if (!request || request.status !== "pending")
+      throw new Error("pending market configuration request not found");
+    if (request.requestedBy === reviewerId)
+      throw new Error("four-eyes approval required");
+    request.status = "rejected";
+    request.reviewedBy = reviewerId;
+    request.reviewReason = reason;
   }
 }
 
@@ -336,87 +456,150 @@ export class PostgresMarketRepository implements IMarketRepository {
     return target;
   }
 
-  async updateConfiguration(
-    code: string,
-    input: Partial<CountryMarketDefinition>,
-  ): Promise<CountryMarketDefinition> {
-    const current = await this.getByCode(code);
-    if (!current) throw new Error(`Unknown market: ${code}`);
-    const update: Database["public"]["Tables"]["markets"]["Update"] = {
-      name: input.name,
-      native_name: input.nativeName,
-      enabled: input.enabled,
-      launch_status: input.launchStatus,
-      canonical_domain_mode: input.canonicalDomainMode,
-      base_path: input.basePath,
-      default_locale: input.defaultLocale,
-      supported_locales: input.supportedLocales
-        ? [...input.supportedLocales]
-        : undefined,
-      currency: input.currency,
-      currency_symbol: input.currencySymbol,
-      timezone: input.timezone,
-      phone_country_code: input.phoneCountryCode,
-      address_format: input.addressFormat,
-      legal_entity: input.legalEntity,
-      seo_policy: input.seo as Json | undefined,
-      marketplace_policy: input.marketplace as Json | undefined,
-      payment_policy: input.payments as Json | undefined,
-      tax_policy: input.taxes as Json | undefined,
-      monetization_policy: input.monetization as Json | undefined,
-      compliance_policy: input.compliance as Json | undefined,
-      launch_content: input.launchContent as Json | undefined,
-      gateway_visible: input.gatewayVisible,
-      display_order: input.displayOrder,
-      protection_fee_rate: input.protectionFeeRate,
-      protection_fixed_fee: input.protectionFixedFee,
-      free_listings_limit: input.freeListingsLimit,
-      reservation_deposit_rate_bps: input.reservationDepositRateBps,
-      reservation_deposit_minimum_minor: input.reservationDepositMinimumMinor,
-      reservation_deposit_maximum_minor: input.reservationDepositMaximumMinor,
-      allowed_delivery_methods: input.allowedDeliveryMethods
-        ? [...input.allowedDeliveryMethods]
-        : undefined,
-      version: (current.version || 1) + 1,
-      updated_at: new Date().toISOString(),
+  private mapChangeRequest(row: any): MarketConfigurationChangeRequest {
+    return {
+      id: String(row.id),
+      marketCode: String(row.market_code),
+      requestedBy: String(row.requested_by),
+      baseVersion: Number(row.base_version),
+      changedFields: (row.changed_fields || []).map(String),
+      reason: String(row.reason),
+      candidate: row.candidate_snapshot as CountryMarketDefinition,
+      status: row.status,
+      reviewedBy: row.reviewed_by || undefined,
+      reviewReason: row.review_reason || undefined,
+      createdAt: String(row.created_at),
     };
-    const clean = Object.fromEntries(
-      Object.entries(update).filter(([, value]) => value !== undefined),
-    ) as Database["public"]["Tables"]["markets"]["Update"];
+  }
+
+  async requestConfigurationChange(
+    code: string,
+    input: {
+      current: CountryMarketDefinition;
+      candidate: CountryMarketDefinition;
+      changedFields: string[];
+      expectedVersion: number;
+      reason: string;
+    },
+    actorId: string,
+  ): Promise<MarketConfigurationChangeRequest> {
     try {
-      const { data, error } = await getSupabaseAdminClient()
-        .from("markets")
-        .update(clean)
-        .eq("code", current.code)
+      const { data: id, error } = await (getSupabaseAdminClient() as any).rpc(
+        "request_market_configuration_change",
+        {
+          p_market_code: code,
+          p_requested_by: actorId,
+          p_base_version: input.expectedVersion,
+          p_changed_fields: input.changedFields,
+          p_reason: input.reason,
+          p_before_snapshot: input.current as unknown as Json,
+          p_candidate_snapshot: input.candidate as unknown as Json,
+        },
+      );
+      if (error || !id)
+        databaseFailure("markets.requestConfigurationChange", error);
+      const { data: row, error: readError } = await getSupabaseAdminClient()
+        .from("market_configuration_change_requests" as any)
         .select("*")
+        .eq("id", id)
         .single();
-      if (error || !data) databaseFailure("markets.updateConfiguration", error);
-      return this.mapRowToMarket(data);
+      if (readError || !row)
+        databaseFailure("markets.requestConfigurationChange.read", readError);
+      return this.mapChangeRequest(row);
     } catch (error) {
-      databaseFailure("markets.updateConfiguration", error);
+      databaseFailure("markets.requestConfigurationChange", error);
     }
   }
 
-  async recordConfigurationAudit(input: {
-    marketCode: string;
-    actorId: string;
-    changedFields: string[];
-    previousVersion: number;
-    newVersion: number;
-  }): Promise<void> {
+  async listConfigurationChanges(
+    code: string,
+  ): Promise<MarketConfigurationChangeRequest[]> {
     try {
-      const { error } = await getSupabaseAdminClient()
-        .from("market_configuration_audit")
-        .insert({
-          market_code: input.marketCode,
-          actor_id: input.actorId,
-          changed_fields: input.changedFields,
-          previous_version: input.previousVersion,
-          new_version: input.newVersion,
-        });
-      if (error) databaseFailure("markets.recordConfigurationAudit", error);
+      const { data, error } = await getSupabaseAdminClient()
+        .from("market_configuration_change_requests" as any)
+        .select("*")
+        .eq("market_code", code.toUpperCase())
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) databaseFailure("markets.listConfigurationChanges", error);
+      return ((data || []) as any[]).map((row) => this.mapChangeRequest(row));
     } catch (error) {
-      databaseFailure("markets.recordConfigurationAudit", error);
+      databaseFailure("markets.listConfigurationChanges", error);
+    }
+  }
+
+  async approveConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<CountryMarketDefinition> {
+    try {
+      const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+        "approve_market_configuration_change",
+        {
+          p_request_id: requestId,
+          p_reviewer: reviewerId,
+          p_review_reason: reason,
+        },
+      );
+      if (error)
+        marketGovernanceFailure("markets.approveConfigurationChange", error);
+      if (!data?.[0]) {
+        const { data: request, error: readError } =
+          await getSupabaseAdminClient()
+            .from("market_configuration_change_requests" as any)
+            .select("status")
+            .eq("id", requestId)
+            .maybeSingle();
+        if (readError)
+          databaseFailure("markets.approveConfigurationChange.read", readError);
+        if ((request as { status?: string } | null)?.status === "stale") {
+          throw new AppError({
+            code: "CONFLICT",
+            statusCode: 409,
+            message:
+              "La configuration du marché a changé. Créez une nouvelle demande.",
+          });
+        }
+        throw new AppError({
+          code: "NOT_FOUND",
+          statusCode: 404,
+          message: "Demande de configuration introuvable.",
+        });
+      }
+      return this.mapRowToMarket(data[0]);
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      databaseFailure("markets.approveConfigurationChange", error);
+    }
+  }
+
+  async rejectConfigurationChange(
+    requestId: string,
+    reviewerId: string,
+    reason: string,
+  ): Promise<void> {
+    try {
+      const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+        "reject_market_configuration_change",
+        {
+          p_request_id: requestId,
+          p_reviewer: reviewerId,
+          p_review_reason: reason,
+        },
+      );
+      if (error)
+        marketGovernanceFailure("markets.rejectConfigurationChange", error);
+      if (data !== true) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          statusCode: 404,
+          message: "Demande de configuration introuvable.",
+        });
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      databaseFailure("markets.rejectConfigurationChange", error);
     }
   }
 }

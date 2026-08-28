@@ -74,7 +74,15 @@ function nodeFallback(): PublicRuntimeConfig {
     );
   }
 
-  const franceUrl = nodeEnvironmentValue("NEXT_PUBLIC_FR_URL");
+  const allowsLocalDefaults =
+    appEnvironment === "local" || appEnvironment === "test";
+  const franceUrl =
+    nodeEnvironmentValue("NEXT_PUBLIC_FR_URL") ||
+    (allowsLocalDefaults ? "http://localhost:3000" : "");
+  const internationalUrl =
+    nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL") ||
+    (allowsLocalDefaults ? "http://localhost:3001" : "");
+  const apiBaseUrl = nodeEnvironmentValue("NEXT_PUBLIC_API_URL");
   const applications = createApplicationRegistry({
     environment: appEnvironment as AppEnvironment,
     marketplaceOrigin:
@@ -91,10 +99,12 @@ function nodeFallback(): PublicRuntimeConfig {
 
   return {
     appEnvironment: appEnvironment as AppEnvironment,
-    environmentId: nodeEnvironmentValue("NEXT_PUBLIC_ENVIRONMENT_ID"),
+    environmentId:
+      nodeEnvironmentValue("NEXT_PUBLIC_ENVIRONMENT_ID") ||
+      (allowsLocalDefaults ? `shongre-${appEnvironment}` : ""),
     franceUrl,
-    internationalUrl: nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL"),
-    apiBaseUrl: nodeEnvironmentValue("NEXT_PUBLIC_API_URL"),
+    internationalUrl,
+    apiBaseUrl,
     dataMode,
     mockStorageEnabled:
       nodeEnvironmentValue("NEXT_PUBLIC_ENABLE_MOCK_STORAGE") !== "false",

@@ -1,5 +1,6 @@
 import {
   Conversation,
+  ConversationPage,
   Message,
   MessagePage,
   UserProfile,
@@ -18,6 +19,9 @@ interface DecodedMessageCursor {
   createdAt: string;
   id: string;
 }
+
+type ConversationPageOptions = MessagePageOptions;
+type DecodedConversationCursor = DecodedMessageCursor;
 
 export interface CreateMarketplaceOfferInput {
   conversationId: string;
@@ -68,8 +72,26 @@ const decodeMessageCursor = (
 const resolveMessageLimit = (value: number | undefined) =>
   Math.max(1, Math.min(100, Math.trunc(value || 50)));
 
+const encodeConversationCursor = (
+  conversation: Pick<Conversation, "lastMessageAt" | "id">,
+) =>
+  Buffer.from(
+    JSON.stringify({
+      createdAt: conversation.lastMessageAt,
+      id: conversation.id,
+    }),
+    "utf8",
+  ).toString("base64url");
+
+const decodeConversationCursor = (
+  cursor: string | undefined,
+): DecodedConversationCursor | undefined => decodeMessageCursor(cursor);
+
 export interface IMessagingRepository {
-  getUserConversations(userId: string): Promise<Conversation[]>;
+  getUserConversations(
+    userId: string,
+    options?: ConversationPageOptions,
+  ): Promise<ConversationPage>;
   getConversationById(id: string): Promise<Conversation | null>;
   createConversation(
     listingId: string,
@@ -138,10 +160,40 @@ export class DemoMessagingRepository implements IMessagingRepository {
     ]);
   }
 
-  async getUserConversations(userId: string): Promise<Conversation[]> {
-    return Array.from(this.conversations.values())
+  async getUserConversations(
+    userId: string,
+    options: ConversationPageOptions = {},
+  ): Promise<ConversationPage> {
+    const limit = resolveMessageLimit(options.limit);
+    const cursor = decodeConversationCursor(options.cursor);
+    const values = Array.from(this.conversations.values())
       .filter((c) => c.buyerId === userId || c.sellerId === userId)
-      .map((c) => ({ ...c }));
+      .sort(
+        (a, b) =>
+          b.lastMessageAt.localeCompare(a.lastMessageAt) ||
+          b.id.localeCompare(a.id),
+      )
+      .filter(
+        (conversation) =>
+          !cursor ||
+          conversation.lastMessageAt < cursor.createdAt ||
+          (conversation.lastMessageAt === cursor.createdAt &&
+            conversation.id < cursor.id),
+      );
+    const page = values.slice(0, limit + 1);
+    const items = page
+      .slice(0, limit)
+      .map((conversation) => ({ ...conversation }));
+    return {
+      items,
+      pageInfo: {
+        hasNextPage: page.length > limit,
+        nextCursor:
+          page.length > limit && items.length
+            ? encodeConversationCursor(items[items.length - 1])
+            : undefined,
+      },
+    };
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {
@@ -474,18 +526,42 @@ export class PostgresMessagingRepository implements IMessagingRepository {
     };
   }
 
-  async getUserConversations(userId: string): Promise<Conversation[]> {
+  async getUserConversations(
+    userId: string,
+    options: ConversationPageOptions = {},
+  ): Promise<ConversationPage> {
     try {
+      const limit = resolveMessageLimit(options.limit);
+      const cursor = decodeConversationCursor(options.cursor);
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await supabase
+      let query = supabase
         .from("conversations")
         .select(PostgresMessagingRepository.CONVERSATION_PROJECTION)
         .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-        .order("last_message_at", { ascending: false });
+        .order("last_message_at", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(limit + 1);
+      if (cursor) {
+        query = query.or(
+          `last_message_at.lt.${cursor.createdAt},and(last_message_at.eq.${cursor.createdAt},id.lt.${cursor.id})`,
+        );
+      }
+      const { data, error } = await query;
 
       if (error || !data)
         databaseFailure("messaging.getUserConversations", error);
-      return data.map((r: any) => this.mapRowToConversation(r));
+      const page = data.map((r: any) => this.mapRowToConversation(r));
+      const items = page.slice(0, limit);
+      return {
+        items,
+        pageInfo: {
+          hasNextPage: page.length > limit,
+          nextCursor:
+            page.length > limit && items.length
+              ? encodeConversationCursor(items[items.length - 1])
+              : undefined,
+        },
+      };
     } catch (error) {
       databaseFailure("messaging.getUserConversations", error);
     }

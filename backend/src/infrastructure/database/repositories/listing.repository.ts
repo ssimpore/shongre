@@ -706,7 +706,7 @@ export class PostgresListingRepository implements IListingRepository {
       if (filters.query) {
         query = query.textSearch("search_vector", filters.query, {
           type: "websearch",
-          config: "french",
+          config: "simple",
         });
       }
 

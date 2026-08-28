@@ -127,6 +127,7 @@ export function InvoicingOnboardingPage() {
                 </span>
                 <span
                   className="flex h-6 w-6 items-center justify-center rounded-full bg-success-surface text-success"
+                  role="img"
                   aria-label={complete ? "Terminé" : `Étape ${index + 1}`}
                 >
                   {complete ? (

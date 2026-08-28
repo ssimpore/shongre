@@ -1052,6 +1052,7 @@ export type MonetizationCatalog = z.infer<typeof monetizationCatalogSchema>;
 
 export const quoteRequestSchema = z.object({
   productIds: z.array(z.string().min(1)).min(1).max(20),
+  organizationId: z.string().uuid().optional(),
   priceIds: z.record(z.string(), z.string().min(1)).optional(),
   listingId: z.string().optional(),
   marketCode: marketCodeSchema,
@@ -1084,6 +1085,7 @@ export type QuoteLine = z.infer<typeof quoteLineSchema>;
 export const monetizationQuoteSchema = z.object({
   id: z.string(),
   accountId: z.string(),
+  organizationId: z.string().uuid().optional(),
   configurationVersionId: z.string(),
   marketCode: marketCodeSchema,
   currency: z.string().length(3),
@@ -1128,6 +1130,7 @@ export const monetizationOrderSchema = z.object({
   id: z.string(),
   quoteId: z.string(),
   accountId: z.string(),
+  organizationId: z.string().uuid().optional(),
   snapshotHash: z.string().length(64),
   total: moneySchema,
   status: z.enum([
@@ -1153,6 +1156,7 @@ export type MonetizationOrder = z.infer<typeof monetizationOrderSchema>;
 export const activeEntitlementSchema = z.object({
   id: z.string(),
   accountId: z.string(),
+  organizationId: z.string().uuid().optional(),
   productId: z.string(),
   key: z.string(),
   value: z.union([commercialScalarSchema, z.array(z.string())]),
@@ -1169,6 +1173,7 @@ export const monetizationSubscriptionSchema = z
   .object({
     id: z.string(),
     accountId: z.string(),
+    organizationId: z.string().uuid().optional(),
     productId: z.string(),
     productVersionId: z.string().optional(),
     priceId: z.string().optional(),

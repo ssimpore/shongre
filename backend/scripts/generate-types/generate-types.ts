@@ -9,6 +9,7 @@ const typesOutputPath = path.resolve(
   currentDirectory,
   "../../src/generated/database.types.ts",
 );
+const checkOnly = process.argv.includes("--check");
 
 function generateTypes(): void {
   const databaseUrl = process.env.DATABASE_URL;
@@ -40,6 +41,17 @@ function generateTypes(): void {
     throw new Error(
       "Supabase CLI did not return a valid Database type definition.",
     );
+  }
+
+  if (checkOnly) {
+    const current = fs.readFileSync(typesOutputPath, "utf8");
+    if (current !== result.stdout) {
+      throw new Error(
+        "Generated database types are stale. Run npm run db:types --workspace=backend against the migrated schema.",
+      );
+    }
+    console.log(`Database types are current at ${typesOutputPath}.`);
+    return;
   }
 
   fs.mkdirSync(path.dirname(typesOutputPath), { recursive: true });
