@@ -140,7 +140,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
               {index > 0 && (
                 <li
                   aria-hidden="true"
-                  className="flex items-center px-1.5 text-sm font-bold text-stone-700 md:px-2"
+                  className="flex items-center px-1.5 text-sm font-bold text-stone-700"
                 >
                   ·
                 </li>
@@ -166,7 +166,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                     onSelectCategory(item.slug);
                   }}
                   aria-current={isActive ? "page" : undefined}
-                  className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight md:px-2 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                  className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
                     isActive
                       ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
                       : item.kind === "link" && item.emphasis

@@ -272,6 +272,160 @@ export const MyListingsPage: React.FC = () => {
               "Vos ventes finalisées apparaîtront ici avec leur historique de transaction.",
           };
 
+  const getListingMarkets = (listing: Listing) =>
+    listing.marketCodes && listing.marketCodes.length > 0
+      ? listing.marketCodes
+      : [listing.marketCode || activeMarket.code];
+
+  const renderListingStatus = (listing: Listing) => (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <Badge
+        variant={listing.status === "active" ? "success" : "neutral"}
+        size="sm"
+      >
+        {listing.status === "active" ? "En ligne" : "Vendu"}
+      </Badge>
+      {listing.isBoosted && (
+        <Badge variant="featured" size="sm">
+          Vedette
+        </Badge>
+      )}
+    </div>
+  );
+
+  const renderMarketsButton = (listing: Listing) => {
+    const markets = getListingMarkets(listing);
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setMarketsModalListing(listing);
+          setSelectedMarketsInModal(markets);
+        }}
+        className="inline-flex min-h-control-sm items-center gap-1.5 rounded-control border border-border-base bg-bg-surface px-2.5 py-1 text-xs font-semibold text-stone-700 motion-interactive hover:bg-bg-subtle"
+        title={t("sellerworkspace.myListingsPage.gererLesPaysDePublication")}
+      >
+        <Globe
+          className="h-icon-sm w-icon-sm text-primary"
+          aria-hidden="true"
+        />
+        <span>{markets.join(", ")}</span>
+        <span className="text-micro font-normal text-stone-500">
+          ({markets.length})
+        </span>
+      </button>
+    );
+  };
+
+  const renderListingActions = (listing: Listing, compact = false) => (
+    <div className="flex min-w-0 items-center justify-end gap-1.5">
+      {listing.status === "active" && (
+        <>
+          <button
+            type="button"
+            onClick={() => openBoostModal(listing)}
+            className="inline-flex min-h-control-sm items-center gap-1 rounded-control border border-warning-border bg-warning-surface px-2 text-xs font-bold text-warning motion-interactive hover:bg-warning-surface"
+            title={t("sellerworkspace.myListingsPage.boosterLAnnonce")}
+            aria-label={t("sellerworkspace.myListingsPage.boosterLAnnonce")}
+          >
+            <Zap
+              className="h-icon-sm w-icon-sm fill-amber-500 text-warning"
+              aria-hidden="true"
+            />
+            <span className={compact ? "" : "hidden lg:inline"}>Booster</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleMarkAsSold(listing.id)}
+            className="min-h-control-sm rounded-control bg-stone-100 px-2.5 text-xs font-semibold text-stone-700 motion-interactive hover:bg-stone-200"
+            title="Marquer comme vendu"
+          >
+            Vendu
+          </button>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={() => handleDeleteListing(listing.id)}
+        className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-control text-text-muted motion-interactive hover:bg-danger-surface hover:text-danger"
+        title={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
+        aria-label={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
+      >
+        <Trash2 className="h-icon-md w-icon-md" aria-hidden="true" />
+      </button>
+    </div>
+  );
+
+  const renderCompactListing = (listing: Listing) => (
+    <article
+      data-compact-listing-row={listing.id}
+      className="rounded-control border border-border-subtle bg-bg-base p-3"
+    >
+      <div className="flex min-w-0 gap-3">
+        <Image
+          src={getPhotoUrl(listing.coverImageUrl || listing.photos?.[0])}
+          alt=""
+          sizes="64px"
+          className="h-16 w-16 shrink-0 rounded-control border border-border-base object-cover"
+        />
+        <div className="min-w-0 flex-1">
+          <Link
+            to={`/annonce/${listing.id}`}
+            title={listing.title}
+            className="line-clamp-2 text-sm font-bold leading-snug text-stone-900 hover:text-primary"
+          >
+            {listing.title}
+          </Link>
+          <p className="mt-0.5 truncate text-xs text-text-muted">
+            {getListingCategoryLabel(listing)}
+          </p>
+          <div className="mt-1.5">{renderListingStatus(listing)}</div>
+        </div>
+      </div>
+
+      <dl
+        data-compact-listing-metrics
+        className="mt-3 grid grid-cols-3 rounded-control border border-border-subtle bg-bg-surface px-3 py-2"
+      >
+        <div className="min-w-0 pr-2">
+          <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
+            Prix
+          </dt>
+          <dd className="truncate text-sm font-extrabold text-stone-900">
+            {formatPrice(listing.price, { currency: listing.currency })}
+          </dd>
+        </div>
+        <div className="min-w-0 border-l border-border-subtle px-3">
+          <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
+            Vues
+          </dt>
+          <dd className="flex items-center gap-1 text-xs font-semibold text-stone-700">
+            <Eye
+              className="h-icon-sm w-icon-sm text-stone-400"
+              aria-hidden="true"
+            />
+            <span>{listing.viewsCount ?? listing.viewCount ?? 0}</span>
+          </dd>
+        </div>
+        <div className="min-w-0 border-l border-border-subtle pl-3">
+          <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
+            Publiée
+          </dt>
+          <dd className="text-micro font-medium leading-tight text-stone-700">
+            {formatRelativeDate(listing.createdAt)}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3">
+        {renderMarketsButton(listing)}
+        {renderListingActions(listing, true)}
+      </div>
+    </article>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -349,6 +503,7 @@ export const MyListingsPage: React.FC = () => {
               rows={filteredListings}
               getRowKey={(listing) => listing.id}
               caption="Mes annonces"
+              renderCompactRow={renderCompactListing}
               empty={
                 <EmptyState
                   icon={<List className="w-8 h-8 text-stone-500" />}
@@ -403,53 +558,12 @@ export const MyListingsPage: React.FC = () => {
                 {
                   id: "Statut",
                   header: "Statut",
-                  cell: (listing) => (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <Badge
-                        variant={
-                          listing.status === "active" ? "success" : "neutral"
-                        }
-                        size="sm"
-                      >
-                        {listing.status === "active" ? "En ligne" : "Vendu"}
-                      </Badge>
-                      {listing.isBoosted && (
-                        <Badge variant="featured" size="sm">
-                          Vedette
-                        </Badge>
-                      )}
-                    </div>
-                  ),
+                  cell: renderListingStatus,
                 },
                 {
                   id: "Marches",
                   header: "Marchés",
-                  cell: (listing) => {
-                    const markets =
-                      listing.marketCodes && listing.marketCodes.length > 0
-                        ? listing.marketCodes
-                        : [listing.marketCode || activeMarket.code];
-
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMarketsModalListing(listing);
-                          setSelectedMarketsInModal(markets);
-                        }}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bg-base hover:bg-bg-subtle border border-border-base text-xs font-semibold text-stone-700 transition-colors"
-                        title={t(
-                          "sellerworkspace.myListingsPage.gererLesPaysDePublication",
-                        )}
-                      >
-                        <Globe className="w-icon-sm h-icon-sm text-primary" />
-                        <span>{markets.join(", ")}</span>
-                        <span className="text-micro text-stone-500 font-normal">
-                          ({markets.length})
-                        </span>
-                      </button>
-                    );
-                  },
+                  cell: renderMarketsButton,
                 },
                 {
                   id: "Prix",
@@ -487,45 +601,7 @@ export const MyListingsPage: React.FC = () => {
                   id: "Actions",
                   header: "Actions",
                   align: "right",
-                  cell: (listing) => (
-                    <div className="flex items-center justify-end gap-1.5">
-                      {listing.status === "active" && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => openBoostModal(listing)}
-                            className="px-2.5 py-1 rounded-lg bg-warning-surface hover:bg-warning-surface border border-warning-border text-warning font-bold text-xs flex items-center gap-1 transition-colors"
-                            title={t(
-                              "sellerworkspace.myListingsPage.boosterLAnnonce",
-                            )}
-                          >
-                            <Zap className="w-icon-sm h-icon-sm text-warning fill-amber-500" />
-                            <span className="hidden lg:inline">Booster</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleMarkAsSold(listing.id)}
-                            className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors"
-                            title="Marquer comme vendu"
-                          >
-                            Vendu
-                          </button>
-                        </>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteListing(listing.id)}
-                        className="p-1.5 rounded-lg hover:bg-danger-surface text-text-muted hover:text-danger transition-colors"
-                        title={t(
-                          "sellerworkspace.myListingsPage.supprimerLAnnonce",
-                        )}
-                      >
-                        <Trash2 className="w-icon-md h-icon-md" />
-                      </button>
-                    </div>
-                  ),
+                  cell: renderListingActions,
                 },
               ]}
             />

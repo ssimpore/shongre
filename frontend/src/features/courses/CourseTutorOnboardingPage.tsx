@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -27,6 +27,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  OnboardingPreparationPage,
   SelectableCard,
   Skeleton,
   Textarea,
@@ -35,6 +36,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { formatCurrencySymbol, formatMoney } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { scrollToTop } from "../../utilities/motion";
 
 const STEPS = [
   { label: "Profil", icon: UserRound },
@@ -70,6 +72,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const startsAtRequestedStep = searchParams.has("step");
   const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [step, setStep] = useState<number>(() =>
@@ -78,8 +81,16 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       : ONBOARDING_STEP.profile,
   );
   const [draft, setDraft] = useState<TutorOnboardingDraft | null>(null);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(
+    !startsAtRequestedStep,
+  );
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(
+    startsAtRequestedStep,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   usePageMeta({
     title: t("verticals.education.onboardingTitle"),
@@ -101,6 +112,13 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       .then(([nextCatalog, savedDraft]) => {
         setCatalog(nextCatalog);
         setDraft(savedDraft);
+        setHasSavedProgress(
+          Boolean(
+            savedDraft.headline.trim() ||
+            savedDraft.subjectIds.length > 0 ||
+            savedDraft.biography.trim(),
+          ),
+        );
       })
       .catch(() => {
         toast.error(t("verticals.education.catalogUnavailable"));
@@ -108,10 +126,14 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   }, [accountId, activeMarket.code, currentUser?.name, t, toast]);
 
   useEffect(() => {
-    if (!draft) return;
+    if (!draft || !hasEnteredWizard) return;
     // The adapter owns draft persistence; UI never chooses a storage backend.
     void services.courses.saveTutorOnboardingDraft(accountId, draft);
-  }, [accountId, draft]);
+  }, [accountId, draft, hasEnteredWizard]);
+
+  useEffect(() => {
+    if (!isPreparationVisible) wizardHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
 
   const availableLevels = useMemo(() => {
     if (!catalog || !draft) return [];
@@ -183,6 +205,70 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     }
   };
 
+  const startOnboarding = () => {
+    setHasEnteredWizard(true);
+    setIsPreparationVisible(false);
+    scrollToTop();
+  };
+
+  const goBack = () => {
+    if (step === ONBOARDING_STEP.profile) {
+      setIsPreparationVisible(true);
+    } else {
+      setStep((value) => value - ONBOARDING_STEP_DELTA);
+    }
+    scrollToTop();
+  };
+
+  if (isPreparationVisible) {
+    return (
+      <OnboardingPreparationPage
+        eyebrow={t("onboarding.preparation.education.eyebrow")}
+        title={t("onboarding.preparation.education.title")}
+        description={t("onboarding.preparation.education.description")}
+        checklistTitle={t("onboarding.preparation.education.checklistTitle")}
+        items={[
+          {
+            title: t("onboarding.preparation.education.expertiseTitle"),
+            description: t(
+              "onboarding.preparation.education.expertiseDescription",
+            ),
+            icon: GraduationCap,
+          },
+          {
+            title: t("onboarding.preparation.education.availabilityTitle"),
+            description: t(
+              "onboarding.preparation.education.availabilityDescription",
+            ),
+            icon: Clock3,
+          },
+          {
+            title: t("onboarding.preparation.education.presentationTitle"),
+            description: t(
+              "onboarding.preparation.education.presentationDescription",
+            ),
+            icon: BookOpen,
+          },
+        ]}
+        actionLabel={t(
+          hasSavedProgress
+            ? "onboarding.preparation.education.resume"
+            : "onboarding.preparation.education.start",
+        )}
+        durationLabel={t("onboarding.preparation.education.duration")}
+        statusLabel={t(
+          !catalog || !draft
+            ? "onboarding.preparation.loading"
+            : hasSavedProgress
+              ? "onboarding.preparation.resumeReady"
+              : "onboarding.preparation.autosave",
+        )}
+        isReady={Boolean(catalog && draft)}
+        onStart={startOnboarding}
+      />
+    );
+  }
+
   if (!catalog || !draft)
     return <Skeleton className="mx-auto h-152 w-full max-w-5xl rounded-card" />;
 
@@ -216,7 +302,11 @@ export const CourseTutorOnboardingPage: React.FC = () => {
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
           <Badge variant="primary">{t("verticals.education.brand")}</Badge>
-          <h1 className="mt-2 text-xl font-black text-text-main sm:text-2xl">
+          <h1
+            ref={wizardHeadingRef}
+            tabIndex={-1}
+            className="mt-2 text-xl font-black text-text-main outline-none sm:text-2xl"
+          >
             Créez votre activité de cours
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
@@ -690,8 +780,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
           <footer className="mt-8 flex items-center justify-between gap-3 border-t border-border-subtle pt-5">
             <Button
               variant="ghost"
-              disabled={step === ONBOARDING_STEP.profile || isSubmitting}
-              onClick={() => setStep((value) => value - ONBOARDING_STEP_DELTA)}
+              disabled={isSubmitting}
+              onClick={goBack}
               leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
             >
               Retour

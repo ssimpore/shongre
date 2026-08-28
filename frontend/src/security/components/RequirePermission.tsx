@@ -284,16 +284,24 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
             {customMessage || copy.message}
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          <div className="mx-auto flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
             <Button
               to={routes.home()}
               variant="outline"
               size="md"
+              fullWidth
+              className="sm:flex-1"
               leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
             >
               {t("security.requirePermission.retourALAccueil")}
             </Button>
-            <Button to={forward.to} variant="primary" size="md">
+            <Button
+              to={forward.to}
+              variant="primary"
+              size="md"
+              fullWidth
+              className="sm:flex-1"
+            >
               {forward.label}
             </Button>
           </div>

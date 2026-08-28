@@ -30,6 +30,12 @@ export interface DataTableProps<T> {
   caption: string;
   /** Rendered instead of the table when `rows` is empty. */
   empty?: React.ReactNode;
+  /**
+   * Optional domain-specific compact row. Operational records do not always
+   * read well as a generic label/value grid on phones; callers can provide a
+   * tighter hierarchy while the desktop table keeps using the same columns.
+   */
+  renderCompactRow?: (row: T) => React.ReactNode;
   className?: string;
 }
 
@@ -49,6 +55,7 @@ export function DataTable<T>({
   getRowKey,
   caption,
   empty,
+  renderCompactRow,
   className = "",
 }: DataTableProps<T>) {
   const isCompact = !useMediaQuery("(min-width: 768px)");
@@ -67,22 +74,31 @@ export function DataTable<T>({
         aria-label={caption}
       >
         {rows.map((row) => (
-          <li key={getRowKey(row)} className="py-4 space-y-2.5">
-            {titleColumn && (
-              <div className="min-w-0">{titleColumn.cell(row)}</div>
+          <li
+            key={getRowKey(row)}
+            className={renderCompactRow ? "py-3" : "space-y-2.5 py-4"}
+          >
+            {renderCompactRow ? (
+              renderCompactRow(row)
+            ) : (
+              <>
+                {titleColumn && (
+                  <div className="min-w-0">{titleColumn.cell(row)}</div>
+                )}
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                  {detailColumns.map((col) => (
+                    <div key={col.id} className="min-w-0">
+                      <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
+                        {col.header}
+                      </dt>
+                      <dd className="mt-0.5 text-xs text-stone-800">
+                        {col.cell(row)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
             )}
-            <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-              {detailColumns.map((col) => (
-                <div key={col.id} className="min-w-0">
-                  <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
-                    {col.header}
-                  </dt>
-                  <dd className="text-xs text-stone-800 mt-0.5">
-                    {col.cell(row)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
           </li>
         ))}
       </ul>

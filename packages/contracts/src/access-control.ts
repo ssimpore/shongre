@@ -528,6 +528,7 @@ export const VERTICAL_CAPABILITIES: Record<
     "auto.inventory.import.own",
   ],
   education: [
+    "course.profile.manage.own",
     "course.offer.manage.own",
     "course.lead.read.own",
     "course.lead.respond.own",

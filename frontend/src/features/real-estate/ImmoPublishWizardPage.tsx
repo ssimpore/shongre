@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,6 +37,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  OnboardingPreparationPage,
   ProgressBar,
   Select,
   Skeleton,
@@ -93,6 +94,8 @@ export const ImmoPublishWizardPage: React.FC = () => {
   const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returningFromCheckout = searchParams.get("checkout") === "success";
   const accountId = currentUser?.id || "guest";
   const [draftId, setDraftId] = useState("");
   const [step, setStep] = useState<number>(FIRST_STEP);
@@ -104,8 +107,16 @@ export const ImmoPublishWizardPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [publishedId, setPublishedId] = useState<string>();
   const [paymentStatus, setPaymentStatus] = useState<string>();
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(
+    !returningFromCheckout,
+  );
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(
+    returningFromCheckout,
+  );
   const hydrated = useRef(false);
   const checkoutRecoveryStarted = useRef(false);
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   usePageMeta({
     title: "Publier un bien immobilier",
@@ -124,14 +135,24 @@ export const ImmoPublishWizardPage: React.FC = () => {
       ),
     ])
       .then(([nextCatalog, remote]) => {
+        const restoredData = {
+          ...EMPTY_PROPERTY_PUBLICATION_DRAFT,
+          ...(remote.data as Partial<DraftData>),
+        };
         setCatalog(nextCatalog);
         setDraftId(remote.id);
         setStep(remote.currentStep);
         setCompletedSteps(remote.completedSteps);
-        setData({
-          ...EMPTY_PROPERTY_PUBLICATION_DRAFT,
-          ...(remote.data as Partial<DraftData>),
-        });
+        setData(restoredData);
+        setHasSavedProgress(
+          remote.currentStep > FIRST_STEP ||
+            remote.completedSteps.length > 0 ||
+            Boolean(
+              restoredData.propertyType ||
+              restoredData.city ||
+              restoredData.title,
+            ),
+        );
         const restoredPaymentStatus = remote.data.paymentStatus;
         setPaymentStatus(
           typeof restoredPaymentStatus === "string"
@@ -146,7 +167,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
   }, [accountId, activeMarket.code, currentUser?.name, toast]);
 
   useEffect(() => {
-    if (!hydrated.current || !draftId) return;
+    if (!hasEnteredWizard || !hydrated.current || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
@@ -172,15 +193,20 @@ export const ImmoPublishWizardPage: React.FC = () => {
     completedSteps,
     data,
     draftId,
+    hasEnteredWizard,
     paymentStatus,
     step,
   ]);
 
   useEffect(() => {
+    if (!isPreparationVisible) wizardHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
+
+  useEffect(() => {
     if (
       !catalog ||
       checkoutRecoveryStarted.current ||
-      new URLSearchParams(window.location.search).get("checkout") !== "success"
+      searchParams.get("checkout") !== "success"
     )
       return;
     checkoutRecoveryStarted.current = true;
@@ -216,6 +242,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
     data.addOnIds,
     data.offerId,
     draftId,
+    searchParams,
     toast,
   ]);
 
@@ -404,6 +431,64 @@ export const ImmoPublishWizardPage: React.FC = () => {
     }
   };
 
+  const startOnboarding = () => {
+    setHasEnteredWizard(true);
+    setIsPreparationVisible(false);
+    scrollToTop();
+  };
+
+  const goBack = () => {
+    if (step === FIRST_STEP) {
+      setIsPreparationVisible(true);
+    } else {
+      setStep((current) => Math.max(FIRST_STEP, current - FIRST_STEP));
+    }
+    scrollToTop();
+  };
+
+  if (isPreparationVisible) {
+    return (
+      <OnboardingPreparationPage
+        eyebrow={t("onboarding.preparation.immo.eyebrow")}
+        title={t("onboarding.preparation.immo.title")}
+        description={t("onboarding.preparation.immo.description")}
+        checklistTitle={t("onboarding.preparation.immo.checklistTitle")}
+        items={[
+          {
+            title: t("onboarding.preparation.immo.locationTitle"),
+            description: t("onboarding.preparation.immo.locationDescription"),
+            icon: MapPin,
+          },
+          {
+            title: t("onboarding.preparation.immo.legalTitle"),
+            description: t("onboarding.preparation.immo.legalDescription"),
+            icon: FileCheck2,
+          },
+          {
+            title: t("onboarding.preparation.immo.photosTitle"),
+            description: t("onboarding.preparation.immo.photosDescription"),
+            icon: Camera,
+          },
+        ]}
+        actionLabel={t(
+          hasSavedProgress
+            ? "onboarding.preparation.immo.resume"
+            : "onboarding.preparation.immo.start",
+        )}
+        durationLabel={t("onboarding.preparation.immo.duration")}
+        statusLabel={t(
+          !catalog || !draftId
+            ? "onboarding.preparation.loading"
+            : hasSavedProgress
+              ? "onboarding.preparation.resumeReady"
+              : "onboarding.preparation.autosave",
+        )}
+        isReady={Boolean(catalog && draftId)}
+        onStart={startOnboarding}
+      />
+    );
+  }
+
   if (!catalog || !draftId)
     return (
       <div className="mx-auto max-w-5xl p-6">
@@ -422,7 +507,11 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-wide text-primary">
               Shongre Immo
             </p>
-            <h1 className="text-lg font-black text-text-main">
+            <h1
+              ref={wizardHeadingRef}
+              tabIndex={-1}
+              className="text-lg font-black text-text-main outline-none"
+            >
               Publier un bien
             </h1>
           </div>
@@ -1261,12 +1350,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <div className="mt-8 flex items-center justify-between border-t border-border-subtle pt-5">
               <Button
                 variant="outline"
-                onClick={() =>
-                  setStep((current) =>
-                    Math.max(FIRST_STEP, current - FIRST_STEP),
-                  )
-                }
-                disabled={step === FIRST_STEP}
+                onClick={goBack}
                 leftIcon={<ArrowLeft className="h-icon-md w-icon-md" />}
               >
                 Retour

@@ -43,6 +43,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  OnboardingPreparationPage,
   ProgressBar,
   Select,
   SelectableCard,
@@ -108,11 +109,15 @@ export const AutoPublishWizardPage: React.FC = () => {
   const [registration, setRegistration] = useState("");
   const [saving, setSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string>();
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(true);
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
   const [checkingDuplicate, setCheckingDuplicate] = useState(false);
   const [mediaUploading, setMediaUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [completeId, setCompleteId] = useState<string>();
   const hydrated = useRef(false);
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   usePageMeta({
     title: "Publier un véhicule",
@@ -128,15 +133,25 @@ export const AutoPublishWizardPage: React.FC = () => {
       services.auto.getOrCreateDraft(accountId, activeMarket.code),
     ])
       .then(([nextCatalog, remote]) => {
+        const restoredData = {
+          ...(EMPTY_AUTO_DRAFT_DATA as AutoDraftData),
+          ...(remote.data as Partial<AutoDraftData>),
+        };
         setCatalog(nextCatalog);
         setDraftId(remote.id);
         setStep(remote.currentStep);
         setCompletedSteps(remote.completedSteps);
         setDuplicateCheck(remote.duplicateCheck);
-        setData({
-          ...(EMPTY_AUTO_DRAFT_DATA as AutoDraftData),
-          ...(remote.data as Partial<AutoDraftData>),
-        });
+        setData(restoredData);
+        setHasSavedProgress(
+          remote.currentStep > FIRST_STEP ||
+            remote.completedSteps.length > 0 ||
+            Boolean(
+              restoredData.vehicleType ||
+              restoredData.makeLabel ||
+              restoredData.title,
+            ),
+        );
         hydrated.current = true;
       })
       .catch(() =>
@@ -145,7 +160,7 @@ export const AutoPublishWizardPage: React.FC = () => {
   }, [accountId, activeMarket.code, toast]);
 
   useEffect(() => {
-    if (!hydrated.current || !draftId) return;
+    if (!hasEnteredWizard || !hydrated.current || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
@@ -173,8 +188,13 @@ export const AutoPublishWizardPage: React.FC = () => {
     data,
     draftId,
     duplicateCheck,
+    hasEnteredWizard,
     step,
   ]);
+
+  useEffect(() => {
+    if (!isPreparationVisible) wizardHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
 
   const update = <K extends keyof AutoDraftData>(
     key: K,
@@ -344,6 +364,64 @@ export const AutoPublishWizardPage: React.FC = () => {
       setSubmitting(false);
     }
   };
+
+  const startOnboarding = () => {
+    setHasEnteredWizard(true);
+    setIsPreparationVisible(false);
+    scrollToTop();
+  };
+
+  const goBack = () => {
+    if (step === FIRST_STEP) {
+      setIsPreparationVisible(true);
+    } else {
+      setStep((current) => Math.max(FIRST_STEP, current - FIRST_STEP));
+    }
+    scrollToTop();
+  };
+
+  if (isPreparationVisible) {
+    return (
+      <OnboardingPreparationPage
+        eyebrow={t("onboarding.preparation.auto.eyebrow")}
+        title={t("onboarding.preparation.auto.title")}
+        description={t("onboarding.preparation.auto.description")}
+        checklistTitle={t("onboarding.preparation.auto.checklistTitle")}
+        items={[
+          {
+            title: t("onboarding.preparation.auto.identityTitle"),
+            description: t("onboarding.preparation.auto.identityDescription"),
+            icon: FileCheck2,
+          },
+          {
+            title: t("onboarding.preparation.auto.historyTitle"),
+            description: t("onboarding.preparation.auto.historyDescription"),
+            icon: History,
+          },
+          {
+            title: t("onboarding.preparation.auto.photosTitle"),
+            description: t("onboarding.preparation.auto.photosDescription"),
+            icon: Camera,
+          },
+        ]}
+        actionLabel={t(
+          hasSavedProgress
+            ? "onboarding.preparation.auto.resume"
+            : "onboarding.preparation.auto.start",
+        )}
+        durationLabel={t("onboarding.preparation.auto.duration")}
+        statusLabel={t(
+          !catalog || !draftId
+            ? "onboarding.preparation.loading"
+            : hasSavedProgress
+              ? "onboarding.preparation.resumeReady"
+              : "onboarding.preparation.autosave",
+        )}
+        isReady={Boolean(catalog && draftId)}
+        onStart={startOnboarding}
+      />
+    );
+  }
 
   if (!catalog || !draftId)
     return (
@@ -1121,7 +1199,11 @@ export const AutoPublishWizardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-bg-base pb-24">
       <div className="mx-auto max-w-screen-xl px-4 py-6">
-        <h1 className="text-2xl font-black tracking-tight">
+        <h1
+          ref={wizardHeadingRef}
+          tabIndex={-1}
+          className="text-2xl font-black tracking-tight outline-none"
+        >
           Publier un véhicule
         </h1>
         <ScrollableRegion
@@ -1166,12 +1248,7 @@ export const AutoPublishWizardPage: React.FC = () => {
             <div className="mt-7 flex justify-between border-t border-border-subtle pt-4">
               <Button
                 variant="outline"
-                disabled={step === FIRST_STEP}
-                onClick={() =>
-                  setStep((current) =>
-                    Math.max(FIRST_STEP, current - FIRST_STEP),
-                  )
-                }
+                onClick={goBack}
                 leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
               >
                 Retour

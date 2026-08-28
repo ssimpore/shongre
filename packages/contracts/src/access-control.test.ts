@@ -31,6 +31,18 @@ describe("canonical access-control policy", () => {
     expect(automotive.has("employment.recruiter.manage.own")).toBe(false);
   });
 
+  it("lets an education professional manage the profile used by onboarding", () => {
+    const education = capabilities({
+      accountType: "professional",
+      professionalVertical: "education",
+    });
+
+    expect(education.has("course.profile.manage.own")).toBe(true);
+    expect(education.has("course.offer.manage.own")).toBe(true);
+    expect(education.has("course.organization.manage.own")).toBe(true);
+    expect(education.has("auto.vehicle.manage.own")).toBe(false);
+  });
+
   it("keeps generic professional inventory separate from specialized verticals", () => {
     const generic = capabilities({
       accountType: "professional",

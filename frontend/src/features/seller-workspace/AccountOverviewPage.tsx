@@ -18,6 +18,7 @@ import {
   Edit3,
   FileText,
   ChevronRight,
+  Store,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -172,24 +173,13 @@ export const AccountOverviewPage: React.FC = () => {
       {/* Welcome Banner */}
       <div
         data-account-hero
-        className="relative isolate overflow-hidden rounded-card border border-white/10 bg-stone-900 p-5 text-white shadow-sm sm:p-6 lg:p-7"
+        className="rounded-card border border-white/10 bg-stone-900 p-4 text-white shadow-sm"
       >
-        <div
-          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-primary/20 blur-3xl"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute -bottom-24 right-1/3 h-40 w-40 rounded-full bg-primary-on-dark/10 blur-3xl"
-          aria-hidden="true"
-        />
-
-        <div className="relative grid items-center gap-5 xl:grid-cols-content-action">
-          <div className="min-w-0 space-y-3">
+        <div className="grid items-center gap-3 lg:grid-cols-content-action">
+          <div className="min-w-0 space-y-1.5">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="text-sm font-medium text-stone-300">
-                Bonjour,
-              </span>
-              <h1 className="min-w-0 text-xl font-extrabold tracking-tight text-white sm:text-2xl">
+              <h1 className="min-w-0 text-lg font-extrabold tracking-tight text-white sm:text-xl">
+                <span className="font-medium text-stone-300">Bonjour, </span>
                 {accountName}
               </h1>
               {isAdmin && (
@@ -207,14 +197,14 @@ export const AccountOverviewPage: React.FC = () => {
               )}
             </div>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-stone-300">
+            <p className="max-w-2xl text-xs leading-relaxed text-stone-300 sm:text-sm">
               {t(
                 "sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes",
               )}
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row xl:justify-end">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto lg:justify-end">
             <Button
               to={
                 isProSeller(currentUser)
@@ -222,27 +212,29 @@ export const AccountOverviewPage: React.FC = () => {
                   : `/profil/${currentUser?.slug || currentUser?.id}`
               }
               variant="outline"
-              size="md"
+              size="compact"
               leftIcon={
-                <ShieldCheck
-                  className="h-icon-md w-icon-md"
-                  aria-hidden="true"
-                />
+                isProSeller(currentUser) ? (
+                  <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                ) : (
+                  <ShieldCheck
+                    className="h-icon-sm w-icon-sm"
+                    aria-hidden="true"
+                  />
+                )
               }
               className="w-full border-white/30 bg-white/5 text-white hover:border-white/60 hover:bg-white/10 focus-visible:outline-white sm:w-auto"
             >
-              {isProSeller(currentUser)
-                ? "Voir ma boutique publique"
-                : "Voir mon profil public"}
+              {isProSeller(currentUser) ? "Ma boutique" : "Mon profil"}
             </Button>
 
             <Button
               to={publishCta.to}
               variant="primary"
-              size="md"
+              size="compact"
               leftIcon={
                 <PlusCircle
-                  className="h-icon-md w-icon-md"
+                  className="h-icon-sm w-icon-sm"
                   aria-hidden="true"
                 />
               }

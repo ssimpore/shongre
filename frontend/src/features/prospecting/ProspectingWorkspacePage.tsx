@@ -1,13 +1,16 @@
 import React from "react";
 import {
+  Armchair,
   BarChart3,
   Building2,
+  CarFront,
   Check,
   ChevronRight,
   CircleAlert,
   Database,
   FileCheck2,
   Gauge,
+  Lightbulb,
   ListFilter,
   MailCheck,
   MapPin,
@@ -15,6 +18,8 @@ import {
   ShieldCheck,
   Sparkles,
   Target,
+  UsersRound,
+  X,
 } from "lucide-react";
 import {
   PROSPECTING_FIELD_CONSTRAINTS,
@@ -111,6 +116,12 @@ const workspaceTabs = [
     icon: <BarChart3 className="h-icon-sm w-icon-sm" />,
   },
 ];
+
+const discoveryExamples = [
+  { label: "Ateliers automobiles", icon: CarFront },
+  { label: "Mobilier reconditionné", icon: Armchair },
+  { label: "Cabinets de recrutement", icon: UsersRound },
+] as const;
 
 function ScoreBadge({ score }: { score: number }) {
   const variant = score >= 85 ? "success" : score >= 70 ? "warning" : "neutral";
@@ -468,6 +479,8 @@ export const ProspectingWorkspacePage: React.FC<
   );
   const [pendingImportCandidate, setPendingImportCandidate] =
     React.useState<ProspectCandidate | null>(null);
+  const [visibleDiscoveryExamples, setVisibleDiscoveryExamples] =
+    React.useState(() => discoveryExamples.map(({ label }) => label));
   usePageMeta({
     title: t("meta.crmAiProspecting.title"),
     description: t("meta.crmAiProspecting.description"),
@@ -756,124 +769,183 @@ export const ProspectingWorkspacePage: React.FC<
         {controller.view === "discover" && (
           <div className="space-y-4">
             <section
-              className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
+              className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6 lg:p-7"
               aria-labelledby="discover-heading"
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-                <div className="min-w-0 flex-1">
-                  <label
-                    id="discover-heading"
-                    htmlFor="prospecting-query"
-                    className="text-sm font-black text-text-main"
-                  >
-                    Décrivez les entreprises recherchées
-                  </label>
-                  <p className="mt-1 text-micro leading-relaxed text-text-muted">
-                    La requête est traduite en filtres validés. Les résultats
-                    proviennent uniquement des sources actives.
-                  </p>
-                  <div className="relative mt-3">
-                    <Search
-                      className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-muted"
+              <label
+                id="discover-heading"
+                htmlFor="prospecting-query"
+                className="block text-xl font-black tracking-tight text-text-main sm:text-2xl"
+              >
+                Décrivez les entreprises recherchées
+              </label>
+              <p
+                id="prospecting-query-help"
+                className="mt-2 text-sm leading-relaxed text-text-muted sm:text-base"
+              >
+                Plus vous détaillez votre recherche, plus les résultats seront
+                pertinents.
+              </p>
+
+              <div className="relative mt-5">
+                <Search
+                  className="pointer-events-none absolute left-4 top-4 h-icon-lg w-icon-lg text-primary"
+                  aria-hidden="true"
+                />
+                <textarea
+                  id="prospecting-query"
+                  value={controller.query}
+                  maxLength={
+                    PROSPECTING_FIELD_CONSTRAINTS.discoveryQueryMaxLength
+                  }
+                  onChange={(event) => controller.setQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      (event.metaKey || event.ctrlKey)
+                    ) {
+                      event.preventDefault();
+                      void controller.discover();
+                    }
+                  }}
+                  aria-describedby="prospecting-query-help prospecting-query-count"
+                  placeholder="Ex. ateliers automobiles spécialisés en carrosserie à Lyon avec un site professionnel, une expérience de plus de 10 ans et des avis clients positifs"
+                  className="min-h-32 w-full resize-y rounded-control border border-border-hover bg-bg-surface py-4 pl-12 pr-20 text-sm leading-6 text-text-main outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 sm:min-h-36 sm:text-base"
+                />
+                <span
+                  id="prospecting-query-count"
+                  className="pointer-events-none absolute right-4 top-4 text-xs tabular-nums text-text-muted sm:text-sm"
+                  aria-live="polite"
+                >
+                  {controller.query.length} /{" "}
+                  {PROSPECTING_FIELD_CONSTRAINTS.discoveryQueryMaxLength}
+                </span>
+              </div>
+
+              <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  type="button"
+                  onClick={() => void controller.discover()}
+                  disabled={controller.searching}
+                >
+                  {controller.searching ? (
+                    <Spinner size="sm" />
+                  ) : (
+                    <Sparkles
+                      className="h-icon-md w-icon-md"
                       aria-hidden="true"
                     />
-                    <input
-                      id="prospecting-query"
-                      value={controller.query}
-                      maxLength={
-                        PROSPECTING_FIELD_CONSTRAINTS.discoveryQueryMaxLength
-                      }
-                      onChange={(event) =>
-                        controller.setQuery(event.target.value)
-                      }
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") void controller.discover();
-                      }}
-                      placeholder="Ex. ateliers automobiles avec un site professionnel"
-                      className="h-control-lg w-full rounded-control border border-border-base bg-bg-base pl-10 pr-4 text-xs text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 sm:text-sm"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="primary"
-                    type="button"
-                    onClick={() => void controller.discover()}
-                    disabled={controller.searching}
-                  >
-                    {controller.searching ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <Sparkles
-                        className="h-icon-sm w-icon-sm"
+                  )}
+                  {controller.searching ? "Recherche…" : "Découvrir"}
+                </Button>
+                <p className="flex min-w-0 items-start gap-2 text-sm leading-relaxed text-text-muted">
+                  <Lightbulb
+                    className="mt-0.5 h-icon-md w-icon-md shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    Essayez d’être précis : activité, localisation, services,
+                    taille, expérience…
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-6 border-t border-border-subtle pt-5">
+                <details className="group rounded-control bg-bg-subtle px-4 py-3 text-xs text-text-secondary sm:text-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <ListFilter
+                        className="h-icon-md w-icon-md shrink-0 text-primary"
                         aria-hidden="true"
                       />
-                    )}
-                    {controller.searching ? "Recherche…" : "Découvrir"}
-                  </Button>
-                </div>
-              </div>
-              <details className="mt-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2 text-micro text-text-secondary">
-                <summary className="cursor-pointer list-none font-bold text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                  <span className="inline-flex items-center gap-2">
-                    <ListFilter
-                      className="h-icon-sm w-icon-sm text-text-muted"
-                      aria-hidden="true"
-                    />
-                    Critères appliqués
-                  </span>
-                </summary>
-                <dl className="mt-3 grid gap-2 border-t border-border-subtle pt-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <dt className="text-text-muted">Marché</dt>
-                    <dd className="font-bold text-text-main">
-                      {controller.activeMarket.name}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Profil de ciblage</dt>
-                    <dd className="font-bold text-text-main">
-                      {controller.profiles[0]?.name ?? "Profil par défaut"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Sources recherchables</dt>
-                    <dd className="font-bold text-text-main">
-                      {
-                        controller.sources.filter(
-                          (source) =>
-                            source.lifecycle === "ACTIVE" &&
-                            source.operations.includes("SEARCH"),
-                        ).length
-                      }
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-text-muted">Qualité minimale</dt>
-                    <dd className="font-bold text-text-main">
-                      Site professionnel · données actuelles
-                    </dd>
-                  </div>
-                </dl>
-              </details>
-              <div
-                className="mt-3 flex flex-wrap gap-2"
-                aria-label="Exemples de recherche"
-              >
-                {[
-                  "Ateliers automobiles",
-                  "Mobilier reconditionné",
-                  "Cabinets de recrutement",
-                ].map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => void controller.discover(example)}
-                    className="rounded-control bg-bg-muted px-2.5 py-1 text-micro font-semibold text-text-secondary hover:bg-primary-light hover:text-primary"
+                      Critères appliqués
+                    </span>
+                    <span className="shrink-0 font-semibold text-primary group-open:hidden">
+                      Modifier les critères
+                    </span>
+                    <span className="hidden shrink-0 font-semibold text-primary group-open:inline">
+                      Masquer les critères
+                    </span>
+                  </summary>
+                  <dl className="mt-3 grid gap-3 border-t border-border-subtle pt-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <dt className="text-text-muted">Marché</dt>
+                      <dd className="font-bold text-text-main">
+                        {controller.activeMarket.name}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-text-muted">Profil de ciblage</dt>
+                      <dd className="font-bold text-text-main">
+                        {controller.profiles[0]?.name ?? "Profil par défaut"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-text-muted">Sources recherchables</dt>
+                      <dd className="font-bold text-text-main">
+                        {
+                          controller.sources.filter(
+                            (source) =>
+                              source.lifecycle === "ACTIVE" &&
+                              source.operations.includes("SEARCH"),
+                          ).length
+                        }
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-text-muted">Qualité minimale</dt>
+                      <dd className="font-bold text-text-main">
+                        Site professionnel · données actuelles
+                      </dd>
+                    </div>
+                  </dl>
+                </details>
+                {visibleDiscoveryExamples.length > 0 && (
+                  <div
+                    className="mt-4 flex flex-wrap gap-3"
+                    aria-label="Exemples de recherche"
                   >
-                    {example}
-                  </button>
-                ))}
+                    {discoveryExamples
+                      .filter(({ label }) =>
+                        visibleDiscoveryExamples.includes(label),
+                      )
+                      .map(({ label, icon: ExampleIcon }) => (
+                        <div
+                          key={label}
+                          className="inline-flex min-h-control-sm items-center rounded-control bg-bg-muted text-xs font-semibold text-text-secondary shadow-2xs sm:text-sm"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => void controller.discover(label)}
+                            className="inline-flex min-h-control-sm items-center gap-2 rounded-l-control py-1.5 pl-3 pr-2 hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                          >
+                            <ExampleIcon
+                              className="h-icon-sm w-icon-sm shrink-0"
+                              aria-hidden="true"
+                            />
+                            {label}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setVisibleDiscoveryExamples((examples) =>
+                                examples.filter((example) => example !== label),
+                              )
+                            }
+                            aria-label={`Retirer la suggestion ${label}`}
+                            className="inline-flex min-h-control-sm w-control-sm items-center justify-center rounded-r-control text-text-muted hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                          >
+                            <X
+                              className="h-icon-sm w-icon-sm"
+                              aria-hidden="true"
+                            />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             </section>
 

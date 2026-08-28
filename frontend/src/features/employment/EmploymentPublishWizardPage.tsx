@@ -38,6 +38,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  OnboardingPreparationPage,
   Select,
   Skeleton,
   Textarea,
@@ -45,6 +46,8 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentMoney } from "./employment-format";
 import { motionDurationMs } from "@shongre/design-tokens";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { scrollToTop } from "../../utilities/motion";
 
 const STEPS = [
   ["Employeur", Building2],
@@ -160,6 +163,7 @@ const hydrateDraftData = (value: Record<string, unknown>): DraftData => {
 };
 
 export const EmploymentPublishWizardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, can } = useAuth();
   const { activeMarket, currentLocale } = useMarketLocation();
   const navigate = useNavigate();
@@ -179,9 +183,13 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   const [flags, setFlags] = useState<ProhibitedLanguageFlag[]>([]);
   const [duplicateIds, setDuplicateIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(true);
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [completeId, setCompleteId] = useState<string>();
   const hydrated = useRef(false);
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   usePageMeta({
     title: "Publier une offre d’emploi",
@@ -204,11 +212,20 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         : Promise.resolve([]),
     ])
       .then(([nextCatalog, remote, availableEmployers]) => {
+        const restoredData = hydrateDraftData(remote.data);
         setCatalog(nextCatalog);
         setEmployers(availableEmployers);
         setDraftId(remote.id);
         setStep(remote.currentStep);
-        setData(hydrateDraftData(remote.data));
+        setData(restoredData);
+        setHasSavedProgress(
+          remote.currentStep > EMPLOYMENT_PUBLICATION_CONSTRAINTS.firstStep ||
+            Boolean(
+              searchParams.get("draft") ||
+              restoredData.title ||
+              restoredData.professionId,
+            ),
+        );
         setPrivateEmployer(
           remote.privateEmployer || !availableEmployers.length,
         );
@@ -268,7 +285,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     });
 
   useEffect(() => {
-    if (!hydrated.current || !catalog || !draftId) return;
+    if (!hasEnteredWizard || !hydrated.current || !catalog || !draftId) return;
     const timer = window.setTimeout(async () => {
       setSaving(true);
       try {
@@ -286,11 +303,16 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     data,
     draftId,
     duplicateIds,
+    hasEnteredWizard,
     privateEmployer,
     selectedAddOnIds,
     selectedOfferId,
     step,
   ]);
+
+  useEffect(() => {
+    if (!isPreparationVisible) wizardHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
 
   const update = <K extends keyof DraftData>(key: K, value: DraftData[K]) =>
     setData((current) => ({
@@ -430,6 +452,68 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     }
   };
 
+  const startOnboarding = () => {
+    setHasEnteredWizard(true);
+    setIsPreparationVisible(false);
+    scrollToTop();
+  };
+
+  const goBack = () => {
+    if (step === PUBLISH_STEP.employer) {
+      setIsPreparationVisible(true);
+    } else {
+      setStep((current) => current - 1);
+    }
+    scrollToTop();
+  };
+
+  if (isPreparationVisible) {
+    return (
+      <OnboardingPreparationPage
+        eyebrow={t("onboarding.preparation.employment.eyebrow")}
+        title={t("onboarding.preparation.employment.title")}
+        description={t("onboarding.preparation.employment.description")}
+        checklistTitle={t("onboarding.preparation.employment.checklistTitle")}
+        items={[
+          {
+            title: t("onboarding.preparation.employment.roleTitle"),
+            description: t("onboarding.preparation.employment.roleDescription"),
+            icon: BriefcaseBusiness,
+          },
+          {
+            title: t("onboarding.preparation.employment.salaryTitle"),
+            description: t(
+              "onboarding.preparation.employment.salaryDescription",
+            ),
+            icon: BadgeEuro,
+          },
+          {
+            title: t("onboarding.preparation.employment.applicationTitle"),
+            description: t(
+              "onboarding.preparation.employment.applicationDescription",
+            ),
+            icon: ClipboardCheck,
+          },
+        ]}
+        actionLabel={t(
+          hasSavedProgress
+            ? "onboarding.preparation.employment.resume"
+            : "onboarding.preparation.employment.start",
+        )}
+        durationLabel={t("onboarding.preparation.employment.duration")}
+        statusLabel={t(
+          !catalog || !draftId
+            ? "onboarding.preparation.loading"
+            : hasSavedProgress
+              ? "onboarding.preparation.resumeReady"
+              : "onboarding.preparation.autosave",
+        )}
+        isReady={Boolean(catalog && draftId)}
+        onStart={startOnboarding}
+      />
+    );
+  }
+
   if (!catalog || !draftId)
     return (
       <div className="mx-auto max-w-5xl space-y-4 p-6">
@@ -497,7 +581,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
             <p className="text-xs font-black uppercase tracking-wide text-primary">
               Shongre Emploi
             </p>
-            <h1 className="text-2xl font-black text-text-main">
+            <h1
+              ref={wizardHeadingRef}
+              tabIndex={-1}
+              className="text-2xl font-black text-text-main outline-none"
+            >
               Publier une offre
             </h1>
           </div>
@@ -1080,11 +1168,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         </section>
 
         <footer className="sticky bottom-3 mt-4 flex items-center justify-between gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-sticky backdrop-blur sm:static sm:bg-transparent sm:p-0 sm:shadow-none">
-          <Button
-            variant="secondary"
-            disabled={step === PUBLISH_STEP.employer || submitting}
-            onClick={() => setStep((current) => current - 1)}
-          >
+          <Button variant="secondary" disabled={submitting} onClick={goBack}>
             <ArrowLeft className="h-icon-sm w-icon-sm" />
             Précédent
           </Button>

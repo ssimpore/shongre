@@ -88,8 +88,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.solutions.visibility.enabled": "Enabled",
   "admin.solutions.visibility.hidden": "Hidden",
   "admin.solutions.visibility.saved": "Catalogue visibility updated.",
-  "admin.solutions.visibility.error":
-    "Unable to update catalogue visibility.",
+  "admin.solutions.visibility.error": "Unable to update catalogue visibility.",
   "nav.categoryNavigation": "Category navigation",
   "nav.category.immobilier": "Property",
   "nav.category.vehicules": "Vehicles",
@@ -2215,8 +2214,7 @@ export const messagesEn: MessageCatalogue = {
     "Safety, reliability and quality assured.",
   "home.heroBoostedScroll.enSavoirPlus": "Learn more",
   "home.heroBoostedScroll.livraison": "Delivery",
-  "home.homeCollectionsSection.nosCollectionsDuMoment":
-    "Explore by collection",
+  "home.homeCollectionsSection.nosCollectionsDuMoment": "Explore by collection",
   "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour":
     "Themed selections put together to uncover unique, durable, verified finds.",
   "legal.legalPages.offresVerifieesAPrixReduits":
@@ -2395,6 +2393,138 @@ export const messagesEn: MessageCatalogue = {
     "Guarantees & trust signals",
   "profile.sellerTrustIndicators.remiseEnMainPropreOu":
     "Handover in person, or shipping with a tracking number",
+  "onboarding.preparation.loading": "Preparing your draft…",
+  "onboarding.preparation.autosave":
+    "Your progress will be saved automatically.",
+  "onboarding.preparation.resumeReady": "Your draft is ready to resume.",
+  "onboarding.preparation.back": "Review preparation",
+  "onboarding.preparation.account.eyebrow": "Your account",
+  "onboarding.preparation.account.title": "Before choosing your account type",
+  "onboarding.preparation.account.description":
+    "A few simple pointers will help you choose the Shongre journey that fits your needs.",
+  "onboarding.preparation.account.checklistTitle": "Things to consider",
+  "onboarding.preparation.account.usageTitle": "Your main use",
+  "onboarding.preparation.account.usageDescription":
+    "Choose Individual for personal use, or Professional to sell on behalf of a business.",
+  "onboarding.preparation.account.businessTitle": "Your business information",
+  "onboarding.preparation.account.businessDescription":
+    "If you choose Professional, have your organisation’s name and contact details ready.",
+  "onboarding.preparation.account.contactTitle": "Your contact details",
+  "onboarding.preparation.account.contactDescription":
+    "An email address and phone number may be requested progressively.",
+  "onboarding.preparation.account.start": "Choose my account type",
+  "onboarding.preparation.account.duration": "Less than a minute",
+  "onboarding.preparation.account.status":
+    "Full verification is only requested when it becomes necessary.",
+  "onboarding.preparation.invoicing.eyebrow": "Shongre Invoicing",
+  "onboarding.preparation.invoicing.title": "Before setting up Invoicing",
+  "onboarding.preparation.invoicing.description":
+    "Have the details ready to create invoices that match your organisation and market.",
+  "onboarding.preparation.invoicing.checklistTitle": "Keep these handy",
+  "onboarding.preparation.invoicing.entityTitle": "Your legal entity",
+  "onboarding.preparation.invoicing.entityDescription":
+    "Have the legal name, address, country, and applicable identifiers ready.",
+  "onboarding.preparation.invoicing.billingTitle": "Your invoicing rules",
+  "onboarding.preparation.invoicing.billingDescription":
+    "Gather the billing details, currency, and required legal wording.",
+  "onboarding.preparation.invoicing.teamTitle": "Your team",
+  "onboarding.preparation.invoicing.teamDescription":
+    "Identify who can create, approve, or view invoices.",
+  "onboarding.preparation.invoicing.start": "Set up my workspace",
+  "onboarding.preparation.invoicing.resume": "Continue setup",
+  "onboarding.preparation.invoicing.duration": "About 4 minutes",
+  "onboarding.preparation.invoicing.status":
+    "No listings or marketplace data are required.",
+  "onboarding.preparation.auto.eyebrow": "Shongre Auto",
+  "onboarding.preparation.auto.title": "Before publishing your vehicle",
+  "onboarding.preparation.auto.description":
+    "Have the details ready to identify, describe, and present your vehicle accurately.",
+  "onboarding.preparation.auto.checklistTitle": "Keep these handy",
+  "onboarding.preparation.auto.identityTitle": "Registration document or VIN",
+  "onboarding.preparation.auto.identityDescription":
+    "Use the official details for the make, model, and first registration date.",
+  "onboarding.preparation.auto.historyTitle": "History and maintenance",
+  "onboarding.preparation.auto.historyDescription":
+    "Note the mileage, completed servicing, repairs, and any accidents.",
+  "onboarding.preparation.auto.photosTitle": "Vehicle photos",
+  "onboarding.preparation.auto.photosDescription":
+    "Prepare exterior, interior, and useful detail shots in good light.",
+  "onboarding.preparation.auto.start": "Start the vehicle listing",
+  "onboarding.preparation.auto.resume": "Resume the vehicle listing",
+  "onboarding.preparation.auto.duration": "About 7 minutes",
+  "onboarding.preparation.immo.eyebrow": "Shongre Real Estate",
+  "onboarding.preparation.immo.title": "Before publishing your property",
+  "onboarding.preparation.immo.description":
+    "Gather the essential details to present the property clearly and meet your market’s requirements.",
+  "onboarding.preparation.immo.checklistTitle": "Keep these handy",
+  "onboarding.preparation.immo.locationTitle": "Address and property details",
+  "onboarding.preparation.immo.locationDescription":
+    "Have the location, floor areas, room count, and amenities ready.",
+  "onboarding.preparation.immo.legalTitle": "Diagnostics and legal information",
+  "onboarding.preparation.immo.legalDescription":
+    "Keep the energy ratings and any co-ownership information available.",
+  "onboarding.preparation.immo.photosTitle": "Photos and price",
+  "onboarding.preparation.immo.photosDescription":
+    "Choose bright photos and define the applicable price, rent, and charges.",
+  "onboarding.preparation.immo.start": "Start the property listing",
+  "onboarding.preparation.immo.resume": "Resume the property listing",
+  "onboarding.preparation.immo.duration": "About 8 minutes",
+  "onboarding.preparation.employment.eyebrow": "Shongre Jobs",
+  "onboarding.preparation.employment.title": "Before writing your job post",
+  "onboarding.preparation.employment.description":
+    "Prepare a precise, accessible, and compliant post that helps candidates understand the role quickly.",
+  "onboarding.preparation.employment.checklistTitle": "Keep these handy",
+  "onboarding.preparation.employment.roleTitle": "Role and contract",
+  "onboarding.preparation.employment.roleDescription":
+    "Clarify the title, responsibilities, contract type, and genuinely required skills.",
+  "onboarding.preparation.employment.salaryTitle": "Pay and location",
+  "onboarding.preparation.employment.salaryDescription":
+    "Have the salary range, location, remote-work policy, and desired start date ready.",
+  "onboarding.preparation.employment.applicationTitle": "Application process",
+  "onboarding.preparation.employment.applicationDescription":
+    "Define how to apply, the recruitment stages, and any useful screening questions.",
+  "onboarding.preparation.employment.start": "Start the job post",
+  "onboarding.preparation.employment.resume": "Resume the job post",
+  "onboarding.preparation.employment.duration": "About 6 minutes",
+  "onboarding.preparation.education.eyebrow": "Shongre Education",
+  "onboarding.preparation.education.title":
+    "Before creating your teaching activity",
+  "onboarding.preparation.education.description":
+    "Have the details ready to help learners understand your expertise, approach, and availability.",
+  "onboarding.preparation.education.checklistTitle": "Keep these handy",
+  "onboarding.preparation.education.expertiseTitle": "Your subjects and levels",
+  "onboarding.preparation.education.expertiseDescription":
+    "List the subjects you teach, the levels you support, and your experience.",
+  "onboarding.preparation.education.availabilityTitle":
+    "Your rates and availability",
+  "onboarding.preparation.education.availabilityDescription":
+    "Have your hourly rate, usual time slots, and delivery formats ready.",
+  "onboarding.preparation.education.presentationTitle": "A clear introduction",
+  "onboarding.preparation.education.presentationDescription":
+    "Summarise your teaching approach and what learners can expect from your lessons.",
+  "onboarding.preparation.education.start": "Prepare my teaching profile",
+  "onboarding.preparation.education.resume": "Resume my teaching profile",
+  "onboarding.preparation.education.duration": "About 5 minutes",
+  "publishing.preparation.title": "Before you begin",
+  "publishing.preparation.description":
+    "Have these few things ready to create a clear, complete listing. You can review everything before publishing.",
+  "publishing.preparation.checklistTitle": "Keep these handy",
+  "publishing.preparation.photosTitle": "Clear photos",
+  "publishing.preparation.photosDescription":
+    "Photograph the item from several angles in a well-lit place.",
+  "publishing.preparation.detailsTitle": "Useful details",
+  "publishing.preparation.detailsDescription":
+    "Note the brand, model, dimensions, condition, and any defects.",
+  "publishing.preparation.handoverTitle": "Your price and handover",
+  "publishing.preparation.handoverDescription":
+    "Have your price, location, and shipping or in-person handover preferences ready.",
+  "publishing.preparation.start": "Start my listing",
+  "publishing.preparation.resume": "Resume my listing",
+  "publishing.preparation.duration": "About 5 minutes",
+  "publishing.preparation.loadingDraft": "Loading your draft…",
+  "publishing.preparation.savedDraftReady":
+    "Your existing draft is ready to resume.",
+  "publishing.preparation.autosave": "Your draft will be saved automatically.",
   "publishing.publishWizard.votreAnnonce": "Your listing",
   "publishing.publishWizard.deposerUneAnnonceSurShongre":
     "Post a listing on Shongre",
@@ -3303,5 +3433,4 @@ export const messagesEn: MessageCatalogue = {
   "crm.taskPriority.medium": "Medium",
   "crm.taskPriority.high": "High",
   "crm.taskPriority.urgent": "Urgent",
-
 };

@@ -1,20 +1,27 @@
 import {
+  ArrowLeft,
   ArrowRight,
   Building2,
   Check,
   ReceiptText,
   UsersRound,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { InvoicingWorkspace } from "@shongre/contracts/invoicing";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { routes } from "../../configuration/routes";
-import { Badge, Button, Notice } from "../../design-system";
+import {
+  Badge,
+  Button,
+  Notice,
+  OnboardingPreparationPage,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { scrollToTop } from "../../utilities/motion";
 
 export function InvoicingOnboardingPage() {
   const { t } = useTranslation();
@@ -24,6 +31,8 @@ export function InvoicingOnboardingPage() {
   const [error, setError] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(true);
+  const onboardingHeadingRef = useRef<HTMLHeadingElement>(null);
 
   usePageMeta({
     title: "Configurer Shongre Facturation",
@@ -42,6 +51,10 @@ export function InvoicingOnboardingPage() {
       active = false;
     };
   }, [activeMarket.code]);
+
+  useEffect(() => {
+    if (!isPreparationVisible) onboardingHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
 
   const organization = workspace?.tenants[0];
   const hasEntity = Boolean(workspace?.legalEntities[0]);
@@ -93,11 +106,75 @@ export function InvoicingOnboardingPage() {
     },
   ];
 
+  const showWorkspaceConfiguration = () => {
+    setIsPreparationVisible(false);
+    scrollToTop();
+  };
+
+  const showPreparation = () => {
+    setIsPreparationVisible(true);
+    scrollToTop();
+  };
+
+  if (isPreparationVisible) {
+    return (
+      <OnboardingPreparationPage
+        eyebrow={t("onboarding.preparation.invoicing.eyebrow")}
+        title={t("onboarding.preparation.invoicing.title")}
+        description={t("onboarding.preparation.invoicing.description")}
+        checklistTitle={t("onboarding.preparation.invoicing.checklistTitle")}
+        items={[
+          {
+            title: t("onboarding.preparation.invoicing.entityTitle"),
+            description: t(
+              "onboarding.preparation.invoicing.entityDescription",
+            ),
+            icon: Building2,
+          },
+          {
+            title: t("onboarding.preparation.invoicing.billingTitle"),
+            description: t(
+              "onboarding.preparation.invoicing.billingDescription",
+            ),
+            icon: ReceiptText,
+          },
+          {
+            title: t("onboarding.preparation.invoicing.teamTitle"),
+            description: t("onboarding.preparation.invoicing.teamDescription"),
+            icon: UsersRound,
+          },
+        ]}
+        actionLabel={t(
+          hasEntity
+            ? "onboarding.preparation.invoicing.resume"
+            : "onboarding.preparation.invoicing.start",
+        )}
+        durationLabel={t("onboarding.preparation.invoicing.duration")}
+        statusLabel={t("onboarding.preparation.invoicing.status")}
+        onStart={showWorkspaceConfiguration}
+      />
+    );
+  }
+
   return (
     <main className="bg-bg-base px-4 py-10 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-4xl">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mb-4"
+          leftIcon={<ArrowLeft className="h-icon-sm w-icon-sm" />}
+          onClick={showPreparation}
+        >
+          {t("onboarding.preparation.back")}
+        </Button>
         <Badge variant="primary">Configuration Facturation</Badge>
-        <h1 className="mt-4 text-2xl font-black tracking-tight text-text-main sm:text-4xl">
+        <h1
+          ref={onboardingHeadingRef}
+          tabIndex={-1}
+          className="mt-4 text-2xl font-black tracking-tight text-text-main focus:outline-none sm:text-4xl"
+        >
           Votre espace, prêt sans la marketplace
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary">

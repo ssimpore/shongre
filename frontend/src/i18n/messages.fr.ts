@@ -2973,7 +2973,148 @@ export const messagesFr = {
   "profile.sellerTrustIndicators.remiseEnMainPropreOu":
     "Remise en main propre ou envoi avec numéro de suivi",
 
+  // --- onboarding preparation ---
+  "onboarding.preparation.loading": "Préparation de votre brouillon…",
+  "onboarding.preparation.autosave":
+    "Votre progression sera enregistrée automatiquement.",
+  "onboarding.preparation.resumeReady":
+    "Votre brouillon est prêt à être repris.",
+  "onboarding.preparation.back": "Revoir la préparation",
+  "onboarding.preparation.account.eyebrow": "Votre compte",
+  "onboarding.preparation.account.title":
+    "Avant de choisir votre type de compte",
+  "onboarding.preparation.account.description":
+    "Quelques repères suffisent pour choisir le parcours adapté à votre usage de Shongre.",
+  "onboarding.preparation.account.checklistTitle": "À prendre en compte",
+  "onboarding.preparation.account.usageTitle": "Votre usage principal",
+  "onboarding.preparation.account.usageDescription":
+    "Choisissez Particulier pour un usage personnel, ou Professionnel pour vendre au nom d’une activité.",
+  "onboarding.preparation.account.businessTitle":
+    "Vos informations professionnelles",
+  "onboarding.preparation.account.businessDescription":
+    "Si vous choisissez Professionnel, préparez le nom et les coordonnées de votre organisation.",
+  "onboarding.preparation.account.contactTitle": "Vos coordonnées",
+  "onboarding.preparation.account.contactDescription":
+    "Une adresse e-mail et un numéro de téléphone pourront être demandés progressivement.",
+  "onboarding.preparation.account.start": "Choisir mon type de compte",
+  "onboarding.preparation.account.duration": "Moins d’une minute",
+  "onboarding.preparation.account.status":
+    "La vérification complète ne sera demandée que lorsqu’elle sera nécessaire.",
+  "onboarding.preparation.invoicing.eyebrow": "Shongre Facturation",
+  "onboarding.preparation.invoicing.title": "Avant de configurer Facturation",
+  "onboarding.preparation.invoicing.description":
+    "Préparez les informations utiles pour créer des factures cohérentes avec votre organisation et votre marché.",
+  "onboarding.preparation.invoicing.checklistTitle": "À garder sous la main",
+  "onboarding.preparation.invoicing.entityTitle": "Votre entité légale",
+  "onboarding.preparation.invoicing.entityDescription":
+    "Prévoyez la raison sociale, l’adresse, le pays et les identifiants applicables.",
+  "onboarding.preparation.invoicing.billingTitle": "Vos règles de facturation",
+  "onboarding.preparation.invoicing.billingDescription":
+    "Rassemblez les coordonnées de facturation, la devise et les mentions nécessaires.",
+  "onboarding.preparation.invoicing.teamTitle": "Votre équipe",
+  "onboarding.preparation.invoicing.teamDescription":
+    "Identifiez les personnes autorisées à créer, valider ou consulter les factures.",
+  "onboarding.preparation.invoicing.start": "Configurer mon espace",
+  "onboarding.preparation.invoicing.resume": "Continuer la configuration",
+  "onboarding.preparation.invoicing.duration": "Environ 4 minutes",
+  "onboarding.preparation.invoicing.status":
+    "Aucune annonce ni donnée marketplace n’est nécessaire.",
+  "onboarding.preparation.auto.eyebrow": "Shongre Auto",
+  "onboarding.preparation.auto.title": "Avant de publier votre véhicule",
+  "onboarding.preparation.auto.description":
+    "Préparez les informations qui permettent d’identifier, décrire et valoriser votre véhicule avec précision.",
+  "onboarding.preparation.auto.checklistTitle": "À garder sous la main",
+  "onboarding.preparation.auto.identityTitle": "Carte grise ou VIN",
+  "onboarding.preparation.auto.identityDescription":
+    "Utilisez les informations officielles pour la marque, le modèle et la première mise en circulation.",
+  "onboarding.preparation.auto.historyTitle": "Historique et entretien",
+  "onboarding.preparation.auto.historyDescription":
+    "Notez le kilométrage, les entretiens réalisés, les réparations et les éventuels accidents.",
+  "onboarding.preparation.auto.photosTitle": "Photos du véhicule",
+  "onboarding.preparation.auto.photosDescription":
+    "Prévoyez des vues extérieures, intérieures et des détails utiles, en bonne lumière.",
+  "onboarding.preparation.auto.start": "Commencer l’annonce véhicule",
+  "onboarding.preparation.auto.resume": "Reprendre l’annonce véhicule",
+  "onboarding.preparation.auto.duration": "Environ 7 minutes",
+  "onboarding.preparation.immo.eyebrow": "Shongre Immo",
+  "onboarding.preparation.immo.title": "Avant de publier votre bien",
+  "onboarding.preparation.immo.description":
+    "Rassemblez les informations essentielles pour présenter le bien clairement et respecter les obligations de votre marché.",
+  "onboarding.preparation.immo.checklistTitle": "À garder sous la main",
+  "onboarding.preparation.immo.locationTitle": "Adresse et caractéristiques",
+  "onboarding.preparation.immo.locationDescription":
+    "Préparez la localisation, les surfaces, le nombre de pièces et les équipements du bien.",
+  "onboarding.preparation.immo.legalTitle":
+    "Diagnostics et informations légales",
+  "onboarding.preparation.immo.legalDescription":
+    "Gardez les classes DPE et GES ainsi que les informations de copropriété disponibles.",
+  "onboarding.preparation.immo.photosTitle": "Photos et prix",
+  "onboarding.preparation.immo.photosDescription":
+    "Choisissez des photos lumineuses et définissez le prix, le loyer et les charges applicables.",
+  "onboarding.preparation.immo.start": "Commencer l’annonce immobilière",
+  "onboarding.preparation.immo.resume": "Reprendre l’annonce immobilière",
+  "onboarding.preparation.immo.duration": "Environ 8 minutes",
+  "onboarding.preparation.employment.eyebrow": "Shongre Emploi",
+  "onboarding.preparation.employment.title": "Avant de rédiger votre offre",
+  "onboarding.preparation.employment.description":
+    "Préparez une offre précise, accessible et conforme pour aider les candidats à se projeter rapidement.",
+  "onboarding.preparation.employment.checklistTitle": "À garder sous la main",
+  "onboarding.preparation.employment.roleTitle": "Poste et contrat",
+  "onboarding.preparation.employment.roleDescription":
+    "Clarifiez l’intitulé, les missions, le type de contrat et les compétences réellement nécessaires.",
+  "onboarding.preparation.employment.salaryTitle": "Rémunération et lieu",
+  "onboarding.preparation.employment.salaryDescription":
+    "Prévoyez la fourchette salariale, le lieu, le télétravail et la date de début souhaitée.",
+  "onboarding.preparation.employment.applicationTitle":
+    "Processus de candidature",
+  "onboarding.preparation.employment.applicationDescription":
+    "Définissez comment candidater, les étapes de recrutement et les questions utiles.",
+  "onboarding.preparation.employment.start": "Commencer l’offre d’emploi",
+  "onboarding.preparation.employment.resume": "Reprendre l’offre d’emploi",
+  "onboarding.preparation.employment.duration": "Environ 6 minutes",
+  "onboarding.preparation.education.eyebrow": "Shongre Éducation",
+  "onboarding.preparation.education.title":
+    "Avant de créer votre activité de cours",
+  "onboarding.preparation.education.description":
+    "Préparez les éléments qui aideront les élèves à comprendre votre expertise, votre méthode et vos disponibilités.",
+  "onboarding.preparation.education.checklistTitle": "À garder sous la main",
+  "onboarding.preparation.education.expertiseTitle": "Vos matières et niveaux",
+  "onboarding.preparation.education.expertiseDescription":
+    "Listez les matières enseignées, les niveaux accompagnés et votre expérience.",
+  "onboarding.preparation.education.availabilityTitle":
+    "Vos tarifs et créneaux",
+  "onboarding.preparation.education.availabilityDescription":
+    "Prévoyez votre tarif horaire, vos créneaux habituels et les formats proposés.",
+  "onboarding.preparation.education.presentationTitle":
+    "Une présentation claire",
+  "onboarding.preparation.education.presentationDescription":
+    "Résumez votre approche pédagogique et ce que les élèves peuvent attendre de vos cours.",
+  "onboarding.preparation.education.start": "Préparer mon profil enseignant",
+  "onboarding.preparation.education.resume": "Reprendre mon profil enseignant",
+  "onboarding.preparation.education.duration": "Environ 5 minutes",
+
   // --- publishing.publishWizard ---
+  "publishing.preparation.title": "Avant de commencer",
+  "publishing.preparation.description":
+    "Préparez ces quelques éléments pour créer une annonce claire et complète. Vous pourrez tout vérifier avant la publication.",
+  "publishing.preparation.checklistTitle": "À garder sous la main",
+  "publishing.preparation.photosTitle": "Des photos nettes",
+  "publishing.preparation.photosDescription":
+    "Photographiez l’article sous plusieurs angles, dans un endroit bien éclairé.",
+  "publishing.preparation.detailsTitle": "Les détails utiles",
+  "publishing.preparation.detailsDescription":
+    "Notez la marque, le modèle, les dimensions, l’état et les éventuels défauts.",
+  "publishing.preparation.handoverTitle": "Votre prix et la remise",
+  "publishing.preparation.handoverDescription":
+    "Prévoyez votre prix, la localisation et vos préférences de livraison ou de remise en main propre.",
+  "publishing.preparation.start": "Commencer mon annonce",
+  "publishing.preparation.resume": "Reprendre mon annonce",
+  "publishing.preparation.duration": "Environ 5 minutes",
+  "publishing.preparation.loadingDraft": "Chargement de votre brouillon…",
+  "publishing.preparation.savedDraftReady":
+    "Votre brouillon existant est prêt à être repris.",
+  "publishing.preparation.autosave":
+    "Votre brouillon sera sauvegardé automatiquement.",
   "publishing.publishWizard.votreAnnonce": "Votre annonce",
   "publishing.publishWizard.deposerUneAnnonceSurShongre":
     "Déposer une annonce sur Shongre",
@@ -3960,7 +4101,8 @@ export const messagesFr = {
 
   "common.loadingMap": "Chargement de la carte",
   "courses.tutorWorkspace.offersTableLabel": "Tableau des cours publiés",
-  "courses.tutorWorkspace.availabilityTableLabel": "Tableau des disponibilités hebdomadaires",
+  "courses.tutorWorkspace.availabilityTableLabel":
+    "Tableau des disponibilités hebdomadaires",
 
   "crm.opportunity.stageStepperLabel": "Étapes du pipeline",
 
@@ -3982,7 +4124,6 @@ export const messagesFr = {
   "crm.taskPriority.medium": "Moyenne",
   "crm.taskPriority.high": "Haute",
   "crm.taskPriority.urgent": "Urgente",
-
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

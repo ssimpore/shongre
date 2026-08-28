@@ -27,6 +27,7 @@ import {
   ShoppingBag,
   List,
   Menu,
+  BadgeCheck,
   X,
   Map as MapIcon,
   ChevronRight,
@@ -66,6 +67,33 @@ const HEADER_SCROLL_BEHAVIOR = {
   revealAtTop: 12,
   transitionSettleMs: 300,
 } as const;
+
+interface VerifiedAccountNameProps {
+  name: string;
+  isVerified?: boolean;
+  verifiedLabel: string;
+}
+
+function VerifiedAccountName({
+  name,
+  isVerified,
+  verifiedLabel,
+}: VerifiedAccountNameProps) {
+  return (
+    <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
+      <span className="truncate">{name}</span>
+      {isVerified ? (
+        <span
+          className="inline-flex shrink-0 text-success"
+          title={verifiedLabel}
+          aria-label={verifiedLabel}
+        >
+          <BadgeCheck className="h-icon-md w-icon-md" aria-hidden="true" />
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 export const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -473,7 +501,6 @@ export const Header: React.FC = () => {
                     src={currentUser.avatarUrl}
                     name={currentUser.name}
                     size="sm"
-                    isVerified={currentUser.isVerified}
                   />
                   <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-25 truncate">
                     {currentUser.name.split(" ")[0]}
@@ -503,9 +530,11 @@ export const Header: React.FC = () => {
                   className={`absolute right-0 mt-2 w-64 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className="px-4 py-2.5 border-b border-border-subtle">
-                    <div className="font-bold text-sm text-stone-900 truncate">
-                      {currentUser.name}
-                    </div>
+                    <VerifiedAccountName
+                      name={currentUser.name}
+                      isVerified={currentUser.isVerified}
+                      verifiedLabel={t("ui.badge.profilVerifie")}
+                    />
                     <div className="text-xs text-stone-500 truncate">
                       {currentUser.email}
                     </div>
@@ -517,11 +546,6 @@ export const Header: React.FC = () => {
                       ) : (
                         <Badge variant="neutral" size="sm">
                           Particulier
-                        </Badge>
-                      )}
-                      {currentUser.isVerified && (
-                        <Badge variant="verified" size="sm">
-                          {t("shell.header.verifie")}
                         </Badge>
                       )}
                     </div>
@@ -731,12 +755,13 @@ export const Header: React.FC = () => {
                         src={currentUser.avatarUrl}
                         name={currentUser.name}
                         size="md"
-                        isVerified={currentUser.isVerified}
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-stone-900 truncate">
-                          {currentUser.name}
-                        </div>
+                        <VerifiedAccountName
+                          name={currentUser.name}
+                          isVerified={currentUser.isVerified}
+                          verifiedLabel={t("ui.badge.profilVerifie")}
+                        />
                         <div className="text-xs text-stone-500 truncate">
                           {currentUser.email}
                         </div>
@@ -748,11 +773,6 @@ export const Header: React.FC = () => {
                           ) : (
                             <Badge variant="neutral" size="sm">
                               Particulier
-                            </Badge>
-                          )}
-                          {currentUser.isVerified && (
-                            <Badge variant="verified" size="sm">
-                              {t("shell.header.verifie")}
                             </Badge>
                           )}
                         </div>

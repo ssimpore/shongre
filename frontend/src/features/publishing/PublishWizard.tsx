@@ -69,6 +69,7 @@ import {
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts";
 import { analyticsService } from "../../services/analytics.service";
+import { PublishPreparationScreen } from "./PublishPreparationScreen";
 
 /**
  * Publication is three phases, not ten steps.
@@ -119,6 +120,16 @@ const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
   rent_plus_charges: "Loyer + charges",
 };
 
+const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
+  Boolean(
+    draft.taxonomyNodeId ||
+    draft.title.trim() ||
+    draft.description.trim() ||
+    draft.photos.length > 0 ||
+    Object.keys(draft.attributes || {}).length > 0 ||
+    draft.pricing.amount > 0,
+  );
+
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
   const { currencySymbol } = useMarketLocation();
@@ -153,8 +164,11 @@ export const PublishWizard: React.FC = () => {
     "loading" | "ready" | "error"
   >("loading");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
+  const [isPreparationVisible, setIsPreparationVisible] = useState(true);
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const publicationStarted = useRef(false);
+  const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // Draft State initialized with default or restored values
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
@@ -221,18 +235,6 @@ export const PublishWizard: React.FC = () => {
   });
 
   useEffect(() => {
-    if (publicationStarted.current) return;
-    publicationStarted.current = true;
-    analyticsService.track("publication_started", {
-      selectedMarketCodes: draft.selectedMarkets,
-      source: "publish_wizard",
-    });
-    // A mount represents one publication attempt; draft mutations must not
-    // create a second start event.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     let active = true;
     if (!currentUser?.id) {
       setIsDraftHydrated(true);
@@ -243,7 +245,10 @@ export const PublishWizard: React.FC = () => {
     services.listings
       .getListingDraft()
       .then((saved) => {
-        if (active && saved) setDraft(saved);
+        if (active && saved) {
+          setDraft(saved);
+          setHasSavedDraft(hasMeaningfulDraftContent(saved));
+        }
       })
       .catch(() => {
         if (active)
@@ -259,14 +264,18 @@ export const PublishWizard: React.FC = () => {
 
   // Autosave Draft through the selected adapter.
   useEffect(() => {
-    if (!isDraftHydrated || !currentUser?.id) return;
+    if (!hasEnteredWizard || !isDraftHydrated || !currentUser?.id) return;
     const timeout = window.setTimeout(() => {
       services.listings.saveListingDraft(draft).catch(() => {
         toast.error("Le brouillon n’a pas pu être sauvegardé.");
       });
     }, 500);
     return () => window.clearTimeout(timeout);
-  }, [draft, currentUser?.id, isDraftHydrated]);
+  }, [draft, currentUser?.id, hasEnteredWizard, isDraftHydrated]);
+
+  useEffect(() => {
+    if (!isPreparationVisible) wizardHeadingRef.current?.focus();
+  }, [isPreparationVisible]);
 
   useEffect(() => {
     let active = true;
@@ -586,7 +595,24 @@ export const PublishWizard: React.FC = () => {
   };
 
   const handlePrevStep = () => {
+    if (currentStep === 1) {
+      setIsPreparationVisible(true);
+      scrollToTop();
+      return;
+    }
     setCurrentStep((prev) => Math.max(prev - 1, 1));
+    scrollToTop();
+  };
+
+  const handleStartPublication = () => {
+    if (!hasEnteredWizard) {
+      analyticsService.track("publication_started", {
+        selectedMarketCodes: draft.selectedMarkets,
+        source: "publish_wizard",
+      });
+      setHasEnteredWizard(true);
+    }
+    setIsPreparationVisible(false);
     scrollToTop();
   };
 
@@ -676,6 +702,16 @@ export const PublishWizard: React.FC = () => {
     }
   };
 
+  if (isPreparationVisible) {
+    return (
+      <PublishPreparationScreen
+        hasSavedDraft={hasSavedDraft}
+        isReady={isDraftHydrated}
+        onStart={handleStartPublication}
+      />
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Top Header */}
@@ -684,7 +720,11 @@ export const PublishWizard: React.FC = () => {
           <span className="text-xs font-bold text-primary uppercase tracking-wider block">
             {t("publishing.publishWizard.votreAnnonce")}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          <h1
+            ref={wizardHeadingRef}
+            tabIndex={-1}
+            className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight focus:outline-none"
+          >
             {t("publishing.publishWizard.deposerUneAnnonceSurShongre")}
           </h1>
         </div>
@@ -2466,7 +2506,7 @@ export const PublishWizard: React.FC = () => {
             variant="outline"
             size="md"
             onClick={handlePrevStep}
-            disabled={currentStep === 1 || isPublishing}
+            disabled={isPublishing}
             leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
           >
             {t("publishing.publishWizard.precedent")}
