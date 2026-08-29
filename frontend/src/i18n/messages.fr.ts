@@ -96,9 +96,10 @@ export const messagesFr = {
   "admin.solutions.visibility.error":
     "Impossible de modifier la visibilité du catalogue.",
   "nav.categoryNavigation": "Navigation par catégorie",
+  "nav.category.active": "Catégorie active",
   "nav.category.immobilier": "Immobilier",
   "nav.category.vehicules": "Véhicules",
-  "nav.category.materielPro": "Matériel pro",
+  "nav.category.materielPro": "Matériel Pro",
   "nav.category.emploi": "Emploi",
   "nav.category.mode": "Mode",
   "nav.category.maisonJardin": "Maison & Jardin",

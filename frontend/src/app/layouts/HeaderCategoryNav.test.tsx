@@ -10,6 +10,7 @@ describe("HeaderCategoryNav", () => {
         <HeaderCategoryNav
           activeCategorySlug="loisirs-culture"
           currentPath="/recherche"
+          marketCode="FR"
           onSelectCategory={vi.fn()}
         />
       </MemoryRouter>,

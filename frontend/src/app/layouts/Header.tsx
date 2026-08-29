@@ -667,16 +667,17 @@ export const Header: React.FC = () => {
           onPointerEnter={revealCategoryNav}
           onFocusCapture={revealCategoryNav}
           onTouchStart={revealCategoryNav}
-          className={`overflow-hidden bg-white/95 backdrop-blur-md motion-layout ${
+          className={`bg-white/95 backdrop-blur-md motion-layout ${
             isCategoryNavVisible
-              ? "visible max-h-control-md translate-y-0 opacity-100"
-              : "invisible pointer-events-none max-h-0 -translate-y-1 opacity-0"
+              ? "visible max-h-control-md translate-y-0 overflow-visible opacity-100"
+              : "invisible pointer-events-none max-h-0 -translate-y-1 overflow-hidden opacity-0"
           }`}
         >
           <Container>
             <HeaderCategoryNav
               activeCategorySlug={activeCategorySlug}
               currentPath={location.pathname}
+              marketCode={activeMarket.code}
               onSelectCategory={handleCategorySelect}
             />
           </Container>

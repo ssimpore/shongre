@@ -90,6 +90,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.solutions.visibility.saved": "Catalogue visibility updated.",
   "admin.solutions.visibility.error": "Unable to update catalogue visibility.",
   "nav.categoryNavigation": "Category navigation",
+  "nav.category.active": "Active category",
   "nav.category.immobilier": "Property",
   "nav.category.vehicules": "Vehicles",
   "nav.category.materielPro": "Pro equipment",
