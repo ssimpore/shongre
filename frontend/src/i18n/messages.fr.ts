@@ -99,16 +99,16 @@ export const messagesFr = {
   "nav.category.active": "Catégorie active",
   "nav.category.immobilier": "Immobilier",
   "nav.category.vehicules": "Véhicules",
-  "nav.category.materielPro": "Matériel Pro",
+  "nav.category.materielPro": "Outils pro",
   "nav.category.emploi": "Emploi",
   "nav.category.mode": "Mode",
-  "nav.category.maisonJardin": "Maison & Jardin",
+  "nav.category.maisonJardin": "Maison",
   "nav.category.famille": "Famille",
   "nav.category.electronique": "Électronique",
   "nav.category.loisirs": "Loisirs",
   "nav.category.autres": "Autres",
   "nav.category.cours": "Éducation",
-  "nav.category.bonsPlans": "Bons plans !",
+  "nav.category.bonsPlans": "Promotions",
   "nav.unreadMessages_one": "{count} message non lu",
   "nav.unreadMessages_other": "{count} messages non lus",
 
@@ -138,7 +138,7 @@ export const messagesFr = {
   "footer.boostGrid": "Grille des options & boosts",
   "footer.safetyTips": "Conseils de sécurité",
   "footer.contactSupport": "Contacter le support",
-  "footer.currentDeals": "Bons plans du moment",
+  "footer.currentDeals": "Promotions",
   "footer.comingSoon": "{name} — bientôt disponible",
   "footer.newsletterPitch":
     "Recevez notre sélection hebdomadaire d’annonces et de nouveautés.",
@@ -1774,7 +1774,7 @@ export const messagesFr = {
   "admin.taxonomyNodeEditor.nomCompletDeLaCategorie":
     "Nom complet de la catégorie (Français)",
   "admin.taxonomyNodeEditor.exVoituresMaterielPro":
-    "Ex: Voitures, Matériel Pro...",
+    "Ex: Voitures, Outils pro...",
   "admin.taxonomyNodeEditor.schemaDEtat": "Schéma d'état",
   "admin.taxonomyNodeEditor.descriptionCanoniqueEtEditorialeDe":
     "Description canonique et éditoriale de la catégorie...",
@@ -2054,7 +2054,7 @@ export const messagesFr = {
   "shell.header.connectezVousPourGererVos":
     "Connectez-vous pour gérer vos annonces et messages",
   "shell.header.explorerSurLaCarte": "Explorer sur la carte",
-  "shell.header.bonsPlansPrixReduits": "Bons plans & Prix réduits",
+  "shell.header.bonsPlansPrixReduits": "Promotions",
   "shell.header.tableauDeBord": "Tableau de bord",
   "shell.header.mesAnnonces": "Mes annonces",
 

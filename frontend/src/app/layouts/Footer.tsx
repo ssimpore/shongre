@@ -285,7 +285,7 @@ export const Footer: React.FC = () => {
               <FooterLink to="/contact">
                 {t("footer.contactSupport")}
               </FooterLink>
-              <FooterLink to="/bons-plans">
+              <FooterLink to={routes.deals()}>
                 {t("footer.currentDeals")}
               </FooterLink>
             </FooterColumn>

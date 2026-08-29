@@ -14,7 +14,9 @@ const REPOSITORY_ROOT = path.resolve(
   "../../..",
 );
 const VERSION = "4.0.0";
-const COMPILER_VERSION = "2.0.0";
+const COMPILER_VERSION = "2.1.0";
+const SHORT_LABEL_MAX_LENGTH = 28;
+const LOCALE_KEY_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 const NORMALIZED_SOURCE_PATH = path.join(
   REPOSITORY_ROOT,
   "backend/taxonomy/v4/taxonomy-v4.normalized.json",
@@ -142,6 +144,10 @@ const SYSTEM_FIELDS = new Set([
   "price_drop",
   "published_since",
   "is_sponsored",
+]);
+const NON_PUBLIC_COMPATIBILITY_ALIASES = new Set([
+  "bons-plans",
+  "dons-solidarite-bons-plans",
 ]);
 const PUBLIC_DEPENDENCY_EFFECTS = new Set([
   "SHOW",
@@ -608,6 +614,25 @@ function splitList(value: Cell): string[] {
     : [];
 }
 
+function localizedShortLabels(row: SourceRow, id: string) {
+  const french = asString(row.short_label_fr, `${id}.short_label_fr`);
+  const english = optionalString(row.short_label_en);
+  assert(
+    french.length <= SHORT_LABEL_MAX_LENGTH,
+    `${id}.short_label_fr exceeds ${SHORT_LABEL_MAX_LENGTH} characters.`,
+  );
+  if (english) {
+    assert(
+      english.length <= SHORT_LABEL_MAX_LENGTH,
+      `${id}.short_label_en exceeds ${SHORT_LABEL_MAX_LENGTH} characters.`,
+    );
+  }
+  return {
+    "fr-FR": french,
+    ...(english ? { "en-US": english } : {}),
+  };
+}
+
 function stableJson(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
@@ -974,6 +999,53 @@ function validateHierarchy(
   }
 }
 
+function validateCategoryShortLabels(
+  categories: Array<{
+    id: string;
+    parentId?: string;
+    labels: Record<string, string>;
+    shortLabels: Record<string, string>;
+  }>,
+) {
+  const siblingLabels = new Set<string>();
+  for (const category of categories) {
+    const french = category.shortLabels["fr-FR"]?.trim();
+    assert(french, `Missing localized French shortLabel for ${category.id}.`);
+    assert(
+      french === category.shortLabels["fr-FR"],
+      `French shortLabel must be trimmed for ${category.id}.`,
+    );
+    assert(
+      french.length <= SHORT_LABEL_MAX_LENGTH,
+      `French shortLabel for ${category.id} exceeds ${SHORT_LABEL_MAX_LENGTH} characters.`,
+    );
+    assert(
+      french.length <= category.labels["fr-FR"].length,
+      `French shortLabel for ${category.id} is longer than its canonical label.`,
+    );
+    for (const [locale, value] of Object.entries(category.shortLabels)) {
+      assert(
+        LOCALE_KEY_PATTERN.test(locale),
+        `Invalid shortLabel locale ${locale} for ${category.id}.`,
+      );
+      assert(
+        value.trim() === value && value.length > 0,
+        `Invalid localized shortLabel ${locale} for ${category.id}.`,
+      );
+      assert(
+        value.length <= SHORT_LABEL_MAX_LENGTH,
+        `Localized shortLabel ${locale} for ${category.id} exceeds ${SHORT_LABEL_MAX_LENGTH} characters.`,
+      );
+    }
+    const siblingKey = `${category.parentId ?? "ROOT"}:${normalizedText(french)}`;
+    assert(
+      !siblingLabels.has(siblingKey),
+      `Duplicate French shortLabel among siblings: ${french}.`,
+    );
+    siblingLabels.add(siblingKey);
+  }
+}
+
 function applicableListingTypes(
   reference: string | undefined,
   flow: string | undefined,
@@ -1038,6 +1110,7 @@ function normalizeWorkbook(
         "fr-FR": asString(row.name_fr, `${id}.name_fr`),
         "en-US": asString(row.name_en, `${id}.name_en`),
       },
+      shortLabels: localizedShortLabels(row, id),
       description: optionalString(row.description),
       iconName: VERTICAL_ICONS[id] ?? "tag",
       sortOrder: asNumber(row.display_order, `${id}.display_order`),
@@ -1066,6 +1139,7 @@ function normalizeWorkbook(
         "fr-FR": asString(row.name_fr, `${id}.name_fr`),
         "en-US": asString(row.name_en, `${id}.name_en`),
       },
+      shortLabels: localizedShortLabels(row, id),
       description: optionalString(row.description),
       iconName: VERTICAL_ICONS[verticalId] ?? "tag",
       sortOrder: asNumber(row.display_order, `${id}.display_order`),
@@ -1095,6 +1169,7 @@ function normalizeWorkbook(
       level: 0,
       slug: vertical.slug,
       labels: vertical.labels,
+      shortLabels: vertical.shortLabels,
       description: vertical.description,
       iconName: vertical.iconName,
       sortOrder: vertical.sortOrder,
@@ -1109,7 +1184,9 @@ function normalizeWorkbook(
         category,
     ),
   ];
+  validateCategoryShortLabels(verticals);
   validateHierarchy(categories);
+  validateCategoryShortLabels(categories);
   assert(
     categories.filter((category) => !category.parentId).length ===
       EXPECTED_COUNTS.verticals,
@@ -1852,32 +1929,7 @@ function normalizeWorkbook(
     };
   });
 
-  const seoProjections = categories.map((category) => ({
-    categoryId: category.id,
-    urlPattern: `/categorie/${category.slug}`,
-    locationUrlPattern: `/categorie/${category.slug}/{location}`,
-    facetUrlPattern: `/categorie/${category.slug}?{facets}`,
-    h1: category.labels,
-    titleTemplate: {
-      "fr-FR": `${category.labels["fr-FR"]} | Shongre`,
-      "en-US": `${category.labels["en-US"]} | Shongre`,
-    },
-    descriptionTemplate: {
-      "fr-FR":
-        category.description ??
-        `Annonces ${category.labels["fr-FR"]} sur Shongre.`,
-      "en-US":
-        category.description ??
-        `${category.labels["en-US"]} listings on Shongre.`,
-    },
-    indexable: category.seo.indexable,
-    canonicalStrategy: "market_url_builder",
-    indexableFacets: [] as string[],
-    structuredData: category.publishable
-      ? ["CollectionPage", "ItemList"]
-      : ["CollectionPage"],
-    sitemap: { eligible: category.seo.indexable, policy: "seo_policy" },
-  }));
+  const seoProjections = buildSeoProjections(categories);
 
   const aliases = new Map<
     string,
@@ -1889,7 +1941,7 @@ function normalizeWorkbook(
     kind: string,
   ) => {
     const alias = aliasValue.trim().toLocaleLowerCase("fr-FR");
-    if (!alias || alias === "bons-plans") return;
+    if (!alias || NON_PUBLIC_COMPATIBILITY_ALIASES.has(alias)) return;
     assert(
       categoryById.has(canonicalCategoryId),
       `Alias ${alias} targets missing ${canonicalCategoryId}.`,
@@ -2185,6 +2237,41 @@ function normalizeWorkbook(
 
 export type NormalizedSource = ReturnType<typeof normalizeWorkbook>;
 
+function buildSeoProjections(categories: NormalizedSource["categories"]) {
+  return categories.map((category) => {
+    const titleTemplate = Object.fromEntries(
+      Object.entries(category.labels).map(([locale, label]) => [
+        locale,
+        `${label} | Shongre`,
+      ]),
+    );
+    const descriptionTemplate = Object.fromEntries(
+      Object.entries(category.labels).map(([locale, label]) => [
+        locale,
+        locale.toLocaleLowerCase().startsWith("fr")
+          ? (category.description ?? `Annonces ${label} sur Shongre.`)
+          : `Browse ${label} listings on Shongre.`,
+      ]),
+    );
+    return {
+      categoryId: category.id,
+      urlPattern: `/categorie/${category.slug}`,
+      locationUrlPattern: `/categorie/${category.slug}/{location}`,
+      facetUrlPattern: `/categorie/${category.slug}?{facets}`,
+      h1: category.labels,
+      titleTemplate,
+      descriptionTemplate,
+      indexable: category.seo.indexable,
+      canonicalStrategy: "market_url_builder",
+      indexableFacets: [] as string[],
+      structuredData: category.publishable
+        ? ["CollectionPage", "ItemList"]
+        : ["CollectionPage"],
+      sitemap: { eligible: category.seo.indexable, policy: "seo_policy" },
+    };
+  });
+}
+
 function buildPublicBundle(source: NormalizedSource) {
   const publicAttributes = source.attributes.filter(
     (attribute) => attribute.privacy === "public",
@@ -2363,12 +2450,12 @@ function generateSeedSql(source: NormalizedSource): string {
   }
   for (const category of source.categories) {
     lines.push(
-      `INSERT INTO public.categories (id, code, slug, name, parent_id, icon_name, sort_order, is_active, labels, level, publishable, status, seller_eligibility, active_market_codes, seo_config, source_key) VALUES (${sqlLiteral(category.id)}, ${sqlLiteral(category.sourceKey)}, ${sqlLiteral(category.slug)}, ${sqlLiteral(category.labels["fr-FR"])}, ${sqlNullable(category.parentId)}, ${sqlLiteral(category.iconName)}, ${category.sortOrder}, ${category.status === "active"}, ${jsonLiteral(category.labels)}, ${sqlLiteral(category.level === 0 ? "category" : category.level === 1 ? "subcategory" : "type")}, ${category.publishable}, ${sqlLiteral(category.status)}, ${jsonLiteral(category.sellerEligibility)}, ARRAY[${category.marketAvailability
+      `INSERT INTO public.categories (id, code, slug, name, short_label, parent_id, icon_name, sort_order, is_active, labels, short_labels, level, publishable, status, seller_eligibility, active_market_codes, seo_config, source_key) VALUES (${sqlLiteral(category.id)}, ${sqlLiteral(category.sourceKey)}, ${sqlLiteral(category.slug)}, ${sqlLiteral(category.labels["fr-FR"])}, ${sqlLiteral(category.shortLabels["fr-FR"])}, ${sqlNullable(category.parentId)}, ${sqlLiteral(category.iconName)}, ${category.sortOrder}, ${category.status === "active"}, ${jsonLiteral(category.labels)}, ${jsonLiteral(category.shortLabels)}, ${sqlLiteral(category.level === 0 ? "category" : category.level === 1 ? "subcategory" : "type")}, ${category.publishable}, ${sqlLiteral(category.status)}, ${jsonLiteral(category.sellerEligibility)}, ARRAY[${category.marketAvailability
         .filter((market) => market.marketplaceEnabled)
         .map((market) => sqlLiteral(market.marketCode))
         .join(
           ",",
-        )}], ${jsonLiteral(category.seo)}, ${sqlLiteral(category.sourceKey)}) ON CONFLICT (id) DO UPDATE SET code = EXCLUDED.code, slug = EXCLUDED.slug, name = EXCLUDED.name, parent_id = EXCLUDED.parent_id, icon_name = EXCLUDED.icon_name, sort_order = EXCLUDED.sort_order, is_active = EXCLUDED.is_active, labels = EXCLUDED.labels, level = EXCLUDED.level, publishable = EXCLUDED.publishable, status = EXCLUDED.status, seller_eligibility = EXCLUDED.seller_eligibility, active_market_codes = EXCLUDED.active_market_codes, seo_config = EXCLUDED.seo_config, source_key = EXCLUDED.source_key, updated_at = NOW();`,
+        )}], ${jsonLiteral(category.seo)}, ${sqlLiteral(category.sourceKey)}) ON CONFLICT (id) DO UPDATE SET code = EXCLUDED.code, slug = EXCLUDED.slug, name = EXCLUDED.name, short_label = EXCLUDED.short_label, parent_id = EXCLUDED.parent_id, icon_name = EXCLUDED.icon_name, sort_order = EXCLUDED.sort_order, is_active = EXCLUDED.is_active, labels = EXCLUDED.labels, short_labels = EXCLUDED.short_labels, level = EXCLUDED.level, publishable = EXCLUDED.publishable, status = EXCLUDED.status, seller_eligibility = EXCLUDED.seller_eligibility, active_market_codes = EXCLUDED.active_market_codes, seo_config = EXCLUDED.seo_config, source_key = EXCLUDED.source_key, updated_at = NOW();`,
     );
   }
   for (const listingType of source.listingTypes) {
@@ -2569,6 +2656,8 @@ async function compileFromNormalizedSource(check: boolean) {
   const source = JSON.parse(
     await fs.readFile(NORMALIZED_SOURCE_PATH, "utf8"),
   ) as NormalizedSource;
+  validateCategoryShortLabels(source.verticals);
+  validateCategoryShortLabels(source.categories);
   const expectedChecksum = sha256(
     stableJson({
       ...source,
@@ -2579,9 +2668,16 @@ async function compileFromNormalizedSource(check: boolean) {
     source.metadata.normalizedSha256 === expectedChecksum,
     "Canonical normalized taxonomy checksum is invalid.",
   );
-  const publicBundle = buildPublicBundle(source);
-  const privateBundle = {
+  const compiledSource: NormalizedSource = {
     ...source,
+    projections: {
+      ...source.projections,
+      seo: buildSeoProjections(source.categories),
+    },
+  };
+  const publicBundle = buildPublicBundle(compiledSource);
+  const privateBundle = {
+    ...compiledSource,
     resolver: {
       precedence: [
         "base_attribute",
@@ -2608,14 +2704,14 @@ async function compileFromNormalizedSource(check: boolean) {
     `${JSON.stringify(publicBundle)}\n`,
     check,
   );
-  await writeOrCheck(SEED_PATH, generateSeedSql(source), check);
+  await writeOrCheck(SEED_PATH, generateSeedSql(compiledSource), check);
   await writeOrCheck(
     IMPORT_REPORT_PATH,
-    stableJson(buildImportReport(source)),
+    stableJson(buildImportReport(compiledSource)),
     check,
   );
   console.log(
-    `${check ? "Verified" : "Generated"} taxonomy v4 master: ${source.categories.length} taxonomy nodes, ${source.listingTypes.length} listing types, ${source.attributes.length} attributes, ${source.bindings.length} resolved bindings.`,
+    `${check ? "Verified" : "Generated"} taxonomy v4 master: ${compiledSource.categories.length} taxonomy nodes, ${compiledSource.listingTypes.length} listing types, ${compiledSource.attributes.length} attributes, ${compiledSource.bindings.length} resolved bindings.`,
   );
 }
 

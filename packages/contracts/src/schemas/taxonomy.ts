@@ -286,6 +286,15 @@ export const taxonomyLocalizedLabelsSchema = z
     message: "A French taxonomy label is required.",
   });
 
+export const taxonomyLocalizedShortLabelsSchema = z
+  .record(
+    z.string().regex(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/),
+    z.string().trim().min(1).max(28),
+  )
+  .refine((labels) => Boolean(labels["fr-FR"]), {
+    message: "A French taxonomy shortLabel is required.",
+  });
+
 export const taxonomyV4UiComponentSchema = z.enum([
   "select",
   "number_input",
@@ -364,6 +373,7 @@ export const taxonomyV4NodeSchema = z.object({
   level: z.number().int().min(0).max(2),
   slug: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
+  shortLabels: taxonomyLocalizedShortLabelsSchema,
   description: z.string().optional(),
   iconName: z.string().min(1),
   sortOrder: z.number().int().nonnegative(),

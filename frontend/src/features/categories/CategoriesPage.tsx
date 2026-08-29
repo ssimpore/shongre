@@ -37,8 +37,7 @@ const CATEGORY_VISUALS: Record<string, string> = {
     "/images/categories/energie-solaire-transition.jpg",
   "informatique-pro-serveurs":
     "/images/categories/informatique-pro-serveurs.jpg",
-  "dons-solidarite-bons-plans":
-    "/images/categories/dons-solidarite-bons-plans.jpg",
+  "dons-et-objets-gratuits": "/images/categories/dons-et-objets-gratuits.jpg",
 };
 
 interface CategoryCardProps {
@@ -57,7 +56,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
   );
   const visualSrc =
     CATEGORY_VISUALS[category.slug] ??
-    CATEGORY_VISUALS["dons-solidarite-bons-plans"];
+    CATEGORY_VISUALS["dons-et-objets-gratuits"];
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary/15 motion-reduce:transform-none">

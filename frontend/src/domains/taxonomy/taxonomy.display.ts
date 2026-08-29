@@ -1,4 +1,4 @@
-import type { Listing } from "../../types";
+import type { Listing, RecentSearch } from "../../types";
 import { getTaxonomyLabel } from "./taxonomy.labels";
 import { TaxonomyMigration } from "./taxonomy.migration";
 import type { TaxonomyNode } from "./taxonomy.types";
@@ -46,4 +46,11 @@ export function getListingSubCategoryLabel(
     listing.subCategorySlug,
     listing.subCategoryLabel || "Autres",
   );
+}
+
+export function getRecentSearchTitle(
+  item: Pick<RecentSearch, "title" | "query" | "categorySlug">,
+): string {
+  if (item.query?.trim()) return item.title;
+  return getCompactTaxonomyLabelBySlug(item.categorySlug, item.title);
 }

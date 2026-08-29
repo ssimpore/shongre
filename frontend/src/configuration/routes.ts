@@ -256,7 +256,7 @@ export const routes = {
   safety: () => "/securite",
   professionals: () => "/professionnels",
   proPlans: () => "/solutions-pro",
-  deals: () => "/bons-plans",
+  deals: () => "/offres-prix-reduit",
   admin: {
     overview: () => `/admin`,
     solutions: () => `/admin/solutions`,

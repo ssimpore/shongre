@@ -47,6 +47,18 @@ describe("CategoryFilterRail Primitive", () => {
       expect(cat.iconName).toBeTruthy();
       expect(cat.slug).toBeTruthy();
     });
+    expect(
+      getTaxonomyLabel(
+        TAXONOMY.find((cat) => cat.id === "professional_equipment"),
+        "compact",
+      ),
+    ).toBe("Outils pro");
+    expect(
+      getTaxonomyLabel(
+        TAXONOMY.find((cat) => cat.id === "home_garden"),
+        "compact",
+      ),
+    ).toBe("Maison");
   });
 
   it("supports subcategories rendering for active categories", () => {

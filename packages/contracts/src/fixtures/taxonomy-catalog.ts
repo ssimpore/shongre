@@ -404,7 +404,7 @@ const IDENTITIES: readonly TaxonomyIdentityTuple[] = [
     "maison-jardin",
     "Maison, Meubles & Jardin",
     "Home & Garden",
-    "Maison & Jardin",
+    "Maison",
     "Home & Garden",
     null,
     "Home",
@@ -868,7 +868,7 @@ const IDENTITIES: readonly TaxonomyIdentityTuple[] = [
     "materiel-professionnel",
     "Matériel Professionnel & BTP",
     "Professional Equipment",
-    "Matériel Pro",
+    "Outils pro",
     "Pro Equipment",
     null,
     "HardHat",
@@ -1009,7 +1009,7 @@ const IDENTITIES: readonly TaxonomyIdentityTuple[] = [
   [
     "deals_donations",
     "DEALS",
-    "dons-solidarite-bons-plans",
+    "dons-et-objets-gratuits",
     "Dons & Solidarité",
     "Free Items & Donations",
     "Dons & Gratuit",
@@ -1046,10 +1046,10 @@ export const CANONICAL_TAXONOMY_IDENTITIES: readonly CanonicalTaxonomyIdentity[]
       code,
       slug,
       labels: { "fr-FR": labelFr, "en-US": labelEn },
-      shortLabels:
-        shortFr || shortEn
-          ? { "fr-FR": shortFr || labelFr, "en-US": shortEn || labelEn }
-          : undefined,
+      shortLabels: {
+        "fr-FR": shortFr || labelFr,
+        "en-US": shortEn || labelEn,
+      },
       parentId: parentId || undefined,
       iconName,
       sortOrder,
@@ -1067,7 +1067,8 @@ export const CANONICAL_TAXONOMY_IDENTITY_BY_ID = new Map(
 /**
  * Historical category IDs/slugs that must keep resolving during migration.
  * Discovery collections such as `bons-plans` are deliberately absent: they
- * are not taxonomy identities.
+ * are not taxonomy identities. A compatibility input can remain here while
+ * the v4 compiler suppresses it from public taxonomy aliases.
  */
 export const CANONICAL_TAXONOMY_ALIASES: Readonly<Record<string, string>> = {
   vehicules: "vehicles",
@@ -1126,4 +1127,5 @@ export const CANONICAL_TAXONOMY_ALIASES: Readonly<Record<string, string>> = {
   "outillage-btp": "professional_btp.machinery",
   "cours-formations": "services.tutoring",
   "offres-emploi": "jobs.offers",
+  "dons-solidarite-bons-plans": "deals_donations",
 };

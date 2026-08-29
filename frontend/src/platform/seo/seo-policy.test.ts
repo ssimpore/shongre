@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
 import { INITIAL_LISTINGS } from "../../mocks/initialDemoData";
+import { listTaxonomySeoRecords } from "../../domains/taxonomy/taxonomy.seo";
 import type { PublicRouteDataResolution } from "./public-route-data";
-import { isSeoMarketEnabled, resolveSeoPolicy } from "./seo-policy";
+import {
+  isSeoMarketEnabled,
+  resolveSeoPolicy,
+  structuredDataForPolicy,
+} from "./seo-policy";
+import { collectionService } from "../../domains/collection/collection.service";
 
 const infrastructure = {
   globalDomain: "shongre.com",
@@ -12,6 +18,22 @@ const infrastructure = {
 
 const context = (hostname: string, pathname: string) =>
   resolveMarketContext({ hostname, pathname, infrastructure });
+
+const categoryRouteData = (
+  pathname: string,
+  availableCountryCodes = ["FR"],
+): PublicRouteDataResolution => ({
+  status: "found",
+  data: {
+    kind: "listing_search",
+    pathname,
+    items: [INITIAL_LISTINGS[0]],
+    total: 1,
+    page: 1,
+    totalPages: 1,
+    availableCountryCodes,
+  },
+});
 
 describe("central SEO policy", () => {
   it.each([
@@ -60,6 +82,75 @@ describe("central SEO policy", () => {
       });
     },
   );
+
+  it.each([
+    ["shongre.fr", "/bons-plans", "https://shongre.fr/offres-prix-reduit"],
+    [
+      "shongre.com",
+      "/be/bons-plans",
+      "https://shongre.com/be/offres-prix-reduit",
+    ],
+    [
+      "shongre.com",
+      "/ch/bons-plans",
+      "https://shongre.com/ch/offres-prix-reduit",
+    ],
+  ])(
+    "redirects the legacy reduced-price route in the active %s market",
+    (hostname, publicPath, canonicalUrl) => {
+      const policy = resolveSeoPolicy({
+        pathname: "/bons-plans",
+        marketContext: context(hostname, publicPath),
+      });
+      expect(policy).toMatchObject({
+        indexable: false,
+        sitemapEligible: false,
+        redirectPath: "/offres-prix-reduit",
+        canonicalUrl,
+      });
+    },
+  );
+
+  it.each([
+    [
+      "/categorie/jet-skis-and-scooters-des-mers",
+      "/categorie/scooters-des-mers-et-motos-nautiques",
+    ],
+    ["/categorie/dons-solidarite-bons-plans", "/categorie/don-d-objet"],
+  ])("redirects the retired taxonomy URL %s", (pathname, redirectPath) => {
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: context("shongre.fr", pathname),
+    });
+    expect(policy).toMatchObject({
+      knownRoute: true,
+      indexable: false,
+      sitemapEligible: false,
+      redirectPath,
+      canonicalUrl: `https://shongre.fr${redirectPath}`,
+    });
+  });
+
+  it("redirects a stable collection ID to the collection's canonical slug", () => {
+    const collection = collectionService.getCollection("bons-plans")!;
+    const policy = resolveSeoPolicy({
+      pathname: "/collections/bons-plans",
+      marketContext: context("shongre.fr", "/collections/bons-plans"),
+      routeData: {
+        status: "found",
+        data: {
+          kind: "collection",
+          collection,
+          listings: INITIAL_LISTINGS.slice(0, 2),
+          availableCountryCodes: ["FR"],
+        },
+      },
+    });
+    expect(policy).toMatchObject({
+      redirectPath: "/collections/offres-prix-reduit",
+      canonicalUrl: "https://shongre.fr/collections/offres-prix-reduit",
+    });
+  });
 
   it.each([
     ["SN", "/sn"],
@@ -154,6 +245,146 @@ describe("central SEO policy", () => {
       canonicalUrl: "https://shongre.fr/recherche",
       exclusionReason: "ARBITRARY_SEARCH_OR_FACET",
     });
+  });
+
+  it("applies the generated localized SEO projection to every taxonomy node", () => {
+    const market = context("shongre.fr", "/categories");
+    listTaxonomySeoRecords().forEach(({ node, projection }) => {
+      const pathname = projection.urlPattern;
+      const policy = resolveSeoPolicy({
+        pathname,
+        marketContext: market,
+        routeData: categoryRouteData(pathname),
+      });
+      expect(policy.knownRoute, node.id).toBe(true);
+      expect(policy.indexable, node.id).toBe(true);
+      expect(policy.canonicalPath, node.id).toBe(projection.urlPattern);
+      expect(policy.canonicalUrl, node.id).toBe(
+        `https://shongre.fr${projection.urlPattern}`,
+      );
+      expect(policy.title, node.id).toBe(projection.titleTemplate["fr-FR"]);
+      expect(policy.description, node.id).toBe(
+        projection.descriptionTemplate["fr-FR"],
+      );
+      expect(policy.taxonomyHeading, node.id).toBe(projection.h1["fr-FR"]);
+      expect(policy.sitemapEligible, node.id).toBe(projection.sitemap.eligible);
+    });
+  });
+
+  it("uses canonical full category names instead of compact navigation labels", () => {
+    const pathname = "/categorie/maison-jardin";
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: context("shongre.fr", pathname),
+      routeData: categoryRouteData(pathname),
+    });
+    expect(policy).toMatchObject({
+      title: "Maison & Jardin | Shongre",
+      taxonomyHeading: "Maison & Jardin",
+      canonicalUrl: "https://shongre.fr/categorie/maison-jardin",
+    });
+    expect(policy.title).not.toBe("Maison | Shongre");
+  });
+
+  it.each([
+    ["shongre.fr", "/categorie/maison-jardin", "FR", "https://shongre.fr"],
+    [
+      "shongre.com",
+      "/be/categorie/maison-jardin",
+      "BE",
+      "https://shongre.com/be",
+    ],
+    [
+      "shongre.com",
+      "/ch/categorie/maison-jardin",
+      "CH",
+      "https://shongre.com/ch",
+    ],
+  ])(
+    "keeps taxonomy SEO localized and canonical in the %s active market",
+    (hostname, publicPath, countryCode, expectedOrigin) => {
+      const pathname = "/categorie/maison-jardin";
+      const policy = resolveSeoPolicy({
+        pathname,
+        marketContext: context(hostname, publicPath),
+        routeData: categoryRouteData(pathname, [countryCode]),
+      });
+      expect(policy).toMatchObject({
+        indexable: true,
+        title: "Maison & Jardin | Shongre",
+        canonicalUrl: `${expectedOrigin}${pathname}`,
+      });
+    },
+  );
+
+  it("redirects stable IDs and generated aliases to the canonical taxonomy slug", () => {
+    expect(
+      resolveSeoPolicy({
+        pathname: "/categorie/home_garden",
+        marketContext: context("shongre.fr", "/categorie/home_garden"),
+        routeData: categoryRouteData("/categorie/home_garden"),
+      }),
+    ).toMatchObject({
+      indexable: false,
+      canonicalPath: "/categorie/maison-jardin",
+      redirectPath: "/categorie/maison-jardin",
+      exclusionReason: "NON_CANONICAL_TAXONOMY_ROUTE",
+    });
+    expect(
+      resolveSeoPolicy({
+        pathname: "/categorie/professional_btp",
+        marketContext: context("shongre.fr", "/categorie/professional_btp"),
+        routeData: categoryRouteData("/categorie/professional_btp"),
+      }),
+    ).toMatchObject({
+      canonicalPath: "/categorie/materiel-professionnel",
+      redirectPath: "/categorie/materiel-professionnel",
+    });
+  });
+
+  it("noindexes taxonomy facets while preserving the canonical category URL", () => {
+    const pathname = "/categorie/maison-jardin";
+    const policy = resolveSeoPolicy({
+      pathname,
+      query: { sortBy: "price_asc" },
+      marketContext: context("shongre.fr", pathname),
+      routeData: categoryRouteData(pathname),
+    });
+    expect(policy).toMatchObject({
+      indexable: false,
+      follow: true,
+      canonicalUrl: "https://shongre.fr/categorie/maison-jardin",
+      exclusionReason: "ARBITRARY_SEARCH_OR_FACET",
+    });
+  });
+
+  it("emits the generated category schema types", () => {
+    const rootPath = "/categorie/maison-jardin";
+    const rootData = categoryRouteData(rootPath);
+    const market = context("shongre.fr", rootPath);
+    const rootPolicy = resolveSeoPolicy({
+      pathname: rootPath,
+      marketContext: market,
+      routeData: rootData,
+    });
+    expect(
+      structuredDataForPolicy(rootPolicy, market, rootData).map(
+        (entry) => entry["@type"],
+      ),
+    ).toEqual(["CollectionPage", "BreadcrumbList"]);
+
+    const leafPath = "/categorie/canapes-and-fauteuils";
+    const leafData = categoryRouteData(leafPath);
+    const leafPolicy = resolveSeoPolicy({
+      pathname: leafPath,
+      marketContext: market,
+      routeData: leafData,
+    });
+    expect(
+      structuredDataForPolicy(leafPolicy, market, leafData).map(
+        (entry) => entry["@type"],
+      ),
+    ).toEqual(["CollectionPage", "ItemList", "BreadcrumbList"]);
   });
 
   it("excludes expired jobs from schema and active sitemaps", () => {

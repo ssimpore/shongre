@@ -9863,6 +9863,12 @@ export interface components {
         } & {
             readonly [key: string]: string;
         };
+        /** @description Localized compact category labels keyed by BCP 47 locale. French is always present and each value is limited to 28 characters. */
+        readonly TaxonomyV4LocalizedShortLabels: {
+            readonly "fr-FR": string;
+        } & {
+            readonly [key: string]: string;
+        };
         readonly TaxonomyV4MarketAvailability: {
             readonly indexable: boolean;
             /** @enum {string} */
@@ -9884,6 +9890,7 @@ export interface components {
             readonly seo: {
                 readonly indexable: boolean;
             };
+            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
             readonly slug: string;
             readonly sortOrder: number;
             readonly sourceKey: string;

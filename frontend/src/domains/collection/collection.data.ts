@@ -96,10 +96,10 @@ export const ALL_COLLECTIONS: Collection[] = [
   },
   {
     id: "bons-plans",
-    slug: "bons-plans",
+    slug: "offres-prix-reduit",
     pillarId: "editorial",
-    title: "Bons plans & Baisses de prix",
-    shortTitle: "Bons plans",
+    title: "Offres à prix réduit",
+    shortTitle: "Prix réduits",
     subtitle:
       "Des réductions réelles et des prix barrés sur des articles contrôlés.",
     description:

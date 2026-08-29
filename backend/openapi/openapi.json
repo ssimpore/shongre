@@ -31126,6 +31126,26 @@
         "properties": { "fr-FR": { "type": "string", "minLength": 1 } },
         "additionalProperties": { "type": "string", "minLength": 1 }
       },
+      "TaxonomyV4LocalizedShortLabels": {
+        "type": "object",
+        "description": "Localized compact category labels keyed by BCP 47 locale. French is always present and each value is limited to 28 characters.",
+        "required": ["fr-FR"],
+        "propertyNames": {
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+        },
+        "properties": {
+          "fr-FR": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 28
+          }
+        },
+        "additionalProperties": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 28
+        }
+      },
       "TaxonomyV4MarketAvailability": {
         "type": "object",
         "additionalProperties": false,
@@ -31161,6 +31181,7 @@
           "level",
           "slug",
           "labels",
+          "shortLabels",
           "iconName",
           "sortOrder",
           "status",
@@ -31177,6 +31198,9 @@
           "slug": { "type": "string", "minLength": 1 },
           "labels": {
             "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "shortLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
           },
           "description": { "type": "string" },
           "iconName": { "type": "string", "minLength": 1 },

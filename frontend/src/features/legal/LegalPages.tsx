@@ -14,6 +14,7 @@ import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingGrid } from "../../design-system/primitives/ListingGrid";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { routes } from "../../configuration/routes";
 
 const DEALS_PER_PAGE = 8;
 
@@ -220,10 +221,10 @@ export const DealsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const dealsSectionRef = React.useRef<HTMLElement>(null);
   usePageMeta({
-    title: "Bons plans & baisses de prix",
+    title: "Offres à prix réduit",
     description:
       "Les annonces dont le prix vient de baisser et les meilleures affaires du moment sur Shongre.",
-    canonicalPath: "/bons-plans",
+    canonicalPath: routes.deals(),
   });
 
   const deals = storageService
@@ -266,7 +267,7 @@ export const DealsPage: React.FC = () => {
       <Breadcrumbs
         items={[
           { label: "Accueil", href: "/" },
-          { label: "Bons plans & Réductions" },
+          { label: "Offres à prix réduit" },
         ]}
       />
       <div>

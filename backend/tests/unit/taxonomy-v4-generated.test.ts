@@ -106,6 +106,35 @@ describe("generated taxonomy v4 integrity", () => {
     );
   });
 
+  it("provides a concise localized French shortLabel for every category", () => {
+    bundle.verticals.forEach((vertical) => {
+      expect(vertical.shortLabels["fr-FR"], vertical.id).toBeTruthy();
+    });
+    const siblingShortLabels = new Set<string>();
+    bundle.categories.forEach((category) => {
+      const shortLabel = category.shortLabels["fr-FR"];
+      expect(shortLabel, category.id).toBeTruthy();
+      expect(shortLabel.length, category.id).toBeLessThanOrEqual(28);
+      expect(shortLabel.length, category.id).toBeLessThanOrEqual(
+        category.labels["fr-FR"].length,
+      );
+      const siblingKey = `${category.parentId ?? "ROOT"}:${shortLabel.toLocaleLowerCase("fr-FR")}`;
+      expect(siblingShortLabels.has(siblingKey), siblingKey).toBe(false);
+      siblingShortLabels.add(siblingKey);
+    });
+    expect(
+      bundle.categories.find(
+        (category) =>
+          category.id === "energy_transition.heating_storage.heat_pumps",
+      ),
+    ).toMatchObject({
+      labels: {
+        "fr-FR": "Pompes à chaleur & chauffage performant",
+      },
+      shortLabels: { "fr-FR": "Pompes à chaleur" },
+    });
+  });
+
   it("resolves every listing type, binding, rule, projection and alias", () => {
     const categories = new Map(
       bundle.categories.map((item) => [item.id, item]),
@@ -153,6 +182,19 @@ describe("generated taxonomy v4 integrity", () => {
       expect(categories.has(projection.categoryId)).toBe(true);
       expect(listingTypes.has(projection.listingTypeId)).toBe(true);
     }
+    expect(bundle.projections.seo).toHaveLength(bundle.categories.length);
+    expect(
+      unique(bundle.projections.seo.map((projection) => projection.urlPattern)),
+    ).toBe(true);
+    bundle.projections.seo.forEach((projection) => {
+      const category = categories.get(projection.categoryId)!;
+      expect(projection.urlPattern).toBe(`/categorie/${category.slug}`);
+      expect(projection.h1).toEqual(category.labels);
+      Object.keys(category.labels).forEach((locale) => {
+        expect(projection.titleTemplate[locale]).toBeTruthy();
+        expect(projection.descriptionTemplate[locale]).toBeTruthy();
+      });
+    });
     bundle.aliases.forEach((alias) =>
       expect(categories.has(alias.canonicalCategoryId)).toBe(true),
     );

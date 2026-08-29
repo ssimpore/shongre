@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
-const discoveryRoutes = ["/", "/recherche", "/bons-plans"] as const;
+const discoveryRoutes = ["/", "/recherche", "/offres-prix-reduit"] as const;
 
 test.describe("shared header scroll behavior", () => {
   test.beforeEach(async ({ page }) => {

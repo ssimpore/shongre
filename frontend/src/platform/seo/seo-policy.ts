@@ -3,8 +3,11 @@ import {
   COUNTRY_REGISTRY,
   type MarketContext,
 } from "@shongre/contracts";
-import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
-import { CANONICAL_TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
+import {
+  resolveLocalizedTaxonomySeoText,
+  resolveTaxonomySeoRecord,
+  taxonomyNodeIsIndexableInMarket,
+} from "../../domains/taxonomy/taxonomy.seo";
 import { isProSeller } from "../../domains/user/user.domain";
 import {
   DEFAULT_DESCRIPTION,
@@ -57,6 +60,8 @@ export type SeoExclusionReason =
   | "RESOURCE_INACTIVE"
   | "RESOURCE_EXPIRED"
   | "RESOURCE_MISSING"
+  | "TAXONOMY_NOT_AVAILABLE"
+  | "NON_CANONICAL_TAXONOMY_ROUTE"
   | "SERVER_CONTENT_NOT_VALIDATED"
   | "UNKNOWN_ROUTE";
 
@@ -79,6 +84,9 @@ export interface SeoRoutePolicy {
   includeXDefault: boolean;
   lastModified?: string;
   redirectPath?: string;
+  taxonomyCategoryId?: string;
+  taxonomyHeading?: string;
+  taxonomyStructuredData?: readonly string[];
 }
 
 export interface ResolveSeoPolicyInput {
@@ -122,8 +130,8 @@ const STATIC_PAGES: Readonly<Record<string, StaticPagePolicy>> = Object.freeze({
     sitemapEligible: true,
     alternate: true,
   },
-  "/bons-plans": {
-    title: "Bons plans & baisses de prix",
+  "/offres-prix-reduit": {
+    title: "Offres à prix réduit",
     description:
       "Les annonces dont le prix vient de baisser et les meilleures affaires du moment sur Shongre.",
     resourceType: "listing_collection",
@@ -243,6 +251,10 @@ const LEGACY_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
   "/support": "/aide",
   "/tarifs": "/solutions-pro",
   "/publier": "/deposer",
+  "/bons-plans": "/offres-prix-reduit",
+  "/categorie/jet-skis-and-scooters-des-mers":
+    "/categorie/scooters-des-mers-et-motos-nautiques",
+  "/categorie/dons-solidarite-bons-plans": "/categorie/don-d-objet",
 });
 
 export function listStaticSitemapPaths(): string[] {
@@ -319,16 +331,6 @@ export function listSeoMarketCountryCodes(): string[] {
       country.compliance.legalReviewStatus === "approved" &&
       ["active", "beta"].includes(country.launchStatus),
   ).map((country) => country.code);
-}
-
-function findTaxonomyNode(slug: string): TaxonomyNode | null {
-  const stack = [...CANONICAL_TAXONOMY];
-  while (stack.length) {
-    const node = stack.shift()!;
-    if (node.slug === slug || node.id === slug) return node;
-    stack.push(...(node.children || []));
-  }
-  return null;
 }
 
 function absoluteImage(image: string | undefined, canonicalUrl: string) {
@@ -517,7 +519,9 @@ export function resolveSeoPolicy({
   const categoryMatch = pathname.match(/^\/categorie\/([^/]+)$/);
   if (categoryMatch) {
     const slug = decodeURIComponent(categoryMatch[1]);
-    const node = findTaxonomyNode(slug);
+    const taxonomyRecord = resolveTaxonomySeoRecord(slug);
+    const node = taxonomyRecord?.node;
+    const projection = taxonomyRecord?.projection;
     const data =
       routeData.status === "found" && routeData.data.kind === "listing_search"
         ? routeData.data
@@ -526,35 +530,81 @@ export function resolveSeoPolicy({
       data && data.total >= PROGRAMMATIC_SEO_THRESHOLDS.categoryInventory,
     );
     const hasArbitraryState = entries.some(
-      ([key, value]) => key !== "category" || value !== slug,
+      ([key, value]) =>
+        key !== "category" ||
+        ![slug, node?.slug, node?.id].filter(Boolean).includes(value),
+    );
+    const canonicalPath =
+      projection?.urlPattern ?? `/categorie/${encodeURIComponent(slug)}`;
+    const nonCanonicalRoute = Boolean(
+      projection && pathname !== projection.urlPattern,
+    );
+    const taxonomyAvailable = Boolean(
+      node &&
+      projection?.indexable &&
+      taxonomyNodeIsIndexableInMarket(node, currentCountry),
     );
     const indexable = Boolean(
-      node && node.status === "active" && enoughInventory && !hasArbitraryState,
+      taxonomyRecord &&
+      taxonomyAvailable &&
+      enoughInventory &&
+      !hasArbitraryState &&
+      !nonCanonicalRoute,
     );
-    const label = node?.name || node?.label || slug.replace(/-/g, " ");
+    const heading = projection
+      ? resolveLocalizedTaxonomySeoText(projection.h1, marketContext.locale)
+      : slug.replace(/-/g, " ");
+    const title = projection
+      ? resolveLocalizedTaxonomySeoText(
+          projection.titleTemplate,
+          marketContext.locale,
+        )
+      : `${heading} — annonces`;
+    const description = projection
+      ? resolveLocalizedTaxonomySeoText(
+          projection.descriptionTemplate,
+          marketContext.locale,
+        )
+      : `Découvrez les annonces ${heading.toLocaleLowerCase(marketContext.locale || "fr")} actives sur Shongre en ${marketContext.country?.name || "votre pays"}.`;
     return base({
-      knownRoute: Boolean(node),
+      knownRoute: Boolean(taxonomyRecord),
       indexable,
       follow: true,
-      canonicalPath: `/categorie/${encodeURIComponent(slug)}`,
-      title: `${label} — annonces`,
-      description: `Découvrez les annonces ${label.toLocaleLowerCase(marketContext.locale || "fr")} actives sur Shongre en ${marketContext.country?.name || "votre pays"}.`,
+      canonicalPath,
+      title,
+      description,
       resourceType: "category",
-      lifecycle: node ? "available" : "missing",
-      sitemapEligible: indexable,
-      structuredDataEligible: indexable,
-      exclusionReason: !node
+      lifecycle: taxonomyRecord
+        ? taxonomyAvailable
+          ? "available"
+          : "inactive"
+        : "missing",
+      sitemapEligible: Boolean(projection?.sitemap.eligible && indexable),
+      structuredDataEligible: Boolean(
+        projection?.structuredData.length && indexable,
+      ),
+      exclusionReason: !taxonomyRecord
         ? "RESOURCE_MISSING"
-        : hasArbitraryState
-          ? "ARBITRARY_SEARCH_OR_FACET"
-          : enoughInventory
-            ? undefined
-            : "INSUFFICIENT_INVENTORY",
+        : nonCanonicalRoute
+          ? "NON_CANONICAL_TAXONOMY_ROUTE"
+          : !taxonomyAvailable
+            ? "TAXONOMY_NOT_AVAILABLE"
+            : hasArbitraryState
+              ? "ARBITRARY_SEARCH_OR_FACET"
+              : enoughInventory
+                ? undefined
+                : "INSUFFICIENT_INVENTORY",
       openGraphType: "website",
       alternateCountryCodes: data
         ? availableAlternates(data.availableCountryCodes, currentCountry)
         : [currentCountry],
       includeXDefault: false,
+      taxonomyCategoryId: node?.id,
+      taxonomyHeading: heading,
+      taxonomyStructuredData: projection?.structuredData,
+      ...(nonCanonicalRoute && projection
+        ? { redirectPath: projection.urlPattern }
+        : {}),
     });
   }
 
@@ -766,11 +816,12 @@ export function resolveSeoPolicy({
     }
     const enoughInventory =
       data.listings.length >= PROGRAMMATIC_SEO_THRESHOLDS.collectionInventory;
+    const canonicalPath = `/collections/${encodeURIComponent(data.collection.slug)}`;
     return base({
       knownRoute: true,
       indexable: enoughInventory,
       follow: true,
-      canonicalPath: `/collections/${encodeURIComponent(data.collection.slug)}`,
+      canonicalPath,
       title: data.collection.title,
       description: data.collection.description,
       resourceType: "collection",
@@ -785,6 +836,7 @@ export function resolveSeoPolicy({
         currentCountry,
       ),
       includeXDefault: false,
+      ...(pathname !== canonicalPath ? { redirectPath: canonicalPath } : {}),
     });
   }
 
@@ -1012,13 +1064,57 @@ export function structuredDataForPolicy(
   }
 
   if (policy.resourceType === "category") {
-    return [
+    const configuredTypes = new Set(policy.taxonomyStructuredData ?? []);
+    const entries: StructuredData[] = [];
+    const heading =
+      policy.taxonomyHeading || policy.title.replace(/\s*[|—].*$/, "");
+    if (configuredTypes.has("CollectionPage")) {
+      entries.push({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: heading,
+        description: policy.description,
+        url: policy.canonicalUrl,
+        inLanguage: context.locale || undefined,
+      });
+    }
+    if (
+      configuredTypes.has("ItemList") &&
+      data?.kind === "listing_search" &&
+      data.items.length
+    ) {
+      entries.push({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: heading,
+        numberOfItems: data.total,
+        itemListElement: data.items.map((listing, index) => {
+          const projectedPath =
+            typeof listing.attributes?.canonicalPath === "string" &&
+            listing.attributes.canonicalPath.startsWith("/")
+              ? normalizedPath(listing.attributes.canonicalPath)
+              : `/annonce/${encodeURIComponent(listing.id)}`;
+          return {
+            "@type": "ListItem",
+            position: index + 1,
+            name: listing.title,
+            url: buildPublicUrl({
+              country: context.countryCode!,
+              route: projectedPath,
+              infrastructure: context.infrastructure,
+            }),
+          };
+        }),
+      });
+    }
+    entries.push(
       breadcrumb(context, [
         { name: "Accueil", path: "/" },
         { name: "Catégories", path: "/categories" },
-        { name: policy.title.replace(/\s*[|—].*$/, "") },
+        { name: heading },
       ]),
-    ];
+    );
+    return entries;
   }
 
   return [];

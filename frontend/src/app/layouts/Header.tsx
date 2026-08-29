@@ -119,8 +119,8 @@ export const Header: React.FC = () => {
       path.startsWith("/categorie/")
     )
       return true;
-    // Show on collections and deals
-    if (path.startsWith("/collections") || path === "/bons-plans") return true;
+    // Show on collections and reduced-price offers
+    if (path.startsWith("/collections") || path === routes.deals()) return true;
 
     // Smartly hide on specialized, focused, transactional, and admin routes
     return false;
@@ -838,9 +838,9 @@ export const Header: React.FC = () => {
                     <ChevronRight className="w-icon-md h-icon-md text-primary" />
                   </Link>
 
-                  {/* Bons plans & Prix réduits */}
+                  {/* Promotions */}
                   <Link
-                    to="/bons-plans"
+                    to={routes.deals()}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                   >

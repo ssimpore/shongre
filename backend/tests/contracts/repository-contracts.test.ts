@@ -253,6 +253,12 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       const roots = await demoRepo.getRootCategories();
       expect(roots.length).toBeGreaterThan(0);
       expect(roots.some((r) => r.id === "vehicles")).toBe(true);
+      expect(
+        roots.find((root) => root.id === "professional_equipment")?.shortLabel,
+      ).toBe("Outils pro");
+      expect(
+        roots.find((root) => root.id === "home_garden")?.shortLabel,
+      ).toBe("Maison");
 
       const children = await demoRepo.getChildren("vehicles");
       expect(children.length).toBeGreaterThanOrEqual(3);

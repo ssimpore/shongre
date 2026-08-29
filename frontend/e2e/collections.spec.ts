@@ -133,8 +133,8 @@ test.describe("Collections catalog density", () => {
     await tag.click();
     await expect(tag).toHaveAttribute("aria-pressed", "true");
 
-    await page.locator('a[href="/collections/bons-plans"]').click();
-    await expect(page).toHaveURL(/\/collections\/bons-plans$/);
+    await page.locator('a[href="/collections/offres-prix-reduit"]').click();
+    await expect(page).toHaveURL(/\/collections\/offres-prix-reduit$/);
     await expect(
       page.getByRole("button", { name: /^Tout/ }).first(),
     ).toHaveAttribute("aria-pressed", "true");

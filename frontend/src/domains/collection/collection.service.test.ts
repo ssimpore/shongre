@@ -61,8 +61,13 @@ describe("CollectionService", () => {
     expect(results.some((l) => l.id === "2")).toBe(false);
   });
 
-  it("filters listings for discount collection (bons-plans)", () => {
+  it("keeps the discount collection ID compatible while exposing its canonical slug", () => {
     const col = collectionService.getCollection("bons-plans")!;
+    expect(col.slug).toBe("offres-prix-reduit");
+    expect(col.title).toBe("Offres à prix réduit");
+
+    expect(collectionService.getCollection("offres-prix-reduit")).toBe(col);
+
     const mockListings: Listing[] = [
       {
         id: "1",

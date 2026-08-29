@@ -688,6 +688,12 @@ const LegacyEducationRedirect: React.FC = () => {
   );
 };
 
+/** Client-side fallback for fixed legacy URLs; Next serves permanent redirects. */
+const LegacyPathRedirect: React.FC<{ to: string }> = ({ to }) => {
+  const location = useLocation();
+  return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
+};
+
 export const APP_ROUTES: RouteObject[] = [
   {
     path: "/solutions",
@@ -961,8 +967,28 @@ export const APP_ROUTES: RouteObject[] = [
       { index: true, element: withSuspense(HomePage) },
       { path: "categories", element: withSuspense(CategoriesPage) },
       { path: "collections", element: withSuspense(CollectionsPage) },
+      {
+        path: "collections/bons-plans",
+        element: (
+          <LegacyPathRedirect
+            to={routes.collections.detail("offres-prix-reduit")}
+          />
+        ),
+      },
       { path: "collections/:slug", element: withSuspense(CollectionsPage) },
       { path: "recherche", element: withSuspense(SearchPage) },
+      {
+        path: "categorie/jet-skis-and-scooters-des-mers",
+        element: (
+          <LegacyPathRedirect
+            to={routes.category("scooters-des-mers-et-motos-nautiques")}
+          />
+        ),
+      },
+      {
+        path: "categorie/dons-solidarite-bons-plans",
+        element: <LegacyPathRedirect to={routes.category("don-d-objet")} />,
+      },
       { path: "categorie/:categorySlug", element: withSuspense(SearchPage) },
       { path: "annonce/:id", element: withSuspense(ListingDetailPage) },
       { path: "auto", element: withSuspense(AutoSearchPage) },
@@ -1027,7 +1053,11 @@ export const APP_ROUTES: RouteObject[] = [
       { path: "professionnels", element: withSuspense(ProDirectoryPage) },
       { path: "solutions-pro", element: withSuspense(ProPlansPage) },
       { path: "tarifs", element: withSuspense(ProPlansPage) },
-      { path: "bons-plans", element: withSuspense(DealsPage) },
+      { path: "offres-prix-reduit", element: withSuspense(DealsPage) },
+      {
+        path: "bons-plans",
+        element: <LegacyPathRedirect to={routes.deals()} />,
+      },
       {
         path: "messages",
         element: (
@@ -1668,7 +1698,9 @@ function routesForApplication(
   }
 
   if (applicationId === "facturation") {
-    const localRoute = APP_ROUTES.find((route) => route.path === "/facturation");
+    const localRoute = APP_ROUTES.find(
+      (route) => route.path === "/facturation",
+    );
     return [
       {
         path: "/",
@@ -1729,11 +1761,7 @@ export const AppRouter: React.FC<{
   initialPath?: string;
   basename?: string;
   applicationId?: ShongreApplicationId;
-}> = ({
-  initialPath = "/",
-  basename = "/",
-  applicationId = "marketplace",
-}) => {
+}> = ({ initialPath = "/", basename = "/", applicationId = "marketplace" }) => {
   const router = useRef<
     | ReturnType<typeof createBrowserRouter>
     | ReturnType<typeof createMemoryRouter>
@@ -1746,7 +1774,9 @@ export const AppRouter: React.FC<{
             basename,
             initialEntries: [initialPath],
           })
-        : createBrowserRouter(routesForApplication(applicationId), { basename });
+        : createBrowserRouter(routesForApplication(applicationId), {
+            basename,
+          });
   }
   return <RouterProvider router={router.current} />;
 };

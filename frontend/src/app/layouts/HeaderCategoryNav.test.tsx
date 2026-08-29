@@ -17,9 +17,10 @@ describe("HeaderCategoryNav", () => {
     );
 
     expect(markup).toContain("Immobilier");
-    expect(markup).toContain("Matériel Pro");
-    expect(markup).toContain("Maison &amp; Jardin");
-    expect(markup).toContain("Bons plans !");
+    expect(markup).toContain("Outils pro");
+    expect(markup).toContain("Maison");
+    expect(markup).toContain("Promotions");
+    expect(markup).toContain('href="/offres-prix-reduit"');
     expect(markup).not.toContain("Toutes les annonces");
     expect(markup).not.toContain("rounded-full");
     expect(markup).toContain('href="/recherche?category=loisirs-culture"');

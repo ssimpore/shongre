@@ -40,6 +40,32 @@ make taxonomy-check
 `taxonomy-check` recompiles from the normalized source, fails on generated drift,
 and runs the Web coverage gate.
 
+## Reviewed public terminology
+
+The public terminology screening completed on 2026-08-29 keeps all ordinary,
+descriptive marketplace labels and the existing hierarchy unchanged. Two
+narrow public-facing changes are recorded in the normalized source:
+
+- `vehicles.nautical.personal_watercraft` keeps its stable identity, listing
+  flow, bindings, attributes and market availability, while its French label
+  and slug use `Scooters des mers & motos nautiques` and
+  `scooters-des-mers-et-motos-nautiques`;
+- the legacy `deals_donations` identity keeps resolving for stored data, but its
+  maintained compatibility slug is `dons-et-objets-gratuits`; the former slug
+  is excluded from generated public aliases and retired by migration `00080`.
+
+The Web keeps fixed same-site redirects for the retired taxonomy paths. The
+discount collection also keeps its internal `bons-plans` ID for saved state,
+while its canonical public title and route are `Offres à prix réduit` and
+`/offres-prix-reduit`. Redirects preserve query strings and market-aware URL
+construction; old terms are not emitted in canonical links or sitemaps.
+
+This is conservative risk screening, not a conclusion of non-infringement.
+The original workbook binary is not stored in this repository, so the recorded
+workbook checksum and normalized source are the available provenance evidence.
+Any future workbook import must be followed by the same terminology review, and
+high-risk naming decisions still require qualified French/EU counsel.
+
 ## Master workbook result
 
 The imported workbook checksum is
@@ -104,6 +130,11 @@ approval:
 make taxonomy-db-dry-run
 make taxonomy-db-import
 ```
+
+Migration `backend/supabase/migrations/00080_public_taxonomy_terminology.sql`
+is a forward-only compatibility update. It keeps `deals_donations`, updates only
+its public slug and SEO path, retires the former alias, and fails closed if the
+replacement slug is already owned. It does not rewrite listings or delete data.
 
 Hosted publication, data backfill, search/cache revalidation, and policy
 activation require the protected operational workflow and current legal,

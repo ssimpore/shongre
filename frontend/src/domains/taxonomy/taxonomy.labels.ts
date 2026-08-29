@@ -40,25 +40,28 @@ export function getTaxonomyLabel(
       : activeDataLocale();
 
   if (isCompact) {
-    // 1. Localized shortLabel if available
+    // 1. Localized shortLabel if available.
     if (node.shortLabels && node.shortLabels[locale]) {
       const locShort = node.shortLabels[locale].trim();
       if (locShort.length > 0) return locShort;
     }
-    // 2. Direct shortLabel
-    if (node.shortLabel && typeof node.shortLabel === "string") {
-      const directShort = node.shortLabel.trim();
-      if (directShort.length > 0) return directShort;
-    }
   }
 
-  // Fallback to localized canonical label
+  // 2. Fall back to the canonical label in the requested locale. A French
+  // compatibility mirror must never leak into another locale simply because
+  // that locale does not yet define a compact form.
   if (node.labels && node.labels[locale]) {
     const locFull = node.labels[locale].trim();
     if (locFull.length > 0) return locFull;
   }
 
-  // Fallback to canonical label / name
+  // 3. Legacy flat projections do not always carry localized maps.
+  if (isCompact && node.shortLabel && typeof node.shortLabel === "string") {
+    const directShort = node.shortLabel.trim();
+    if (directShort.length > 0) return directShort;
+  }
+
+  // 4. Final canonical compatibility fallback.
   const canonical = (node.label ?? node.name ?? "").trim();
   return canonical;
 }

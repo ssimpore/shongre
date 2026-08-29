@@ -193,7 +193,7 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
       id: "customer-with-forged-override",
       accountType: "individual",
       role: "individual_buyer",
-      primaryRole: "individual_buyer",
+      primaryRole: "buyer",
       status: "active",
       customPermissions: ["admin.access"],
     };

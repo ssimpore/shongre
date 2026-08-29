@@ -1,5 +1,6 @@
 import "server-only";
 import type { MarketContext } from "@shongre/contracts";
+import { taxonomySlugsForListing } from "../../domains/taxonomy/taxonomy.seo";
 import type { PublicRouteDataResolution } from "./public-route-data";
 import { listServerPublicSitemapData } from "./server-public-route-data";
 import {
@@ -124,10 +125,10 @@ export async function buildMarketSitemapGroups(
   }
 
   const categoryEntries = Array.from(
-    new Set(activeListings.map((listing) => listing.categorySlug)),
+    new Set(activeListings.flatMap(taxonomySlugsForListing)),
   ).map((slug) => {
-    const listings = activeListings.filter(
-      (listing) => listing.categorySlug === slug,
+    const listings = activeListings.filter((listing) =>
+      taxonomySlugsForListing(listing).includes(slug),
     );
     return resolveEntry(
       context,

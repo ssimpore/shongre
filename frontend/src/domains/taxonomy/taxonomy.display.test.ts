@@ -3,6 +3,7 @@ import {
   getCompactTaxonomyLabelBySlug,
   getListingCategoryLabel,
   getListingSubCategoryLabel,
+  getRecentSearchTitle,
 } from "./taxonomy.display";
 
 describe("taxonomy display labels", () => {
@@ -24,5 +25,21 @@ describe("taxonomy display labels", () => {
         subCategoryLabel: "Libellé historique",
       }),
     ).toBe("Libellé historique");
+  });
+
+  it("refreshes stored category searches without rewriting free-text titles", () => {
+    expect(
+      getRecentSearchTitle({
+        title: "Maison & Jardin",
+        categorySlug: "maison-jardin",
+      }),
+    ).toBe("Maison");
+    expect(
+      getRecentSearchTitle({
+        title: "Table de jardin",
+        query: "table de jardin",
+        categorySlug: "maison-jardin",
+      }),
+    ).toBe("Table de jardin");
   });
 });

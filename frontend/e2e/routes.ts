@@ -75,7 +75,27 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
     name: "employment-job-detail",
     persona: "guest",
   },
-  { path: "/bons-plans", name: "deals", persona: "guest" },
+  { path: "/offres-prix-reduit", name: "deals", persona: "guest" },
+  {
+    path: "/bons-plans",
+    name: "deals-legacy-redirect",
+    persona: "guest",
+  },
+  {
+    path: "/collections/bons-plans",
+    name: "discount-collection-legacy-redirect",
+    persona: "guest",
+  },
+  {
+    path: "/categorie/dons-solidarite-bons-plans",
+    name: "donation-category-legacy-redirect",
+    persona: "guest",
+  },
+  {
+    path: "/categorie/jet-skis-and-scooters-des-mers",
+    name: "personal-watercraft-category-legacy-redirect",
+    persona: "guest",
+  },
   { path: "/connexion", name: "login", persona: "guest" },
   { path: "/inscription", name: "register-choice", persona: "guest" },
   { path: "/aide", name: "help-center", persona: "guest" },
@@ -130,7 +150,11 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   },
   // The three seller-profile aliases render the same page; each is linked from
   // a different surface, so each has to stay routable.
-  { path: "/u/camille-martin", name: "seller-profile-u-alias", persona: "guest" },
+  {
+    path: "/u/camille-martin",
+    name: "seller-profile-u-alias",
+    persona: "guest",
+  },
   {
     path: "/vendeur/camille-martin",
     name: "seller-profile-vendeur-alias",

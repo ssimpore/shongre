@@ -102,7 +102,7 @@ export const messagesEn: MessageCatalogue = {
   "nav.category.loisirs": "Leisure",
   "nav.category.autres": "More",
   "nav.category.cours": "Education",
-  "nav.category.bonsPlans": "Deals!",
+  "nav.category.bonsPlans": "Reduced-price offers",
   "nav.unreadMessages_one": "{count} unread message",
   "nav.unreadMessages_other": "{count} unread messages",
 
@@ -132,7 +132,7 @@ export const messagesEn: MessageCatalogue = {
   "footer.boostGrid": "Options & boosts pricing",
   "footer.safetyTips": "Safety tips",
   "footer.contactSupport": "Contact support",
-  "footer.currentDeals": "Current deals",
+  "footer.currentDeals": "Reduced-price offers",
   "footer.comingSoon": "{name} — coming soon",
   "footer.newsletterPitch":
     "Get our weekly selection of listings and product updates.",
@@ -1709,7 +1709,7 @@ export const messagesEn: MessageCatalogue = {
   "shell.header.connectezVousPourGererVos":
     "Sign in to manage your listings and messages",
   "shell.header.explorerSurLaCarte": "Explore on the map",
-  "shell.header.bonsPlansPrixReduits": "Deals & reduced prices",
+  "shell.header.bonsPlansPrixReduits": "Reduced-price offers",
   "shell.header.tableauDeBord": "Dashboard",
   "shell.header.mesAnnonces": "My listings",
   "shell.locationPickerModal.appliquerLaZone": "Apply area",

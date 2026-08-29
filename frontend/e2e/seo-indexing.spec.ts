@@ -134,6 +134,55 @@ test.describe("SEO response and hydration contract", () => {
     expect(html).toContain('/recherche"');
   });
 
+  test("renders canonical taxonomy SEO and noindexes an interacted facet", async ({
+    page,
+    request,
+  }) => {
+    const pathname = "/categorie/maison-jardin";
+    const response = await request.get(pathname);
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    expect(headValue(html, /<title>([\s\S]*?)<\/title>/)).toBe(
+      "Maison & Jardin | Shongre",
+    );
+    expect(html).toContain("Maison &amp; Jardin");
+    expect(headValue(html, /<link rel="canonical" href="([^"]+)"/)).toMatch(
+      /\/categorie\/maison-jardin$/,
+    );
+    const schemas = [
+      ...html.matchAll(
+        /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+      ),
+    ].map((match) => JSON.parse(match[1]));
+    expect(schemas.map((schema) => schema["@type"])).toEqual([
+      "CollectionPage",
+      "BreadcrumbList",
+    ]);
+
+    await page.goto(pathname);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Maison & Jardin",
+    );
+    await expect(page).toHaveTitle("Maison & Jardin | Shongre");
+    await expect(
+      page.locator('script[type="application/ld+json"]'),
+    ).toHaveCount(2);
+    await page.getByRole("button", { name: "Trier les résultats" }).click();
+    await page.getByRole("option", { name: "Prix : croissant" }).click();
+    await expect(page).toHaveURL(/sortBy=price_asc/);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, follow",
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      /\/categorie\/maison-jardin$/,
+    );
+    await expect(
+      page.locator('script[type="application/ld+json"]'),
+    ).toHaveCount(0);
+  });
+
   test("returns real 404 responses for missing public resources and routes", async ({
     request,
   }) => {

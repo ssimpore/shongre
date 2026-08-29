@@ -1,8 +1,8 @@
 {
   "taxonomyVersion": "4.0.0",
-  "compilerVersion": "2.0.0",
+  "compilerVersion": "2.1.0",
   "workbookSha256": "47dfc844bc66504276c1467e8e2d03227370fc66fd831f17a61815d5722c0cf0",
-  "normalizedSha256": "731560d9fb8ba47a0d9f585fc87e6588d49468322f7ef73b7970124878bd6f75",
+  "normalizedSha256": "404f575c89fb658c6b8ab24bb09e6cfe0c9fff90bfd9f2c5e4a5e6fe7e5043d5",
   "sourceCounts": {
     "verticals": 18,
     "categories": 276,

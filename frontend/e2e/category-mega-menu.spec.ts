@@ -44,7 +44,7 @@ test.describe("desktop category mega-menu", () => {
     await vehicles.hover();
     await expect(menu).toHaveAttribute("data-active-category", "vehicules");
     await expect(
-      menu.getByRole("menuitem", { name: "Voitures d'occasion", exact: true }),
+      menu.getByRole("menuitem", { name: "Voitures", exact: true }),
     ).toBeVisible();
 
     await menu.hover({ position: { x: 320, y: 120 } });

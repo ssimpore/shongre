@@ -17,6 +17,7 @@ export interface TaxonomyNode {
   slug: string;
   name: string;
   labels: Record<string, string>;
+  shortLabels?: Record<string, string>;
   shortLabel?: string;
   parentId?: string | null;
   iconName: string;
@@ -92,7 +93,8 @@ function categoryToTaxonomyNode(
     slug: category.slug,
     name: category.labels["fr-FR"],
     labels: category.labels,
-    shortLabel: category.labels["fr-FR"],
+    shortLabels: category.shortLabels,
+    shortLabel: category.shortLabels["fr-FR"],
     parentId: category.parentId,
     iconName: category.iconName,
     sortOrder: category.sortOrder,
@@ -126,7 +128,7 @@ function categoryToLegacyCategory(
     id: category.id,
     slug: category.slug,
     name: category.labels["fr-FR"],
-    shortLabel: category.labels["fr-FR"],
+    shortLabel: category.shortLabels["fr-FR"],
     parentId: category.parentId,
     iconName: category.iconName,
     sortOrder: category.sortOrder,
@@ -225,7 +227,9 @@ function databaseRowToTaxonomyNode(row: any): TaxonomyNode {
     slug: String(row.slug),
     name: String(row.name),
     labels: (row.labels || { "fr-FR": row.name }) as Record<string, string>,
-    shortLabel: row.short_label || undefined,
+    shortLabels: (row.short_labels || {}) as Record<string, string>,
+    shortLabel:
+      row.short_labels?.["fr-FR"] || row.short_label || row.name || undefined,
     parentId: row.parent_id || undefined,
     iconName: row.icon_name || "Package",
     sortOrder: row.sort_order || 0,
@@ -301,7 +305,11 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
             id: child.id,
             slug: child.slug,
             name: child.name,
-            shortLabel: child.short_label || undefined,
+            shortLabel:
+              child.short_labels?.["fr-FR"] ||
+              child.short_label ||
+              child.name ||
+              undefined,
             parentId: child.parent_id,
             iconName: child.icon_name || "Package",
             sortOrder: child.sort_order || 0,
@@ -311,7 +319,11 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
           id: root.id,
           slug: root.slug,
           name: root.name,
-          shortLabel: root.short_label || undefined,
+          shortLabel:
+            root.short_labels?.["fr-FR"] ||
+            root.short_label ||
+            root.name ||
+            undefined,
           iconName: root.icon_name || "Package",
           sortOrder: root.sort_order || 0,
           isActive: Boolean(root.is_active),

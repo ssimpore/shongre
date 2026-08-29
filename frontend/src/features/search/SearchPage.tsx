@@ -59,6 +59,7 @@ import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider"
 import {
   pageMetaForPolicy,
   resolveSeoPolicy,
+  structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 
 // Leaflet is the heaviest optional frontend dependency. Keep it outside the
@@ -478,8 +479,12 @@ export const SearchPage: React.FC = () => {
     storageService.addRecentSearchItem({
       title:
         query.trim() ||
-        activeSubCat?.name ||
-        activeCategory?.name ||
+        (activeSubCat
+          ? getTaxonomyLabel(activeSubCat, "compact")
+          : undefined) ||
+        (activeCategory
+          ? getTaxonomyLabel(activeCategory, "compact")
+          : undefined) ||
         t("search.searchPage.recherchePersonnalisee"),
       locationLabel: city || userLocation.city || activeMarket.name,
       categorySlug:
@@ -668,10 +673,13 @@ export const SearchPage: React.FC = () => {
    */
   const pageHeading = useMemo(() => {
     if (query) return `Recherche : ${query}`;
-    if (activeSubCat) return getTaxonomyLabel(activeSubCat, "compact");
-    if (activeCategory) return getTaxonomyLabel(activeCategory, "compact");
+    if (activeCanonicalNode) {
+      return getTaxonomyLabel(activeCanonicalNode, {
+        locale: currentLocale,
+      });
+    }
     return "Toutes les annonces";
-  }, [query, activeSubCat, activeCategory]);
+  }, [activeCanonicalNode, currentLocale, query]);
 
   const searchMeta = useMemo(() => {
     if (!marketContext) {
@@ -699,7 +707,10 @@ export const SearchPage: React.FC = () => {
       marketContext,
       routeData,
     });
-    return pageMetaForPolicy(policy);
+    return pageMetaForPolicy(
+      policy,
+      structuredDataForPolicy(policy, marketContext, routeData),
+    );
   }, [
     activeMarket.code,
     categoryRouteSlug,

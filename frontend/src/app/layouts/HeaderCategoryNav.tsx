@@ -177,7 +177,9 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
           onClick={onNavigate}
           className={`inline-flex max-w-full rounded-sm hover:text-primary ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
         >
-          <span className="truncate">{getTaxonomyLabel(node, { locale })}</span>
+          <span className="truncate">
+            {getTaxonomyLabel(node, { compact: true, locale })}
+          </span>
         </Link>
       </h3>
 
@@ -191,7 +193,7 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
                 onClick={onNavigate}
                 className={`block min-h-7 rounded-control py-1 pr-2 text-sm font-medium leading-5 text-stone-600 hover:bg-bg-subtle hover:text-primary ${depth > 1 ? "pl-4" : "pl-2"} ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
               >
-                {getTaxonomyLabel(child, { locale })}
+                {getTaxonomyLabel(child, { compact: true, locale })}
               </Link>
             </li>
           ))}

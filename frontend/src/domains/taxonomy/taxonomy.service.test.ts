@@ -163,14 +163,16 @@ describe("Taxonomy Service & Integrity", () => {
 
   describe("shortLabel Resolution & Fallbacks", () => {
     it("returns canonical full label in default/full mode and compact alias in compact mode", () => {
-      const carsNode = taxonomyService.getNode("vehicles.cars");
-      expect(carsNode).toBeDefined();
+      const node = taxonomyService.getNode(
+        "services.local_services.electronics_repair",
+      );
+      expect(node).toBeDefined();
 
-      const fullLabel = taxonomyService.getLabel(carsNode, "full");
-      const compactLabel = taxonomyService.getLabel(carsNode, "compact");
+      const fullLabel = taxonomyService.getLabel(node, "full");
+      const compactLabel = taxonomyService.getLabel(node, "compact");
 
-      expect(fullLabel).toBe("Voitures");
-      expect(compactLabel).toBe("Voitures");
+      expect(fullLabel).toBe("Réparation électronique & informatique");
+      expect(compactLabel).toBe("Réparation électronique");
     });
 
     it("safely falls back to canonical label/name if shortLabel is undefined", () => {
@@ -210,6 +212,23 @@ describe("Taxonomy Service & Integrity", () => {
       expect(frCompact).toBe("Voitures");
     });
 
+    it("falls back to the canonical requested locale without leaking the French compatibility mirror", () => {
+      expect(
+        taxonomyService.getLabel(
+          {
+            labels: {
+              "fr-FR": "Libellé canonique français",
+              "en-US": "Canonical English label",
+            },
+            shortLabels: { "fr-FR": "Libellé court" },
+            shortLabel: "Libellé court",
+            name: "Libellé canonique français",
+          },
+          { compact: true, locale: "en-US" },
+        ),
+      ).toBe("Canonical English label");
+    });
+
     it("resolves breadcrumbs in full and compact modes", () => {
       const fullCrumbs = taxonomyService.getBreadcrumbs(
         "vehicles.caravaning.motorhomes",
@@ -236,7 +255,7 @@ describe("Taxonomy Service & Integrity", () => {
       const results = taxonomyService.searchTaxonomy("Voitures", 5);
       expect(results.some((r) => r.id === "vehicles.cars")).toBe(true);
 
-      const proResults = taxonomyService.searchTaxonomy("Matériel Pro", 5);
+      const proResults = taxonomyService.searchTaxonomy("Outils pro", 5);
       expect(proResults.some((r) => r.id === "professional_equipment")).toBe(
         true,
       );
@@ -251,9 +270,8 @@ describe("Taxonomy Service & Integrity", () => {
       );
 
       expect(shortLabelMap["vehicles"]).toBe("Véhicules");
-      expect(shortLabelMap["professional_equipment"]).toBe(
-        "Matériel professionnel",
-      );
+      expect(shortLabelMap["professional_equipment"]).toBe("Outils pro");
+      expect(shortLabelMap["home_garden"]).toBe("Maison");
       expect(shortLabelMap["education"]).toBe("Éducation");
       expect(shortLabelMap["free_exchange"]).toBe("Dons & Échanges");
 

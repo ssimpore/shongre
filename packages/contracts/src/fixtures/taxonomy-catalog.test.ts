@@ -36,6 +36,8 @@ describe("canonical taxonomy identity catalog", () => {
     CANONICAL_TAXONOMY_IDENTITIES.forEach((node) => {
       expect(node.labels["fr-FR"], node.id).not.toBe("");
       expect(node.labels["en-US"], node.id).not.toBe("");
+      expect(node.shortLabels?.["fr-FR"], node.id).not.toBe("");
+      expect(node.shortLabels?.["en-US"], node.id).not.toBe("");
       expect(node.supportedIntents.length, node.id).toBeGreaterThan(0);
     });
   });
@@ -46,5 +48,11 @@ describe("canonical taxonomy identity catalog", () => {
       expect(CANONICAL_TAXONOMY_IDENTITY_BY_ID.has(target), alias).toBe(true);
     });
     expect(CANONICAL_TAXONOMY_ALIASES["bons-plans"]).toBeUndefined();
+    expect(CANONICAL_TAXONOMY_IDENTITY_BY_ID.get("deals_donations")?.slug).toBe(
+      "dons-et-objets-gratuits",
+    );
+    expect(CANONICAL_TAXONOMY_ALIASES["dons-solidarite-bons-plans"]).toBe(
+      "deals_donations",
+    );
   });
 });
