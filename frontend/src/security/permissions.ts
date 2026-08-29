@@ -1242,6 +1242,14 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
   {
+    id: "staff.internal.access",
+    name: "Accéder aux surfaces internes Staff",
+    category: "Administration Système",
+    description:
+      "Franchir le portail interne uniquement avec une adhésion Staff active, avant l’évaluation des permissions plus précises.",
+    isSensitive: true,
+  },
+  {
     id: "analytics.marketing.read",
     name: "Consulter les analytics marketing",
     category: "Marketing & Communication",

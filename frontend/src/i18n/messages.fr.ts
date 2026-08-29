@@ -3858,6 +3858,57 @@ export const messagesFr = {
   "admin.staff.confirmAction": "Enregistrer l’accès Staff",
   "admin.staff.updateSuccess": "L’accès Staff a été mis à jour.",
   "admin.staff.updateError": "L’accès Staff n’a pas pu être mis à jour.",
+  "identityBadge.staff.active": "Équipe Shongre",
+  "identityBadge.staff.activeWithRole": "Équipe Shongre — {role}",
+  "identityBadge.staff.activeAria": "Membre actif de l’équipe Shongre",
+  "identityBadge.staff.activeAriaWithRole":
+    "Membre actif de l’équipe Shongre — {role}",
+  "identityBadge.staff.suspended": "Staff suspendu",
+  "identityBadge.staff.revoked": "Staff révoqué",
+  "identityBadge.verification.individual": "Identité vérifiée",
+  "identityBadge.verification.professional": "Professionnel vérifié",
+  "admin.capabilities.modalTitle": "Gérer les permissions de {name}",
+  "admin.capabilities.description":
+    "Consultez les permissions héritées et définissez uniquement les surcharges directes. Les permissions Staff restent inactives sans adhésion Staff active.",
+  "admin.capabilities.loading": "Chargement des permissions…",
+  "admin.capabilities.loadError": "Les permissions n’ont pas pu être chargées.",
+  "admin.capabilities.empty": "Aucune permission canonique n’est disponible.",
+  "admin.capabilities.searchLabel": "Rechercher une permission",
+  "admin.capabilities.searchPlaceholder": "Nom, identifiant ou catégorie",
+  "admin.capabilities.searchEmpty":
+    "Aucune permission ne correspond à la recherche.",
+  "admin.capabilities.source.account": "Héritée du compte",
+  "admin.capabilities.source.staffRole": "Héritée du rôle Staff",
+  "admin.capabilities.effective": "Effective",
+  "admin.capabilities.ineffective": "Ineffective",
+  "admin.capabilities.ineffective.directly_revoked": "Révoquée directement.",
+  "admin.capabilities.ineffective.inactive_staff":
+    "Inactive sans adhésion Staff active.",
+  "admin.capabilities.ineffective.account_status":
+    "Inactive à cause du statut du compte.",
+  "admin.capabilities.ineffective.not_granted": "Non accordée.",
+  "admin.capabilities.mode.none": "Aucune surcharge",
+  "admin.capabilities.mode.grant": "Accorder directement",
+  "admin.capabilities.mode.revoke": "Révoquer directement",
+  "admin.capabilities.scopeNotice":
+    "Ces modifications ne changent ni le type de compte ni l’adhésion, le rôle ou le statut Staff.",
+  "admin.capabilities.reasonLabel": "Motif de la modification",
+  "admin.capabilities.reasonHint":
+    "10 à 1 000 caractères. N’incluez aucune donnée sensible.",
+  "admin.capabilities.reasonError":
+    "Saisissez un motif significatif de 10 à 1 000 caractères.",
+  "admin.capabilities.noChanges":
+    "Aucune modification de permission à enregistrer.",
+  "admin.capabilities.confirmationError":
+    "Confirmez la modification à risque élevé avant de continuer.",
+  "admin.capabilities.highRiskConfirmation":
+    "Je confirme avoir vérifié l’impact de ces permissions sensibles et la déconnexion des sessions de la personne concernée.",
+  "admin.capabilities.updateSuccess":
+    "Les permissions ont été mises à jour et les sessions existantes ont été révoquées.",
+  "admin.capabilities.updateError":
+    "Les permissions n’ont pas pu être mises à jour.",
+  "admin.capabilities.saveAction": "Enregistrer les permissions",
+  "admin.capabilities.manageAction": "Gérer les permissions",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Rôle plateforme hors des personas de démonstration",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees":

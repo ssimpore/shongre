@@ -152,4 +152,24 @@ describe("protected route policy registry", () => {
       expect(canAccessRoutePolicy(formerAdmin, "accountOverview")).toBe(true);
     }
   });
+
+  it("uses staff.internal.access as the common deny-by-default internal gate", () => {
+    const revokedInternalAccess = persona({
+      staffStatus: "active",
+      staffRole: "admin",
+      revokedPermissions: ["staff.internal.access"],
+    });
+    const directGrantWithoutMembership = persona({
+      staffStatus: "none",
+      customPermissions: ["staff.internal.access", "admin.access"],
+    });
+
+    expect(canAccessRoutePolicy(revokedInternalAccess, "adminOverview")).toBe(
+      false,
+    );
+    expect(canAccessRoutePolicy(revokedInternalAccess, "staffMfa")).toBe(false);
+    expect(
+      canAccessRoutePolicy(directGrantWithoutMembership, "adminOverview"),
+    ).toBe(false);
+  });
 });

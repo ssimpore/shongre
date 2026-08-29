@@ -3,15 +3,14 @@ import { FormField, Modal, Select, Textarea } from "../../design-system";
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  CheckCircle2,
   AlertTriangle,
   FileCheck,
+  KeyRound,
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
-  normalizePlatformRole,
   ROLE_DEFINITIONS,
   ALL_PLATFORM_ROLES,
   STAFF_ROLE_PRESENTATION,
@@ -31,6 +30,13 @@ import {
   STAFF_ROLES,
   staffRoleFromLegacyRole,
 } from "@shongre/contracts/access-control";
+import {
+  StaffBadge,
+  VerificationBadge,
+} from "../../design-system/components/IdentityBadges";
+import { CapabilityOverridesModal } from "./CapabilityOverridesModal";
+import { adminPrimaryIdentity } from "./admin-user-identity";
+import { AdminUserPrimaryBadge } from "./AdminUserPrimaryBadge";
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -61,6 +67,8 @@ export const AdminUsersPage: React.FC = () => {
   const [staffModalUser, setStaffModalUser] = useState<UserProfile | null>(
     null,
   );
+  const [capabilityModalUser, setCapabilityModalUser] =
+    useState<UserProfile | null>(null);
   const [staffStatus, setStaffStatus] =
     useState<Exclude<StaffStatus, "none">>("active");
   const [staffRole, setStaffRole] = useState<StaffRole>("support_agent");
@@ -330,14 +338,12 @@ export const AdminUsersPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-border-subtle">
               {filteredUsers.map((u) => {
-                const roleDef =
-                  ROLE_DEFINITIONS[
-                    normalizePlatformRole(u.primaryRole || u.role)
-                  ] || ROLE_DEFINITIONS.buyer;
+                const primaryIdentity = adminPrimaryIdentity(u);
                 const isPro = isProSeller(u);
                 const isPendingPro =
                   isPro && u.professionalVerification?.status === "pending";
                 const isSuspended = u.isSuspended || u.status === "suspended";
+                const isActiveStaff = primaryIdentity === "staff";
 
                 return (
                   <tr key={u.id} className="hover:bg-bg-base transition-colors">
@@ -356,10 +362,12 @@ export const AdminUsersPage: React.FC = () => {
                         <div>
                           <div className="font-bold text-stone-900 flex items-center gap-1.5">
                             <span>{u.name}</span>
-                            {u.isVerified && (
-                              <CheckCircle2 className="w-icon-sm h-icon-sm text-info" />
-                            )}
                           </div>
+                          <VerificationBadge
+                            verified={u.isVerified}
+                            accountType={u.accountType || "individual"}
+                            className="mt-1"
+                          />
                           <div className="text-xs text-stone-500">
                             {u.companyName ? `${u.companyName} • ` : ""}
                             {u.email}
@@ -371,11 +379,7 @@ export const AdminUsersPage: React.FC = () => {
                     {/* Type & Role */}
                     <td className="p-3.5">
                       <div className="flex flex-col gap-1 items-start">
-                        <span
-                          className={`text-micro font-bold px-2 py-1 rounded-full border ${roleDef.badgeColor}`}
-                        >
-                          {roleDef.title}
-                        </span>
+                        <AdminUserPrimaryBadge user={u} />
                         {/* This rendered the raw stored enum — `individual`,
                             `professional`, `internal` — in monospace directly
                             under the translated role badge above it. Two labels
@@ -388,14 +392,9 @@ export const AdminUsersPage: React.FC = () => {
                             `admin.accountType.${u.accountType || "individual"}` as MessageKey,
                           )}
                         </span>
-                        {u.staffStatus &&
-                          u.staffStatus !== "none" &&
-                          u.staffRole && (
-                            <span className="text-micro font-bold px-2 py-1 rounded-full border bg-info-surface text-info border-info-border flex items-center gap-1">
-                              <ShieldCheck className="w-icon-xs h-icon-xs" />
-                              {STAFF_ROLE_PRESENTATION[u.staffRole].shortLabel}
-                            </span>
-                          )}
+                        {!isActiveStaff && (
+                          <StaffBadge status={u.staffStatus} showLifecycle />
+                        )}
                       </div>
                     </td>
 
@@ -494,6 +493,21 @@ export const AdminUsersPage: React.FC = () => {
                               {u.staffStatus && u.staffStatus !== "none"
                                 ? t("admin.staff.manageAction")
                                 : t("admin.staff.grantAction")}
+                            </Button>
+                          )}
+
+                        {can("admin.permissions.manage") &&
+                          currentUser?.id !== u.id &&
+                          (u.staffRole !== "owner" ||
+                            currentUser?.staffRole === "owner") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setCapabilityModalUser(u)}
+                              className="text-xs text-violet-700 border-violet-200"
+                            >
+                              <KeyRound className="w-icon-xs h-icon-xs" />
+                              {t("admin.capabilities.manageAction")}
                             </Button>
                           )}
                       </div>
@@ -605,6 +619,15 @@ export const AdminUsersPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {capabilityModalUser && (
+        <CapabilityOverridesModal
+          user={capabilityModalUser}
+          actorIsOwner={currentUser?.staffRole === "owner"}
+          onClose={() => setCapabilityModalUser(null)}
+          onUpdated={loadUsers}
+        />
+      )}
 
       {/* Suspend User Modal */}
       <PromptModal

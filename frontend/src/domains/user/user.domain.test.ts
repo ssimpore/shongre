@@ -50,12 +50,38 @@ describe("showsVerifiedBadge", () => {
 });
 
 describe("isInternalAccount", () => {
-  it("recognises the active Staff status and legacy account payloads", () => {
+  it("recognises only active Staff membership with a canonical role grant", () => {
+    expect(
+      isInternalAccount({
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole: "support_agent",
+      }),
+    ).toBe(true);
     expect(
       isInternalAccount({ accountType: "individual", staffStatus: "active" }),
-    ).toBe(true);
-    expect(isInternalAccount({ accountType: "staff" })).toBe(true);
-    expect(isInternalAccount({ accountType: "internal" })).toBe(true);
+    ).toBe(false);
+    expect(isInternalAccount({ accountType: "staff" })).toBe(false);
+    expect(isInternalAccount({ accountType: "internal" })).toBe(false);
+  });
+
+  it("honours explicit revocation and rejects direct grants without active Staff", () => {
+    expect(
+      isInternalAccount({
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole: "admin",
+        revokedPermissions: ["staff.internal.access"],
+      }),
+    ).toBe(false);
+    expect(
+      isInternalAccount({
+        accountType: "individual",
+        staffStatus: "revoked",
+        staffRole: "admin",
+        customPermissions: ["staff.internal.access"],
+      }),
+    ).toBe(false);
   });
 
   it("never infers Staff authority from a role label alone", () => {
@@ -101,7 +127,7 @@ describe("isPubliclyListableProSeller", () => {
     const staff = {
       ...shop,
       staffStatus: "active",
-      staffRole: "commercial",
+      staffRole: "commercial" as const,
     };
     expect(isProSeller(staff)).toBe(true);
     expect(isPubliclyListableProSeller(staff)).toBe(true);

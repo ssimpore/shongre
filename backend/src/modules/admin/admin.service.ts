@@ -14,9 +14,18 @@ import {
   type Principal,
 } from "../../shared/auth/principal.js";
 import {
+  CAPABILITIES,
+  CAPABILITY_OVERRIDE_REASON_MAX_LENGTH,
+  CAPABILITY_OVERRIDE_REASON_MIN_LENGTH,
+  OWNER_ONLY_CAPABILITIES,
   STAFF_ACCESS_REASON_MAX_LENGTH,
   STAFF_ACCESS_REASON_MIN_LENGTH,
   STAFF_ROLES,
+  canonicalAccessContext,
+  resolveCapabilityFacts,
+  type Capability,
+  type CapabilityManagementProjection,
+  type CapabilityOverrideUpdate,
   type StaffRole,
   type StaffStatus,
 } from "@shongre/contracts/access-control";
@@ -25,6 +34,7 @@ import {
   type SessionService,
 } from "../auth/session.service.js";
 import { config } from "../../app/config/index.js";
+import { presentCapabilityFact } from "./capability-presentation.js";
 
 export type { AdminStatsSummary };
 
@@ -42,6 +52,179 @@ export class AdminService {
 
   async getAllUsers(): Promise<UserProfile[]> {
     return this.userRepo.getAll();
+  }
+
+  async getCapabilityOverrides(input: {
+    userId: string;
+    actor: Principal;
+  }): Promise<CapabilityManagementProjection> {
+    requirePermission(input.actor, "admin.permissions.manage");
+    requireRecentAuthentication(input.actor);
+    const user = await this.userRepo.findById(input.userId);
+    if (!user) {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    return this.capabilityProjection(user);
+  }
+
+  async updateCapabilityOverrides(
+    input: CapabilityOverrideUpdate & {
+      userId: string;
+      actor: Principal;
+      requestId: string;
+    },
+  ): Promise<CapabilityManagementProjection> {
+    requirePermission(input.actor, "admin.permissions.manage");
+    requireRecentAuthentication(input.actor);
+    if (input.userId === input.actor.userId) {
+      throw new AppError({
+        code: "BAD_REQUEST",
+        message: "Vous ne pouvez pas modifier vos propres permissions.",
+      });
+    }
+
+    const reason = String(input.reason || "").trim();
+    if (
+      reason.length < CAPABILITY_OVERRIDE_REASON_MIN_LENGTH ||
+      reason.length > CAPABILITY_OVERRIDE_REASON_MAX_LENGTH
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un motif de 10 à 1 000 caractères est requis.",
+      });
+    }
+    if (
+      !Number.isSafeInteger(input.expectedVersion) ||
+      input.expectedVersion < 1
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Version de permissions invalide.",
+      });
+    }
+
+    const customPermissions = this.validateCapabilityCollection(
+      input.customPermissions,
+    );
+    const revokedPermissions = this.validateCapabilityCollection(
+      input.revokedPermissions,
+    );
+    const revokedSet = new Set(revokedPermissions);
+    if (customPermissions.some((capability) => revokedSet.has(capability))) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Une permission ne peut pas être accordée et révoquée simultanément.",
+      });
+    }
+
+    const previous = await this.userRepo.findById(input.userId);
+    if (!previous) {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    const actorIsOwner =
+      input.actor.staffStatus === "active" && input.actor.staffRole === "owner";
+    if (!actorIsOwner && previous.staffRole === "owner") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Seul un propriétaire peut modifier un autre propriétaire.",
+      });
+    }
+    if (
+      !actorIsOwner &&
+      customPermissions.some((capability) =>
+        OWNER_ONLY_CAPABILITIES.includes(
+          capability as (typeof OWNER_ONLY_CAPABILITIES)[number],
+        ),
+      )
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Seul un propriétaire peut accorder cette permission de gouvernance.",
+      });
+    }
+
+    const updated = await this.userRepo.updateCapabilityOverrides({
+      userId: input.userId,
+      actorId: input.actor.userId,
+      customPermissions,
+      revokedPermissions,
+      reason,
+      expectedVersion: input.expectedVersion,
+      requestId: input.requestId,
+    });
+
+    if (config.dataMode === "demo") {
+      await this.adminRepo.saveAuditLog({
+        actorId: input.actor.userId,
+        actorName: input.actor.email,
+        actorRole: input.actor.staffRole || input.actor.role,
+        targetId: input.userId,
+        targetName: updated.name,
+        action: "capability_overrides_updated",
+        details: reason,
+        metadata: {
+          previousCustomPermissions: previous.customPermissions ?? [],
+          newCustomPermissions: customPermissions,
+          previousRevokedPermissions: previous.revokedPermissions ?? [],
+          newRevokedPermissions: revokedPermissions,
+          previousVersion: previous.capabilityOverrideVersion ?? 1,
+          newVersion:
+            updated.capabilityOverrideVersion ?? input.expectedVersion + 1,
+          requestId: input.requestId,
+        },
+      });
+      await this.sessions.revokeAll(
+        input.userId,
+        undefined,
+        "capability_overrides_changed",
+      );
+    }
+
+    logger.warn(
+      `Staff actor ${input.actor.userId} changed capability overrides for ${input.userId}`,
+    );
+    return this.capabilityProjection(updated);
+  }
+
+  private validateCapabilityCollection(value: unknown): Capability[] {
+    if (!Array.isArray(value)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "La collection de permissions est invalide.",
+      });
+    }
+    const values = value.map((item) => String(item)) as Capability[];
+    if (new Set(values).size !== values.length) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une permission ne peut apparaître qu’une seule fois.",
+      });
+    }
+    const known = new Set<string>(CAPABILITIES);
+    if (values.some((capability) => !known.has(capability))) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une permission demandée est inconnue.",
+      });
+    }
+    return values.sort();
+  }
+
+  private capabilityProjection(
+    user: UserProfile,
+  ): CapabilityManagementProjection {
+    const access = canonicalAccessContext(user);
+    return {
+      userId: user.id,
+      accountType:
+        access.accountType === "professional" ? "professional" : "individual",
+      staffStatus: access.staffStatus,
+      staffRole: access.staffRole ?? null,
+      version: user.capabilityOverrideVersion ?? 1,
+      capabilities: resolveCapabilityFacts(user).map(presentCapabilityFact),
+    };
   }
 
   async updateUserStatus(input: {

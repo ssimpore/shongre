@@ -105,6 +105,9 @@ describe("public marketplace projections", () => {
     });
     expect(publicStaffSeller).not.toHaveProperty("staffStatus");
     expect(publicStaffSeller).not.toHaveProperty("staffRole");
+    expect(publicStaffSeller).not.toHaveProperty("customPermissions");
+    expect(publicStaffSeller).not.toHaveProperty("revokedPermissions");
+    expect(publicStaffSeller).not.toHaveProperty("capabilityOverrideVersion");
   });
 
   it("never exposes private listing, seller, ranking, or risk fields", async () => {
@@ -121,6 +124,9 @@ describe("public marketplace projections", () => {
     expect(result).not.toHaveProperty("externalStockId");
     expect(result?.seller).not.toHaveProperty("email");
     expect(result?.seller).not.toHaveProperty("phone");
+    expect(result?.seller).not.toHaveProperty("staffStatus");
+    expect(result?.seller).not.toHaveProperty("staffRole");
+    expect(result?.seller).not.toHaveProperty("customPermissions");
     expect(result?.attributes).toEqual({ frameSize: "M" });
   });
 

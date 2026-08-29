@@ -501,6 +501,22 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /admin/users/:userId/capabilities": {
+    operationId: "getAdminUserCapabilities",
+    access: "permission",
+    permission: "admin.permissions.manage",
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {},
+  },
+  "PUT /admin/users/:userId/capability-overrides": {
+    operationId: "updateAdminUserCapabilityOverrides",
+    access: "permission",
+    permission: "admin.permissions.manage",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {},
+  },
   "PUT /admin/users/:userId/status": {
     operationId: "putAdminUsersByUserIdStatus",
     access: "permission",

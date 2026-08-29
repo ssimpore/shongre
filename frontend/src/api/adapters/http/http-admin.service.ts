@@ -14,6 +14,10 @@ import type {
 } from "@shongre/contracts/discovery";
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
+import type {
+  CapabilityManagementProjection,
+  CapabilityOverrideUpdate,
+} from "@shongre/contracts/access-control";
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -22,6 +26,24 @@ export class HttpAdminService implements AdminServiceContract {
 
   async getAllUsers(): Promise<UserProfile[]> {
     return httpClient.get<UserProfile[]>("/admin/users");
+  }
+
+  async getCapabilityOverrides(
+    userId: string,
+  ): Promise<CapabilityManagementProjection> {
+    return httpClient.get<CapabilityManagementProjection>(
+      `/admin/users/${encodeURIComponent(userId)}/capabilities`,
+    );
+  }
+
+  async updateCapabilityOverrides(
+    userId: string,
+    update: CapabilityOverrideUpdate,
+  ): Promise<CapabilityManagementProjection> {
+    return httpClient.put<CapabilityManagementProjection>(
+      `/admin/users/${encodeURIComponent(userId)}/capability-overrides`,
+      update,
+    );
   }
 
   async updateUserStatus(

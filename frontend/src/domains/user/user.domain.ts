@@ -1,9 +1,19 @@
+import {
+  hasEffectiveCapability,
+  type AccessSubject,
+  type Capability,
+  type StaffRole,
+} from "@shongre/contracts/access-control";
+
 // Presentation helpers intentionally accept flattened listing/seller shapes as
 // well as full profiles. Authoritative authorization uses the canonical access
 // subject instead of these tolerant display classifiers.
 export interface UserClassification {
   accountType?: string;
   staffStatus?: string;
+  staffRole?: StaffRole;
+  customPermissions?: readonly Capability[];
+  revokedPermissions?: readonly Capability[];
   primaryRole?: string;
   role?: string;
   sellerType?: string;
@@ -54,14 +64,10 @@ export function isFacturationOnlyAccount(
 export function isInternalAccount(
   user: UserClassification | null | undefined,
 ): boolean {
-  if (!user) return false;
-  if (user.staffStatus === "active") return true;
-  // Rollout compatibility for pre-v79 demo/profile payloads only. A role label
-  // by itself is never sufficient to establish employee access.
-  if (user.accountType === "staff" || user.accountType === "internal") {
-    return true;
-  }
-  return false;
+  return hasEffectiveCapability(
+    user as AccessSubject | null | undefined,
+    "staff.internal.access",
+  );
 }
 
 export function isProSeller(

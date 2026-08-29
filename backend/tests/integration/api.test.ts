@@ -341,7 +341,7 @@ describe("API v1 Endpoints Integration", () => {
     expect(await response.json()).toBeNull();
   });
 
-  it("returns privacy-safe public profiles and hides staff profiles", async () => {
+  it("returns privacy-safe public profiles without leaking Staff identity", async () => {
     const sellerResponse = await fetch(`${baseUrl}/api/v1/users/user_camille`);
     expect(sellerResponse.status).toBe(200);
     const seller = await sellerResponse.json();
@@ -353,7 +353,17 @@ describe("API v1 Endpoints Integration", () => {
 
     const staffResponse = await fetch(`${baseUrl}/api/v1/users/user_admin`);
     expect(staffResponse.status).toBe(200);
-    expect(await staffResponse.json()).toBeNull();
+    const staffSeller = await staffResponse.json();
+    expect(staffSeller).toMatchObject({
+      id: "user_admin",
+      accountType: "individual",
+      sellerType: "individual",
+    });
+    expect(staffSeller).not.toHaveProperty("staffStatus");
+    expect(staffSeller).not.toHaveProperty("staffRole");
+    expect(staffSeller).not.toHaveProperty("customPermissions");
+    expect(staffSeller).not.toHaveProperty("revokedPermissions");
+    expect(staffSeller).not.toHaveProperty("capabilityOverrideVersion");
   });
 
   it("POST /api/v1/listings/search executes structured search query", async () => {
@@ -638,6 +648,7 @@ describe("API v1 Endpoints Integration", () => {
     const protectedCalls: Array<[string, RequestInit]> = [
       ["/api/v1/admin/stats", {}],
       ["/api/v1/admin/users", {}],
+      ["/api/v1/admin/users/user_thomas/capabilities", {}],
       ["/api/v1/admin/audit-logs", {}],
       ["/api/v1/favorites", {}],
       ["/api/v1/compliance/status", {}],
@@ -686,6 +697,7 @@ describe("API v1 Endpoints Integration", () => {
     for (const path of [
       "/api/v1/admin/stats",
       "/api/v1/admin/users",
+      "/api/v1/admin/users/user_thomas/capabilities",
       "/api/v1/admin/audit-logs",
     ]) {
       const res = await fetch(`${baseUrl}${path}`, {
@@ -702,6 +714,25 @@ describe("API v1 Endpoints Integration", () => {
     expect(res.status).toBe(200);
     const stats = await res.json();
     expect(stats.totalUsers).toBeGreaterThan(0);
+  });
+
+  it("allows only capability administrators to inspect user overrides", async () => {
+    const [adminResponse, moderatorResponse] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/admin/users/user_thomas/capabilities`, {
+        headers: auth(adminToken),
+      }),
+      fetch(`${baseUrl}/api/v1/admin/users/user_thomas/capabilities`, {
+        headers: auth(moderatorToken),
+      }),
+    ]);
+
+    expect(adminResponse.status).toBe(200);
+    expect(await adminResponse.json()).toMatchObject({
+      userId: "user_thomas",
+      accountType: "individual",
+      version: 1,
+    });
+    expect(moderatorResponse.status).toBe(403);
   });
 
   it("does not let administrative configuration imply moderation or finance", async () => {

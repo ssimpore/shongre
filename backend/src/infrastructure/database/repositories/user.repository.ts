@@ -7,7 +7,11 @@ import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
-import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
+import type {
+  Capability,
+  StaffRole,
+  StaffStatus,
+} from "@shongre/contracts/access-control";
 import { AppError } from "../../../shared/errors/app-error.js";
 
 /**
@@ -35,6 +39,15 @@ export interface IUserRepository {
     staffRole: StaffRole;
     actorId: string;
     reason: string;
+  }): Promise<UserProfile>;
+  updateCapabilityOverrides(input: {
+    userId: string;
+    actorId: string;
+    customPermissions: Capability[];
+    revokedPermissions: Capability[];
+    reason: string;
+    expectedVersion: number;
+    requestId: string;
   }): Promise<UserProfile>;
   getAll(): Promise<UserProfile[]>;
   findCredentialByUserId(userId: string): Promise<UserCredential | null>;
@@ -328,6 +341,38 @@ export class DemoUserRepository implements IUserRepository {
     return { ...updated };
   }
 
+  async updateCapabilityOverrides(input: {
+    userId: string;
+    actorId: string;
+    customPermissions: Capability[];
+    revokedPermissions: Capability[];
+    reason: string;
+    expectedVersion: number;
+    requestId: string;
+  }): Promise<UserProfile> {
+    const existing = this.users.get(input.userId);
+    if (!existing) {
+      throw new Error(
+        `User with id ${input.userId} not found in Demo repository`,
+      );
+    }
+    const version = existing.capabilityOverrideVersion ?? 1;
+    if (version !== input.expectedVersion) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Les permissions ont été modifiées par une autre session.",
+      });
+    }
+    const updated: UserProfile = {
+      ...existing,
+      customPermissions: [...input.customPermissions],
+      revokedPermissions: [...input.revokedPermissions],
+      capabilityOverrideVersion: version + 1,
+    };
+    this.users.set(input.userId, updated);
+    return { ...updated };
+  }
+
   async getAll(): Promise<UserProfile[]> {
     return Array.from(this.users.values()).map((u) => ({ ...u }));
   }
@@ -398,6 +443,7 @@ export class PostgresUserRepository implements IUserRepository {
       status: row.status,
       customPermissions: row.custom_permissions || [],
       revokedPermissions: row.revoked_permissions || [],
+      capabilityOverrideVersion: Number(row.capability_override_version || 1),
       avatarUrl: row.avatar_url || undefined,
       phone: row.phone || undefined,
       city: row.city || undefined,
@@ -625,6 +671,55 @@ export class PostgresUserRepository implements IUserRepository {
         "users.updateStaffAccess",
         new Error("Staff target disappeared"),
       );
+    return updated;
+  }
+
+  async updateCapabilityOverrides(input: {
+    userId: string;
+    actorId: string;
+    customPermissions: Capability[];
+    revokedPermissions: Capability[];
+    reason: string;
+    expectedVersion: number;
+    requestId: string;
+  }): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await (supabase.rpc as any)(
+      "update_profile_capability_overrides",
+      {
+        p_target_user_id: input.userId,
+        p_actor_id: input.actorId,
+        p_custom_permissions: input.customPermissions,
+        p_revoked_permissions: input.revokedPermissions,
+        p_reason: input.reason,
+        p_expected_version: input.expectedVersion,
+        p_request_id: input.requestId || null,
+      },
+    );
+    if (error?.code === "42501") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Cette modification de permissions n’est pas autorisée.",
+      });
+    }
+    if (["23514", "40001"].includes(error?.code)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Les permissions ont changé entre-temps ou la modification viole une règle de gouvernance.",
+      });
+    }
+    if (error?.code === "P0002") {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    if (error) databaseFailure("users.updateCapabilityOverrides", error);
+    const updated = await this.findById(input.userId);
+    if (!updated) {
+      databaseFailure(
+        "users.updateCapabilityOverrides",
+        new Error("Capability target disappeared"),
+      );
+    }
     return updated;
   }
 

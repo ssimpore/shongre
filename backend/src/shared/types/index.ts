@@ -32,6 +32,7 @@ export interface UserProfile {
   status: AccountStatus;
   customPermissions?: Capability[];
   revokedPermissions?: Capability[];
+  capabilityOverrideVersion?: number;
   /** Read projection only; organization entitlements remain authoritative. */
   enabledProducts?: readonly ("marketplace" | "prospects" | "facturation")[];
   avatarUrl?: string;

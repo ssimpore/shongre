@@ -23,7 +23,7 @@ export const RequireRole: React.FC<RequireRoleProps> = ({
     // visitor has no way to act on.
     return (
       <RequirePermission
-        permission="admin.access"
+        permission="staff.internal.access"
         standalone
         customTitle="Espace réservé aux équipes Shongre"
         customMessage="Cette section est réservée au personnel interne. Si vous pensez y avoir droit, contactez votre administrateur."

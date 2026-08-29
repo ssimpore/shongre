@@ -288,11 +288,15 @@ component → hook/controller → service contract → demo or HTTP adapter
   or capability. Ownership failures should return 404 when 403 would disclose
   another user's resource. Test the wrong caller as well as the allowed caller.
 - Writes must allowlist mutable fields. Users must not self-assign roles,
-  verification state, account status, staff capability, or administrative data.
+  verification state, account status, Staff capability, or administrative data;
+  direct capability changes use only the dedicated capability-override workflow.
 - Individual and Professional are the only account types. Staff is an
-  orthogonal, server-managed membership status with an explicit role; only an
-  active membership grants employee capabilities, and every membership change
-  requires MFA, recent authentication, session revocation, and an audit trail.
+  orthogonal, server-managed membership status with an explicit role. Every
+  Staff role receives `staff.internal.access`, but it and all Staff-only direct
+  grants are effective only while membership is active. Membership and
+  capability-override changes require active Staff, MFA, recent authentication,
+  self/owner governance, session revocation, and an audit trail; capability
+  overrides additionally require `admin.permissions.manage`.
 - Social identities are matched by provider plus provider subject, never by
   email alone. Linking requires authenticated recent user intent; never silently
   merge accounts because an email matches or allow removal of the last usable

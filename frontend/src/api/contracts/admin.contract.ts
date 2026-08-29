@@ -8,6 +8,10 @@ import type {
   DiscoveryMetrics,
 } from "@shongre/contracts/discovery";
 import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
+import type {
+  CapabilityManagementProjection,
+  CapabilityOverrideUpdate,
+} from "@shongre/contracts/access-control";
 
 export interface AdminStatsSummary {
   totalUsers: number;
@@ -37,6 +41,13 @@ export interface AdminAuditLogEntry {
 export interface AdminServiceContract {
   getPlatformStats(): Promise<AdminStatsSummary>;
   getAllUsers(): Promise<UserProfile[]>;
+  getCapabilityOverrides(
+    userId: string,
+  ): Promise<CapabilityManagementProjection>;
+  updateCapabilityOverrides(
+    userId: string,
+    update: CapabilityOverrideUpdate,
+  ): Promise<CapabilityManagementProjection>;
   updateUserStatus(
     userId: string,
     status: "active" | "restricted" | "suspended" | "banned",

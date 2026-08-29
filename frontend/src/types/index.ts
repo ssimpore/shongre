@@ -81,6 +81,7 @@ export type SecurityAuditAction =
   | "market_scope_updated"
   | "plan_modified"
   | "permission_overridden"
+  | "capability_overrides_updated"
   | "listing_hidden"
   | "listing_restored"
   | "password_reset_completed"
@@ -126,6 +127,7 @@ export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
     market_scope_updated: "Périmètre de marché modifié",
     plan_modified: "Forfait modifié",
     permission_overridden: "Permission surchargée",
+    capability_overrides_updated: "Surcharges de permissions modifiées",
     listing_hidden: "Annonce masquée",
     listing_restored: "Annonce restaurée",
     password_reset_completed: "Mot de passe réinitialisé",
@@ -208,6 +210,7 @@ export interface UserProfile {
   // Direct permission grants / revokes
   customPermissions?: Permission[];
   revokedPermissions?: Permission[];
+  capabilityOverrideVersion?: number;
 
   /**
    * Product surfaces provisioned for this account. Older profiles omit this

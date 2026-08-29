@@ -37,6 +37,8 @@ import { Listing } from "../../types";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { StaffBadge } from "../../design-system/components/IdentityBadges";
+import { STAFF_ROLE_PRESENTATION } from "../../security/roles.config";
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === "string") return photo;
@@ -69,13 +71,10 @@ export const AccountOverviewPage: React.FC = () => {
   // A verified flag with no number on file is not a verified phone — showing the
   // badge on its own contradicts the "Non renseigné" value rendered right below it.
   const hasVerifiedPhone = isPhoneVerified && Boolean(currentUser?.phone);
-  const isAdmin =
-    currentUser?.staffStatus === "active" &&
-    (currentUser.staffRole === "admin" || currentUser.staffRole === "owner");
-  const adminRoleLabel =
-    currentUser?.staffRole === "owner"
-      ? t("shell.accountLayout.roleSuperAdministrateur")
-      : t("shell.accountLayout.roleAdministrateur");
+  const activeStaffRole =
+    currentUser?.staffStatus === "active" && currentUser.staffRole
+      ? currentUser.staffRole
+      : null;
   const accountName = (
     currentUser?.companyName ||
     currentUser?.name ||
@@ -183,18 +182,13 @@ export const AccountOverviewPage: React.FC = () => {
                 <span className="font-medium text-stone-300">Bonjour, </span>
                 {accountName}
               </h1>
-              {isAdmin && (
-                <span
-                  role="img"
-                  aria-label={adminRoleLabel}
-                  title={adminRoleLabel}
-                  className="inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-pill border border-primary-on-dark/40 bg-primary-on-dark/10 text-primary-on-dark"
-                >
-                  <ShieldCheck
-                    className="h-icon-sm w-icon-sm"
-                    aria-hidden="true"
-                  />
-                </span>
+              {activeStaffRole && (
+                <StaffBadge
+                  status="active"
+                  roleLabel={
+                    STAFF_ROLE_PRESENTATION[activeStaffRole].shortLabel
+                  }
+                />
               )}
             </div>
 

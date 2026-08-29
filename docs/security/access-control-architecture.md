@@ -73,6 +73,9 @@ legacy helpers derive from it; they do not maintain separate grants.
 - Migration `00023_canonical_access_control.sql` backfills dimensions, creates
   capability grants, replaces core RLS policies, restricts profile column
   updates, and publishes a privacy-safe profile view.
+- Migration `00082_staff_capability_management.sql` adds the shared
+  `staff.internal.access` gate and an optimistic, service-role-only capability
+  override transaction with atomic audit and session revocation.
 
 ## D. Canonical account model
 
@@ -132,8 +135,18 @@ vertical grant alone never grants access to another organization.
 Activating Staff adds only the selected employee role; it does not mutate or
 upgrade the account type. The account keeps the customer capabilities it
 already receives as an Individual or Professional account. Suspended and
-revoked Staff states add no employee capabilities. Non-owner Staff operations
-are also constrained by assigned market scope.
+revoked Staff states add no employee capabilities. Every Staff role includes
+`staff.internal.access`; it gates shared employee entry while narrower
+capabilities continue to gate each tool. A stale direct grant cannot make that
+capability effective without active Staff membership. Non-owner Staff
+operations are also constrained by assigned market scope.
+
+`admin` and `owner` receive `admin.permissions.manage`. Capability overrides
+are separate from Staff membership changes: they use complete canonical grant
+and revocation collections, an optimistic version, and a required reason.
+Active Staff, MFA, recent authentication, self-management denial, owner
+governance, atomic audit evidence, and target-session revocation remain
+mandatory.
 
 ## G. Effective capability matrix
 
@@ -176,7 +189,7 @@ The machine-readable matrix is
 | `/compte/*`                                               | individual/professional | customer boundary plus per-child capability                     |
 | `/compte/pro/*`                                           | professional            | generic storefront capability or shared subscription capability |
 | `/compte/{auto,immo,cours/organisation,emploi/recruteur}` | professional            | selected vertical capability                                    |
-| `/admin`                                                  | active Staff            | `admin.access`                                                  |
+| `/admin`                                                  | active Staff            | `staff.internal.access` + `admin.access`                        |
 | `/admin/moderation`                                       | active Staff            | report or moderation capability                                 |
 | `/admin/utilisateurs`                                     | active Staff            | `user.read`                                                     |
 | `/admin/verifications`                                    | active Staff            | `user.verify` or `compliance.review`                            |
@@ -192,24 +205,26 @@ routes remain public or guest-only as declared in the application router.
 
 ## I. Important API authorization matrix
 
-| Endpoint/action                           | Policy                                             | Additional scope                                                                                   |
-| ----------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Public markets/taxonomy/search/detail     | public                                             | privacy-safe DTO only                                                                              |
-| Create/update/publish listing             | listing capability                                 | authenticated publisher + owner/org/branch + entitlement                                           |
-| Orders/messages/notifications/workspace   | own capability                                     | participant or owner; foreign IDs return 404                                                       |
-| Vertical recruiter/agency/dealer/org APIs | vertical capability                                | active membership/ownership                                                                        |
-| `GET /admin/users`                        | `user.read`                                        | no credential fields                                                                               |
-| `PUT /admin/users/:id/status`             | read + action-specific restrict/suspend/reactivate | no self-status mutation; reason + audit                                                            |
-| `PUT /admin/users/:id/staff-status`       | `admin.staff.manage`                               | active Staff + MFA + recent auth; no self-management; owner protection; audit + session revocation |
-| `PUT /admin/users/:id/verification`       | `user.verify`                                      | professional target; note + audit                                                                  |
-| `GET /admin/reports`                      | `report.review`                                    | staff only                                                                                         |
-| Resolve report: dismiss                   | `report.review`                                    | reason + audit                                                                                     |
-| Resolve report: remove listing            | `report.review` + `moderation.action`              | reason + audit                                                                                     |
-| Resolve report: ban user                  | `report.review` + `user.suspend`                   | reason + audit                                                                                     |
-| Audit log                                 | `audit.read`                                       | staff scope                                                                                        |
-| Trending/configuration                    | `admin.configuration.manage`                       | market scope where applicable                                                                      |
-| Refund                                    | `payment.refund`/`order.refund`                    | transaction validation and idempotency                                                             |
-| Stripe webhook                            | signed public webhook                              | raw-body signature, no session token                                                               |
+| Endpoint/action                             | Policy                                             | Additional scope                                                                                   |
+| ------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Public markets/taxonomy/search/detail       | public                                             | privacy-safe DTO only                                                                              |
+| Create/update/publish listing               | listing capability                                 | authenticated publisher + owner/org/branch + entitlement                                           |
+| Orders/messages/notifications/workspace     | own capability                                     | participant or owner; foreign IDs return 404                                                       |
+| Vertical recruiter/agency/dealer/org APIs   | vertical capability                                | active membership/ownership                                                                        |
+| `GET /admin/users`                          | `user.read`                                        | no credential fields                                                                               |
+| `GET /admin/users/:id/capabilities`         | `admin.permissions.manage`                         | active Staff + MFA + recent auth; complete explainable projection                                  |
+| `PUT /admin/users/:id/capability-overrides` | `admin.permissions.manage`                         | no self/owner escalation; optimistic version; atomic audit + session revocation                    |
+| `PUT /admin/users/:id/status`               | read + action-specific restrict/suspend/reactivate | no self-status mutation; reason + audit                                                            |
+| `PUT /admin/users/:id/staff-status`         | `admin.staff.manage`                               | active Staff + MFA + recent auth; no self-management; owner protection; audit + session revocation |
+| `PUT /admin/users/:id/verification`         | `user.verify`                                      | professional target; note + audit                                                                  |
+| `GET /admin/reports`                        | `report.review`                                    | staff only                                                                                         |
+| Resolve report: dismiss                     | `report.review`                                    | reason + audit                                                                                     |
+| Resolve report: remove listing              | `report.review` + `moderation.action`              | reason + audit                                                                                     |
+| Resolve report: ban user                    | `report.review` + `user.suspend`                   | reason + audit                                                                                     |
+| Audit log                                   | `audit.read`                                       | staff scope                                                                                        |
+| Trending/configuration                      | `admin.configuration.manage`                       | market scope where applicable                                                                      |
+| Refund                                      | `payment.refund`/`order.refund`                    | transaction validation and idempotency                                                             |
+| Stripe webhook                              | signed public webhook                              | raw-body signature, no session token                                                               |
 
 Every backend route must declare `public`, `authenticated`, or an explicit
 permission when registered. Capability checks use capabilities recomputed from
@@ -237,6 +252,13 @@ denies browser access to the membership table, grants Staff capabilities only
 for active rows, protects owners, and writes the audit record in the same
 database transaction. Legacy account/role values remain rollout aliases only.
 
+The v82 migration grants `staff.internal.access` to every Staff role and
+`admin.permissions.manage` to admin/owner, versions direct overrides, and owns
+the allowlisted override mutation. PostgreSQL locks the target, rejects stale,
+unknown, contradictory, self, and owner-escalating changes, then updates the
+profile, revokes sessions, and inserts before/after audit metadata in one
+transaction. Browser roles cannot execute the function.
+
 ## K. Security validation
 
 Automated coverage includes:
@@ -253,6 +275,9 @@ Automated coverage includes:
 - sensitive status audit reason/actor capture;
 - role-label-only, self-elevation, missing-MFA, stale-recent-auth, and last-owner
   Staff administration denial;
+- inactive-Staff/direct-grant denial, capability-override wrong-caller,
+  self/owner escalation, unknown/contradictory collection, concurrency, audit,
+  and session-revocation checks;
 - RLS enablement, safe profile projection, and broad admin-helper retirement;
 - suspended/restricted/banned lifecycle filtering.
 
@@ -261,6 +286,11 @@ Automated coverage includes:
 - Navigation and direct-route guards share one named policy registry.
 - Active Staff can enter the Staff console while retaining the workspace for
   their underlying Individual or Professional account.
+- Internal identity surfaces present active Staff before Professional and
+  Individual identity. Staff and customer-verification badges use distinct
+  text, icons, accessible names, and semantic treatments.
+- User administration offers the complete searchable capability projection to
+  authorized admin/owner Staff through matching demo and HTTP adapters.
 - Professional menus show only the selected vertical.
 - Pending professional registration lands in verification rather than a locked
   dashboard.
@@ -272,7 +302,8 @@ Automated coverage includes:
 
 ## M. Remaining production checks
 
-- Execute migration `00023` against a disposable Supabase/PostgreSQL clone and
+- Execute migrations `00023`, `00079`, and `00082` against a disposable
+  Supabase/PostgreSQL clone and
   run SQL-level authenticated-role probes before production rollout. Static RLS
   tests validate its policy contract, but they do not replace a real database
   migration rehearsal.

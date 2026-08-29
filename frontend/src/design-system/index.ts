@@ -35,6 +35,7 @@ export * from "./primitives/Typography";
 // Shared UI components
 export * from "./components/Breadcrumbs";
 export * from "./components/Feedback";
+export * from "./components/IdentityBadges";
 export * from "./components/OnboardingPreparationPage";
 export * from "./components/Price";
 export * from "./components/Skeleton";

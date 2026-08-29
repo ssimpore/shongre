@@ -238,8 +238,14 @@ export function canAccessRoutePolicy(
   if (policy.productId && !hasProductAccess(user, policy.productId)) {
     return false;
   }
-  if (!policy.capability) return true;
   const capabilities = resolveEffectiveCapabilities(user);
+  if (
+    policy.requiresActiveStaff &&
+    !capabilities.includes("staff.internal.access")
+  ) {
+    return false;
+  }
+  if (!policy.capability) return true;
   return [policy.capability, ...(policy.alternativeCapabilities ?? [])].some(
     (capability) => capabilities.includes(capability),
   );

@@ -48,6 +48,8 @@ export const STAFF_ROLES = [
 export type StaffRole = (typeof STAFF_ROLES)[number];
 export const STAFF_ACCESS_REASON_MIN_LENGTH = 10;
 export const STAFF_ACCESS_REASON_MAX_LENGTH = 1000;
+export const CAPABILITY_OVERRIDE_REASON_MIN_LENGTH = 10;
+export const CAPABILITY_OVERRIDE_REASON_MAX_LENGTH = 1000;
 
 export const ACCOUNT_STATUSES = [
   "pending",
@@ -163,6 +165,7 @@ export const CAPABILITIES = [
   "user.suspend",
   "user.reactivate",
   "user.verify",
+  "staff.internal.access",
   "staff.support.access",
   "staff.operations.access",
   "staff.finance.access",
@@ -330,6 +333,17 @@ export const CAPABILITIES = [
   "finance.commission_revenue.read",
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
+
+/**
+ * Direct grants for these governance capabilities are reserved for active
+ * owners. A non-owner permission manager may still place them in the direct
+ * revocation set to remediate an improper historical grant.
+ */
+export const OWNER_ONLY_CAPABILITIES = [
+  "permission.manage",
+  "provider.credentials.manage",
+  "monetization.complimentary_grants.create",
+] as const satisfies readonly Capability[];
 
 const CRM_COMMERCIAL_CAPABILITIES = [
   "crm.access",
@@ -559,6 +573,7 @@ export const VERTICAL_CAPABILITIES: Record<
 export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
   {
     support_agent: [
+      "staff.internal.access",
       "admin.access",
       "staff.support.access",
       "support.case.read",
@@ -570,6 +585,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "support.invoicing.inspect",
     ],
     moderator: [
+      "staff.internal.access",
       "admin.access",
       "profile.read",
       "listing.read",
@@ -581,6 +597,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "user.read",
     ],
     trust_safety: [
+      "staff.internal.access",
       "admin.access",
       "user.read",
       "user.verify",
@@ -593,6 +610,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "audit.read",
     ],
     compliance: [
+      "staff.internal.access",
       "admin.access",
       "user.read",
       "user.verify",
@@ -606,6 +624,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "audit.read",
     ],
     finance: [
+      "staff.internal.access",
       "admin.access",
       "staff.finance.access",
       "transaction.audit.finance",
@@ -636,6 +655,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "audit.read",
     ],
     operations: [
+      "staff.internal.access",
       "admin.access",
       "staff.operations.access",
       "user.read",
@@ -646,6 +666,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "analytics.technical.read",
     ],
     commercial: [
+      "staff.internal.access",
       "admin.access",
       "staff.commercial.access",
       "user.read",
@@ -675,6 +696,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "commissions.promotions.manage",
     ],
     content_manager: [
+      "staff.internal.access",
       "admin.access",
       "taxonomy.manage",
       "listing.feature",
@@ -682,6 +704,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "analytics.marketing.read",
     ],
     market_manager: [
+      "staff.internal.access",
       "admin.access",
       "market.manage",
       "market.configure",
@@ -701,9 +724,11 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       ...MARKETING_EDITOR_CAPABILITIES,
     ],
     admin: [
+      "staff.internal.access",
       "admin.access",
       "admin.configuration.manage",
       "admin.staff.manage",
+      "admin.permissions.manage",
       "user.read",
       "user.manage",
       "market.manage",
@@ -767,6 +792,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       ...MARKETING_ADMIN_CAPABILITIES,
     ],
     owner: [
+      "staff.internal.access",
       "admin.access",
       "admin.configuration.manage",
       "admin.staff.manage",
@@ -851,6 +877,40 @@ export interface AccessSubject {
   status?: AccountStatus;
   customPermissions?: readonly Capability[];
   revokedPermissions?: readonly Capability[];
+}
+
+export type CapabilityIneffectiveReason =
+  "directly_revoked" | "inactive_staff" | "account_status" | "not_granted";
+
+export interface CapabilityResolutionFact {
+  capability: Capability;
+  fromCustomerAccount: boolean;
+  fromStaffRole: boolean;
+  directlyGranted: boolean;
+  directlyRevoked: boolean;
+  effective: boolean;
+  ineffectiveReason: CapabilityIneffectiveReason | null;
+}
+
+export interface CapabilityManagementEntry extends CapabilityResolutionFact {
+  label: string;
+  category: string;
+}
+
+export interface CapabilityManagementProjection {
+  userId: string;
+  accountType: AccountType;
+  staffStatus: StaffStatus;
+  staffRole: StaffRole | null;
+  version: number;
+  capabilities: CapabilityManagementEntry[];
+}
+
+export interface CapabilityOverrideUpdate {
+  customPermissions: Capability[];
+  revokedPermissions: Capability[];
+  reason: string;
+  expectedVersion: number;
 }
 
 const STAFF_CAPABILITY_SET = new Set<Capability>(
@@ -946,18 +1006,14 @@ export function canonicalAccessContext(
     };
   const role = subject.primaryRole ?? subject.role;
   const accountType = normalizeAccountType(subject.accountType, role);
-  const wasLegacyStaffAccount =
-    subject.accountType === "staff" || subject.accountType === "internal";
-  const staffStatus =
-    subject.staffStatus ?? (wasLegacyStaffAccount ? "active" : "none");
+  // Legacy account-family values are normalized for customer behavior only.
+  // They must never synthesize employee authority: Staff status and role are
+  // explicit, server-managed dimensions.
+  const staffStatus = subject.staffStatus ?? "none";
   return {
     accountType,
     staffStatus,
-    staffRole:
-      staffStatus !== "none"
-        ? (subject.staffRole ??
-          (wasLegacyStaffAccount ? staffRoleFromLegacyRole(role) : undefined))
-        : undefined,
+    staffRole: staffStatus !== "none" ? subject.staffRole : undefined,
     professionalVertical:
       accountType === "professional"
         ? (subject.professionalVertical ?? "generic")
@@ -1015,7 +1071,10 @@ export function resolveEffectiveCapabilities(
   subject?.customPermissions?.forEach((capability) => {
     // Direct overrides can refine an active employee's role, but they must not
     // turn a customer—or a suspended/revoked employee—into Staff authority.
-    if (context.staffStatus === "active" || !isStaffCapability(capability)) {
+    if (
+      !isStaffCapability(capability) ||
+      (context.staffStatus === "active" && context.staffRole)
+    ) {
       capabilities.add(capability);
     }
   });
@@ -1052,6 +1111,79 @@ export function hasEffectiveCapability(
   capability: Capability,
 ): boolean {
   return resolveEffectiveCapabilities(subject).includes(capability);
+}
+
+/**
+ * Explain every canonical capability without changing the authoritative
+ * resolver. Admin projections add localized presentation metadata to these
+ * facts, while demo and HTTP adapters retain identical source semantics.
+ */
+export function resolveCapabilityFacts(
+  subject: AccessSubject | null | undefined,
+): CapabilityResolutionFact[] {
+  const context = canonicalAccessContext(subject);
+  const customerCapabilities = new Set<Capability>();
+  if (context.accountType === "guest") {
+    PUBLIC_CAPABILITIES.forEach((capability) =>
+      customerCapabilities.add(capability),
+    );
+  } else if (context.accountType === "professional") {
+    PROFESSIONAL_CORE_CAPABILITIES.forEach((capability) =>
+      customerCapabilities.add(capability),
+    );
+    VERTICAL_CAPABILITIES[context.professionalVertical ?? "generic"].forEach(
+      (capability) => customerCapabilities.add(capability),
+    );
+  } else {
+    INDIVIDUAL_CAPABILITIES.forEach((capability) =>
+      customerCapabilities.add(capability),
+    );
+  }
+
+  const staffCapabilities = new Set<Capability>(
+    context.staffRole ? STAFF_ROLE_CAPABILITIES[context.staffRole] : [],
+  );
+  const directGrants = new Set(subject?.customPermissions ?? []);
+  const directRevocations = new Set(subject?.revokedPermissions ?? []);
+  const effectiveCapabilities = new Set(resolveEffectiveCapabilities(subject));
+
+  return CAPABILITIES.map((capability) => {
+    const directlyGranted = directGrants.has(capability);
+    const directlyRevoked = directRevocations.has(capability);
+    const fromCustomerAccount = customerCapabilities.has(capability);
+    const fromStaffRole = staffCapabilities.has(capability);
+    const effective = effectiveCapabilities.has(capability);
+    let ineffectiveReason: CapabilityIneffectiveReason | null = null;
+
+    if (!effective) {
+      if (directlyRevoked) {
+        ineffectiveReason = "directly_revoked";
+      } else if (
+        isStaffCapability(capability) &&
+        (context.staffStatus !== "active" || !context.staffRole) &&
+        (fromStaffRole || directlyGranted)
+      ) {
+        ineffectiveReason = "inactive_staff";
+      } else if (
+        context.status !== "active" &&
+        (fromCustomerAccount || fromStaffRole || directlyGranted)
+      ) {
+        ineffectiveReason = "account_status";
+      } else {
+        ineffectiveReason = "not_granted";
+      }
+    }
+
+    return {
+      capability,
+      fromCustomerAccount,
+      fromStaffRole,
+      directlyGranted,
+      directlyRevoked,
+      effective,
+      ineffectiveReason,
+    };
+  });
 }
 
 export function accessSubjectForLegacyRole(

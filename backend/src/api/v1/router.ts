@@ -4422,6 +4422,35 @@ export class ApiV1Router {
       adminService.getAllUsers(),
     );
     this.addRoute(
+      "GET",
+      "/admin/users/:userId/capabilities",
+      permission("admin.permissions.manage"),
+      async ({ principal, params }) => {
+        requireRecentAuthentication(principal);
+        return adminService.getCapabilityOverrides({
+          userId: params.userId,
+          actor: principal,
+        });
+      },
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/users/:userId/capability-overrides",
+      permission("admin.permissions.manage"),
+      async ({ principal, params, body, requestId }) => {
+        requireRecentAuthentication(principal);
+        return adminService.updateCapabilityOverrides({
+          userId: params.userId,
+          customPermissions: body?.customPermissions,
+          revokedPermissions: body?.revokedPermissions,
+          reason: body?.reason,
+          expectedVersion: body?.expectedVersion,
+          actor: principal,
+          requestId,
+        });
+      },
+    );
+    this.addRoute(
       "PUT",
       "/admin/users/:userId/status",
       permission("user.read"),

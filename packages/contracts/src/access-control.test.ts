@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   STAFF_ROLES,
+  canonicalAccessContext,
+  resolveCapabilityFacts,
   resolveEffectiveCapabilities,
   type AccessSubject,
 } from "./access-control";
@@ -95,6 +97,7 @@ describe("canonical access-control policy", () => {
         staffStatus: "active",
         staffRole,
       });
+      expect(staff.has("staff.internal.access")).toBe(true);
       expect(staff.has("favorite.manage.own")).toBe(true);
       expect(staff.has("listing.create")).toBe(true);
       expect(staff.has("subscription.manage.own")).toBe(false);
@@ -109,9 +112,34 @@ describe("canonical access-control policy", () => {
         staffRole: "admin",
       });
       expect(staff.has("admin.access")).toBe(false);
+      expect(staff.has("staff.internal.access")).toBe(false);
       expect(staff.has("admin.staff.manage")).toBe(false);
       expect(staff.has("listing.create")).toBe(true);
     }
+  });
+
+  it("grants capability administration only to active admin and owner Staff", () => {
+    for (const staffRole of STAFF_ROLES) {
+      const staff = capabilities({
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole,
+      });
+      expect(staff.has("admin.permissions.manage")).toBe(
+        staffRole === "admin" || staffRole === "owner",
+      );
+    }
+  });
+
+  it("does not synthesize Staff identity from legacy account-family values", () => {
+    expect(canonicalAccessContext({ accountType: "staff" })).toMatchObject({
+      accountType: "individual",
+      staffStatus: "none",
+      staffRole: undefined,
+    });
+    expect(
+      resolveEffectiveCapabilities({ accountType: "internal" }),
+    ).not.toContain("staff.internal.access");
   });
 
   it("never derives Staff authority from a legacy role label alone", () => {
@@ -215,5 +243,54 @@ describe("canonical access-control policy", () => {
     expect(customer.has("admin.configuration.manage")).toBe(false);
     expect(revokedStaff.has("admin.configuration.manage")).toBe(false);
     expect(revokedStaff.has("listing.read")).toBe(true);
+  });
+
+  it("requires a resolved Staff role even when the membership status says active", () => {
+    const inconsistentMembership = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      customPermissions: ["staff.internal.access"],
+    });
+    const internalFact = resolveCapabilityFacts({
+      accountType: "individual",
+      staffStatus: "active",
+      customPermissions: ["staff.internal.access"],
+    }).find((fact) => fact.capability === "staff.internal.access");
+
+    expect(inconsistentMembership.has("staff.internal.access")).toBe(false);
+    expect(internalFact).toMatchObject({
+      directlyGranted: true,
+      effective: false,
+      ineffectiveReason: "inactive_staff",
+    });
+  });
+
+  it("explains role, direct, revoked, and inactive sources without widening authority", () => {
+    const facts = resolveCapabilityFacts({
+      accountType: "individual",
+      staffStatus: "suspended",
+      staffRole: "admin",
+      customPermissions: ["staff.internal.access", "listing.read"],
+      revokedPermissions: ["listing.create"],
+    });
+    const byId = new Map(facts.map((fact) => [fact.capability, fact]));
+
+    expect(byId.get("staff.internal.access")).toMatchObject({
+      fromStaffRole: true,
+      directlyGranted: true,
+      effective: false,
+      ineffectiveReason: "inactive_staff",
+    });
+    expect(byId.get("listing.read")).toMatchObject({
+      directlyGranted: true,
+      effective: true,
+      ineffectiveReason: null,
+    });
+    expect(byId.get("listing.create")).toMatchObject({
+      fromCustomerAccount: true,
+      directlyRevoked: true,
+      effective: false,
+      ineffectiveReason: "directly_revoked",
+    });
   });
 });

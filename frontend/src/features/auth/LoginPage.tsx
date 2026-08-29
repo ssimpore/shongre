@@ -15,6 +15,7 @@ import { PasswordField } from "./components/PasswordField";
 import { AuthLayout } from "./components/AuthLayout";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { hasEffectiveCapability } from "@shongre/contracts/access-control";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { SocialLoginButtons } from "./components/SocialLoginButtons";
 import { resolveSafeReturn } from "../../security/safe-return";
@@ -60,7 +61,9 @@ export const LoginPage: React.FC = () => {
         if (result.success) {
           toast.success("Authentification 2FA réussie. Bienvenue !");
           navigate(
-            result.user?.staffStatus === "active" ? "/admin" : redirectUrl,
+            hasEffectiveCapability(result.user, "staff.internal.access")
+              ? "/admin"
+              : redirectUrl,
           );
         } else {
           setErrorMessage(result.errorMessage || "Code 2FA invalide.");
@@ -70,7 +73,7 @@ export const LoginPage: React.FC = () => {
         if (result.success) {
           toast.success("Connexion réussie ! Bienvenue sur Shongre.");
           navigate(
-            result.user?.staffStatus === "active"
+            hasEffectiveCapability(result.user, "staff.internal.access")
               ? "/securite-interne"
               : redirectUrl,
           );

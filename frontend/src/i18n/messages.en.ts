@@ -3181,6 +3181,54 @@ export const messagesEn: MessageCatalogue = {
   "admin.staff.confirmAction": "Save Staff access",
   "admin.staff.updateSuccess": "Staff access was updated.",
   "admin.staff.updateError": "Staff access could not be updated.",
+  "identityBadge.staff.active": "Shongre team",
+  "identityBadge.staff.activeWithRole": "Shongre team — {role}",
+  "identityBadge.staff.activeAria": "Active Shongre team member",
+  "identityBadge.staff.activeAriaWithRole":
+    "Active Shongre team member — {role}",
+  "identityBadge.staff.suspended": "Suspended Staff",
+  "identityBadge.staff.revoked": "Revoked Staff",
+  "identityBadge.verification.individual": "Verified identity",
+  "identityBadge.verification.professional": "Verified professional",
+  "admin.capabilities.modalTitle": "Manage {name}'s permissions",
+  "admin.capabilities.description":
+    "Review inherited permissions and set direct overrides only. Staff permissions stay inactive without an active Staff membership.",
+  "admin.capabilities.loading": "Loading permissions…",
+  "admin.capabilities.loadError": "Permissions could not be loaded.",
+  "admin.capabilities.empty": "No canonical permission is available.",
+  "admin.capabilities.searchLabel": "Search permissions",
+  "admin.capabilities.searchPlaceholder": "Name, identifier, or category",
+  "admin.capabilities.searchEmpty": "No permission matches this search.",
+  "admin.capabilities.source.account": "Inherited from account",
+  "admin.capabilities.source.staffRole": "Inherited from Staff role",
+  "admin.capabilities.effective": "Effective",
+  "admin.capabilities.ineffective": "Ineffective",
+  "admin.capabilities.ineffective.directly_revoked": "Directly revoked.",
+  "admin.capabilities.ineffective.inactive_staff":
+    "Inactive without an active Staff membership.",
+  "admin.capabilities.ineffective.account_status":
+    "Inactive because of the account status.",
+  "admin.capabilities.ineffective.not_granted": "Not granted.",
+  "admin.capabilities.mode.none": "No override",
+  "admin.capabilities.mode.grant": "Grant directly",
+  "admin.capabilities.mode.revoke": "Revoke directly",
+  "admin.capabilities.scopeNotice":
+    "These changes do not alter the account type or Staff membership, role, or status.",
+  "admin.capabilities.reasonLabel": "Change reason",
+  "admin.capabilities.reasonHint":
+    "10 to 1,000 characters. Do not include sensitive data.",
+  "admin.capabilities.reasonError":
+    "Enter a meaningful reason between 10 and 1,000 characters.",
+  "admin.capabilities.noChanges": "There are no permission changes to save.",
+  "admin.capabilities.confirmationError":
+    "Confirm the high-risk change before continuing.",
+  "admin.capabilities.highRiskConfirmation":
+    "I confirm that I reviewed the impact of these sensitive permissions and the affected person's session revocation.",
+  "admin.capabilities.updateSuccess":
+    "Permissions were updated and existing sessions were revoked.",
+  "admin.capabilities.updateError": "Permissions could not be updated.",
+  "admin.capabilities.saveAction": "Save permissions",
+  "admin.capabilities.manageAction": "Manage permissions",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Platform role outside the demo personas",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees": "No data yet",

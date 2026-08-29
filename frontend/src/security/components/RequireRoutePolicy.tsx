@@ -1,6 +1,9 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { canonicalAccessContext } from "@shongre/contracts/access-control";
+import {
+  canonicalAccessContext,
+  hasEffectiveCapability,
+} from "@shongre/contracts/access-control";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { routes } from "../../configuration/routes";
 import {
@@ -33,7 +36,10 @@ export const RequireRoutePolicy: React.FC<{
   }
 
   const access = canonicalAccessContext(currentUser);
-  if (policy.requiresActiveStaff && access.staffStatus !== "active") {
+  if (
+    policy.requiresActiveStaff &&
+    !hasEffectiveCapability(currentUser, "staff.internal.access")
+  ) {
     return <Navigate to={routes.workspace.overview()} replace />;
   }
   if (!policy.accountTypes.some((type) => type === access.accountType)) {

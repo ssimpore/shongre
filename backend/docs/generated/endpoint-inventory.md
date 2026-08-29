@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **449**
-- Specification SHA-256: `1c37a9b816854ba1`
+- Operations: **451**
+- Specification SHA-256: `4d1b4ab45dddb03f`
 
 ## account
 
@@ -139,6 +139,8 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/admin/users/{userId}/capabilities` | `getAdminUserCapabilities` | `permission` | `admin.permissions.manage` | `200` |
+| `PUT` | `/admin/users/{userId}/capability-overrides` | `updateAdminUserCapabilityOverrides` | `permission` | `admin.permissions.manage` | `200` |
 | `PUT` | `/admin/users/{userId}/staff-status` | `updateAdminUserStaffStatus` | `permission` | `admin.staff.manage` | `200` |
 | `PUT` | `/admin/users/{userId}/status` | `putAdminUsersByUserIdStatus` | `permission` | `user.read` | `200` |
 | `PUT` | `/admin/users/{userId}/verification` | `putAdminUsersByUserIdVerification` | `permission` | `user.verify` | `200` |
