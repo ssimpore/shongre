@@ -46,13 +46,13 @@
     "@shongre/features": "1.0.0",
     "@shongre/shared": "1.0.0",
     "@shongre/ui": "1.0.0",
-    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query": "^5.102.4",
     "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
-    "next": "16.3.1",
+    "next": "16.3.3",
     "posthog-js": "^1.421.2",
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-dom": "19.2.3",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
@@ -61,8 +61,8 @@
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-arm64-musl": "4.3.3",
     "@tailwindcss/oxide-linux-x64-musl": "4.3.3",
-    "lightningcss-linux-arm64-musl": "1.32.0",
-    "lightningcss-linux-x64-musl": "1.32.0"
+    "lightningcss-linux-arm64-musl": "1.33.0",
+    "lightningcss-linux-x64-musl": "1.33.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
