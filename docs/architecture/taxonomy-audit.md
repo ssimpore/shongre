@@ -1,260 +1,136 @@
-# Canonical taxonomy audit and implementation record
+# Taxonomy v4 architecture and migration record
 
-Status: taxonomy version 3 implemented and verified on 2026-08-22. The frontend
-continues to run in the required `demo` data mode; this work does not connect it
-to Supabase or the production API.
+Status: implemented in-repository on 2026-08-29. Taxonomy v4 remains a draft
+database version until an authorized operator publishes it. Demo remains the
+default client data mode; no hosted database or live provider was changed.
 
-## Outcome
+## One source and deterministic outputs
 
-Shongre now has one shared identity catalogue for frontend and backend runtime
-use, backed by an idempotent PostgreSQL reconciliation migration:
+`backend/taxonomy/v4/taxonomy-v4.normalized.json` is the single reviewed,
+backend-owned taxonomy source in the repository. The reviewed master workbook
+is an explicit import input, never a runtime dependency. The import records its
+SHA-256 checksum, validates all required sheets and relationships, and rewrites
+the normalized source deterministically.
 
-- 16 active root categories;
-- 61 active nodes;
-- 45 publishable leaves;
-- 109 reusable attribute definitions;
-- 52 active legacy aliases and redirects;
-- 20 database source-to-canonical merge mappings;
-- zero active duplicate IDs, codes or slugs;
-- zero orphaned or circular nodes;
-- 45/45 publishable leaves passing the coverage gate.
+`backend/scripts/taxonomy/master-compiler.ts` owns workbook normalization and
+artifact generation; `backend/scripts/taxonomy/compile.ts` is its stable CLI
+entry point. `backend/taxonomy/v4/crosswalk.reviewed.json` is migration evidence,
+not another category catalogue. Generated private/public bundles, local seed SQL,
+and the import report are read-only outputs:
 
-The canonical flow is:
+- `backend/src/modules/taxonomy/generated/taxonomy-v4.private.ts`;
+- `packages/contracts/src/fixtures/generated/taxonomy-v4.public.{json,ts}`;
+- `backend/supabase/seed/taxonomy-v4.generated.sql`;
+- `docs/architecture/generated/taxonomy-v4-import-report.json`.
 
-```text
-stable taxonomy identity + versioned attribute registry
-        ↓
-publication resolver + seller/market policy
-        ↓
-server validation + commercial authorization
-        ↓
-search facets + card fields + detail groups + comparison + CTA
-```
+The old v3 fixture is retained only as a compatibility snapshot for explicit
+legacy crosswalk and established vertical-contract consumers. It does not drive
+runtime taxonomy navigation, publication schemas, search projections, admin
+inspection, or mobile. Remove it only after all persisted references and its
+remaining named consumers have migrated.
 
-`packages/contracts/src/fixtures/taxonomy-catalog.ts` owns stable IDs, codes,
-slugs, localized names, hierarchy and legacy aliases. The existing frontend
-taxonomy retains the richer schema and presentation configuration, and the
-coverage gate prevents it from drifting from the shared identities.
-
-## Audit inventory
-
-| Surface               | Existing source                                                | Finding                                                                                | Resolution                                                                              |
-| --------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Frontend taxonomy     | `frontend/src/domains/taxonomy/taxonomy.data.ts`               | Richest source: 16 roots, inheritance and vertical metadata                            | Retained and enriched; checked against shared identities                                |
-| Attribute definitions | `frontend/src/domains/taxonomy/attribute.registry.ts`          | 109 reusable fields, but comparison coverage was incomplete                            | Retained; comparison flags completed                                                    |
-| Publication           | resolver, service and `PublishWizard`                          | Schema-driven fields existed; pricing/media copy still assumed a product               | Reused; intent, media, price model, inventory and standard policy now resolve by family |
-| Cards/details         | shared `ListingCard`, listing display resolver and detail page | Detail groups were schema-driven; card summaries and CTA labels were not wired through | Shared web/native cards now render taxonomy summary fields; detail CTA follows taxonomy |
-| Search/comparison     | demo search, Auto and Education verticals                      | Facets were schema-driven; compatible-leaf rule was not centralized                    | One compatibility guard and comparison attribute resolver added                         |
-| Administration        | taxonomy and monetization pages                                | Versioning existed; CTA, moderation and standard allowance were not editable           | Existing editor extended; commercial simulator uses canonical IDs                       |
-| Backend demo          | taxonomy repository                                            | Obsolete seven-root parallel tree and legacy slugs                                     | Parallel tree removed; repository reads shared 61-node catalogue                        |
-| Backend validation    | taxonomy/listing/business-rule services                        | Server validation and quota authorization existed                                      | Retained; final-leaf validation and job/on-request pricing added                        |
-| Database              | migrations 00001, 00004 and 00010                              | Legacy IDs plus a v2 registry, without a complete canonical seed or aliases            | Migration 00016 expands, maps, verifies and deprecates safely                           |
-| Monetization          | shared commercial catalogue and Immo scopes                    | `courses` and `real-estate` were commercial category aliases                           | Replaced with canonical taxonomy IDs                                                    |
-| Demo listings         | `frontend/src/mocks/initialDemoData.ts`                        | Several historical slugs were normalized independently in storage                      | One shared alias resolver now normalizes all seeded listings                            |
-| SEO/navigation        | category routes and taxonomy labels                            | Canonical routing existed but old aliases lacked one auditable map                     | Alias resolver returns canonical `/categorie/:slug` redirects                           |
-| Discovery             | collections and trending                                       | `Bons plans` is a cross-category collection                                            | Explicitly excluded from taxonomy aliases                                               |
-
-No category remains backend-only or frontend-only in active runtime identity
-data. Historical values remain only in migrations, aliases, fixtures used to
-prove compatibility, and migration tests.
-
-## Canonical tree
-
-```text
-Véhicules
-├── Voitures d'occasion
-│   ├── Citadines
-│   ├── Berlines
-│   ├── SUV & 4x4
-│   ├── Breaks
-│   ├── Coupés & Cabriolets
-│   └── Utilitaires & Fourgons
-├── Motos & Scooters
-├── Vélos & Trottinettes électriques
-└── Équipements & Pièces Auto / Moto
-Immobilier
-├── Ventes immobilières
-├── Locations à l'année
-├── Bureaux & Commerces
-└── Parkings & Garages
-Emploi & Recrutement
-└── Offres d'emploi
-Services & Prestations
-├── Bricolage, Rénovation & Travaux
-├── Cours particuliers & Formation
-└── Événementiel, Photo & DJ
-Maison, Meubles & Jardin
-├── Mobilier & Meubles
-│   ├── Canapés & Fauteuils
-│   ├── Tables & Chaises
-│   └── Lits & Literie
-├── Électroménager
-└── Bricolage, Outillage & Jardin
-Électronique & Multimédia
-├── Smartphones & Téléphones
-├── Informatique & PC Portables
-├── Consoles & Jeux vidéo
-└── Audio, Hi-Fi & Casques
-Mode & Accessoires
-├── Vêtements Femme
-├── Vêtements Homme
-├── Chaussures
-└── Montres & Bijoux
-Bébé & Puériculture
-├── Poussettes & Sièges auto
-└── Jouets & Jeux d'éveil
-Loisirs, Livres & Musique
-├── Instruments de musique
-└── Livres, BD & Mangas
-Sports & Plein air
-├── Fitness & Musculation
-├── Randonnée, Camping & Ski
-└── Sports nautiques & Glisse
-Animaux & Accessoires
-└── Accessoires & Alimentation
-Matériel Professionnel & BTP
-├── BTP, Chantier & Engins
-└── Restauration & Hôtellerie (CHR)
-Agriculture & Espaces verts
-└── Tracteurs & Matériel de récolte
-Énergie & Transition Écologique
-├── Panneaux solaires & Onduleurs
-└── Bornes de recharge VE
-Informatique Pro & Serveurs
-Dons & Solidarité
-```
-
-Property type, vehicle make/model, course subject, job contract, fashion size
-and similar decision dimensions remain controlled attributes rather than
-parallel category trees. This avoids duplicating the same business concept at
-multiple taxonomy levels.
-
-## Duplicate reconciliation
-
-Migration 00016 records counts before changing references, updates listings,
-saved searches, category attributes, activity events and trending topics, then
-marks old category rows `deprecated`. It never deletes a referenced category.
-
-| Legacy source         | Canonical target              |
-| --------------------- | ----------------------------- |
-| `cars`                | `vehicles.cars`               |
-| `motorcycles`         | `vehicles.motos`              |
-| `bicycles`            | `vehicles.cycles`             |
-| `real-estate`         | `real_estate`                 |
-| `real-estate-sale`    | `real_estate.sales`           |
-| `real-estate-rent`    | `real_estate.rentals`         |
-| `multimedia`          | `electronics`                 |
-| `smartphones`         | `electronics.smartphones`     |
-| `computers`           | `electronics.computers`       |
-| `gaming`              | `electronics.gaming`          |
-| `home-garden`         | `home_garden`                 |
-| `furniture`           | `home_garden.furniture`       |
-| `appliances`          | `home_garden.appliances`      |
-| `clothing-women`      | `fashion.women`               |
-| `clothing-men`        | `fashion.men`                 |
-| `luxury-watches`      | `fashion.jewelry`             |
-| `leisure-sports`      | `leisure_culture`             |
-| `musical-instruments` | `leisure_culture.instruments` |
-| `sport-equipment`     | `sports_outdoors.fitness`     |
-| `professional`        | `professional_btp`            |
-
-Additional historical French slugs are stored as aliases. `Bons plans` is not
-mapped to `Dons & Solidarité`; it remains a discovery collection.
-
-## Schema, publication and presentation
-
-Each active publishable leaf resolves:
-
-- schema version and lifecycle status;
-- supported intent and price model;
-- required, recommended and conditional attributes;
-- field validation, units, options and dependencies;
-- search facets and sorting;
-- 3–5 card decision fields;
-- ordered detail sections;
-- compatible-leaf comparison fields;
-- media minimum/maximum and recommended views;
-- localized SEO metadata;
-- moderation/prohibited-item policy;
-- primary CTA;
-- free standard publication policy and non-preselected optional upgrades.
-
-The standard journey remains one adaptive engine. Job offers use `Apply`, have
-no product purchase flow and no mandatory product photo. Services use quote or
-lesson CTAs and service pricing. Real estate uses visit requests and property
-media. Vehicles use test-drive requests and technical decision fields.
-
-Eligible private sellers keep `Publication standard gratuite`, including the
-configured duration, media allowance, messaging, management and standard
-statistics. Paid visibility is loaded asynchronously from the centralized
-promotion service and is never preselected.
-
-## Database design and safety
-
-Migration `backend/supabase/migrations/00016_canonical_taxonomy_governance.sql`:
-
-1. expands `categories` with publication, presentation, moderation, market,
-   premium and schema-governance columns;
-2. upserts version 3 and all 61 stable identities;
-3. records 20 source-to-canonical mappings with before-counts;
-4. creates 52 aliases and canonical redirects;
-5. migrates every known reference table;
-6. deprecates legacy rows without deleting them;
-7. backfills the global attribute registry and node assignments;
-8. adds hierarchy, publishable-marketplace and alias indexes;
-9. enables deny-by-default RLS for aliases and merge reports;
-10. exposes a read-only alias resolver;
-11. is safe to rerun without duplicate rows or lost before-counts.
-
-Search remains PostgreSQL-backed in the current backend. Updating
-`listings.category_id` updates the existing B-tree/GIN-indexed records directly;
-there is no external search index to rebuild in the current architecture.
-
-## Verification record
-
-The isolated PostgreSQL verification applied migrations 00001–00005, 00007,
-00010 and 00016. Supabase-only role grants in unrelated migrations were not
-needed for the taxonomy test database.
-
-Results:
-
-- 61 active nodes, 45 publishable leaves and 16 roots;
-- 52/52 unique active aliases;
-- zero duplicate active slugs;
-- zero orphaned active nodes;
-- migration 00016 reran successfully;
-- a synthetic legacy listing and saved search both moved from `cars` to
-  `vehicles.cars`;
-- `attributes_schema_version` remained 2 and `taxonomy_version_id` was set;
-- the mapping retained `listing_count_before = 1` and
-  `saved_search_count_before = 1` after rerun;
-- `real-estate-sale` resolved to
-  `/categorie/ventes-immobilieres`.
-
-The temporary verification database was dropped after these checks. No live or
-production database was changed. On deployment, the merge report will capture
-the real listing/reference counts before any production references move.
-
-Run the executable coverage matrix with:
+The supported workflow is:
 
 ```bash
-npm run check:taxonomy -w frontend
+make taxonomy-import TAXONOMY_WORKBOOK=/absolute/path/to/workbook.xlsx
+make taxonomy-compile
+make taxonomy-check
 ```
 
-The command is part of the frontend prebuild and fails on incomplete leaf
-configuration, identity drift, invalid aliases, unresolved demo listing
-references, duplicate concepts, orphaned nodes, cycles or invalid references.
+`taxonomy-check` recompiles from the normalized source, fails on generated drift,
+and runs the Web coverage gate.
 
-## External rollout boundary
+## Master workbook result
 
-Remaining work is operational rather than a missing in-repository
-implementation:
+The imported workbook checksum is
+`47dfc844bc66504276c1467e8e2d03227370fc66fd831f17a61815d5722c0cf0`.
+Core sheets 01–21 supply the normalized model; summary and sheets 22–30 are
+advisory evidence only.
 
-- apply migration 00016 in the target Supabase environment and archive its
-  generated merge-count report;
-- keep the frontend in demo mode until the HTTP adapters are explicitly
-  authorized;
-- run production analytics/search cache revalidation after deployment if an
-  external index is introduced;
-- enable real payments, payouts, KYC/KYB and provider webhooks only through
-  their existing backend feature flags and operational approvals.
+| Resource               |     Workbook/source |                                         Normalized/runtime |
+| ---------------------- | ------------------: | ---------------------------------------------------------: |
+| Verticals              |                  18 |                                                   18 roots |
+| Category rows          |                 276 |                         294 nodes including vertical roots |
+| Publishable leaves     |                 208 |                                                        208 |
+| Listing types          |                 208 |                            208 across 20 publication flows |
+| Attributes             |                 323 |                               323 private; 317 public-safe |
+| Attribute groups       |                  56 |                                                         56 |
+| Option rows            |                 732 |              732 private; 725 public-safe; 75 parent links |
+| Compact bindings       |               1,194 |                         10,751 resolved effective bindings |
+| Dependencies           |                 122 |                                     203 normalized effects |
+| Validation rows        | 505 + 30 regulatory | 535 private; regulatory rows disabled pending legal review |
+| Filter rows            |                 242 |                                      2,704 resolved facets |
+| Card/detail rows       |           130 / 790 |                             1,402 / 10,059 resolved fields |
+| Publication-flow rows  |                 846 |                                      1,612 resolved fields |
+| Search/SEO projections |       341 / derived |                                                  208 / 294 |
+
+The compiler expands `FLOW_TEMPLATE` rows, then applies listing-type `ADD` and
+`EXCLUDE` overrides. The result has exactly 10,751 unique category/type/attribute
+relationships and no duplicate effective binding. It also consolidates 34
+repeated filter templates by flow and attribute, retaining the earliest
+canonical display definition. Radius remains part of the existing search
+contract rather than a second duplicate city facet.
+
+All 108 workbook country-policy rows remain quarantined draft policy. The
+placeholder market code `FUTURE` is not added to the market registry. All 47
+seller-policy rows are disabled pending policy review, and all 30 regulatory
+rules are disabled pending legal approval. Runtime availability continues to
+come from the canonical market registry: FR, BE, and CH active; SN and BF coming
+soon and non-indexable.
+
+## Compatibility and migration safety
+
+The reviewed crosswalk covers 294 master identities, all 61 legacy v3 nodes,
+and all 154 nodes from the superseded v4 source. Of the previous v4 identities,
+40 remain exact, 30 are reviewed renames, and 84 have explicit compatibility
+redirects; none is left to an automatic broad match. The deterministic demo
+dry-run resolves all 19 seeded listings without an ambiguous category.
+
+Legacy listing drafts are mapped at the application boundary to master field
+names and options, including `listing_intent`, `price_type`, `condition`,
+`currency`, `city`, and `postal_code`. Web/native semantic control registries
+cover every workbook UI component. Choice-like fields without a materialized
+closed option set use the existing text fallback and surface an admin warning,
+not an empty control or a false publication blocker.
+
+Migration `backend/supabase/migrations/00078_taxonomy_v4.sql` is expand-only.
+Generated local seed SQL uses deterministic upserts, deprecates stale categories,
+disables stale listing types/options, and expires stale bindings. It never
+deletes listings, truncates tables, or deletes taxonomy rows. Local import still
+requires `APP_ENV=local`, a proven loopback database target, and explicit local
+approval:
+
+```bash
+make taxonomy-db-dry-run
+make taxonomy-db-import
+```
+
+Hosted publication, data backfill, search/cache revalidation, and policy
+activation require the protected operational workflow and current legal,
+provider, and market-readiness evidence.
+
+## Runtime boundary and verification
+
+The authoritative backend resolver remains
+`backend/src/modules/taxonomy/taxonomy.v4.service.ts`. Public contracts are owned
+by `packages/contracts/src/schemas/taxonomy.ts`; OpenAPI remains the only HTTP
+specification. Web and mobile consume the generated public-safe projection
+through the shared resolver/service boundary. Private expressions, seller draft
+policy, internal fields, and unapproved regulatory data do not enter the public
+bundle or local storage.
+
+Minimum verification:
+
+```bash
+make taxonomy-check
+make migrations-check
+make openapi-check
+make typecheck
+make frontend-test
+make backend-test
+make mobile-check
+```
+
+The executable coverage gate currently proves 208/208 active publishable leaves
+complete across the generated schema, publication, card/detail, filter,
+comparison, market, alias, Web, and mobile boundaries.

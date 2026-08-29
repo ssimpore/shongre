@@ -6,6 +6,7 @@ export * from "./ai/ai.service.js";
 export * from "./users/users.service.js";
 export * from "./markets/markets.service.js";
 export * from "./taxonomy/taxonomy.service.js";
+export * from "./taxonomy/taxonomy.v4.service.js";
 export * from "./listings/listings.service.js";
 export * from "./discovery/discovery.service.js";
 export * from "./publishers/publisher-entitlements.service.js";

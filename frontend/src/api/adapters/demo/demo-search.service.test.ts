@@ -51,17 +51,17 @@ describe("DemoSearchService unified discovery", () => {
   });
 
   it.each([
-    ["vehicules", "voitures", { fuel: "diesel" }, "automotive"],
+    ["vehicles", "vehicles.cars", { fuel_type: "diesel" }, "automotive"],
     [
-      "immobilier",
-      "locations-immobilieres",
-      { property_type: "appartement" },
+      "real_estate",
+      "real_estate.rentals",
+      { property_type: "apartment" },
       "real_estate",
     ],
-    ["emploi", "offres-emploi", { contract_type: "cdi" }, "employment"],
+    ["jobs", "jobs.offers", { contract_type: "permanent" }, "employment"],
     [
-      "services",
-      "cours-particuliers",
+      "education",
+      "education.academic",
       { subject: "Mathématiques" },
       "tutoring",
     ],
@@ -88,8 +88,8 @@ describe("DemoSearchService unified discovery", () => {
   it("returns data-derived values for taxonomy facets without static options", async () => {
     const result = await new DemoSearchService().search({
       marketCode: "FR",
-      categorySlug: "services",
-      subCategorySlug: "cours-particuliers",
+      categorySlug: "education",
+      subCategorySlug: "education.academic",
       limit: 50,
     });
 

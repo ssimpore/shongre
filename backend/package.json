@@ -30,6 +30,7 @@
     "db:dry-run:unified-discovery": "tsx scripts/maintenance/unified-discovery-dry-run.ts",
     "db:types": "tsx scripts/generate-types/generate-types.ts",
     "db:types:check": "tsx scripts/generate-types/generate-types.ts --check",
+    "taxonomy:import:local": "tsx scripts/taxonomy/import-local.ts",
     "check:boundary": "node scripts/maintenance/check-boundary.js"
   },
   "dependencies": {

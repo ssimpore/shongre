@@ -1,2 +1,5 @@
 packages/contracts/src/generated/openapi.ts
+backend/src/modules/taxonomy/generated/
 backend/docs/generated/
+docs/architecture/generated/
+packages/contracts/src/fixtures/generated/

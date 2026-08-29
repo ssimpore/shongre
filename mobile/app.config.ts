@@ -48,6 +48,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     experiments: { typedRoutes: true },
     plugins: [
       "expo-router",
+      "expo-font",
       ["expo-secure-store", { faceIDPermission: false }],
       "expo-notifications",
       [

@@ -11,6 +11,8 @@
     "./auth": "./src/schemas/auth.ts",
     "./taxonomy": "./src/schemas/taxonomy.ts",
     "./taxonomy-catalog": "./src/fixtures/taxonomy-catalog.ts",
+    "./taxonomy-v4-public": "./src/fixtures/generated/taxonomy-v4.public.ts",
+    "./taxonomy-v4-resolver": "./src/taxonomy-v4-resolver.ts",
     "./courses": "./src/schemas/courses.ts",
     "./auto": "./src/schemas/auto.ts",
     "./vertical": "./src/schemas/vertical.ts",
@@ -47,6 +49,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "fflate": "0.8.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {

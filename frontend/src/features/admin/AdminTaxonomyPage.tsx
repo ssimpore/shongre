@@ -8,6 +8,7 @@ import {
   Download,
   AlertOctagon,
   GitCommit,
+  Database,
 } from "lucide-react";
 import { taxonomyAdminRepository } from "../../repositories/taxonomy.repository";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
@@ -26,6 +27,7 @@ import { AddNodeModal } from "./taxonomy/components/modals/AddNodeModal";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { TaxonomyV4GovernanceTab } from "./taxonomy/components/TaxonomyV4GovernanceTab";
 
 export const AdminTaxonomyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -40,7 +42,13 @@ export const AdminTaxonomyPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentTab = (searchParams.get("tab") || "tree") as
-    "tree" | "attributes" | "validation" | "drafts" | "import_export" | "audit";
+    | "tree"
+    | "attributes"
+    | "governance"
+    | "validation"
+    | "drafts"
+    | "import_export"
+    | "audit";
 
   const selectedNodeIdParam = searchParams.get("node") || "vehicles";
 
@@ -222,6 +230,12 @@ export const AdminTaxonomyPage: React.FC = () => {
               badge: undefined,
             },
             {
+              id: "governance",
+              label: "Schéma v4 & Migration",
+              icon: Database,
+              badge: undefined,
+            },
+            {
               id: "validation",
               label: "Validation & Qualité",
               icon: ShieldCheck,
@@ -339,6 +353,8 @@ export const AdminTaxonomyPage: React.FC = () => {
       {/* 2. ATTRIBUTE REGISTRY TAB */}
       {/* ========================================================================= */}
       {currentTab === "attributes" && <TaxonomyAttributeRegistryTab />}
+
+      {currentTab === "governance" && <TaxonomyV4GovernanceTab />}
 
       {/* ========================================================================= */}
       {/* 3. VALIDATION QUALITY GATE TAB */}

@@ -24,14 +24,26 @@ export const taxonomyAttributeDataTypeSchema = z.enum([
   "select",
   "multi_select",
   "number",
+  "integer",
+  "decimal",
+  "percent",
+  "enum",
+  "multi_enum",
+  "string",
   "text",
   "long_text",
+  "phone",
+  "email",
+  "url",
   "boolean",
   "range",
   "year",
   "date",
   "date_time",
   "money",
+  "media",
+  "document",
+  "json",
   "autocomplete",
   "location",
 ]);
@@ -267,3 +279,512 @@ export type TaxonomyLevel = z.infer<typeof taxonomyLevelSchema>;
 export type TaxonomyAttribute = z.infer<typeof taxonomyAttributeSchema>;
 export type TaxonomyNode = z.infer<typeof taxonomyNodeSchema>;
 export type TaxonomyTree = z.infer<typeof taxonomyTreeSchema>;
+
+export const taxonomyLocalizedLabelsSchema = z
+  .record(z.string().min(2), z.string().min(1))
+  .refine((labels) => Boolean(labels["fr-FR"]), {
+    message: "A French taxonomy label is required.",
+  });
+
+export const taxonomyV4UiComponentSchema = z.enum([
+  "select",
+  "number_input",
+  "switch",
+  "text_input",
+  "money_input",
+  "checkbox_group",
+  "stepper",
+  "radio_group",
+  "autocomplete",
+  "date_picker",
+  "segmented_control",
+  "textarea",
+  "hidden",
+  "cascading_select",
+  "location_picker",
+  "readonly_text",
+  "size_grid",
+  "media_uploader",
+  "document_uploader",
+  "tag_input",
+  "slider",
+  "checkbox",
+  "date_range_picker",
+  "rich_textarea",
+  "hierarchical_select",
+  "multiselect",
+  "country_select",
+  "location_autocomplete",
+  "postal_code_input",
+  "address_autocomplete",
+  "hidden_geo",
+  "radius_input",
+  "image_uploader",
+  "video_uploader",
+  "file_uploader",
+  "url_input",
+  "schedule_editor",
+  "business_id_input",
+  "year_picker",
+  "secure_text_input",
+  "computed_readonly",
+  "energy_rating",
+  "time_picker",
+  "structured_textarea",
+  "tags_input",
+  "evidence_editor",
+  "status_badge",
+  "document_status",
+  "datetime_picker",
+  "barcode_input",
+]);
+
+export const taxonomyV4MarketStatusSchema = z.enum([
+  "active",
+  "coming_soon",
+  "unavailable",
+]);
+
+export const taxonomyV4MarketAvailabilitySchema = z.object({
+  marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
+  status: taxonomyV4MarketStatusSchema,
+  marketplaceEnabled: z.boolean(),
+  indexable: z.boolean(),
+});
+
+export const taxonomyV4SellerEligibilitySchema = z.object({
+  individualAllowed: z.boolean(),
+  professionalAllowed: z.boolean(),
+});
+
+export const taxonomyV4NodeSchema = z.object({
+  id: z.string().min(1),
+  sourceKey: z.string().min(1),
+  parentId: z.string().min(1).optional(),
+  level: z.number().int().min(0).max(2),
+  slug: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  description: z.string().optional(),
+  iconName: z.string().min(1),
+  sortOrder: z.number().int().nonnegative(),
+  status: taxonomyNodeStatusSchema,
+  publishable: z.boolean(),
+  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  seo: z.object({ indexable: z.boolean() }),
+});
+
+export const taxonomyV4ListingIntentSchema = z.enum([
+  "SELL",
+  "WANTED",
+  "DONATE",
+  "EXCHANGE",
+  "RENT_OUT",
+  "RENT_SEEK",
+  "SERVICE_REQUEST",
+  "SERVICE_OFFER",
+  "NOTICE",
+  "BOOK",
+  "COURSE_OFFER",
+  "JOB_OFFER",
+  "BUSINESS_SALE",
+  "JOB_SEEK",
+]);
+
+export const taxonomyV4ListingTypeSchema = z.object({
+  id: z.string().min(1),
+  sourceKey: z.string().min(1),
+  categoryId: z.string().min(1),
+  verticalId: z.string().min(1),
+  publicationFlow: z.string().min(1),
+  intent: taxonomyV4ListingIntentSchema,
+  intentLabel: taxonomyLocalizedLabelsSchema,
+  labels: taxonomyLocalizedLabelsSchema,
+  slug: z.string().min(1),
+  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  status: z.enum(["active", "disabled"]),
+  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  seoIndexable: z.boolean(),
+});
+
+export const taxonomyV4AttributeSchema = z.object({
+  id: z.string().min(1),
+  code: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  dataType: taxonomyAttributeDataTypeSchema,
+  sourceDataType: z.enum([
+    "select",
+    "multi_select",
+    "number",
+    "long_text",
+    "autocomplete",
+    "location",
+    "year",
+    "date_time",
+    "integer",
+    "decimal",
+    "money",
+    "percent",
+    "enum",
+    "enum_multi",
+    "string",
+    "text",
+    "phone",
+    "email",
+    "url",
+    "date",
+    "datetime",
+    "media",
+    "document",
+    "boolean",
+    "json",
+  ]),
+  uiComponent: taxonomyV4UiComponentSchema,
+  groupId: z.string().min(1),
+  scope: z.string().min(1),
+  optionSetId: z.string().min(1).optional(),
+  cardinality: z.string().optional(),
+  unit: z.string().optional(),
+  defaultValue: z.string().optional(),
+  validation: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    declarativeRules: z.array(z.string()),
+  }),
+  searchable: z.boolean(),
+  filterable: z.boolean(),
+  sortable: z.boolean(),
+  cardVisible: z.boolean(),
+  detailVisible: z.boolean(),
+  seoRelevant: z.boolean(),
+  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  defaultRequired: z.boolean(),
+  defaultDisplayOrder: z.number().int().nonnegative(),
+  privacy: taxonomyAttributeVisibilitySchema,
+  immutableAfterPublication: z.boolean(),
+  helpText: z.record(z.string(), z.string().optional()),
+  placeholder: z.record(z.string(), z.string().optional()),
+});
+
+export const taxonomyV4AttributeGroupSchema = z.object({
+  id: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  iconName: z.string().min(1),
+  sortOrder: z.number().int().nonnegative(),
+  collapsible: z.boolean(),
+  public: z.boolean(),
+});
+
+export const taxonomyV4OptionSetSchema = z.object({
+  id: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+});
+
+export const taxonomyV4OptionSchema = z.object({
+  id: z.string().min(1),
+  optionSetId: z.string().min(1),
+  key: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  sortOrder: z.number().int().nonnegative(),
+  active: z.boolean(),
+  managedExternally: z.boolean(),
+});
+
+export const taxonomyV4OptionParentLinkSchema = z.object({
+  optionId: z.string().min(1),
+  parentOptionId: z.string().min(1),
+});
+
+export const taxonomyV4AttributeBindingSchema = z.object({
+  id: z.string().min(1),
+  categoryId: z.string().min(1),
+  listingTypeId: z.string().min(1),
+  intent: taxonomyV4ListingIntentSchema,
+  attributeId: z.string().min(1),
+  groupId: z.string().min(1),
+  scope: z.string().min(1),
+  sourceLevel: z.string().min(1),
+  required: z.boolean(),
+  sortOrder: z.number().int().nonnegative(),
+  publicationVisible: z.boolean(),
+  detailVisible: z.boolean(),
+  cardVisible: z.boolean(),
+  filterable: z.boolean(),
+  searchable: z.boolean(),
+  sortable: z.boolean(),
+  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  overrideDefault: z.string().optional(),
+});
+
+export const taxonomyV4FieldReferenceSchema = z.object({
+  kind: z.enum(["attribute", "context", "system"]),
+  key: z.string().min(1),
+});
+
+export const taxonomyV4DependencyRuleSchema = z.object({
+  id: z.string().min(1),
+  scopes: z.array(z.string().min(1)),
+  trigger: taxonomyV4FieldReferenceSchema,
+  operator: z.enum([
+    "eq",
+    "neq",
+    "in",
+    "is_set",
+    "always",
+    "changes",
+    "in_dataset",
+    "gt",
+    "older_than",
+    "lte",
+    "contains",
+    "gte",
+    "contains_any",
+  ]),
+  values: z.array(z.string()),
+  effect: z.enum([
+    "SHOW",
+    "HIDE",
+    "REQUIRE",
+    "FILTER_OPTIONS",
+    "CLEAR_VALUE",
+    "SET_VALUE",
+    "SHOW_NOTICE",
+    "OPTIONAL",
+  ]),
+  targets: z.array(taxonomyV4FieldReferenceSchema).min(1),
+  detail: z.string().optional(),
+  status: z.literal("draft"),
+});
+
+export const taxonomyV4ValidationRuleSchema = z.object({
+  id: z.string().min(1),
+  target: taxonomyV4FieldReferenceSchema,
+  scopes: z.array(z.string().min(1)),
+  ruleType: z.string().min(1),
+  severity: z.enum(["BLOCK", "WARN", "REVIEW"]),
+  messages: taxonomyLocalizedLabelsSchema,
+  countries: z.array(z.string().min(1)),
+  sellerScopes: z.array(z.string().min(1)),
+  enforcement: z.enum(["backend", "backend+frontend"]),
+  status: z.literal("draft"),
+});
+
+export const taxonomyV4FilterProjectionSchema = z.object({
+  id: z.string().min(1),
+  categoryId: z.string().min(1),
+  listingTypeId: z.string().min(1),
+  attributeId: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  uiComponent: taxonomyV4UiComponentSchema,
+  filterType: z.enum(["multi_select", "range", "boolean", "keyword"]),
+  optionSetId: z.string().min(1).optional(),
+  sortOrder: z.number().int().nonnegative(),
+});
+
+export const taxonomyV4CardProjectionSchema = z.object({
+  listingTypeId: z.string().min(1),
+  categoryId: z.string().min(1),
+  slot: z.string().min(1),
+  field: taxonomyV4FieldReferenceSchema,
+  labels: z.record(z.string(), z.string().optional()),
+  format: z.string().optional(),
+  sortOrder: z.number().int().nonnegative(),
+});
+
+export const taxonomyV4DetailProjectionSchema = z.object({
+  listingTypeId: z.string().min(1),
+  categoryId: z.string().min(1),
+  sectionId: z.string().min(1),
+  sectionLabels: taxonomyLocalizedLabelsSchema,
+  sectionOrder: z.number().int().nonnegative(),
+  field: taxonomyV4FieldReferenceSchema,
+  labels: taxonomyLocalizedLabelsSchema,
+  sortOrder: z.number().int().nonnegative(),
+  emphasis: z.string().optional(),
+  emptyBehavior: z.string().optional(),
+});
+
+export const taxonomyV4PublicationFlowProjectionSchema = z.object({
+  listingTypeId: z.string().min(1),
+  categoryId: z.string().min(1),
+  intent: taxonomyV4ListingIntentSchema,
+  step: z.number().int().positive(),
+  stepId: z.string().min(1),
+  labels: taxonomyLocalizedLabelsSchema,
+  sections: z.array(z.string()),
+  requiredFields: z.array(taxonomyV4FieldReferenceSchema),
+  condition: z.string().optional(),
+  validation: z.string().optional(),
+  helpText: z.string().optional(),
+  nextStepId: z.string().optional(),
+});
+
+export const taxonomyV4SearchProjectionSchema = z.object({
+  categoryId: z.string().min(1),
+  searchableFields: z.array(z.string().min(1)),
+  filterableAttributeIds: z.array(z.string().min(1)),
+  sortableAttributeIds: z.array(z.string().min(1)),
+  sortOptions: z.array(
+    z.enum(["relevance", "recent", "price_asc", "price_desc", "distance"]),
+  ),
+  defaultSort: z.enum([
+    "relevance",
+    "recent",
+    "price_asc",
+    "price_desc",
+    "distance",
+  ]),
+});
+
+export const taxonomyV4SeoProjectionSchema = z.object({
+  categoryId: z.string().min(1),
+  urlPattern: z.string().min(1),
+  locationUrlPattern: z.string().optional(),
+  facetUrlPattern: z.string().optional(),
+  h1: taxonomyLocalizedLabelsSchema,
+  titleTemplate: taxonomyLocalizedLabelsSchema,
+  descriptionTemplate: taxonomyLocalizedLabelsSchema,
+  indexable: z.boolean(),
+  canonicalStrategy: z.string().min(1),
+  indexableFacets: z.array(z.string()),
+  structuredData: z.array(z.string()),
+  sitemap: z.object({ eligible: z.boolean(), policy: z.string().min(1) }),
+});
+
+export const taxonomyV4ResolvedPublicationSchema = z.object({
+  taxonomyVersion: z.literal("4.0.0"),
+  category: taxonomyV4NodeSchema,
+  listingType: taxonomyV4ListingTypeSchema,
+  attributes: z.array(
+    z.object({
+      definition: taxonomyV4AttributeSchema,
+      binding: taxonomyV4AttributeBindingSchema,
+      options: z.array(taxonomyV4OptionSchema),
+    }),
+  ),
+  dependencyRules: z.array(taxonomyV4DependencyRuleSchema),
+  validationRules: z.array(taxonomyV4ValidationRuleSchema),
+  eligible: z.boolean(),
+  ineligibilityCode: z.string().optional(),
+});
+
+export const taxonomyV4ResolvedSchemaSchema =
+  taxonomyV4ResolvedPublicationSchema.extend({
+    locale: z.string().min(2).max(16),
+    marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
+    projections: z.object({
+      filters: z.array(taxonomyV4FilterProjectionSchema),
+      cardFields: z.array(taxonomyV4CardProjectionSchema),
+      detailFields: z.array(taxonomyV4DetailProjectionSchema),
+      publicationFlow: z.array(taxonomyV4PublicationFlowProjectionSchema),
+      search: taxonomyV4SearchProjectionSchema.nullable(),
+      seo: taxonomyV4SeoProjectionSchema.nullable(),
+    }),
+  });
+
+export const taxonomyV4TreeResponseSchema = z.object({
+  taxonomyVersion: z.literal("4.0.0"),
+  compilerVersion: z.string().min(1),
+  checksum: z.string().regex(/^[a-f0-9]{64}$/),
+  marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
+  locale: z.string().min(2).max(16),
+  items: z.array(taxonomyV4NodeSchema),
+});
+
+export const taxonomyV4OptionPageSchema = z.object({
+  items: z.array(taxonomyV4OptionSchema).max(200),
+  nextCursor: z.string().regex(/^\d+$/).optional(),
+  total: z.number().int().nonnegative(),
+  taxonomyVersion: z.literal("4.0.0"),
+});
+
+export const taxonomyV4MetadataSchema = z.object({
+  taxonomyVersion: z.literal("4.0.0"),
+  compilerVersion: z.string().min(1),
+  workbookSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  normalizedSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  pagination: z.object({
+    defaultLimit: z.number().int().positive(),
+    maxLimit: z.number().int().positive(),
+  }),
+  sourceCounts: z.object({
+    categories: z.number().int().nonnegative(),
+    listingTypes: z.number().int().nonnegative(),
+    attributes: z.number().int().nonnegative(),
+    bindings: z.number().int().nonnegative(),
+  }),
+});
+
+export const taxonomyV4PublicBundleSchema = z.object({
+  metadata: taxonomyV4MetadataSchema,
+  categories: z.array(taxonomyV4NodeSchema),
+  listingTypes: z.array(taxonomyV4ListingTypeSchema),
+  attributes: z.array(taxonomyV4AttributeSchema),
+  attributeGroups: z.array(taxonomyV4AttributeGroupSchema),
+  optionSets: z.array(taxonomyV4OptionSetSchema),
+  options: z.array(taxonomyV4OptionSchema),
+  optionParentLinks: z.array(taxonomyV4OptionParentLinkSchema),
+  bindings: z.array(taxonomyV4AttributeBindingSchema),
+  dependencyRules: z.array(taxonomyV4DependencyRuleSchema),
+  validationRules: z.array(taxonomyV4ValidationRuleSchema),
+  projections: z.object({
+    filters: z.array(taxonomyV4FilterProjectionSchema),
+    cardFields: z.array(taxonomyV4CardProjectionSchema),
+    detailFields: z.array(taxonomyV4DetailProjectionSchema),
+    publicationFlow: z.array(taxonomyV4PublicationFlowProjectionSchema),
+    search: z.array(taxonomyV4SearchProjectionSchema),
+    seo: z.array(taxonomyV4SeoProjectionSchema),
+  }),
+  aliases: z.array(
+    z.object({
+      alias: z.string().min(1),
+      canonicalCategoryId: z.string().min(1),
+      kind: z.string().min(1),
+    }),
+  ),
+  compatibility: z.object({
+    supportedIntentsByCategory: z.record(
+      z.string(),
+      z.array(taxonomyV4ListingIntentSchema),
+    ),
+    v3Crosswalk: z.array(
+      z.object({
+        sourceId: z.string().min(1),
+        canonicalId: z.string().min(1),
+        disposition: z.string().min(1),
+        rationale: z.string().min(1),
+      }),
+    ),
+  }),
+});
+
+export type TaxonomyV4Node = z.infer<typeof taxonomyV4NodeSchema>;
+export type TaxonomyV4UiComponent = z.infer<typeof taxonomyV4UiComponentSchema>;
+export type TaxonomyV4ListingIntent = z.infer<
+  typeof taxonomyV4ListingIntentSchema
+>;
+export type TaxonomyV4ListingType = z.infer<typeof taxonomyV4ListingTypeSchema>;
+export type TaxonomyV4Attribute = z.infer<typeof taxonomyV4AttributeSchema>;
+export type TaxonomyV4AttributeBinding = z.infer<
+  typeof taxonomyV4AttributeBindingSchema
+>;
+export type TaxonomyV4DependencyRule = z.infer<
+  typeof taxonomyV4DependencyRuleSchema
+>;
+export type TaxonomyV4ValidationRule = z.infer<
+  typeof taxonomyV4ValidationRuleSchema
+>;
+export type TaxonomyV4ResolvedPublication = z.infer<
+  typeof taxonomyV4ResolvedPublicationSchema
+>;
+export type TaxonomyV4ResolvedSchema = z.infer<
+  typeof taxonomyV4ResolvedSchemaSchema
+>;
+export type TaxonomyV4TreeResponse = z.infer<
+  typeof taxonomyV4TreeResponseSchema
+>;
+export type TaxonomyV4OptionPage = z.infer<typeof taxonomyV4OptionPageSchema>;
+export type TaxonomyV4PublicBundle = z.infer<
+  typeof taxonomyV4PublicBundleSchema
+>;

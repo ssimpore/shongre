@@ -16,82 +16,117 @@ describe("Listing Detail Display & Action Resolvers", () => {
   // 1. SUMMARY ATTRIBUTES DERIVATION ACROSS TAXONOMY FAMILIES
   // =========================================================================
   describe("Summary Attributes Resolver", () => {
-    it("resolves vehicle summary attributes (Year, Mileage, Fuel, Transmission, CritAir)", () => {
+    it("uses the v4 vehicle card projection and preserves full details", () => {
       const vehicleListing: Partial<Listing> = {
         id: "list-car-1",
         title: "Renault Mégane E-Tech EV60",
         price: 28900,
         categorySlug: "vehicules",
-        subCategorySlug: "vehicles.cars",
+        subCategorySlug: "vehicles.cars.suv",
         condition: "very_good",
         attributes: {
-          year: 2024,
+          brand: "renault",
+          first_registration_date: "2024-01-01",
           mileage: 24000,
-          fuel: "electrique",
-          gearbox: "automatique",
-          critair: "0",
+          fuel_type: "electric",
+          transmission: "automatic",
+          critair_class: "electric",
         },
       };
 
-      const summary = listingDisplayResolver.resolveSummaryAttributes(
-        vehicleListing as Listing,
+      const listing = vehicleListing as Listing;
+      const summary = listingDisplayResolver.resolveSummaryAttributes(listing);
+      const detailItems = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(summary).toEqual([
+        "Renault",
+        "24 000 km",
+        "Électrique",
+        "Automatique",
+      ]);
+      expect(detailItems.find((item) => item.code === "mileage")?.value).toBe(
+        "24 000 km",
       );
-      expect(summary).toContain("2024");
-      expect(summary).toContain("24 000 km");
-      expect(summary).toContain("100% Électrique");
-      expect(summary).toContain("Automatique");
-      expect(summary).toContain("Crit'Air 0");
+      expect(detailItems.find((item) => item.code === "fuel_type")?.value).toBe(
+        "Électrique",
+      );
+      expect(
+        detailItems.find((item) => item.code === "transmission")?.value,
+      ).toBe("Automatique");
+      expect(
+        detailItems.find((item) => item.code === "critair_class")?.value,
+      ).toBe("Électrique / 0");
     });
 
-    it("resolves real estate summary attributes (Property type, Surface, Rooms, Bedrooms, DPE)", () => {
+    it("uses the v4 real-estate card projection and preserves full details", () => {
       const realEstateListing: Partial<Listing> = {
         id: "list-re-1",
         title: "Appartement T3 lumineux Lyon 6e",
         price: 345000,
         categorySlug: "immobilier",
-        subCategorySlug: "real_estate.sales",
+        subCategorySlug: "real_estate.sales.apartments",
         attributes: {
-          property_type: "appartement",
-          surface: 68,
+          property_type: "apartment",
+          living_area: 68,
           rooms: 3,
           bedrooms: 2,
-          energy_class: "b",
+          dpe_class: "B",
         },
       };
 
-      const summary = listingDisplayResolver.resolveSummaryAttributes(
-        realEstateListing as Listing,
+      const listing = realEstateListing as Listing;
+      const summary = listingDisplayResolver.resolveSummaryAttributes(listing);
+      const detailItems = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(summary).toEqual(["Appartement", "68 m²", "3 pièces", "B", "2"]);
+      expect(
+        detailItems.find((item) => item.code === "living_area")?.value,
+      ).toBe("68 m²");
+      expect(detailItems.find((item) => item.code === "rooms")?.value).toBe(
+        "3 pièces",
       );
-      expect(summary).toContain("Appartement");
-      expect(summary).toContain("68 m²");
-      expect(summary).toContain("3 pièces");
-      expect(summary).toContain("2 ch.");
-      expect(summary).toContain("DPE B");
+      expect(detailItems.find((item) => item.code === "bedrooms")?.value).toBe(
+        "2",
+      );
+      expect(detailItems.find((item) => item.code === "dpe_class")?.value).toBe(
+        "B",
+      );
     });
 
-    it("resolves smartphone summary attributes (Storage, Color, Condition)", () => {
+    it("keeps smartphone cards concise while preserving v4 details", () => {
       const phoneListing: Partial<Listing> = {
         id: "list-phone-1",
         title: "iPhone 15 Pro 256 Go Titane",
         price: 890,
-        categorySlug: "multimedia",
-        subCategorySlug: "electronics.telephony.smartphones",
+        categorySlug: "electronique",
+        subCategorySlug: "electronics.smartphones.phones",
         condition: "very_good",
         attributes: {
-          storage_capacity: 256,
-          color: "gris",
+          storage_capacity_gb: 256,
+          color: "grey",
         },
       };
 
-      const summary = listingDisplayResolver.resolveSummaryAttributes(
-        phoneListing as Listing,
+      const listing = phoneListing as Listing;
+      const summary = listingDisplayResolver.resolveSummaryAttributes(listing);
+      const detailItems = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(summary).toEqual(["256 GB", "Très bon état"]);
+      expect(
+        detailItems.find((item) => item.code === "storage_capacity_gb")?.value,
+      ).toBe("256 GB");
+      expect(detailItems.find((item) => item.code === "color")?.value).toBe(
+        "Gris",
       );
-      expect(summary).toContain("256 Go");
-      expect(summary).toContain("Gris / Argent");
-      expect(summary).toContain("Très bon état");
     });
 
-    it("resolves furniture summary attributes (Material, Dimensions, Condition)", () => {
+    it("keeps furniture cards concise while preserving v4 details", () => {
       const furnitureListing: Partial<Listing> = {
         id: "list-furn-1",
         title: "Table à manger scandinave teck",
@@ -100,17 +135,28 @@ describe("Listing Detail Display & Action Resolvers", () => {
         subCategorySlug: "home_garden.furniture.tables",
         condition: "very_good",
         attributes: {
-          material: "bois_massif",
-          dimensions: "160 × 90 cm",
+          material: "wood",
+          dimensions_width: 160,
+          dimensions_length: 90,
         },
       };
 
-      const summary = listingDisplayResolver.resolveSummaryAttributes(
-        furnitureListing as Listing,
+      const listing = furnitureListing as Listing;
+      const summary = listingDisplayResolver.resolveSummaryAttributes(listing);
+      const detailItems = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(summary).toEqual(["Très bon état"]);
+      expect(detailItems.find((item) => item.code === "material")?.value).toBe(
+        "Bois",
       );
-      expect(summary).toContain("Bois massif");
-      expect(summary).toContain("160 × 90 cm");
-      expect(summary).toContain("Très bon état");
+      expect(
+        detailItems.find((item) => item.code === "dimensions_width")?.value,
+      ).toBe("160 cm");
+      expect(
+        detailItems.find((item) => item.code === "dimensions_length")?.value,
+      ).toBe("90 cm");
     });
 
     it("keeps employment cards essential while preserving full detail values", () => {
@@ -118,12 +164,12 @@ describe("Listing Detail Display & Action Resolvers", () => {
         id: "list-job-1",
         title: "Développeur·se front-end React",
         categorySlug: "emploi",
-        subCategorySlug: "offres-d-emploi",
+        subCategorySlug: "jobs.offers.it_data",
         condition: "not_applicable",
         attributes: {
-          contract_type: "cdi",
-          job_sector: "tech_informatique",
-          telework: "hybrid",
+          contract_type: "permanent",
+          job_sector: "it_data",
+          remote_work: "hybrid",
         },
       };
 
@@ -133,13 +179,16 @@ describe("Listing Detail Display & Action Resolvers", () => {
         .resolveGroupedCharacteristics(listing)
         .flatMap((group) => group.items);
 
-      expect(summary).toEqual(["CDI", "Télétravail hybride"]);
+      expect(summary).toEqual(["CDI", "Hybride"]);
       expect(
         detailItems.find((item) => item.code === "job_sector")?.value,
-      ).toBe("Informatique / Tech / Data & IA");
-      expect(detailItems.find((item) => item.code === "telework")?.value).toBe(
-        "Télétravail hybride (2-3 jours/semaine)",
-      );
+      ).toBe("Informatique, Data & IA");
+      expect(
+        detailItems.find((item) => item.code === "contract_type")?.value,
+      ).toBe("CDI");
+      expect(
+        detailItems.find((item) => item.code === "remote_work")?.value,
+      ).toBe("Hybride");
     });
 
     it("humanizes unregistered imported attributes on detail pages", () => {
@@ -186,15 +235,15 @@ describe("Listing Detail Display & Action Resolvers", () => {
     it("groups vehicle technical specifications and ignores absent attributes", () => {
       const vehicleListing: Partial<Listing> = {
         id: "list-car-1",
-        subCategorySlug: "vehicles.cars",
+        subCategorySlug: "vehicles.cars.suv",
         condition: "very_good",
         attributes: {
-          year: 2024,
+          first_registration_date: "2024-01-01",
           mileage: 24000,
-          fuel: "electrique",
-          gearbox: "automatique",
-          doors: 5,
-          battery_capacity: 60,
+          fuel_type: "electric",
+          transmission: "automatic",
+          doors: "5",
+          battery_capacity_kwh: 60,
         },
       };
 
@@ -209,7 +258,7 @@ describe("Listing Detail Display & Action Resolvers", () => {
       ).toBe(true);
       expect(
         allItems.some(
-          (i) => i.code === "fuel" && i.value === "100% Électrique",
+          (i) => i.code === "fuel_type" && i.value === "Électrique",
         ),
       ).toBe(true);
 
@@ -226,10 +275,10 @@ describe("Listing Detail Display & Action Resolvers", () => {
     it("does NOT include vehicle engine specs on real estate listings", () => {
       const reListing: Partial<Listing> = {
         id: "list-re-1",
-        subCategorySlug: "real_estate.sales",
+        subCategorySlug: "real_estate.sales.apartments",
         attributes: {
-          surface: 75,
-          rooms: 3,
+          living_area: 75,
+          rooms: "3",
         },
       };
 

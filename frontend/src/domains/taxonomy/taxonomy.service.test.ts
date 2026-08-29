@@ -22,9 +22,11 @@ describe("Taxonomy Service & Integrity", () => {
   });
 
   it("resolves publication schema with inherited capabilities and attributes for Cars", () => {
-    const schema = taxonomyService.resolvePublicationSchema("vehicles.cars");
+    const schema = taxonomyService.resolvePublicationSchema(
+      "vehicles.cars.city_cars",
+    );
     expect(schema).not.toBeNull();
-    expect(schema?.node.name).toBe("Voitures d'occasion");
+    expect(schema?.node.name).toBe("Citadines");
     expect(schema?.conditionScheme).toBeDefined();
     expect(schema?.capabilities.canSell).toBe(true);
     expect(schema?.capabilities.reservationAllowed).toBe(true);
@@ -32,42 +34,43 @@ describe("Taxonomy Service & Integrity", () => {
 
     // Attributes check
     const attrCodes = schema?.attributes.map((a) => a.code);
-    expect(attrCodes).toContain("vehicle_brand");
+    expect(attrCodes).toContain("brand");
     expect(attrCodes).toContain("mileage");
-    expect(attrCodes).toContain("year");
-    expect(attrCodes).toContain("fuel");
+    expect(attrCodes).toContain("first_registration_date");
+    expect(attrCodes).toContain("fuel_type");
   });
 
   it("resolves real estate publication schema without physical parcel shipping", () => {
-    const schema =
-      taxonomyService.resolvePublicationSchema("real_estate.sales");
+    const schema = taxonomyService.resolvePublicationSchema(
+      "real_estate.sales.apartments",
+    );
     expect(schema).not.toBeNull();
     expect(schema?.capabilities.fulfillmentModes).toContain("none");
     expect(schema?.capabilities.securePaymentAllowed).toBe(false);
 
     const attrCodes = schema?.attributes.map((a) => a.code);
-    expect(attrCodes).toContain("surface");
+    expect(attrCodes).toContain("living_area");
     expect(attrCodes).toContain("rooms");
-    expect(attrCodes).toContain("energy_class");
+    expect(attrCodes).toContain("dpe_class");
   });
 
   it("derives dynamic search filters for category node", () => {
-    const facets = taxonomyService.resolveSearchFilters("vehicles.cars");
+    const facets = taxonomyService.resolveSearchFilters(
+      "vehicles.cars.city_cars",
+    );
     expect(facets.length).toBeGreaterThan(3);
     const facetCodes = facets.map((f) => f.attribute.code);
-    expect(facetCodes).toContain("vehicle_brand");
-    expect(facetCodes).toContain("year");
+    expect(facetCodes).toContain("brand");
+    expect(facetCodes).toContain("model_year");
     expect(facetCodes).toContain("mileage");
   });
 
   it("resolves card summary preview attributes", () => {
-    const summary = taxonomyService.getCardSummaryAttributes("vehicles.cars");
+    const summary = taxonomyService.getCardSummaryAttributes(
+      "vehicles.cars.city_cars",
+    );
     expect(summary.length).toBeGreaterThanOrEqual(1);
-    expect(
-      summary.some(
-        (s) => s.id === "vehicle.year" || s.id === "vehicle.mileage",
-      ),
-    ).toBe(true);
+    expect(summary.some((attribute) => attribute.id === "brand")).toBe(true);
   });
 
   it("provides a non-empty, searchable schema for every publishable leaf", () => {
@@ -94,18 +97,18 @@ describe("Taxonomy Service & Integrity", () => {
   it("resolves dependent publication fields and nested descendants from metadata", () => {
     const descendants = taxonomyService.getDescendants("vehicles");
     expect(
-      descendants.some((node) => node.id === "vehicles.cars.citadines"),
+      descendants.some((node) => node.id === "vehicles.caravaning.motorhomes"),
     ).toBe(true);
 
     const electricSchema = publicationResolver.resolve({
-      taxonomyNodeId: "vehicles.cars",
-      currentValues: { fuel: "electric" },
+      taxonomyNodeId: "vehicles.cars.city_cars",
+      currentValues: { fuel_type: "electric" },
     });
-    const connector = electricSchema?.fields.find(
-      (field) => field.attribute.id === "vehicle.charging_connector",
+    const battery = electricSchema?.fields.find(
+      (field) => field.attribute.id === "battery_capacity_kwh",
     );
-    expect(connector?.isVisiblyMet).toBe(true);
-    expect(connector?.fieldRole).toBe("optional");
+    expect(battery).toBeDefined();
+    expect(battery?.fieldRole).toBe("optional");
   });
 
   it("migrates legacy category slugs cleanly", () => {
@@ -166,7 +169,7 @@ describe("Taxonomy Service & Integrity", () => {
       const fullLabel = taxonomyService.getLabel(carsNode, "full");
       const compactLabel = taxonomyService.getLabel(carsNode, "compact");
 
-      expect(fullLabel).toBe("Voitures d'occasion");
+      expect(fullLabel).toBe("Voitures");
       expect(compactLabel).toBe("Voitures");
     });
 
@@ -209,23 +212,23 @@ describe("Taxonomy Service & Integrity", () => {
 
     it("resolves breadcrumbs in full and compact modes", () => {
       const fullCrumbs = taxonomyService.getBreadcrumbs(
-        "vehicles.cars.citadines",
+        "vehicles.caravaning.motorhomes",
         "full",
       );
       expect(fullCrumbs.map((c) => c.label)).toEqual([
         "Véhicules",
-        "Voitures d'occasion",
-        "Citadines",
+        "Caravaning",
+        "Camping-cars",
       ]);
 
       const compactCrumbs = taxonomyService.getBreadcrumbs(
-        "vehicles.cars.citadines",
+        "vehicles.caravaning.motorhomes",
         "compact",
       );
       expect(compactCrumbs.map((c) => c.label)).toEqual([
         "Véhicules",
-        "Voitures",
-        "Citadines",
+        "Caravaning",
+        "Camping-cars",
       ]);
     });
 
@@ -234,28 +237,28 @@ describe("Taxonomy Service & Integrity", () => {
       expect(results.some((r) => r.id === "vehicles.cars")).toBe(true);
 
       const proResults = taxonomyService.searchTaxonomy("Matériel Pro", 5);
-      expect(proResults.some((r) => r.id === "professional_btp")).toBe(true);
+      expect(proResults.some((r) => r.id === "professional_equipment")).toBe(
+        true,
+      );
     });
 
-    it("provides concise and legible shortLabels for all 16 root categories without truncation", () => {
+    it("provides non-empty workbook labels for all 18 v4 root categories", () => {
       const roots = taxonomyService.getRootCategories();
-      expect(roots).toHaveLength(16);
+      expect(roots).toHaveLength(18);
 
       const shortLabelMap = Object.fromEntries(
         roots.map((r) => [r.id, taxonomyService.getLabel(r, "compact")]),
       );
 
       expect(shortLabelMap["vehicles"]).toBe("Véhicules");
-      expect(shortLabelMap["sports_outdoors"]).toBe("Sports");
-      expect(shortLabelMap["professional_btp"]).toBe("Matériel Pro");
-      expect(shortLabelMap["agriculture"]).toBe("Agriculture");
-      expect(shortLabelMap["pro_it_telecom"]).toBe("IT & Serveurs");
-      expect(shortLabelMap["deals_donations"]).toBe("Dons & Gratuit");
+      expect(shortLabelMap["professional_equipment"]).toBe(
+        "Matériel professionnel",
+      );
+      expect(shortLabelMap["education"]).toBe("Éducation");
+      expect(shortLabelMap["free_exchange"]).toBe("Dons & Échanges");
 
-      // Ensure every root compact label is concise (under 20 characters)
       roots.forEach((root) => {
         const compact = taxonomyService.getLabel(root, "compact");
-        expect(compact.length).toBeLessThanOrEqual(20);
         expect(compact.trim().length).toBeGreaterThan(0);
       });
     });

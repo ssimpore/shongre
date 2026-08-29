@@ -9,9 +9,9 @@ SHELL := /bin/bash
 	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
-	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
+	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
-	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-check providers-check analytics-check crm-check marketing-check contracts generate check check-all ci build \
+	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
@@ -375,6 +375,10 @@ migrations-check: ## Validate migration ordering and contents without connecting
 	@scripts/database.sh check
 db-seed: ## Load deterministic seed data into a proven local development database
 	@scripts/database.sh seed
+taxonomy-db-dry-run: taxonomy-compile ## Diff the v4 import against a proven local database, then roll back
+	@scripts/database.sh taxonomy-dry-run
+taxonomy-db-import: taxonomy-compile ## Idempotently import v4 into a proven local database
+	@scripts/database.sh taxonomy-import
 supabase-seed: db-seed
 db-types: ## Regenerate canonical database types from local or explicitly linked Supabase
 	@source scripts/env.sh && npm run db:types --workspace=backend
@@ -424,7 +428,13 @@ test-coverage:
 	@npm run test --workspace=mobile -- --coverage
 i18n-check: ## Validate locale catalogues and untranslated-surface regression budgets
 	@npm run check:i18n --workspace=frontend
-taxonomy-check: ## Validate canonical taxonomy coverage and publication schemas
+taxonomy-import: ## Import TAXONOMY_WORKBOOK into the reviewed normalized v4 source and generated projections
+	@test -n "$(TAXONOMY_WORKBOOK)" || (echo 'TAXONOMY_WORKBOOK is required.' >&2; exit 1)
+	@npm run taxonomy:import -- "$(TAXONOMY_WORKBOOK)"
+taxonomy-compile: ## Regenerate taxonomy v4 bundles and local seed SQL from the normalized backend source
+	@npm run taxonomy:compile
+taxonomy-check: ## Validate taxonomy v4 source drift, generated projections, and Web publication coverage
+	@npm run taxonomy:check
 	@npm run check:taxonomy --workspace=frontend
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:providers --workspace=backend'
@@ -441,7 +451,7 @@ marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, prov
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:marketing --workspace=frontend'
 	@npm run openapi:check
 contracts: contracts-check ## Validate stable public client/backend contracts
-generate: tokens-build db-types openapi-generate ## Regenerate deterministic tokens, database types, and API clients
+generate: tokens-build taxonomy-compile db-types openapi-generate ## Regenerate deterministic taxonomy, tokens, database types, and API clients
 check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
 check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets

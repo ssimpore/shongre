@@ -9,6 +9,7 @@ import { simulateNetworkDelay } from "../../client/api-client.config";
 import { runUnifiedDiscovery } from "@shongre/shared";
 import { toDemoDiscoveryDocument } from "../../../domains/discovery/discovery.mapper";
 import { getCountryConfig } from "@shongre/contracts";
+import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 
 const POPULAR_KEYWORDS_BY_MARKET: Record<string, string[]> = {
   FR: [
@@ -90,13 +91,19 @@ export class DemoSearchService implements SearchServiceContract {
       page: 1,
       limit: 500,
     });
+    const requestedTaxonomyNode = TaxonomyMigration.resolveCanonicalNode(
+      params.subCategorySlug || params.categorySlug,
+    );
     const ranked = runUnifiedDiscovery(
       res.listings.map(toDemoDiscoveryDocument),
       {
         requestId: `demo-search:${JSON.stringify(params)}`,
         marketCode,
         query: params.query,
-        categoryId: params.subCategorySlug || params.categorySlug,
+        categoryId:
+          requestedTaxonomyNode?.id ||
+          params.subCategorySlug ||
+          params.categorySlug,
         city: params.city,
         publisherType:
           params.sellerType === "individual"

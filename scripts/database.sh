@@ -118,6 +118,16 @@ case "$action" in
     resolved_database_url="$(local_database_url)"
     DATABASE_URL="$resolved_database_url" ALLOW_DEMO_SEED=true npm run db:seed --workspace=backend
     ;;
+  taxonomy-dry-run|taxonomy-import)
+    require_local
+    resolved_database_url="$(local_database_url)"
+    taxonomy_args=()
+    if [[ "$action" == "taxonomy-dry-run" ]]; then
+      taxonomy_args+=(--dry-run)
+    fi
+    DATABASE_URL="$resolved_database_url" TAXONOMY_IMPORT_APPROVAL=local \
+      npm run taxonomy:import:local --workspace=backend -- "${taxonomy_args[@]}"
+    ;;
   reset)
     require_local
     if [[ -n "${DATABASE_URL:-}" ]]; then
@@ -153,7 +163,7 @@ case "$action" in
     exec psql -X "$resolved_database_url"
     ;;
   *)
-    shongre_fail "usage: scripts/database.sh <check|migrate|diff|seed|reset|shell>"
+    shongre_fail "usage: scripts/database.sh <check|migrate|diff|seed|taxonomy-dry-run|taxonomy-import|reset|shell>"
     exit 2
     ;;
 esac

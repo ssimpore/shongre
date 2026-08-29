@@ -34,6 +34,19 @@ import {
 import { requireMarketCode } from "../../shared/market/market-code.js";
 import { getCurrencyMinorUnitDigits } from "@shongre/shared";
 import { analyticsService } from "../analytics/analytics.service.js";
+import type {
+  MarketContext,
+  TaxonomyV4ListingIntent,
+} from "@shongre/contracts";
+import {
+  toApplicationListingCondition,
+  toTaxonomyV4ItemCondition,
+} from "@shongre/contracts";
+import {
+  taxonomyV4Service,
+  TaxonomyV4Error,
+  TaxonomyV4Service,
+} from "../taxonomy/taxonomy.v4.service.js";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -49,6 +62,9 @@ export interface PublicationDraftInput {
     | "monthly"
     | "rent_plus_charges";
   categoryId?: string;
+  listingTypeId?: string;
+  intent?: TaxonomyV4ListingIntent;
+  taxonomyVersion?: "4.0.0";
   marketCode?: string;
   selectedMarkets?: string[];
   marketPublications?: Record<
@@ -154,6 +170,57 @@ const DELIVERY_TYPES = new Set<DeliveryType>([
   "express",
 ]);
 
+type ManagedTaxonomyDefinition = {
+  id: string;
+  defaultValue?: unknown;
+};
+
+function applicationManagedTaxonomyAttributes(
+  draft: PublicationDraftInput,
+  definitions: ManagedTaxonomyDefinition[],
+  market: { countryCode: string; currency: string },
+  sellerType: "individual" | "professional",
+): Record<string, unknown> {
+  const allowed = new Set(definitions.map((definition) => definition.id));
+  const defaults = new Map(
+    definitions.map((definition) => [definition.id, definition.defaultValue]),
+  );
+  const condition = toTaxonomyV4ItemCondition(draft.condition);
+  const currency = market.currency;
+  const candidates: Record<string, unknown> = {
+    listing_intent:
+      draft.attributes?.listing_intent ??
+      draft.intent?.toLocaleLowerCase("en-US") ??
+      "sell",
+    title: draft.title,
+    description: draft.description,
+    images: draft.images,
+    price:
+      draft.price === undefined
+        ? undefined
+        : Math.round(draft.price * 10 ** getCurrencyMinorUnitDigits(currency)),
+    currency,
+    price_type: draft.attributes?.price_type ?? draft.priceModel ?? "fixed",
+    condition,
+    country: market.countryCode,
+    postal_code: draft.postalCode,
+    city: draft.city,
+    location_country: market.countryCode,
+    location_postcode: draft.postalCode,
+    location_city: draft.city,
+    contact_mode:
+      draft.attributes?.contact_mode ?? defaults.get("contact_mode"),
+    seller_type: sellerType,
+    item_condition: condition,
+  };
+
+  return Object.fromEntries(
+    Object.entries(candidates).filter(
+      ([id, value]) => allowed.has(id) && value !== undefined,
+    ),
+  );
+}
+
 export class ListingsService {
   constructor(
     private listingRepo: IListingRepository = repositories.listings,
@@ -163,6 +230,7 @@ export class ListingsService {
     private discovery: UnifiedDiscoveryService = unifiedDiscoveryService,
     private markets: IMarketRepository = repositories.markets,
     private storage: StorageService = storageService,
+    private taxonomyV4: TaxonomyV4Service = taxonomyV4Service,
   ) {}
 
   async getListings(
@@ -354,6 +422,11 @@ export class ListingsService {
   async publishListing(
     draft: PublicationDraftInput,
     sellerId: string,
+    taxonomyContext?: {
+      marketContext: MarketContext;
+      sellerType: "individual" | "professional";
+      sellerCapabilities?: string[];
+    },
   ): Promise<PublicListing> {
     if (!draft.title || !draft.categoryId) {
       throw new AppError({
@@ -384,28 +457,107 @@ export class ListingsService {
       });
     }
 
-    const taxonomyValidation =
-      await this.taxonomyValidation.validateListingAttributes(
+    const marketCode = requireMarketCode(draft.marketCode);
+    const primaryMarket = await this.markets.getEffective(marketCode);
+
+    if (
+      draft.taxonomyVersion === "4.0.0" ||
+      draft.listingTypeId ||
+      draft.intent
+    ) {
+      if (!taxonomyContext || !draft.listingTypeId || !draft.intent) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            "Le type d’annonce et le contexte de taxonomie v4 sont obligatoires.",
+        });
+      }
+      try {
+        const resolvedTaxonomy = this.taxonomyV4.resolve({
+          marketContext: taxonomyContext.marketContext,
+          categoryIdentity: draft.categoryId,
+          listingTypeId: draft.listingTypeId,
+          intent: draft.intent,
+          sellerType: taxonomyContext.sellerType,
+          sellerCapabilities: taxonomyContext.sellerCapabilities,
+          locale: taxonomyContext.marketContext.locale ?? "fr-FR",
+          taxonomyVersion: "4.0.0",
+        });
+        const acceptsCondition = resolvedTaxonomy.attributes.some(
+          ({ definition }) => definition.id === "condition",
+        );
+        const canonicalCondition = acceptsCondition
+          ? toTaxonomyV4ItemCondition(draft.condition)
+          : undefined;
+        const managedAttributes = applicationManagedTaxonomyAttributes(
+          draft,
+          resolvedTaxonomy.attributes.map(({ definition }) => definition),
+          {
+            countryCode: taxonomyContext.marketContext.countryCode!,
+            currency: taxonomyContext.marketContext.currency!,
+          },
+          taxonomyContext.sellerType,
+        );
+        const validation = this.taxonomyV4.validate({
+          marketContext: taxonomyContext.marketContext,
+          categoryIdentity: draft.categoryId,
+          listingTypeId: draft.listingTypeId,
+          intent: draft.intent,
+          sellerType: taxonomyContext.sellerType,
+          sellerCapabilities: taxonomyContext.sellerCapabilities,
+          locale: taxonomyContext.marketContext.locale ?? "fr-FR",
+          taxonomyVersion: "4.0.0",
+          attributes: {
+            ...(draft.attributes || {}),
+            ...managedAttributes,
+            ...(canonicalCondition ? { condition: canonicalCondition } : {}),
+          },
+        });
+        if (!validation.valid) {
+          throw new AppError({
+            code: validation.issues[0]?.code ?? "VALIDATION_ERROR",
+            message:
+              validation.issues[0]?.message ||
+              "Les caractéristiques de l’annonce sont invalides.",
+            details: { issues: validation.issues },
+          });
+        }
+      } catch (error) {
+        if (error instanceof AppError) throw error;
+        if (error instanceof TaxonomyV4Error) {
+          throw new AppError({ code: error.code, message: error.message });
+        }
+        throw error;
+      }
+    } else {
+      const definitions = await taxonomyService.getAttributesForCategory(
         draft.categoryId,
-        {
-          ...(draft.attributes || {}),
-          // `condition` was historically a top-level publication field. Feed it
-          // into the canonical validator without forcing legacy adapters to
-          // duplicate it inside their JSON attributes payload.
-          ...(draft.condition ? { condition: draft.condition } : {}),
-        },
       );
-    if (!taxonomyValidation.isValid) {
-      throw new AppError({
-        code: "VALIDATION_ERROR",
-        message:
-          taxonomyValidation.issues[0]?.message ||
-          "Les caractéristiques de l’annonce sont invalides.",
-        details: { issues: taxonomyValidation.issues },
-      });
+      const managedAttributes = applicationManagedTaxonomyAttributes(
+        draft,
+        definitions,
+        { countryCode: marketCode, currency: primaryMarket.currency },
+        "individual",
+      );
+      const taxonomyValidation =
+        await this.taxonomyValidation.validateListingAttributes(
+          draft.categoryId,
+          {
+            ...(draft.attributes || {}),
+            ...managedAttributes,
+          },
+        );
+      if (!taxonomyValidation.isValid) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            taxonomyValidation.issues[0]?.message ||
+            "Les caractéristiques de l’annonce sont invalides.",
+          details: { issues: taxonomyValidation.issues },
+        });
+      }
     }
 
-    const marketCode = requireMarketCode(draft.marketCode);
     const requestedMarketCodes = Array.from(
       new Set(
         (draft.selectedMarkets?.length
@@ -424,7 +576,11 @@ export class ListingsService {
       ...requestedMarketCodes.filter((code) => code !== marketCode),
     ];
     const selectedMarkets = await Promise.all(
-      selectedMarketCodes.map((code) => this.markets.getEffective(code)),
+      selectedMarketCodes.map((code) =>
+        code === marketCode
+          ? Promise.resolve(primaryMarket)
+          : this.markets.getEffective(code),
+      ),
     );
     if (
       selectedMarkets.some(
@@ -591,12 +747,17 @@ export class ListingsService {
           : "listing.standard.individual",
       entitlementSnapshot: publicationPolicy.entitlementSnapshot,
       categoryId: draft.categoryId,
+      listingTypeId: draft.listingTypeId,
+      listingIntent: draft.intent,
       title: draft.title,
       description: draft.description || "",
       price: Number(effectivePrice),
       currency: market.currency,
       status: safety.riskScore >= 50 ? "flagged" : "published",
-      condition: draft.condition || "bon-etat",
+      condition: toApplicationListingCondition(
+        draft.attributes || {},
+        draft.condition || "bon-etat",
+      ),
       brand: draft.brand,
       model: draft.model,
       marketCode,

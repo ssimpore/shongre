@@ -71,6 +71,7 @@ export class PublicationResolver {
     const {
       taxonomyNodeId,
       marketCode = marketService.getDefaultMarket().code,
+      sellerRole,
       listingIntent,
       currentValues = {},
     } = params;
@@ -175,6 +176,11 @@ export class PublicationResolver {
         return override ? { ...base, ...override } : base;
       })
       .filter((a): a is TaxonomyAttribute => a !== null)
+      .filter((attribute) =>
+        sellerRole === "pro_seller" || sellerRole === "professional"
+          ? attribute.sellerEligibility?.proAllowed !== false
+          : attribute.sellerEligibility?.individualAllowed !== false,
+      )
       .sort((a, b) => (a.displayOrder || 99) - (b.displayOrder || 99));
 
     // 5. Evaluate Declarative Conditional Dependencies for Fields
@@ -205,15 +211,15 @@ export class PublicationResolver {
     });
 
     // 6. Resolve Supported Intents
-    let supportedIntents: ListingIntent[] = ["SELL", "GIVE", "EXCHANGE"];
+    let supportedIntents: ListingIntent[] = ["SELL", "DONATE", "EXCHANGE"];
     if (listingFamily === "real_estate") {
-      supportedIntents = ["SELL", "RENT"];
+      supportedIntents = ["SELL", "RENT_OUT", "RENT_SEEK"];
     } else if (listingFamily === "service") {
-      supportedIntents = ["OFFER_SERVICE"];
+      supportedIntents = ["SERVICE_OFFER", "SERVICE_REQUEST"];
     } else if (listingFamily === "job") {
       supportedIntents = ["JOB_OFFER"];
     } else if (listingFamily === "vehicle") {
-      supportedIntents = ["SELL", "RENT"];
+      supportedIntents = ["SELL", "WANTED"];
     }
     if (node.supportedIntents) {
       supportedIntents = node.supportedIntents as ListingIntent[];
@@ -231,7 +237,12 @@ export class PublicationResolver {
       defaultPriceModel = "monthly";
     } else if (
       listingFamily === "real_estate" &&
-      (listingIntent === "RENT" || defaultIntent === "RENT")
+      (listingIntent === "RENT" ||
+        listingIntent === "RENT_OUT" ||
+        listingIntent === "RENT_SEEK" ||
+        defaultIntent === "RENT" ||
+        defaultIntent === "RENT_OUT" ||
+        defaultIntent === "RENT_SEEK")
     ) {
       supportedPriceModels = ["rent_plus_charges", "monthly"];
       defaultPriceModel = "rent_plus_charges";

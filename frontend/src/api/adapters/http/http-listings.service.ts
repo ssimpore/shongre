@@ -8,6 +8,8 @@ import {
 import { httpClient } from "./http-client";
 import { Listing, ListingStatus, SearchFilters } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
+import { toTaxonomyV4ItemCondition } from "@shongre/contracts";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 
 export type BackendListing = {
   id: string;
@@ -137,25 +139,53 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
   };
 };
 
-const publicationPayload = (draft: PublicationDraftState) => ({
-  title: draft.title,
-  description: draft.description,
-  price: draft.pricing.isFreeDonation ? 0 : draft.pricing.amount,
-  priceModel: draft.pricing.priceModel,
-  categoryId: draft.taxonomyNodeId,
-  marketCode: draft.marketCode,
-  city: draft.location.city,
-  postalCode: draft.location.postalCode,
-  images: [...draft.photos]
-    .sort((left, right) => Number(right.isCover) - Number(left.isCover))
-    .map((photo) => photo.url),
-  attributes: draft.attributes,
-  allowedDelivery: [
-    ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
-    ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
-  ],
-  condition: draft.condition,
-});
+const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
+
+const publicationPayload = (draft: PublicationDraftState) => {
+  const acceptsItemCondition = taxonomyV4Bundle.bindings.some(
+    (binding) =>
+      binding.categoryId === draft.taxonomyNodeId &&
+      binding.listingTypeId === draft.listingTypeId &&
+      binding.attributeId === "item_condition",
+  );
+  const itemCondition = acceptsItemCondition
+    ? toTaxonomyV4ItemCondition(draft.condition)
+    : undefined;
+
+  return {
+    title: draft.title,
+    description: draft.description,
+    price: draft.pricing.isFreeDonation ? 0 : draft.pricing.amount,
+    priceModel: draft.pricing.priceModel,
+    categoryId: draft.taxonomyNodeId,
+    marketCode: draft.marketCode,
+    city: draft.location.city,
+    postalCode: draft.location.postalCode,
+    images: [...draft.photos]
+      .sort((left, right) => Number(right.isCover) - Number(left.isCover))
+      .map((photo) => photo.url),
+    listingTypeId: draft.listingTypeId,
+    intent: draft.listingIntent,
+    taxonomyVersion: draft.taxonomyVersion,
+    attributes: {
+      ...draft.attributes,
+      ...(itemCondition ? { item_condition: itemCondition } : {}),
+      title: draft.title,
+      description: draft.description,
+      images: draft.photos.map((photo) => photo.url),
+      price: Math.round(draft.pricing.amount * 100),
+      currency: draft.pricing.currency,
+      location_country: draft.location.countryCode,
+      location_postcode: draft.location.postalCode,
+      location_city: draft.location.city,
+    },
+    allowedDelivery: [
+      ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
+      ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
+    ],
+    condition: draft.condition,
+  };
+};
 
 export class HttpListingsService implements ListingsServiceContract {
   async getListings(filter?: SearchFilters) {

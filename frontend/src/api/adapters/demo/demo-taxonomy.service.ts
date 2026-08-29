@@ -6,6 +6,18 @@ import {
   TaxonomyAttribute,
 } from "../../../domains/taxonomy/taxonomy.types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import {
+  TaxonomyV4PublicResolver,
+  type ResolveTaxonomyV4PublicInput,
+  type TaxonomyV4OptionPage,
+  type TaxonomyV4ResolvedSchema,
+  type TaxonomyV4TreeResponse,
+} from "@shongre/contracts";
+
+const taxonomyV4Resolver = new TaxonomyV4PublicResolver(
+  getTaxonomyV4PublicBundle(),
+);
 
 export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getRootCategories(): Promise<Category[]> {
@@ -39,6 +51,41 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async resolveSearchFilters(nodeId?: string): Promise<any[]> {
     await simulateNetworkDelay();
     return taxonomyService.resolveSearchFilters(nodeId);
+  }
+
+  async getV4Tree(input: {
+    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    locale: string;
+    taxonomyVersion?: string;
+  }): Promise<TaxonomyV4TreeResponse> {
+    await simulateNetworkDelay();
+    return taxonomyV4Resolver.tree(
+      input.marketContext,
+      input.locale,
+      input.taxonomyVersion,
+    );
+  }
+
+  async resolveV4(
+    input: ResolveTaxonomyV4PublicInput,
+  ): Promise<TaxonomyV4ResolvedSchema> {
+    await simulateNetworkDelay();
+    return taxonomyV4Resolver.resolve(input);
+  }
+
+  async lookupV4Options(input: {
+    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    optionSetId: string;
+    parentOptionId?: string;
+    query?: string;
+    cursor?: string;
+    limit?: number;
+    locale?: string;
+    taxonomyVersion?: string;
+  }): Promise<TaxonomyV4OptionPage> {
+    await simulateNetworkDelay();
+    taxonomyV4Resolver.tree(input.marketContext, input.locale ?? "fr-FR");
+    return taxonomyV4Resolver.lookupOptions(input);
   }
 }
 

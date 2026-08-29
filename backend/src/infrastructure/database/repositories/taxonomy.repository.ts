@@ -1,11 +1,6 @@
-import { Category } from "../../../shared/types/index.js";
 import type { TaxonomyAttribute as ContractTaxonomyAttribute } from "@shongre/contracts/taxonomy";
-import {
-  CANONICAL_TAXONOMY_IDENTITIES,
-  CANONICAL_TAXONOMY_IDENTITY_BY_ID,
-  CANONICAL_TAXONOMY_ALIASES,
-} from "@shongre/contracts/taxonomy-catalog";
-import type { CanonicalTaxonomyIdentity } from "@shongre/contracts/taxonomy-catalog";
+import type { Category } from "../../../shared/types/index.js";
+import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../../modules/taxonomy/generated/taxonomy-v4.private.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
@@ -13,6 +8,7 @@ import { databaseFailure } from "./repository-error.js";
 export type TaxonomyAttribute = ContractTaxonomyAttribute & {
   name?: string;
   type?: ContractTaxonomyAttribute["dataType"];
+  defaultValue?: unknown;
 };
 
 export interface TaxonomyNode {
@@ -26,7 +22,7 @@ export interface TaxonomyNode {
   iconName: string;
   sortOrder: number;
   isActive: boolean;
-  level: CanonicalTaxonomyIdentity["level"];
+  level: "category" | "subcategory" | "type";
   publishable: boolean;
   listingFamily: string;
   supportedIntents: string[];
@@ -34,42 +30,192 @@ export interface TaxonomyNode {
   children?: TaxonomyNode[];
 }
 
-function identityToTaxonomyNode(
-  identity: CanonicalTaxonomyIdentity,
+const bundle = TAXONOMY_V4_PRIVATE_BUNDLE;
+const categoriesById = new Map(
+  bundle.categories.map((category) => [category.id, category]),
+);
+const publicGroupIds = new Set(
+  bundle.attributeGroups
+    .filter((group) => group.public)
+    .map((group) => group.id),
+);
+const publicAttributesById = new Map(
+  bundle.attributes
+    .filter(
+      (attribute) =>
+        publicGroupIds.has(attribute.groupId) && attribute.privacy === "public",
+    )
+    .map((attribute) => [attribute.id, attribute]),
+);
+const aliases = new Map(
+  bundle.aliases.map((alias) => [alias.alias, alias.canonicalCategoryId]),
+);
+
+function canonicalCategoryId(identity: string): string {
+  if (categoriesById.has(identity)) return identity;
+  const normalized = identity.trim().toLocaleLowerCase("fr-FR");
+  const direct = bundle.categories.find(
+    (category) =>
+      category.slug === normalized || category.sourceKey === identity,
+  );
+  return direct?.id ?? aliases.get(normalized) ?? identity;
+}
+
+function rootIdFor(categoryId: string): string {
+  let current = categoriesById.get(categoryId);
+  while (current?.parentId) current = categoriesById.get(current.parentId);
+  return current?.id ?? categoryId;
+}
+
+function listingFamilyFor(categoryId: string): string {
+  const rootId = rootIdFor(categoryId);
+  if (rootId === "vehicles") return "vehicle";
+  if (rootId === "real_estate") return "real_estate";
+  if (rootId === "jobs") return "job";
+  if (rootId === "services" || rootId === "education") return "service";
+  if (
+    rootId === "professional_equipment" ||
+    rootId === "agriculture" ||
+    rootId === "energy_transition"
+  ) {
+    return "professional_equipment";
+  }
+  return "physical_product";
+}
+
+function categoryToTaxonomyNode(
+  category: (typeof bundle.categories)[number],
 ): TaxonomyNode {
   return {
-    id: identity.id,
-    code: identity.code,
-    slug: identity.slug,
-    name: identity.labels["fr-FR"],
-    labels: identity.labels,
-    shortLabel: identity.shortLabels?.["fr-FR"],
-    parentId: identity.parentId,
-    iconName: identity.iconName,
-    sortOrder: identity.sortOrder,
-    isActive: true,
-    level: identity.level,
-    publishable: identity.publishable,
-    listingFamily: identity.listingFamily,
-    supportedIntents: [...identity.supportedIntents],
+    id: category.id,
+    code: category.sourceKey,
+    slug: category.slug,
+    name: category.labels["fr-FR"],
+    labels: category.labels,
+    shortLabel: category.labels["fr-FR"],
+    parentId: category.parentId,
+    iconName: category.iconName,
+    sortOrder: category.sortOrder,
+    isActive: category.status === "active",
+    level:
+      category.level === 0
+        ? "category"
+        : category.level === 1
+          ? "subcategory"
+          : "type",
+    publishable: category.publishable,
+    listingFamily: listingFamilyFor(category.id),
+    supportedIntents: [
+      ...new Set(
+        bundle.listingTypes
+          .filter((listingType) => listingType.categoryId === category.id)
+          .map((listingType) => listingType.intent),
+      ),
+    ],
   };
 }
 
-function identityToCategory(identity: CanonicalTaxonomyIdentity): Category {
-  const children = CANONICAL_TAXONOMY_IDENTITIES.filter(
-    (candidate) => candidate.parentId === identity.id,
-  ).map(identityToCategory);
+function categoryToLegacyCategory(
+  category: (typeof bundle.categories)[number],
+): Category {
+  const children = bundle.categories
+    .filter((candidate) => candidate.parentId === category.id)
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+    .map(categoryToLegacyCategory);
   return {
-    id: identity.id,
-    slug: identity.slug,
-    name: identity.labels["fr-FR"],
-    shortLabel: identity.shortLabels?.["fr-FR"],
-    parentId: identity.parentId,
-    iconName: identity.iconName,
-    sortOrder: identity.sortOrder,
-    isActive: true,
+    id: category.id,
+    slug: category.slug,
+    name: category.labels["fr-FR"],
+    shortLabel: category.labels["fr-FR"],
+    parentId: category.parentId,
+    iconName: category.iconName,
+    sortOrder: category.sortOrder,
+    isActive: category.status === "active",
     subcategories: children.length > 0 ? children : undefined,
   };
+}
+
+function publicAttributesForCategory(
+  categoryIdentity: string,
+): TaxonomyAttribute[] {
+  const categoryId = canonicalCategoryId(categoryIdentity);
+  const defaultListingType = bundle.listingTypes
+    .filter(
+      (listingType) =>
+        listingType.categoryId === categoryId &&
+        listingType.status === "active" &&
+        listingType.sellerEligibility.individualAllowed,
+    )
+    .sort((left, right) => {
+      const intentOrder = ["SELL", "SERVICE_OFFER", "JOB_OFFER", "BOOK"];
+      const leftOrder = intentOrder.indexOf(left.intent);
+      const rightOrder = intentOrder.indexOf(right.intent);
+      return (
+        (leftOrder === -1 ? intentOrder.length : leftOrder) -
+          (rightOrder === -1 ? intentOrder.length : rightOrder) ||
+        left.id.localeCompare(right.id)
+      );
+    })[0];
+  const bindings = bundle.bindings
+    .filter(
+      (binding) =>
+        binding.categoryId === categoryId &&
+        (!defaultListingType ||
+          binding.listingTypeId === defaultListingType.id) &&
+        binding.publicationVisible &&
+        binding.sellerEligibility.individualAllowed &&
+        publicAttributesById.has(binding.attributeId) &&
+        publicAttributesById.get(binding.attributeId)?.sellerEligibility
+          .individualAllowed,
+    )
+    .sort((left, right) => left.sortOrder - right.sortOrder);
+  const bindingByAttributeId = new Map(
+    bindings.map((binding) => [binding.attributeId, binding]),
+  );
+  const attributeIds = [
+    ...new Set(bindings.map((binding) => binding.attributeId)),
+  ];
+  return attributeIds.flatMap((attributeId) => {
+    const attribute = publicAttributesById.get(attributeId);
+    if (!attribute) return [];
+    const options = attribute.optionSetId
+      ? bundle.options
+          .filter(
+            (option) =>
+              option.optionSetId === attribute.optionSetId && option.active,
+          )
+          .sort((left, right) => left.sortOrder - right.sortOrder)
+          .map((option) => ({
+            value: option.key,
+            label: option.labels["fr-FR"],
+            labels: option.labels,
+          }))
+      : undefined;
+    return [
+      {
+        id: attribute.id,
+        code: attribute.code,
+        name: attribute.code,
+        label: attribute.labels["fr-FR"],
+        labels: attribute.labels,
+        dataType: attribute.dataType,
+        type: attribute.dataType,
+        unit: attribute.unit,
+        required: bindingByAttributeId.get(attribute.id)?.required ?? false,
+        filterable: attribute.filterable,
+        searchable: attribute.searchable,
+        sortable: attribute.sortable,
+        options,
+        validation: {
+          min: attribute.validation.min,
+          max: attribute.validation.max,
+        },
+        displayOrder: attribute.defaultDisplayOrder,
+        defaultValue: attribute.defaultValue,
+        privacy: attribute.privacy,
+      },
+    ];
+  });
 }
 
 function databaseRowToTaxonomyNode(row: any): TaxonomyNode {
@@ -87,22 +233,19 @@ function databaseRowToTaxonomyNode(row: any): TaxonomyNode {
     level: (row.level ||
       (row.parent_id ? "subcategory" : "category")) as TaxonomyNode["level"],
     publishable: Boolean(row.publishable),
-    listingFamily: row.listing_family || "physical_product",
+    listingFamily: row.listing_family || listingFamilyFor(String(row.id)),
     supportedIntents: Array.isArray(row.supported_intents)
       ? row.supported_intents
-      : [],
+      : bundle.listingTypes
+          .filter((listingType) => listingType.categoryId === row.id)
+          .map((listingType) => listingType.intent),
   };
 }
 
-/**
- * The backend demo adapter consumes the same stable identity catalog as every
- * other client. Legacy identities exist only in the database migration map and
- * are never kept as a second runtime taxonomy.
- */
-export const CANONICAL_DEMO_CATEGORIES: Category[] =
-  CANONICAL_TAXONOMY_IDENTITIES.filter((node) => !node.parentId).map(
-    identityToCategory,
-  );
+export const CANONICAL_DEMO_CATEGORIES: Category[] = bundle.categories
+  .filter((category) => !category.parentId && category.status === "active")
+  .sort((left, right) => left.sortOrder - right.sortOrder)
+  .map(categoryToLegacyCategory);
 
 export interface ITaxonomyRepository {
   getRootCategories(): Promise<Category[]>;
@@ -113,143 +256,31 @@ export interface ITaxonomyRepository {
 }
 
 export class DemoTaxonomyRepository implements ITaxonomyRepository {
-  private categories: Category[] = CANONICAL_DEMO_CATEGORIES;
-
   async getRootCategories(): Promise<Category[]> {
-    return this.categories;
+    return CANONICAL_DEMO_CATEGORIES;
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
-    const node = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(
-      CANONICAL_TAXONOMY_ALIASES[id] || id,
-    );
-    return node ? identityToTaxonomyNode(node) : null;
+    const category = categoriesById.get(canonicalCategoryId(id));
+    return category ? categoryToTaxonomyNode(category) : null;
   }
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
-    const node = CANONICAL_TAXONOMY_IDENTITIES.find(
-      (candidate) => candidate.slug === slug,
-    );
-    return this.getNodeById(
-      node?.id || CANONICAL_TAXONOMY_ALIASES[slug] || slug,
-    );
+    return this.getNodeById(slug);
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
-    return CANONICAL_TAXONOMY_IDENTITIES.filter(
-      (node) => node.parentId === nodeId,
-    ).map(identityToTaxonomyNode);
+    const parentId = canonicalCategoryId(nodeId);
+    return bundle.categories
+      .filter((category) => category.parentId === parentId)
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map(categoryToTaxonomyNode);
   }
 
   async getAttributesForCategory(
     categoryId: string,
   ): Promise<TaxonomyAttribute[]> {
-    const identity = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(
-      CANONICAL_TAXONOMY_ALIASES[categoryId] || categoryId,
-    );
-    const commonAttributes: TaxonomyAttribute[] = [
-      {
-        id: "condition",
-        code: "condition",
-        name: "condition",
-        label: "État général",
-        dataType: "select",
-        type: "select",
-        required: true,
-      },
-      {
-        id: "brand",
-        code: "brand",
-        name: "brand",
-        label: "Marque",
-        dataType: "text",
-        type: "text",
-      },
-      {
-        id: "color",
-        code: "color",
-        name: "color",
-        label: "Couleur",
-        dataType: "text",
-        type: "text",
-      },
-    ];
-
-    if (identity?.listingFamily === "vehicle") {
-      return [
-        ...commonAttributes,
-        {
-          id: "mileage",
-          code: "mileage",
-          name: "mileage",
-          label: "Kilométrage",
-          dataType: "number",
-          type: "number",
-          unit: "km",
-          required: true,
-        },
-        {
-          id: "fuel",
-          code: "fuel",
-          name: "fuel",
-          label: "Carburant",
-          dataType: "select",
-          type: "select",
-          required: true,
-        },
-        {
-          id: "year",
-          code: "year",
-          name: "year",
-          label: "Année modèle",
-          dataType: "year",
-          type: "year",
-          required: true,
-        },
-        {
-          id: "transmission",
-          code: "transmission",
-          name: "transmission",
-          label: "Boîte de vitesse",
-          dataType: "select",
-          type: "select",
-        },
-      ];
-    }
-
-    if (identity?.listingFamily === "real_estate") {
-      return [
-        {
-          id: "surface",
-          code: "surface",
-          name: "surface",
-          label: "Surface habitable",
-          dataType: "number",
-          type: "number",
-          unit: "m²",
-          required: true,
-        },
-        {
-          id: "rooms",
-          code: "rooms",
-          name: "rooms",
-          label: "Nombre de pièces",
-          dataType: "number",
-          type: "number",
-          required: true,
-        },
-        {
-          id: "dpe",
-          code: "energy_class",
-          name: "energy_class",
-          label: "Classe énergétique (DPE)",
-          dataType: "select",
-          type: "select",
-        },
-      ];
-    }
-
-    return commonAttributes;
+    return publicAttributesForCategory(categoryId);
   }
 }
 
@@ -261,24 +292,21 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         .from("categories")
         .select("*")
         .order("sort_order", { ascending: true });
-
       if (error || !data) databaseFailure("taxonomy.getRootCategories", error);
-
-      const roots = data.filter((c: any) => !c.parent_id);
+      const roots = data.filter((category: any) => !category.parent_id);
       return roots.map((root: any) => {
         const children = data
-          .filter((c: any) => c.parent_id === root.id)
-          .map((sub: any) => ({
-            id: sub.id,
-            slug: sub.slug,
-            name: sub.name,
-            shortLabel: sub.short_label || undefined,
-            parentId: sub.parent_id,
-            iconName: sub.icon_name || "Package",
-            sortOrder: sub.sort_order || 0,
-            isActive: Boolean(sub.is_active),
+          .filter((category: any) => category.parent_id === root.id)
+          .map((child: any) => ({
+            id: child.id,
+            slug: child.slug,
+            name: child.name,
+            shortLabel: child.short_label || undefined,
+            parentId: child.parent_id,
+            iconName: child.icon_name || "Package",
+            sortOrder: child.sort_order || 0,
+            isActive: Boolean(child.is_active),
           }));
-
         return {
           id: root.id,
           slug: root.slug,
@@ -298,17 +326,15 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
     try {
       const supabase = getSupabaseAdminClient();
-      const canonicalId = CANONICAL_TAXONOMY_ALIASES[id] || id;
       const { data, error } = await (supabase.from("categories" as any) as any)
         .select("*")
-        .eq("id", canonicalId)
+        .eq("id", canonicalCategoryId(id))
         .single();
       if (error) {
         if (error.code === "PGRST116") return null;
         databaseFailure("taxonomy.getNodeById", error);
       }
-      if (!data) return null;
-      return databaseRowToTaxonomyNode(data);
+      return data ? databaseRowToTaxonomyNode(data) : null;
     } catch (error) {
       databaseFailure("taxonomy.getNodeById", error);
     }
@@ -316,8 +342,8 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
     try {
-      const mappedId = CANONICAL_TAXONOMY_ALIASES[slug];
-      if (mappedId) return this.getNodeById(mappedId);
+      const mappedId = canonicalCategoryId(slug);
+      if (categoriesById.has(mappedId)) return this.getNodeById(mappedId);
       const supabase = getSupabaseAdminClient();
       const { data, error } = await (supabase.from("categories" as any) as any)
         .select("*")
@@ -327,8 +353,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         if (error.code === "PGRST116") return null;
         databaseFailure("taxonomy.getNodeBySlug", error);
       }
-      if (!data) return null;
-      return databaseRowToTaxonomyNode(data);
+      return data ? databaseRowToTaxonomyNode(data) : null;
     } catch (error) {
       databaseFailure("taxonomy.getNodeBySlug", error);
     }
@@ -340,7 +365,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
       const { data, error } = await supabase
         .from("categories")
         .select("*")
-        .eq("parent_id", nodeId)
+        .eq("parent_id", canonicalCategoryId(nodeId))
         .order("sort_order", { ascending: true });
       if (error || !data) databaseFailure("taxonomy.getChildren", error);
       return data.map(databaseRowToTaxonomyNode);
@@ -357,28 +382,28 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
       const { data, error } = await supabase
         .from("category_attributes")
         .select("*")
-        .eq("category_id", categoryId)
+        .eq("category_id", canonicalCategoryId(categoryId))
         .order("sort_order", { ascending: true });
-
-      if (error || !data)
+      if (error || !data) {
         databaseFailure("taxonomy.getAttributesForCategory", error);
-
-      return data.map((a: any) => ({
-        id: a.attribute_id || a.name,
-        code: a.code || a.name,
-        name: a.name,
-        label: a.label,
-        dataType: a.data_type || a.type || "text",
-        type: a.data_type || a.type || "text",
-        options: a.options || undefined,
-        unit: a.unit || undefined,
-        required: Boolean(a.is_required),
-        filterable: Boolean(a.is_filterable),
-        searchable: Boolean(a.is_searchable),
-        sortable: Boolean(a.is_sortable),
-        comparable: Boolean(a.is_comparable),
-        publicationGroup: a.publication_group || undefined,
-        displayOrder: a.display_order || a.sort_order || undefined,
+      }
+      return data.map((attribute: any) => ({
+        id: attribute.attribute_id || attribute.name,
+        code: attribute.code || attribute.name,
+        name: attribute.name,
+        label: attribute.label,
+        dataType: attribute.data_type || attribute.type || "text",
+        type: attribute.data_type || attribute.type || "text",
+        options: attribute.options || undefined,
+        unit: attribute.unit || undefined,
+        required: Boolean(attribute.is_required),
+        filterable: Boolean(attribute.is_filterable),
+        searchable: Boolean(attribute.is_searchable),
+        sortable: Boolean(attribute.is_sortable),
+        comparable: Boolean(attribute.is_comparable),
+        publicationGroup: attribute.publication_group || undefined,
+        displayOrder:
+          attribute.display_order || attribute.sort_order || undefined,
       }));
     } catch (error) {
       databaseFailure("taxonomy.getAttributesForCategory", error);

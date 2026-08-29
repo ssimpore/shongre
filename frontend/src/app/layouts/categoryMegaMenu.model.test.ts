@@ -4,6 +4,7 @@ import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import {
   hasCategoryMenuContent,
   loadCategoryNavigationBranch,
+  loadCategoryNavigationOverview,
 } from "./categoryMegaMenu.model";
 
 const node = (
@@ -76,5 +77,32 @@ describe("category mega-menu taxonomy projection", () => {
     ).resolves.toBeNull();
     expect(taxonomy.getChildren).not.toHaveBeenCalled();
     expect(hasCategoryMenuContent(null)).toBe(false);
+  });
+
+  it("builds the Autres panel from unpromoted canonical roots", async () => {
+    const promoted = node("promoted", "promue", 1);
+    const later = node("later", "plus-tard", 3);
+    const first = node("first", "premiere", 2);
+    const taxonomy = {
+      getRootCategories: vi
+        .fn()
+        .mockResolvedValue([promoted, later, first, first]),
+      getNodeBySlug: vi.fn((slug: string) =>
+        Promise.resolve(
+          [promoted, later, first].find((root) => root.slug === slug) ?? null,
+        ),
+      ),
+      getChildren: vi.fn().mockResolvedValue([]),
+    } as unknown as TaxonomyServiceContract;
+
+    const result = await loadCategoryNavigationOverview(
+      taxonomy,
+      new Set([promoted.slug]),
+      () => true,
+    );
+
+    expect(result.map((root) => root.id)).toEqual([first.id, later.id]);
+    expect(taxonomy.getNodeBySlug).not.toHaveBeenCalledWith(promoted.slug);
+    expect(hasCategoryMenuContent(first)).toBe(true);
   });
 });

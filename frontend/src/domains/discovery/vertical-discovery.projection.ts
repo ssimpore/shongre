@@ -54,73 +54,69 @@ function mapFacetValue(
 }
 
 const VEHICLE_FUEL: Record<string, string> = {
-  petrol: "essence",
-  electric: "electrique",
-  hybrid: "hybride",
-  plug_in_hybrid: "hybride_rechargeable",
-  lpg: "gpl",
-  hydrogen: "hydrogene",
+  essence: "petrol",
+  electrique: "electric",
+  hybride: "hybrid",
+  hybride_rechargeable: "plug_in_hybrid",
+  gpl: "lpg",
+  hydrogene: "hydrogen",
 };
 
 const VEHICLE_GEARBOX: Record<string, string> = {
-  manual: "manuelle",
-  automatic: "automatique",
-  semi_automatic: "automatique",
+  manuelle: "manual",
+  automatique: "automatic",
+  semi_automatique: "semi_automatic",
 };
 
 const PROPERTY_TYPE: Record<string, string> = {
-  apartment: "appartement",
-  house: "maison",
-  land: "terrain",
-  parking_garage: "parking",
-  commercial: "commerce",
-  office: "bureau",
-  building: "immeuble",
+  appartement: "apartment",
+  maison: "house",
+  terrain: "land",
+  parking: "parking_garage",
+  commerce: "retail",
+  bureau: "office",
+  immeuble: "building",
 };
 
 const EMPLOYMENT_CONTRACT: Record<string, string> = {
-  permanent: "cdi",
-  fixed_term: "cdd",
-  temporary: "interim",
-  apprenticeship: "alternance",
-  internship: "stage",
-  freelance: "freelance",
-  seasonal: "saisonnier",
-  part_time: "temps_partiel",
-  student: "job_etudiant",
+  cdi: "permanent",
+  cdd: "fixed_term",
+  interim: "temporary",
+  alternance: "apprenticeship",
+  stage: "internship",
+  saisonnier: "seasonal",
 };
 
 const EMPLOYMENT_SECTOR: Record<string, string> = {
-  technology: "tech_informatique",
-  commerce: "commerce_vente",
-  marketing: "marketing_com",
-  engineering: "ingenierie_industrie",
-  industry: "ingenierie_industrie",
-  construction: "btp_construction",
-  transport: "transport_logistique",
-  health_social: "sante_social",
-  hospitality: "hotellerie_restauration",
-  finance: "finance_comptabilite",
-  human_resources: "rh_recrutement",
-  education: "education_formation",
-  services: "artisanat_services",
+  technology: "it_data",
+  commerce: "sales_marketing",
+  marketing: "sales_marketing",
+  engineering: "engineering_energy",
+  industry: "engineering_energy",
+  construction: "construction",
+  transport: "transport_logistics",
+  hospitality: "retail_hospitality",
+  finance: "finance_legal",
+  human_resources: "sales_marketing",
+  education: "education_public",
+  services: "retail_hospitality",
 };
 
 const EMPLOYMENT_EXPERIENCE: Record<string, string> = {
-  beginner: "debutant",
-  junior: "debutant",
-  intermediate: "intermediaire",
-  confirmed: "confirme",
-  experienced: "confirme",
-  senior: "senior",
-  expert: "senior",
+  beginner: "none",
+  junior: "1_2",
+  intermediate: "3_5",
+  confirmed: "6_10",
+  experienced: "6_10",
+  senior: "gt_10",
+  expert: "gt_10",
 };
 
 const EMPLOYMENT_TELEWORK: Record<string, string> = {
-  remote: "full",
+  remote: "fully_remote",
   hybrid: "hybrid",
-  occasional: "occasional",
-  onsite: "none",
+  occasional: "remote_fr",
+  onsite: "onsite",
 };
 
 const EMPLOYMENT_DURATION: Record<string, string> = {
@@ -212,7 +208,20 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
     isFreeDonation: false,
     categorySlug: "vehicules",
     subCategorySlug:
-      vehicle.vehicleType === "car" ? "voitures" : vehicle.vehicleType,
+      vehicle.vehicleType === "car"
+        ? `vehicles.cars.${
+            {
+              hatchback: "city_cars",
+              sedan: "sedans",
+              estate: "estates",
+              wagon: "estates",
+              sport_utility_vehicle: "suv",
+              suv: "suv",
+              van: "utility_vans",
+              pickup_truck: "utility_vans",
+            }[facetSlug(vehicle.technical.bodyType) || ""] || "city_cars"
+          }`
+        : "vehicles.motos.motorcycles",
     categoryLabel: "Véhicules",
     subCategoryLabel:
       vehicle.vehicleType === "car" ? "Voitures" : vehicle.vehicleType,
@@ -256,34 +265,34 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
       ...vehicle.dynamicAttributes,
       vehicleType: vehicle.vehicleType,
       make: vehicle.makeLabel,
-      model: vehicle.modelLabel,
-      vehicle_brand: mapFacetValue(vehicle.makeLabel, {
+      brand: mapFacetValue(vehicle.makeLabel, {
         mercedes_benz: "mercedes",
       }),
-      vehicle_model: facetSlug(vehicle.modelLabel),
-      year: vehicle.technical.modelYear,
+      model: facetSlug(vehicle.modelLabel),
+      model_year: vehicle.technical.modelYear,
       mileage: vehicle.technical.mileage,
-      mileageUnit: vehicle.technical.mileageUnit,
+      mileage_unit: vehicle.technical.mileageUnit,
       body_type: mapFacetValue(vehicle.technical.bodyType, {
-        hatchback: "citadine",
-        sedan: "berline",
-        estate: "break",
-        wagon: "break",
+        hatchback: "city_car",
+        estate: "estate",
+        wagon: "estate",
         sport_utility_vehicle: "suv",
-        van: "utilitaire",
+        van: "van",
         pickup_truck: "pickup",
       }),
-      fuel: mapFacetValue(vehicle.technical.fuelType, VEHICLE_FUEL),
-      transmission: vehicle.technical.transmission,
-      gearbox: mapFacetValue(vehicle.technical.transmission, VEHICLE_GEARBOX),
-      critair: vehicle.technical.critAirClass,
-      registration_date: vehicle.technical.firstRegistrationDate,
+      fuel_type: mapFacetValue(vehicle.technical.fuelType, VEHICLE_FUEL),
+      transmission: mapFacetValue(
+        vehicle.technical.transmission,
+        VEHICLE_GEARBOX,
+      ),
+      critair_class: vehicle.technical.critAirClass,
+      first_registration_date: vehicle.technical.firstRegistrationDate,
       doors: vehicle.technical.doors,
       seats: vehicle.technical.seats,
       fiscal_power: vehicle.technical.fiscalPower,
-      engine_power_din: vehicle.technical.powerHp,
-      battery_capacity: vehicle.technical.batteryCapacityKwh,
-      electric_range: vehicle.technical.electricRangeKm,
+      power_hp: vehicle.technical.powerHp,
+      battery_capacity_kwh: vehicle.technical.batteryCapacityKwh,
+      electric_range_km: vehicle.technical.electricRangeKm,
       first_hand:
         vehicle.history.previousOwnerCount === undefined
           ? undefined
@@ -291,8 +300,8 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
       service_history:
         vehicle.history.maintenanceBookStatus === "complete" ||
         vehicle.dynamicAttributes.serviceHistory === true,
-      owners_count: vehicle.history.previousOwnerCount,
-      emissions_g_km: vehicle.technical.co2GramsPerKm,
+      previous_owners: vehicle.history.previousOwnerCount,
+      co2_emissions: vehicle.technical.co2GramsPerKm,
     },
     status: autoStatus(vehicle),
     createdAt: vehicle.publishedAt,
@@ -346,7 +355,20 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
     isNegotiable: false,
     isFreeDonation: false,
     categorySlug: "emploi",
-    subCategorySlug: "offres-emploi",
+    subCategorySlug: `jobs.offers.${
+      {
+        it_data: "it_data",
+        engineering_energy: "engineering_energy",
+        sales_marketing: "sales_marketing",
+        retail_hospitality: "retail_hospitality",
+        construction: "construction_trades",
+        transport_logistics: "transport_logistics",
+        health_social: "health_social",
+        education_public: "education_public",
+        finance_legal: "finance_legal",
+      }[mapFacetValue(idSuffix(job.industryId), EMPLOYMENT_SECTOR) || ""] ||
+      "it_data"
+    }`,
     categoryLabel: "Emploi",
     subCategoryLabel: "Offres d’emploi",
     condition: "not_applicable",
@@ -394,7 +416,7 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
         idSuffix(job.requiredExperienceId),
         EMPLOYMENT_EXPERIENCE,
       ),
-      telework: mapFacetValue(
+      remote_work: mapFacetValue(
         idSuffix(job.workingArrangementId),
         EMPLOYMENT_TELEWORK,
       ),
@@ -478,10 +500,10 @@ export function projectCourseOffer(
     currency: price.currency,
     isNegotiable: false,
     isFreeDonation: false,
-    categorySlug: "services",
-    subCategorySlug: "cours-particuliers",
-    categoryLabel: "Services",
-    subCategoryLabel: "Éducation & Formation",
+    categorySlug: "education",
+    subCategorySlug: "education.academic.math_science",
+    categoryLabel: "Éducation & Formation",
+    subCategoryLabel: "Cours particuliers",
     condition: "not_applicable",
     sellerId: tutor.id,
     sellerName: tutor.displayName,
@@ -605,8 +627,8 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
     property.characteristics.heatingType === "collective"
       ? "collective"
       : mapFacetValue(property.characteristics.energyType, {
-          electricity: "electric",
-          electric: "electric",
+          electricity: "electricity",
+          electric: "electricity",
           gas: "gas",
           heat_pump: "heat_pump",
           wood: "wood",
@@ -623,8 +645,16 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
     categorySlug: "immobilier",
     subCategorySlug:
       property.transactionType === "sale"
-        ? "ventes-immobilieres"
-        : "locations-immobilieres",
+        ? property.propertyType === "house"
+          ? "real_estate.sales.houses"
+          : property.propertyType === "land"
+            ? "real_estate.sales.land"
+            : "real_estate.sales.apartments"
+        : property.propertyType === "house"
+          ? "real_estate.rentals.houses"
+          : property.characteristics.isFurnished
+            ? "real_estate.rentals.furnished"
+            : "real_estate.rentals.apartments",
     categoryLabel: "Immobilier",
     subCategoryLabel:
       property.transactionType === "sale" ? "Ventes" : "Locations",
@@ -673,33 +703,33 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
       transactionType: property.transactionType,
       livingAreaSquareMeters: property.characteristics.livingAreaSquareMeters,
       property_type: mapFacetValue(property.propertyType, PROPERTY_TYPE),
-      surface: property.characteristics.livingAreaSquareMeters,
-      land_surface: property.characteristics.landAreaSquareMeters,
+      property_transaction: property.transactionType,
+      living_area: property.characteristics.livingAreaSquareMeters,
+      land_area: property.characteristics.landAreaSquareMeters,
       rooms: property.characteristics.rooms,
       bedrooms: property.characteristics.bedrooms,
       dpeClass: property.energy.dpeClass,
       furnished:
         property.characteristics.isFurnished === undefined
           ? undefined
-          : property.characteristics.isFurnished
-            ? "meuble"
-            : "non_meuble",
-      energy_class: property.energy.dpeClass,
+          : property.characteristics.isFurnished,
+      dpe_class: property.energy.dpeClass,
       ges_class: property.energy.gesClass,
       floor: property.characteristics.floor,
       elevator: property.characteristics.hasLift,
-      balcony_terrace: outdoorSpace.some((space) =>
-        ["balcony", "terrace"].includes(space),
-      ),
+      balcony: outdoorSpace.includes("balcony"),
+      terrace: outdoorSpace.includes("terrace"),
+      garden: outdoorSpace.includes("garden"),
       monthly_rent:
         property.financials.period === "month"
           ? property.financials.price.amountMinor / 100
           : undefined,
       availability_date: property.characteristics.availabilityDate,
       total_floors: property.characteristics.floorCount,
-      heating_source: heatingSource,
-      outdoor_space: outdoorSpace,
-      parking,
+      heating_type: property.characteristics.heatingType,
+      energy_source: heatingSource,
+      amenities,
+      parking: parking.length > 0,
     },
     status: propertyStatus(property),
     createdAt: property.publishedAt || property.createdAt,

@@ -28,9 +28,9 @@ describe("canonical vertical discovery projection", () => {
       publisherType: "professional",
       attributes: {
         canonicalPath: "/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019",
-        vehicle_brand: "peugeot",
-        fuel: "diesel",
-        gearbox: "manuelle",
+        brand: "peugeot",
+        fuel_type: "diesel",
+        transmission: "manual",
       },
     });
     expect(
@@ -39,9 +39,9 @@ describe("canonical vertical discovery projection", () => {
       categorySlug: "emploi",
       attributes: {
         canonicalPath: `/emploi/offre/${EMPLOYMENT_DEMO_JOBS[0].slug}`,
-        contract_type: "cdi",
-        job_sector: "tech_informatique",
-        telework: "hybrid",
+        contract_type: "permanent",
+        job_sector: "it_data",
+        remote_work: "hybrid",
       },
     });
     expect(
@@ -61,9 +61,9 @@ describe("canonical vertical discovery projection", () => {
       categorySlug: "immobilier",
       attributes: {
         canonicalPath: "/immo/bien/appartement-meuble-lyon-jean-mace",
-        property_type: "appartement",
-        furnished: "meuble",
-        heating_source: "collective",
+        property_type: "apartment",
+        furnished: true,
+        heating_type: "collective",
       },
     });
   });

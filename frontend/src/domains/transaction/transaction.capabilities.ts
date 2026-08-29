@@ -64,6 +64,7 @@ export class TransactionCapabilitiesService {
       directPurchaseDisabledReason =
         "L'achat en ligne direct n'est pas applicable à cette catégorie.";
     } else if (
+      listingIntent === "DONATE" ||
       listingIntent === "GIVE" ||
       listingIntent === "EXCHANGE" ||
       price <= 0
@@ -102,7 +103,7 @@ export class TransactionCapabilitiesService {
       canReserve = false;
       reservationDisabledReason =
         "La réservation n'est pas applicable aux offres d'emploi.";
-    } else if (listingIntent === "GIVE") {
+    } else if (listingIntent === "DONATE" || listingIntent === "GIVE") {
       canReserve = false;
       reservationDisabledReason =
         "Les dons gratuits ne nécessitent pas de réservation payante.";

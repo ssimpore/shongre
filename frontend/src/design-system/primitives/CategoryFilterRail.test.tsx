@@ -24,7 +24,7 @@ describe("CategoryFilterRail Primitive", () => {
     // Common requested categories: Automobile/Véhicules, Immobilier, High-Tech/Multimédia
     expect(slugs).toContain("vehicules");
     expect(slugs).toContain("immobilier");
-    expect(slugs).toContain("multimedia-electronique");
+    expect(slugs).toContain("electronique");
 
     const vehiculesCat = TAXONOMY.find((c) => c.slug === "vehicules");
     expect(vehiculesCat).toBeDefined();
@@ -34,7 +34,7 @@ describe("CategoryFilterRail Primitive", () => {
     expect(immoCat).toBeDefined();
     expect(getTaxonomyLabel(immoCat!, "compact")).toBeTruthy();
 
-    const techCat = TAXONOMY.find((c) => c.slug === "multimedia-electronique");
+    const techCat = TAXONOMY.find((c) => c.slug === "electronique");
     expect(techCat).toBeDefined();
     expect(getTaxonomyLabel(techCat!, "compact")).toBeTruthy();
   });

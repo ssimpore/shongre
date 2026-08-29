@@ -73,7 +73,7 @@ describe("Publication Wizard & Multi-Market Resolution", () => {
   it("validates publication readiness correctly", () => {
     const validation = marketService.validateListingForMarkets({
       draft: {
-        taxonomyNodeId: "home_garden.furniture.sofas",
+        taxonomyNodeId: "home_garden.furniture",
         title: "Table à manger en chêne",
         marketCode: "FR",
         selectedMarkets: ["FR"],

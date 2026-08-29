@@ -7,7 +7,12 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import type { CountryConfig } from "@shongre/contracts";
+import {
+  resolveMarketContext,
+  type CountryConfig,
+  type MarketContext as ResolvedMarketContext,
+} from "@shongre/contracts";
+import { mobileEnvironment } from "@/config/environment";
 import {
   isSelectableMobileMarket,
   mobileMarketCountries,
@@ -16,6 +21,7 @@ import {
 
 interface MarketContextValue {
   activeMarket: CountryConfig;
+  marketContext: ResolvedMarketContext;
   countries: readonly CountryConfig[];
   selectMarket(code: string): Promise<void>;
   isSelectable(country: CountryConfig): boolean;
@@ -46,14 +52,34 @@ export function MarketProvider({ children }: PropsWithChildren) {
     setActiveMarket(await mobileMarketStore.select(code));
   }, []);
 
+  const marketContext = useMemo(() => {
+    const infrastructure = {
+      globalDomain: mobileEnvironment.urls.internationalApp.host,
+      franceDomain: mobileEnvironment.urls.franceApp.host,
+      canonicalProtocol:
+        mobileEnvironment.urls.franceApp.protocol === "http:"
+          ? "http"
+          : "https",
+    } as const;
+    return resolveMarketContext({
+      hostname: activeMarket.isDefault
+        ? infrastructure.franceDomain
+        : infrastructure.globalDomain,
+      pathname: activeMarket.basePath,
+      infrastructure,
+      allowDevelopmentHosts: false,
+    });
+  }, [activeMarket]);
+
   const value = useMemo(
     () => ({
       activeMarket,
+      marketContext,
       countries: mobileMarketCountries,
       selectMarket,
       isSelectable: isSelectableMobileMarket,
     }),
-    [activeMarket, selectMarket],
+    [activeMarket, marketContext, selectMarket],
   );
 
   return (

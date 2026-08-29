@@ -27,7 +27,11 @@ import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data"
 import { resolveShippedLocale } from "../../i18n/locale";
 import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
 import { marketResolver } from "../../domains/market/market.resolver";
-import { getCountryConfig, type MarketContext } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  resolveMarketContext,
+  type MarketContext,
+} from "@shongre/contracts";
 import { buildRuntimeMarketUrl } from "../../domains/market/market-routing";
 import {
   currentRuntimeInternalPath,
@@ -139,6 +143,23 @@ export const MarketLocationProvider: React.FC<{
     if (!hasRestoredPreferences) return requestConfig;
     return marketService.getEffectiveConfig(activeMarket.code);
   }, [activeMarket, hasRestoredPreferences, marketDataVersion, requestConfig]);
+
+  const resolvedMarketContext = useMemo<MarketContext | null>(() => {
+    if (initialMarketContext?.countryCode === activeMarket.code) {
+      return initialMarketContext;
+    }
+    const country = getCountryConfig(activeMarket.code);
+    if (!country) return null;
+    const hostname = country.isDefault
+      ? RUNTIME_MARKET_INFRASTRUCTURE.franceDomain
+      : RUNTIME_MARKET_INFRASTRUCTURE.globalDomain;
+    return resolveMarketContext({
+      hostname,
+      pathname: country.basePath,
+      infrastructure: RUNTIME_MARKET_INFRASTRUCTURE,
+      allowDevelopmentHosts: false,
+    });
+  }, [activeMarket.code, initialMarketContext]);
 
   const availableMarkets = useMemo<Market[]>(() => {
     if (!hasRestoredPreferences) {
@@ -418,7 +439,7 @@ export const MarketLocationProvider: React.FC<{
   return (
     <MarketLocationContext.Provider
       value={{
-        marketContext: initialMarketContext || null,
+        marketContext: resolvedMarketContext,
         activeMarket,
         effectiveConfig,
         availableMarkets,

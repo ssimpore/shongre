@@ -51,8 +51,10 @@ function buildRequestHeaders(
   return headers;
 }
 
+type ApiRequestPath = ApiPath | `${ApiPath}?${string}`;
+
 export async function apiRequest<T>(
-  path: ApiPath,
+  path: ApiRequestPath,
   init: RequestInit = {},
   requestedMarketCode?: string,
 ): Promise<T> {

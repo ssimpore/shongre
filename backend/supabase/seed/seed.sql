@@ -3,3 +3,4 @@
 \ir courses.sql
 \ir auto.sql
 \ir real-estate.sql
+\ir taxonomy-v4.generated.sql

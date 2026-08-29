@@ -184,6 +184,65 @@ describe("API v1 Endpoints Integration", () => {
     expect(categories.length).toBeGreaterThan(0);
   });
 
+  it("serves taxonomy v4 through explicit market-scoped typed endpoints", async () => {
+    for (const [marketCode, locale] of [
+      ["FR", "fr-FR"],
+      ["BE", "fr-BE"],
+      ["CH", "fr-CH"],
+    ]) {
+      const treeResponse = await fetch(
+        `${baseUrl}/api/v1/taxonomy/v4/tree?locale=${locale}&version=4.0.0`,
+        { headers: { "X-Shongre-Market": marketCode } },
+      );
+      expect(treeResponse.status).toBe(200);
+      const tree = await treeResponse.json();
+      expect(tree).toMatchObject({
+        taxonomyVersion: "4.0.0",
+        marketCode,
+        locale,
+      });
+      expect(tree.items).toHaveLength(294);
+      expect(
+        tree.items.some((node: any) => node.sourceKey === "vehicles.cars.suv"),
+      ).toBe(true);
+    }
+
+    const resolvedResponse = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v4/resolve?category=vehicles.cars.suv&listingTypeId=vehicles.cars.suv.listing&sellerType=individual&locale=fr-FR`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    );
+    expect(resolvedResponse.status).toBe(200);
+    const resolved = await resolvedResponse.json();
+    expect(resolved.category.id).toBe("vehicles.cars.suv");
+    expect(resolved.attributes.length).toBeGreaterThan(0);
+    expect(resolved.projections.cardFields.length).toBeGreaterThan(0);
+
+    const optionResponse = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v4/options/brand?limit=5`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    );
+    expect(optionResponse.status).toBe(200);
+    expect((await optionResponse.json()).items.length).toBeLessThanOrEqual(5);
+  });
+
+  it("fails closed for unavailable or mismatched taxonomy markets", async () => {
+    const comingSoonResponse = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v4/tree`,
+      { headers: { "X-Shongre-Market": "SN" } },
+    );
+    expect(comingSoonResponse.status).toBe(409);
+    expect((await comingSoonResponse.json()).error.code).toBe(
+      "TAXONOMY_MARKET_UNAVAILABLE",
+    );
+
+    const mismatchResponse = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v4/tree?market=BE`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    );
+    expect(mismatchResponse.status).toBe(409);
+    expect((await mismatchResponse.json()).error.code).toBe("CONFLICT");
+  });
+
   it("GET /api/v1/listings returns paginated listings", async () => {
     const res = await fetch(`${baseUrl}/api/v1/listings?marketCode=FR`);
     expect(res.status).toBe(200);

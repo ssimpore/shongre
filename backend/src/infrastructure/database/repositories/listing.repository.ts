@@ -496,6 +496,8 @@ export class PostgresListingRepository implements IListingRepository {
           }
         : undefined,
       categoryId: row.category_id,
+      listingTypeId: row.listing_type_id || undefined,
+      listingIntent: row.listing_intent || undefined,
       title: row.title,
       description: row.description,
       price: effectivePublication
@@ -768,6 +770,8 @@ export class PostgresListingRepository implements IListingRepository {
       subscription_id: listing.subscriptionId || null,
       entitlement_snapshot: listing.entitlementSnapshot || {},
       category_id: listing.categoryId,
+      listing_type_id: listing.listingTypeId || null,
+      listing_intent: listing.listingIntent || null,
       title: listing.title,
       description: listing.description,
       price: listing.price,

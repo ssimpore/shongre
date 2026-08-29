@@ -6,10 +6,15 @@
 import { taxonomyService } from "./taxonomy.service";
 import { getTaxonomyLabel } from "./taxonomy.labels";
 import { TaxonomyNode } from "./taxonomy.types";
-import { CANONICAL_TAXONOMY_ALIASES } from "@shongre/contracts/taxonomy-catalog";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 
 export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
-  ...CANONICAL_TAXONOMY_ALIASES,
+  ...Object.fromEntries(
+    getTaxonomyV4PublicBundle().aliases.map((alias) => [
+      alias.alias,
+      alias.canonicalCategoryId,
+    ]),
+  ),
 };
 
 export interface TaxonomyMigrationListingReference {
@@ -57,7 +62,8 @@ export class TaxonomyMigration {
     // 3. Legacy mapping
     const mappedId = LEGACY_CATEGORY_SLUG_MAP[clean];
     if (mappedId) {
-      return taxonomyService.getNode(mappedId);
+      const mapped = taxonomyService.getNode(mappedId);
+      if (mapped) return mapped;
     }
 
     // Admin-managed aliases remain attached to their canonical record. They

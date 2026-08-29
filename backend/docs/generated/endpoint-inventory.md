@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **442**
-- Specification SHA-256: `cda0ca63bfa39d0b`
+- Operations: **445**
+- Specification SHA-256: `270917abfdf9fb0c`
 
 ## account
 
@@ -678,6 +678,9 @@
 | `GET` | `/taxonomy/root` | `getTaxonomyRoot` | `public` | — | `200` |
 | `GET` | `/taxonomy/search-filters` | `getTaxonomySearchFilters` | `public` | — | `200` |
 | `GET` | `/taxonomy/slug/{slug}` | `getTaxonomySlugBySlug` | `public` | — | `200` |
+| `GET` | `/taxonomy/v4/options/{optionSetId}` | `getTaxonomyV4Options` | `public` | — | `200` |
+| `GET` | `/taxonomy/v4/resolve` | `resolveTaxonomyV4PublicationSchema` | `public` | — | `200` |
+| `GET` | `/taxonomy/v4/tree` | `getTaxonomyV4Tree` | `public` | — | `200` |
 
 ## users
 

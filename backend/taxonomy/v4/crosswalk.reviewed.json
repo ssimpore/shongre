@@ -1,0 +1,3087 @@
+{
+  "version": "4.0.0",
+  "reviewStatus": "reviewed",
+  "reviewedAt": "2026-08-29T00:00:00.000Z",
+  "baselineComparison": {
+    "previousCounts": {
+      "categories": 154,
+      "listingTypes": 389,
+      "attributes": 354
+    },
+    "exactIdsPreserved": {
+      "categories": 40,
+      "listingTypes": 0,
+      "attributes": 73
+    },
+    "added": {
+      "categories": 254,
+      "listingTypes": 208,
+      "attributes": 250
+    },
+    "removedOrRedirected": {
+      "categories": 114,
+      "listingTypes": 389,
+      "attributes": 281
+    }
+  },
+  "workbookCategories": [
+    {
+      "sourceId": "vehicles",
+      "canonicalId": "vehicles",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "real_estate",
+      "canonicalId": "real_estate",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "jobs",
+      "canonicalId": "jobs",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "services",
+      "canonicalId": "services",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "fashion",
+      "canonicalId": "fashion",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden",
+      "canonicalId": "home_garden",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "electronics",
+      "canonicalId": "electronics",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "leisure_culture",
+      "canonicalId": "leisure_culture",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "holidays",
+      "canonicalId": "holidays",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education",
+      "canonicalId": "education",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets",
+      "canonicalId": "pets",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "professional_equipment",
+      "canonicalId": "professional_equipment",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture",
+      "canonicalId": "agriculture",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "baby_family",
+      "canonicalId": "baby_family",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors",
+      "canonicalId": "sports_outdoors",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "events_tickets",
+      "canonicalId": "events_tickets",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "free_exchange",
+      "canonicalId": "free_exchange",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition",
+      "canonicalId": "energy_transition",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.cars",
+      "canonicalId": "vehicles.cars",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.cars.city_cars",
+      "canonicalId": "vehicles.cars.city_cars",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.sedans",
+      "canonicalId": "vehicles.cars.sedans",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.suv",
+      "canonicalId": "vehicles.cars.suv",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.cars.estates",
+      "canonicalId": "vehicles.cars.estates",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.coupes_convertibles",
+      "canonicalId": "vehicles.cars.coupes_convertibles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.mpv",
+      "canonicalId": "vehicles.cars.mpv",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.sports_classic",
+      "canonicalId": "vehicles.cars.sports_classic",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cars.utility_vans",
+      "canonicalId": "vehicles.cars.utility_vans",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.motos",
+      "canonicalId": "vehicles.motos",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.motos.motorcycles",
+      "canonicalId": "vehicles.motos.motorcycles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.motos.scooters",
+      "canonicalId": "vehicles.motos.scooters",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.motos.trail_enduro",
+      "canonicalId": "vehicles.motos.trail_enduro",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.motos.electric_two_wheelers",
+      "canonicalId": "vehicles.motos.electric_two_wheelers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.motos.quads",
+      "canonicalId": "vehicles.motos.quads",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.caravaning",
+      "canonicalId": "vehicles.caravaning",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.caravaning.motorhomes",
+      "canonicalId": "vehicles.caravaning.motorhomes",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.caravaning.caravans",
+      "canonicalId": "vehicles.caravaning.caravans",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.caravaning.converted_vans",
+      "canonicalId": "vehicles.caravaning.converted_vans",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.utility",
+      "canonicalId": "vehicles.utility",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.utility.vans",
+      "canonicalId": "vehicles.utility.vans",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.utility.pickups_minibuses",
+      "canonicalId": "vehicles.utility.pickups_minibuses",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.nautical",
+      "canonicalId": "vehicles.nautical",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.nautical.motorboats",
+      "canonicalId": "vehicles.nautical.motorboats",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.nautical.sailboats",
+      "canonicalId": "vehicles.nautical.sailboats",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.nautical.personal_watercraft",
+      "canonicalId": "vehicles.nautical.personal_watercraft",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.nautical.small_craft",
+      "canonicalId": "vehicles.nautical.small_craft",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cycles",
+      "canonicalId": "vehicles.cycles",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.cycles.bicycles",
+      "canonicalId": "vehicles.cycles.bicycles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cycles.electric_bikes",
+      "canonicalId": "vehicles.cycles.electric_bikes",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cycles.cargo_bikes",
+      "canonicalId": "vehicles.cycles.cargo_bikes",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.cycles.scooters",
+      "canonicalId": "vehicles.cycles.scooters",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.parts",
+      "canonicalId": "vehicles.parts",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "vehicles.parts.auto_parts",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.parts.moto_parts",
+      "canonicalId": "vehicles.parts.moto_parts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "vehicles.parts.caravan_nautical_parts",
+      "canonicalId": "vehicles.parts.caravan_nautical_parts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales",
+      "canonicalId": "real_estate.sales",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "real_estate.sales.apartments",
+      "canonicalId": "real_estate.sales.apartments",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales.houses",
+      "canonicalId": "real_estate.sales.houses",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales.land",
+      "canonicalId": "real_estate.sales.land",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales.buildings",
+      "canonicalId": "real_estate.sales.buildings",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales.new_developments",
+      "canonicalId": "real_estate.sales.new_developments",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.sales.life_annuity",
+      "canonicalId": "real_estate.sales.life_annuity",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.rentals",
+      "canonicalId": "real_estate.rentals",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "real_estate.rentals.apartments",
+      "canonicalId": "real_estate.rentals.apartments",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.rentals.houses",
+      "canonicalId": "real_estate.rentals.houses",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.rentals.furnished",
+      "canonicalId": "real_estate.rentals.furnished",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.rentals.student",
+      "canonicalId": "real_estate.rentals.student",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.rentals.rooms",
+      "canonicalId": "real_estate.rentals.rooms",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.shared",
+      "canonicalId": "real_estate.shared",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.shared.room_offer",
+      "canonicalId": "real_estate.shared.room_offer",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.shared.room_search",
+      "canonicalId": "real_estate.shared.room_search",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.commercial",
+      "canonicalId": "real_estate.commercial",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "real_estate.commercial.offices",
+      "canonicalId": "real_estate.commercial.offices",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.commercial.retail",
+      "canonicalId": "real_estate.commercial.retail",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.commercial.warehouses",
+      "canonicalId": "real_estate.commercial.warehouses",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.commercial.business_assets",
+      "canonicalId": "real_estate.commercial.business_assets",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.parking",
+      "canonicalId": "real_estate.parking",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "real_estate.parking.sale",
+      "canonicalId": "real_estate.parking.sale",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "real_estate.parking.rent",
+      "canonicalId": "real_estate.parking.rent",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers",
+      "canonicalId": "jobs.offers",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "jobs.offers.it_data",
+      "canonicalId": "jobs.offers.it_data",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.engineering_energy",
+      "canonicalId": "jobs.offers.engineering_energy",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.sales_marketing",
+      "canonicalId": "jobs.offers.sales_marketing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.retail_hospitality",
+      "canonicalId": "jobs.offers.retail_hospitality",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.construction_trades",
+      "canonicalId": "jobs.offers.construction_trades",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.transport_logistics",
+      "canonicalId": "jobs.offers.transport_logistics",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.health_social",
+      "canonicalId": "jobs.offers.health_social",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.education_public",
+      "canonicalId": "jobs.offers.education_public",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.offers.finance_legal",
+      "canonicalId": "jobs.offers.finance_legal",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.candidates",
+      "canonicalId": "jobs.candidates",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.candidates.candidate_profile",
+      "canonicalId": "jobs.candidates.candidate_profile",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.candidates.student_apprentice",
+      "canonicalId": "jobs.candidates.student_apprentice",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.training",
+      "canonicalId": "jobs.training",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "jobs.training.training_offer",
+      "canonicalId": "jobs.training.training_offer",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services",
+      "canonicalId": "services.local_services",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.home_repairs",
+      "canonicalId": "services.local_services.home_repairs",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.cleaning_home_help",
+      "canonicalId": "services.local_services.cleaning_home_help",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.moving",
+      "canonicalId": "services.local_services.moving",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.gardening",
+      "canonicalId": "services.local_services.gardening",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.vehicle_repair",
+      "canonicalId": "services.local_services.vehicle_repair",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.electronics_repair",
+      "canonicalId": "services.local_services.electronics_repair",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.digital_it",
+      "canonicalId": "services.local_services.digital_it",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.administrative",
+      "canonicalId": "services.local_services.administrative",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.personal_care",
+      "canonicalId": "services.local_services.personal_care",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.pet_services",
+      "canonicalId": "services.local_services.pet_services",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.event_services",
+      "canonicalId": "services.local_services.event_services",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "services.local_services.other_services",
+      "canonicalId": "services.local_services.other_services",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.clothing",
+      "canonicalId": "fashion.clothing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.clothing.women",
+      "canonicalId": "fashion.clothing.women",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.clothing.men",
+      "canonicalId": "fashion.clothing.men",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.clothing.unisex",
+      "canonicalId": "fashion.clothing.unisex",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.clothing.luxury_clothing",
+      "canonicalId": "fashion.clothing.luxury_clothing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.shoes",
+      "canonicalId": "fashion.shoes",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "fashion.shoes.women",
+      "canonicalId": "fashion.shoes.women",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.shoes.men",
+      "canonicalId": "fashion.shoes.men",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.shoes.sport",
+      "canonicalId": "fashion.shoes.sport",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.accessories",
+      "canonicalId": "fashion.accessories",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.accessories.bags",
+      "canonicalId": "fashion.accessories.bags",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.accessories.accessories",
+      "canonicalId": "fashion.accessories.accessories",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.accessories.eyewear",
+      "canonicalId": "fashion.accessories.eyewear",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.jewelry",
+      "canonicalId": "fashion.jewelry",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "fashion.jewelry.watches",
+      "canonicalId": "fashion.jewelry.watches",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "fashion.jewelry.jewelry",
+      "canonicalId": "fashion.jewelry.jewelry",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.furniture",
+      "canonicalId": "home_garden.furniture",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.furniture.sofas",
+      "canonicalId": "home_garden.furniture.sofas",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.furniture.tables",
+      "canonicalId": "home_garden.furniture.tables",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.furniture.beds",
+      "canonicalId": "home_garden.furniture.beds",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.furniture.storage",
+      "canonicalId": "home_garden.furniture.storage",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.appliances",
+      "canonicalId": "home_garden.appliances",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.appliances.large",
+      "canonicalId": "home_garden.appliances.large",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.appliances.small",
+      "canonicalId": "home_garden.appliances.small",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.appliances.climate",
+      "canonicalId": "home_garden.appliances.climate",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.decoration",
+      "canonicalId": "home_garden.decoration",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.decoration.decor",
+      "canonicalId": "home_garden.decoration.decor",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.decoration.tableware",
+      "canonicalId": "home_garden.decoration.tableware",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.decoration.linens",
+      "canonicalId": "home_garden.decoration.linens",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.diy_garden",
+      "canonicalId": "home_garden.diy_garden",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "home_garden.diy_garden.tools",
+      "canonicalId": "home_garden.diy_garden.tools",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.diy_garden.materials",
+      "canonicalId": "home_garden.diy_garden.materials",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.diy_garden.garden",
+      "canonicalId": "home_garden.diy_garden.garden",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.school_office",
+      "canonicalId": "home_garden.school_office",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "home_garden.school_office.school",
+      "canonicalId": "home_garden.school_office.school",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.computers",
+      "canonicalId": "electronics.computers",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "electronics.computers.laptops",
+      "canonicalId": "electronics.computers.laptops",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.computers.desktops",
+      "canonicalId": "electronics.computers.desktops",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.computers.components",
+      "canonicalId": "electronics.computers.components",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smartphones",
+      "canonicalId": "electronics.smartphones",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "electronics.smartphones.phones",
+      "canonicalId": "electronics.smartphones.phones",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smartphones.wearables",
+      "canonicalId": "electronics.smartphones.wearables",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smartphones.phone_accessories",
+      "canonicalId": "electronics.smartphones.phone_accessories",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.audio_hifi",
+      "canonicalId": "electronics.audio_hifi",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "electronics.audio_hifi.tv_video",
+      "canonicalId": "electronics.audio_hifi.tv_video",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.audio_hifi.photo",
+      "canonicalId": "electronics.audio_hifi.photo",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.audio_hifi.audio",
+      "canonicalId": "electronics.audio_hifi.audio",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.gaming",
+      "canonicalId": "electronics.gaming",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "electronics.gaming.consoles",
+      "canonicalId": "electronics.gaming.consoles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.gaming.video_games",
+      "canonicalId": "electronics.gaming.video_games",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smart_home",
+      "canonicalId": "electronics.smart_home",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smart_home.home_automation",
+      "canonicalId": "electronics.smart_home.home_automation",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "electronics.smart_home.tablets_readers",
+      "canonicalId": "electronics.smart_home.tablets_readers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.books_media",
+      "canonicalId": "leisure_culture.books_media",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.books_media.books",
+      "canonicalId": "leisure_culture.books_media.books",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.books_media.music_media",
+      "canonicalId": "leisure_culture.books_media.music_media",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.books_media.films",
+      "canonicalId": "leisure_culture.books_media.films",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.instruments",
+      "canonicalId": "leisure_culture.instruments",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "leisure_culture.instruments.instruments",
+      "canonicalId": "leisure_culture.instruments.instruments",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.instruments.dj_studio",
+      "canonicalId": "leisure_culture.instruments.dj_studio",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.collection",
+      "canonicalId": "leisure_culture.collection",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.collection.antiques",
+      "canonicalId": "leisure_culture.collection.antiques",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.collection.collectibles",
+      "canonicalId": "leisure_culture.collection.collectibles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.collection.model_making",
+      "canonicalId": "leisure_culture.collection.model_making",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.toys_creative",
+      "canonicalId": "leisure_culture.toys_creative",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.toys_creative.toys_games",
+      "canonicalId": "leisure_culture.toys_creative.toys_games",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.toys_creative.creative_hobbies",
+      "canonicalId": "leisure_culture.toys_creative.creative_hobbies",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.gastronomy",
+      "canonicalId": "leisure_culture.gastronomy",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "leisure_culture.gastronomy.wine_gastronomy",
+      "canonicalId": "leisure_culture.gastronomy.wine_gastronomy",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation",
+      "canonicalId": "holidays.accommodation",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation.apartment_studio",
+      "canonicalId": "holidays.accommodation.apartment_studio",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation.house_villa",
+      "canonicalId": "holidays.accommodation.house_villa",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation.gite",
+      "canonicalId": "holidays.accommodation.gite",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation.guest_house",
+      "canonicalId": "holidays.accommodation.guest_house",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.accommodation.unusual",
+      "canonicalId": "holidays.accommodation.unusual",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.outdoor",
+      "canonicalId": "holidays.outdoor",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.outdoor.camping",
+      "canonicalId": "holidays.outdoor.camping",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.outdoor.mobile_home",
+      "canonicalId": "holidays.outdoor.mobile_home",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "holidays.outdoor.boat_stay",
+      "canonicalId": "holidays.outdoor.boat_stay",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.academic",
+      "canonicalId": "education.academic",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.academic.math_science",
+      "canonicalId": "education.academic.math_science",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.academic.languages_school",
+      "canonicalId": "education.academic.languages_school",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.academic.humanities",
+      "canonicalId": "education.academic.humanities",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.academic.primary_homework",
+      "canonicalId": "education.academic.primary_homework",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.languages",
+      "canonicalId": "education.languages",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.languages.english",
+      "canonicalId": "education.languages.english",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.languages.french_fle",
+      "canonicalId": "education.languages.french_fle",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.languages.other_languages",
+      "canonicalId": "education.languages.other_languages",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.music_arts",
+      "canonicalId": "education.music_arts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.music_arts.music",
+      "canonicalId": "education.music_arts.music",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.music_arts.visual_arts",
+      "canonicalId": "education.music_arts.visual_arts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.professional",
+      "canonicalId": "education.professional",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.professional.digital_data",
+      "canonicalId": "education.professional.digital_data",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.professional.business",
+      "canonicalId": "education.professional.business",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "education.professional.exam_preparation",
+      "canonicalId": "education.professional.exam_preparation",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals",
+      "canonicalId": "pets.animals",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.dogs",
+      "canonicalId": "pets.animals.dogs",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.cats",
+      "canonicalId": "pets.animals.cats",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.horses",
+      "canonicalId": "pets.animals.horses",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.birds",
+      "canonicalId": "pets.animals.birds",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.fish",
+      "canonicalId": "pets.animals.fish",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.animals.small_animals",
+      "canonicalId": "pets.animals.small_animals",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.accessories",
+      "canonicalId": "pets.accessories",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "pets.accessories.supplies",
+      "canonicalId": "pets.accessories.supplies",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.accessories.equestrian_equipment",
+      "canonicalId": "pets.accessories.equestrian_equipment",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.lost_found",
+      "canonicalId": "pets.lost_found",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.lost_found.lost",
+      "canonicalId": "pets.lost_found.lost",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "pets.lost_found.found",
+      "canonicalId": "pets.lost_found.found",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_btp.machinery",
+      "canonicalId": "professional_btp.machinery",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "professional_btp.machinery.heavy_machinery",
+      "canonicalId": "professional_btp.machinery.heavy_machinery",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_btp.machinery.site_tools",
+      "canonicalId": "professional_btp.machinery.site_tools",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_btp.machinery.handling_lifting",
+      "canonicalId": "professional_btp.machinery.handling_lifting",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.industrial",
+      "canonicalId": "professional_equipment.industrial",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.industrial.machines",
+      "canonicalId": "professional_equipment.industrial.machines",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.industrial.workshop",
+      "canonicalId": "professional_equipment.industrial.workshop",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_btp.catering",
+      "canonicalId": "professional_btp.catering",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "professional_btp.catering.kitchen",
+      "canonicalId": "professional_btp.catering.kitchen",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_btp.catering.hotel",
+      "canonicalId": "professional_btp.catering.hotel",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.office_retail",
+      "canonicalId": "professional_equipment.office_retail",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.office_retail.office",
+      "canonicalId": "professional_equipment.office_retail.office",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.office_retail.retail",
+      "canonicalId": "professional_equipment.office_retail.retail",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.office_retail.pro_it",
+      "canonicalId": "professional_equipment.office_retail.pro_it",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.medical",
+      "canonicalId": "professional_equipment.medical",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.medical.medical",
+      "canonicalId": "professional_equipment.medical.medical",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "professional_equipment.medical.care_furniture",
+      "canonicalId": "professional_equipment.medical.care_furniture",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.tractors",
+      "canonicalId": "agriculture.tractors",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "agriculture.tractors.tractors",
+      "canonicalId": "agriculture.tractors.tractors",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.tractors.utility_vehicles",
+      "canonicalId": "agriculture.tractors.utility_vehicles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.crop",
+      "canonicalId": "agriculture.crop",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.crop.soil",
+      "canonicalId": "agriculture.crop.soil",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.crop.harvest",
+      "canonicalId": "agriculture.crop.harvest",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.crop.irrigation",
+      "canonicalId": "agriculture.crop.irrigation",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.livestock",
+      "canonicalId": "agriculture.livestock",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.livestock.livestock_equipment",
+      "canonicalId": "agriculture.livestock.livestock_equipment",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.forestry",
+      "canonicalId": "agriculture.forestry",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.forestry.forestry",
+      "canonicalId": "agriculture.forestry.forestry",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "agriculture.forestry.green_spaces",
+      "canonicalId": "agriculture.forestry.green_spaces",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.equipment",
+      "canonicalId": "baby_family.equipment",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.equipment.strollers",
+      "canonicalId": "baby_family.equipment.strollers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.equipment.car_seats",
+      "canonicalId": "baby_family.equipment.car_seats",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.equipment.feeding_care",
+      "canonicalId": "baby_family.equipment.feeding_care",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.furniture",
+      "canonicalId": "baby_family.furniture",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.furniture.nursery",
+      "canonicalId": "baby_family.furniture.nursery",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.clothing",
+      "canonicalId": "baby_family.clothing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.clothing.baby_clothing",
+      "canonicalId": "baby_family.clothing.baby_clothing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.clothing.baby_textiles",
+      "canonicalId": "baby_family.clothing.baby_textiles",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.maternity",
+      "canonicalId": "baby_family.maternity",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.maternity.maternity",
+      "canonicalId": "baby_family.maternity.maternity",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "baby_family.maternity.early_learning",
+      "canonicalId": "baby_family.maternity.early_learning",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.fitness",
+      "canonicalId": "sports_outdoors.fitness",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "sports_outdoors.fitness.cardio",
+      "canonicalId": "sports_outdoors.fitness.cardio",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.fitness.strength",
+      "canonicalId": "sports_outdoors.fitness.strength",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor",
+      "canonicalId": "sports_outdoors.outdoor",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor.hiking_camping",
+      "canonicalId": "sports_outdoors.outdoor.hiking_camping",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor.climbing",
+      "canonicalId": "sports_outdoors.outdoor.climbing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor.cycling_equipment",
+      "canonicalId": "sports_outdoors.outdoor.cycling_equipment",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.water_winter",
+      "canonicalId": "sports_outdoors.water_winter",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.water_winter.winter_sports",
+      "canonicalId": "sports_outdoors.water_winter.winter_sports",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.water_winter.water_sports",
+      "canonicalId": "sports_outdoors.water_winter.water_sports",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.team_racket",
+      "canonicalId": "sports_outdoors.team_racket",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.team_racket.team_sports",
+      "canonicalId": "sports_outdoors.team_racket.team_sports",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.team_racket.racket_sports",
+      "canonicalId": "sports_outdoors.team_racket.racket_sports",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.equestrian_fishing",
+      "canonicalId": "sports_outdoors.equestrian_fishing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.equestrian_fishing.equestrian",
+      "canonicalId": "sports_outdoors.equestrian_fishing.equestrian",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "sports_outdoors.equestrian_fishing.fishing",
+      "canonicalId": "sports_outdoors.equestrian_fishing.fishing",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.tickets",
+      "canonicalId": "events_tickets.tickets",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.tickets.concerts",
+      "canonicalId": "events_tickets.tickets.concerts",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.tickets.sports",
+      "canonicalId": "events_tickets.tickets.sports",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.tickets.shows",
+      "canonicalId": "events_tickets.tickets.shows",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.tickets.leisure_access",
+      "canonicalId": "events_tickets.tickets.leisure_access",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.events",
+      "canonicalId": "events_tickets.events",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.events.local_events",
+      "canonicalId": "events_tickets.events.local_events",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "events_tickets.events.professional_events",
+      "canonicalId": "events_tickets.events.professional_events",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "free_exchange.offers",
+      "canonicalId": "free_exchange.offers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "free_exchange.offers.free_items",
+      "canonicalId": "free_exchange.offers.free_items",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "free_exchange.offers.exchange",
+      "canonicalId": "free_exchange.offers.exchange",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "free_exchange.offers.wanted",
+      "canonicalId": "free_exchange.offers.wanted",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.solar",
+      "canonicalId": "energy_transition.solar",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "energy_transition.solar.panels",
+      "canonicalId": "energy_transition.solar.panels",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.solar.inverters",
+      "canonicalId": "energy_transition.solar.inverters",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.solar.solar_kits",
+      "canonicalId": "energy_transition.solar.solar_kits",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.ev_charging",
+      "canonicalId": "energy_transition.ev_charging",
+      "disposition": "preserved",
+      "rationale": "Preserves a semantically equivalent Shongre identity."
+    },
+    {
+      "sourceId": "energy_transition.ev_charging.home_chargers",
+      "canonicalId": "energy_transition.ev_charging.home_chargers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.ev_charging.pro_chargers",
+      "canonicalId": "energy_transition.ev_charging.pro_chargers",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.ev_charging.charging_accessories",
+      "canonicalId": "energy_transition.ev_charging.charging_accessories",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.heating_storage",
+      "canonicalId": "energy_transition.heating_storage",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.heating_storage.heat_pumps",
+      "canonicalId": "energy_transition.heating_storage.heat_pumps",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    },
+    {
+      "sourceId": "energy_transition.heating_storage.batteries",
+      "canonicalId": "energy_transition.heating_storage.batteries",
+      "disposition": "new",
+      "rationale": "Introduces a stable identity defined by the master workbook."
+    }
+  ],
+  "v3Nodes": [
+    {
+      "sourceId": "vehicles",
+      "canonicalId": "vehicles",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cars",
+      "canonicalId": "vehicles.cars",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cars.citadines",
+      "canonicalId": "vehicles.cars.city_cars",
+      "disposition": "renamed",
+      "rationale": "The master preserves the city-car category with a stable English identifier."
+    },
+    {
+      "sourceId": "vehicles.cars.berlines",
+      "canonicalId": "vehicles.cars.sedans",
+      "disposition": "renamed",
+      "rationale": "The master preserves the sedan category with a stable English identifier."
+    },
+    {
+      "sourceId": "vehicles.cars.suv",
+      "canonicalId": "vehicles.cars.suv",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cars.breaks",
+      "canonicalId": "vehicles.cars.estates",
+      "disposition": "renamed",
+      "rationale": "The master preserves the estate category with a stable English identifier."
+    },
+    {
+      "sourceId": "vehicles.cars.coupes_cabriolets",
+      "canonicalId": "vehicles.cars.coupes_convertibles",
+      "disposition": "renamed",
+      "rationale": "The master preserves the coupe and convertible category under its canonical identifier."
+    },
+    {
+      "sourceId": "vehicles.cars.utilitaires",
+      "canonicalId": "vehicles.utility.vans",
+      "disposition": "renamed",
+      "rationale": "Legacy utility listings map to the master vans and utility-vehicles leaf."
+    },
+    {
+      "sourceId": "vehicles.motos",
+      "canonicalId": "vehicles.motos",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cycles",
+      "canonicalId": "vehicles.cycles",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.parts",
+      "canonicalId": "vehicles.parts",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate",
+      "canonicalId": "real_estate",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.sales",
+      "canonicalId": "real_estate.sales",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.rentals",
+      "canonicalId": "real_estate.rentals",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.commercial",
+      "canonicalId": "real_estate.commercial",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.parking",
+      "canonicalId": "real_estate.parking",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "jobs",
+      "canonicalId": "jobs",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "jobs.offers",
+      "canonicalId": "jobs.offers",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "services",
+      "canonicalId": "services",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "services.home_repairs",
+      "canonicalId": "services.local_services.home_repairs",
+      "disposition": "renamed",
+      "rationale": "The service now sits below the canonical local-services group."
+    },
+    {
+      "sourceId": "services.tutoring",
+      "canonicalId": "education.academic.primary_homework",
+      "disposition": "moved",
+      "rationale": "Tutoring is owned by the dedicated education vertical in the master."
+    },
+    {
+      "sourceId": "services.events",
+      "canonicalId": "services.local_services.event_services",
+      "disposition": "renamed",
+      "rationale": "Event services now sit below the canonical local-services group."
+    },
+    {
+      "sourceId": "home_garden",
+      "canonicalId": "home_garden",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.furniture",
+      "canonicalId": "home_garden.furniture",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.furniture.sofas",
+      "canonicalId": "home_garden.furniture.sofas",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.furniture.tables",
+      "canonicalId": "home_garden.furniture.tables",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.furniture.beds",
+      "canonicalId": "home_garden.furniture.beds",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.appliances",
+      "canonicalId": "home_garden.appliances",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.diy_garden",
+      "canonicalId": "home_garden.diy_garden",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics",
+      "canonicalId": "electronics",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.smartphones",
+      "canonicalId": "electronics.smartphones",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.computers",
+      "canonicalId": "electronics.computers",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.gaming",
+      "canonicalId": "electronics.gaming",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.audio_hifi",
+      "canonicalId": "electronics.audio_hifi",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion",
+      "canonicalId": "fashion",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.women",
+      "canonicalId": "fashion.clothing.women",
+      "disposition": "moved",
+      "rationale": "Women's fashion is a final clothing category in the master."
+    },
+    {
+      "sourceId": "fashion.men",
+      "canonicalId": "fashion.clothing.men",
+      "disposition": "moved",
+      "rationale": "Men's fashion is a final clothing category in the master."
+    },
+    {
+      "sourceId": "fashion.shoes",
+      "canonicalId": "fashion.shoes",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.jewelry",
+      "canonicalId": "fashion.jewelry",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "baby_kids",
+      "canonicalId": "baby_family",
+      "disposition": "renamed",
+      "rationale": "The master renames the vertical to Baby & Family."
+    },
+    {
+      "sourceId": "baby_kids.strollers",
+      "canonicalId": "baby_family.equipment.strollers",
+      "disposition": "moved",
+      "rationale": "Strollers move into the canonical baby-equipment hierarchy."
+    },
+    {
+      "sourceId": "baby_kids.toys",
+      "canonicalId": "baby_family.maternity.early_learning",
+      "disposition": "narrowed",
+      "rationale": "Baby toys map to the master's early-learning leaf."
+    },
+    {
+      "sourceId": "leisure_culture",
+      "canonicalId": "leisure_culture",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "leisure_culture.instruments",
+      "canonicalId": "leisure_culture.instruments",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "leisure_culture.books",
+      "canonicalId": "leisure_culture.books_media.books",
+      "disposition": "moved",
+      "rationale": "Books now sit below the canonical Books & Media group."
+    },
+    {
+      "sourceId": "sports_outdoors",
+      "canonicalId": "sports_outdoors",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.fitness",
+      "canonicalId": "sports_outdoors.fitness",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor",
+      "canonicalId": "sports_outdoors.outdoor",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.water_sports",
+      "canonicalId": "sports_outdoors.water_winter.water_sports",
+      "disposition": "moved",
+      "rationale": "Water sports now sit below the Water & Winter sports group."
+    },
+    {
+      "sourceId": "pets",
+      "canonicalId": "pets",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "pets.accessories",
+      "canonicalId": "pets.accessories",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "professional_btp",
+      "canonicalId": "professional_equipment",
+      "disposition": "broadened",
+      "rationale": "The master replaces the narrow BTP root with Professional Equipment."
+    },
+    {
+      "sourceId": "professional_btp.machinery",
+      "canonicalId": "professional_btp.machinery",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "professional_btp.catering",
+      "canonicalId": "professional_btp.catering",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "agriculture",
+      "canonicalId": "agriculture",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "agriculture.tractors",
+      "canonicalId": "agriculture.tractors",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "energy_transition",
+      "canonicalId": "energy_transition",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "energy_transition.solar",
+      "canonicalId": "energy_transition.solar",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "energy_transition.ev_charging",
+      "canonicalId": "energy_transition.ev_charging",
+      "disposition": "preserved",
+      "rationale": "The identity remains semantically equivalent in the master taxonomy."
+    },
+    {
+      "sourceId": "pro_it_telecom",
+      "canonicalId": "professional_equipment.office_retail.pro_it",
+      "disposition": "moved",
+      "rationale": "Professional IT is a final professional-equipment category."
+    },
+    {
+      "sourceId": "deals_donations",
+      "canonicalId": "free_exchange.offers.free_items",
+      "disposition": "renamed",
+      "rationale": "Donation listings map to the master free-items leaf."
+    }
+  ],
+  "previousV4Nodes": [
+    {
+      "sourceId": "vehicles",
+      "canonicalId": "vehicles",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cars",
+      "canonicalId": "vehicles.cars",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.motos",
+      "canonicalId": "vehicles.motos",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.scooters",
+      "canonicalId": "vehicles.motos.scooters",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.quads_buggys",
+      "canonicalId": "vehicles.motos.quads",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.cars.utilitaires",
+      "canonicalId": "vehicles.utility",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.camions",
+      "canonicalId": "vehicles.utility.vans",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.caravaning",
+      "canonicalId": "vehicles.caravaning",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.caravaning.camping_cars",
+      "canonicalId": "vehicles.caravaning.motorhomes",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.caravaning.caravanes",
+      "canonicalId": "vehicles.caravaning.caravans",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.caravaning.remorques",
+      "canonicalId": "vehicles.caravaning",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.caravaning.mobil_homes",
+      "canonicalId": "holidays.outdoor.mobile_home",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.nautisme",
+      "canonicalId": "vehicles.nautical",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.nautisme.bateaux_a_moteur",
+      "canonicalId": "vehicles.nautical.motorboats",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.nautisme.voiliers",
+      "canonicalId": "vehicles.nautical.sailboats",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.nautisme.semi_rigides_annexes",
+      "canonicalId": "vehicles.nautical.small_craft",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.nautisme.jet_skis",
+      "canonicalId": "vehicles.nautical.personal_watercraft",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.nautisme.remorques_bateau",
+      "canonicalId": "vehicles.parts.caravan_nautical_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.cycles",
+      "canonicalId": "vehicles.cycles",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cycles.bicycles",
+      "canonicalId": "vehicles.cycles.bicycles",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cycles.e_bikes",
+      "canonicalId": "vehicles.cycles.electric_bikes",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vehicles.cycles.scooters",
+      "canonicalId": "vehicles.cycles.scooters",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "vehicles.cycles.accessories",
+      "canonicalId": "sports_outdoors.outdoor.cycling_equipment",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.pneus_jantes",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.pieces_moteur",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.carrosserie",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.interieur_auto",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.audio_gps_auto",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.entretien_outillage_auto",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.auto_parts.accessoires_auto",
+      "canonicalId": "vehicles.parts.auto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.motorcycle_parts",
+      "canonicalId": "vehicles.parts.moto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.motorcycle_parts.casques",
+      "canonicalId": "vehicles.parts.moto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.motorcycle_parts.equipement_pilote",
+      "canonicalId": "vehicles.parts.moto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.motorcycle_parts.pieces_moto",
+      "canonicalId": "vehicles.parts.moto_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.equipement_caravaning",
+      "canonicalId": "vehicles.parts.caravan_nautical_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vehicles.equipement_nautisme",
+      "canonicalId": "vehicles.parts.caravan_nautical_parts",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate",
+      "canonicalId": "real_estate",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.appartements",
+      "canonicalId": "real_estate.sales.apartments",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate.maisons",
+      "canonicalId": "real_estate.sales.houses",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate.chambres_colocation",
+      "canonicalId": "real_estate.shared.room_offer",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate.terrains",
+      "canonicalId": "real_estate.sales.land",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "real_estate.parking",
+      "canonicalId": "real_estate.parking",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.immeubles",
+      "canonicalId": "real_estate.sales.buildings",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "real_estate.commercial",
+      "canonicalId": "real_estate.commercial",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "real_estate.commercial.bureaux",
+      "canonicalId": "real_estate.commercial.offices",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "real_estate.commercial.commerces",
+      "canonicalId": "real_estate.commercial.retail",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate.commercial.entrepots_locaux_activite",
+      "canonicalId": "real_estate.commercial.warehouses",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "real_estate.commercial.fonds_de_commerce",
+      "canonicalId": "real_estate.commercial.business_assets",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "real_estate.programmes_neufs",
+      "canonicalId": "real_estate.sales.new_developments",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "jobs",
+      "canonicalId": "jobs",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "jobs.offers",
+      "canonicalId": "jobs.offers",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "jobs.alternance_stages",
+      "canonicalId": "jobs.offers",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "jobs.missions_freelance",
+      "canonicalId": "jobs",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "jobs.recherches_d_emploi",
+      "canonicalId": "jobs.candidates.candidate_profile",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services",
+      "canonicalId": "services",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "services.services_a_la_personne",
+      "canonicalId": "services.local_services.personal_care",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "services.home_repairs",
+      "canonicalId": "services.local_services.home_repairs",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.demenagement_transport",
+      "canonicalId": "services.local_services.moving",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.events",
+      "canonicalId": "services.local_services.event_services",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.beaute_bien_etre",
+      "canonicalId": "services.local_services.personal_care",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.informatique_web",
+      "canonicalId": "services.local_services.digital_it",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.reparation",
+      "canonicalId": "services.local_services.electronics_repair",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.services_aux_entreprises",
+      "canonicalId": "services.local_services.other_services",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.location_de_materiel",
+      "canonicalId": "services.local_services.other_services",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.covoiturage",
+      "canonicalId": "services.local_services.other_services",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "services.services_animaliers",
+      "canonicalId": "services.local_services.pet_services",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "fashion",
+      "canonicalId": "fashion",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.clothing",
+      "canonicalId": "fashion.clothing",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.shoes",
+      "canonicalId": "fashion.shoes",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.sacs_bagagerie",
+      "canonicalId": "fashion.accessories.bags",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "fashion.jewelry",
+      "canonicalId": "fashion.jewelry",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "fashion.accessoires_mode",
+      "canonicalId": "fashion.accessories.accessories",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "fashion.vetements_professionnels",
+      "canonicalId": "fashion.clothing.unisex",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "home_garden",
+      "canonicalId": "home_garden",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.furniture",
+      "canonicalId": "home_garden.furniture",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.appliances",
+      "canonicalId": "home_garden.appliances",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.decoration",
+      "canonicalId": "home_garden.decoration",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.luminaires",
+      "canonicalId": "home_garden.decoration.decor",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "home_garden.arts_de_la_table",
+      "canonicalId": "home_garden.decoration.tableware",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "home_garden.linge_de_maison",
+      "canonicalId": "home_garden.decoration.linens",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "home_garden.diy_garden",
+      "canonicalId": "home_garden.diy_garden",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "home_garden.jardin_plantes",
+      "canonicalId": "home_garden.diy_garden.garden",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "home_garden.materiaux_de_construction",
+      "canonicalId": "home_garden.diy_garden.materials",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "home_garden.chauffage_climatisation",
+      "canonicalId": "home_garden.appliances.climate",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "baby_kids",
+      "canonicalId": "baby_family",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "baby_kids.equipement_bebe",
+      "canonicalId": "baby_family.equipment",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "baby_kids.vetements_bebe_enfant",
+      "canonicalId": "baby_family.clothing.baby_clothing",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "baby_kids.mobilier_enfant",
+      "canonicalId": "baby_family.furniture",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "baby_kids.toys",
+      "canonicalId": "baby_family.maternity.early_learning",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "baby_kids.repas_et_soins",
+      "canonicalId": "baby_family.equipment.feeding_care",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "baby_kids.scolarite",
+      "canonicalId": "home_garden.school_office.school",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "electronics",
+      "canonicalId": "electronics",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.smartphones",
+      "canonicalId": "electronics.smartphones",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.computers",
+      "canonicalId": "electronics.computers",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.tablettes_liseuses",
+      "canonicalId": "electronics.smart_home.tablets_readers",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "electronics.audio_hifi",
+      "canonicalId": "electronics.audio_hifi",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.photo_video_drone",
+      "canonicalId": "electronics.audio_hifi.photo",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "electronics.gaming",
+      "canonicalId": "electronics.gaming",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "electronics.objets_connectes",
+      "canonicalId": "electronics.smart_home.home_automation",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "electronics.network_storage",
+      "canonicalId": "electronics.computers.components",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "electronics.accessoires_electronique",
+      "canonicalId": "electronics.smartphones.phone_accessories",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture",
+      "canonicalId": "leisure_culture",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors",
+      "canonicalId": "sports_outdoors",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.fitness",
+      "canonicalId": "sports_outdoors.fitness",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.outdoor",
+      "canonicalId": "sports_outdoors.outdoor",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "sports_outdoors.water_sports",
+      "canonicalId": "sports_outdoors.water_winter.water_sports",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "sports_outdoors.sports_d_hiver",
+      "canonicalId": "sports_outdoors.water_winter.winter_sports",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "sports_outdoors.sports_collectifs",
+      "canonicalId": "sports_outdoors.team_racket",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "sports_outdoors.chasse_peche",
+      "canonicalId": "sports_outdoors.equestrian_fishing.fishing",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture.instruments",
+      "canonicalId": "leisure_culture.instruments",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "leisure_culture.books",
+      "canonicalId": "leisure_culture.books_media.books",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture.cd_vinyles_dvd",
+      "canonicalId": "leisure_culture.books_media.music_media",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture.collection",
+      "canonicalId": "leisure_culture.collection",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "leisure_culture.antiquites_et_art",
+      "canonicalId": "leisure_culture.collection.antiques",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture.jeux_de_societe_modelisme",
+      "canonicalId": "leisure_culture.toys_creative.toys_games",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "leisure_culture.billetterie",
+      "canonicalId": "events_tickets.tickets",
+      "disposition": "renamed",
+      "rationale": "A unique canonical slug establishes the equivalent master node."
+    },
+    {
+      "sourceId": "leisure_culture.vins_et_gastronomie",
+      "canonicalId": "leisure_culture.gastronomy.wine_gastronomy",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "pets",
+      "canonicalId": "pets",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "pets.chiens",
+      "canonicalId": "pets.animals.dogs",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "pets.chats",
+      "canonicalId": "pets.animals.cats",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "pets.equides",
+      "canonicalId": "pets.animals.horses",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "pets.autres_animaux",
+      "canonicalId": "pets.animals.small_animals",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "pets.accessories",
+      "canonicalId": "pets.accessories",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "pets.animaux_perdus_trouves",
+      "canonicalId": "pets.lost_found",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vacations",
+      "canonicalId": "holidays",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "vacations.locations_saisonnieres",
+      "canonicalId": "holidays.accommodation",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vacations.chambres_d_hotes",
+      "canonicalId": "holidays.accommodation.guest_house",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vacations.campings",
+      "canonicalId": "holidays.outdoor.camping",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vacations.hebergements_insolites",
+      "canonicalId": "holidays.accommodation.unusual",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "vacations.echanges_de_maison",
+      "canonicalId": "holidays.accommodation.house_villa",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "professional_btp",
+      "canonicalId": "professional_equipment",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "agriculture.tractors",
+      "canonicalId": "agriculture.tractors",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "agriculture",
+      "canonicalId": "agriculture",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "professional_btp.machinery",
+      "canonicalId": "professional_btp.machinery",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "professional_btp.poids_lourds",
+      "canonicalId": "vehicles.utility.vans",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "professional_btp.manutention_levage",
+      "canonicalId": "professional_btp.machinery.handling_lifting",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "professional_btp.equipement_industriel",
+      "canonicalId": "professional_equipment.industrial",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "professional_btp.catering",
+      "canonicalId": "professional_btp.catering",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "professional_btp.materiel_medical",
+      "canonicalId": "professional_equipment.medical",
+      "disposition": "renamed",
+      "rationale": "A unique French label establishes the equivalent master node."
+    },
+    {
+      "sourceId": "professional_btp.equipement_de_commerce",
+      "canonicalId": "professional_equipment.office_retail.retail",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "education",
+      "canonicalId": "education",
+      "disposition": "preserved",
+      "rationale": "The identity remains present in the master taxonomy."
+    },
+    {
+      "sourceId": "services.tutoring",
+      "canonicalId": "education.academic.primary_homework",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "education.formations_professionnelles",
+      "canonicalId": "education.professional.digital_data",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "education.ateliers_et_stages",
+      "canonicalId": "education.professional.business",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "education.coaching_et_concours",
+      "canonicalId": "education.professional.exam_preparation",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community",
+      "canonicalId": "free_exchange",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community.annonces_de_quartier",
+      "canonicalId": "free_exchange.offers.wanted",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community.evenements_locaux",
+      "canonicalId": "events_tickets.events.local_events",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community.objets_perdus_trouves",
+      "canonicalId": "free_exchange.offers.wanted",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community.mutual_aid",
+      "canonicalId": "free_exchange.offers.free_items",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "community.bons_plans_locaux",
+      "canonicalId": "free_exchange.offers.free_items",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "other",
+      "canonicalId": "free_exchange",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    },
+    {
+      "sourceId": "other.autres_annonces",
+      "canonicalId": "free_exchange.offers.wanted",
+      "disposition": "reviewed_compatibility_redirect",
+      "rationale": "A reviewed compatibility redirect preserves the former v4 identity."
+    }
+  ]
+}

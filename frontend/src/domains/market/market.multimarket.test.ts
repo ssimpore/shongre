@@ -13,9 +13,9 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
     );
     expect(isVehiclesInFR).toBe(true);
 
-    // Disable category in Luxembourg
-    marketService.setCategoryEnabledInMarket("LU", "vehicules", false);
-    expect(marketService.isCategoryEnabledInMarket("LU", "vehicules")).toBe(
+    // Disable category in Switzerland
+    marketService.setCategoryEnabledInMarket("CH", "vehicules", false);
+    expect(marketService.isCategoryEnabledInMarket("CH", "vehicules")).toBe(
       false,
     );
 
@@ -24,9 +24,9 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
       true,
     );
 
-    // Re-enable in Luxembourg
-    marketService.setCategoryEnabledInMarket("LU", "vehicules", true);
-    expect(marketService.isCategoryEnabledInMarket("LU", "vehicules")).toBe(
+    // Re-enable in Switzerland
+    marketService.setCategoryEnabledInMarket("CH", "vehicules", true);
+    expect(marketService.isCategoryEnabledInMarket("CH", "vehicules")).toBe(
       true,
     );
   });
@@ -34,23 +34,23 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
   it("should validate multi-market listing drafts accurately", () => {
     const validation = marketService.validateListingForMarkets({
       draft: {
-        taxonomyNodeId: "home_garden.furniture.sofas",
+        taxonomyNodeId: "home_garden.furniture.tables",
         title: "Canapé scandinave",
         marketCode: "FR",
-        selectedMarkets: ["FR", "BE", "LU"],
+        selectedMarkets: ["FR", "BE", "CH"],
       },
-      marketCodes: ["FR", "BE", "LU"],
+      marketCodes: ["FR", "BE", "CH"],
     });
 
     expect(validation.isValid).toBe(true);
     expect(validation.marketResults["FR"].isValid).toBe(true);
     expect(validation.marketResults["BE"].isValid).toBe(true);
-    expect(validation.marketResults["LU"].isValid).toBe(true);
+    expect(validation.marketResults["CH"].isValid).toBe(true);
 
     // Testing a coming-soon market correctly flags ineligibility.
     const pausedValidation = marketService.validateListingForMarkets({
       draft: {
-        taxonomyNodeId: "home_garden.furniture.sofas",
+        taxonomyNodeId: "home_garden.furniture.tables",
         title: "Canapé scandinave",
         marketCode: "FR",
         selectedMarkets: ["SN"],
@@ -67,8 +67,8 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
 
     const draft: PublicationDraftState = {
       marketCode: "FR",
-      selectedMarkets: ["FR", "BE", "LU"],
-      taxonomyNodeId: "home_garden.furniture.sofas",
+      selectedMarkets: ["FR", "BE", "CH"],
+      taxonomyNodeId: "home_garden.furniture.tables",
       listingIntent: "SELL",
       title: "Table en chêne massif authentique",
       description:
@@ -107,7 +107,10 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
         allowDirectPurchase: true,
         allowReservation: true,
       },
-      attributes: {},
+      attributes: {
+        contact_mode: "messagerie",
+        furniture_type: "table",
+      },
       currentStep: 10,
       updatedAt: new Date().toISOString(),
     };
@@ -115,7 +118,7 @@ describe("Multi-Market Publishing & Taxonomy Per Market", () => {
     const created = await publicationService.publishListing(draft, user);
 
     expect(created.marketCode).toBe("FR");
-    expect(created.marketCodes).toEqual(["FR", "BE", "LU"]);
+    expect(created.marketCodes).toEqual(["FR", "BE", "CH"]);
     expect(created.marketPublications?.length).toBe(3);
     expect(
       created.marketPublications?.some(

@@ -37,7 +37,7 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
     const subCategories = [
       "vehicles.cars",
       "vehicles.motos",
-      "real_estate.sales",
+      "real_estate.sales.apartments",
       "electronics.smartphones",
       "home_garden.furniture",
     ];

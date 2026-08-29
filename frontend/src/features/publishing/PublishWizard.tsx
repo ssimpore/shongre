@@ -67,9 +67,18 @@ import {
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts";
+import {
+  PUBLICATION_CONSTRAINTS,
+  toApplicationListingCondition,
+} from "@shongre/contracts";
+import type {
+  TaxonomyV4ListingIntent,
+  TaxonomyV4ResolvedSchema,
+} from "@shongre/contracts";
+import { resolveTaxonomyFieldState } from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
+import { TaxonomyV4Field } from "./TaxonomyV4Field";
 
 /**
  * Publication is three phases, not ten steps.
@@ -108,6 +117,95 @@ const PHASES = [
 
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
+const WEB_MANAGED_V4_ATTRIBUTES = new Set([
+  "title",
+  "description",
+  "images",
+  "listing_intent",
+  "price",
+  "price_type",
+  "currency",
+  "seller_type",
+  "condition",
+  "country",
+  "postal_code",
+  "city",
+  "address",
+  "location_country",
+  "location_postcode",
+  "location_city",
+  "item_condition",
+]);
+
+const INTENT_PRESENTATION: Record<
+  ListingIntent,
+  { label: string; desc: string; Icon: typeof Tag }
+> = {
+  SELL: { label: "Vendre un bien", desc: "Vente standard", Icon: Tag },
+  DONATE: { label: "Faire un don", desc: "Cession gratuite", Icon: Gift },
+  EXCHANGE: {
+    label: "Échanger un bien",
+    desc: "Troc ou échange",
+    Icon: ArrowLeftRight,
+  },
+  RENT_OUT: {
+    label: "Mettre en location",
+    desc: "Bien à louer",
+    Icon: KeyRound,
+  },
+  RENT_SEEK: {
+    label: "Chercher une location",
+    desc: "Demande de location",
+    Icon: Search,
+  },
+  SERVICE_OFFER: {
+    label: "Proposer un service",
+    desc: "Prestation ou artisan",
+    Icon: Wrench,
+  },
+  SERVICE_REQUEST: {
+    label: "Chercher un service",
+    desc: "Demande de prestation",
+    Icon: Search,
+  },
+  JOB_OFFER: { label: "Offre d’emploi", desc: "Recrutement", Icon: Briefcase },
+  JOB_SEEK: { label: "Recherche d’emploi", desc: "Candidature", Icon: Search },
+  WANTED: { label: "Objet recherché", desc: "Avis de recherche", Icon: Search },
+  BOOK: { label: "Réserver", desc: "Réservation de service", Icon: Clock },
+  COURSE_OFFER: {
+    label: "Proposer un cours",
+    desc: "Cours ou formation",
+    Icon: Briefcase,
+  },
+  BUSINESS_SALE: {
+    label: "Céder une activité",
+    desc: "Fonds ou entreprise",
+    Icon: Store,
+  },
+  NOTICE: {
+    label: "Publier un avis",
+    desc: "Annonce informative",
+    Icon: Globe,
+  },
+  GIVE: { label: "Faire un don", desc: "Ancien brouillon", Icon: Gift },
+  RENT: { label: "Location", desc: "Ancien brouillon", Icon: KeyRound },
+  OFFER_SERVICE: {
+    label: "Proposer un service",
+    desc: "Ancien brouillon",
+    Icon: Wrench,
+  },
+};
+
+const INTENT_ORDER = Object.keys(INTENT_PRESENTATION).filter(
+  (intent) => !["GIVE", "RENT", "OFFER_SERVICE"].includes(intent),
+) as ListingIntent[];
+
+const toV4Intent = (intent: ListingIntent): TaxonomyV4ListingIntent => {
+  if (intent === "GIVE") return "DONATE";
+  if (intent === "RENT") return "RENT_OUT";
+  if (intent === "OFFER_SERVICE") return "SERVICE_OFFER";
+  return intent;
+};
 
 const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
   fixed: "Prix fixe",
@@ -132,7 +230,7 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
 
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
-  const { currencySymbol } = useMarketLocation();
+  const { currencySymbol, marketContext, currentLocale } = useMarketLocation();
   usePageMeta({
     title: t("meta.publishWizard.title"),
     description: t("meta.publishWizard.description"),
@@ -141,7 +239,9 @@ export const PublishWizard: React.FC = () => {
   });
 
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, accountType } = useAuth();
+  const taxonomySellerType =
+    accountType === "professional" ? "professional" : "individual";
   const toast = useToast();
   const defaultMarket = marketService.getDefaultMarket();
   const defaultMarketConfig = marketService.getEffectiveConfig(
@@ -168,6 +268,20 @@ export const PublishWizard: React.FC = () => {
   const [isPreparationVisible, setIsPreparationVisible] = useState(true);
   const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [v4Schema, setV4Schema] = useState<TaxonomyV4ResolvedSchema | null>(
+    null,
+  );
+  const [v4SchemaState, setV4SchemaState] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [v4SchemaError, setV4SchemaError] = useState("");
+  const [v4RetryKey, setV4RetryKey] = useState(0);
+  const [v4CascadeOptions, setV4CascadeOptions] = useState<
+    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
+  >({});
+  const [v4CascadeState, setV4CascadeState] = useState<
+    Record<string, "loading" | "ready" | "empty" | "error">
+  >({});
   const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // Draft State initialized with default or restored values
@@ -302,13 +416,17 @@ export const PublishWizard: React.FC = () => {
   };
 
   const updateAttribute = (attrCode: string, value: any) => {
-    setDraft((prev) => ({
-      ...prev,
-      attributes: {
+    setDraft((prev) => {
+      const attributes = {
         ...(prev.attributes || {}),
         [attrCode]: value,
-      },
-    }));
+      };
+      return {
+        ...prev,
+        attributes,
+        condition: toApplicationListingCondition(attributes, prev.condition),
+      };
+    });
   };
 
   // Compile Schema dynamically
@@ -362,6 +480,191 @@ export const PublishWizard: React.FC = () => {
       };
     });
   }, [schema]);
+
+  useEffect(() => {
+    let active = true;
+    if (!draft.taxonomyNodeId || !marketContext) {
+      setV4Schema(null);
+      setV4SchemaState("idle");
+      return () => {
+        active = false;
+      };
+    }
+    setV4Schema(null);
+    setV4SchemaState("loading");
+    setV4SchemaError("");
+    void services.taxonomy
+      .resolveV4({
+        marketContext,
+        categoryIdentity: draft.taxonomyNodeId,
+        intent: toV4Intent(draft.listingIntent),
+        sellerType: taxonomySellerType,
+        locale: currentLocale,
+        taxonomyVersion: "4.0.0",
+      })
+      .then((resolved) => {
+        if (!active) return;
+        setV4Schema(resolved);
+        setV4SchemaState("ready");
+        setDraft((current) =>
+          current.listingTypeId === resolved.listingType.id &&
+          current.taxonomyVersion === "4.0.0"
+            ? current
+            : {
+                ...current,
+                listingTypeId: resolved.listingType.id,
+                taxonomyVersion: "4.0.0",
+              },
+        );
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setV4SchemaState("error");
+        setV4SchemaError(
+          reason instanceof Error
+            ? reason.message
+            : "Le schéma de cette annonce est indisponible.",
+        );
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    currentLocale,
+    draft.listingIntent,
+    draft.taxonomyNodeId,
+    marketContext,
+    taxonomySellerType,
+    v4RetryKey,
+  ]);
+
+  useEffect(() => {
+    let active = true;
+    if (!v4Schema || !marketContext) {
+      setV4CascadeOptions({});
+      setV4CascadeState({});
+      return () => {
+        active = false;
+      };
+    }
+    const requests = v4Schema.dependencyRules.flatMap((rule) => {
+      if (
+        rule.effect !== "FILTER_OPTIONS" ||
+        rule.trigger.kind !== "attribute"
+      ) {
+        return [];
+      }
+      const parent = v4Schema.attributes.find(
+        (field) => field.definition.id === rule.trigger.key,
+      );
+      const parentValue = draft.attributes[rule.trigger.key];
+      if (!parent?.definition.optionSetId) return [];
+      return rule.targets.flatMap((target) => {
+        if (target.kind !== "attribute") return [];
+        const child = v4Schema.attributes.find(
+          (field) => field.definition.id === target.key,
+        );
+        if (!child?.definition.optionSetId) return [];
+        return [
+          {
+            attributeId: target.key,
+            optionSetId: child.definition.optionSetId,
+            parentOptionId:
+              parentValue === undefined ||
+              parentValue === null ||
+              parentValue === ""
+                ? undefined
+                : `${parent.definition.optionSetId}:${String(parentValue)}`,
+          },
+        ];
+      });
+    });
+    if (requests.length === 0)
+      return () => {
+        active = false;
+      };
+    setV4CascadeState((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        requests.map((request) => [
+          request.attributeId,
+          request.parentOptionId ? "loading" : "empty",
+        ]),
+      ),
+    }));
+    setV4CascadeOptions((current) => ({
+      ...current,
+      ...Object.fromEntries(
+        requests
+          .filter((request) => !request.parentOptionId)
+          .map((request) => [request.attributeId, []]),
+      ),
+    }));
+    void Promise.all(
+      requests
+        .filter((request) => request.parentOptionId)
+        .map(async (request) => ({
+          request,
+          page: await services.taxonomy.lookupV4Options({
+            marketContext,
+            optionSetId: request.optionSetId,
+            parentOptionId: request.parentOptionId,
+            limit: 200,
+            locale: currentLocale,
+            taxonomyVersion: "4.0.0",
+          }),
+        })),
+    )
+      .then((results) => {
+        if (!active) return;
+        setV4CascadeOptions((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            results.map(({ request, page }) => [
+              request.attributeId,
+              page.items,
+            ]),
+          ),
+        }));
+        setV4CascadeState((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            results.map(({ request, page }) => [
+              request.attributeId,
+              page.items.length > 0 ? "ready" : "empty",
+            ]),
+          ),
+        }));
+        setDraft((current) => {
+          let changed = false;
+          const attributes = { ...current.attributes };
+          results.forEach(({ request, page }) => {
+            const selected = attributes[request.attributeId];
+            if (
+              selected !== undefined &&
+              selected !== "" &&
+              !page.items.some((option) => option.key === String(selected))
+            ) {
+              delete attributes[request.attributeId];
+              changed = true;
+            }
+          });
+          return changed ? { ...current, attributes } : current;
+        });
+      })
+      .catch(() => {
+        if (!active) return;
+        setV4CascadeState((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            requests.map((request) => [request.attributeId, "error"]),
+          ),
+        }));
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentLocale, draft.attributes, marketContext, v4Schema]);
 
   const resolveSelectableNodeId = (nodeId: string): string => {
     if (taxonomyService.isPublishable(nodeId)) return nodeId;
@@ -821,76 +1124,41 @@ export const PublishWizard: React.FC = () => {
               {t("publishing.publishWizard.typeDAnnonceIntention")}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {[
-                {
-                  value: "SELL",
-                  label: "Vendre un bien",
-                  desc: "Vente standard",
-                  Icon: Tag,
-                },
-                {
-                  value: "GIVE",
-                  label: "Faire un don",
-                  desc: `Gratuit (0 ${currencySymbol})`,
-                  Icon: Gift,
-                },
-                {
-                  value: "EXCHANGE",
-                  label: "Échange de biens",
-                  desc: "Troc / Échange",
-                  Icon: ArrowLeftRight,
-                },
-                {
-                  value: "RENT",
-                  label: "Location",
-                  desc: "Louer un bien",
-                  Icon: KeyRound,
-                },
-                {
-                  value: "OFFER_SERVICE",
-                  label: "Proposer un service",
-                  desc: "Artisan, cours, presta",
-                  Icon: Wrench,
-                },
-                {
-                  value: "JOB_OFFER",
-                  label: "Offre d'emploi",
-                  desc: "Recrutement",
-                  Icon: Briefcase,
-                },
-              ].map((it) => (
-                <button
-                  key={it.value}
-                  type="button"
-                  onClick={() =>
-                    updateDraft({ listingIntent: it.value as ListingIntent })
-                  }
-                  aria-pressed={draft.listingIntent === it.value}
-                  className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
-                    draft.listingIntent === it.value
-                      ? "border-primary bg-primary-light text-primary font-bold"
-                      : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
-                  }`}
-                >
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
-                      draft.listingIntent === it.value
-                        ? "bg-primary text-white"
-                        : "bg-primary-light text-primary"
+              {(schema?.supportedIntents ?? INTENT_ORDER).map((intent) => {
+                const it = INTENT_PRESENTATION[intent];
+                if (!it) return null;
+                return (
+                  <button
+                    key={intent}
+                    type="button"
+                    onClick={() => updateDraft({ listingIntent: intent })}
+                    aria-pressed={draft.listingIntent === intent}
+                    className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
+                      draft.listingIntent === intent
+                        ? "border-primary bg-primary-light text-primary font-bold"
+                        : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                     }`}
                   >
-                    <it.Icon className="h-4 w-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-bold">
-                      {it.label}
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+                        draft.listingIntent === intent
+                          ? "bg-primary text-white"
+                          : "bg-primary-light text-primary"
+                      }`}
+                    >
+                      <it.Icon className="h-4 w-4" aria-hidden="true" />
                     </span>
-                    <span className="mt-0.5 block truncate text-micro text-stone-500">
-                      {it.desc}
+                    <span className="min-w-0">
+                      <span className="block truncate text-xs font-bold">
+                        {it.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-micro text-stone-500">
+                        {it.desc}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1029,279 +1297,369 @@ export const PublishWizard: React.FC = () => {
           </div>
 
           {/* Condition Scheme Selector */}
-          <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              {schema?.listingFamily === "job"
-                ? "Disponibilité du poste"
-                : schema?.listingFamily === "service"
-                  ? "Disponibilité de la prestation"
-                  : t("publishing.publishWizard.etatDuBienProduit")}
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {(schema?.conditionScheme || []).map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => updateDraft({ condition: c.value })}
-                  className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                    draft.condition === c.value
-                      ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
-                      : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
-                  }`}
-                >
-                  <div className="text-xs font-bold">{c.label}</div>
-                  <div className="text-micro text-stone-500 mt-0.5">
-                    {c.description}
-                  </div>
-                </button>
-              ))}
+          {!v4Schema?.attributes.some(({ definition }) =>
+            ["property_condition", "equipment_condition"].includes(
+              definition.id,
+            ),
+          ) && (
+            <div>
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+                {schema?.listingFamily === "job"
+                  ? "Disponibilité du poste"
+                  : schema?.listingFamily === "service"
+                    ? "Disponibilité de la prestation"
+                    : t("publishing.publishWizard.etatDuBienProduit")}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(schema?.conditionScheme || []).map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => updateDraft({ condition: c.value })}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      draft.condition === c.value
+                        ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
+                        : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
+                    }`}
+                  >
+                    <div className="text-xs font-bold">{c.label}</div>
+                    <div className="text-micro text-stone-500 mt-0.5">
+                      {c.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Dynamic Attributes Grid */}
-          {schema && schema.fields.length > 0 && (
-            <div className="pt-4 border-t border-border-subtle space-y-4">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Tag className="w-icon-sm h-icon-sm text-primary" />
+          {v4SchemaState === "loading" && (
+            <div
+              role="status"
+              className="rounded-control bg-bg-base p-4 text-xs text-text-muted"
+            >
+              Chargement des caractéristiques de cette annonce…
+            </div>
+          )}
+          {v4SchemaState === "error" && (
+            <div
+              role="alert"
+              className="rounded-control border border-danger-border bg-danger-surface p-4 text-xs text-danger"
+            >
+              <p>{v4SchemaError}</p>
+              <button
+                type="button"
+                className="mt-2 font-bold underline"
+                onClick={() => setV4RetryKey((value) => value + 1)}
+              >
+                Réessayer
+              </button>
+            </div>
+          )}
+          {v4Schema && v4Schema.attributes.length > 0 && (
+            <div className="space-y-4 border-t border-border-subtle pt-4">
+              <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-900">
+                <Tag className="h-icon-sm w-icon-sm text-primary" />
                 <span>{t("publishing.publishWizard.criteresDetailles")}</span>
               </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {schema.fields.map((field) => {
-                  if (!field.isVisiblyMet) return null;
-                  const attr = field.attribute;
-                  const value = draft.attributes?.[attr.code] ?? "";
-                  const hint =
-                    attr.helpText ||
-                    (field.fieldRole === "recommended"
-                      ? "Champ recommandé"
-                      : undefined);
-
-                  if (attr.dataType === "select") {
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={attr.label}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <Select
-                          size="compact"
-                          className="w-full"
-                          labelledByAncestor
-                          value={value}
-                          onChange={(e) =>
-                            updateAttribute(attr.code, e.target.value)
-                          }
-                        >
-                          <option value="">
-                            {t(
-                              "publishing.publishWizard.selectionnerUneOption",
-                            )}
-                          </option>
-                          {attr.options?.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </Select>
-                      </FormField>
-                    );
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {v4Schema.attributes.map((field) => {
+                  if (WEB_MANAGED_V4_ATTRIBUTES.has(field.definition.id)) {
+                    return null;
                   }
-
-                  if (attr.dataType === "multi_select") {
-                    const selectedValues = Array.isArray(value) ? value : [];
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={attr.label}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <div className="grid grid-cols-1 gap-2 rounded-control border border-border-base bg-bg-base p-3 sm:grid-cols-2">
-                          {(attr.options || []).map((option) => (
-                            <Checkbox
-                              key={option.value}
-                              label={option.label}
-                              checked={selectedValues.includes(option.value)}
-                              onChange={(event) => {
-                                const next = event.target.checked
-                                  ? [...selectedValues, option.value]
-                                  : selectedValues.filter(
-                                      (selected) => selected !== option.value,
-                                    );
-                                updateAttribute(attr.code, next);
-                              }}
-                            />
-                          ))}
-                        </div>
-                      </FormField>
-                    );
-                  }
-
-                  if (
-                    attr.dataType === "number" ||
-                    attr.dataType === "year" ||
-                    attr.dataType === "money"
-                  ) {
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <Input
-                          type="number"
-                          placeholder={
-                            attr.validation?.placeholder ||
-                            (attr.unit ? `ex: 50 ${attr.unit}` : "")
-                          }
-                          value={value}
-                          min={attr.validation?.min}
-                          max={attr.validation?.max}
-                          step={
-                            attr.validation?.step ||
-                            (attr.dataType === "year" ? 1 : undefined)
-                          }
-                          onChange={(e) =>
-                            updateAttribute(
-                              attr.code,
-                              e.target.value ? Number(e.target.value) : "",
-                            )
-                          }
-                          className="h-control-md text-xs"
-                        />
-                      </FormField>
-                    );
-                  }
-
-                  if (attr.dataType === "range") {
-                    const rangeValue =
-                      value &&
-                      typeof value === "object" &&
-                      !Array.isArray(value)
-                        ? value
-                        : { min: "", max: "" };
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <div className="grid grid-cols-2 gap-2">
-                          {(["min", "max"] as const).map((bound) => (
-                            <Input
-                              key={bound}
-                              type="number"
-                              aria-label={
-                                bound === "min" ? "Minimum" : "Maximum"
-                              }
-                              placeholder={bound === "min" ? "Min" : "Max"}
-                              value={rangeValue[bound] ?? ""}
-                              min={attr.validation?.min}
-                              max={attr.validation?.max}
-                              step={attr.validation?.step}
-                              onChange={(event) =>
-                                updateAttribute(attr.code, {
-                                  ...rangeValue,
-                                  [bound]: event.target.value
-                                    ? Number(event.target.value)
-                                    : "",
-                                })
-                              }
-                              className="h-control-md text-xs"
-                            />
-                          ))}
-                        </div>
-                      </FormField>
-                    );
-                  }
-
-                  if (attr.dataType === "boolean") {
-                    return (
-                      <div key={attr.id} className="flex items-center pt-6">
-                        <Checkbox
-                          label={attr.label}
-                          description={attr.helpText}
-                          checked={!!value}
-                          onChange={(e) =>
-                            updateAttribute(attr.code, e.target.checked)
-                          }
-                        />
-                      </div>
-                    );
-                  }
-
-                  if (attr.dataType === "long_text") {
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={attr.label}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <Textarea
-                          value={value}
-                          maxLength={attr.validation?.maxLength}
-                          placeholder={attr.validation?.placeholder || ""}
-                          onChange={(event) =>
-                            updateAttribute(attr.code, event.target.value)
-                          }
-                          className="min-h-24 text-xs"
-                        />
-                      </FormField>
-                    );
-                  }
-
-                  if (
-                    attr.dataType === "date" ||
-                    attr.dataType === "date_time"
-                  ) {
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={attr.label}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <Input
-                          type={
-                            attr.dataType === "date" ? "date" : "datetime-local"
-                          }
-                          value={value}
-                          onChange={(event) =>
-                            updateAttribute(attr.code, event.target.value)
-                          }
-                          className="h-control-md text-xs"
-                        />
-                      </FormField>
-                    );
-                  }
-
-                  return (
-                    <FormField
-                      key={attr.id}
-                      label={attr.label}
-                      required={field.isRequired}
-                      hint={hint}
-                    >
-                      <Input
-                        type="text"
-                        placeholder={attr.validation?.placeholder || ""}
-                        value={value}
-                        onChange={(e) =>
-                          updateAttribute(attr.code, e.target.value)
+                  const fieldState = resolveTaxonomyFieldState({
+                    schema: v4Schema,
+                    attributeId: field.definition.id,
+                    values: draft.attributes,
+                    sellerType: taxonomySellerType,
+                  });
+                  if (!fieldState.visible) return null;
+                  const resolvedField = fieldState.required
+                    ? {
+                        ...field,
+                        binding: { ...field.binding, required: true },
+                      }
+                    : field;
+                  const controlledField =
+                    field.definition.id in v4CascadeOptions
+                      ? {
+                          ...resolvedField,
+                          options: v4CascadeOptions[field.definition.id] ?? [],
                         }
-                        className="h-control-md text-xs"
-                      />
-                    </FormField>
+                      : resolvedField;
+                  return (
+                    <TaxonomyV4Field
+                      key={field.definition.id}
+                      field={controlledField}
+                      locale={currentLocale}
+                      value={draft.attributes[field.definition.id]}
+                      disabled={fieldState.disabled}
+                      state={
+                        v4CascadeState[field.definition.id] ??
+                        (field.definition.optionSetId &&
+                        field.options.length === 0
+                          ? "empty"
+                          : "ready")
+                      }
+                      error="Impossible de charger les options liées."
+                      onRetry={() => setV4RetryKey((value) => value + 1)}
+                      onChange={(value) =>
+                        updateAttribute(field.definition.id, value)
+                      }
+                    />
                   );
                 })}
               </div>
             </div>
           )}
+          {!v4Schema &&
+            v4SchemaState !== "loading" &&
+            schema &&
+            schema.fields.length > 0 && (
+              <div className="pt-4 border-t border-border-subtle space-y-4">
+                <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Tag className="w-icon-sm h-icon-sm text-primary" />
+                  <span>{t("publishing.publishWizard.criteresDetailles")}</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {schema.fields.map((field) => {
+                    if (!field.isVisiblyMet) return null;
+                    const attr = field.attribute;
+                    const value = draft.attributes?.[attr.code] ?? "";
+                    const hint =
+                      attr.helpText ||
+                      (field.fieldRole === "recommended"
+                        ? "Champ recommandé"
+                        : undefined);
+
+                    if (attr.dataType === "select") {
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={attr.label}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <Select
+                            size="compact"
+                            className="w-full"
+                            labelledByAncestor
+                            value={value}
+                            onChange={(e) =>
+                              updateAttribute(attr.code, e.target.value)
+                            }
+                          >
+                            <option value="">
+                              {t(
+                                "publishing.publishWizard.selectionnerUneOption",
+                              )}
+                            </option>
+                            {attr.options?.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </Select>
+                        </FormField>
+                      );
+                    }
+
+                    if (attr.dataType === "multi_select") {
+                      const selectedValues = Array.isArray(value) ? value : [];
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={attr.label}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <div className="grid grid-cols-1 gap-2 rounded-control border border-border-base bg-bg-base p-3 sm:grid-cols-2">
+                            {(attr.options || []).map((option) => (
+                              <Checkbox
+                                key={option.value}
+                                label={option.label}
+                                checked={selectedValues.includes(option.value)}
+                                onChange={(event) => {
+                                  const next = event.target.checked
+                                    ? [...selectedValues, option.value]
+                                    : selectedValues.filter(
+                                        (selected) => selected !== option.value,
+                                      );
+                                  updateAttribute(attr.code, next);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </FormField>
+                      );
+                    }
+
+                    if (
+                      attr.dataType === "number" ||
+                      attr.dataType === "year" ||
+                      attr.dataType === "money"
+                    ) {
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <Input
+                            type="number"
+                            placeholder={
+                              attr.validation?.placeholder ||
+                              (attr.unit ? `ex: 50 ${attr.unit}` : "")
+                            }
+                            value={value}
+                            min={attr.validation?.min}
+                            max={attr.validation?.max}
+                            step={
+                              attr.validation?.step ||
+                              (attr.dataType === "year" ? 1 : undefined)
+                            }
+                            onChange={(e) =>
+                              updateAttribute(
+                                attr.code,
+                                e.target.value ? Number(e.target.value) : "",
+                              )
+                            }
+                            className="h-control-md text-xs"
+                          />
+                        </FormField>
+                      );
+                    }
+
+                    if (attr.dataType === "range") {
+                      const rangeValue =
+                        value &&
+                        typeof value === "object" &&
+                        !Array.isArray(value)
+                          ? value
+                          : { min: "", max: "" };
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <div className="grid grid-cols-2 gap-2">
+                            {(["min", "max"] as const).map((bound) => (
+                              <Input
+                                key={bound}
+                                type="number"
+                                aria-label={
+                                  bound === "min" ? "Minimum" : "Maximum"
+                                }
+                                placeholder={bound === "min" ? "Min" : "Max"}
+                                value={rangeValue[bound] ?? ""}
+                                min={attr.validation?.min}
+                                max={attr.validation?.max}
+                                step={attr.validation?.step}
+                                onChange={(event) =>
+                                  updateAttribute(attr.code, {
+                                    ...rangeValue,
+                                    [bound]: event.target.value
+                                      ? Number(event.target.value)
+                                      : "",
+                                  })
+                                }
+                                className="h-control-md text-xs"
+                              />
+                            ))}
+                          </div>
+                        </FormField>
+                      );
+                    }
+
+                    if (attr.dataType === "boolean") {
+                      return (
+                        <div key={attr.id} className="flex items-center pt-6">
+                          <Checkbox
+                            label={attr.label}
+                            description={attr.helpText}
+                            checked={!!value}
+                            onChange={(e) =>
+                              updateAttribute(attr.code, e.target.checked)
+                            }
+                          />
+                        </div>
+                      );
+                    }
+
+                    if (attr.dataType === "long_text") {
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={attr.label}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <Textarea
+                            value={value}
+                            maxLength={attr.validation?.maxLength}
+                            placeholder={attr.validation?.placeholder || ""}
+                            onChange={(event) =>
+                              updateAttribute(attr.code, event.target.value)
+                            }
+                            className="min-h-24 text-xs"
+                          />
+                        </FormField>
+                      );
+                    }
+
+                    if (
+                      attr.dataType === "date" ||
+                      attr.dataType === "date_time"
+                    ) {
+                      return (
+                        <FormField
+                          key={attr.id}
+                          label={attr.label}
+                          required={field.isRequired}
+                          hint={hint}
+                        >
+                          <Input
+                            type={
+                              attr.dataType === "date"
+                                ? "date"
+                                : "datetime-local"
+                            }
+                            value={value}
+                            onChange={(event) =>
+                              updateAttribute(attr.code, event.target.value)
+                            }
+                            className="h-control-md text-xs"
+                          />
+                        </FormField>
+                      );
+                    }
+
+                    return (
+                      <FormField
+                        key={attr.id}
+                        label={attr.label}
+                        required={field.isRequired}
+                        hint={hint}
+                      >
+                        <Input
+                          type="text"
+                          placeholder={attr.validation?.placeholder || ""}
+                          value={value}
+                          onChange={(e) =>
+                            updateAttribute(attr.code, e.target.value)
+                          }
+                          className="h-control-md text-xs"
+                        />
+                      </FormField>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
         </div>
       )}
 

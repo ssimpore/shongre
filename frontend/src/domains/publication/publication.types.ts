@@ -65,7 +65,24 @@ export interface MultiMarketValidationResult {
 }
 
 export type ListingIntent =
-  "SELL" | "GIVE" | "EXCHANGE" | "RENT" | "OFFER_SERVICE" | "JOB_OFFER";
+  | "SELL"
+  | "DONATE"
+  | "EXCHANGE"
+  | "RENT_OUT"
+  | "RENT_SEEK"
+  | "SERVICE_OFFER"
+  | "SERVICE_REQUEST"
+  | "JOB_OFFER"
+  | "JOB_SEEK"
+  | "WANTED"
+  | "BOOK"
+  | "COURSE_OFFER"
+  | "BUSINESS_SALE"
+  | "NOTICE"
+  // Compatibility values accepted while persisted v3 drafts are upgraded.
+  | "GIVE"
+  | "RENT"
+  | "OFFER_SERVICE";
 
 export type PriceModel =
   | "fixed"
@@ -141,6 +158,8 @@ export interface PublicationDraftState {
   selectedMarkets?: string[]; // Multiple target publication markets e.g. ['FR', 'BE']
   marketPublications?: Record<string, Partial<ListingMarketPublication>>;
   taxonomyNodeId: string;
+  listingTypeId?: string;
+  taxonomyVersion?: "4.0.0";
   taxonomySlug?: string;
   listingIntent: ListingIntent;
   listingFamily?: ListingFamily;

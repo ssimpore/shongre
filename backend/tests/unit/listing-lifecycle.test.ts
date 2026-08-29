@@ -46,15 +46,17 @@ describe("Listing & Order Lifecycle", () => {
   it("publishes a valid listing with automated safety assessment", async () => {
     const published = await listingsService.publishListing(
       {
-        title: "Appareil photo Sony Alpha 7 IV",
+        title: "Smartphone Sony Xperia 1 V",
         description:
-          "Excellent état, vendu avec objectif 28-70mm et 2 batteries.",
+          "Excellent état, vendu avec sa boîte et deux coques de protection.",
         price: 1850,
-        categoryId: "electronics.smartphones",
+        categoryId: "electronics.smartphones.phones",
         marketCode: "FR",
         condition: "tres-bon-etat",
         city: "Lyon",
         postalCode: "69002",
+        images: ["https://images.example.test/xperia.jpg"],
+        attributes: { listing_intent: "sell", price_type: "fixed" },
       },
       "user_camille",
     );
@@ -68,16 +70,18 @@ describe("Listing & Order Lifecycle", () => {
   it("persists one listing with explicit France and Belgium publications", async () => {
     const published = await listingsService.publishListing(
       {
-        title: "Appareil photo hybride multi-marché",
+        title: "Smartphone Sony multi-marché",
         description:
-          "Excellent état, vendu avec objectif et batterie supplémentaire.",
+          "Excellent état, vendu avec sa boîte et une coque supplémentaire.",
         price: 920,
-        categoryId: "electronics.smartphones",
+        categoryId: "electronics.smartphones.phones",
         marketCode: "FR",
         selectedMarkets: ["FR", "BE"],
         condition: "tres-bon-etat",
         city: "Lille",
         postalCode: "59000",
+        images: ["https://images.example.test/xperia-multi-market.jpg"],
+        attributes: { listing_intent: "sell", price_type: "fixed" },
       },
       "user_camille",
     );

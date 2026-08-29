@@ -5,6 +5,13 @@ import {
   TaxonomyNode,
   TaxonomyAttribute,
 } from "../../../domains/taxonomy/taxonomy.types";
+import type {
+  MarketContext,
+  ResolveTaxonomyV4PublicInput,
+  TaxonomyV4OptionPage,
+  TaxonomyV4ResolvedSchema,
+  TaxonomyV4TreeResponse,
+} from "@shongre/contracts";
 
 export class HttpTaxonomyService implements TaxonomyServiceContract {
   async getRootCategories(): Promise<Category[]> {
@@ -39,6 +46,62 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     >("/taxonomy/search-filters", {
       params: { nodeId },
     });
+  }
+
+  async getV4Tree(input: {
+    marketContext: MarketContext;
+    locale: string;
+    taxonomyVersion?: string;
+  }): Promise<TaxonomyV4TreeResponse> {
+    return httpClient.get<TaxonomyV4TreeResponse>("/taxonomy/v4/tree", {
+      headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+      params: {
+        locale: input.locale,
+        version: input.taxonomyVersion,
+      },
+    });
+  }
+
+  async resolveV4(
+    input: ResolveTaxonomyV4PublicInput,
+  ): Promise<TaxonomyV4ResolvedSchema> {
+    return httpClient.get<TaxonomyV4ResolvedSchema>("/taxonomy/v4/resolve", {
+      headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+      params: {
+        category: input.categoryIdentity,
+        listingTypeId: input.listingTypeId,
+        intent: input.intent,
+        sellerType: input.sellerType,
+        locale: input.locale,
+        version: input.taxonomyVersion,
+      },
+    });
+  }
+
+  async lookupV4Options(input: {
+    marketContext: MarketContext;
+    optionSetId: string;
+    parentOptionId?: string;
+    query?: string;
+    cursor?: string;
+    limit?: number;
+    locale?: string;
+    taxonomyVersion?: string;
+  }): Promise<TaxonomyV4OptionPage> {
+    return httpClient.get<TaxonomyV4OptionPage>(
+      `/taxonomy/v4/options/${encodeURIComponent(input.optionSetId)}`,
+      {
+        headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+        params: {
+          parentOptionId: input.parentOptionId,
+          q: input.query,
+          cursor: input.cursor,
+          limit: input.limit,
+          locale: input.locale,
+          version: input.taxonomyVersion,
+        },
+      },
+    );
   }
 }
 

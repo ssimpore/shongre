@@ -259,9 +259,11 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
     });
 
     it("resolves dynamic category attributes in Demo mode", async () => {
-      const attrs = await demoRepo.getAttributesForCategory("cars");
+      const attrs = await demoRepo.getAttributesForCategory(
+        "vehicles.cars.city_cars",
+      );
       expect(attrs.some((a) => a.id === "mileage")).toBe(true);
-      expect(attrs.some((a) => a.id === "fuel")).toBe(true);
+      expect(attrs.some((a) => a.id === "fuel_type")).toBe(true);
     });
 
     it("PostgresTaxonomyRepository implements all interface methods cleanly", () => {

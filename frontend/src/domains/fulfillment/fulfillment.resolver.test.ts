@@ -4,7 +4,7 @@ import { fulfillmentResolver } from "./fulfillment.resolver";
 describe("FulfillmentResolver", () => {
   it("resolves parcel and hand delivery capabilities for physical items", () => {
     const caps = fulfillmentResolver.resolveCapabilities({
-      taxonomyNodeId: "electronics.smartphones",
+      taxonomyNodeId: "electronics.smartphones.phones",
       marketCode: "FR",
       sellerType: "individual",
       price: 450,
@@ -30,7 +30,7 @@ describe("FulfillmentResolver", () => {
 
   it("disables physical shipping for real estate and job listings", () => {
     const realEstateCaps = fulfillmentResolver.resolveCapabilities({
-      taxonomyNodeId: "real_estate.sales",
+      taxonomyNodeId: "real_estate.sales.apartments",
       marketCode: "FR",
       sellerType: "pro",
     });

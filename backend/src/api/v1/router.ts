@@ -1,12 +1,17 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { createHash } from "node:crypto";
 import { ZodError } from "zod";
-import { getCountryConfig } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  taxonomyV4ListingIntentSchema,
+} from "@shongre/contracts";
 import {
   authService,
   usersService,
   marketsService,
   taxonomyService,
+  taxonomyV4Service,
+  TaxonomyV4Error,
   listingsService,
   ordersService,
   paymentsService,
@@ -83,11 +88,50 @@ import type {
 } from "../../modules/trending/trending.types.js";
 import { OPENAPI_OPERATIONS } from "../../generated/openapi-manifest.js";
 import {
+  requireApiMarketContext,
   requireApiRequestMarket,
   requireOpenApiRequestMarket,
   requireOpenMarketplace,
   resolveApiRequestMarket,
 } from "../../modules/markets/request-market-context.js";
+
+function requireTaxonomyV4Version(value: string | null): "4.0.0" | undefined {
+  if (value === null) return undefined;
+  if (value !== "4.0.0") {
+    throw new AppError({
+      code: "TAXONOMY_VERSION_UNSUPPORTED",
+      statusCode: 400,
+      message: "Version de taxonomie non prise en charge.",
+    });
+  }
+  return value;
+}
+
+function taxonomyV4Result<T>(operation: () => T): T {
+  try {
+    return operation();
+  } catch (error) {
+    if (!(error instanceof TaxonomyV4Error)) throw error;
+    const statusCode =
+      error.code === "TAXONOMY_CATEGORY_NOT_FOUND" ||
+      error.code === "TAXONOMY_LISTING_TYPE_NOT_FOUND"
+        ? 404
+        : [
+              "TAXONOMY_CATEGORY_NOT_PUBLISHABLE",
+              "TAXONOMY_LISTING_TYPE_AMBIGUOUS",
+              "TAXONOMY_MARKET_UNAVAILABLE",
+              "TAXONOMY_SELLER_INELIGIBLE",
+            ].includes(error.code)
+          ? 409
+          : 400;
+    throw new AppError({
+      code: error.code,
+      statusCode,
+      message: error.message,
+      details: error.field ? { field: error.field } : undefined,
+    });
+  }
+}
 
 /**
  * Every route declares who may call it.
@@ -844,22 +888,17 @@ export class ApiV1Router {
         });
       },
     );
-    this.addRoute(
-      "GET",
-      "/home",
-      PUBLIC,
-      async ({ query, marketCode }) => {
-        const resolvedMarket = requireOpenApiRequestMarket(marketCode);
-        requireOpenMarketplace(resolvedMarket);
-        return homepageService.getPublished({
-          marketCode: resolvedMarket,
-          locale: query.get("locale") || "fr-FR",
-          country: query.get("country") || undefined,
-          region: query.get("region") || undefined,
-          city: query.get("city") || undefined,
-        });
-      },
-    );
+    this.addRoute("GET", "/home", PUBLIC, async ({ query, marketCode }) => {
+      const resolvedMarket = requireOpenApiRequestMarket(marketCode);
+      requireOpenMarketplace(resolvedMarket);
+      return homepageService.getPublished({
+        marketCode: resolvedMarket,
+        locale: query.get("locale") || "fr-FR",
+        country: query.get("country") || undefined,
+        region: query.get("region") || undefined,
+        city: query.get("city") || undefined,
+      });
+    });
     this.addRoute(
       "GET",
       "/home/trending",
@@ -987,7 +1026,13 @@ export class ApiV1Router {
         });
         // The seller is the caller. Taking sellerId from the body would let anyone
         // publish listings under another account's name.
-        return listingsService.publishListing(body?.draft, principal.userId);
+        return listingsService.publishListing(body?.draft, principal.userId, {
+          marketContext: requireApiMarketContext(marketCode),
+          sellerType:
+            subject.accountType === "professional"
+              ? "professional"
+              : "individual",
+        });
       },
     );
     this.addRoute(
@@ -1074,6 +1119,93 @@ export class ApiV1Router {
       PUBLIC,
       async ({ query }) =>
         taxonomyService.resolveSearchFilters(query.get("nodeId") || undefined),
+    );
+    this.addRoute(
+      "GET",
+      "/taxonomy/v4/tree",
+      PUBLIC,
+      async ({ marketCode, query }) => {
+        requireTaxonomyV4Version(query.get("version"));
+        const marketContext = requireApiMarketContext(marketCode);
+        const locale = query.get("locale") || marketContext.locale;
+        if (!locale || locale.length < 2 || locale.length > 16) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Locale de taxonomie invalide.",
+          });
+        }
+        return taxonomyV4Result(() => ({
+          ...taxonomyV4Service.getMetadata(),
+          marketCode: marketContext.countryCode!,
+          locale,
+          items: taxonomyV4Service.listTree(marketContext),
+        }));
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/taxonomy/v4/resolve",
+      PUBLIC,
+      async ({ marketCode, query }) => {
+        const categoryIdentity = query.get("category") || "";
+        const sellerType = query.get("sellerType");
+        const locale = query.get("locale") || "";
+        if (!categoryIdentity) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Une catégorie explicite est requise.",
+          });
+        }
+        if (sellerType !== "individual" && sellerType !== "professional") {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Type de vendeur invalide.",
+          });
+        }
+        if (locale.length < 2 || locale.length > 16) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Locale de taxonomie invalide.",
+          });
+        }
+        const intentValue = query.get("intent");
+        const intent = intentValue
+          ? taxonomyV4ListingIntentSchema.parse(intentValue)
+          : undefined;
+        return taxonomyV4Result(() =>
+          taxonomyV4Service.resolve({
+            marketContext: requireApiMarketContext(marketCode),
+            categoryIdentity,
+            listingTypeId: query.get("listingTypeId") || undefined,
+            intent,
+            sellerType,
+            sellerCapabilities: query.getAll("sellerCapability"),
+            locale,
+            taxonomyVersion: requireTaxonomyV4Version(query.get("version")),
+          }),
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/taxonomy/v4/options/:optionSetId",
+      PUBLIC,
+      async ({ marketCode, params, query }) => {
+        requireTaxonomyV4Version(query.get("version"));
+        const marketContext = requireApiMarketContext(marketCode);
+        return taxonomyV4Result(() => {
+          // Option availability is taxonomy-version and market scoped even when
+          // the current authored option set is shared by all active markets.
+          taxonomyV4Service.listTree(marketContext);
+          return taxonomyV4Service.lookupOptions({
+            optionSetId: params.optionSetId,
+            parentOptionId: query.get("parentOptionId") || undefined,
+            query: query.get("q") || undefined,
+            cursor: query.get("cursor") || undefined,
+            limit: query.has("limit") ? Number(query.get("limit")) : undefined,
+          });
+        });
+      },
     );
 
     // --------------------------------------------------------------------------
@@ -4507,10 +4639,7 @@ export class ApiV1Router {
       async ({ principal, body, query, marketCode }) => {
         const resolvedMarket = requireApiRequestMarket(marketCode);
         const locale = query.get("locale") || "fr-FR";
-        if (
-          body?.marketCode !== resolvedMarket ||
-          body?.locale !== locale
-        ) {
+        if (body?.marketCode !== resolvedMarket || body?.locale !== locale) {
           throw new AppError({
             code: "VALIDATION_ERROR",
             message: "La publication ne correspond pas au marché demandé.",

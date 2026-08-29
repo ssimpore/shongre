@@ -5,6 +5,7 @@ export * from "./schemas/discovery";
 export * from "./schemas/auth";
 export * from "./schemas/publication";
 export * from "./schemas/taxonomy";
+export * from "./taxonomy-v4-resolver";
 export * from "./fixtures/taxonomy-catalog";
 export * from "./schemas/moderation";
 export * from "./schemas/account";

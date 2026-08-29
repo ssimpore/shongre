@@ -28,14 +28,26 @@ export type AttributeDataType =
   | "select"
   | "multi_select"
   | "number"
+  | "integer"
+  | "decimal"
+  | "percent"
+  | "enum"
+  | "multi_enum"
+  | "string"
   | "text"
   | "long_text"
+  | "phone"
+  | "email"
+  | "url"
   | "boolean"
   | "range"
   | "year"
   | "date"
   | "date_time"
   | "money"
+  | "media"
+  | "document"
+  | "json"
   | "autocomplete"
   | "location";
 
@@ -83,6 +95,7 @@ export interface TaxonomyAttribute {
   unit?: string;
   fieldRole?: TaxonomyAttributeFieldRole;
   privacy?: TaxonomyAttributeVisibility;
+  sellerEligibility?: SellerEligibilityRules;
   required?: boolean;
   filterable?: boolean;
   searchable?: boolean;

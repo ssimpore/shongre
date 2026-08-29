@@ -132,6 +132,8 @@ export interface Listing {
   entitlementSnapshot?: Record<string, string | number | boolean | string[]>;
   seller?: UserProfile;
   categoryId: string;
+  listingTypeId?: string;
+  listingIntent?: import("@shongre/contracts").TaxonomyV4ListingIntent;
   title: string;
   description: string;
   price: number;

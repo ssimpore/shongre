@@ -2,6 +2,7 @@ import type { DiscoveryDocument } from "@shongre/shared";
 import type { PromotionPlacementType } from "@shongre/contracts";
 import type { Listing } from "../../types";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
+import { TaxonomyMigration } from "../taxonomy/taxonomy.migration";
 
 function promotionFor(listing: Listing): DiscoveryDocument["promotion"] {
   if (listing.promotionType) {
@@ -56,6 +57,21 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
   const publisherType =
     listing.publisherType ||
     (listing.sellerType === "pro" ? "professional" : "private");
+  const taxonomyNode =
+    TaxonomyMigration.resolveCanonicalNode(listing.subCategorySlug) ||
+    TaxonomyMigration.resolveCanonicalNode(listing.categorySlug);
+  const categoryId =
+    taxonomyNode?.id || listing.subCategorySlug || listing.categorySlug;
+  const categoryPath = Array.from(
+    new Set(
+      [
+        listing.categorySlug,
+        listing.subCategorySlug,
+        ...(taxonomyNode?.ancestorIds || []),
+        taxonomyNode?.id,
+      ].filter((value): value is string => Boolean(value)),
+    ),
+  );
   return {
     id: listing.id,
     publisherId:
@@ -66,8 +82,8 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
     marketCodes: listing.marketCodes || [
       listing.marketCode || DEFAULT_MARKET_CODE,
     ],
-    categoryId: listing.subCategorySlug || listing.categorySlug,
-    categoryPath: [listing.categorySlug, listing.subCategorySlug],
+    categoryId,
+    categoryPath,
     title: listing.title,
     description: listing.description,
     searchableAttributes: attributeValues,

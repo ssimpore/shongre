@@ -8,8 +8,8 @@ describe("canonical taxonomy coverage gate", () => {
   it("keeps every active publishable leaf complete", () => {
     const report = buildTaxonomyCoverageReport();
 
-    expect(report.totals.roots).toBe(16);
-    expect(report.totals.publishableLeaves).toBeGreaterThanOrEqual(44);
+    expect(report.totals.roots).toBe(18);
+    expect(report.totals.publishableLeaves).toBe(208);
     expect(report.totals.completeLeaves).toBe(report.totals.publishableLeaves);
     expect(report.blockingIssues).toEqual([]);
   });
@@ -37,14 +37,14 @@ describe("canonical taxonomy coverage gate", () => {
   it("only compares listings classified in the same publishable leaf", () => {
     expect(
       taxonomyService.canCompare([
-        "vehicles.cars.citadines",
-        "vehicles.cars.citadines",
+        "vehicles.cars.city_cars",
+        "vehicles.cars.city_cars",
       ]),
     ).toBe(true);
     expect(
       taxonomyService.canCompare([
-        "vehicles.cars.citadines",
-        "vehicles.cars.berlines",
+        "vehicles.cars.city_cars",
+        "vehicles.motos.motorcycles",
       ]),
     ).toBe(false);
   });

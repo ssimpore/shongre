@@ -5,6 +5,7 @@ import {
   isTest,
   resolveMarketContext,
 } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { config } from "../../app/config/index.js";
@@ -160,4 +161,34 @@ export function requireOpenApiRequestMarket(marketCode: string | null): string {
   const resolved = requireApiRequestMarket(marketCode);
   requireOpenMarketplace(resolved);
   return resolved;
+}
+
+/**
+ * Rebuilds the complete canonical context from the already cross-validated API
+ * market code. Domain services receive MarketContext rather than a locale or a
+ * France fallback, including for coming-soon markets that must fail closed.
+ */
+export function requireApiMarketContext(
+  marketCode: string | null,
+): MarketContext {
+  const resolved = requireApiRequestMarket(marketCode);
+  const country = getCountryConfig(resolved);
+  if (!country) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Marché inconnu ou désactivé.",
+    });
+  }
+  const hostname =
+    country.canonicalDomainMode === "france"
+      ? config.marketInfrastructure.franceDomain
+      : config.marketInfrastructure.globalDomain;
+  return resolveMarketContext({
+    hostname,
+    pathname: country.basePath,
+    infrastructure: config.marketInfrastructure,
+    allowDevelopmentHosts:
+      isLocal(config.environment.environment) ||
+      isTest(config.environment.environment),
+  });
 }

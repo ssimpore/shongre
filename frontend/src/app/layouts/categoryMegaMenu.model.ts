@@ -48,8 +48,36 @@ export async function loadCategoryNavigationBranch(
   return loadNodeBranch(taxonomy, root, isAvailable, new Set());
 }
 
+/**
+ * Loads the taxonomy roots not already promoted into the primary header row.
+ * This keeps the "Autres" panel derived from the same authoritative taxonomy
+ * instead of introducing another manually maintained category catalogue.
+ */
+export async function loadCategoryNavigationOverview(
+  taxonomy: TaxonomyServiceContract,
+  excludedRootSlugs: ReadonlySet<string>,
+  isAvailable: TaxonomyNodeAvailability,
+): Promise<TaxonomyNode[]> {
+  const roots = await taxonomy.getRootCategories();
+  const slugs = [
+    ...new Set(
+      roots
+        .map((root) => root.slug)
+        .filter((slug) => !excludedRootSlugs.has(slug)),
+    ),
+  ];
+  const branches = await Promise.all(
+    slugs.map((slug) =>
+      loadCategoryNavigationBranch(taxonomy, slug, isAvailable),
+    ),
+  );
+  return branches
+    .filter((branch): branch is TaxonomyNode => branch !== null)
+    .sort(byTaxonomyOrder);
+}
+
 export function hasCategoryMenuContent(
   node: TaxonomyNode | null | undefined,
 ): node is TaxonomyNode {
-  return Boolean(node?.children?.length);
+  return Boolean(node);
 }

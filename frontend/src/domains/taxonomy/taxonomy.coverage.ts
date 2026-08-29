@@ -1,10 +1,7 @@
 import { TaxonomyService, taxonomyService } from "./taxonomy.service";
 import { TaxonomyLevel, TaxonomyNode } from "./taxonomy.types";
-import {
-  CANONICAL_TAXONOMY_ALIASES,
-  CANONICAL_TAXONOMY_IDENTITIES,
-  CANONICAL_TAXONOMY_IDENTITY_BY_ID,
-} from "@shongre/contracts/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDENTITIES } from "@shongre/contracts/taxonomy-catalog";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { INITIAL_LISTINGS } from "../../mocks/initialDemoData";
 import { TaxonomyMigration } from "./taxonomy.migration";
 
@@ -102,27 +99,28 @@ export function buildTaxonomyCoverageReport(
   const leaves = service.getPublishableLeaves();
   const integrity = service.validateIntegrity();
   const duplicates = duplicateCandidates(nodes);
+  const v4Bundle = getTaxonomyV4PublicBundle();
   const identityIssues = CANONICAL_TAXONOMY_IDENTITIES.flatMap((identity) => {
-    const node = service.getNode(identity.id);
-    if (!node)
+    const crosswalk = v4Bundle.compatibility.v3Crosswalk.find(
+      (entry) => entry.sourceId === identity.id,
+    );
+    if (!crosswalk) {
       return [
-        `Shared identity ${identity.id} is missing from the demo taxonomy`,
+        `Shared identity ${identity.id} is missing from the reviewed v4 crosswalk`,
       ];
-    const mismatches = [
-      node.code !== identity.code ? "code" : "",
-      node.slug !== identity.slug ? "slug" : "",
-      node.parentId !== identity.parentId ? "parentId" : "",
-      node.level !== identity.level ? "level" : "",
-    ].filter(Boolean);
-    return mismatches.length
-      ? [`${identity.id}: shared identity drift in ${mismatches.join(", ")}`]
-      : [];
+    }
+    return service.getNode(crosswalk.canonicalId)
+      ? []
+      : [
+          `Shared identity ${identity.id} maps to missing v4 node ${crosswalk.canonicalId}`,
+        ];
   });
-  const aliasIssues = Object.entries(CANONICAL_TAXONOMY_ALIASES).flatMap(
-    ([alias, nodeId]) =>
-      CANONICAL_TAXONOMY_IDENTITY_BY_ID.has(nodeId)
-        ? []
-        : [`Alias ${alias} targets missing node ${nodeId}`],
+  const aliasIssues = v4Bundle.aliases.flatMap((alias) =>
+    service.getNode(alias.canonicalCategoryId)
+      ? []
+      : [
+          `Alias ${alias.alias} targets missing node ${alias.canonicalCategoryId}`,
+        ],
   );
   const listingReferenceIssues = TaxonomyMigration.buildDryRunReport(
     INITIAL_LISTINGS,

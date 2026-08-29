@@ -443,7 +443,14 @@ France-only happy path is insufficient for market-sensitive work.
 ## Marketplace domain invariants
 
 - Taxonomy is hierarchical, variable-depth, market-aware, and metadata-driven.
-  Publication fields and search filters should use reusable field definitions
+  The normalized v4 source is backend-owned and compiled through the root
+  `taxonomy-import`, `taxonomy-compile`, and `taxonomy-check` targets; runtime
+  clients consume generated private or public-safe projections and must never
+  parse Excel or maintain a second category/attribute catalogue. The master
+  workbook compiler expands reusable `FLOW_TEMPLATE` rows with listing-type
+  `ADD`/`EXCLUDE` overrides and must reject duplicate effective bindings.
+  Unapproved country, seller, and regulatory policy remains quarantined or
+  disabled. Publication fields and search filters use reusable field definitions
   rather than category condition trees.
 - A listing is stored once and may have explicit market publications. The shared
   record alone does not prove availability. Backend services own lifecycle

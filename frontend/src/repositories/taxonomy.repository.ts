@@ -21,13 +21,33 @@ import { CANONICAL_TAXONOMY } from "../domains/taxonomy/taxonomy.data";
 import { ATTRIBUTE_REGISTRY } from "../domains/taxonomy/attribute.registry";
 import { storageService } from "../services/storage.service";
 import { themeColors } from "@shongre/design-tokens";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { TaxonomyMigration } from "../domains/taxonomy/taxonomy.migration";
+import { INITIAL_LISTINGS } from "../mocks/initialDemoData";
+
+const TAXONOMY_V4_PUBLIC_BUNDLE = getTaxonomyV4PublicBundle();
+
+export type TaxonomyV4GovernanceSnapshot = Readonly<{
+  metadata: typeof TAXONOMY_V4_PUBLIC_BUNDLE.metadata;
+  listingTypes: typeof TAXONOMY_V4_PUBLIC_BUNDLE.listingTypes;
+  attributeGroups: typeof TAXONOMY_V4_PUBLIC_BUNDLE.attributeGroups;
+  optionSets: typeof TAXONOMY_V4_PUBLIC_BUNDLE.optionSets;
+  options: typeof TAXONOMY_V4_PUBLIC_BUNDLE.options;
+  optionParentLinks: typeof TAXONOMY_V4_PUBLIC_BUNDLE.optionParentLinks;
+  bindings: typeof TAXONOMY_V4_PUBLIC_BUNDLE.bindings;
+  dependencyRules: typeof TAXONOMY_V4_PUBLIC_BUNDLE.dependencyRules;
+  validationRules: typeof TAXONOMY_V4_PUBLIC_BUNDLE.validationRules;
+  aliases: typeof TAXONOMY_V4_PUBLIC_BUNDLE.aliases;
+  crosswalk: typeof TAXONOMY_V4_PUBLIC_BUNDLE.compatibility.v3Crosswalk;
+  demoMigration: ReturnType<typeof TaxonomyMigration.buildDryRunReport>;
+}>;
 
 const STORAGE_KEYS = {
-  TAXONOMY_NODES: "shongre_taxonomy_nodes_v2",
-  ATTRIBUTES: "shongre_taxonomy_attributes_v2",
-  DRAFT_CHANGES: "shongre_taxonomy_draft_changes_v2",
-  VERSIONS: "shongre_taxonomy_versions_v2",
-  AUDIT_LOGS: "shongre_taxonomy_audit_logs_v2",
+  TAXONOMY_NODES: "shongre_taxonomy_nodes_v4",
+  ATTRIBUTES: "shongre_taxonomy_attributes_v4",
+  DRAFT_CHANGES: "shongre_taxonomy_draft_changes_v4",
+  VERSIONS: "shongre_taxonomy_versions_v4",
+  AUDIT_LOGS: "shongre_taxonomy_audit_logs_v4",
 };
 
 export interface ITaxonomyAdminRepository {
@@ -98,6 +118,7 @@ export interface ITaxonomyAdminRepository {
   validateTaxonomy(): TaxonomyValidationIssue[];
   analyzeNodeImpact(nodeId: string): TaxonomyImpactReport;
   getAuditHistory(nodeId?: string): TaxonomyAuditEvent[];
+  getV4GovernanceSnapshot(): TaxonomyV4GovernanceSnapshot;
   exportTaxonomyJSON(): string;
   importTaxonomyJSON(
     jsonString: string,
@@ -164,7 +185,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           versionNumber: 1,
           status: "published",
           changeCount: 0,
-          description: "Taxonomie initiale canonique Shongre (16 univers)",
+          description:
+            "Projection de démonstration de la taxonomie v4 (18 univers)",
           publishedAt: "2026-08-01T08:00:00Z",
           publishedBy: "System Administrator",
           createdAt: "2026-08-01T08:00:00Z",
@@ -188,7 +210,7 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
           },
           timestamp: "2026-08-01T08:00:00Z",
           details:
-            "16 univers créés avec schéma d'attributs et capacités de paiement.",
+            "18 univers chargés depuis la projection publique générée de la taxonomie v4.",
         },
       ],
     );
@@ -318,6 +340,23 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
     };
     this.nodes.forEach(traverse);
     return found;
+  }
+
+  getV4GovernanceSnapshot(): TaxonomyV4GovernanceSnapshot {
+    return {
+      metadata: TAXONOMY_V4_PUBLIC_BUNDLE.metadata,
+      listingTypes: TAXONOMY_V4_PUBLIC_BUNDLE.listingTypes,
+      attributeGroups: TAXONOMY_V4_PUBLIC_BUNDLE.attributeGroups,
+      optionSets: TAXONOMY_V4_PUBLIC_BUNDLE.optionSets,
+      options: TAXONOMY_V4_PUBLIC_BUNDLE.options,
+      optionParentLinks: TAXONOMY_V4_PUBLIC_BUNDLE.optionParentLinks,
+      bindings: TAXONOMY_V4_PUBLIC_BUNDLE.bindings,
+      dependencyRules: TAXONOMY_V4_PUBLIC_BUNDLE.dependencyRules,
+      validationRules: TAXONOMY_V4_PUBLIC_BUNDLE.validationRules,
+      aliases: TAXONOMY_V4_PUBLIC_BUNDLE.aliases,
+      crosswalk: TAXONOMY_V4_PUBLIC_BUNDLE.compatibility.v3Crosswalk,
+      demoMigration: TaxonomyMigration.buildDryRunReport(INITIAL_LISTINGS),
+    };
   }
 
   // =========================================================================
@@ -594,7 +633,15 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       const newParent = this.getNode(newParentId);
       if (!newParent)
         throw new Error(`Nouveau parent "${newParentId}" introuvable.`);
-      if (newParent.ancestorIds?.includes(node.id)) {
+      const descendantIds = new Set<string>();
+      const visitDescendants = (current: TaxonomyNode) => {
+        current.children?.forEach((child) => {
+          descendantIds.add(child.id);
+          visitDescendants(child);
+        });
+      };
+      visitDescendants(node);
+      if (descendantIds.has(newParentId)) {
         throw new Error(
           `Déplacement interdit (cycle détecté) : "${newParent.name}" est un descendant direct de "${node.name}".`,
         );
@@ -1305,12 +1352,12 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
         issues.push({
           id: `val_attr_options_${attribute.id}`,
           nodeLabel: attribute.label,
-          severity: "error",
+          severity: "warning",
           code: "MISSING_ATTRIBUTE_OPTIONS",
           message: `L'attribut "${attribute.label}" n'a pas d'options déclarées.`,
           field: "options",
           remediation:
-            "Ajoutez les options localisées ou utilisez un type texte.",
+            "Ajoutez une source d’options localisée si ce champ doit utiliser un vocabulaire fermé ; sinon le contrôle texte de repli reste actif.",
         });
       }
     });

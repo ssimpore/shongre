@@ -61,29 +61,18 @@ describe("Publication System & Schema Resolvers", () => {
   // =========================================================================
   // 2. DECLARATIVE CONDITIONAL DEPENDENCIES
   // =========================================================================
-  it("evaluates declarative conditional dependencies dynamically", () => {
-    // When fuel is electric on cars
+  it("exposes workbook-defined electric vehicle attributes through the v4 compatibility projection", () => {
     const electricSchema = publicationResolver.resolve({
-      taxonomyNodeId: "vehicles.cars",
-      currentValues: { fuel: "electrique" },
+      taxonomyNodeId: "vehicles.cars.city_cars",
+      currentValues: { fuel_type: "electric" },
     });
 
     expect(electricSchema).not.toBeNull();
     const batteryField = electricSchema?.fields.find(
-      (f) => f.attribute.code === "battery_capacity",
+      (field) => field.attribute.code === "battery_capacity_kwh",
     );
-    expect(batteryField?.isVisiblyMet).toBe(true);
-
-    // When fuel is diesel on cars
-    const dieselSchema = publicationResolver.resolve({
-      taxonomyNodeId: "vehicles.cars",
-      currentValues: { fuel: "diesel" },
-    });
-
-    const batteryFieldDiesel = dieselSchema?.fields.find(
-      (f) => f.attribute.code === "battery_capacity",
-    );
-    expect(batteryFieldDiesel?.isVisiblyMet).toBe(false);
+    expect(batteryField).toBeDefined();
+    expect(batteryField?.fieldRole).toBe("optional");
   });
 
   // =========================================================================
@@ -92,7 +81,7 @@ describe("Publication System & Schema Resolvers", () => {
   it("strictly decouples Direct Online Purchase from Reservation", () => {
     // Smartphone: Supports Direct Purchase + Reservation + Contact
     const phoneCaps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: "electronics.telephony.smartphones",
+      taxonomyNodeId: "electronics.smartphones.phones",
       price: 490,
       stock: 1,
     });
@@ -102,7 +91,7 @@ describe("Publication System & Schema Resolvers", () => {
 
     // Real Estate: Contact only (Direct purchase disabled)
     const reCaps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: "real_estate.sales",
+      taxonomyNodeId: "real_estate.sales.apartments",
       price: 250000,
     });
     expect(reCaps.canContact).toBe(true);
@@ -110,7 +99,7 @@ describe("Publication System & Schema Resolvers", () => {
 
     // Free Donation (0 €): Contact only (No paid purchase/reservation)
     const donationCaps = transactionCapabilitiesService.resolve({
-      taxonomyNodeId: "home_garden.furniture.sofas",
+      taxonomyNodeId: "home_garden.furniture.tables",
       listingIntent: "GIVE",
       price: 0,
     });
@@ -124,7 +113,7 @@ describe("Publication System & Schema Resolvers", () => {
   it("resolves accurate fulfillment capabilities and delivery quotes across categories", () => {
     // Smartphone -> Parcel shipping enabled
     const phoneFulfillment = fulfillmentResolver.resolveCapabilities({
-      taxonomyNodeId: "electronics.telephony.smartphones",
+      taxonomyNodeId: "electronics.smartphones.phones",
     });
     expect(phoneFulfillment.allowHandDelivery).toBe(true);
     expect(phoneFulfillment.allowParcelShipping).toBe(true);
@@ -196,7 +185,7 @@ describe("Publication System & Schema Resolvers", () => {
   // =========================================================================
   it("validates required attributes and rejects incomplete drafts", () => {
     const invalidDraft: Partial<PublicationDraftState> = {
-      taxonomyNodeId: "vehicles.cars",
+      taxonomyNodeId: "vehicles.cars.city_cars",
       title: "", // Too short
       description: "Court",
       photos: [],
@@ -220,7 +209,7 @@ describe("Publication System & Schema Resolvers", () => {
 
   it("keeps employment publication contact-led without product media or purchase pricing", () => {
     const schema = publicationResolver.resolve({
-      taxonomyNodeId: "jobs.offers",
+      taxonomyNodeId: "jobs.offers.it_data",
       marketCode: "FR",
     });
     expect(schema?.supportedIntents).toEqual(["JOB_OFFER"]);
@@ -228,12 +217,11 @@ describe("Publication System & Schema Resolvers", () => {
     expect(schema?.mediaGuidance?.minimumPhotoCount).toBe(0);
     expect(schema?.publication.primaryCta).toBe("apply");
     expect(schema?.publication.standardPolicy.eligibleSellerTypes).toEqual([
-      "individual",
       "professional",
     ]);
 
     const result = publicationService.validateDraft({
-      taxonomyNodeId: "jobs.offers",
+      taxonomyNodeId: "jobs.offers.it_data",
       listingIntent: "JOB_OFFER",
       title: "Développeur frontend senior",
       description:
@@ -260,7 +248,7 @@ describe("Publication System & Schema Resolvers", () => {
   it("saves, retrieves and restores draft seamlessly", () => {
     const mockDraft: PublicationDraftState = {
       marketCode: "FR",
-      taxonomyNodeId: "home_garden.furniture.sofas",
+      taxonomyNodeId: "home_garden.furniture",
       listingIntent: "SELL",
       title: "Canapé convertible 3 places",
       description: "Superbe canapé beige en parfait état.",

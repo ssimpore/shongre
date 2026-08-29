@@ -10,7 +10,7 @@ describe("taxonomy publication validation", () => {
 
   it("rejects missing required vehicle fields and rogue attributes", async () => {
     const result = await validation.validateListingAttributes(
-      "vehicles.cars.citadines",
+      "vehicles.cars.city_cars",
       {
         mileage: 120000,
         unknown_field: "not allowed",
@@ -25,14 +25,24 @@ describe("taxonomy publication validation", () => {
 
   it("accepts a complete vehicle attribute payload", async () => {
     const result = await validation.validateListingAttributes(
-      "vehicles.cars.citadines",
+      "vehicles.cars.city_cars",
       {
-        condition: "bon-etat",
-        brand: "Renault",
+        title: "Renault Mégane d'occasion",
+        description: "Berline entretenue avec historique disponible.",
+        images: ["https://images.example.test/megane.jpg"],
+        price: 1_250_000,
+        listing_intent: "sell",
+        price_type: "fixed",
+        currency: "EUR",
+        city: "Lyon",
+        vehicle_type: "car",
+        brand: "renault",
+        model: "megane",
+        model_year: 2020,
         mileage: 120000,
-        fuel: "essence",
-        year: 2020,
-        transmission: "manuelle",
+        fuel_type: "petrol",
+        transmission: "manual",
+        condition: "very_good",
       },
     );
 

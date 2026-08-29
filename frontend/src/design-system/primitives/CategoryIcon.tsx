@@ -42,6 +42,8 @@ import {
   Compass,
   Code,
   Tv,
+  Leaf,
+  Ticket,
   LucideIcon,
 } from "lucide-react";
 import { colors } from "@shongre/design-tokens";
@@ -102,6 +104,8 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   Compass,
   Code,
   Tv,
+  Leaf,
+  Ticket,
 };
 
 // Fallback mapping by category slug or code
