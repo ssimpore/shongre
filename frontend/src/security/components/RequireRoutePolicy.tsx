@@ -33,10 +33,10 @@ export const RequireRoutePolicy: React.FC<{
   }
 
   const access = canonicalAccessContext(currentUser);
+  if (policy.requiresActiveStaff && access.staffStatus !== "active") {
+    return <Navigate to={routes.workspace.overview()} replace />;
+  }
   if (!policy.accountTypes.some((type) => type === access.accountType)) {
-    if (access.accountType === "staff") {
-      return <Navigate to={routes.admin.overview()} replace />;
-    }
     if (policy.access === "staff_capability") {
       return <Navigate to={routes.workspace.overview()} replace />;
     }

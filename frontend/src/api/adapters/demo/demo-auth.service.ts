@@ -96,7 +96,7 @@ export class DemoAuthService implements AuthServiceContract {
   async getMfaStatus() {
     await simulateNetworkDelay();
     const user = currentUserOrThrow();
-    const required = user.accountType === "staff" || Boolean(user.staffRole);
+    const required = user.staffStatus === "active";
     return {
       // Seeded staff personas represent provisioned internal accounts. Keeping
       // their session verified preserves one-click role switching while the
@@ -143,7 +143,7 @@ export class DemoAuthService implements AuthServiceContract {
   async disableMfa(code: string): Promise<void> {
     await simulateNetworkDelay();
     const user = currentUserOrThrow();
-    if (user.accountType === "staff" || user.staffRole)
+    if (user.staffStatus === "active" || user.staffStatus === "suspended")
       throw new Error("La double authentification est obligatoire.");
     const result = demoEngine.disableMFA(user.id, code);
     if (!result.success) throw new Error(result.message);

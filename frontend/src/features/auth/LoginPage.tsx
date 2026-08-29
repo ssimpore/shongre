@@ -60,7 +60,7 @@ export const LoginPage: React.FC = () => {
         if (result.success) {
           toast.success("Authentification 2FA réussie. Bienvenue !");
           navigate(
-            result.user?.accountType === "staff" ? "/admin" : redirectUrl,
+            result.user?.staffStatus === "active" ? "/admin" : redirectUrl,
           );
         } else {
           setErrorMessage(result.errorMessage || "Code 2FA invalide.");
@@ -70,7 +70,7 @@ export const LoginPage: React.FC = () => {
         if (result.success) {
           toast.success("Connexion réussie ! Bienvenue sur Shongre.");
           navigate(
-            result.user?.accountType === "staff"
+            result.user?.staffStatus === "active"
               ? "/securite-interne"
               : redirectUrl,
           );

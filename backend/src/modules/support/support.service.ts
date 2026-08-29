@@ -21,10 +21,7 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 
 function canReadSupportCases(principal: Principal): boolean {
-  return Boolean(
-    principal.capabilities?.includes("support.case.read") ||
-    ["support", "admin", "super_admin"].includes(principal.role),
-  );
+  return Boolean(principal.capabilities?.includes("support.case.read"));
 }
 
 function initialPriority(

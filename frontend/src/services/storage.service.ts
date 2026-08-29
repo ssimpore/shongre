@@ -28,6 +28,7 @@ import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 import { getCountryConfig } from "@shongre/contracts";
+import { staffRoleFromLegacyRole } from "@shongre/contracts/access-control";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -63,6 +64,24 @@ const KEYS = {
   USER_LOCALE: "shongre_user_locale_v1",
   USER_CURRENCY: "shongre_user_currency_v1",
 };
+
+function normalizeLegacyStaffProfile(user: UserProfile): UserProfile {
+  if (!["staff", "internal"].includes(String(user.accountType))) return user;
+  const canonicalFixture = Object.values(DEMO_USERS).find(
+    (fixture) => fixture.id === user.id,
+  );
+  const accountType = canonicalFixture?.accountType ?? "individual";
+  return {
+    ...user,
+    accountType,
+    staffStatus: user.staffStatus ?? "active",
+    staffRole:
+      user.staffRole ?? staffRoleFromLegacyRole(user.primaryRole || user.role),
+    primaryRole: canonicalFixture?.primaryRole ?? "buyer",
+    role: canonicalFixture?.role ?? "individual_buyer",
+    sellerType: accountType === "professional" ? "pro" : "individual",
+  };
+}
 
 class StorageService {
   private memoryStore = new Map<string, string>();
@@ -715,7 +734,12 @@ class StorageService {
       if (savedById) merged[fixtureKey] = savedById;
     });
 
-    return merged;
+    return Object.fromEntries(
+      Object.entries(merged).map(([key, user]) => [
+        key,
+        normalizeLegacyStaffProfile(user),
+      ]),
+    );
   }
 
   getUser(idOrKey: string): UserProfile | null {

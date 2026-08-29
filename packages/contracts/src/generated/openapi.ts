@@ -1033,6 +1033,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/users/{userId}/staff-status": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /**
+         * Grant, suspend, reactivate, revoke, or change Staff access
+         * @description Staff is an independently granted employee status. The caller must have admin.staff.manage, an MFA-verified Staff session, and recent authentication. Self-management is forbidden and every accepted change is audited.
+         */
+        readonly put: operations["updateAdminUserStaffStatus"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/users/{userId}/status": {
         readonly parameters: {
             readonly query?: never;
@@ -9678,6 +9698,14 @@ export interface components {
             readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
             readonly sellerId: string;
         };
+        readonly StaffAccessUpdateRequest: {
+            readonly reason: string;
+            readonly staffRole: components["schemas"]["StaffRole"];
+            /** @enum {string} */
+            readonly status: "active" | "suspended" | "revoked";
+        };
+        /** @enum {string} */
+        readonly StaffRole: "support_agent" | "moderator" | "trust_safety" | "compliance" | "finance" | "operations" | "commercial" | "content_manager" | "market_manager" | "admin" | "owner";
         readonly TaxonomyLegacyAttribute: {
             readonly code: string;
             readonly dataType: string;
@@ -12079,6 +12107,44 @@ export interface operations {
         readonly requestBody?: never;
         readonly responses: {
             /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateAdminUserStaffStatus: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly userId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["StaffAccessUpdateRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description The updated private user projection. */
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];

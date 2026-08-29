@@ -56,6 +56,21 @@ export const STAFF_ROLE_PRESENTATION: Record<
   owner: { title: "Propriétaire Plateforme", shortLabel: "Propriétaire" },
 };
 
+/** Presentation-only bridge for the historical role matrix UI. */
+export function platformRoleForStaffRole(role: StaffRole): PlatformRole {
+  switch (role) {
+    case "support_agent":
+      return "support";
+    case "owner":
+      return "super_admin";
+    case "trust_safety":
+    case "compliance":
+      return "operations";
+    default:
+      return role;
+  }
+}
+
 const permissionsFor = (role: PlatformRole): Permission[] =>
   capabilitiesForLegacyRole(role);
 
@@ -111,7 +126,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "support",
     title: "Agent Support Client",
     shortLabel: "Support",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 50,
     badgeColor: "bg-info-surface text-info border-info-border",
     description: "Assistance et gestion des dossiers support autorisés.",
@@ -122,7 +137,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "moderator",
     title: "Modérateur",
     shortLabel: "Modérateur",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 60,
     badgeColor: "bg-warning-surface text-warning border-warning-border",
     description: "Traitement des signalements et actions de modération.",
@@ -133,7 +148,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "operations",
     title: "Spécialiste Opérations",
     shortLabel: "Opérations",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 65,
     badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-300",
     description: "Suivi opérationnel dans un périmètre explicitement attribué.",
@@ -144,7 +159,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "finance",
     title: "Responsable Finance",
     shortLabel: "Finance",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 70,
     badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
     description: "Transactions, remboursements et rapprochement financier.",
@@ -155,7 +170,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "commercial",
     title: "Responsable Développement Marchand",
     shortLabel: "Commercial",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 68,
     badgeColor: "bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300",
     description: "Accompagnement des comptes et partenariats autorisés.",
@@ -166,7 +181,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "content_manager",
     title: "Gestionnaire Contenu & Taxonomie",
     shortLabel: "Contenu",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 62,
     badgeColor: "bg-violet-100 text-violet-900 border-violet-300",
     description: "Taxonomie et sélections éditoriales, sans privilège global.",
@@ -177,7 +192,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "market_manager",
     title: "Responsable Marché & Pays",
     shortLabel: "Responsable Marché",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 75,
     badgeColor: "bg-info-surface text-info border-info-border",
     description:
@@ -189,7 +204,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "admin",
     title: "Administrateur Plateforme",
     shortLabel: "Administrateur",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 90,
     badgeColor: "bg-danger-surface text-danger border-danger-border",
     description:
@@ -201,7 +216,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     id: "super_admin",
     title: "Propriétaire Plateforme",
     shortLabel: "Propriétaire",
-    accountType: "staff",
+    accountType: "individual",
     hierarchyLevel: 100,
     badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-black",
     description:

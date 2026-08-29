@@ -2222,8 +2222,7 @@ export const messagesEn: MessageCatalogue = {
   "home.homepageDeals.emptyTitle": "No active offers",
   "home.homepageDeals.emptyDescription":
     "The administrator preview shows this state, but the public section remains hidden.",
-  "home.homepageRecent.emptyTitle":
-    "No listings in the {market} market yet",
+  "home.homepageRecent.emptyTitle": "No listings in the {market} market yet",
   "home.heroBoostedScroll.carouselLabel": "Featured listings",
   "home.heroBoostedScroll.previous": "Previous listing",
   "home.heroBoostedScroll.next": "Next listing",
@@ -3133,6 +3132,26 @@ export const messagesEn: MessageCatalogue = {
   "admin.accountType.professional": "Professional account",
   "admin.accountType.internal": "Internal staff",
   "admin.accountType.staff": "Internal staff",
+  "admin.staff.filterLabel": "Filter by Staff status",
+  "admin.staff.filterAll": "All Staff statuses",
+  "admin.staff.status.none": "No Staff access",
+  "admin.staff.status.active": "Active Staff",
+  "admin.staff.status.suspended": "Suspended Staff",
+  "admin.staff.status.revoked": "Revoked Staff",
+  "admin.staff.grantAction": "Grant Staff",
+  "admin.staff.manageAction": "Manage Staff",
+  "admin.staff.modalTitle": "Secure Staff access",
+  "admin.staff.modalDescription":
+    "Set the employee access for {name}. Their Individual or Professional account type remains unchanged.",
+  "admin.staff.roleLabel": "Staff role",
+  "admin.staff.statusLabel": "Staff status",
+  "admin.staff.reasonLabel": "Auditable reason",
+  "admin.staff.reasonHint":
+    "At least 10 characters. Do not include sensitive data or secrets.",
+  "admin.staff.reasonMinimum": "Enter a reason of at least 10 characters.",
+  "admin.staff.confirmAction": "Save Staff access",
+  "admin.staff.updateSuccess": "Staff access was updated.",
+  "admin.staff.updateError": "Staff access could not be updated.",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Platform role outside the demo personas",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees": "No data yet",

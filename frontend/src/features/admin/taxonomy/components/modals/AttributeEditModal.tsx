@@ -139,7 +139,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
 

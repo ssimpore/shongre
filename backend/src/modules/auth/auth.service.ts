@@ -29,7 +29,6 @@ import {
   PROFESSIONAL_VERTICALS,
   type ProfessionalVertical,
   canonicalAccessContext,
-  staffRoleFromLegacyRole,
 } from "@shongre/contracts/access-control";
 import {
   buildPublicUrl,
@@ -131,8 +130,7 @@ export class AuthService {
     private sessions: SessionService = sessionService,
     private authRepo: IAuthRepository = authRepository,
     private emailSender: AuthEmailSender = authEmailSender,
-    private organizationProvisioner: OrganizationProvisioningRepository =
-      organizationProvisioningRepository,
+    private organizationProvisioner: OrganizationProvisioningRepository = organizationProvisioningRepository,
   ) {}
 
   /**
@@ -169,6 +167,10 @@ export class AuthService {
 
     if (claims.sid) await this.sessions.touch(claims.sid);
 
+    const [mfaVerified, recentlyAuthenticated] = await Promise.all([
+      this.sessions.isMfaVerified(claims.sid),
+      this.sessions.hasRecentAuthentication(claims.sid),
+    ]);
     return {
       userId: user.id,
       email: user.email,
@@ -176,12 +178,12 @@ export class AuthService {
       accountType: access.accountType,
       status: user.status,
       professionalVertical: user.professionalVertical,
-      staffRole:
-        user.staffRole ??
-        staffRoleFromLegacyRole(user.primaryRole || user.role),
+      staffStatus: access.staffStatus,
+      staffRole: access.staffRole,
       capabilities: permissionsForSubject(user),
       sessionId: claims.sid,
-      mfaVerified: await this.sessions.isMfaVerified(claims.sid),
+      mfaVerified,
+      recentlyAuthenticated,
     };
   }
 
@@ -501,7 +503,7 @@ export class AuthService {
     const credential = await this.authRepo.getMfaCredential(principal.userId);
     return {
       enabled: Boolean(credential?.enabledAt && !credential.disabledAt),
-      required: principal.accountType === "staff",
+      required: principal.staffStatus === "active",
       backupCodesRemaining:
         credential?.enabledAt && !credential.disabledAt
           ? credential.backupCodeHashes.length
@@ -620,7 +622,10 @@ export class AuthService {
 
   async disableMfa(principal: Principal, codeInput: string) {
     if (!principal.userId || !principal.sessionId) throw invalidCredentials();
-    if (principal.accountType === "staff") {
+    if (
+      principal.staffStatus === "active" ||
+      principal.staffStatus === "suspended"
+    ) {
       throw new AppError({
         code: "FORBIDDEN",
         message:

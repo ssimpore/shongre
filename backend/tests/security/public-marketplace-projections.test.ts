@@ -70,7 +70,7 @@ const listing = (status: Listing["status"] = "published"): Listing => ({
 });
 
 describe("public marketplace projections", () => {
-  it("returns a safe seller profile and hides staff accounts", async () => {
+  it("keeps Staff status private while preserving the underlying seller profile", async () => {
     const users = new UsersService(
       new DemoUserRepository({
         [seller.email]: seller,
@@ -79,10 +79,11 @@ describe("public marketplace projections", () => {
           id: "staff-user",
           slug: "staff-user",
           email: "staff@example.test",
-          accountType: "staff",
+          accountType: "individual",
+          staffStatus: "active",
           staffRole: "admin",
-          primaryRole: "admin",
-          role: "admin",
+          primaryRole: "individual_seller",
+          role: "individual_seller",
         },
       }),
     );
@@ -97,7 +98,13 @@ describe("public marketplace projections", () => {
     expect(publicSeller).not.toHaveProperty("phone");
     expect(publicSeller).not.toHaveProperty("staffRole");
     expect(publicSeller).not.toHaveProperty("isIdentityVerified");
-    expect(await users.getPublicUserById("staff-user")).toBeNull();
+    const publicStaffSeller = await users.getPublicUserById("staff-user");
+    expect(publicStaffSeller).toMatchObject({
+      id: "staff-user",
+      accountType: "individual",
+    });
+    expect(publicStaffSeller).not.toHaveProperty("staffStatus");
+    expect(publicStaffSeller).not.toHaveProperty("staffRole");
   });
 
   it("never exposes private listing, seller, ranking, or risk fields", async () => {

@@ -88,6 +88,15 @@ returns a neutral cancelled result and creates no account or session.
   unauthenticated even when the access-token signature is valid.
 - Link, unlink, add-password and other sensitive actions require authentication
   within `AUTH_RECENT_AUTH_SECONDS`.
+- Staff is not an account type or a token claim. Each employee retains an
+  Individual or Professional account and receives a separate server-managed
+  membership with `active`, `suspended`, or `revoked` status and one explicit
+  Staff role. Request principals reload that membership and its capabilities
+  from the database on every request.
+- Staff-only capabilities require an MFA-verified session. Granting, changing,
+  suspending, reactivating, or revoking Staff access also requires recent
+  authentication, forbids self-management, revokes all target sessions, and
+  protects the last active owner. A role label alone grants no authority.
 
 `auth_audit_events` records login outcome, provider, coarse IP prefix, generic
 failure category and non-sensitive metadata. A database constraint rejects
@@ -110,6 +119,11 @@ metadata keys that resemble passwords, tokens, codes or secrets.
 | GET        | `/auth/security`                                                                  | Connected methods and active sessions          |
 | DELETE     | `/auth/identities/:provider`                                                      | Guarded provider unlink                        |
 | POST/GET   | `/auth/oauth/facebook/data-deletion`, `/auth/oauth/facebook/data-deletion/status` | Signed Meta deletion request and opaque status |
+
+Staff lifecycle administration is exposed separately at
+`PUT /admin/users/:userId/staff-status`. It never changes the target's
+Individual/Professional account type. The canonical OpenAPI document defines
+the request schema and the required `admin.staff.manage` capability.
 
 Cookie-authenticated mutations require `X-CSRF-Token`; credential entry points,
 provider callbacks and native bearer requests are exempt for the reasons stated

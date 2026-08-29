@@ -225,7 +225,7 @@ export const AdminMarketsPage: React.FC = () => {
           ? {
               id: currentUser.id,
               name: currentUser.name,
-              role: currentUser.role,
+              role: currentUser.staffRole || currentUser.role,
             }
           : undefined,
       );
@@ -250,7 +250,7 @@ export const AdminMarketsPage: React.FC = () => {
           ? {
               id: currentUser.id,
               name: currentUser.name,
-              role: currentUser.role,
+              role: currentUser.staffRole || currentUser.role,
             }
           : undefined,
       );
@@ -269,7 +269,7 @@ export const AdminMarketsPage: React.FC = () => {
           ? {
               id: currentUser.id,
               name: currentUser.name,
-              role: currentUser.role,
+              role: currentUser.staffRole || currentUser.role,
             }
           : undefined,
       );
@@ -292,7 +292,7 @@ export const AdminMarketsPage: React.FC = () => {
           ? {
               id: currentUser.id,
               name: currentUser.name,
-              role: currentUser.role,
+              role: currentUser.staffRole || currentUser.role,
             }
           : undefined,
       );
@@ -340,7 +340,7 @@ export const AdminMarketsPage: React.FC = () => {
           ? {
               id: currentUser.id,
               name: currentUser.name,
-              role: currentUser.role,
+              role: currentUser.staffRole || currentUser.role,
             }
           : undefined,
       );

@@ -7,6 +7,8 @@ import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
+import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
+import { AppError } from "../../../shared/errors/app-error.js";
 
 /**
  * Credentials are stored separately from UserProfile on purpose.
@@ -27,6 +29,13 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<UserProfile | null>;
   save(user: UserProfile): Promise<UserProfile>;
   update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
+  updateStaffAccess(input: {
+    userId: string;
+    status: Exclude<StaffStatus, "none">;
+    staffRole: StaffRole;
+    actorId: string;
+    reason: string;
+  }): Promise<UserProfile>;
   getAll(): Promise<UserProfile[]>;
   findCredentialByUserId(userId: string): Promise<UserCredential | null>;
   saveCredential(credential: UserCredential): Promise<void>;
@@ -139,10 +148,11 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
     slug: "moderation-shongre",
     email: "moderation@shongre.com",
     name: "Modération Shongre",
-    accountType: "staff",
+    accountType: "individual",
+    staffStatus: "active",
     staffRole: "moderator",
-    primaryRole: "moderator",
-    role: "moderator",
+    primaryRole: "individual_buyer",
+    role: "individual_buyer",
     status: "active",
     country: "FR",
     isVerified: true,
@@ -158,10 +168,11 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
     slug: "trust-safety-shongre",
     email: "trust@shongre.com",
     name: "Trust & Safety Shongre",
-    accountType: "staff",
+    accountType: "individual",
+    staffStatus: "active",
     staffRole: "trust_safety",
-    primaryRole: "operations",
-    role: "operations",
+    primaryRole: "individual_buyer",
+    role: "individual_buyer",
     status: "active",
     country: "FR",
     isVerified: true,
@@ -177,10 +188,11 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
     slug: "compliance-shongre",
     email: "compliance@shongre.com",
     name: "Conformité Shongre",
-    accountType: "staff",
+    accountType: "individual",
+    staffStatus: "active",
     staffRole: "compliance",
-    primaryRole: "operations",
-    role: "operations",
+    primaryRole: "individual_buyer",
+    role: "individual_buyer",
     status: "active",
     country: "FR",
     isVerified: true,
@@ -196,10 +208,11 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
     slug: "finance-shongre",
     email: "finance@shongre.com",
     name: "Finance Shongre",
-    accountType: "staff",
+    accountType: "individual",
+    staffStatus: "active",
     staffRole: "finance",
-    primaryRole: "finance",
-    role: "finance",
+    primaryRole: "individual_buyer",
+    role: "individual_buyer",
     status: "active",
     country: "FR",
     isVerified: true,
@@ -215,10 +228,11 @@ export const CANONICAL_DEMO_USERS: Record<string, UserProfile> = {
     slug: "admin-shongre",
     email: "admin@shongre.com",
     name: "Administrateur Shongre",
-    accountType: "staff",
+    accountType: "individual",
+    staffStatus: "active",
     staffRole: "admin",
-    primaryRole: "admin",
-    role: "admin",
+    primaryRole: "individual_buyer",
+    role: "individual_buyer",
     status: "active",
     avatarUrl:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80",
@@ -292,6 +306,28 @@ export class DemoUserRepository implements IUserRepository {
     return { ...updated };
   }
 
+  async updateStaffAccess(input: {
+    userId: string;
+    status: Exclude<StaffStatus, "none">;
+    staffRole: StaffRole;
+    actorId: string;
+    reason: string;
+  }): Promise<UserProfile> {
+    const existing = this.users.get(input.userId);
+    if (!existing) {
+      throw new Error(
+        `User with id ${input.userId} not found in Demo repository`,
+      );
+    }
+    const updated: UserProfile = {
+      ...existing,
+      staffStatus: input.status,
+      staffRole: input.staffRole,
+    };
+    this.users.set(input.userId, updated);
+    return { ...updated };
+  }
+
   async getAll(): Promise<UserProfile[]> {
     return Array.from(this.users.values()).map((u) => ({ ...u }));
   }
@@ -339,17 +375,25 @@ export class DemoUserRepository implements IUserRepository {
 }
 
 export class PostgresUserRepository implements IUserRepository {
-  private mapRowToUserProfile(row: any): UserProfile {
+  private mapRowToUserProfile(row: any, staffMembership?: any): UserProfile {
+    const legacyStaffAccount = ["internal", "staff"].includes(
+      String(row.account_type),
+    );
     return {
       id: row.id,
       slug: row.slug,
       email: row.email,
       name: row.name,
-      accountType: row.account_type === "internal" ? "staff" : row.account_type,
+      accountType:
+        row.account_type === "professional" ? "professional" : "individual",
       professionalVertical: row.professional_vertical || undefined,
-      staffRole: row.staff_role || undefined,
-      primaryRole: row.primary_role,
-      role: (row.primary_role || "individual_buyer") as UserRole,
+      staffStatus:
+        staffMembership?.status || (legacyStaffAccount ? "active" : "none"),
+      staffRole: staffMembership?.staff_role || row.staff_role || undefined,
+      primaryRole: legacyStaffAccount ? "individual_buyer" : row.primary_role,
+      role: (legacyStaffAccount
+        ? "individual_buyer"
+        : row.primary_role || "individual_buyer") as UserRole,
       sellerType: row.account_type === "professional" ? "pro" : "individual",
       status: row.status,
       customPermissions: row.custom_permissions || [],
@@ -385,7 +429,8 @@ export class PostgresUserRepository implements IUserRepository {
         .maybeSingle();
       if (error) databaseFailure("users.findById", error);
       if (!data) return null;
-      return this.mapRowToUserProfile(data);
+      const membership = await this.findStaffMembership(id);
+      return this.mapRowToUserProfile(data, membership);
     } catch (error) {
       databaseFailure("users.findById", error);
     }
@@ -439,7 +484,8 @@ export class PostgresUserRepository implements IUserRepository {
         .maybeSingle();
       if (error) databaseFailure("users.findByEmail", error);
       if (!data) return null;
-      return this.mapRowToUserProfile(data);
+      const membership = await this.findStaffMembership(data.id);
+      return this.mapRowToUserProfile(data, membership);
     } catch (error) {
       databaseFailure("users.findByEmail", error);
     }
@@ -454,7 +500,6 @@ export class PostgresUserRepository implements IUserRepository {
       name: user.name,
       account_type: user.accountType,
       professional_vertical: user.professionalVertical || null,
-      staff_role: user.staffRole || null,
       custom_permissions: user.customPermissions || [],
       revoked_permissions: user.revokedPermissions || [],
       primary_role: user.primaryRole || user.role,
@@ -512,7 +557,6 @@ export class PostgresUserRepository implements IUserRepository {
       payload.account_type = updates.accountType;
     if (updates.professionalVertical !== undefined)
       payload.professional_vertical = updates.professionalVertical;
-    if (updates.staffRole !== undefined) payload.staff_role = updates.staffRole;
     if (updates.customPermissions !== undefined)
       payload.custom_permissions = updates.customPermissions;
     if (updates.revokedPermissions !== undefined)
@@ -538,7 +582,50 @@ export class PostgresUserRepository implements IUserRepository {
     if (error || !data) {
       databaseFailure("users.update", error);
     }
-    return this.mapRowToUserProfile(data);
+    return this.findById(data.id) as Promise<UserProfile>;
+  }
+
+  async updateStaffAccess(input: {
+    userId: string;
+    status: Exclude<StaffStatus, "none">;
+    staffRole: StaffRole;
+    actorId: string;
+    reason: string;
+  }): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await ((
+      supabase.from("staff_memberships" as any) as any
+    ).upsert(
+      {
+        user_id: input.userId,
+        status: input.status,
+        staff_role: input.staffRole,
+        updated_by: input.actorId,
+        change_reason: input.reason,
+      },
+      { onConflict: "user_id" },
+    ) as any);
+    if (error?.code === "42501") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Cette modification d’accès Staff n’est pas autorisée.",
+      });
+    }
+    if (error?.code === "23514") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "L’accès Staff a changé entre-temps ou violerait une règle de gouvernance.",
+      });
+    }
+    if (error) databaseFailure("users.updateStaffAccess", error);
+    const updated = await this.findById(input.userId);
+    if (!updated)
+      databaseFailure(
+        "users.updateStaffAccess",
+        new Error("Staff target disappeared"),
+      );
+    return updated;
   }
 
   async getAll(): Promise<UserProfile[]> {
@@ -549,10 +636,34 @@ export class PostgresUserRepository implements IUserRepository {
         .select("*")
         .order("created_at", { ascending: false });
       if (error || !data) databaseFailure("users.getAll", error);
-      return data.map((r) => this.mapRowToUserProfile(r));
+      const memberships = await this.findStaffMemberships(
+        data.map((row) => row.id),
+      );
+      return data.map((row) =>
+        this.mapRowToUserProfile(row, memberships.get(row.id)),
+      );
     } catch (error) {
       databaseFailure("users.getAll", error);
     }
+  }
+
+  private async findStaffMembership(userId: string): Promise<any | null> {
+    const memberships = await this.findStaffMemberships([userId]);
+    return memberships.get(userId) ?? null;
+  }
+
+  private async findStaffMemberships(
+    userIds: readonly string[],
+  ): Promise<Map<string, any>> {
+    if (userIds.length === 0) return new Map();
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await ((
+      supabase.from("staff_memberships" as any) as any
+    )
+      .select("user_id, status, staff_role")
+      .in("user_id", [...userIds]) as any);
+    if (error) databaseFailure("users.findStaffMemberships", error);
+    return new Map((data || []).map((row: any) => [row.user_id, row]));
   }
 
   async findCredentialByUserId(userId: string): Promise<UserCredential | null> {

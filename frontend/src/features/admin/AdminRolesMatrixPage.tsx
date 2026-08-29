@@ -18,6 +18,7 @@ import {
 import {
   ROLE_DEFINITIONS,
   ALL_PLATFORM_ROLES,
+  platformRoleForStaffRole,
 } from "../../security/roles.config";
 import { plural } from "../../utilities/formatters";
 import { roleLabel } from "../../security/roles.config";
@@ -34,6 +35,9 @@ export const AdminRolesMatrixPage: React.FC = () => {
   });
 
   const { currentUser, platformRole } = useAuth();
+  const presentedRole = currentUser?.staffRole
+    ? platformRoleForStaffRole(currentUser.staffRole)
+    : platformRole;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showSensitiveOnly, setShowSensitiveOnly] = useState(false);
@@ -125,7 +129,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 {currentUser?.name}
               </strong>
               <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded-full">
-                {roleLabel(platformRole)}
+                {roleLabel(presentedRole)}
               </span>
             </div>
           </div>
@@ -141,7 +145,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
           {roleStats.map((r) => {
-            const isCurrent = r.role === platformRole;
+            const isCurrent = r.role === presentedRole;
             return (
               <div
                 key={r.role}
@@ -272,7 +276,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 </th>
                 {ALL_PLATFORM_ROLES.map((r) => {
                   const def = ROLE_DEFINITIONS[r];
-                  const isCurrent = r === platformRole;
+                  const isCurrent = r === presentedRole;
                   return (
                     <th
                       scope="col"
@@ -370,7 +374,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               {/* Grants per role */}
                               {ALL_PLATFORM_ROLES.map((r) => {
                                 const isGranted = row.roleGrants[r];
-                                const isCurrent = r === platformRole;
+                                const isCurrent = r === presentedRole;
                                 return (
                                   <td
                                     key={r}

@@ -5,8 +5,10 @@ import type { Principal } from "../../src/shared/auth/principal.js";
 const principal: Principal = {
   userId: "10000000-0000-4000-8000-000000000004",
   email: "lea@example.test",
-  role: "admin",
-  accountType: "staff",
+  role: "buyer",
+  accountType: "individual",
+  staffStatus: "active",
+  staffRole: "admin",
   mfaVerified: true,
 };
 

@@ -18,6 +18,7 @@ import {
   requireAuthenticated,
   requirePermission,
   requireOwnership,
+  requireRecentAuthentication,
   resolveOwnerId,
 } from "../../src/shared/auth/principal.js";
 import {
@@ -31,11 +32,19 @@ const buyer: Principal = {
   userId: "user_thomas",
   email: "thomas@example.fr",
   role: "individual_buyer",
+  accountType: "individual",
+  capabilities: ["listing.read"],
 };
 const admin: Principal = {
   userId: "user_admin",
   email: "admin@shongre.com",
-  role: "admin",
+  role: "individual_buyer",
+  accountType: "individual",
+  staffStatus: "active",
+  staffRole: "admin",
+  mfaVerified: true,
+  recentlyAuthenticated: true,
+  capabilities: ["admin.access", "user.manage"],
 };
 
 describe("Password hashing", () => {
@@ -177,6 +186,56 @@ describe("Principal guards", () => {
     expect(() => requirePermission(buyer, "listing.read")).not.toThrow();
     expect(() => requirePermission(buyer, "admin.access")).toThrow(/droits/i);
     expect(() => requirePermission(admin, "admin.access")).not.toThrow();
+  });
+
+  it("never treats a privileged role label as Staff authority", () => {
+    expect(() =>
+      requirePermission(
+        {
+          userId: "forged-role",
+          email: "attacker@example.test",
+          role: "admin",
+          accountType: "individual",
+          capabilities: [],
+        },
+        "admin.access",
+      ),
+    ).toThrow(/droits/i);
+
+    expect(() =>
+      requirePermission(
+        {
+          userId: "forged-capability",
+          email: "attacker@example.test",
+          role: "individual_buyer",
+          accountType: "individual",
+          staffStatus: "none",
+          mfaVerified: true,
+          capabilities: ["admin.access"],
+        },
+        "admin.access",
+      ),
+    ).toThrow(/droits/i);
+  });
+
+  it("requires MFA for Staff capabilities but not customer capabilities", () => {
+    const unverified = { ...admin, mfaVerified: false };
+    expect(() => requirePermission(unverified, "admin.access")).toThrow(
+      /deux facteurs/i,
+    );
+    expect(() =>
+      requirePermission(
+        { ...unverified, capabilities: ["listing.read"] },
+        "listing.read",
+      ),
+    ).not.toThrow();
+  });
+
+  it("requires a fresh authentication proof for Staff administration", () => {
+    expect(() =>
+      requireRecentAuthentication({ ...admin, recentlyAuthenticated: false }),
+    ).toThrow(/Confirmez/i);
+    expect(() => requireRecentAuthentication(admin)).not.toThrow();
   });
 
   it("rejects a guest before checking permissions", () => {

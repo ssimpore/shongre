@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **445**
-- Specification SHA-256: `270917abfdf9fb0c`
+- Operations: **446**
+- Specification SHA-256: `979042a49d05cfce`
 
 ## account
 
@@ -132,6 +132,7 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `PUT` | `/admin/users/{userId}/staff-status` | `updateAdminUserStaffStatus` | `permission` | `admin.staff.manage` | `200` |
 | `PUT` | `/admin/users/{userId}/status` | `putAdminUsersByUserIdStatus` | `permission` | `user.read` | `200` |
 | `PUT` | `/admin/users/{userId}/verification` | `putAdminUsersByUserIdVerification` | `permission` | `user.verify` | `200` |
 | `GET` | `/admin/users` | `getAdminUsers` | `permission` | `user.read` | `200` |

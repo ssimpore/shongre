@@ -54,4 +54,23 @@ describe("vertical Pro demo personas", () => {
       pro_employment_clara: { id: "user_employment_clara" },
     });
   });
+
+  it("migrates persisted legacy Staff account types without a storage reset", () => {
+    storageService.set("shongre_users_v1", {
+      admin_antoine: {
+        ...DEMO_USERS.admin_antoine,
+        accountType: "staff",
+        staffStatus: undefined,
+        primaryRole: "admin",
+        role: "admin",
+      } as any,
+    });
+
+    expect(storageService.getUsers().admin_antoine).toMatchObject({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "admin",
+      primaryRole: "buyer",
+    });
+  });
 });

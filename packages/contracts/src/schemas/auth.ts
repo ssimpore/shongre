@@ -5,6 +5,7 @@ import {
   CAPABILITIES,
   PROFESSIONAL_VERTICALS,
   STAFF_ROLES,
+  STAFF_STATUSES,
 } from "../access-control";
 
 export const AUTH_CONSTRAINTS = {
@@ -26,6 +27,7 @@ export const authUserSchema = z.object({
   accountType: z.enum(ACCOUNT_TYPES),
   status: z.enum(ACCOUNT_STATUSES).optional(),
   professionalVertical: z.enum(PROFESSIONAL_VERTICALS).optional(),
+  staffStatus: z.enum(STAFF_STATUSES).optional(),
   staffRole: z.enum(STAFF_ROLES).optional(),
   capabilities: z.array(z.enum(CAPABILITIES)).optional(),
 });

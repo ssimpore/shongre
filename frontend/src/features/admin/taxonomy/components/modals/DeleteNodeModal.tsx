@@ -37,7 +37,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
 

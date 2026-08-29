@@ -1,15 +1,22 @@
 import { isProSeller } from "../../domains/user/user.domain";
-import { Select } from "../../design-system";
+import { FormField, Modal, Select, Textarea } from "../../design-system";
 import React, { useState, useEffect } from "react";
-import { Search, CheckCircle2, AlertTriangle, FileCheck } from "lucide-react";
+import {
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  FileCheck,
+  ShieldCheck,
+} from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   normalizePlatformRole,
   ROLE_DEFINITIONS,
   ALL_PLATFORM_ROLES,
+  STAFF_ROLE_PRESENTATION,
 } from "../../security/roles.config";
-import { UserProfile } from "../../types";
+import { UserProfile, type StaffRole, type StaffStatus } from "../../types";
 import { Button } from "../../design-system/primitives/Button";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { Image } from "../../design-system/primitives/Image";
@@ -18,6 +25,12 @@ import type { MessageKey } from "../../i18n/messages.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import {
+  STAFF_ACCESS_REASON_MAX_LENGTH,
+  STAFF_ACCESS_REASON_MIN_LENGTH,
+  STAFF_ROLES,
+  staffRoleFromLegacyRole,
+} from "@shongre/contracts/access-control";
 
 export const AdminUsersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -28,7 +41,7 @@ export const AdminUsersPage: React.FC = () => {
     noIndex: true,
   });
 
-  const { can } = useAuth();
+  const { can, currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
   const toast = useToast();
 
@@ -36,6 +49,7 @@ export const AdminUsersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [selectedStaffStatus, setSelectedStaffStatus] = useState<string>("all");
 
   // Modals state
   const [kbisModalUser, setKbisModalUser] = useState<UserProfile | null>(null);
@@ -44,6 +58,15 @@ export const AdminUsersPage: React.FC = () => {
   );
   const [reactivateModalUser, setReactivateModalUser] =
     useState<UserProfile | null>(null);
+  const [staffModalUser, setStaffModalUser] = useState<UserProfile | null>(
+    null,
+  );
+  const [staffStatus, setStaffStatus] =
+    useState<Exclude<StaffStatus, "none">>("active");
+  const [staffRole, setStaffRole] = useState<StaffRole>("support_agent");
+  const [staffReason, setStaffReason] = useState("");
+  const [staffError, setStaffError] = useState<string | null>(null);
+  const [isSavingStaff, setIsSavingStaff] = useState(false);
 
   const loadUsers = async () => {
     setUsers(await services.admin.getAllUsers());
@@ -115,15 +138,58 @@ export const AdminUsersPage: React.FC = () => {
     }
   };
 
+  const openStaffModal = (user: UserProfile) => {
+    setStaffModalUser(user);
+    setStaffStatus(user.staffStatus === "suspended" ? "suspended" : "active");
+    setStaffRole(user.staffRole || "support_agent");
+    setStaffReason("");
+    setStaffError(null);
+  };
+
+  const handleStaffSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!staffModalUser) return;
+    if (staffReason.trim().length < STAFF_ACCESS_REASON_MIN_LENGTH) {
+      setStaffError(t("admin.staff.reasonMinimum"));
+      return;
+    }
+    setIsSavingStaff(true);
+    setStaffError(null);
+    try {
+      await services.admin.updateStaffStatus(
+        staffModalUser.id,
+        staffStatus,
+        staffRole,
+        staffReason.trim(),
+      );
+      await loadUsers();
+      toast.success(t("admin.staff.updateSuccess"));
+      setStaffModalUser(null);
+    } catch (error: unknown) {
+      setStaffError(
+        error instanceof Error ? error.message : t("admin.staff.updateError"),
+      );
+    } finally {
+      setIsSavingStaff(false);
+    }
+  };
+
   const filteredUsers = users.filter((u) => {
     if (
       selectedRole !== "all" &&
       u.primaryRole !== selectedRole &&
-      u.role !== selectedRole
+      u.role !== selectedRole &&
+      u.staffRole !== staffRoleFromLegacyRole(selectedRole)
     ) {
       return false;
     }
     if (selectedType !== "all" && u.accountType !== selectedType) {
+      return false;
+    }
+    if (
+      selectedStaffStatus !== "all" &&
+      (u.staffStatus ?? "none") !== selectedStaffStatus
+    ) {
       return false;
     }
     if (searchQuery.trim()) {
@@ -188,7 +254,21 @@ export const AdminUsersPage: React.FC = () => {
             </option>
             <option value="individual">Particulier</option>
             <option value="professional">Professionnel (Pro)</option>
-            <option value="staff">Personnel Interne (Staff)</option>
+          </Select>
+
+          <Select
+            className="w-auto"
+            aria-label={t("admin.staff.filterLabel")}
+            value={selectedStaffStatus}
+            onChange={(e) => setSelectedStaffStatus(e.target.value)}
+          >
+            <option value="all">{t("admin.staff.filterAll")}</option>
+            <option value="active">{t("admin.staff.status.active")}</option>
+            <option value="suspended">
+              {t("admin.staff.status.suspended")}
+            </option>
+            <option value="revoked">{t("admin.staff.status.revoked")}</option>
+            <option value="none">{t("admin.staff.status.none")}</option>
           </Select>
 
           <Select
@@ -308,6 +388,14 @@ export const AdminUsersPage: React.FC = () => {
                             `admin.accountType.${u.accountType || "individual"}` as MessageKey,
                           )}
                         </span>
+                        {u.staffStatus &&
+                          u.staffStatus !== "none" &&
+                          u.staffRole && (
+                            <span className="text-micro font-bold px-2 py-1 rounded-full border bg-info-surface text-info border-info-border flex items-center gap-1">
+                              <ShieldCheck className="w-icon-xs h-icon-xs" />
+                              {STAFF_ROLE_PRESENTATION[u.staffRole].shortLabel}
+                            </span>
+                          )}
                       </div>
                     </td>
 
@@ -331,6 +419,13 @@ export const AdminUsersPage: React.FC = () => {
                         {u.siret && (
                           <span className="text-micro text-stone-500 font-mono">
                             SIRET: {u.siret}
+                          </span>
+                        )}
+                        {u.staffStatus && u.staffStatus !== "none" && (
+                          <span className="text-micro text-stone-600 font-semibold">
+                            {t(
+                              `admin.staff.status.${u.staffStatus}` as MessageKey,
+                            )}
                           </span>
                         )}
                       </div>
@@ -362,7 +457,9 @@ export const AdminUsersPage: React.FC = () => {
 
                         {/* Suspend / Reactivate */}
                         {((isSuspended && can("user.reactivate")) ||
-                          (!isSuspended && can("user.suspend"))) && (
+                          (!isSuspended &&
+                            u.staffStatus !== "active" &&
+                            can("user.suspend"))) && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -382,6 +479,23 @@ export const AdminUsersPage: React.FC = () => {
                             {isSuspended ? "Réactiver" : "Suspendre"}
                           </Button>
                         )}
+
+                        {can("admin.staff.manage") &&
+                          currentUser?.id !== u.id &&
+                          (u.staffRole !== "owner" ||
+                            currentUser?.staffRole === "owner") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openStaffModal(u)}
+                              className="text-xs text-info border-info-border"
+                            >
+                              <ShieldCheck className="w-icon-xs h-icon-xs" />
+                              {u.staffStatus && u.staffStatus !== "none"
+                                ? t("admin.staff.manageAction")
+                                : t("admin.staff.grantAction")}
+                            </Button>
+                          )}
                       </div>
                     </td>
                   </tr>
@@ -403,6 +517,94 @@ export const AdminUsersPage: React.FC = () => {
         confirmText="Valider le badge Pro"
         required
       />
+
+      <Modal
+        isOpen={Boolean(staffModalUser)}
+        onClose={() => setStaffModalUser(null)}
+        title={t("admin.staff.modalTitle")}
+        maxWidth="md"
+      >
+        <form onSubmit={handleStaffSubmit} className="space-y-4">
+          <p className="text-xs text-stone-600">
+            {t("admin.staff.modalDescription", {
+              name: staffModalUser?.name || "",
+            })}
+          </p>
+          <FormField label={t("admin.staff.roleLabel")} required>
+            <Select
+              labelledByAncestor
+              value={staffRole}
+              onChange={(event) =>
+                setStaffRole(event.target.value as StaffRole)
+              }
+            >
+              {STAFF_ROLES.filter(
+                (role) =>
+                  role !== "owner" || currentUser?.staffRole === "owner",
+              ).map((role) => (
+                <option key={role} value={role}>
+                  {STAFF_ROLE_PRESENTATION[role].title}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label={t("admin.staff.statusLabel")} required>
+            <Select
+              labelledByAncestor
+              value={staffStatus}
+              onChange={(event) =>
+                setStaffStatus(
+                  event.target.value as Exclude<StaffStatus, "none">,
+                )
+              }
+            >
+              <option value="active">{t("admin.staff.status.active")}</option>
+              {staffModalUser?.staffStatus &&
+                staffModalUser.staffStatus !== "none" && (
+                  <>
+                    <option value="suspended">
+                      {t("admin.staff.status.suspended")}
+                    </option>
+                    <option value="revoked">
+                      {t("admin.staff.status.revoked")}
+                    </option>
+                  </>
+                )}
+            </Select>
+          </FormField>
+          <FormField
+            label={t("admin.staff.reasonLabel")}
+            required
+            hint={t("admin.staff.reasonHint")}
+            error={staffError || undefined}
+          >
+            <Textarea
+              rows={4}
+              value={staffReason}
+              onChange={(event) => {
+                setStaffReason(event.target.value);
+                if (staffError) setStaffError(null);
+              }}
+              maxLength={STAFF_ACCESS_REASON_MAX_LENGTH}
+            />
+          </FormField>
+          <div className="flex justify-end gap-2.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setStaffModalUser(null)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" size="sm" disabled={isSavingStaff}>
+              {isSavingStaff
+                ? t("common.loading")
+                : t("admin.staff.confirmAction")}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Suspend User Modal */}
       <PromptModal

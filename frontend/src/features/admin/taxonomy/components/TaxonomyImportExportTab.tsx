@@ -62,7 +62,7 @@ export const TaxonomyImportExportTab: React.FC<
       ? {
           id: currentUser.id,
           name: currentUser.name || "Admin",
-          role: currentUser.role,
+          role: currentUser.staffRole || currentUser.role,
         }
       : undefined;
     const result = taxonomyAdminRepository.importTaxonomyJSON(

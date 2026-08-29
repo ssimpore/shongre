@@ -148,7 +148,7 @@ export type ComplianceEvaluationInput = z.infer<
 
 export interface ComplianceSubject {
   userId?: string;
-  accountType: "guest" | "individual" | "professional" | "staff";
+  accountType: "guest" | "individual" | "professional";
   sellerType?: "individual" | "professional";
   businessStatus?: "none" | "declared" | "registered";
   country: string;
@@ -212,7 +212,7 @@ export const complianceRuleSchema = z.object({
   conditions: z
     .object({
       accountTypes: z
-        .array(z.enum(["guest", "individual", "professional", "staff"]))
+        .array(z.enum(["guest", "individual", "professional"]))
         .optional(),
       sellerTypes: z.array(z.enum(["individual", "professional"])).optional(),
       categories: z.array(z.string().max(100)).optional(),

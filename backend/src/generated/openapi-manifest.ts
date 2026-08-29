@@ -493,6 +493,14 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "PUT /admin/users/:userId/staff-status": {
+    operationId: "updateAdminUserStaffStatus",
+    access: "permission",
+    permission: "admin.staff.manage",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {},
+  },
   "PUT /admin/users/:userId/verification": {
     operationId: "putAdminUsersByUserIdVerification",
     access: "permission",

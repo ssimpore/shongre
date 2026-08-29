@@ -88,23 +88,56 @@ describe("canonical access-control policy", () => {
   });
 
   it.each(STAFF_ROLES)(
-    "never grants customer capabilities implicitly to %s staff",
+    "adds %s Staff access without changing the underlying account type",
     (staffRole) => {
-      const staff = capabilities({ accountType: "staff", staffRole });
-      expect(staff.has("favorite.manage.own")).toBe(false);
-      expect(staff.has("listing.create")).toBe(false);
+      const staff = capabilities({
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole,
+      });
+      expect(staff.has("favorite.manage.own")).toBe(true);
+      expect(staff.has("listing.create")).toBe(true);
       expect(staff.has("subscription.manage.own")).toBe(false);
     },
   );
 
+  it("removes Staff capabilities immediately when the status is suspended or revoked", () => {
+    for (const staffStatus of ["suspended", "revoked"] as const) {
+      const staff = capabilities({
+        accountType: "individual",
+        staffStatus,
+        staffRole: "admin",
+      });
+      expect(staff.has("admin.access")).toBe(false);
+      expect(staff.has("admin.staff.manage")).toBe(false);
+      expect(staff.has("listing.create")).toBe(true);
+    }
+  });
+
+  it("never derives Staff authority from a legacy role label alone", () => {
+    const forged = capabilities({
+      accountType: "individual",
+      role: "admin",
+      staffStatus: "active",
+    });
+    expect(forged.has("admin.access")).toBe(false);
+    expect(forged.has("admin.staff.manage")).toBe(false);
+  });
+
   it("keeps administration, moderation and refunds separate", () => {
-    const admin = capabilities({ accountType: "staff", staffRole: "admin" });
+    const admin = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "admin",
+    });
     const moderator = capabilities({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       staffRole: "moderator",
     });
     const finance = capabilities({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       staffRole: "finance",
     });
 
@@ -124,13 +157,23 @@ describe("canonical access-control policy", () => {
 
   it("reserves complimentary commercial grants for the platform owner", () => {
     const commercial = capabilities({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       staffRole: "commercial",
     });
-    const admin = capabilities({ accountType: "staff", staffRole: "admin" });
-    const owner = capabilities({ accountType: "staff", staffRole: "owner" });
+    const admin = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "admin",
+    });
+    const owner = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "owner",
+    });
     const finance = capabilities({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       staffRole: "finance",
     });
 
@@ -155,5 +198,22 @@ describe("canonical access-control policy", () => {
     expect(suspended.has("profile.read")).toBe(true);
     expect(suspended.has("listing.create")).toBe(false);
     expect(suspended.has("admin.configuration.manage")).toBe(false);
+  });
+
+  it("never grants Staff-only overrides without an active Staff status", () => {
+    const customer = capabilities({
+      accountType: "individual",
+      customPermissions: ["admin.configuration.manage"],
+    });
+    const revokedStaff = capabilities({
+      accountType: "individual",
+      staffStatus: "revoked",
+      staffRole: "admin",
+      customPermissions: ["admin.configuration.manage", "listing.read"],
+    });
+
+    expect(customer.has("admin.configuration.manage")).toBe(false);
+    expect(revokedStaff.has("admin.configuration.manage")).toBe(false);
+    expect(revokedStaff.has("listing.read")).toBe(true);
   });
 });

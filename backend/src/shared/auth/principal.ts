@@ -1,11 +1,13 @@
 import { AppError } from "../errors/app-error.js";
-import { PlatformRole, Permission, hasPermission } from "./rbac.js";
+import { PlatformRole, Permission } from "./rbac.js";
 import type {
   AccountStatus,
   AccountType,
   ProfessionalVertical,
   StaffRole,
+  StaffStatus,
 } from "@shongre/contracts/access-control";
+import { isStaffCapability } from "@shongre/contracts/access-control";
 
 /**
  * The authenticated caller for a single request.
@@ -21,12 +23,15 @@ export interface Principal {
   accountType?: AccountType | "guest";
   status?: AccountStatus;
   professionalVertical?: ProfessionalVertical;
+  staffStatus?: StaffStatus;
   staffRole?: StaffRole;
   capabilities?: readonly Permission[];
   /** Present for revocable sessions; absent on rollout-compatible legacy JWTs. */
   sessionId?: string;
   /** True only after a TOTP or one-time recovery code was accepted for this session. */
   mfaVerified?: boolean;
+  /** True only while the session remains inside the recent-authentication window. */
+  recentlyAuthenticated?: boolean;
 }
 
 /** An anonymous caller. Kept explicit so route handlers never see `null` unexpectedly. */
@@ -35,6 +40,7 @@ export const GUEST_PRINCIPAL: Principal = {
   email: "",
   role: "guest",
   accountType: "guest",
+  staffStatus: "none",
   status: "active",
   capabilities: [],
 };
@@ -67,22 +73,45 @@ export function requirePermission(
   permission: Permission,
 ): Principal {
   requireAuthenticated(principal);
-  if (principal.accountType === "staff" && principal.mfaVerified === false) {
-    throw new AppError({
-      code: "FORBIDDEN",
-      message:
-        "Une authentification à deux facteurs est requise pour accéder à cet espace.",
-      details: { reason: "mfa_required" },
-    });
+  if (isStaffCapability(permission)) {
+    if (principal.staffStatus !== "active") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+      });
+    }
+    if (principal.mfaVerified !== true) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Une authentification à deux facteurs est requise pour accéder à cet espace.",
+        details: { reason: "mfa_required" },
+      });
+    }
   }
-  const allowed = principal.capabilities
-    ? principal.capabilities.includes(permission)
-    : hasPermission(principal.role, permission);
+  // Role labels and token claims are never authority. AuthService always
+  // reloads the current profile/membership and places the resolved capability
+  // projection on the request principal.
+  const allowed = principal.capabilities?.includes(permission) ?? false;
   if (!allowed) {
     throw new AppError({
       code: "FORBIDDEN",
       message:
         "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+    });
+  }
+  return principal;
+}
+
+/** Require a fresh sign-in proof for high-impact employee administration. */
+export function requireRecentAuthentication(principal: Principal): Principal {
+  requireAuthenticated(principal);
+  if (principal.recentlyAuthenticated !== true) {
+    throw new AppError({
+      code: "FORBIDDEN",
+      message: "Confirmez à nouveau votre identité avant cette action.",
+      details: { reason: "recent_authentication_required" },
     });
   }
   return principal;
@@ -104,13 +133,10 @@ export function requireOwnership(
   requireAuthenticated(principal);
 
   if (principal.userId === resourceOwnerId) return principal;
-  if (
-    override &&
-    (principal.capabilities
-      ? principal.capabilities.includes(override)
-      : hasPermission(principal.role, override))
-  )
+  if (override && principal.capabilities?.includes(override)) {
+    requirePermission(principal, override);
     return principal;
+  }
 
   // 404 rather than 403: confirming the resource exists but is not yours still
   // leaks that the id is real, which is enough to enumerate users and orders.

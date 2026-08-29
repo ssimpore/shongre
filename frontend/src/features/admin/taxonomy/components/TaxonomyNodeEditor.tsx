@@ -286,7 +286,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
       const copy = await taxonomyAdminRepository.duplicateNode(node.id, actor);
@@ -305,7 +305,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
 
@@ -391,7 +391,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
       if (marketOverrideEnabled) {

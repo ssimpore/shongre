@@ -4500,6 +4500,90 @@
         "x-shongre-permission": "user.read"
       }
     },
+    "/admin/users/{userId}/staff-status": {
+      "put": {
+        "operationId": "updateAdminUserStaffStatus",
+        "tags": ["admin-users"],
+        "summary": "Grant, suspend, reactivate, revoke, or change Staff access",
+        "description": "Staff is an independently granted employee status. The caller must have admin.staff.manage, an MFA-verified Staff session, and recent authentication. Self-management is forbidden and every accepted change is audited.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated private user projection.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.staff.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts:4443",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffAccessUpdateRequest"
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/users/{userId}/verification": {
       "put": {
         "operationId": "putAdminUsersByUserIdVerification",
@@ -30975,6 +31059,41 @@
       }
     },
     "schemas": {
+      "StaffRole": {
+        "type": "string",
+        "enum": [
+          "support_agent",
+          "moderator",
+          "trust_safety",
+          "compliance",
+          "finance",
+          "operations",
+          "commercial",
+          "content_manager",
+          "market_manager",
+          "admin",
+          "owner"
+        ]
+      },
+      "StaffAccessUpdateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "staffRole", "reason"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["active", "suspended", "revoked"]
+          },
+          "staffRole": {
+            "$ref": "#/components/schemas/StaffRole"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          }
+        }
+      },
       "JsonValue": {
         "description": "A JSON-compatible payload whose domain representation is mapped by the owning service adapter.",
         "oneOf": [

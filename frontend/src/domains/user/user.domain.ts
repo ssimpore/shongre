@@ -1,12 +1,9 @@
-import {
-  normalizePlatformRole,
-  ROLE_DEFINITIONS,
-} from "../../security/roles.config";
 // Presentation helpers intentionally accept flattened listing/seller shapes as
 // well as full profiles. Authoritative authorization uses the canonical access
 // subject instead of these tolerant display classifiers.
 export interface UserClassification {
   accountType?: string;
+  staffStatus?: string;
   primaryRole?: string;
   role?: string;
   sellerType?: string;
@@ -58,17 +55,19 @@ export function isInternalAccount(
   user: UserClassification | null | undefined,
 ): boolean {
   if (!user) return false;
+  if (user.staffStatus === "active") return true;
+  // Rollout compatibility for pre-v79 demo/profile payloads only. A role label
+  // by itself is never sufficient to establish employee access.
   if (user.accountType === "staff" || user.accountType === "internal") {
     return true;
   }
-  const role = normalizePlatformRole(user.primaryRole ?? user.role);
-  return Boolean(ROLE_DEFINITIONS[role]?.isInternalStaff);
+  return false;
 }
 
 export function isProSeller(
   user: UserClassification | null | undefined,
 ): boolean {
-  if (!user || isInternalAccount(user)) return false;
+  if (!user) return false;
   return (
     user.sellerType === "pro" ||
     user.accountType === "professional" ||
@@ -79,7 +78,7 @@ export function isProSeller(
 export function isPubliclyListableProSeller(
   user: UserClassification | null | undefined,
 ): boolean {
-  if (!user || isInternalAccount(user) || !isProSeller(user)) return false;
+  if (!user || !isProSeller(user)) return false;
   return !isAccountSuspended(user) && !isAccountDeactivated(user);
 }
 
@@ -89,7 +88,6 @@ export function isIndividualSeller(
   if (!user) return false;
   return (
     !isProSeller(user) &&
-    !isInternalAccount(user) &&
     (user.sellerType === "individual" || user.accountType === "individual")
   );
 }

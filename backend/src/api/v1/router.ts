@@ -64,6 +64,7 @@ import {
   requireAuthenticated,
   requirePermission,
   requireOwnership,
+  requireRecentAuthentication,
   resolveOwnerId,
   isAuthenticated,
 } from "../../shared/auth/principal.js";
@@ -4432,6 +4433,21 @@ export class ApiV1Router {
         return adminService.updateUserStatus({
           userId: params.userId,
           status: body?.status,
+          reason: body?.reason,
+          actor: principal,
+        });
+      },
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/users/:userId/staff-status",
+      permission("admin.staff.manage"),
+      async ({ principal, params, body }) => {
+        requireRecentAuthentication(principal);
+        return adminService.updateStaffStatus({
+          userId: params.userId,
+          status: body?.status,
+          staffRole: body?.staffRole,
           reason: body?.reason,
           actor: principal,
         });

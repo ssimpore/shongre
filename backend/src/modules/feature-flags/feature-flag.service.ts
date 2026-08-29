@@ -125,7 +125,7 @@ export class FeatureFlagService {
     await repositories.admin.saveAuditLog({
       actorId: principal.userId,
       actorName: principal.email || principal.userId,
-      actorRole: principal.role,
+      actorRole: principal.staffRole || principal.role,
       targetId: key,
       targetName: key,
       action: "feature_flag_definition_upserted",
@@ -153,7 +153,7 @@ export class FeatureFlagService {
     await repositories.admin.saveAuditLog({
       actorId: principal.userId,
       actorName: principal.email || principal.userId,
-      actorRole: principal.role,
+      actorRole: principal.staffRole || principal.role,
       targetId: result.id,
       targetName: key,
       action: "feature_flag_rule_upserted",

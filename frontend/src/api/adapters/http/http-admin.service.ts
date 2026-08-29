@@ -13,6 +13,7 @@ import type {
   DiscoveryMetrics,
 } from "@shongre/contracts/discovery";
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
+import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -30,6 +31,19 @@ export class HttpAdminService implements AdminServiceContract {
   ): Promise<UserProfile> {
     return httpClient.put<UserProfile>(`/admin/users/${userId}/status`, {
       status,
+      reason,
+    });
+  }
+
+  async updateStaffStatus(
+    userId: string,
+    status: Exclude<StaffStatus, "none">,
+    staffRole: StaffRole,
+    reason: string,
+  ): Promise<UserProfile> {
+    return httpClient.put<UserProfile>(`/admin/users/${userId}/staff-status`, {
+      status,
+      staffRole,
       reason,
     });
   }

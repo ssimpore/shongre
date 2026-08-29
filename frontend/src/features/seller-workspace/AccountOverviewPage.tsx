@@ -56,7 +56,6 @@ export const AccountOverviewPage: React.FC = () => {
 
   const {
     currentUser,
-    platformRole,
     isEmailVerified,
     isPhoneVerified,
     refreshUser,
@@ -70,9 +69,11 @@ export const AccountOverviewPage: React.FC = () => {
   // A verified flag with no number on file is not a verified phone — showing the
   // badge on its own contradicts the "Non renseigné" value rendered right below it.
   const hasVerifiedPhone = isPhoneVerified && Boolean(currentUser?.phone);
-  const isAdmin = platformRole === "admin" || platformRole === "super_admin";
+  const isAdmin =
+    currentUser?.staffStatus === "active" &&
+    (currentUser.staffRole === "admin" || currentUser.staffRole === "owner");
   const adminRoleLabel =
-    platformRole === "super_admin"
+    currentUser?.staffRole === "owner"
       ? t("shell.accountLayout.roleSuperAdministrateur")
       : t("shell.accountLayout.roleAdministrateur");
   const accountName = (

@@ -71,14 +71,16 @@ import {
   PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
 } from "@shongre/contracts";
-import type {
-  TaxonomyV4ListingIntent,
-  TaxonomyV4ResolvedSchema,
-} from "@shongre/contracts";
+import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts";
 import { resolveTaxonomyFieldState } from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV4Field } from "./TaxonomyV4Field";
+import {
+  isCurrentTaxonomyV4Schema,
+  retainTaxonomyV4Attributes,
+  toTaxonomyV4ListingIntent,
+} from "../../domains/publication/publication.taxonomy-state";
 
 /**
  * Publication is three phases, not ten steps.
@@ -199,13 +201,6 @@ const INTENT_PRESENTATION: Record<
 const INTENT_ORDER = Object.keys(INTENT_PRESENTATION).filter(
   (intent) => !["GIVE", "RENT", "OFFER_SERVICE"].includes(intent),
 ) as ListingIntent[];
-
-const toV4Intent = (intent: ListingIntent): TaxonomyV4ListingIntent => {
-  if (intent === "GIVE") return "DONATE";
-  if (intent === "RENT") return "RENT_OUT";
-  if (intent === "OFFER_SERVICE") return "SERVICE_OFFER";
-  return intent;
-};
 
 const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
   fixed: "Prix fixe",
@@ -415,6 +410,19 @@ export const PublishWizard: React.FC = () => {
     setDraft((prev) => ({ ...prev, ...updates }));
   };
 
+  const selectListingIntent = (listingIntent: ListingIntent) => {
+    setDraft((current) =>
+      current.listingIntent === listingIntent
+        ? current
+        : {
+            ...current,
+            listingIntent,
+            listingTypeId: undefined,
+            taxonomyVersion: undefined,
+          },
+    );
+  };
+
   const updateAttribute = (attrCode: string, value: any) => {
     setDraft((prev) => {
       const attributes = {
@@ -431,6 +439,7 @@ export const PublishWizard: React.FC = () => {
 
   // Compile Schema dynamically
   const schema = useMemo(() => {
+    if (!draft.taxonomyNodeId) return null;
     return publicationResolver.resolve({
       taxonomyNodeId: draft.taxonomyNodeId,
       marketCode: draft.marketCode,
@@ -445,6 +454,14 @@ export const PublishWizard: React.FC = () => {
     draft.listingIntent,
     draft.attributes,
   ]);
+
+  const activeV4Schema = isCurrentTaxonomyV4Schema(
+    v4Schema,
+    draft.taxonomyNodeId,
+    draft.listingIntent,
+  )
+    ? v4Schema
+    : null;
 
   useEffect(() => {
     if (!schema) return;
@@ -497,7 +514,7 @@ export const PublishWizard: React.FC = () => {
       .resolveV4({
         marketContext,
         categoryIdentity: draft.taxonomyNodeId,
-        intent: toV4Intent(draft.listingIntent),
+        intent: toTaxonomyV4ListingIntent(draft.listingIntent),
         sellerType: taxonomySellerType,
         locale: currentLocale,
         taxonomyVersion: "4.0.0",
@@ -506,16 +523,32 @@ export const PublishWizard: React.FC = () => {
         if (!active) return;
         setV4Schema(resolved);
         setV4SchemaState("ready");
-        setDraft((current) =>
-          current.listingTypeId === resolved.listingType.id &&
-          current.taxonomyVersion === "4.0.0"
-            ? current
-            : {
-                ...current,
-                listingTypeId: resolved.listingType.id,
-                taxonomyVersion: "4.0.0",
-              },
-        );
+        setDraft((current) => {
+          const attributes = retainTaxonomyV4Attributes(
+            current.attributes,
+            resolved,
+          );
+          const attributesChanged =
+            Object.keys(attributes).length !==
+            Object.keys(current.attributes).length;
+          if (
+            current.listingTypeId === resolved.listingType.id &&
+            current.taxonomyVersion === "4.0.0" &&
+            !attributesChanged
+          ) {
+            return current;
+          }
+          return {
+            ...current,
+            attributes,
+            condition: toApplicationListingCondition(
+              attributes,
+              current.condition,
+            ),
+            listingTypeId: resolved.listingType.id,
+            taxonomyVersion: "4.0.0",
+          };
+        });
       })
       .catch((reason: unknown) => {
         if (!active) return;
@@ -540,28 +573,28 @@ export const PublishWizard: React.FC = () => {
 
   useEffect(() => {
     let active = true;
-    if (!v4Schema || !marketContext) {
+    if (!activeV4Schema || !marketContext) {
       setV4CascadeOptions({});
       setV4CascadeState({});
       return () => {
         active = false;
       };
     }
-    const requests = v4Schema.dependencyRules.flatMap((rule) => {
+    const requests = activeV4Schema.dependencyRules.flatMap((rule) => {
       if (
         rule.effect !== "FILTER_OPTIONS" ||
         rule.trigger.kind !== "attribute"
       ) {
         return [];
       }
-      const parent = v4Schema.attributes.find(
+      const parent = activeV4Schema.attributes.find(
         (field) => field.definition.id === rule.trigger.key,
       );
       const parentValue = draft.attributes[rule.trigger.key];
       if (!parent?.definition.optionSetId) return [];
       return rule.targets.flatMap((target) => {
         if (target.kind !== "attribute") return [];
-        const child = v4Schema.attributes.find(
+        const child = activeV4Schema.attributes.find(
           (field) => field.definition.id === target.key,
         );
         if (!child?.definition.optionSetId) return [];
@@ -664,7 +697,7 @@ export const PublishWizard: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [currentLocale, draft.attributes, marketContext, v4Schema]);
+  }, [activeV4Schema, currentLocale, draft.attributes, marketContext]);
 
   const resolveSelectableNodeId = (nodeId: string): string => {
     if (taxonomyService.isPublishable(nodeId)) return nodeId;
@@ -673,6 +706,22 @@ export const PublishWizard: React.FC = () => {
         .getDescendants(nodeId)
         .find((candidate) => taxonomyService.isPublishable(candidate.id))?.id ||
       nodeId
+    );
+  };
+
+  const selectTaxonomyNode = (nodeId: string) => {
+    const taxonomyNodeId = resolveSelectableNodeId(nodeId);
+    setV4SchemaError("");
+    setDraft((current) =>
+      current.taxonomyNodeId === taxonomyNodeId
+        ? current
+        : {
+            ...current,
+            taxonomyNodeId,
+            listingTypeId: undefined,
+            taxonomyVersion: undefined,
+            attributes: {},
+          },
     );
   };
 
@@ -1131,7 +1180,7 @@ export const PublishWizard: React.FC = () => {
                   <button
                     key={intent}
                     type="button"
-                    onClick={() => updateDraft({ listingIntent: intent })}
+                    onClick={() => selectListingIntent(intent)}
                     aria-pressed={draft.listingIntent === intent}
                     className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                       draft.listingIntent === intent
@@ -1188,9 +1237,7 @@ export const PublishWizard: React.FC = () => {
                     key={n.id}
                     type="button"
                     onClick={() => {
-                      updateDraft({
-                        taxonomyNodeId: resolveSelectableNodeId(n.id),
-                      });
+                      selectTaxonomyNode(n.id);
                       setCategorySearchQuery("");
                     }}
                     className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
@@ -1228,11 +1275,7 @@ export const PublishWizard: React.FC = () => {
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => {
-                    updateDraft({
-                      taxonomyNodeId: resolveSelectableNodeId(cat.id),
-                    });
-                  }}
+                  onClick={() => selectTaxonomyNode(cat.id)}
                   title={getTaxonomyLabel(cat, "compact")}
                   className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
                     schema?.ancestors[0]?.id === cat.id ||
@@ -1297,40 +1340,42 @@ export const PublishWizard: React.FC = () => {
           </div>
 
           {/* Condition Scheme Selector */}
-          {!v4Schema?.attributes.some(({ definition }) =>
-            ["property_condition", "equipment_condition"].includes(
-              definition.id,
-            ),
-          ) && (
-            <div>
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-                {schema?.listingFamily === "job"
-                  ? "Disponibilité du poste"
-                  : schema?.listingFamily === "service"
-                    ? "Disponibilité de la prestation"
-                    : t("publishing.publishWizard.etatDuBienProduit")}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(schema?.conditionScheme || []).map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => updateDraft({ condition: c.value })}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                      draft.condition === c.value
-                        ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
-                        : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
-                    }`}
-                  >
-                    <div className="text-xs font-bold">{c.label}</div>
-                    <div className="text-micro text-stone-500 mt-0.5">
-                      {c.description}
-                    </div>
-                  </button>
-                ))}
+          {schema &&
+            activeV4Schema &&
+            !activeV4Schema.attributes.some(({ definition }) =>
+              ["property_condition", "equipment_condition"].includes(
+                definition.id,
+              ),
+            ) && (
+              <div>
+                <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+                  {schema?.listingFamily === "job"
+                    ? "Disponibilité du poste"
+                    : schema?.listingFamily === "service"
+                      ? "Disponibilité de la prestation"
+                      : t("publishing.publishWizard.etatDuBienProduit")}
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(schema?.conditionScheme || []).map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => updateDraft({ condition: c.value })}
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        draft.condition === c.value
+                          ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
+                          : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
+                      }`}
+                    >
+                      <div className="text-xs font-bold">{c.label}</div>
+                      <div className="text-micro text-stone-500 mt-0.5">
+                        {c.description}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Dynamic Attributes Grid */}
           {v4SchemaState === "loading" && (
@@ -1356,19 +1401,19 @@ export const PublishWizard: React.FC = () => {
               </button>
             </div>
           )}
-          {v4Schema && v4Schema.attributes.length > 0 && (
+          {activeV4Schema && activeV4Schema.attributes.length > 0 && (
             <div className="space-y-4 border-t border-border-subtle pt-4">
               <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-900">
                 <Tag className="h-icon-sm w-icon-sm text-primary" />
                 <span>{t("publishing.publishWizard.criteresDetailles")}</span>
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {v4Schema.attributes.map((field) => {
+                {activeV4Schema.attributes.map((field) => {
                   if (WEB_MANAGED_V4_ATTRIBUTES.has(field.definition.id)) {
                     return null;
                   }
                   const fieldState = resolveTaxonomyFieldState({
-                    schema: v4Schema,
+                    schema: activeV4Schema,
                     attributeId: field.definition.id,
                     values: draft.attributes,
                     sellerType: taxonomySellerType,
@@ -1412,254 +1457,6 @@ export const PublishWizard: React.FC = () => {
               </div>
             </div>
           )}
-          {!v4Schema &&
-            v4SchemaState !== "loading" &&
-            schema &&
-            schema.fields.length > 0 && (
-              <div className="pt-4 border-t border-border-subtle space-y-4">
-                <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Tag className="w-icon-sm h-icon-sm text-primary" />
-                  <span>{t("publishing.publishWizard.criteresDetailles")}</span>
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {schema.fields.map((field) => {
-                    if (!field.isVisiblyMet) return null;
-                    const attr = field.attribute;
-                    const value = draft.attributes?.[attr.code] ?? "";
-                    const hint =
-                      attr.helpText ||
-                      (field.fieldRole === "recommended"
-                        ? "Champ recommandé"
-                        : undefined);
-
-                    if (attr.dataType === "select") {
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={attr.label}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <Select
-                            size="compact"
-                            className="w-full"
-                            labelledByAncestor
-                            value={value}
-                            onChange={(e) =>
-                              updateAttribute(attr.code, e.target.value)
-                            }
-                          >
-                            <option value="">
-                              {t(
-                                "publishing.publishWizard.selectionnerUneOption",
-                              )}
-                            </option>
-                            {attr.options?.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </Select>
-                        </FormField>
-                      );
-                    }
-
-                    if (attr.dataType === "multi_select") {
-                      const selectedValues = Array.isArray(value) ? value : [];
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={attr.label}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <div className="grid grid-cols-1 gap-2 rounded-control border border-border-base bg-bg-base p-3 sm:grid-cols-2">
-                            {(attr.options || []).map((option) => (
-                              <Checkbox
-                                key={option.value}
-                                label={option.label}
-                                checked={selectedValues.includes(option.value)}
-                                onChange={(event) => {
-                                  const next = event.target.checked
-                                    ? [...selectedValues, option.value]
-                                    : selectedValues.filter(
-                                        (selected) => selected !== option.value,
-                                      );
-                                  updateAttribute(attr.code, next);
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </FormField>
-                      );
-                    }
-
-                    if (
-                      attr.dataType === "number" ||
-                      attr.dataType === "year" ||
-                      attr.dataType === "money"
-                    ) {
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <Input
-                            type="number"
-                            placeholder={
-                              attr.validation?.placeholder ||
-                              (attr.unit ? `ex: 50 ${attr.unit}` : "")
-                            }
-                            value={value}
-                            min={attr.validation?.min}
-                            max={attr.validation?.max}
-                            step={
-                              attr.validation?.step ||
-                              (attr.dataType === "year" ? 1 : undefined)
-                            }
-                            onChange={(e) =>
-                              updateAttribute(
-                                attr.code,
-                                e.target.value ? Number(e.target.value) : "",
-                              )
-                            }
-                            className="h-control-md text-xs"
-                          />
-                        </FormField>
-                      );
-                    }
-
-                    if (attr.dataType === "range") {
-                      const rangeValue =
-                        value &&
-                        typeof value === "object" &&
-                        !Array.isArray(value)
-                          ? value
-                          : { min: "", max: "" };
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={`${attr.label} ${attr.unit ? `(${attr.unit})` : ""}`}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <div className="grid grid-cols-2 gap-2">
-                            {(["min", "max"] as const).map((bound) => (
-                              <Input
-                                key={bound}
-                                type="number"
-                                aria-label={
-                                  bound === "min" ? "Minimum" : "Maximum"
-                                }
-                                placeholder={bound === "min" ? "Min" : "Max"}
-                                value={rangeValue[bound] ?? ""}
-                                min={attr.validation?.min}
-                                max={attr.validation?.max}
-                                step={attr.validation?.step}
-                                onChange={(event) =>
-                                  updateAttribute(attr.code, {
-                                    ...rangeValue,
-                                    [bound]: event.target.value
-                                      ? Number(event.target.value)
-                                      : "",
-                                  })
-                                }
-                                className="h-control-md text-xs"
-                              />
-                            ))}
-                          </div>
-                        </FormField>
-                      );
-                    }
-
-                    if (attr.dataType === "boolean") {
-                      return (
-                        <div key={attr.id} className="flex items-center pt-6">
-                          <Checkbox
-                            label={attr.label}
-                            description={attr.helpText}
-                            checked={!!value}
-                            onChange={(e) =>
-                              updateAttribute(attr.code, e.target.checked)
-                            }
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (attr.dataType === "long_text") {
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={attr.label}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <Textarea
-                            value={value}
-                            maxLength={attr.validation?.maxLength}
-                            placeholder={attr.validation?.placeholder || ""}
-                            onChange={(event) =>
-                              updateAttribute(attr.code, event.target.value)
-                            }
-                            className="min-h-24 text-xs"
-                          />
-                        </FormField>
-                      );
-                    }
-
-                    if (
-                      attr.dataType === "date" ||
-                      attr.dataType === "date_time"
-                    ) {
-                      return (
-                        <FormField
-                          key={attr.id}
-                          label={attr.label}
-                          required={field.isRequired}
-                          hint={hint}
-                        >
-                          <Input
-                            type={
-                              attr.dataType === "date"
-                                ? "date"
-                                : "datetime-local"
-                            }
-                            value={value}
-                            onChange={(event) =>
-                              updateAttribute(attr.code, event.target.value)
-                            }
-                            className="h-control-md text-xs"
-                          />
-                        </FormField>
-                      );
-                    }
-
-                    return (
-                      <FormField
-                        key={attr.id}
-                        label={attr.label}
-                        required={field.isRequired}
-                        hint={hint}
-                      >
-                        <Input
-                          type="text"
-                          placeholder={attr.validation?.placeholder || ""}
-                          value={value}
-                          onChange={(e) =>
-                            updateAttribute(attr.code, e.target.value)
-                          }
-                          className="h-control-md text-xs"
-                        />
-                      </FormField>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
         </div>
       )}
 

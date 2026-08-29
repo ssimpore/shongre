@@ -92,15 +92,21 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
   it("keeps moderation separate from platform administration", () => {
     const moderator: Partial<UserProfile> = {
       id: "mod-1",
-      role: "moderator",
-      primaryRole: "moderator",
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "moderator",
+      role: "buyer",
+      primaryRole: "buyer",
       status: "active",
     };
 
     const admin: Partial<UserProfile> = {
       id: "admin-1",
-      role: "admin",
-      primaryRole: "admin",
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "admin",
+      role: "buyer",
+      primaryRole: "buyer",
       status: "active",
     };
 
@@ -166,7 +172,8 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
   it("does not grant commercial entitlements to staff administrators", () => {
     const admin: Partial<UserProfile> = {
       id: "admin-1",
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       staffRole: "admin",
       role: "admin",
       primaryRole: "admin",
@@ -179,5 +186,32 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
         "bulkImportExport",
       ),
     ).toBe(false);
+  });
+
+  it("rejects Staff-only direct overrides without an active membership", () => {
+    const customer: Partial<UserProfile> = {
+      id: "customer-with-forged-override",
+      accountType: "individual",
+      role: "individual_buyer",
+      primaryRole: "individual_buyer",
+      status: "active",
+      customPermissions: ["admin.access"],
+    };
+    const revokedStaff: Partial<UserProfile> = {
+      ...customer,
+      id: "revoked-staff-with-override",
+      staffStatus: "revoked",
+      staffRole: "admin",
+    };
+
+    expect(
+      authorizationService.can(customer as UserProfile, "admin.access"),
+    ).toBe(false);
+    expect(
+      authorizationService.can(revokedStaff as UserProfile, "admin.access"),
+    ).toBe(false);
+    expect(
+      authorizationService.can(revokedStaff as UserProfile, "listing.read"),
+    ).toBe(true);
   });
 });

@@ -178,11 +178,11 @@ export class ProspectingService {
       return {
         accountId,
         accessMode:
-          principal.accountType === "staff"
+          principal.staffStatus === "active"
             ? "INTERNAL_SHONGRE"
             : "SHONGRE_CONNECTED",
         planName:
-          principal.accountType === "staff"
+          principal.staffStatus === "active"
             ? "Accès interne de démonstration"
             : "Prospects Growth — démonstration",
         value: {
@@ -199,7 +199,7 @@ export class ProspectingService {
     );
     const values = new Map(active.map((entry) => [entry.key, entry.value]));
     const accessMode =
-      principal.accountType === "staff"
+      principal.staffStatus === "active"
         ? "INTERNAL_SHONGRE"
         : values.get("prospecting.accessMode") === "STANDALONE"
           ? "STANDALONE"
@@ -254,7 +254,7 @@ export class ProspectingService {
           "prospecting.shongreConversionTools",
         ),
         internalFirstPartyAccess:
-          principal.accountType === "staff" &&
+          principal.staffStatus === "active" &&
           booleanValue(values, "prospecting.internalFirstPartyAccess"),
       },
     };

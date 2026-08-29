@@ -3807,6 +3807,26 @@ export const messagesFr = {
   "admin.accountType.professional": "Compte professionnel",
   "admin.accountType.internal": "Collaborateur interne",
   "admin.accountType.staff": "Collaborateur interne",
+  "admin.staff.filterLabel": "Filtrer par statut Staff",
+  "admin.staff.filterAll": "Tous les statuts Staff",
+  "admin.staff.status.none": "Aucun accès Staff",
+  "admin.staff.status.active": "Staff actif",
+  "admin.staff.status.suspended": "Staff suspendu",
+  "admin.staff.status.revoked": "Staff révoqué",
+  "admin.staff.grantAction": "Accorder Staff",
+  "admin.staff.manageAction": "Gérer Staff",
+  "admin.staff.modalTitle": "Accès Staff sécurisé",
+  "admin.staff.modalDescription":
+    "Définissez l’accès employé de {name}. Le type de compte particulier ou professionnel reste inchangé.",
+  "admin.staff.roleLabel": "Rôle Staff",
+  "admin.staff.statusLabel": "Statut Staff",
+  "admin.staff.reasonLabel": "Motif auditable",
+  "admin.staff.reasonHint":
+    "10 caractères minimum. N’incluez aucune donnée sensible ni aucun secret.",
+  "admin.staff.reasonMinimum": "Saisissez un motif d’au moins 10 caractères.",
+  "admin.staff.confirmAction": "Enregistrer l’accès Staff",
+  "admin.staff.updateSuccess": "L’accès Staff a été mis à jour.",
+  "admin.staff.updateError": "L’accès Staff n’a pas pu être mis à jour.",
   "shell.demoRoleSwitcher.roleHorsPersonasDemo":
     "Rôle plateforme hors des personas de démonstration",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees":

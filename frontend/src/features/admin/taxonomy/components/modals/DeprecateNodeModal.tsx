@@ -47,7 +47,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
 

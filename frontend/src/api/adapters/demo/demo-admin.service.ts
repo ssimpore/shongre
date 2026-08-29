@@ -27,6 +27,7 @@ import {
 } from "@shongre/contracts/discovery";
 import { DEFAULT_DISCOVERY_CONFIGURATION } from "@shongre/shared";
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
+import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
 
 export class DemoAdminService implements AdminServiceContract {
   private discoveryConfiguration = structuredClone(
@@ -92,6 +93,55 @@ export class DemoAdminService implements AdminServiceContract {
       details: reason,
       previousValue: { status: user.status },
       newValue: { status },
+    });
+    return updated;
+  }
+
+  async updateStaffStatus(
+    userId: string,
+    status: Exclude<StaffStatus, "none">,
+    staffRole: StaffRole,
+    reason: string,
+  ): Promise<UserProfile> {
+    await simulateNetworkDelay();
+    const actor = await userRepository.getCurrentUser();
+    authorizationService.assertCan(actor, "admin.staff.manage");
+    if (!actor || actor.staffStatus !== "active") {
+      throw new Error("Un statut Staff actif est requis.");
+    }
+    if (actor.id === userId) {
+      throw new Error("Vous ne pouvez pas modifier votre propre statut Staff.");
+    }
+    if (reason.trim().length < 10) {
+      throw new Error("Un motif d’au moins 10 caractères est requis.");
+    }
+    const user = await userRepository.getUserById(userId);
+    if (!user) throw new Error("Utilisateur introuvable");
+    if (
+      actor.staffRole !== "owner" &&
+      (staffRole === "owner" || user.staffRole === "owner")
+    ) {
+      throw new Error("Seul un propriétaire peut gérer ce niveau d’accès.");
+    }
+    const updated: UserProfile = {
+      ...user,
+      staffStatus: status,
+      staffRole,
+    };
+    storageService.saveUser(updated);
+    auditService.logEvent({
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.staffRole || actor.role,
+      targetId: userId,
+      targetName: user.name,
+      action: status === "revoked" ? "role_removed" : "role_assigned",
+      details: reason.trim(),
+      previousValue: {
+        staffStatus: user.staffStatus ?? "none",
+        staffRole: user.staffRole ?? null,
+      },
+      newValue: { staffStatus: status, staffRole },
     });
     return updated;
   }

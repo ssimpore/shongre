@@ -1,4 +1,5 @@
 import {
+  ACCOUNT_TYPES,
   canonicalAccessContext,
   resolveEffectiveCapabilities,
   type AccountType,
@@ -17,6 +18,7 @@ export interface RoutePolicy {
   capability?: Capability;
   alternativeCapabilities?: readonly Capability[];
   accountTypes: readonly AccountType[];
+  requiresActiveStaff?: boolean;
   productId?: ShongreProductId;
 }
 
@@ -38,7 +40,8 @@ const staff = (path: string, capability: Capability): RoutePolicy => ({
   path,
   access: "staff_capability",
   capability,
-  accountTypes: ["staff"],
+  accountTypes: ACCOUNT_TYPES,
+  requiresActiveStaff: true,
 });
 
 /**
@@ -51,7 +54,8 @@ export const ROUTE_POLICIES = {
   staffMfa: {
     path: "/securite-interne",
     access: "authenticated",
-    accountTypes: ["staff"],
+    accountTypes: ACCOUNT_TYPES,
+    requiresActiveStaff: true,
     capability: undefined,
     alternativeCapabilities: undefined,
   },
@@ -226,6 +230,9 @@ export function canAccessRoutePolicy(
   const access = canonicalAccessContext(user);
   if (access.accountType === "guest") return false;
   if (!policy.accountTypes.some((type) => type === access.accountType)) {
+    return false;
+  }
+  if (policy.requiresActiveStaff && access.staffStatus !== "active") {
     return false;
   }
   if (policy.productId && !hasProductAccess(user, policy.productId)) {

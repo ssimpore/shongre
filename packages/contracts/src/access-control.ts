@@ -7,9 +7,21 @@
  * ownership and organization scope remain request/resource-level decisions.
  */
 
-export const ACCOUNT_TYPES = ["individual", "professional", "staff"] as const;
+export const ACCOUNT_TYPES = ["individual", "professional"] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
-export type LegacyAccountType = AccountType | "internal";
+export type LegacyAccountType = AccountType | "staff" | "internal";
+
+/**
+ * Staff is an independently granted employment access state, never a customer
+ * account type. `none` is the projection used when no membership row exists.
+ */
+export const STAFF_STATUSES = [
+  "none",
+  "active",
+  "suspended",
+  "revoked",
+] as const;
+export type StaffStatus = (typeof STAFF_STATUSES)[number];
 
 export const PROFESSIONAL_VERTICALS = [
   "generic",
@@ -34,6 +46,8 @@ export const STAFF_ROLES = [
   "owner",
 ] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
+export const STAFF_ACCESS_REASON_MIN_LENGTH = 10;
+export const STAFF_ACCESS_REASON_MAX_LENGTH = 1000;
 
 export const ACCOUNT_STATUSES = [
   "pending",
@@ -831,6 +845,7 @@ export interface AccessSubject {
   accountType?: LegacyAccountType;
   primaryRole?: string;
   role?: string;
+  staffStatus?: StaffStatus;
   staffRole?: StaffRole;
   professionalVertical?: ProfessionalVertical;
   status?: AccountStatus;
@@ -838,8 +853,27 @@ export interface AccessSubject {
   revokedPermissions?: readonly Capability[];
 }
 
+const STAFF_CAPABILITY_SET = new Set<Capability>(
+  Object.values(STAFF_ROLE_CAPABILITIES).flat(),
+);
+const CUSTOMER_CAPABILITY_SET = new Set<Capability>([
+  ...PUBLIC_CAPABILITIES,
+  ...INDIVIDUAL_CAPABILITIES,
+  ...PROFESSIONAL_CORE_CAPABILITIES,
+  ...Object.values(VERTICAL_CAPABILITIES).flat(),
+]);
+
+/** True when a capability is granted only through the Staff access plane. */
+export function isStaffCapability(capability: Capability): boolean {
+  return (
+    STAFF_CAPABILITY_SET.has(capability) &&
+    !CUSTOMER_CAPABILITY_SET.has(capability)
+  );
+}
+
 export interface CanonicalAccessContext {
   accountType: AccountType | "guest";
+  staffStatus: StaffStatus;
   staffRole?: StaffRole;
   professionalVertical?: ProfessionalVertical;
   status: CanonicalAccountStatus;
@@ -850,8 +884,10 @@ export function normalizeAccountType(
   role?: string,
 ): AccountType | "guest" {
   if (!accountType && (!role || role === "guest")) return "guest";
-  if (!accountType && staffRoleFromLegacyRole(role)) return "staff";
-  if (accountType === "internal" || accountType === "staff") return "staff";
+  // Historical staff/internal rows are migrated to an individual customer
+  // account plus an independently managed staff membership.
+  if (accountType === "internal" || accountType === "staff")
+    return "individual";
   if (accountType === "professional" || role === "pro_seller")
     return "professional";
   return "individual";
@@ -902,14 +938,25 @@ export function staffRoleFromLegacyRole(role?: string): StaffRole | undefined {
 export function canonicalAccessContext(
   subject: AccessSubject | null | undefined,
 ): CanonicalAccessContext {
-  if (!subject) return { accountType: "guest", status: "active" };
+  if (!subject)
+    return {
+      accountType: "guest",
+      staffStatus: "none",
+      status: "active",
+    };
   const role = subject.primaryRole ?? subject.role;
   const accountType = normalizeAccountType(subject.accountType, role);
+  const wasLegacyStaffAccount =
+    subject.accountType === "staff" || subject.accountType === "internal";
+  const staffStatus =
+    subject.staffStatus ?? (wasLegacyStaffAccount ? "active" : "none");
   return {
     accountType,
+    staffStatus,
     staffRole:
-      accountType === "staff"
-        ? (subject.staffRole ?? staffRoleFromLegacyRole(role))
+      staffStatus !== "none"
+        ? (subject.staffRole ??
+          (wasLegacyStaffAccount ? staffRoleFromLegacyRole(role) : undefined))
         : undefined,
     professionalVertical:
       accountType === "professional"
@@ -943,12 +990,6 @@ export function resolveEffectiveCapabilities(
 
   if (context.accountType === "guest") {
     PUBLIC_CAPABILITIES.forEach((capability) => capabilities.add(capability));
-  } else if (context.accountType === "staff") {
-    if (context.staffRole) {
-      STAFF_ROLE_CAPABILITIES[context.staffRole].forEach((capability) =>
-        capabilities.add(capability),
-      );
-    }
   } else if (context.accountType === "professional") {
     PROFESSIONAL_CORE_CAPABILITIES.forEach((capability) =>
       capabilities.add(capability),
@@ -962,9 +1003,22 @@ export function resolveEffectiveCapabilities(
     );
   }
 
-  subject?.customPermissions?.forEach((capability) =>
-    capabilities.add(capability),
-  );
+  // Activating Staff adds only the explicitly selected employee role. The
+  // account's Individual/Professional capabilities remain independently
+  // derived from its account type.
+  if (context.staffStatus === "active" && context.staffRole) {
+    STAFF_ROLE_CAPABILITIES[context.staffRole].forEach((capability) =>
+      capabilities.add(capability),
+    );
+  }
+
+  subject?.customPermissions?.forEach((capability) => {
+    // Direct overrides can refine an active employee's role, but they must not
+    // turn a customer—or a suspended/revoked employee—into Staff authority.
+    if (context.staffStatus === "active" || !isStaffCapability(capability)) {
+      capabilities.add(capability);
+    }
+  });
   subject?.revokedPermissions?.forEach((capability) =>
     capabilities.delete(capability),
   );
@@ -1012,8 +1066,20 @@ export function accessSubjectForLegacyRole(
     };
   }
   const staffRole = staffRoleFromLegacyRole(role);
-  if (staffRole) return { accountType: "staff", role, staffRole };
+  if (staffRole)
+    return {
+      accountType: "individual",
+      role,
+      staffStatus: "active",
+      staffRole,
+    };
   return { accountType: "individual", role };
+}
+
+export function isActiveStaffSubject(
+  subject: AccessSubject | null | undefined,
+): boolean {
+  return canonicalAccessContext(subject).staffStatus === "active";
 }
 
 export function capabilitiesForLegacyRole(role: PlatformRole): Capability[] {

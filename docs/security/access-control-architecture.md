@@ -36,8 +36,8 @@ legacy helpers derive from it; they do not maintain separate grants.
 - Buyer and seller were treated as durable security identities despite being
   activities of the same individual account.
 - Workspace navigation and route guards repeated unrelated capability strings.
-- Staff could enter the customer workspace, and staff landing pages loaded
-  datasets before capability checks.
+- Staff was conflated with a third customer account type, and Staff landing
+  pages loaded datasets before capability checks.
 - The user table exposed an unrestricted demo impersonation action.
 - Report resolution used one broad permission for dismissal, listing removal,
   and account banning.
@@ -54,9 +54,9 @@ legacy helpers derive from it; they do not maintain separate grants.
   backend.
 - Positive professional-vertical grants; no subtractive “grant all then
   revoke” persona construction.
-- Separate account family, professional vertical, staff role, lifecycle
-  status, direct grants/revocations, entitlements, verification, ownership,
-  organization scope, and market scope.
+- Separate customer account type, Staff membership status and role,
+  professional vertical, account lifecycle, direct grants/revocations,
+  entitlements, verification, ownership, organization scope, and market scope.
 - One protected-route registry used by route guards and workspace navigation.
 - Capability-scoped staff and customer layouts; unrelated links are removed,
   not disabled.
@@ -76,14 +76,16 @@ legacy helpers derive from it; they do not maintain separate grants.
 
 ## D. Canonical account model
 
-| Dimension         | Values                                                             | Meaning                             |
-| ----------------- | ------------------------------------------------------------------ | ----------------------------------- |
-| Account family    | `individual`, `professional`, `staff`                              | Stable identity family              |
-| Lifecycle         | `pending`, `active`, `restricted`, `suspended`, `banned`, `closed` | Whether the account may act         |
-| Legacy aliases    | buyer/seller/pro/staff role labels                                 | Persistence compatibility only      |
-| Direct policy     | `customPermissions`, `revokedPermissions`                          | Explicit, audited exceptions        |
-| Commercial access | plan entitlements                                                  | Never a staff or identity role      |
-| Trust state       | email, phone, identity, business, payment, payout                  | Independent verification dimensions |
+| Dimension         | Values                                                             | Meaning                               |
+| ----------------- | ------------------------------------------------------------------ | ------------------------------------- |
+| Account type      | `individual`, `professional`                                       | Stable customer identity type         |
+| Staff status      | `none`, `active`, `suspended`, `revoked`                           | Independently managed employee access |
+| Staff role        | explicit least-privilege role                                      | Capabilities added only while active  |
+| Lifecycle         | `pending`, `active`, `restricted`, `suspended`, `banned`, `closed` | Whether the account may act           |
+| Legacy aliases    | buyer/seller/pro/staff role labels                                 | Persistence compatibility only        |
+| Direct policy     | `customPermissions`, `revokedPermissions`                          | Explicit, audited exceptions          |
+| Commercial access | plan entitlements                                                  | Never a staff or identity role        |
+| Trust state       | email, phone, identity, business, payment, payout                  | Independent verification dimensions   |
 
 An individual account receives both legitimate buying and selling journeys.
 The UI may emphasize the current activity, but authorization does not create a
@@ -119,16 +121,19 @@ vertical grant alone never grants access to another organization.
 | Moderator       | reports, listings, reviews                           | suspension, refunds, platform configuration      |
 | Trust & Safety  | verification, restriction/suspension, reports, audit | listing removal, refunds, configuration          |
 | Compliance      | verification, restrictions, audit                    | moderation, suspension, refunds                  |
-| Finance         | transaction audit, refunds, commercial approval      | moderation, customer workspace, configuration    |
-| Operations      | provider health/read                                 | customer, moderation, finance                    |
+| Finance         | transaction audit, refunds, commercial approval      | moderation, Staff configuration, credentials     |
+| Operations      | provider health/read                                 | moderation, finance, Staff administration        |
 | Commercial      | CRM and commercial-rule editing                      | moderation, finance, platform configuration      |
 | Content manager | taxonomy and editorial featuring                     | users, finance, moderation                       |
-| Market manager  | market/vertical configuration in assigned markets    | finance and customer activity                    |
+| Market manager  | market/vertical configuration in assigned markets    | finance and Staff administration                 |
 | Admin           | platform configuration and staff administration      | moderation and refunds unless separately granted |
 | Owner           | permission governance and provider credentials       | moderation and refunds unless separately granted |
 
-Staff receive no implicit customer/professional capabilities. Non-owner staff
-operations are also constrained by assigned market scope.
+Activating Staff adds only the selected employee role; it does not mutate or
+upgrade the account type. The account keeps the customer capabilities it
+already receives as an Individual or Professional account. Suspended and
+revoked Staff states add no employee capabilities. Non-owner Staff operations
+are also constrained by assigned market scope.
 
 ## G. Effective capability matrix
 
@@ -171,39 +176,40 @@ The machine-readable matrix is
 | `/compte/*`                                               | individual/professional | customer boundary plus per-child capability                     |
 | `/compte/pro/*`                                           | professional            | generic storefront capability or shared subscription capability |
 | `/compte/{auto,immo,cours/organisation,emploi/recruteur}` | professional            | selected vertical capability                                    |
-| `/admin`                                                  | staff                   | `admin.access`                                                  |
-| `/admin/moderation`                                       | staff                   | report or moderation capability                                 |
-| `/admin/utilisateurs`                                     | staff                   | `user.read`                                                     |
-| `/admin/verifications`                                    | staff                   | `user.verify` or `compliance.review`                            |
-| `/admin/{marches,taxonomie,monetisation,tendances}`       | staff                   | exact configuration capability                                  |
-| `/admin/fournisseurs/*`                                   | staff                   | `provider.read`                                                 |
-| `/admin/{cours,auto,immo,emploi}`                         | staff                   | corresponding vertical-admin capability                         |
-| `/admin/crm/*`                                            | staff                   | exact CRM read/use capability                                   |
-| `/admin/roles`                                            | staff                   | role or permission governance capability                        |
-| `/admin/audit`                                            | staff                   | `audit.read`                                                    |
+| `/admin`                                                  | active Staff            | `admin.access`                                                  |
+| `/admin/moderation`                                       | active Staff            | report or moderation capability                                 |
+| `/admin/utilisateurs`                                     | active Staff            | `user.read`                                                     |
+| `/admin/verifications`                                    | active Staff            | `user.verify` or `compliance.review`                            |
+| `/admin/{marches,taxonomie,monetisation,tendances}`       | active Staff            | exact configuration capability                                  |
+| `/admin/fournisseurs/*`                                   | active Staff            | `provider.read`                                                 |
+| `/admin/{cours,auto,immo,emploi}`                         | active Staff            | corresponding vertical-admin capability                         |
+| `/admin/crm/*`                                            | active Staff            | exact CRM read/use capability                                   |
+| `/admin/roles`                                            | active Staff            | role or permission governance capability                        |
+| `/admin/audit`                                            | active Staff            | `audit.read`                                                    |
 
 Unlisted marketplace, search, category, listing-detail, legal, and onboarding
 routes remain public or guest-only as declared in the application router.
 
 ## I. Important API authorization matrix
 
-| Endpoint/action                           | Policy                                             | Additional scope                                         |
-| ----------------------------------------- | -------------------------------------------------- | -------------------------------------------------------- |
-| Public markets/taxonomy/search/detail     | public                                             | privacy-safe DTO only                                    |
-| Create/update/publish listing             | listing capability                                 | authenticated publisher + owner/org/branch + entitlement |
-| Orders/messages/notifications/workspace   | own capability                                     | participant or owner; foreign IDs return 404             |
-| Vertical recruiter/agency/dealer/org APIs | vertical capability                                | active membership/ownership                              |
-| `GET /admin/users`                        | `user.read`                                        | no credential fields                                     |
-| `PUT /admin/users/:id/status`             | read + action-specific restrict/suspend/reactivate | no self-status mutation; reason + audit                  |
-| `PUT /admin/users/:id/verification`       | `user.verify`                                      | professional target; note + audit                        |
-| `GET /admin/reports`                      | `report.review`                                    | staff only                                               |
-| Resolve report: dismiss                   | `report.review`                                    | reason + audit                                           |
-| Resolve report: remove listing            | `report.review` + `moderation.action`              | reason + audit                                           |
-| Resolve report: ban user                  | `report.review` + `user.suspend`                   | reason + audit                                           |
-| Audit log                                 | `audit.read`                                       | staff scope                                              |
-| Trending/configuration                    | `admin.configuration.manage`                       | market scope where applicable                            |
-| Refund                                    | `payment.refund`/`order.refund`                    | transaction validation and idempotency                   |
-| Stripe webhook                            | signed public webhook                              | raw-body signature, no session token                     |
+| Endpoint/action                           | Policy                                             | Additional scope                                                                                   |
+| ----------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Public markets/taxonomy/search/detail     | public                                             | privacy-safe DTO only                                                                              |
+| Create/update/publish listing             | listing capability                                 | authenticated publisher + owner/org/branch + entitlement                                           |
+| Orders/messages/notifications/workspace   | own capability                                     | participant or owner; foreign IDs return 404                                                       |
+| Vertical recruiter/agency/dealer/org APIs | vertical capability                                | active membership/ownership                                                                        |
+| `GET /admin/users`                        | `user.read`                                        | no credential fields                                                                               |
+| `PUT /admin/users/:id/status`             | read + action-specific restrict/suspend/reactivate | no self-status mutation; reason + audit                                                            |
+| `PUT /admin/users/:id/staff-status`       | `admin.staff.manage`                               | active Staff + MFA + recent auth; no self-management; owner protection; audit + session revocation |
+| `PUT /admin/users/:id/verification`       | `user.verify`                                      | professional target; note + audit                                                                  |
+| `GET /admin/reports`                      | `report.review`                                    | staff only                                                                                         |
+| Resolve report: dismiss                   | `report.review`                                    | reason + audit                                                                                     |
+| Resolve report: remove listing            | `report.review` + `moderation.action`              | reason + audit                                                                                     |
+| Resolve report: ban user                  | `report.review` + `user.suspend`                   | reason + audit                                                                                     |
+| Audit log                                 | `audit.read`                                       | staff scope                                                                                        |
+| Trending/configuration                    | `admin.configuration.manage`                       | market scope where applicable                                                                      |
+| Refund                                    | `payment.refund`/`order.refund`                    | transaction validation and idempotency                                                             |
+| Stripe webhook                            | signed public webhook                              | raw-body signature, no session token                                                               |
 
 Every backend route must declare `public`, `authenticated`, or an explicit
 permission when registered. Capability checks use capabilities recomputed from
@@ -211,7 +217,9 @@ the current database profile, not client-provided claims.
 
 ## J. Migration
 
-`00023_canonical_access_control.sql` uses expand/backfill/compatibility steps:
+`00023_canonical_access_control.sql` establishes the capability vocabulary.
+`00079_staff_status.sql` then separates Staff from the account type using
+expand/backfill/compatibility steps:
 
 1. add canonical account/status values and access dimensions;
 2. backfill staff roles and professional verticals from legacy data;
@@ -223,8 +231,11 @@ the current database profile, not client-provided claims.
 8. restrict authenticated profile writes to safe columns;
 9. expose only `public_profiles` to public/authenticated database roles.
 
-Legacy role values remain available during rollout, but are presentation and
-persistence aliases only.
+The v79 migration backfills historical Staff profiles into
+`staff_memberships`, converts their underlying account type to Individual,
+denies browser access to the membership table, grants Staff capabilities only
+for active rows, protects owners, and writes the audit record in the same
+database transaction. Legacy account/role values remain rollout aliases only.
 
 ## K. Security validation
 
@@ -240,14 +251,16 @@ Automated coverage includes:
 - profile mass-assignment filtering;
 - report action step-up checks;
 - sensitive status audit reason/actor capture;
+- role-label-only, self-elevation, missing-MFA, stale-recent-auth, and last-owner
+  Staff administration denial;
 - RLS enablement, safe profile projection, and broad admin-helper retirement;
 - suspended/restricted/banned lifecycle filtering.
 
 ## L. UX validation
 
 - Navigation and direct-route guards share one named policy registry.
-- Staff are redirected to the staff console; customer accounts remain in the
-  account workspace.
+- Active Staff can enter the Staff console while retaining the workspace for
+  their underlying Individual or Professional account.
 - Professional menus show only the selected vertical.
 - Pending professional registration lands in verification rather than a locked
   dashboard.

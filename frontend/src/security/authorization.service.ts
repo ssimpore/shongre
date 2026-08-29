@@ -1,6 +1,7 @@
 import {
   canonicalAccessContext,
   resolveEffectiveCapabilities,
+  type AccountType,
   type ProfessionalVertical,
 } from "@shongre/contracts/access-control";
 import { isProSeller } from "../domains/user/user.domain";
@@ -49,7 +50,7 @@ export type FeatureAvailabilityState =
 export interface FeatureRequirement {
   capability: Permission;
   entitlement?: CommercialEntitlement;
-  accountTypes?: readonly ("individual" | "professional" | "staff")[];
+  accountTypes?: readonly AccountType[];
   professionalVerticals?: readonly ProfessionalVertical[];
   requiresVerification?: boolean;
   country?: string;
@@ -238,7 +239,7 @@ export class AuthorizationService {
 
     // Customer accounts browse markets; operational scope constrains staff
     // actions. Owners are the sole implicit global governance context.
-    if (access.accountType !== "staff" || access.staffRole === "owner") {
+    if (access.staffStatus !== "active" || access.staffRole === "owner") {
       return true;
     }
 

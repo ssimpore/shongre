@@ -4,6 +4,7 @@ import type {
   Capability,
   ProfessionalVertical,
   StaffRole,
+  StaffStatus,
 } from "@shongre/contracts/access-control";
 import type { CountryConfig } from "@shongre/contracts";
 
@@ -23,6 +24,7 @@ export interface UserProfile {
   name: string;
   accountType: AccountType;
   professionalVertical?: ProfessionalVertical;
+  staffStatus?: StaffStatus;
   staffRole?: StaffRole;
   primaryRole: string;
   role: UserRole;

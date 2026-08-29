@@ -50,23 +50,24 @@ describe("showsVerifiedBadge", () => {
 });
 
 describe("isInternalAccount", () => {
-  it("recognises staff by account type", () => {
+  it("recognises the active Staff status and legacy account payloads", () => {
+    expect(
+      isInternalAccount({ accountType: "individual", staffStatus: "active" }),
+    ).toBe(true);
     expect(isInternalAccount({ accountType: "staff" })).toBe(true);
     expect(isInternalAccount({ accountType: "internal" })).toBe(true);
   });
 
-  it("recognises staff by platform role even when the account type disagrees", () => {
-    // A profile whose role was changed without its stored accountType being
-    // updated must still be treated as internal.
+  it("never infers Staff authority from a role label alone", () => {
     expect(
       isInternalAccount({
         accountType: "professional",
         primaryRole: "moderator",
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       isInternalAccount({ accountType: "professional", role: "finance" }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("does not flag marketplace members", () => {
@@ -96,14 +97,14 @@ describe("isPubliclyListableProSeller", () => {
     expect(isPubliclyListableProSeller(shop)).toBe(true);
   });
 
-  it("never lists a Shongre staff account, whatever its seller type", () => {
+  it("keeps Staff status orthogonal to a professional seller profile", () => {
     const staff = {
       ...shop,
-      accountType: "staff" as const,
-      primaryRole: "commercial",
+      staffStatus: "active",
+      staffRole: "commercial",
     };
-    expect(isProSeller(staff)).toBe(false);
-    expect(isPubliclyListableProSeller(staff)).toBe(false);
+    expect(isProSeller(staff)).toBe(true);
+    expect(isPubliclyListableProSeller(staff)).toBe(true);
   });
 
   it("never lists a suspended or deactivated shop", () => {
@@ -132,10 +133,12 @@ describe("isPubliclyListableProSeller", () => {
     ).toBe(false);
   });
 
-  it("excludes every internal persona shipped in the demo fixtures", () => {
+  it("keeps employee status out of customer account-type classification", () => {
     const leaked = Object.values(DEMO_USERS)
-      .filter((u: any) => isPubliclyListableProSeller(u))
-      .filter((u: any) => u.accountType === "staff");
+      .filter((u: any) => u.staffStatus === "active")
+      .filter(
+        (u: any) => !["individual", "professional"].includes(u.accountType),
+      );
 
     expect(leaked.map((u: any) => u.email)).toEqual([]);
   });

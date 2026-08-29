@@ -289,6 +289,10 @@ component → hook/controller → service contract → demo or HTTP adapter
   another user's resource. Test the wrong caller as well as the allowed caller.
 - Writes must allowlist mutable fields. Users must not self-assign roles,
   verification state, account status, staff capability, or administrative data.
+- Individual and Professional are the only account types. Staff is an
+  orthogonal, server-managed membership status with an explicit role; only an
+  active membership grants employee capabilities, and every membership change
+  requires MFA, recent authentication, session revocation, and an audit trail.
 - Social identities are matched by provider plus provider subject, never by
   email alone. Linking requires authenticated recent user intent; never silently
   merge accounts because an email matches or allow removal of the last usable

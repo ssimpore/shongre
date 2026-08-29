@@ -95,7 +95,7 @@ function currentActor() {
   const user = storageService.getCurrentUser();
   return {
     id: user?.id ?? "guest",
-    isStaff: user?.accountType === "staff" || Boolean(user?.staffRole),
+    isStaff: user?.staffStatus === "active",
   };
 }
 

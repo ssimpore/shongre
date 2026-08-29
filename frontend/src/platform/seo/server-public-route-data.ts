@@ -31,9 +31,7 @@ function decoded(value: string): string | null {
 }
 
 function publicSeller(seller: UserProfile | null): seller is UserProfile {
-  return Boolean(
-    seller && seller.status === "active" && seller.accountType !== "staff",
-  );
+  return Boolean(seller && seller.status === "active");
 }
 
 function sellerCountryCode(seller: UserProfile): string | null {

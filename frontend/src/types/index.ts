@@ -18,6 +18,7 @@ import type {
   PlatformRole as SharedPlatformRole,
   ProfessionalVertical,
   StaffRole,
+  StaffStatus,
 } from "@shongre/contracts/access-control";
 
 export type {
@@ -39,7 +40,7 @@ export * from "../domains/market/market.types";
 export * from "../domains/verification/verification.types";
 
 export type AccountType = CanonicalAccountType;
-export type { ProfessionalVertical, StaffRole };
+export type { ProfessionalVertical, StaffRole, StaffStatus };
 
 export type PlatformRole = Exclude<
   SharedPlatformRole,
@@ -174,6 +175,7 @@ export interface UserProfile {
   name: string;
   accountType?: AccountType;
   professionalVertical?: ProfessionalVertical;
+  staffStatus?: StaffStatus;
   staffRole?: StaffRole;
   primaryRole?: PlatformRole;
   roles?: PlatformRole[];

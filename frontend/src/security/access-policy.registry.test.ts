@@ -23,10 +23,11 @@ describe("protected route policy registry", () => {
     });
   });
 
-  it("keeps staff out of customer workspaces and customers out of staff tools", () => {
+  it("adds Staff tools without replacing the customer's account workspace", () => {
     const individual = persona({});
     const admin = persona({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       role: "admin",
       primaryRole: "admin",
       staffRole: "admin",
@@ -34,7 +35,7 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(individual, "accountOverview")).toBe(true);
     expect(canAccessRoutePolicy(individual, "adminOverview")).toBe(false);
     expect(canAccessRoutePolicy(admin, "adminOverview")).toBe(true);
-    expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(false);
+    expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(true);
   });
 
   it("keeps professional workspaces vertical-specific", () => {
@@ -108,19 +109,22 @@ describe("protected route policy registry", () => {
 
   it("keeps admin, moderation and finance routes least-privilege", () => {
     const admin = persona({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       role: "admin",
       primaryRole: "admin",
       staffRole: "admin",
     });
     const moderator = persona({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       role: "moderator",
       primaryRole: "moderator",
       staffRole: "moderator",
     });
     const finance = persona({
-      accountType: "staff",
+      accountType: "individual",
+      staffStatus: "active",
       role: "finance",
       primaryRole: "finance",
       staffRole: "finance",
@@ -135,5 +139,17 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(admin, "adminFinance")).toBe(true);
     expect(canAccessRoutePolicy(moderator, "adminFinance")).toBe(false);
     expect(canAccessRoutePolicy(finance, "adminAudit")).toBe(true);
+  });
+
+  it("removes Staff routes when the Staff status is suspended or revoked", () => {
+    for (const staffStatus of ["suspended", "revoked"] as const) {
+      const formerAdmin = persona({
+        accountType: "individual",
+        staffStatus,
+        staffRole: "admin",
+      });
+      expect(canAccessRoutePolicy(formerAdmin, "adminOverview")).toBe(false);
+      expect(canAccessRoutePolicy(formerAdmin, "accountOverview")).toBe(true);
+    }
   });
 });

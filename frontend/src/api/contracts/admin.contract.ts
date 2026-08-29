@@ -7,6 +7,7 @@ import type {
   DiscoveryConfiguration,
   DiscoveryMetrics,
 } from "@shongre/contracts/discovery";
+import type { StaffRole, StaffStatus } from "@shongre/contracts/access-control";
 
 export interface AdminStatsSummary {
   totalUsers: number;
@@ -39,6 +40,12 @@ export interface AdminServiceContract {
   updateUserStatus(
     userId: string,
     status: "active" | "restricted" | "suspended" | "banned",
+    reason: string,
+  ): Promise<UserProfile>;
+  updateStaffStatus(
+    userId: string,
+    status: Exclude<StaffStatus, "none">,
+    staffRole: StaffRole,
     reason: string,
   ): Promise<UserProfile>;
   reviewProfessionalVerification(

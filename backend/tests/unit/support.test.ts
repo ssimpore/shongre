@@ -21,10 +21,12 @@ const otherCustomer: Principal = {
 const supportAgent: Principal = {
   userId: "support-1",
   email: "support@example.test",
-  role: "support",
-  accountType: "staff",
+  role: "buyer",
+  accountType: "individual",
+  staffStatus: "active",
   staffRole: "support_agent",
   status: "active",
+  mfaVerified: true,
   capabilities: ["support.case.read", "support.case.manage"],
 };
 

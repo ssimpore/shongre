@@ -17,7 +17,7 @@ export const RequireStaffMfa: React.FC<{ children: React.ReactNode }> = ({
   );
 
   useEffect(() => {
-    if (currentUser?.accountType !== "staff" && !currentUser?.staffRole) {
+    if (currentUser?.staffStatus !== "active") {
       setState("allowed");
       return;
     }

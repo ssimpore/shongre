@@ -611,11 +611,7 @@ export class MockListingRepository implements IListingRepository {
 
     const currentUser = storageService.getCurrentUser();
     if (!currentUser) throw new Error("Authentification requise");
-    if (
-      listing.sellerId !== currentUser.id &&
-      currentUser.role !== "admin" &&
-      currentUser.role !== "super_admin"
-    ) {
+    if (listing.sellerId !== currentUser.id) {
       authorizationService.assertCan(currentUser, "listing.moderate");
     }
 
@@ -646,7 +642,7 @@ export class MockListingRepository implements IListingRepository {
     auditService.logEvent({
       actorId: currentUser.id,
       actorName: currentUser.name,
-      actorRole: currentUser.role as any,
+      actorRole: (currentUser.staffRole || currentUser.role) as any,
       targetId: id,
       targetName: listing.title,
       action: "listing_moderated",

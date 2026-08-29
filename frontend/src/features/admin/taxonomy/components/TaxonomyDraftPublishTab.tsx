@@ -46,7 +46,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         ? {
             id: currentUser.id,
             name: currentUser.name || "Admin",
-            role: currentUser.role,
+            role: currentUser.staffRole || currentUser.role,
           }
         : undefined;
 

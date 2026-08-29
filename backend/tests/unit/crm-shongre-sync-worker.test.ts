@@ -13,8 +13,10 @@ const ownerUserId = "10000000-0000-4000-8000-000000000004";
 const principal: Principal = {
   userId: ownerUserId,
   email: "owner@example.test",
-  role: "admin",
-  accountType: "staff",
+  role: "buyer",
+  accountType: "individual",
+  staffStatus: "active",
+  staffRole: "admin",
   mfaVerified: true,
 };
 
