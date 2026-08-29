@@ -18,6 +18,7 @@ import {
   workspaceService,
   adminService,
   trendingService,
+  homepageService,
   coursesService,
   autoService,
   realEstateService,
@@ -845,11 +846,28 @@ export class ApiV1Router {
     );
     this.addRoute(
       "GET",
+      "/home",
+      PUBLIC,
+      async ({ query, marketCode }) => {
+        const resolvedMarket = requireOpenApiRequestMarket(marketCode);
+        requireOpenMarketplace(resolvedMarket);
+        return homepageService.getPublished({
+          marketCode: resolvedMarket,
+          locale: query.get("locale") || "fr-FR",
+          country: query.get("country") || undefined,
+          region: query.get("region") || undefined,
+          city: query.get("city") || undefined,
+        });
+      },
+    );
+    this.addRoute(
+      "GET",
       "/home/trending",
       PUBLIC,
       async ({ query, marketCode }) =>
         trendingService.getSection({
           marketCode: requireOpenApiRequestMarket(marketCode),
+          locale: query.get("locale") || undefined,
           region: query.get("region") || undefined,
           city: query.get("city") || undefined,
           limit: query.get("limit") ? Number(query.get("limit")) : undefined,
@@ -4439,6 +4457,75 @@ export class ApiV1Router {
     );
     this.addRoute(
       "GET",
+      "/admin/homepage/configuration",
+      permission("admin.configuration.manage"),
+      async ({ query, marketCode }) =>
+        homepageService.getDraft(
+          requireApiRequestMarket(marketCode),
+          query.get("locale") || "fr-FR",
+        ),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/homepage/configuration",
+      permission("admin.configuration.manage"),
+      async ({ principal, body, query, marketCode }) => {
+        const resolvedMarket = requireApiRequestMarket(marketCode);
+        const locale = query.get("locale") || "fr-FR";
+        if (
+          body?.configuration?.marketCode !== resolvedMarket ||
+          body?.configuration?.locale !== locale
+        ) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Le brouillon ne correspond pas au marché demandé.",
+          });
+        }
+        return homepageService.saveDraft({
+          configuration: body?.configuration,
+          actorId: principal.userId,
+          changeReason: String(body?.changeReason || ""),
+        });
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/admin/homepage/preview",
+      permission("admin.configuration.manage"),
+      async ({ body, query, marketCode }) =>
+        homepageService.preview(body?.configuration, {
+          marketCode: requireApiRequestMarket(marketCode),
+          locale: query.get("locale") || "fr-FR",
+          region: query.get("region") || undefined,
+          city: query.get("city") || undefined,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/homepage/publish",
+      permission("admin.configuration.manage"),
+      async ({ principal, body, query, marketCode }) => {
+        const resolvedMarket = requireApiRequestMarket(marketCode);
+        const locale = query.get("locale") || "fr-FR";
+        if (
+          body?.marketCode !== resolvedMarket ||
+          body?.locale !== locale
+        ) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "La publication ne correspond pas au marché demandé.",
+          });
+        }
+        return homepageService.publish({
+          marketCode: resolvedMarket,
+          locale,
+          actorId: principal.userId,
+          changeReason: String(body?.changeReason || ""),
+        });
+      },
+    );
+    this.addRoute(
+      "GET",
       "/admin/trending/config",
       permission("admin.configuration.manage"),
       async ({ marketCode }) =>
@@ -5118,7 +5205,9 @@ function sanitizeTrendingConfigPatch(body: any): Partial<TrendingAdminConfig> {
   if (!body || typeof body !== "object") return {};
   const allowed = [
     "enabled",
+    "selectionMode",
     "maxTopics",
+    "listingsPerTopic",
     "minTopics",
     "maxTopicsPerParentCategory",
     "minimumActivity",

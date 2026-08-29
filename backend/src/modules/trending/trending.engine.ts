@@ -87,6 +87,10 @@ export function selectTrendingTopics(
     )
     .filter((candidate) => !config.excludedTopics.includes(candidate.key))
     .filter((candidate) => !candidate.override?.isHidden)
+    .filter(
+      (candidate) =>
+        config.selectionMode !== "manual" || candidate.override?.isPinned,
+    )
     .map((candidate) => ({
       candidate,
       score: scoreCandidate(candidate, candidates, config, now),
@@ -94,8 +98,10 @@ export function selectTrendingTopics(
     .filter(({ candidate }) => candidate.signals.activeListings > 0)
     .sort((a, b) => {
       const pinned =
-        Number(Boolean(b.candidate.override?.isPinned)) -
-        Number(Boolean(a.candidate.override?.isPinned));
+        config.selectionMode === "automatic"
+          ? 0
+          : Number(Boolean(b.candidate.override?.isPinned)) -
+            Number(Boolean(a.candidate.override?.isPinned));
       if (pinned !== 0) return pinned;
       return b.score - a.score;
     });
@@ -132,7 +138,7 @@ export function selectTrendingTopics(
           claimedListings.add(listing.id);
           return true;
         })
-        .slice(0, 5);
+        .slice(0, config.listingsPerTopic);
       const direction: "up" | "stable" =
         candidate.signals.demandGrowth > 0.58 ? "up" : "stable";
       return {

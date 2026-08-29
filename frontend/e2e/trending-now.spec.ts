@@ -2,8 +2,8 @@ import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
-test.describe("Homepage discovery simplification", () => {
-  test("keeps recent listings primary, then a short deals rail and collection cards", async ({
+test.describe("Admin-managed homepage discovery", () => {
+  test("renders trends, six deals, recent listings, then collections in configured order", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -20,10 +20,18 @@ test.describe("Homepage discovery simplification", () => {
       })
       .first();
     const deals = page.getByTestId("home-deals");
+    const trending = page.getByTestId("home-trending");
     const collections = page.getByTestId("home-collection-explorer");
 
     await expect(recentListings).toBeVisible();
     await expect(recentListings.locator("article")).toHaveCount(12);
+    await expect(trending).toBeVisible();
+    await expect(trending.locator(":scope > section")).toHaveCount(4);
+    for (const topic of await trending.locator(":scope > section").all()) {
+      const count = await topic.locator("article").count();
+      expect(count).toBeGreaterThan(0);
+      expect(count).toBeLessThanOrEqual(8);
+    }
     await expect(deals).toBeVisible();
     await expect(deals.locator("article")).toHaveCount(6);
     await expect(collections).toBeVisible();
@@ -36,35 +44,39 @@ test.describe("Homepage discovery simplification", () => {
         name: "En ce moment sur Shongre",
         exact: true,
       }),
-    ).toHaveCount(0);
-    await expect(
-      page.getByRole("heading", {
-        name: "Tendance en ce moment",
-        exact: true,
-      }),
-    ).toHaveCount(0);
+    ).toBeVisible();
 
-    const dealsFollowRecentListings = await recentListings.evaluate(
-      (recentSection, dealsSection) =>
+    const dealsFollowTrending = await trending.evaluate(
+      (trendingSection, dealsSection) =>
         Boolean(
           dealsSection &&
-          recentSection.compareDocumentPosition(dealsSection) &
+          trendingSection.compareDocumentPosition(dealsSection) &
             Node.DOCUMENT_POSITION_FOLLOWING,
         ),
       await deals.elementHandle(),
     );
-    const collectionsFollowDeals = await deals.evaluate(
-      (dealsSection, collectionsSection) =>
+    const recentFollowsDeals = await deals.evaluate(
+      (dealsSection, recentSection) =>
+        Boolean(
+          recentSection &&
+          dealsSection.compareDocumentPosition(recentSection) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ),
+      await recentListings.elementHandle(),
+    );
+    const collectionsFollowRecent = await recentListings.evaluate(
+      (recentSection, collectionsSection) =>
         Boolean(
           collectionsSection &&
-          dealsSection.compareDocumentPosition(collectionsSection) &
+          recentSection.compareDocumentPosition(collectionsSection) &
             Node.DOCUMENT_POSITION_FOLLOWING,
         ),
       await collections.elementHandle(),
     );
 
-    expect(dealsFollowRecentListings).toBe(true);
-    expect(collectionsFollowDeals).toBe(true);
+    expect(dealsFollowTrending).toBe(true);
+    expect(recentFollowsDeals).toBe(true);
+    expect(collectionsFollowRecent).toBe(true);
   });
 
   test("opens a collection from the homepage discovery rail", async ({ page }) => {

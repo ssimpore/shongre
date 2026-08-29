@@ -1,10 +1,14 @@
 import type { Listing } from "../../types";
+import type { HomepageSelectionMode } from "@shongre/contracts/homepage";
 
 export const TRENDING_ADMIN_CONSTRAINTS = {
   topicCount: { min: 1, max: 12, step: 1 },
+  listingsPerTopic: { min: 4, max: 8, step: 1 },
   minimumActivity: { min: 0, max: 1, step: 0.01 },
   displayPeriodDays: { min: 1, max: 30, step: 1 },
   cacheTtlMinutes: { min: 5, max: 120, step: 1 },
+  editorialBoost: { min: 0, max: 1, step: 0.05 },
+  sortOrder: { min: 0, max: 1_000, step: 1 },
   publicTitle: { maxLength: 120 },
   publicSubtitle: { maxLength: 240 },
 } as const;
@@ -90,7 +94,9 @@ export interface TrendingTopicOverride {
 
 export interface TrendingAdminConfig {
   enabled: boolean;
+  selectionMode: HomepageSelectionMode;
   maxTopics: number;
+  listingsPerTopic: number;
   minTopics: number;
   maxTopicsPerParentCategory: number;
   minimumActivity: number;
@@ -154,7 +160,8 @@ export interface TrendingTopic {
   listings: Listing[];
   badge?: string;
   trend: {
-    score: number;
+    /** Present only in private engine candidates; public adapters remove it. */
+    score?: number;
     direction: "up" | "stable";
   };
 }

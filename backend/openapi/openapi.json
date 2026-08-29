@@ -54,6 +54,10 @@
       "description": "Audited feature rollout administration."
     },
     {
+      "name": "admin-homepage",
+      "description": "Audited, market-scoped homepage composition and publication."
+    },
+    {
       "name": "admin-monetization",
       "description": "Operations owned by the admin-monetization API domain."
     },
@@ -3846,6 +3850,138 @@
         "x-shongre-permission": "admin.configuration.manage"
       }
     },
+    "/admin/homepage/configuration": {
+      "get": {
+        "operationId": "getAdminHomepageConfiguration",
+        "tags": ["admin-homepage"],
+        "summary": "Read the market homepage draft",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "name": "locale", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 32 } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Current draft revision.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JsonValue" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "put": {
+        "operationId": "putAdminHomepageConfiguration",
+        "tags": ["admin-homepage"],
+        "summary": "Save a validated homepage draft revision",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "name": "locale", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 32 } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["configuration", "changeReason"],
+            "properties": {
+              "configuration": { "$ref": "#/components/schemas/JsonValue" },
+              "changeReason": { "type": "string", "minLength": 3, "maxLength": 500 }
+            }
+          } } }
+        },
+        "responses": {
+          "200": { "description": "Saved draft revision.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JsonValue" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/homepage/preview": {
+      "post": {
+        "operationId": "postAdminHomepagePreview",
+        "tags": ["admin-homepage"],
+        "summary": "Resolve a draft without publishing it",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "name": "locale", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 32 } },
+          { "name": "region", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "city", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["configuration"],
+            "properties": { "configuration": { "$ref": "#/components/schemas/JsonValue" } }
+          } } }
+        },
+        "responses": {
+          "200": { "description": "Resolved private preview.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JsonValue" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/homepage/publish": {
+      "post": {
+        "operationId": "postAdminHomepagePublish",
+        "tags": ["admin-homepage"],
+        "summary": "Publish the latest market homepage draft",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "name": "locale", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 32 } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["marketCode", "locale", "changeReason"],
+            "properties": {
+              "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+              "locale": { "type": "string", "minLength": 2, "maxLength": 32 },
+              "changeReason": { "type": "string", "minLength": 3, "maxLength": 500 }
+            }
+          } } }
+        },
+        "responses": {
+          "200": { "description": "Published immutable revision.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JsonValue" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/admin/trending/config": {
       "get": {
         "operationId": "getAdminTrendingConfig",
@@ -3859,6 +3995,16 @@
             "required": false,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 32
             }
           },
           {
@@ -19559,6 +19705,31 @@
         "x-shongre-source": "backend/src/app/server/index.ts"
       }
     },
+    "/home": {
+      "get": {
+        "operationId": "getHome",
+        "tags": ["home"],
+        "summary": "Resolve the published homepage for an open market",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "name": "country", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "locale", "in": "query", "required": true, "schema": { "type": "string", "minLength": 2, "maxLength": 32 } },
+          { "name": "region", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "city", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": { "description": "Published homepage experience.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/JsonValue" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/home/trending": {
       "get": {
         "operationId": "getHomeTrending",
@@ -31463,7 +31634,15 @@
           "trending_topic_change",
           "trending_listing_impression",
           "trending_listing_click",
-          "trending_see_all_click"
+          "trending_see_all_click",
+          "homepage_section_view",
+          "homepage_section_click",
+          "homepage_trending_topic_view",
+          "homepage_trending_topic_click",
+          "homepage_trending_view_all_click",
+          "homepage_deals_view",
+          "homepage_deal_click",
+          "homepage_deals_view_all_click"
         ]
       },
       "AnalyticsContext": {

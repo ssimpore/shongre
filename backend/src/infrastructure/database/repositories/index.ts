@@ -13,6 +13,7 @@ export * from "./admin.repository.js";
 export * from "./workspace.repository.js";
 export * from "./organization-provisioning.repository.js";
 export * from "./trending.repository.js";
+export * from "./homepage.repository.js";
 export * from "./courses.repository.js";
 export * from "./auto.repository.js";
 export * from "./real-estate.repository.js";

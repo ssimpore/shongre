@@ -23,6 +23,7 @@ export * from "./reviews/reviews.service.js";
 export * from "./workspace/workspace.service.js";
 export * from "./admin/admin.service.js";
 export * from "./trending/trending.service.js";
+export * from "./homepage/homepage.service.js";
 export * from "./courses/courses.service.js";
 export * from "./auto/auto.service.js";
 export * from "./real-estate/real-estate.service.js";

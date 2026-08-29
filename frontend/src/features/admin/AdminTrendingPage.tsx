@@ -26,6 +26,7 @@ import {
   Checkbox,
 } from "../../design-system/primitives/FormField";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { HomepageConfigurationPanel } from "./HomepageConfigurationPanel";
 
 export const AdminTrendingPage: React.FC = () => {
   usePageMeta({
@@ -35,7 +36,7 @@ export const AdminTrendingPage: React.FC = () => {
     noIndex: true,
   });
 
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [config, setConfig] = useState<TrendingAdminConfig | null>(null);
@@ -139,6 +140,28 @@ export const AdminTrendingPage: React.FC = () => {
     );
   };
 
+  const patchOverride = async (
+    topicKey: string,
+    patch: Partial<TrendingAdminConfig["overrides"][number]>,
+  ) => {
+    const current = config?.overrides.find(
+      (override) => override.topicKey === topicKey,
+    );
+    const next = await services.admin.upsertTrendingOverride({
+      ...current,
+      ...patch,
+      topicKey,
+      marketCode,
+    });
+    setConfig(next);
+    setPreview(
+      await services.trending.getTrending({
+        marketCode,
+        limit: next.maxTopics,
+      }),
+    );
+  };
+
   if (isLoading || !config) {
     return (
       <div className="flex min-h-64 items-center justify-center text-sm font-medium text-stone-500">
@@ -150,14 +173,19 @@ export const AdminTrendingPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <HomepageConfigurationPanel
+        marketCode={marketCode}
+        locale={currentLocale}
+      />
+
       <div className="flex flex-col justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <Flame className="h-icon-md w-icon-md" /> Découverte éditoriale
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-stone-900">
+          <h2 className="text-2xl font-black tracking-tight text-stone-900">
             En ce moment sur Shongre
-          </h1>
+          </h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
             Les thèmes sont calculés à partir de l’activité du marché puis
             ajustés ici. Les données de classement restent internes à la
@@ -209,6 +237,34 @@ export const AdminTrendingPage: React.FC = () => {
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
+              <FormField label="Mode de sélection">
+                <select
+                  value={config.selectionMode}
+                  onChange={(event) =>
+                    update(
+                      "selectionMode",
+                      event.target.value as TrendingAdminConfig["selectionMode"],
+                    )
+                  }
+                  className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm text-text-main focus-visible:outline-2 focus-visible:outline-primary"
+                >
+                  <option value="automatic">Automatique</option>
+                  <option value="manual">Manuel</option>
+                  <option value="hybrid">Hybride</option>
+                </select>
+              </FormField>
+              <FormField label="Annonces par sous-section">
+                <Input
+                  type="number"
+                  min={TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.min}
+                  max={TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.max}
+                  step={TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.step}
+                  value={config.listingsPerTopic}
+                  onChange={(event) =>
+                    update("listingsPerTopic", Number(event.target.value))
+                  }
+                />
+              </FormField>
               <FormField label="Maximum de sous-sections">
                 <Input
                   type="number"
@@ -340,48 +396,151 @@ export const AdminTrendingPage: React.FC = () => {
           <div className="space-y-2">
             {preview?.topics.map((topic, position) => {
               const topicKey = topic.id.replace("category:", "");
+              const override = config.overrides.find(
+                (item) => item.topicKey === topicKey,
+              );
               return (
                 <div
                   key={topic.id}
-                  className="flex items-center gap-3 rounded-control border border-stone-200 bg-stone-50 p-3"
+                  className="rounded-control border border-stone-200 bg-stone-50 p-3"
                 >
-                  <span className="w-5 text-center text-xs font-black text-stone-400">
-                    {position + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-bold text-stone-900">
-                      {topic.title}
-                    </div>
-                    <div className="text-xs text-stone-500">
-                      {topic.listings.length} annonces · score interne{" "}
-                      {topic.trend.score.toFixed(2)}
-                    </div>
-                  </div>
-                  {pinned.has(topicKey) ? (
-                    <span className="rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                      Épinglé
+                  <div className="flex items-center gap-3">
+                    <span className="w-5 text-center text-xs font-black text-stone-400">
+                      {position + 1}
                     </span>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => void toggleOverride(topicKey, "pin")}
-                    aria-label={`${pinned.has(topicKey) ? "Désépingler" : "Épingler"} ${topic.title}`}
-                    className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <Pin
-                      className={`h-icon-md w-icon-md ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void toggleOverride(topicKey, "hide")}
-                    aria-label={`${hidden.has(topicKey) ? "Afficher" : "Masquer"} ${topic.title}`}
-                    className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <EyeOff
-                      className={`h-icon-md w-icon-md ${hidden.has(topicKey) ? "text-danger" : ""}`}
-                    />
-                  </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold text-stone-900">
+                        {topic.title}
+                      </div>
+                      <div className="text-xs text-stone-500">
+                        {topic.listings.length} annonces · tendance{" "}
+                        {topic.trend.direction === "up" ? "en hausse" : "stable"}
+                      </div>
+                    </div>
+                    {pinned.has(topicKey) ? (
+                      <span className="rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
+                        Épinglé
+                      </span>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => void toggleOverride(topicKey, "pin")}
+                      aria-label={`${pinned.has(topicKey) ? "Désépingler" : "Épingler"} ${topic.title}`}
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      <Pin
+                        className={`h-icon-md w-icon-md ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void toggleOverride(topicKey, "hide")}
+                      aria-label={`${hidden.has(topicKey) ? "Afficher" : "Masquer"} ${topic.title}`}
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      <EyeOff
+                        className={`h-icon-md w-icon-md ${hidden.has(topicKey) ? "text-danger" : ""}`}
+                      />
+                    </button>
+                  </div>
+                  <details className="mt-3 border-t border-stone-200 pt-3">
+                    <summary className="cursor-pointer text-xs font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary">
+                      Édition éditoriale avancée
+                    </summary>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <FormField label="Titre personnalisé">
+                        <Input
+                          defaultValue={override?.customTitle || ""}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              customTitle: event.target.value || undefined,
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="Score de boost (0–1)">
+                        <Input
+                          type="number"
+                          min={TRENDING_ADMIN_CONSTRAINTS.editorialBoost.min}
+                          max={TRENDING_ADMIN_CONSTRAINTS.editorialBoost.max}
+                          step={TRENDING_ADMIN_CONSTRAINTS.editorialBoost.step}
+                          defaultValue={override?.boostScore || 0}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              boostScore: Number(event.target.value),
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="Sous-titre personnalisé" className="sm:col-span-2">
+                        <Textarea
+                          defaultValue={override?.customSubtitle || ""}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              customSubtitle: event.target.value || undefined,
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="URL de l’image">
+                        <Input
+                          type="url"
+                          defaultValue={override?.customImage?.src || ""}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              customImage: event.target.value
+                                ? {
+                                    src: event.target.value,
+                                    alt:
+                                      override?.customImage?.alt || topic.title,
+                                  }
+                                : undefined,
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="Ordre manuel">
+                        <Input
+                          type="number"
+                          min={TRENDING_ADMIN_CONSTRAINTS.sortOrder.min}
+                          max={TRENDING_ADMIN_CONSTRAINTS.sortOrder.max}
+                          step={TRENDING_ADMIN_CONSTRAINTS.sortOrder.step}
+                          defaultValue={override?.sortOrder ?? position}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              sortOrder: Number(event.target.value),
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="Début programmé">
+                        <Input
+                          type="datetime-local"
+                          defaultValue={override?.startsAt?.slice(0, 16) || ""}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              startsAt: event.target.value
+                                ? new Date(event.target.value).toISOString()
+                                : undefined,
+                            })
+                          }
+                        />
+                      </FormField>
+                      <FormField label="Fin programmée">
+                        <Input
+                          type="datetime-local"
+                          defaultValue={override?.endsAt?.slice(0, 16) || ""}
+                          onBlur={(event) =>
+                            void patchOverride(topicKey, {
+                              endsAt: event.target.value
+                                ? new Date(event.target.value).toISOString()
+                                : undefined,
+                            })
+                          }
+                        />
+                      </FormField>
+                    </div>
+                  </details>
                 </div>
               );
             })}

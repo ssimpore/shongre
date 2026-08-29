@@ -99,6 +99,14 @@ export const ANALYTICS_EVENT_NAMES = [
   "trending_listing_impression",
   "trending_listing_click",
   "trending_see_all_click",
+  "homepage_section_view",
+  "homepage_section_click",
+  "homepage_trending_topic_view",
+  "homepage_trending_topic_click",
+  "homepage_trending_view_all_click",
+  "homepage_deals_view",
+  "homepage_deal_click",
+  "homepage_deals_view_all_click",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENT_NAMES)[number];

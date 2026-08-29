@@ -17,7 +17,9 @@ export const createDefaultTrendingConfig = (
   now = new Date(),
 ): TrendingAdminConfig => ({
   enabled: true,
-  maxTopics: 8,
+  selectionMode: "hybrid",
+  maxTopics: 4,
+  listingsPerTopic: 8,
   minTopics: 4,
   maxTopicsPerParentCategory: 1,
   minimumActivity: 0.08,

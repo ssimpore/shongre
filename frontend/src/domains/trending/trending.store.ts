@@ -28,11 +28,21 @@ function normalizeConfig(config: TrendingAdminConfig): TrendingAdminConfig {
   );
   return {
     ...config,
+    selectionMode: ["automatic", "manual", "hybrid"].includes(
+      config.selectionMode,
+    )
+      ? config.selectionMode
+      : DEFAULT_TRENDING_ADMIN_CONFIG.selectionMode,
     minTopics,
     maxTopics: clamp(
       Math.floor(config.maxTopics),
       minTopics,
       TRENDING_ADMIN_CONSTRAINTS.topicCount.max,
+    ),
+    listingsPerTopic: clamp(
+      Math.floor(config.listingsPerTopic),
+      TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.min,
+      TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.max,
     ),
     maxTopicsPerParentCategory: clamp(
       Math.floor(config.maxTopicsPerParentCategory),

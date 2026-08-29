@@ -205,7 +205,7 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/tendances",
-      label: "Tendances de la page d’accueil",
+      label: "Page d’accueil & tendances",
       icon: Flame,
       show: canAccessRoute("adminTrending"),
     },

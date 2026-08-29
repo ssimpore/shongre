@@ -2207,6 +2207,23 @@ export const messagesEn: MessageCatalogue = {
     "Open your official storefront in a few clicks, get the certified Pro badge and profitability analytics, and import your catalogues in bulk.",
   "home.homePage.decouvrirLesForfaitsPro": "Explore the Pro plans",
   "home.homePage.creerMonComptePro": "Create my Pro account",
+  "home.homepageTrending.seeMoreListings": "See more listings",
+  "home.homepageTrending.emptyTitle": "No trends available",
+  "home.homepageTrending.emptyDescription":
+    "This market does not yet have enough active listings to provide useful trends.",
+  "home.homepageTrending.browseCategories": "Browse categories",
+  "home.homepageTrending.errorTitle": "Trends temporarily unavailable",
+  "home.homepageTrending.errorDescription":
+    "Other sections remain available. You can retry this request.",
+  "home.homepageDeals.viewAll": "View all offers",
+  "home.homepageDeals.errorTitle": "Offers temporarily unavailable",
+  "home.homepageDeals.errorDescription":
+    "Active offers for this market cannot be loaded right now.",
+  "home.homepageDeals.emptyTitle": "No active offers",
+  "home.homepageDeals.emptyDescription":
+    "The administrator preview shows this state, but the public section remains hidden.",
+  "home.homepageRecent.emptyTitle":
+    "No listings in the {market} market yet",
   "home.heroBoostedScroll.carouselLabel": "Featured listings",
   "home.heroBoostedScroll.previous": "Previous listing",
   "home.heroBoostedScroll.next": "Next listing",

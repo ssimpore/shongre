@@ -169,6 +169,7 @@ export function rankTrendingCandidates(
   const eligible = candidates.filter((candidate) => {
     const override = activeOverride(config.overrides, candidate.key, now);
     return (
+      (config.selectionMode !== "manual" || override?.isPinned) &&
       !config.excludedCategories.includes(
         candidate.categorySlug || candidate.parentKey || "",
       ) &&
@@ -204,8 +205,10 @@ export function rankTrendingCandidates(
     .filter((candidate) => activityScore(candidate) >= config.minimumActivity)
     .sort((a, b) => {
       const pinnedDelta =
-        Number(Boolean(b.override?.isPinned)) -
-        Number(Boolean(a.override?.isPinned));
+        config.selectionMode === "automatic"
+          ? 0
+          : Number(Boolean(b.override?.isPinned)) -
+            Number(Boolean(a.override?.isPinned));
       if (pinnedDelta !== 0) return pinnedDelta;
       const sortDelta =
         (a.override?.sortOrder ?? Number.MAX_SAFE_INTEGER) -
@@ -295,7 +298,7 @@ export function toPublicTopics(
   config: TrendingAdminConfig,
   now = new Date(),
 ): TrendingTopic[] {
-  const assignments = deduplicateListings(selected);
+  const assignments = deduplicateListings(selected, config.listingsPerTopic);
   return selected
     .map((candidate) => {
       const listingIds = new Set(assignments.get(candidate.id) || []);
@@ -320,5 +323,8 @@ export function toPublicTopics(
       };
     })
     .filter((topic) => topic.listings.length > 0 || config.minTopics === 0)
-    .map((topic) => ({ ...topic, listings: topic.listings.slice(0, 5) }));
+    .map((topic) => ({
+      ...topic,
+      listings: topic.listings.slice(0, config.listingsPerTopic),
+    }));
 }

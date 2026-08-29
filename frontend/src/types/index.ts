@@ -68,6 +68,8 @@ export type Permission = Capability;
 export type SecurityAuditAction =
   | "MARKET_CONFIG_UPDATE"
   | "AUTO_FLAG_SUSPICIOUS_PRICE"
+  | "HOMEPAGE_CONFIGURATION_DRAFT_UPDATED"
+  | "HOMEPAGE_CONFIGURATION_PUBLISHED"
   | "role_assigned"
   | "role_removed"
   | "user_suspended"
@@ -109,6 +111,10 @@ export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
   {
     MARKET_CONFIG_UPDATE: "Configuration du marché modifiée",
     AUTO_FLAG_SUSPICIOUS_PRICE: "Prix suspect signalé automatiquement",
+    HOMEPAGE_CONFIGURATION_DRAFT_UPDATED:
+      "Brouillon de la page d’accueil modifié",
+    HOMEPAGE_CONFIGURATION_PUBLISHED:
+      "Configuration de la page d’accueil publiée",
     role_assigned: "Rôle attribué",
     role_removed: "Rôle retiré",
     user_suspended: "Compte suspendu",

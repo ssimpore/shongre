@@ -13,7 +13,15 @@ import { HomeSectionHeading } from "./HomeSectionHeading";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { normalizeRecentSearchesLimit } from "../../../domains/market/market.constants";
 
-export const HomeRecentSearches: React.FC = () => {
+interface HomeRecentSearchesProps {
+  title?: string;
+  maxItems?: number;
+}
+
+export const HomeRecentSearches: React.FC<HomeRecentSearchesProps> = ({
+  title,
+  maxItems,
+}) => {
   const { t } = useTranslation();
   const { effectiveConfig } = useMarketLocation();
   // Browser persistence cannot influence the initial hydrated tree.
@@ -50,7 +58,12 @@ export const HomeRecentSearches: React.FC = () => {
 
   const visibleRecentSearches = recentSearches.slice(
     0,
-    normalizeRecentSearchesLimit(effectiveConfig.features.recentSearchesLimit),
+    Math.min(
+      maxItems ?? Number.MAX_SAFE_INTEGER,
+      normalizeRecentSearchesLimit(
+        effectiveConfig.features.recentSearchesLimit,
+      ),
+    ),
   );
 
   if (visibleRecentSearches.length === 0) {
@@ -62,7 +75,7 @@ export const HomeRecentSearches: React.FC = () => {
       {/* Section Header */}
       <div className="mb-3 sm:mb-4">
         <HomeSectionHeading id="home-recent-searches-title">
-          {t("home.homeRecentSearches.recherchesRecentes")}
+          {title || t("home.homeRecentSearches.recherchesRecentes")}
         </HomeSectionHeading>
       </div>
 

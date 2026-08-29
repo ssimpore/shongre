@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **437**
-- Specification SHA-256: `98f4ddc63fb4f02a`
+- Operations: **442**
+- Specification SHA-256: `cda0ca63bfa39d0b`
 
 ## account
 
@@ -83,6 +83,15 @@
 | `PUT` | `/admin/feature-flags/{key}/rules/{ruleId}` | `putAdminFeatureFlagRule` | `permission` | `admin.configuration.manage` | `200` |
 | `PUT` | `/admin/feature-flags/{key}` | `putAdminFeatureFlag` | `permission` | `admin.configuration.manage` | `200` |
 | `GET` | `/admin/feature-flags` | `getAdminFeatureFlags` | `permission` | `admin.configuration.manage` | `200` |
+
+## admin-homepage
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/admin/homepage/configuration` | `getAdminHomepageConfiguration` | `permission` | `admin.configuration.manage` | `200` |
+| `PUT` | `/admin/homepage/configuration` | `putAdminHomepageConfiguration` | `permission` | `admin.configuration.manage` | `200` |
+| `POST` | `/admin/homepage/preview` | `postAdminHomepagePreview` | `permission` | `admin.configuration.manage` | `200` |
+| `POST` | `/admin/homepage/publish` | `postAdminHomepagePublish` | `permission` | `admin.configuration.manage` | `200` |
 
 ## admin-monetization
 
@@ -374,6 +383,7 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/home/trending` | `getHomeTrending` | `public` | — | `200` |
+| `GET` | `/home` | `getHome` | `public` | — | `200` |
 
 ## invoicing
 

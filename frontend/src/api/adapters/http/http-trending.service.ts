@@ -11,6 +11,7 @@ export class HttpTrendingService implements TrendingServiceContract {
       params: {
         market: query.marketCode,
         country: query.country,
+        locale: query.locale,
         region: query.region,
         city: query.city,
         limit: query.limit,

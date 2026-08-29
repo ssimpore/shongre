@@ -24,6 +24,28 @@ export function minorToMajorAmount(
   return amountMinor / 10 ** getCurrencyMinorUnitDigits(currency, locale);
 }
 
+/**
+ * Boundary adapter for legacy major-unit values. Decimal text is normalized
+ * before integer arithmetic so new contracts can remain minor-unit only.
+ */
+export function majorToMinorAmount(
+  amount: number,
+  currency: string,
+  locale?: string,
+): number {
+  if (!Number.isFinite(amount)) throw new RangeError("Invalid money amount.");
+  const digits = getCurrencyMinorUnitDigits(currency, locale);
+  const sign = amount < 0 ? -1 : 1;
+  const [whole = "0", fraction = ""] = Math.abs(amount)
+    .toFixed(digits)
+    .split(".");
+  return (
+    sign *
+    (Number.parseInt(whole, 10) * 10 ** digits +
+      Number.parseInt(fraction.padEnd(digits, "0") || "0", 10))
+  );
+}
+
 export function formatMoney(money: Money, locale?: string): string {
   const fractionDigits = getCurrencyMinorUnitDigits(money.currency, locale);
   return new Intl.NumberFormat(locale, {
@@ -40,9 +62,8 @@ export function formatMajorMoney(
   currency: string,
   locale?: string,
 ): string {
-  const factor = 10 ** getCurrencyMinorUnitDigits(currency, locale);
   return formatMoney(
-    { amountMinor: Math.round(amount * factor), currency },
+    { amountMinor: majorToMinorAmount(amount, currency, locale), currency },
     locale,
   );
 }

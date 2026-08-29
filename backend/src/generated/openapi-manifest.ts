@@ -403,6 +403,48 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /admin/homepage/configuration": {
+    operationId: "getAdminHomepageConfiguration",
+    access: "permission",
+    permission: "admin.configuration.manage",
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
+  "PUT /admin/homepage/configuration": {
+    operationId: "putAdminHomepageConfiguration",
+    access: "permission",
+    permission: "admin.configuration.manage",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
+  "POST /admin/homepage/preview": {
+    operationId: "postAdminHomepagePreview",
+    access: "permission",
+    permission: "admin.configuration.manage",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+      region: "string",
+      city: "string",
+    },
+  },
+  "POST /admin/homepage/publish": {
+    operationId: "postAdminHomepagePublish",
+    access: "permission",
+    permission: "admin.configuration.manage",
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
   "GET /admin/trending/config": {
     operationId: "getAdminTrendingConfig",
     access: "permission",
@@ -411,6 +453,7 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {
       country: "string",
+      locale: "string",
       market: "string",
     },
   },
@@ -2470,6 +2513,19 @@ export const OPENAPI_OPERATIONS = {
     requestBodyRequired: false,
     successStatus: 200,
     queryParameters: {},
+  },
+  "GET /home": {
+    operationId: "getHome",
+    access: "public",
+    permission: null,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      country: "string",
+      locale: "string",
+      region: "string",
+      city: "string",
+    },
   },
   "GET /home/trending": {
     operationId: "getHomeTrending",

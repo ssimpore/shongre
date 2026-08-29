@@ -27,6 +27,7 @@
     "./prospecting": "./src/schemas/prospecting.ts",
     "./marketing": "./src/schemas/marketing.ts",
     "./analytics": "./src/schemas/analytics.ts",
+    "./homepage": "./src/schemas/homepage.ts",
     "./invoicing": "./src/schemas/invoicing.ts",
     "./product-access": "./src/schemas/product-access.ts",
     "./provider-connections": "./src/schemas/provider-connections.ts",

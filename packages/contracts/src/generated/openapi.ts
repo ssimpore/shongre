@@ -726,6 +726,58 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/homepage/configuration": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the market homepage draft */
+        readonly get: operations["getAdminHomepageConfiguration"];
+        /** Save a validated homepage draft revision */
+        readonly put: operations["putAdminHomepageConfiguration"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/homepage/preview": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Resolve a draft without publishing it */
+        readonly post: operations["postAdminHomepagePreview"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/homepage/publish": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Publish the latest market homepage draft */
+        readonly post: operations["postAdminHomepagePublish"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/moderation/appeals": {
         readonly parameters: {
             readonly query?: never;
@@ -4255,6 +4307,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/home": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Resolve the published homepage for an open market */
+        readonly get: operations["getHome"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/home/trending": {
         readonly parameters: {
             readonly query?: never;
@@ -7703,7 +7772,7 @@ export interface components {
             readonly events: readonly components["schemas"]["AnalyticsEvent"][];
         };
         /** @enum {string} */
-        readonly AnalyticsEventName: "session_started" | "page_viewed" | "navigation_performed" | "signup_started" | "signup_completed" | "login_started" | "login_completed" | "logout_completed" | "verification_started" | "verification_completed" | "password_reset_requested" | "onboarding_started" | "onboarding_step_completed" | "onboarding_completed" | "search_started" | "search_performed" | "search_result_clicked" | "filter_applied" | "filter_removed" | "sort_changed" | "category_viewed" | "subcategory_viewed" | "recommendation_viewed" | "listing_viewed" | "listing_shared" | "listing_favorited" | "listing_unfavorited" | "publication_started" | "publication_step_completed" | "publication_abandoned" | "publication_completed" | "listing_published" | "listing_updated" | "listing_paused" | "listing_reactivated" | "listing_deleted" | "seller_profile_viewed" | "seller_followed" | "seller_contacted" | "conversation_started" | "message_sent" | "message_received" | "contact_revealed" | "offer_started" | "offer_sent" | "offer_accepted" | "offer_rejected" | "checkout_started" | "checkout_completed" | "transaction_started" | "transaction_completed" | "transaction_cancelled" | "refund_requested" | "refund_completed" | "plan_viewed" | "subscription_checkout_started" | "subscription_started" | "subscription_upgraded" | "subscription_downgraded" | "subscription_cancelled" | "promotion_viewed" | "promotion_checkout_started" | "promotion_purchased" | "boost_purchased" | "featured_listing_purchased" | "lead_received" | "lead_viewed" | "lead_contacted" | "lead_converted" | "crm_contact_created" | "crm_opportunity_created" | "crm_opportunity_converted" | "newsletter_campaign_created" | "newsletter_campaign_scheduled" | "newsletter_campaign_sent" | "report_started" | "report_submitted" | "kyc_started" | "kyc_completed" | "moderation_action_performed" | "support_request_created" | "support_request_resolved" | "web_vital_measured" | "feature_flag_evaluated" | "experiment_exposure_recorded" | "trending_section_view" | "trending_topic_impression" | "trending_topic_click" | "trending_topic_change" | "trending_listing_impression" | "trending_listing_click" | "trending_see_all_click";
+        readonly AnalyticsEventName: "session_started" | "page_viewed" | "navigation_performed" | "signup_started" | "signup_completed" | "login_started" | "login_completed" | "logout_completed" | "verification_started" | "verification_completed" | "password_reset_requested" | "onboarding_started" | "onboarding_step_completed" | "onboarding_completed" | "search_started" | "search_performed" | "search_result_clicked" | "filter_applied" | "filter_removed" | "sort_changed" | "category_viewed" | "subcategory_viewed" | "recommendation_viewed" | "listing_viewed" | "listing_shared" | "listing_favorited" | "listing_unfavorited" | "publication_started" | "publication_step_completed" | "publication_abandoned" | "publication_completed" | "listing_published" | "listing_updated" | "listing_paused" | "listing_reactivated" | "listing_deleted" | "seller_profile_viewed" | "seller_followed" | "seller_contacted" | "conversation_started" | "message_sent" | "message_received" | "contact_revealed" | "offer_started" | "offer_sent" | "offer_accepted" | "offer_rejected" | "checkout_started" | "checkout_completed" | "transaction_started" | "transaction_completed" | "transaction_cancelled" | "refund_requested" | "refund_completed" | "plan_viewed" | "subscription_checkout_started" | "subscription_started" | "subscription_upgraded" | "subscription_downgraded" | "subscription_cancelled" | "promotion_viewed" | "promotion_checkout_started" | "promotion_purchased" | "boost_purchased" | "featured_listing_purchased" | "lead_received" | "lead_viewed" | "lead_contacted" | "lead_converted" | "crm_contact_created" | "crm_opportunity_created" | "crm_opportunity_converted" | "newsletter_campaign_created" | "newsletter_campaign_scheduled" | "newsletter_campaign_sent" | "report_started" | "report_submitted" | "kyc_started" | "kyc_completed" | "moderation_action_performed" | "support_request_created" | "support_request_resolved" | "web_vital_measured" | "feature_flag_evaluated" | "experiment_exposure_recorded" | "trending_section_view" | "trending_topic_impression" | "trending_topic_click" | "trending_topic_change" | "trending_listing_impression" | "trending_listing_click" | "trending_see_all_click" | "homepage_section_view" | "homepage_section_click" | "homepage_trending_topic_view" | "homepage_trending_topic_click" | "homepage_trending_view_all_click" | "homepage_deals_view" | "homepage_deal_click" | "homepage_deals_view_all_click";
         readonly AnalyticsIngestionResult: {
             readonly accepted: number;
         };
@@ -11053,6 +11122,159 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getAdminHomepageConfiguration: {
+        readonly parameters: {
+            readonly query: {
+                readonly locale: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current draft revision. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminHomepageConfiguration: {
+        readonly parameters: {
+            readonly query: {
+                readonly locale: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly changeReason: string;
+                    readonly configuration: components["schemas"]["JsonValue"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Saved draft revision. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminHomepagePreview: {
+        readonly parameters: {
+            readonly query: {
+                readonly city?: string;
+                readonly locale: string;
+                readonly region?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly configuration: components["schemas"]["JsonValue"];
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Resolved private preview. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminHomepagePublish: {
+        readonly parameters: {
+            readonly query: {
+                readonly locale: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly changeReason: string;
+                    readonly locale: string;
+                    readonly marketCode: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Published immutable revision. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getAdminModerationAppeals: {
         readonly parameters: {
             readonly query?: {
@@ -11411,6 +11633,7 @@ export interface operations {
         readonly parameters: {
             readonly query?: {
                 readonly country?: string;
+                readonly locale?: string;
                 readonly market?: string;
             };
             readonly header?: {
@@ -18291,6 +18514,40 @@ export interface operations {
                 };
             };
             readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getHome: {
+        readonly parameters: {
+            readonly query: {
+                readonly city?: string;
+                readonly country?: string;
+                readonly locale: string;
+                readonly region?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Published homepage experience. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
         };
     };
     readonly getHomeTrending: {

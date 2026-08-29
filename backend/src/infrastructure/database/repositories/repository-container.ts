@@ -65,6 +65,11 @@ import {
   PostgresTrendingRepository,
 } from "./trending.repository.js";
 import {
+  IHomepageRepository,
+  DemoHomepageRepository,
+  PostgresHomepageRepository,
+} from "./homepage.repository.js";
+import {
   ICoursesRepository,
   DemoCoursesRepository,
   PostgresCoursesRepository,
@@ -145,6 +150,7 @@ export interface RepositoryContainer {
   admin: IAdminRepository;
   workspace: IWorkspaceRepository;
   trending: ITrendingRepository;
+  homepage: IHomepageRepository;
   courses: ICoursesRepository;
   auto: IAutoRepository;
   realEstate: IRealEstateRepository;
@@ -183,6 +189,7 @@ export function createRepositoryContainer(
       admin: new PostgresAdminRepository(),
       workspace: new PostgresWorkspaceRepository(),
       trending: new PostgresTrendingRepository(),
+      homepage: new PostgresHomepageRepository(),
       courses: new PostgresCoursesRepository(),
       auto: new PostgresAutoRepository(),
       realEstate: new PostgresRealEstateRepository(),
@@ -214,6 +221,7 @@ export function createRepositoryContainer(
     admin: new DemoAdminRepository(),
     workspace: new DemoWorkspaceRepository(),
     trending: new DemoTrendingRepository(),
+    homepage: new DemoHomepageRepository(),
     courses: new DemoCoursesRepository(),
     auto: new DemoAutoRepository(),
     realEstate: new DemoRealEstateRepository(),

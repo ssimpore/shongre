@@ -239,7 +239,10 @@ export class DemoTrendingService implements TrendingServiceContract {
       ...config,
       maxTopics: Math.min(query.limit || config.maxTopics, config.maxTopics),
     });
-    const topics = toPublicTopics(selected, config, now);
+    const topics = toPublicTopics(selected, config, now).map((topic) => ({
+      ...topic,
+      trend: { direction: topic.trend.direction },
+    }));
     const expiresAt = new Date(
       now.getTime() + config.cacheTtlMinutes * 60 * 1000,
     ).toISOString();

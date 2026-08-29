@@ -27,9 +27,22 @@ const HOME_COLLECTIONS: readonly Collection[] = HOME_COLLECTION_SLUGS.flatMap(
   },
 );
 
-export const HomeCollectionExplorer: React.FC = () => {
+interface HomeCollectionExplorerProps {
+  title?: string;
+  subtitle?: string;
+  maxItems?: number;
+}
+
+export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
+  title,
+  subtitle,
+  maxItems,
+}) => {
   const { t } = useTranslation();
-  const heading = t("home.homeCollectionsSection.nosCollectionsDuMoment");
+  const heading =
+    title || t("home.homeCollectionsSection.nosCollectionsDuMoment");
+  const collections =
+    maxItems === undefined ? HOME_COLLECTIONS : HOME_COLLECTIONS.slice(0, maxItems);
 
   return (
     <Container
@@ -43,9 +56,10 @@ export const HomeCollectionExplorer: React.FC = () => {
             {heading}
           </HomeSectionHeading>
           <p className="mt-1 hidden text-sm font-medium text-text-secondary sm:block">
-            {t(
-              "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour",
-            )}
+            {subtitle ||
+              t(
+                "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour",
+              )}
           </p>
         </div>
 
@@ -71,7 +85,7 @@ export const HomeCollectionExplorer: React.FC = () => {
         className="-mx-4 px-4 py-1.5 sm:mx-0 sm:px-0"
       >
         <div className="flex w-max items-stretch gap-3 sm:gap-4 lg:w-full">
-          {HOME_COLLECTIONS.map((collection) => (
+          {collections.map((collection) => (
             <Link
               key={collection.id}
               to={routes.collections.detail(collection.slug)}

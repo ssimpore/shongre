@@ -127,7 +127,12 @@ export class PostgresTrendingRepository implements ITrendingRepository {
       return {
         ...defaults,
         ...data,
+        selectionMode:
+          data.selection_mode || defaults.selectionMode,
         maxTopics: Number(data.max_topics ?? defaults.maxTopics),
+        listingsPerTopic: Number(
+          data.listings_per_topic ?? defaults.listingsPerTopic,
+        ),
         minTopics: Number(data.min_topics ?? defaults.minTopics),
         maxTopicsPerParentCategory: Number(
           data.max_topics_per_parent_category ??
@@ -187,7 +192,9 @@ export class PostgresTrendingRepository implements ITrendingRepository {
       const { error } = await supabase.from("trending_section_configs").upsert({
         market_code: marketCode,
         enabled: next.enabled,
+        selection_mode: next.selectionMode,
         max_topics: next.maxTopics,
+        listings_per_topic: next.listingsPerTopic,
         min_topics: next.minTopics,
         max_topics_per_parent_category: next.maxTopicsPerParentCategory,
         minimum_activity: next.minimumActivity,
@@ -366,7 +373,7 @@ export class PostgresTrendingRepository implements ITrendingRepository {
             .eq("is_enabled", true)
             .gt("expires_at", new Date().toISOString())
             .order("sort_order", { ascending: true })
-            .limit(query.limit || 8),
+            .limit(query.limit || 4),
           supabase
             .from("trending_section_configs")
             .select("enabled, title, subtitle")
@@ -419,8 +426,8 @@ export class PostgresTrendingRepository implements ITrendingRepository {
             topic_key: topic.categorySlug || topic.id,
             title: topic.title,
             subtitle: topic.subtitle,
-            trend_score: topic.trend.score,
-            activity_score: topic.trend.score,
+            trend_score: topic.trend.score ?? 0,
+            activity_score: topic.trend.score ?? 0,
             growth_score: topic.trend.direction === "up" ? 1 : 0.5,
             editorial_score: 0,
             topic_payload: topic,

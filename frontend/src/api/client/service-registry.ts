@@ -11,6 +11,7 @@ import { demoCoursesService } from "../adapters/demo/demo-courses.service";
 import { demoCrmService } from "../adapters/demo/demo-crm.service";
 import { demoEmploymentService } from "../adapters/demo/demo-employment.service";
 import { demoFeatureFlagService } from "../adapters/demo/demo-feature-flag.service";
+import { demoHomepageService } from "../adapters/demo/demo-homepage.service";
 import { demoFinanceService } from "../adapters/demo/demo-finance.service";
 import { demoInvoicingService } from "../adapters/demo/demo-invoicing.service";
 import { demoSolutionsService } from "../adapters/demo/demo-solutions.service";
@@ -44,6 +45,7 @@ import { httpCrmProspectingService } from "../adapters/http/http-crm-prospecting
 import { httpCrmService } from "../adapters/http/http-crm.service";
 import { httpEmploymentService } from "../adapters/http/http-employment.service";
 import { httpFeatureFlagService } from "../adapters/http/http-feature-flag.service";
+import { httpHomepageService } from "../adapters/http/http-homepage.service";
 import { httpFinanceService } from "../adapters/http/http-finance.service";
 import { httpInvoicingService } from "../adapters/http/http-invoicing.service";
 import { httpSolutionsService } from "../adapters/http/http-solutions.service";
@@ -78,6 +80,7 @@ import type { CrmProspectingServiceContract } from "../contracts/crm-prospecting
 import type { CrmServiceContract } from "../contracts/crm.contract";
 import type { EmploymentServiceContract } from "../contracts/employment.contract";
 import type { FeatureFlagServiceContract } from "../contracts/feature-flags.contract";
+import type { HomepageServiceContract } from "../contracts/homepage.contract";
 import type { FinanceServiceContract } from "../contracts/finance.contract";
 import type { InvoicingServiceContract } from "../contracts/invoicing.contract";
 import type { SolutionsServiceContract } from "../contracts/solutions.contract";
@@ -102,6 +105,7 @@ import type { WorkspaceServiceContract } from "../contracts/workspace.contract";
 
 export interface ServiceRegistry {
   listings: ListingsServiceContract;
+  homepage: HomepageServiceContract;
   search: SearchServiceContract;
   auth: AuthServiceContract;
   markets: MarketsServiceContract;
@@ -143,6 +147,7 @@ export function createServiceRegistry(
 
   return {
     listings: useDemo ? demoListingsService : httpListingsService,
+    homepage: useDemo ? demoHomepageService : httpHomepageService,
     search: useDemo ? demoSearchService : httpSearchService,
     auth: useDemo ? demoAuthService : httpAuthService,
     markets: useDemo ? demoMarketsService : httpMarketsService,

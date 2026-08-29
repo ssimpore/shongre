@@ -1,4 +1,5 @@
 import type { Listing } from "../../shared/types/index.js";
+import type { HomepageSelectionMode } from "@shongre/contracts/homepage";
 
 export type TrendingTopicType =
   | "category"
@@ -25,7 +26,9 @@ export interface TrendWeights {
 
 export interface TrendingAdminConfig {
   enabled: boolean;
+  selectionMode: HomepageSelectionMode;
   maxTopics: number;
+  listingsPerTopic: number;
   minTopics: number;
   maxTopicsPerParentCategory: number;
   minimumActivity: number;
@@ -62,6 +65,7 @@ export interface TrendingTopicOverride {
 
 export interface TrendingQuery {
   marketCode: string;
+  locale?: string;
   region?: string;
   city?: string;
   limit?: number;
@@ -77,7 +81,7 @@ export interface TrendingTopic {
   image?: { src: string; alt: string };
   listings: Listing[];
   badge?: string;
-  trend: { score: number; direction: "up" | "stable" };
+  trend: { score?: number; direction: "up" | "stable" };
 }
 
 export interface TrendingSectionResponse {

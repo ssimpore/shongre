@@ -2719,6 +2719,23 @@ export const messagesFr = {
     "Ouvrez votre vitrine officielle en quelques clics, bénéficiez du badge Pro certifié, de statistiques de rentabilité et importez vos catalogues en masse.",
   "home.homePage.decouvrirLesForfaitsPro": "Découvrir les forfaits Pro",
   "home.homePage.creerMonComptePro": "Créer mon compte Pro",
+  "home.homepageTrending.seeMoreListings": "Voir plus d’annonces",
+  "home.homepageTrending.emptyTitle": "Aucune tendance disponible",
+  "home.homepageTrending.emptyDescription":
+    "Ce marché ne dispose pas encore d’assez d’annonces actives pour proposer des tendances utiles.",
+  "home.homepageTrending.browseCategories": "Parcourir les catégories",
+  "home.homepageTrending.errorTitle": "Tendances temporairement indisponibles",
+  "home.homepageTrending.errorDescription":
+    "Les autres sections restent accessibles. Vous pouvez réessayer ce chargement.",
+  "home.homepageDeals.viewAll": "Voir toutes les offres",
+  "home.homepageDeals.errorTitle": "Offres temporairement indisponibles",
+  "home.homepageDeals.errorDescription":
+    "Impossible de charger les offres actives de ce marché pour le moment.",
+  "home.homepageDeals.emptyTitle": "Aucune offre active",
+  "home.homepageDeals.emptyDescription":
+    "L’aperçu administrateur affiche cet état, mais la section reste masquée publiquement.",
+  "home.homepageRecent.emptyTitle":
+    "Aucune annonce sur le marché {market} pour l’instant",
 
   // --- home.heroBoostedScroll ---
   "home.heroBoostedScroll.carouselLabel": "Annonces vedettes",

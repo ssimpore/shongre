@@ -11,8 +11,22 @@ import type {
   TrendingTopicOverride,
 } from "./trending.types.js";
 import type { ITrendingRepository } from "../../infrastructure/database/repositories/trending.repository.js";
+import type { ITaxonomyRepository } from "../../infrastructure/database/repositories/taxonomy.repository.js";
+import { config as runtimeConfig } from "../../app/config/index.js";
 
 const MAX_LIMIT = 12;
+
+function withoutInternalScores(
+  response: TrendingSectionResponse,
+): TrendingSectionResponse {
+  return {
+    ...response,
+    topics: response.topics.map((topic) => ({
+      ...topic,
+      trend: { direction: topic.trend.direction },
+    })),
+  };
+}
 
 function normalizeQuery(query: TrendingQuery): TrendingQuery {
   const marketCode = (query.marketCode || "").trim().toUpperCase();
@@ -25,11 +39,21 @@ function normalizeQuery(query: TrendingQuery): TrendingQuery {
   return {
     ...query,
     marketCode,
-    limit: Math.min(MAX_LIMIT, Math.max(1, query.limit || 8)),
+    limit: Math.min(MAX_LIMIT, Math.max(1, query.limit || 4)),
   };
 }
 
-function titleFromCategory(categoryId: string): string {
+function titleFromCategory(
+  categoryId: string,
+  labels?: Record<string, string>,
+  locale = "fr-FR",
+): string {
+  const language = locale.split("-")[0];
+  const localized =
+    labels?.[locale] ||
+    Object.entries(labels || {}).find(([key]) => key.split("-")[0] === language)?.[1] ||
+    labels?.["fr-FR"];
+  if (localized) return localized;
   return categoryId
     .replace(/[._-]+/g, " ")
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -39,6 +63,7 @@ export class TrendingService {
   constructor(
     private readonly trendRepo: ITrendingRepository = repositories.trending,
     private readonly listingRepo: IListingRepository = repositories.listings,
+    private readonly taxonomyRepo: ITaxonomyRepository = repositories.taxonomy,
   ) {}
 
   async getSection(
@@ -57,9 +82,20 @@ export class TrendingService {
         topics: [],
       };
 
-    if (!options.bypassCache) {
+    if (!options.bypassCache && (!query.locale || query.locale.startsWith("fr"))) {
       const cached = await this.trendRepo.getCachedSection(query);
-      if (cached) return cached;
+      if (cached) return withoutInternalScores(cached);
+    }
+    // Production request paths read only the worker-maintained cache. A cache
+    // miss must not turn a homepage hit into an unbounded event aggregation.
+    if (runtimeConfig.dataMode === "database" && !options.bypassCache) {
+      return {
+        enabled: true,
+        generatedAt: generatedAt.toISOString(),
+        title: config.title,
+        subtitle: config.subtitle,
+        topics: [],
+      };
     }
 
     const result = await this.listingRepo.search({
@@ -86,8 +122,16 @@ export class TrendingService {
         groups.set(listing.categoryId, [...group, listing]);
       });
 
-    const candidates: TrendCandidate[] = Array.from(groups.entries()).map(
-      ([categoryId, listings]) => {
+    const candidates: TrendCandidate[] = await Promise.all(
+      Array.from(groups.entries()).map(async ([categoryId, listings]) => {
+        const taxonomyNode =
+          (await this.taxonomyRepo.getNodeById(categoryId)) ||
+          (await this.taxonomyRepo.getNodeBySlug(categoryId));
+        const categoryTitle = titleFromCategory(
+          categoryId,
+          taxonomyNode?.labels,
+          query.locale,
+        );
         const activity: TrendingActivitySignals = activitySignals.get(
           categoryId,
         ) || {
@@ -138,10 +182,10 @@ export class TrendingService {
           id: `category:${categoryId}`,
           key: categoryId,
           parentKey: categoryId,
-          title: titleFromCategory(categoryId),
-          href: `/categorie/${categoryId}`,
+          title: categoryTitle,
+          href: `/categorie/${taxonomyNode?.slug || categoryId}`,
           image: listings[0]?.images[0]
-            ? { src: listings[0].images[0], alt: titleFromCategory(categoryId) }
+            ? { src: listings[0].images[0], alt: categoryTitle }
             : undefined,
           listings,
           signals: {
@@ -170,7 +214,7 @@ export class TrendingService {
             lastActivityAt: listings[0]?.updatedAt,
           },
         };
-      },
+      }),
     );
 
     const overrides = config.overrides.reduce(
@@ -197,10 +241,15 @@ export class TrendingService {
     // The current cache key is market-wide. Keep local requests out of it until
     // a geographic scope is part of the persisted key, otherwise a city request
     // could overwrite the global homepage cache for every visitor.
-    if (response.topics.length > 0 && !query.city && !query.region) {
+    if (
+      response.topics.length > 0 &&
+      !query.city &&
+      !query.region &&
+      (!query.locale || query.locale.startsWith("fr"))
+    ) {
       await this.trendRepo.saveCachedSection(query.marketCode, response);
     }
-    return response;
+    return withoutInternalScores(response);
   }
 
   refreshActivityWindow(

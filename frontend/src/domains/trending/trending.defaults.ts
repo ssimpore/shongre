@@ -15,7 +15,9 @@ export const DEFAULT_TREND_WEIGHTS: TrendWeights = {
 
 export const DEFAULT_TRENDING_ADMIN_CONFIG: TrendingAdminConfig = {
   enabled: true,
-  maxTopics: 8,
+  selectionMode: "hybrid",
+  maxTopics: 4,
+  listingsPerTopic: 8,
   minTopics: 4,
   maxTopicsPerParentCategory: 1,
   minimumActivity: 0.08,

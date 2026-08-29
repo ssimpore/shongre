@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/web";
-import type { ListingCardView } from "@shongre/contracts";
+import type { ListingCardView, Money } from "@shongre/contracts";
+import { majorToMinorAmount } from "@shongre/shared";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -16,22 +17,27 @@ export interface ListingCardProps {
   listing: Listing;
   variant?: "grid" | "list" | "compact";
   className?: string;
+  pricing?: { currentPrice: Money; originalPrice?: Money };
 }
 
-function toListingCardView(listing: Listing): ListingCardView {
+function toListingCardView(
+  listing: Listing,
+  pricing?: ListingCardProps["pricing"],
+): ListingCardView {
+  const currency = listing.currency ?? MARKET_CONFIG.defaultCurrency;
   return {
     id: listing.id,
     title: listing.title,
-    price: {
-      amountMinor: Math.round(listing.price * 100),
-      currency: listing.currency ?? MARKET_CONFIG.defaultCurrency,
+    price: pricing?.currentPrice ?? {
+      amountMinor: majorToMinorAmount(listing.price, currency),
+      currency,
     },
-    originalPrice: listing.originalPrice
+    originalPrice: pricing?.originalPrice ?? (listing.originalPrice
       ? {
-          amountMinor: Math.round(listing.originalPrice * 100),
-          currency: listing.currency ?? MARKET_CONFIG.defaultCurrency,
+          amountMinor: majorToMinorAmount(listing.originalPrice, currency),
+          currency,
         }
-      : undefined,
+      : undefined),
     imageUrl: listing.coverImageUrl || undefined,
     city: listing.city,
     marketCode: listing.marketCode ?? MARKET_CONFIG.defaultMarket,
@@ -90,6 +96,7 @@ export function ListingCard({
   listing,
   variant = "grid",
   className,
+  pricing,
 }: ListingCardProps) {
   const { t } = useTranslation();
   const { currentLocale } = useMarketLocation();
@@ -102,7 +109,7 @@ export function ListingCard({
 
   return (
     <SharedListingCard
-      listing={toListingCardView(listing)}
+      listing={toListingCardView(listing, pricing)}
       href={href}
       locale={currentLocale}
       variant={variant}
