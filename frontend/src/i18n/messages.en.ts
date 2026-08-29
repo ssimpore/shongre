@@ -1175,6 +1175,35 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminRolesMatrixPage.securiteAudit": "Security & audit",
   "admin.adminRolesMatrixPage.marchesTerritoires": "Markets & territories",
   "admin.adminTaxonomyPage.taxonomieSynchronisee": "Taxonomy synchronised",
+  "admin.taxonomyHeader.tabLabel": "Category bar",
+  "admin.taxonomyHeader.title": "Header categories",
+  "admin.taxonomyHeader.description":
+    "Select the root categories shown in this market header, enable or disable them, and set their display order.",
+  "admin.taxonomyHeader.loading": "Loading configuration…",
+  "admin.taxonomyHeader.marketRequired":
+    "Select a market before configuring its header.",
+  "admin.taxonomyHeader.unavailableTitle": "Header configuration unavailable",
+  "admin.taxonomyHeader.loadError":
+    "Unable to load the category-bar configuration.",
+  "admin.taxonomyHeader.saveError":
+    "Unable to save the category-bar configuration.",
+  "admin.taxonomyHeader.saved": "The category bar has been saved and audited.",
+  "admin.taxonomyHeader.updatedAt": "Last updated: {date}",
+  "admin.taxonomyHeader.save": "Save",
+  "admin.taxonomyHeader.addLabel": "Add a root category",
+  "admin.taxonomyHeader.addPlaceholder": "Select a category",
+  "admin.taxonomyHeader.add": "Add",
+  "admin.taxonomyHeader.selectedTitle": "Selected categories ({count})",
+  "admin.taxonomyHeader.empty":
+    "No categories are selected. Utility links remain available.",
+  "admin.taxonomyHeader.toggle": "Enable or disable {name}",
+  "admin.taxonomyHeader.moveUp": "Move {name} up",
+  "admin.taxonomyHeader.moveDown": "Move {name} down",
+  "admin.taxonomyHeader.remove": "Remove {name}",
+  "admin.taxonomyHeader.saveTitle": "Save header configuration",
+  "admin.taxonomyHeader.reasonLabel": "Reason for change",
+  "admin.taxonomyHeader.reasonPlaceholder":
+    "Explain the selection, activation, or new order…",
   "admin.adminUsersPage.rechercherUnNomEmailEntreprise":
     "Search a name, email, company, SIRET…",
   "admin.adminUsersPage.rechercherUnUtilisateur": "Search a user",

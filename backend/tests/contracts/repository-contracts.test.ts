@@ -256,9 +256,9 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       expect(
         roots.find((root) => root.id === "professional_equipment")?.shortLabel,
       ).toBe("Outils pro");
-      expect(
-        roots.find((root) => root.id === "home_garden")?.shortLabel,
-      ).toBe("Maison");
+      expect(roots.find((root) => root.id === "home_garden")?.shortLabel).toBe(
+        "Maison",
+      );
 
       const children = await demoRepo.getChildren("vehicles");
       expect(children.length).toBeGreaterThanOrEqual(3);
@@ -278,6 +278,8 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       expect(typeof postgresRepo.getNodeBySlug).toBe("function");
       expect(typeof postgresRepo.getChildren).toBe("function");
       expect(typeof postgresRepo.getAttributesForCategory).toBe("function");
+      expect(typeof postgresRepo.getHeaderNavigation).toBe("function");
+      expect(typeof postgresRepo.replaceHeaderNavigation).toBe("function");
     });
   });
 

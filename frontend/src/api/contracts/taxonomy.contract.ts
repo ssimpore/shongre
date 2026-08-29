@@ -6,6 +6,8 @@ import {
 import type {
   MarketContext,
   ResolveTaxonomyV4PublicInput,
+  TaxonomyHeaderNavigationConfiguration,
+  TaxonomyHeaderNavigationUpdate,
   TaxonomyV4OptionPage,
   TaxonomyV4ResolvedSchema,
   TaxonomyV4TreeResponse,
@@ -20,6 +22,15 @@ export interface TaxonomyServiceContract {
   resolveSearchFilters(
     nodeId?: string,
   ): Promise<Array<{ attribute: TaxonomyAttribute; facetType: string }>>;
+  getHeaderNavigation(
+    marketContext: MarketContext,
+  ): Promise<TaxonomyHeaderNavigationConfiguration>;
+  getAdminHeaderNavigation(
+    marketContext: MarketContext,
+  ): Promise<TaxonomyHeaderNavigationConfiguration>;
+  saveHeaderNavigation(
+    input: TaxonomyHeaderNavigationUpdate,
+  ): Promise<TaxonomyHeaderNavigationConfiguration>;
   getV4Tree(input: {
     marketContext: MarketContext;
     locale: string;

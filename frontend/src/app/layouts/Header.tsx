@@ -102,7 +102,7 @@ export const Header: React.FC = () => {
      search slot below. */
   const isSearchRoute = location.pathname === "/recherche";
   const { currentUser, isAuthenticated, logout } = useAuth();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, marketContext } = useMarketLocation();
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -658,7 +658,7 @@ export const Header: React.FC = () => {
       </Container>
 
       {/* Category Sub-Header Bar (Smartly shown on Home and Discovery surfaces) */}
-      {shouldShowCategoryBar && (
+      {shouldShowCategoryBar && marketContext && (
         <nav
           ref={categoryNavRef}
           aria-label={t("ui.categoryFilterRail.filtresParCategorie")}
@@ -677,6 +677,7 @@ export const Header: React.FC = () => {
             <HeaderCategoryNav
               activeCategorySlug={activeCategorySlug}
               currentPath={location.pathname}
+              marketContext={marketContext}
               marketCode={activeMarket.code}
               onSelectCategory={handleCategorySelect}
             />

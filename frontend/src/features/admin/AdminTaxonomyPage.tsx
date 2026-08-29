@@ -9,6 +9,7 @@ import {
   AlertOctagon,
   GitCommit,
   Database,
+  ListOrdered,
 } from "lucide-react";
 import { taxonomyAdminRepository } from "../../repositories/taxonomy.repository";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
@@ -28,6 +29,7 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { TaxonomyV4GovernanceTab } from "./taxonomy/components/TaxonomyV4GovernanceTab";
+import { TaxonomyHeaderNavigationTab } from "./taxonomy/components/TaxonomyHeaderNavigationTab";
 
 export const AdminTaxonomyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -43,6 +45,7 @@ export const AdminTaxonomyPage: React.FC = () => {
 
   const currentTab = (searchParams.get("tab") || "tree") as
     | "tree"
+    | "header"
     | "attributes"
     | "governance"
     | "validation"
@@ -230,6 +233,12 @@ export const AdminTaxonomyPage: React.FC = () => {
               badge: undefined,
             },
             {
+              id: "header",
+              label: t("admin.taxonomyHeader.tabLabel"),
+              icon: ListOrdered,
+              badge: undefined,
+            },
+            {
               id: "governance",
               label: "Schéma v4 & Migration",
               icon: Database,
@@ -353,6 +362,8 @@ export const AdminTaxonomyPage: React.FC = () => {
       {/* 2. ATTRIBUTE REGISTRY TAB */}
       {/* ========================================================================= */}
       {currentTab === "attributes" && <TaxonomyAttributeRegistryTab />}
+
+      {currentTab === "header" && <TaxonomyHeaderNavigationTab />}
 
       {currentTab === "governance" && <TaxonomyV4GovernanceTab />}
 

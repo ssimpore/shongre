@@ -455,7 +455,10 @@ France-only happy path is insufficient for market-sensitive work.
   `ADD`/`EXCLUDE` overrides and must reject duplicate effective bindings.
   Unapproved country, seller, and regulatory policy remains quarantined or
   disabled. Publication fields and search filters use reusable field definitions
-  rather than category condition trees.
+  rather than category condition trees. Header category-bar selection,
+  activation, and display order are market-scoped taxonomy configuration managed
+  through the authorized admin service; clients consume its public projection
+  and must not hardcode an editorial category list.
 - A listing is stored once and may have explicit market publications. The shared
   record alone does not prove availability. Backend services own lifecycle
   transitions across draft, review, published, reserved, sold, expired,

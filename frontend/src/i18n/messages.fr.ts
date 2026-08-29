@@ -1417,6 +1417,37 @@ export const messagesFr = {
 
   // --- admin.adminTaxonomyPage ---
   "admin.adminTaxonomyPage.taxonomieSynchronisee": "Taxonomie Synchronisée",
+  "admin.taxonomyHeader.tabLabel": "Barre de catégories",
+  "admin.taxonomyHeader.title": "Catégories de l’en-tête",
+  "admin.taxonomyHeader.description":
+    "Sélectionnez les catégories racines présentées dans l’en-tête de ce marché, activez-les ou désactivez-les et définissez leur ordre d’affichage.",
+  "admin.taxonomyHeader.loading": "Chargement de la configuration…",
+  "admin.taxonomyHeader.marketRequired":
+    "Sélectionnez un marché avant de configurer son en-tête.",
+  "admin.taxonomyHeader.unavailableTitle":
+    "Configuration de l’en-tête indisponible",
+  "admin.taxonomyHeader.loadError":
+    "Impossible de charger la configuration de la barre de catégories.",
+  "admin.taxonomyHeader.saveError":
+    "Impossible d’enregistrer la configuration de la barre de catégories.",
+  "admin.taxonomyHeader.saved":
+    "La barre de catégories a été enregistrée et auditée.",
+  "admin.taxonomyHeader.updatedAt": "Dernière modification : {date}",
+  "admin.taxonomyHeader.save": "Enregistrer",
+  "admin.taxonomyHeader.addLabel": "Ajouter une catégorie racine",
+  "admin.taxonomyHeader.addPlaceholder": "Sélectionner une catégorie",
+  "admin.taxonomyHeader.add": "Ajouter",
+  "admin.taxonomyHeader.selectedTitle": "Catégories sélectionnées ({count})",
+  "admin.taxonomyHeader.empty":
+    "Aucune catégorie n’est sélectionnée. Les liens utilitaires restent disponibles.",
+  "admin.taxonomyHeader.toggle": "Activer ou désactiver {name}",
+  "admin.taxonomyHeader.moveUp": "Monter {name}",
+  "admin.taxonomyHeader.moveDown": "Descendre {name}",
+  "admin.taxonomyHeader.remove": "Retirer {name}",
+  "admin.taxonomyHeader.saveTitle": "Enregistrer la configuration de l’en-tête",
+  "admin.taxonomyHeader.reasonLabel": "Motif de la modification",
+  "admin.taxonomyHeader.reasonPlaceholder":
+    "Expliquez la sélection, l’activation ou le nouvel ordre…",
 
   // --- admin.adminUsersPage ---
   "admin.adminUsersPage.rechercherUnNomEmailEntreprise":

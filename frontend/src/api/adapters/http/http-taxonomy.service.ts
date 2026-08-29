@@ -8,12 +8,20 @@ import {
 import type {
   MarketContext,
   ResolveTaxonomyV4PublicInput,
+  TaxonomyHeaderNavigationConfiguration,
+  TaxonomyHeaderNavigationUpdate,
   TaxonomyV4OptionPage,
   TaxonomyV4ResolvedSchema,
   TaxonomyV4TreeResponse,
 } from "@shongre/contracts";
 
 export class HttpTaxonomyService implements TaxonomyServiceContract {
+  private marketHeaders(marketContext: MarketContext) {
+    return {
+      "X-Shongre-Market": marketContext.countryCode ?? "",
+    };
+  }
+
   async getRootCategories(): Promise<Category[]> {
     return httpClient.get<Category[]>("/taxonomy/root");
   }
@@ -48,13 +56,41 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     });
   }
 
+  async getHeaderNavigation(
+    marketContext: MarketContext,
+  ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    return httpClient.get<TaxonomyHeaderNavigationConfiguration>(
+      "/taxonomy/header-navigation",
+      { headers: this.marketHeaders(marketContext) },
+    );
+  }
+
+  async getAdminHeaderNavigation(
+    marketContext: MarketContext,
+  ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    return httpClient.get<TaxonomyHeaderNavigationConfiguration>(
+      "/admin/taxonomy/header-navigation",
+      { headers: this.marketHeaders(marketContext) },
+    );
+  }
+
+  async saveHeaderNavigation(
+    input: TaxonomyHeaderNavigationUpdate,
+  ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    return httpClient.put<TaxonomyHeaderNavigationConfiguration>(
+      "/admin/taxonomy/header-navigation",
+      input,
+      { headers: { "X-Shongre-Market": input.marketCode } },
+    );
+  }
+
   async getV4Tree(input: {
     marketContext: MarketContext;
     locale: string;
     taxonomyVersion?: string;
   }): Promise<TaxonomyV4TreeResponse> {
     return httpClient.get<TaxonomyV4TreeResponse>("/taxonomy/v4/tree", {
-      headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+      headers: this.marketHeaders(input.marketContext),
       params: {
         locale: input.locale,
         version: input.taxonomyVersion,
@@ -66,7 +102,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     input: ResolveTaxonomyV4PublicInput,
   ): Promise<TaxonomyV4ResolvedSchema> {
     return httpClient.get<TaxonomyV4ResolvedSchema>("/taxonomy/v4/resolve", {
-      headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+      headers: this.marketHeaders(input.marketContext),
       params: {
         category: input.categoryIdentity,
         listingTypeId: input.listingTypeId,
@@ -91,7 +127,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     return httpClient.get<TaxonomyV4OptionPage>(
       `/taxonomy/v4/options/${encodeURIComponent(input.optionSetId)}`,
       {
-        headers: { "X-Shongre-Market": input.marketContext.countryCode ?? "" },
+        headers: this.marketHeaders(input.marketContext),
         params: {
           parentOptionId: input.parentOptionId,
           q: input.query,

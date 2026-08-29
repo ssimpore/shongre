@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **446**
-- Specification SHA-256: `1bb5c91a4cbbed94`
+- Operations: **449**
+- Specification SHA-256: `1c37a9b816854ba1`
 
 ## account
 
@@ -119,6 +119,13 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/admin/stats` | `getAdminStats` | `permission` | `admin.configuration.manage` | `200` |
+
+## admin-taxonomy
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/admin/taxonomy/header-navigation` | `getAdminTaxonomyHeaderNavigation` | `permission` | `taxonomy.manage` | `200` |
+| `PUT` | `/admin/taxonomy/header-navigation` | `putAdminTaxonomyHeaderNavigation` | `permission` | `taxonomy.manage` | `200` |
 
 ## admin-trending
 
@@ -673,6 +680,7 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/taxonomy/header-navigation` | `getTaxonomyHeaderNavigation` | `public` | — | `200` |
 | `GET` | `/taxonomy/nodes/{id}/attributes` | `getTaxonomyNodesByIdAttributes` | `public` | — | `200` |
 | `GET` | `/taxonomy/nodes/{id}/children` | `getTaxonomyNodesByIdChildren` | `public` | — | `200` |
 | `GET` | `/taxonomy/nodes/{id}` | `getTaxonomyNodesById` | `public` | — | `200` |

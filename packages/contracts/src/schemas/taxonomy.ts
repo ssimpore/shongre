@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { marketCodeSchema } from "./primitives";
 
 export const TAXONOMY_PUBLICATION_CONSTRAINTS = {
   durationDays: { min: 1, max: 365, default: 60, step: 1 },
@@ -709,6 +710,74 @@ export const taxonomyV4OptionPageSchema = z.object({
   taxonomyVersion: z.literal("4.0.0"),
 });
 
+export const TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS = {
+  maxItems: 30,
+  changeReason: { minLength: 10, maxLength: 500 },
+} as const;
+
+export const taxonomyHeaderCategoryItemSchema = z.object({
+  categoryId: z.string().min(1).max(150),
+  slug: z.string().min(1).max(180),
+  labels: taxonomyLocalizedLabelsSchema,
+  shortLabels: taxonomyLocalizedShortLabelsSchema,
+  iconName: z.string().min(1).max(100),
+  isActive: z.boolean(),
+  displayOrder: z.number().int().nonnegative(),
+});
+
+export const taxonomyHeaderNavigationConfigurationSchema = z.object({
+  marketCode: marketCodeSchema,
+  revision: z.number().int().nonnegative(),
+  updatedAt: z.string().datetime().nullable(),
+  items: z
+    .array(taxonomyHeaderCategoryItemSchema)
+    .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.maxItems),
+});
+
+export const taxonomyHeaderCategoryUpdateSchema = z.object({
+  categoryId: z.string().min(1).max(150),
+  isActive: z.boolean(),
+  displayOrder: z.number().int().nonnegative(),
+});
+
+export const taxonomyHeaderNavigationUpdateSchema = z
+  .object({
+    marketCode: marketCodeSchema,
+    expectedRevision: z.number().int().nonnegative(),
+    changeReason: z
+      .string()
+      .trim()
+      .min(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.changeReason.minLength)
+      .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.changeReason.maxLength),
+    items: z
+      .array(taxonomyHeaderCategoryUpdateSchema)
+      .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.maxItems),
+  })
+  .superRefine((configuration, context) => {
+    const categoryIds = new Set<string>();
+    const displayOrders = new Set<number>();
+
+    configuration.items.forEach((item, index) => {
+      if (categoryIds.has(item.categoryId)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["items", index, "categoryId"],
+          message: "A header category may only be selected once.",
+        });
+      }
+      categoryIds.add(item.categoryId);
+
+      if (displayOrders.has(item.displayOrder)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["items", index, "displayOrder"],
+          message: "Header category display orders must be unique.",
+        });
+      }
+      displayOrders.add(item.displayOrder);
+    });
+  });
+
 export const taxonomyV4MetadataSchema = z.object({
   taxonomyVersion: z.literal("4.0.0"),
   compilerVersion: z.string().min(1),
@@ -795,6 +864,15 @@ export type TaxonomyV4TreeResponse = z.infer<
   typeof taxonomyV4TreeResponseSchema
 >;
 export type TaxonomyV4OptionPage = z.infer<typeof taxonomyV4OptionPageSchema>;
+export type TaxonomyHeaderCategoryItem = z.infer<
+  typeof taxonomyHeaderCategoryItemSchema
+>;
+export type TaxonomyHeaderNavigationConfiguration = z.infer<
+  typeof taxonomyHeaderNavigationConfigurationSchema
+>;
+export type TaxonomyHeaderNavigationUpdate = z.infer<
+  typeof taxonomyHeaderNavigationUpdateSchema
+>;
 export type TaxonomyV4PublicBundle = z.infer<
   typeof taxonomyV4PublicBundleSchema
 >;

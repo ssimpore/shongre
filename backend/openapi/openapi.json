@@ -74,6 +74,10 @@
       "description": "Operations owned by the admin-stats API domain."
     },
     {
+      "name": "admin-taxonomy",
+      "description": "Audited taxonomy and market header-navigation administration."
+    },
+    {
       "name": "admin-trending",
       "description": "Operations owned by the admin-trending API domain."
     },
@@ -4063,6 +4067,87 @@
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
         "x-shongre-access": "permission",
         "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/taxonomy/header-navigation": {
+      "get": {
+        "operationId": "getAdminTaxonomyHeaderNavigation",
+        "tags": ["admin-taxonomy"],
+        "summary": "Read the complete market header category configuration",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selected categories including inactive entries and their display order.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyHeaderNavigationConfiguration"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "put": {
+        "operationId": "putAdminTaxonomyHeaderNavigation",
+        "tags": ["admin-taxonomy"],
+        "summary": "Atomically replace the market header category configuration",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyHeaderNavigationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved configuration with its new revision.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyHeaderNavigationConfiguration"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29047,6 +29132,41 @@
         "x-shongre-source": "backend/src/api/v1/router.ts:2515"
       }
     },
+    "/taxonomy/header-navigation": {
+      "get": {
+        "operationId": "getTaxonomyHeaderNavigation",
+        "tags": ["taxonomy"],
+        "summary": "Get the active ordered header categories for an explicit market",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active root categories selected for the public market header.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyHeaderNavigationConfiguration"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/taxonomy/v4/tree": {
       "get": {
         "operationId": "getTaxonomyV4Tree",
@@ -31826,6 +31946,85 @@
           "nextCursor": { "type": "string", "pattern": "^[0-9]+$" },
           "total": { "type": "integer", "minimum": 0 },
           "taxonomyVersion": { "type": "string", "enum": ["4.0.0"] }
+        }
+      },
+      "TaxonomyHeaderCategoryItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "categoryId",
+          "slug",
+          "labels",
+          "shortLabels",
+          "iconName",
+          "isActive",
+          "displayOrder"
+        ],
+        "properties": {
+          "categoryId": { "type": "string", "minLength": 1, "maxLength": 150 },
+          "slug": { "type": "string", "minLength": 1, "maxLength": 180 },
+          "labels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "shortLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
+          },
+          "iconName": { "type": "string", "minLength": 1, "maxLength": 100 },
+          "isActive": { "type": "boolean" },
+          "displayOrder": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "TaxonomyHeaderNavigationConfiguration": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["marketCode", "revision", "updatedAt", "items"],
+        "properties": {
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "revision": { "type": "integer", "minimum": 0 },
+          "updatedAt": {
+            "oneOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyHeaderCategoryItem"
+            }
+          }
+        }
+      },
+      "TaxonomyHeaderCategoryUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["categoryId", "isActive", "displayOrder"],
+        "properties": {
+          "categoryId": { "type": "string", "minLength": 1, "maxLength": 150 },
+          "isActive": { "type": "boolean" },
+          "displayOrder": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "TaxonomyHeaderNavigationUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["marketCode", "expectedRevision", "changeReason", "items"],
+        "properties": {
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "expectedRevision": { "type": "integer", "minimum": 0 },
+          "changeReason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyHeaderCategoryUpdate"
+            }
+          }
         }
       },
       "TaxonomyLegacyCategory": {

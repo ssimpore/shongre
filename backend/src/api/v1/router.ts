@@ -1123,6 +1123,16 @@ export class ApiV1Router {
     );
     this.addRoute(
       "GET",
+      "/taxonomy/header-navigation",
+      PUBLIC,
+      async ({ marketCode }) =>
+        taxonomyService.getHeaderNavigation(
+          requireApiMarketContext(marketCode),
+          false,
+        ),
+    );
+    this.addRoute(
+      "GET",
       "/taxonomy/v4/tree",
       PUBLIC,
       async ({ marketCode, query }) => {
@@ -4612,6 +4622,27 @@ export class ApiV1Router {
           requireApiRequestMarket(marketCode),
           query.get("locale") || "fr-FR",
         ),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/taxonomy/header-navigation",
+      permission("taxonomy.manage"),
+      async ({ marketCode }) =>
+        taxonomyService.getHeaderNavigation(
+          requireApiMarketContext(marketCode),
+          true,
+        ),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/taxonomy/header-navigation",
+      permission("taxonomy.manage"),
+      async ({ principal, body, marketCode, requestId }) =>
+        taxonomyService.saveHeaderNavigation(body, {
+          marketContext: requireApiMarketContext(marketCode),
+          actorProfileId: principal.userId,
+          requestId,
+        }),
     );
     this.addRoute(
       "PUT",

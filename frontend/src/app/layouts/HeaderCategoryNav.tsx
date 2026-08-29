@@ -1,4 +1,8 @@
 import { breakpoints, motionDurationMs } from "@shongre/design-tokens";
+import type {
+  MarketContext,
+  TaxonomyHeaderCategoryItem,
+} from "@shongre/contracts";
 import React, {
   useCallback,
   useEffect,
@@ -28,58 +32,23 @@ import {
 interface HeaderCategoryNavProps {
   activeCategorySlug?: string;
   currentPath: string;
+  initialCategories?: TaxonomyHeaderCategoryItem[];
+  marketContext: MarketContext;
   marketCode: string;
   onSelectCategory: (categorySlug: string) => void;
 }
 
 type HeaderNavItem =
-  | { kind: "category"; labelKey: MessageKey; slug: string }
+  | ({ kind: "category" } & TaxonomyHeaderCategoryItem)
   | { kind: "overview"; labelKey: MessageKey; to: string }
   | { kind: "link"; labelKey: MessageKey; to: string; emphasis?: boolean };
 
-/**
- * The intentionally edited set of primary marketplace destinations.
- *
- * The full taxonomy remains available from "Autres" and the category picker;
- * this row is navigation, not a dump of every taxonomy root. Keeping the
- * collection outside the component also prevents rebuilding it on each render.
- */
-const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
-  { kind: "category", labelKey: "nav.category.immobilier", slug: "immobilier" },
-  { kind: "category", labelKey: "nav.category.vehicules", slug: "vehicules" },
-  {
-    kind: "category",
-    labelKey: "nav.category.materielPro",
-    slug: "materiel-professionnel",
-  },
-  { kind: "category", labelKey: "nav.category.emploi", slug: "emploi" },
-  { kind: "category", labelKey: "nav.category.mode", slug: "mode" },
-  {
-    kind: "category",
-    labelKey: "nav.category.maisonJardin",
-    slug: "maison-jardin",
-  },
-  {
-    kind: "category",
-    labelKey: "nav.category.famille",
-    slug: "bebe-famille",
-  },
-  {
-    kind: "category",
-    labelKey: "nav.category.electronique",
-    slug: "electronique",
-  },
-  {
-    kind: "category",
-    labelKey: "nav.category.loisirs",
-    slug: "loisirs-culture",
-  },
+const HEADER_UTILITY_ITEMS: readonly HeaderNavItem[] = [
   {
     kind: "overview",
     labelKey: "nav.category.autres",
     to: routes.categories(),
   },
-  { kind: "category", labelKey: "nav.category.cours", slug: "education" },
   {
     kind: "link",
     labelKey: "nav.category.bonsPlans",
@@ -87,6 +56,23 @@ const HEADER_NAV_ITEMS: readonly HeaderNavItem[] = [
     emphasis: true,
   },
 ];
+
+function localizedHeaderCategoryLabel(
+  item: TaxonomyHeaderCategoryItem,
+  locale: string,
+): string {
+  const language = locale.split("-")[0];
+  const localizedEntry = (values: Record<string, string>) =>
+    values[locale] ??
+    Object.entries(values).find(
+      ([key]) => key.split("-")[0] === language,
+    )?.[1] ??
+    values["fr-FR"] ??
+    Object.values(values)[0];
+  return (
+    localizedEntry(item.shortLabels) ?? localizedEntry(item.labels) ?? item.slug
+  );
+}
 
 const CATEGORY_MENU_ID = "header-category-mega-menu";
 const OVERVIEW_MENU_KEY = "autres";
@@ -393,6 +379,8 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
 export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   activeCategorySlug,
   currentPath,
+  initialCategories = [],
+  marketContext,
   marketCode,
   onSelectCategory,
 }) => {
@@ -408,6 +396,13 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   const [branchesBySlug, setBranchesBySlug] = useState<
     ReadonlyMap<string, TaxonomyNode>
   >(() => new Map());
+  const [headerCategories, setHeaderCategories] = useState<
+    TaxonomyHeaderCategoryItem[]
+  >(() =>
+    [...initialCategories].sort(
+      (left, right) => left.displayOrder - right.displayOrder,
+    ),
+  );
   const [overviewRoots, setOverviewRoots] = useState<TaxonomyNode[]>([]);
   const [activeMenuSlug, setActiveMenuSlug] = useState<string | null>(null);
 
@@ -477,29 +472,39 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   useEffect(() => {
     let cancelled = false;
     const normalizedMarketCode = marketCode.toUpperCase();
-    const slugs = HEADER_NAV_ITEMS.flatMap((item) =>
-      item.kind === "category" ? [item.slug] : [],
-    );
-    const promotedSlugs = new Set(slugs);
     const isAvailable = (node: TaxonomyNode) =>
       (node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status) ===
         "active" &&
       marketService.isCategoryEnabledInMarket(normalizedMarketCode, node.id);
 
-    void Promise.all([
-      Promise.all(
-        slugs.map((slug) =>
-          loadCategoryNavigationBranch(services.taxonomy, slug, isAvailable),
-        ),
-      ),
-      loadCategoryNavigationOverview(
-        services.taxonomy,
-        promotedSlugs,
-        isAvailable,
-      ),
-    ])
-      .then(([branches, overview]) => {
+    void services.taxonomy
+      .getHeaderNavigation(marketContext)
+      .then(async (configuration) => {
+        const categories = [...configuration.items].sort(
+          (left, right) => left.displayOrder - right.displayOrder,
+        );
+        const promotedSlugs = new Set(categories.map((item) => item.slug));
+        const [branches, overview] = await Promise.all([
+          Promise.all(
+            categories.map((item) =>
+              loadCategoryNavigationBranch(
+                services.taxonomy,
+                item.slug,
+                isAvailable,
+              ),
+            ),
+          ),
+          loadCategoryNavigationOverview(
+            services.taxonomy,
+            promotedSlugs,
+            isAvailable,
+          ),
+        ]);
+        return { categories, branches, overview };
+      })
+      .then(({ categories, branches, overview }) => {
         if (cancelled) return;
+        setHeaderCategories(categories);
         setBranchesBySlug(
           new Map(
             branches
@@ -511,6 +516,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       })
       .catch(() => {
         if (!cancelled) {
+          setHeaderCategories([]);
           setBranchesBySlug(new Map());
           setOverviewRoots([]);
         }
@@ -519,7 +525,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [locale, marketCode]);
+  }, [locale, marketCode, marketContext]);
 
   useEffect(() => {
     if (!isDesktop) closeMenu();
@@ -551,6 +557,16 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     () =>
       activeMenuSlug ? (branchesBySlug.get(activeMenuSlug) ?? null) : null,
     [activeMenuSlug, branchesBySlug],
+  );
+  const headerNavItems = useMemo<readonly HeaderNavItem[]>(
+    () => [
+      ...headerCategories.map((category) => ({
+        kind: "category" as const,
+        ...category,
+      })),
+      ...HEADER_UTILITY_ITEMS,
+    ],
+    [headerCategories],
   );
 
   const focusFirstMenuItem = useCallback((slug: string) => {
@@ -665,7 +681,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         className="no-scrollbar overflow-x-auto scroll-smooth"
       >
         <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
-          {HEADER_NAV_ITEMS.map((item, index) => {
+          {headerNavItems.map((item, index) => {
             const taxonomyNode =
               item.kind === "category"
                 ? branchesBySlug.get(item.slug)
@@ -678,7 +694,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                   : undefined;
             const label = taxonomyNode
               ? getTaxonomyLabel(taxonomyNode, { compact: true, locale })
-              : t(item.labelKey);
+              : item.kind === "category"
+                ? localizedHeaderCategoryLabel(item, locale)
+                : t(item.labelKey);
             const dedicatedDestination =
               item.kind === "category"
                 ? getDedicatedRootDestination(item.slug)
@@ -701,7 +719,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
             const isExpanded = hasMenu && activeMenuSlug === menuKey;
 
             return (
-              <React.Fragment key={item.labelKey}>
+              <React.Fragment
+                key={item.kind === "category" ? item.categoryId : item.labelKey}
+              >
                 {index > 0 && (
                   <li
                     aria-hidden="true"

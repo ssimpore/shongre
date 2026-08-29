@@ -969,6 +969,24 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/taxonomy/header-navigation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the complete market header category configuration */
+        readonly get: operations["getAdminTaxonomyHeaderNavigation"];
+        /** Atomically replace the market header category configuration */
+        readonly put: operations["putAdminTaxonomyHeaderNavigation"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/trending/config": {
         readonly parameters: {
             readonly query?: never;
@@ -7423,6 +7441,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/taxonomy/header-navigation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the active ordered header categories for an explicit market */
+        readonly get: operations["getTaxonomyHeaderNavigation"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/taxonomy/nodes/{id}": {
         readonly parameters: {
             readonly query?: never;
@@ -9706,6 +9741,32 @@ export interface components {
         };
         /** @enum {string} */
         readonly StaffRole: "support_agent" | "moderator" | "trust_safety" | "compliance" | "finance" | "operations" | "commercial" | "content_manager" | "market_manager" | "admin" | "owner";
+        readonly TaxonomyHeaderCategoryItem: {
+            readonly categoryId: string;
+            readonly displayOrder: number;
+            readonly iconName: string;
+            readonly isActive: boolean;
+            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
+            readonly slug: string;
+        };
+        readonly TaxonomyHeaderCategoryUpdate: {
+            readonly categoryId: string;
+            readonly displayOrder: number;
+            readonly isActive: boolean;
+        };
+        readonly TaxonomyHeaderNavigationConfiguration: {
+            readonly items: readonly components["schemas"]["TaxonomyHeaderCategoryItem"][];
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly revision: number;
+            readonly updatedAt: string | null;
+        };
+        readonly TaxonomyHeaderNavigationUpdate: {
+            readonly changeReason: string;
+            readonly expectedRevision: number;
+            readonly items: readonly components["schemas"]["TaxonomyHeaderCategoryUpdate"][];
+            readonly marketCode: components["schemas"]["MarketCode"];
+        };
         readonly TaxonomyLegacyAttribute: {
             readonly code: string;
             readonly dataType: string;
@@ -11973,6 +12034,75 @@ export interface operations {
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminTaxonomyHeaderNavigation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Selected categories including inactive entries and their display order. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyHeaderNavigationConfiguration"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminTaxonomyHeaderNavigation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TaxonomyHeaderNavigationUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Saved configuration with its new revision. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyHeaderNavigationConfiguration"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
@@ -25350,6 +25480,38 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getTaxonomyHeaderNavigation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Active root categories selected for the public market header. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyHeaderNavigationConfiguration"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];

@@ -184,6 +184,44 @@ describe("API v1 Endpoints Integration", () => {
     expect(categories.length).toBeGreaterThan(0);
   });
 
+  it("serves the ordered public header configuration and protects admin writes", async () => {
+    const [publicResponse, adminReadResponse, adminWriteResponse] =
+      await Promise.all([
+        fetch(`${baseUrl}/api/v1/taxonomy/header-navigation`, {
+          headers: { "X-Shongre-Market": "FR" },
+        }),
+        fetch(`${baseUrl}/api/v1/admin/taxonomy/header-navigation`, {
+          headers: { "X-Shongre-Market": "FR" },
+        }),
+        fetch(`${baseUrl}/api/v1/admin/taxonomy/header-navigation`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shongre-Market": "FR",
+          },
+          body: JSON.stringify({
+            marketCode: "FR",
+            expectedRevision: 1,
+            changeReason: "Tentative non authentifiée de modification.",
+            items: [],
+          }),
+        }),
+      ]);
+
+    expect(publicResponse.status).toBe(200);
+    const configuration = await publicResponse.json();
+    expect(configuration.marketCode).toBe("FR");
+    expect(configuration.items.length).toBeGreaterThan(0);
+    expect(configuration.items.every((item: any) => item.isActive)).toBe(true);
+    expect(configuration.items.map((item: any) => item.displayOrder)).toEqual(
+      [...configuration.items]
+        .sort((left: any, right: any) => left.displayOrder - right.displayOrder)
+        .map((item: any) => item.displayOrder),
+    );
+    expect(adminReadResponse.status).toBe(401);
+    expect(adminWriteResponse.status).toBe(401);
+  });
+
   it("serves taxonomy v4 through explicit market-scoped typed endpoints", async () => {
     for (const [marketCode, locale] of [
       ["FR", "fr-FR"],
