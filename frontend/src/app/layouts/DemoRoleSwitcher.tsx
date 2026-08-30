@@ -17,6 +17,8 @@ import {
   Database,
   Target,
   ReceiptText,
+  FlaskConical,
+  ShieldCheck,
 } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
@@ -25,6 +27,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { routes } from "../../configuration/routes";
 import { DataModeSettingsControl } from "./DataModeSettingsControl";
 import { useDataMode } from "../providers/DataModeProvider";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 
 interface DemoPersona {
   userKey: string;
@@ -233,6 +236,44 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
   },
 ];
 
+/**
+ * Keeps the Staff marketplace boundary visible without adding a second header
+ * row. The native title preserves a mouse-discoverable explanation, while the
+ * accessible name carries the full mode disclosure and admin destination.
+ */
+const StaffMarketplaceModeIndicator: React.FC = () => {
+  const { t } = useTranslation();
+  const { isStaff, canUseDemoMarketplace } = useStaffMarketplaceAccess();
+
+  if (!isStaff) return null;
+
+  const modeTitle = canUseDemoMarketplace
+    ? t("staffMarketplace.demo.title")
+    : t("staffMarketplace.readOnly.title");
+  const modeDescription = canUseDemoMarketplace
+    ? t("staffMarketplace.demo.description")
+    : t("staffMarketplace.readOnly.description");
+  const accessibleLabel = `${modeTitle} ${modeDescription} ${t("staffMarketplace.openAdmin")}`;
+  const Icon = canUseDemoMarketplace ? FlaskConical : ShieldCheck;
+
+  return (
+    <Link
+      to={routes.admin.overview()}
+      data-testid="staff-marketplace-mode"
+      data-mode={canUseDemoMarketplace ? "demo" : "read-only"}
+      aria-label={accessibleLabel}
+      title={`${modeTitle} ${modeDescription}`}
+      className={`inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-control border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+        canUseDemoMarketplace
+          ? "border-warning/60 bg-warning/15 text-warning hover:bg-warning/25"
+          : "border-info/60 bg-info/15 text-info hover:bg-info/25"
+      }`}
+    >
+      <Icon className="h-icon-sm w-icon-sm" aria-hidden="true" />
+    </Link>
+  );
+};
+
 const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
   utility,
 }) => {
@@ -380,6 +421,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
 
         <div className="flex min-w-0 basis-32 flex-1 items-center justify-end gap-2">
           {utility}
+          <StaffMarketplaceModeIndicator />
           <div ref={containerRef} className="relative min-w-0">
             <button
               ref={triggerRef}
@@ -549,6 +591,7 @@ const LiveModeToolbar: React.FC<{ utility?: ReactNode }> = ({ utility }) => {
         </div>
         <div className="flex min-w-0 items-center justify-end gap-2">
           {utility}
+          <StaffMarketplaceModeIndicator />
           {currentUser ? (
             <span className="truncate font-semibold text-white">
               {currentUser.name}

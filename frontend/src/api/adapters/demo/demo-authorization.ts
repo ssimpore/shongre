@@ -1,4 +1,6 @@
 import {
+  isCustomerMarketplaceCapability,
+  isStaffMarketplaceReadCapability,
   isStaffSeparatedSubject,
   type Capability,
 } from "@shongre/contracts/access-control";
@@ -8,6 +10,26 @@ import {
 } from "../../../security/authorization.service";
 import { storageService } from "../../../services/storage.service";
 import type { UserProfile } from "../../../types";
+import { auditService } from "../../../security/audit.service";
+
+function recordStaffDemoAction(user: UserProfile, action: string): void {
+  auditService.logEvent({
+    actorId: user.id,
+    actorName: user.name,
+    actorRole: user.staffRole || user.role,
+    targetId: "isolated-marketplace-demo",
+    targetName: "Bac à sable marketplace Staff",
+    action: "staff_marketplace_demo_action",
+    details: `Action Staff simulée dans les données Démo isolées : ${action}.`,
+    newValue: {
+      action,
+      dataMode: "demo",
+      isolated: true,
+      providerActivity: false,
+    },
+    market: user.country,
+  });
+}
 
 /**
  * Demo adapters enforce the same coarse capability boundary as HTTP routes.
@@ -18,16 +40,35 @@ export function requireDemoCapability(
   capability: Capability,
 ): UserProfile | null {
   const user = storageService.getCurrentUser();
+  if (
+    isStaffSeparatedSubject(user) &&
+    isStaffMarketplaceReadCapability(capability)
+  ) {
+    return user;
+  }
+  if (
+    isStaffSeparatedSubject(user) &&
+    isCustomerMarketplaceCapability(capability)
+  ) {
+    authorizationService.assertCan(user, "staff.marketplace.demo");
+    recordStaffDemoAction(user!, capability);
+    return user;
+  }
   authorizationService.assertCan(user, capability);
   return user;
 }
 
-export function forbidDemoStaffMarketplaceAccess(): UserProfile | null {
+/**
+ * Protects public demo mutations which have no customer capability of their
+ * own (for example newsletter token flows). Public reads do not call this.
+ */
+export function requireDemoMarketplaceAction(
+  action: string,
+): UserProfile | null {
   const user = storageService.getCurrentUser();
   if (isStaffSeparatedSubject(user)) {
-    throw new ForbiddenError(
-      "Les identités Staff ne peuvent pas utiliser la marketplace client.",
-    );
+    authorizationService.assertCan(user, "staff.marketplace.demo");
+    recordStaffDemoAction(user!, action);
   }
   return user;
 }
@@ -36,12 +77,32 @@ export function requireDemoAnyCapability(
   capabilities: readonly Capability[],
 ): UserProfile | null {
   const user = storageService.getCurrentUser();
+  const demoCustomerCapability = capabilities.find(
+    isCustomerMarketplaceCapability,
+  );
   if (
-    !capabilities.some((capability) =>
+    isStaffSeparatedSubject(user) &&
+    demoCustomerCapability &&
+    authorizationService.can(user, "staff.marketplace.demo")
+  ) {
+    recordStaffDemoAction(user!, demoCustomerCapability);
+    return user;
+  }
+  if (
+    capabilities.some((capability) =>
       authorizationService.can(user, capability),
     )
   ) {
-    throw new ForbiddenError();
+    return user;
   }
-  return user;
+  if (isStaffSeparatedSubject(user)) {
+    const publicRead = capabilities.find(isStaffMarketplaceReadCapability);
+    if (publicRead) return user;
+    if (demoCustomerCapability) {
+      authorizationService.assertCan(user, "staff.marketplace.demo");
+      recordStaffDemoAction(user!, demoCustomerCapability);
+      return user;
+    }
+  }
+  throw new ForbiddenError();
 }

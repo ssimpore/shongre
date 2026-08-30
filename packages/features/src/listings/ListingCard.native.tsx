@@ -29,7 +29,7 @@ export function ListingCard({
 }: ListingCardProps) {
   const price = listing.isFreeDonation
     ? "Gratuit"
-    : formatMoney(listing.price, locale);
+    : listing.priceLabel || formatMoney(listing.price, locale);
   const originalPrice = listing.originalPrice
     ? formatMoney(listing.originalPrice, locale)
     : undefined;
@@ -43,7 +43,10 @@ export function ListingCard({
       onPress={onPress}
       style={({ pressed }) => [pressed && styles.pressed]}
     >
-      <Card padding="none" style={horizontal && styles.horizontal}>
+      <Card
+        padding="none"
+        style={[styles.card, horizontal && styles.horizontal]}
+      >
         <View style={[styles.media, horizontal && styles.horizontalMedia]}>
           {listing.imageUrl ? (
             <Image
@@ -193,6 +196,7 @@ export function ListingCard({
 }
 const styles = StyleSheet.create({
   pressed: { opacity: nativeOpacity.pressed },
+  card: { borderRadius: nativeRadius.listingCard },
   horizontal: { flexDirection: "row" },
   media: {
     width: "100%",

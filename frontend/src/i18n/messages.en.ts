@@ -73,6 +73,19 @@ export const messagesEn: MessageCatalogue = {
   "nav.openMenu": "Open menu",
   "nav.closeMenu": "Close menu",
   "nav.mobileLabel": "Mobile navigation",
+  "staffMarketplace.readOnly.title": "Staff navigation — read only.",
+  "staffMarketplace.readOnly.description":
+    "You can browse the marketplace, but all customer actions remain disabled.",
+  "staffMarketplace.readOnly.footerMutation":
+    "Sign-up is disabled for this read-only Staff identity.",
+  "staffMarketplace.demo.title": "Staff test mode — isolated data.",
+  "staffMarketplace.demo.description":
+    "Actions are simulated and audited; no real publication, payment, message, notification, or provider is triggered.",
+  "staffMarketplace.openAdmin": "Open administration",
+  "staffMarketplace.actionBlocked.title":
+    "Action unavailable for Staff accounts",
+  "staffMarketplace.actionBlocked.description":
+    "Staff accounts can browse the marketplace but cannot perform this action. No operation was started.",
   "solutions.header.chooseSolution": "Choose a Shongre solution",
   "solutions.header.seeAll": "See all solutions",
   "admin.solutions.order.title": "Order and visibility",
@@ -1741,6 +1754,18 @@ export const messagesEn: MessageCatalogue = {
   "shell.header.bonsPlansPrixReduits": "Reduced-price offers",
   "shell.header.tableauDeBord": "Dashboard",
   "shell.header.mesAnnonces": "My listings",
+  "shell.header.accountMenu.availableAccess": "Available access",
+  "shell.header.accountMenu.favorites": "My favorites",
+  "shell.header.accountMenu.purchases": "Purchases & transactions",
+  "shell.header.accountMenu.publicProfile": "View my public profile",
+  "shell.header.accountMenu.publicStorefront": "View my storefront",
+  "shell.header.accountMenu.proSolutions": "Professional plans & subscriptions",
+  "shell.header.accountMenu.demoWorkspace": "Demo marketplace workspace",
+  "shell.header.accountMenu.demoAuthorized": "Marketplace demo authorized",
+  "shell.header.accountMenu.status.pending": "Account pending",
+  "shell.header.accountMenu.status.restricted": "Limited account",
+  "shell.header.accountMenu.status.suspended": "Suspended account",
+  "shell.header.accountMenu.status.inactive": "Deactivated account",
   "shell.locationPickerModal.appliquerLaZone": "Apply area",
   "shell.preferencesModal.validerLesPreferences": "Save preferences",
   "ui.categoryFilterRail.sousCategories": "Subcategories:",
@@ -3543,6 +3568,9 @@ export const messagesEn: MessageCatalogue = {
   "admin.employment.tableLabel": "Job offers table",
   "employment.recruiter.tableLabel": "Applications table",
   "pro.plans.comparisonTableLabel": "Pro plan comparison table",
+  "pro.plans.subscriptionUnavailable.title": "Subscription unavailable",
+  "pro.plans.subscriptionUnavailable.description":
+    "An active Professional account authorized to manage subscriptions is required. Pricing remains available.",
   "admin.auto.tableLabel": "Vehicle listings table",
   "auto.publish.stepperLabel": "Vehicle publishing steps",
   "auto.compare.tableLabel": "Vehicle comparison table",

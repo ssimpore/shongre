@@ -651,6 +651,8 @@ export const DEMO_USERS: Record<string, UserProfile> = {
     accountType: "individual",
     staffStatus: "active",
     staffRole: "operations",
+    customPermissions: ["staff.marketplace.demo"],
+    capabilityOverrideVersion: 1,
     primaryRole: "buyer",
     role: "individual_buyer",
     sellerType: "individual",

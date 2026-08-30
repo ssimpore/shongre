@@ -537,13 +537,46 @@
   }
 }
 
-/* Standard listing cards own their vertical footprint. The rules are kept
-   outside Tailwind's layers so page-level utility classes cannot make one
-   section's cards taller or shorter than another. The mobile grid may still
-   narrow the card horizontally; its height stays tokenized. */
-.listing-card-standard,
+/* Cards have a compact minimum rhythm but can grow for translated or unusually
+   long essential content. Grid and rail parents stretch siblings to the same
+   row height, so missing attributes collapse without leaving an artificial
+   fixed-height void and present attributes are never clipped. */
+.listing-card-standard {
+  min-height: var(--spacing-listing-card-height);
+}
+
+.listing-card-shell,
+.listing-card-skeleton {
+  border-radius: var(--radius-listing-card);
+}
+
 .listing-card-skeleton {
   height: var(--spacing-listing-card-height);
+  overflow: hidden;
+}
+
+/* Homepage discovery uses the same card anatomy at a slightly wider editorial
+   width. It is intentionally compact enough for the whole card to be visible
+   in an ordinary viewport. */
+.listing-card-showcase {
+  min-height: var(--spacing-listing-card-showcase-height);
+}
+
+.listing-card-showcase-skeleton {
+  height: var(--spacing-listing-card-showcase-height);
+}
+
+.listing-card-showcase {
+  box-shadow: var(--shadow-sm);
+}
+
+.listing-card-showcase > a {
+  height: 100%;
+  min-height: 0;
+}
+
+.listing-card-showcase-skeleton > :first-child {
+  aspect-ratio: var(--aspect-media);
 }
 
 /* Horizontal results use a fixed shared footprint so cards stay aligned when
@@ -551,21 +584,20 @@
    token-backed slot rather than an ad-hoc width utility: it grows on larger
    screens while preserving enough copy width on phones. */
 .listing-card-list {
-  height: var(--spacing-listing-card-list-height);
   min-height: var(--spacing-listing-card-list-height);
-  max-height: var(--spacing-listing-card-list-height);
 }
 
 .listing-card-list > a {
-  height: 100%;
   min-width: 0;
 }
 
+.listing-card-list-link {
+  flex-direction: column;
+}
+
 .listing-card-list-image {
-  width: var(--spacing-listing-card-list-image);
-  min-width: var(--spacing-listing-card-list-image);
-  height: 100%;
-  flex: 0 0 var(--spacing-listing-card-list-image);
+  width: 100%;
+  aspect-ratio: var(--aspect-media);
 }
 
 .listing-card-list-content {
@@ -574,9 +606,20 @@
 }
 
 @variant sm {
+  .listing-card-list {
+    height: var(--spacing-listing-card-list-height);
+    max-height: var(--spacing-listing-card-list-height);
+  }
+
+  .listing-card-list-link {
+    flex-direction: row;
+  }
+
   .listing-card-list-image {
     width: var(--spacing-listing-card-list-image-md);
     min-width: var(--spacing-listing-card-list-image-md);
+    height: 100%;
+    aspect-ratio: auto;
     flex-basis: var(--spacing-listing-card-list-image-md);
   }
 }

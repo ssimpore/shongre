@@ -7,10 +7,7 @@ import {
 } from "../../../configuration/plans.config";
 import { listingRepository } from "../../../repositories/listing.repository";
 import { simulateNetworkDelay } from "../../client/api-client.config";
-import {
-  forbidDemoStaffMarketplaceAccess,
-  requireDemoCapability,
-} from "./demo-authorization";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoPromotionsService implements PromotionsServiceContract {
   private readonly activations = new Map<
@@ -26,7 +23,6 @@ export class DemoPromotionsService implements PromotionsServiceContract {
 
   async getProSubscriptionPlans(): Promise<ProPlan[]> {
     await simulateNetworkDelay();
-    forbidDemoStaffMarketplaceAccess();
     return PRO_PLANS;
   }
 

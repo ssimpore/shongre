@@ -78,6 +78,19 @@ export const messagesFr = {
   "nav.openMenu": "Ouvrir le menu",
   "nav.closeMenu": "Fermer le menu",
   "nav.mobileLabel": "Navigation mobile",
+  "staffMarketplace.readOnly.title": "Navigation Staff — lecture seule.",
+  "staffMarketplace.readOnly.description":
+    "Vous pouvez parcourir la marketplace, mais toutes les actions client restent désactivées.",
+  "staffMarketplace.readOnly.footerMutation":
+    "Inscription désactivée pour cette identité Staff en lecture seule.",
+  "staffMarketplace.demo.title": "Mode test Staff — données isolées.",
+  "staffMarketplace.demo.description":
+    "Les actions sont simulées et auditées ; aucune publication, aucun paiement, message, notification ou fournisseur réel n’est déclenché.",
+  "staffMarketplace.openAdmin": "Ouvrir l’administration",
+  "staffMarketplace.actionBlocked.title":
+    "Action indisponible pour les comptes Staff",
+  "staffMarketplace.actionBlocked.description":
+    "Les comptes Staff peuvent parcourir la marketplace, mais ne peuvent pas effectuer cette action. Aucune opération n’a été lancée.",
   "solutions.header.chooseSolution": "Choisir une solution Shongre",
   "solutions.header.seeAll": "Voir toutes les solutions",
   "admin.solutions.order.title": "Ordre et visibilité",
@@ -2088,6 +2101,18 @@ export const messagesFr = {
   "shell.header.bonsPlansPrixReduits": "Promotions",
   "shell.header.tableauDeBord": "Tableau de bord",
   "shell.header.mesAnnonces": "Mes annonces",
+  "shell.header.accountMenu.availableAccess": "Accès disponibles",
+  "shell.header.accountMenu.favorites": "Mes favoris",
+  "shell.header.accountMenu.purchases": "Achats & Transactions",
+  "shell.header.accountMenu.publicProfile": "Voir mon profil public",
+  "shell.header.accountMenu.publicStorefront": "Voir ma vitrine boutique",
+  "shell.header.accountMenu.proSolutions": "Solutions & Abonnements Pro",
+  "shell.header.accountMenu.demoWorkspace": "Espace marketplace Démo",
+  "shell.header.accountMenu.demoAuthorized": "Démo marketplace autorisée",
+  "shell.header.accountMenu.status.pending": "Compte en attente",
+  "shell.header.accountMenu.status.restricted": "Compte limité",
+  "shell.header.accountMenu.status.suspended": "Compte suspendu",
+  "shell.header.accountMenu.status.inactive": "Compte désactivé",
 
   // --- shell.locationPickerModal ---
   "shell.locationPickerModal.appliquerLaZone": "Appliquer la zone",
@@ -4240,6 +4265,9 @@ export const messagesFr = {
   "admin.employment.tableLabel": "Tableau des offres d’emploi",
   "employment.recruiter.tableLabel": "Tableau des candidatures",
   "pro.plans.comparisonTableLabel": "Tableau comparatif des forfaits Pro",
+  "pro.plans.subscriptionUnavailable.title": "Souscription indisponible",
+  "pro.plans.subscriptionUnavailable.description":
+    "Un compte Professionnel actif autorisé à gérer ses abonnements est requis. Les tarifs restent consultables.",
   "admin.auto.tableLabel": "Tableau des annonces automobiles",
   "auto.publish.stepperLabel": "Étapes de publication du véhicule",
   "auto.compare.tableLabel": "Tableau comparatif des véhicules",
@@ -4250,76 +4278,101 @@ export const messagesFr = {
   "crm.taskPriority.urgent": "Urgente",
 
   // --- Admin and CRM migration ---
-  "admin.adminAnalyticsPage.pilotageProduitAcquisitionSeoRechercheEtMonetisation": "Pilotage produit, acquisition, SEO, recherche et monétisation.",
+  "admin.adminAnalyticsPage.pilotageProduitAcquisitionSeoRechercheEtMonetisation":
+    "Pilotage produit, acquisition, SEO, recherche et monétisation.",
   "admin.adminAnalyticsPage.accesLimite": "Accès limité",
-  "admin.adminAnalyticsPage.aucunPerimetreAnalyticsNEstAttribueAVotreRole": "Aucun périmètre analytics n’est attribué à votre rôle.",
-  "admin.adminAnalyticsPage.analyticsSeoObservabilite": "Analytics, SEO & observabilité",
-  "admin.adminAnalyticsPage.indicateursInternesFiablesSegmentesParMarcheLesRevenusSontRapproches": "Indicateurs internes fiables, segmentés par marché. Les revenus sont rapprochés du grand livre financier.",
+  "admin.adminAnalyticsPage.aucunPerimetreAnalyticsNEstAttribueAVotreRole":
+    "Aucun périmètre analytics n’est attribué à votre rôle.",
+  "admin.adminAnalyticsPage.analyticsSeoObservabilite":
+    "Analytics, SEO & observabilité",
+  "admin.adminAnalyticsPage.indicateursInternesFiablesSegmentesParMarcheLesRevenusSontRapproches":
+    "Indicateurs internes fiables, segmentés par marché. Les revenus sont rapprochés du grand livre financier.",
   "admin.adminAnalyticsPage.periode": "Période",
   "admin.adminAnalyticsPage.personnalisee": "Personnalisée",
   "admin.adminAnalyticsPage.dimensionsAvancees": "Dimensions avancées",
   "admin.adminAnalyticsPage.identifiantCategorie": "Identifiant catégorie",
   "admin.adminAnalyticsPage.perimetresAnalytics": "Périmètres analytics",
-  "admin.adminAnalyticsPage.chargementDesIndicateurs": "Chargement des indicateurs",
+  "admin.adminAnalyticsPage.chargementDesIndicateurs":
+    "Chargement des indicateurs",
   "admin.adminAnalyticsPage.donneesIndisponibles": "Données indisponibles",
-  "admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise": "Sélectionnez un marché pour un rapprochement complet dans sa devise. La vue « Tous les marchés » ne fusionne jamais des devises différentes.",
+  "admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise":
+    "Sélectionnez un marché pour un rapprochement complet dans sa devise. La vue « Tous les marchés » ne fusionne jamais des devises différentes.",
   "admin.adminAnalyticsPage.activiteProduit": "Activité produit",
   "admin.adminAnalyticsPage.acquisitionParCanal": "Acquisition par canal",
-  "admin.adminAnalyticsPage.demandesDeRechercheSousServies": "Demandes de recherche sous-servies",
+  "admin.adminAnalyticsPage.demandesDeRechercheSousServies":
+    "Demandes de recherche sous-servies",
   "admin.adminAnalyticsPage.requete": "Requête",
   "admin.adminAnalyticsPage.visibiliteOrganique": "Visibilité organique",
-  "admin.adminAnalyticsPage.requetesOrganiquesSearchConsole": "Requêtes organiques Search Console",
+  "admin.adminAnalyticsPage.requetesOrganiquesSearchConsole":
+    "Requêtes organiques Search Console",
   "admin.adminAnalyticsPage.echecs": "Échecs :",
-  "admin.adminAuditLogsPage.toutesLesActionsDAudit": "Toutes les actions d'audit (",
+  "admin.adminAuditLogsPage.toutesLesActionsDAudit":
+    "Toutes les actions d'audit (",
   "admin.adminAuditLogsPage.dateEtHeure": "Date et heure",
-  "admin.adminAuditLogsPage.detailDeLEvenementDAudit": "Détail de l’événement d’audit",
+  "admin.adminAuditLogsPage.detailDeLEvenementDAudit":
+    "Détail de l’événement d’audit",
   "admin.adminAuditLogsPage.donneesTechniques": "Données techniques",
   "admin.adminCommissionPanel.reglesVersionnees": "Règles versionnées",
   "admin.adminCommissionPanel.defautSur": "Défaut sûr :",
-  "admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible": "aucune commission n’est prélevée sans politique active, contexte éligible et événement d’acquisition atteint. Une simple annonce publiée ne déclenche jamais de commission.",
+  "admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible":
+    "aucune commission n’est prélevée sans politique active, contexte éligible et événement d’acquisition atteint. Une simple annonce publiée ne déclenche jamais de commission.",
   "admin.adminCommissionPanel.soumettreAApprobation": "Soumettre à approbation",
-  "admin.adminCommissionPanel.simulateurDeCommission": "Simulateur de commission",
-  "admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa": "Utilise exactement le même résolveur que le checkout et la comptabilisation serveur.",
+  "admin.adminCommissionPanel.simulateurDeCommission":
+    "Simulateur de commission",
+  "admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa":
+    "Utilise exactement le même résolveur que le checkout et la comptabilisation serveur.",
   "admin.adminCommissionPanel.typeVendeur": "Type vendeur",
   "admin.adminCommissionPanel.categorieIdentifiant": "Catégorie (identifiant)",
   "admin.adminCommissionPanel.resultat": "Résultat",
-  "admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt": "Renseignez le contexte pour voir la politique, le calcul et sa justification.",
+  "admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt":
+    "Renseignez le contexte pour voir la politique, le calcul et sa justification.",
   "admin.adminCommissionPanel.precedence": "· précédence",
-  "admin.adminCommissionPanel.politiquesDuCataloguePublie": "Politiques du catalogue publié",
+  "admin.adminCommissionPanel.politiquesDuCataloguePublie":
+    "Politiques du catalogue publié",
   "admin.adminCommissionPanel.porteeHeritage": "Portée / héritage",
-  "admin.adminCommissionPanel.desactiverViaBrouillon": "Désactiver via brouillon",
-  "admin.adminCommissionPolicyEditor.laModificationCreeUneNouvelleVersionSoumiseAuWorkflowMaker": "La modification crée une nouvelle version soumise au workflow maker-checker.",
+  "admin.adminCommissionPanel.desactiverViaBrouillon":
+    "Désactiver via brouillon",
+  "admin.adminCommissionPolicyEditor.laModificationCreeUneNouvelleVersionSoumiseAuWorkflowMaker":
+    "La modification crée une nouvelle version soumise au workflow maker-checker.",
   "admin.adminCommissionPolicyEditor.typeDePolitique": "Type de politique",
   "admin.adminCommissionPolicyEditor.commissionDeBase": "Commission de base",
   "admin.adminCommissionPolicyEditor.deploiementBps": "Déploiement (bps)",
-  "admin.adminCommissionPolicyEditor.niveauDeDerogation": "Niveau de dérogation",
+  "admin.adminCommissionPolicyEditor.niveauDeDerogation":
+    "Niveau de dérogation",
   "admin.adminCommissionPolicyEditor.defautDuMarche": "Défaut du marché",
-  "admin.adminCommissionPolicyEditor.categorieListePossible": "Catégorie (liste possible)",
+  "admin.adminCommissionPolicyEditor.categorieListePossible":
+    "Catégorie (liste possible)",
   "admin.adminCommissionPolicyEditor.typeDeTransaction": "Type de transaction",
   "admin.adminCommissionPolicyEditor.valeursDePortee": "Valeurs de portée",
   "admin.adminCommissionPolicyEditor.modele": "Modèle",
   "admin.adminCommissionPolicyEditor.forfaitCategorie": "Forfait catégorie",
   "admin.adminCommissionPolicyEditor.auMoinsLeSeuil": "Au moins le seuil",
-  "admin.adminCommissionPolicyEditor.strictementAuDessus": "Strictement au-dessus",
+  "admin.adminCommissionPolicyEditor.strictementAuDessus":
+    "Strictement au-dessus",
   "admin.adminCommissionPolicyEditor.sousLeSeuil": "Sous le seuil",
   "admin.adminCommissionPolicyEditor.modeDesPaliers": "Mode des paliers",
   "admin.adminCommissionPolicyEditor.baseDesPaliers": "Base des paliers",
-  "admin.adminCommissionPolicyEditor.montantDeLaTransaction": "Montant de la transaction",
+  "admin.adminCommissionPolicyEditor.montantDeLaTransaction":
+    "Montant de la transaction",
   "admin.adminCommissionPolicyEditor.volumeCumule": "Volume cumulé",
   "admin.adminCommissionPolicyEditor.periodeDeVolume": "Période de volume",
   "admin.adminCommissionPolicyEditor.annee": "Année",
   "admin.adminCommissionPolicyEditor.dureeDeVie": "Durée de vie",
   "admin.adminCommissionPolicyEditor.apresRemise": "Après remise",
   "admin.adminCommissionPolicyEditor.encaissePlateforme": "Encaissé plateforme",
-  "admin.adminCommissionPolicyEditor.evenementDAcquisition": "Événement d’acquisition",
+  "admin.adminCommissionPolicyEditor.evenementDAcquisition":
+    "Événement d’acquisition",
   "admin.adminCommissionPolicyEditor.paiementReussi": "Paiement réussi",
   "admin.adminCommissionPolicyEditor.commandeTerminee": "Commande terminée",
   "admin.adminCommissionPolicyEditor.serviceTermine": "Service terminé",
   "admin.adminCommissionPolicyEditor.virementLibere": "Virement libéré",
   "admin.adminCommissionPolicyEditor.leadQualifie": "Lead qualifié",
-  "admin.adminCommissionPolicyEditor.reservationTerminee": "Réservation terminée",
-  "admin.adminCommissionPolicyEditor.politiqueDeRemboursement": "Politique de remboursement",
-  "admin.adminCommissionPolicyEditor.commissionConservee": "Commission conservée",
+  "admin.adminCommissionPolicyEditor.reservationTerminee":
+    "Réservation terminée",
+  "admin.adminCommissionPolicyEditor.politiqueDeRemboursement":
+    "Politique de remboursement",
+  "admin.adminCommissionPolicyEditor.commissionConservee":
+    "Commission conservée",
   "admin.adminCommissionPolicyEditor.taxeAjoutee": "Taxe ajoutée",
   "admin.adminCommissionPolicyEditor.exoneree": "Exonérée",
   "admin.adminCommissionPolicyEditor.exonerationTotale": "Exonération totale",
@@ -4327,10 +4380,14 @@ export const messagesFr = {
   "admin.adminCommissionPolicyEditor.montantNegocie": "Montant négocié",
   "admin.adminCommissionPolicyEditor.debutEffectif": "Début effectif",
   "admin.adminCommissionPolicyEditor.creerLeBrouillon": "Créer le brouillon",
-  "admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre": "Fonctionnalités — Console Shongre",
-  "admin.adminFeatureFlagsPage.pilotageAuditeDesActivationsProgressivesShongre": "Pilotage audité des activations progressives Shongre.",
-  "admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs": "Fonctionnalités et déploiements progressifs",
-  "admin.adminFeatureFlagsPage.lesValeursAbsentesExpireesOuIndisponiblesRestentDesactiveesChaqueModification": "Les valeurs absentes, expirées ou indisponibles restent désactivées. Chaque modification exige un propriétaire et un motif d’audit.",
+  "admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre":
+    "Fonctionnalités — Console Shongre",
+  "admin.adminFeatureFlagsPage.pilotageAuditeDesActivationsProgressivesShongre":
+    "Pilotage audité des activations progressives Shongre.",
+  "admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs":
+    "Fonctionnalités et déploiements progressifs",
+  "admin.adminFeatureFlagsPage.lesValeursAbsentesExpireesOuIndisponiblesRestentDesactiveesChaqueModification":
+    "Les valeurs absentes, expirées ou indisponibles restent désactivées. Chaque modification exige un propriétaire et un motif d’audit.",
   "admin.adminFeatureFlagsPage.regleS": "règle(s)",
   "admin.adminFeatureFlagsPage.miseAJour": "Mise à jour",
   "admin.adminFeatureFlagsPage.modificationsAuditees": "Modifications auditées",
@@ -4338,23 +4395,32 @@ export const messagesFr = {
   "admin.adminFeatureFlagsPage.cycleDeVie": "Cycle de vie",
   "admin.adminFeatureFlagsPage.archivee": "Archivée",
   "admin.adminFeatureFlagsPage.activeParDefaut": "Active par défaut",
-  "admin.adminFeatureFlagsPage.pourquoiCeChangementEstIlNecessaire": "Pourquoi ce changement est-il nécessaire ?",
+  "admin.adminFeatureFlagsPage.pourquoiCeChangementEstIlNecessaire":
+    "Pourquoi ce changement est-il nécessaire ?",
   "admin.adminFeatureFlagsPage.reglesCiblees": "Règles ciblées",
-  "admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique": "Aucune règle : la valeur par défaut s’applique.",
+  "admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique":
+    "Aucune règle : la valeur par défaut s’applique.",
   "admin.adminFeatureFlagsPage.priorite": "% · priorité",
   "admin.adminFeatureFlagsPage.nouvelleRegle": "Nouvelle règle",
   "admin.adminFeatureFlagsPage.deploiement": "Déploiement (%)",
-  "admin.adminFeatureFlagsPage.valeurActiveePourLaCohorte": "Valeur activée pour la cohorte",
+  "admin.adminFeatureFlagsPage.valeurActiveePourLaCohorte":
+    "Valeur activée pour la cohorte",
   "admin.adminFeatureFlagsPage.motifDeLaRegle": "Motif de la règle",
-  "admin.adminFeatureFlagsPage.objectifEtValidationAttendueDuDeploiement": "Objectif et validation attendue du déploiement",
+  "admin.adminFeatureFlagsPage.objectifEtValidationAttendueDuDeploiement":
+    "Objectif et validation attendue du déploiement",
   "admin.adminFeatureFlagsPage.ajouterLaRegle": "Ajouter la règle",
-  "admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee": "Aucune fonctionnalité sélectionnée.",
+  "admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee":
+    "Aucune fonctionnalité sélectionnée.",
   "admin.adminFinancePage.financeDeLaPlateforme": "Finance de la plateforme",
-  "admin.adminFinancePage.revenusTransactionsEtRapprochementFinancierShongre": "Revenus, transactions et rapprochement financier Shongre.",
+  "admin.adminFinancePage.revenusTransactionsEtRapprochementFinancierShongre":
+    "Revenus, transactions et rapprochement financier Shongre.",
   "admin.adminFinancePage.chargementDesFinances": "Chargement des finances",
-  "admin.adminFinancePage.lesAgregatsFinanciersNOntPasPuEtreCharges": "Les agrégats financiers n’ont pas pu être chargés.",
-  "admin.adminFinancePage.registreFinancierImmuableRevenusReconnusEtControleDesEcartsFournisseurs": "Registre financier immuable, revenus reconnus et contrôle des écarts fournisseurs.",
-  "admin.adminFinancePage.rechercherUneTransaction": "Rechercher une transaction",
+  "admin.adminFinancePage.lesAgregatsFinanciersNOntPasPuEtreCharges":
+    "Les agrégats financiers n’ont pas pu être chargés.",
+  "admin.adminFinancePage.registreFinancierImmuableRevenusReconnusEtControleDesEcartsFournisseurs":
+    "Registre financier immuable, revenus reconnus et contrôle des écarts fournisseurs.",
+  "admin.adminFinancePage.rechercherUneTransaction":
+    "Rechercher une transaction",
   "admin.adminLayout.crmPipelineVentes": "CRM & Pipeline Ventes",
   "admin.adminLayout.conformiteKycKyb": "Conformité KYC / KYB",
   "admin.adminLayout.fournisseursIntegrations": "Fournisseurs & Intégrations",
@@ -4363,11 +4429,14 @@ export const messagesFr = {
   "admin.adminMarketsPage.betaPublique": "Bêta publique",
   "admin.adminMarketsPage.betaPrivee": "Bêta privée",
   "admin.adminMarketsPage.marcheParDefaut": "Marché par défaut :",
-  "admin.adminMarketsPage.restaurerLaValeurLocaleValidee": "Restaurer la valeur locale validée",
+  "admin.adminMarketsPage.restaurerLaValeurLocaleValidee":
+    "Restaurer la valeur locale validée",
   "admin.adminMarketsPage.registreMultiMarches": "Registre multi-marchés",
-  "admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance": "Chaque marché possède une politique complète et explicite. La France reste le marché initial par défaut, sans propager ses valeurs aux autres pays.",
+  "admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance":
+    "Chaque marché possède une politique complète et explicite. La France reste le marché initial par défaut, sans propager ses valeurs aux autres pays.",
   "admin.adminMarketsPage.configureLocalement": "% configuré localement",
-  "admin.adminMarketsPage.aucunHeritageInterMarche": "Aucun héritage inter-marché",
+  "admin.adminMarketsPage.aucunHeritageInterMarche":
+    "Aucun héritage inter-marché",
   "admin.adminMarketsPage.configurationDe": "Configuration de",
   "admin.adminMarketsPage.taxonomieCategories": "Taxonomie & Catégories",
   "admin.adminMarketsPage.annonces": "Annonces",
@@ -4375,155 +4444,224 @@ export const messagesFr = {
   "admin.adminMarketsPage.fiscaliteTva": "Fiscalité & TVA",
   "admin.adminMarketsPage.monetisation": "Monétisation",
   "admin.adminMarketsPage.modifierLeRoutage": "Modifier le routage",
-  "admin.adminMarketsPage.laTaxonomieEstPartageeMaisSaDisponibiliteEstConfigureeExplicitement": "La taxonomie est partagée, mais sa disponibilité est configurée explicitement par marché. Activez ou désactivez des catégories ou sous-catégories pour",
+  "admin.adminMarketsPage.laTaxonomieEstPartageeMaisSaDisponibiliteEstConfigureeExplicitement":
+    "La taxonomie est partagée, mais sa disponibilité est configurée explicitement par marché. Activez ou désactivez des catégories ou sous-catégories pour",
   "admin.adminMarketsPage.sousCategories": "Sous-catégories (",
   "admin.adminMarketsPage.surcharge2": "✏️ Surchargé (",
-  "admin.adminMarketsPage.leModeDeDomaineEtLePrefixeSontUniquesLes": "Le mode de domaine et le préfixe sont uniques. Les noms d’hôte concrets viennent exclusivement de la configuration du déploiement.",
+  "admin.adminMarketsPage.leModeDeDomaineEtLePrefixeSontUniquesLes":
+    "Le mode de domaine et le préfixe sont uniques. Les noms d’hôte concrets viennent exclusivement de la configuration du déploiement.",
   "admin.adminMarketsPage.modeDeDomaineCanonique": "Mode de domaine canonique",
   "admin.adminMarketsPage.prefixePublic": "Préfixe public",
-  "admin.adminMarketsPage.visibleSurLePortailInternational": "Visible sur le portail international",
-  "admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel": "Expliquez le changement et son impact opérationnel.",
-  "admin.adminMarketsPage.soumettrePourApprobation": "Soumettre pour approbation",
-  "admin.adminMarketsPage.creerLeBrouillonSecurise": "Créer le brouillon sécurisé",
+  "admin.adminMarketsPage.visibleSurLePortailInternational":
+    "Visible sur le portail international",
+  "admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel":
+    "Expliquez le changement et son impact opérationnel.",
+  "admin.adminMarketsPage.soumettrePourApprobation":
+    "Soumettre pour approbation",
+  "admin.adminMarketsPage.creerLeBrouillonSecurise":
+    "Créer le brouillon sécurisé",
   "admin.adminMarketsPage.nouvelleValeurPour": "Nouvelle Valeur pour",
   "admin.adminModerationPage.signalementsRecus": "Signalements Reçus (",
-  "admin.adminModerationPage.controleAuditIaAnnonces": "Contrôle & Audit IA Annonces (",
-  "admin.adminModerationPage.aucunSignalementEnAttente": "Aucun signalement en attente",
+  "admin.adminModerationPage.controleAuditIaAnnonces":
+    "Contrôle & Audit IA Annonces (",
+  "admin.adminModerationPage.aucunSignalementEnAttente":
+    "Aucun signalement en attente",
   "admin.adminModerationPage.dossiersDeModeration": "Dossiers de modération",
-  "admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees": "Historique canonique des signalements et décisions appliquées.",
-  "admin.adminModerationPage.aucunDossierEnregistre": "Aucun dossier enregistré.",
+  "admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees":
+    "Historique canonique des signalements et décisions appliquées.",
+  "admin.adminModerationPage.aucunDossierEnregistre":
+    "Aucun dossier enregistré.",
   "admin.adminModerationPage.recoursAExaminer": "Recours à examiner",
-  "admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision": "Le backend interdit qu’un modérateur révise sa propre décision.",
-  "admin.adminModerationPage.aucunRecoursEnregistre": "Aucun recours enregistré.",
+  "admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision":
+    "Le backend interdit qu’un modérateur révise sa propre décision.",
+  "admin.adminModerationPage.aucunRecoursEnregistre":
+    "Aucun recours enregistré.",
   "admin.adminModerationPage.decision": "Décision :",
   "admin.adminModerationPage.annulerLaDecision": "Annuler la décision",
-  "admin.adminModerationPage.catalogueDAnnoncesShongre": "Catalogue d'annonces Shongre (",
+  "admin.adminModerationPage.catalogueDAnnoncesShongre":
+    "Catalogue d'annonces Shongre (",
   "admin.adminModerationPage.auTotal": "au total)",
   "admin.adminModerationPage.motifLegal": "Motif légal :",
   "admin.adminModerationPage.vendeur2": "• Vendeur :",
   "admin.adminModerationPage.deciderLeRecours": "Décider le recours",
-  "admin.adminModerationPage.motifIndependantEtVerifiable": "Motif indépendant et vérifiable",
-  "admin.adminModerationPage.expliquezLesElementsExaminesEtLaJustificationDeLaDecision": "Expliquez les éléments examinés et la justification de la décision.",
-  "admin.adminMonetizationPage.reglesBusinessEtMonetisation": "Règles business et monétisation",
-  "admin.adminMonetizationPage.administrationVersionneeDuCatalogueCommercialShongre": "Administration versionnée du catalogue commercial Shongre.",
-  "admin.adminMonetizationPage.chargementDuCatalogueCommercial": "Chargement du catalogue commercial…",
+  "admin.adminModerationPage.motifIndependantEtVerifiable":
+    "Motif indépendant et vérifiable",
+  "admin.adminModerationPage.expliquezLesElementsExaminesEtLaJustificationDeLaDecision":
+    "Expliquez les éléments examinés et la justification de la décision.",
+  "admin.adminMonetizationPage.reglesBusinessEtMonetisation":
+    "Règles business et monétisation",
+  "admin.adminMonetizationPage.administrationVersionneeDuCatalogueCommercialShongre":
+    "Administration versionnée du catalogue commercial Shongre.",
+  "admin.adminMonetizationPage.chargementDuCatalogueCommercial":
+    "Chargement du catalogue commercial…",
   "admin.adminMonetizationPage.businessMonetisation": "Business & Monétisation",
-  "admin.adminMonetizationPage.uneSourceVersionneePourLesOffresPrixQuotasReglesTaxes": "Une source versionnée pour les offres, prix, quotas, règles, taxes, commissions et promotions.",
+  "admin.adminMonetizationPage.uneSourceVersionneePourLesOffresPrixQuotasReglesTaxes":
+    "Une source versionnée pour les offres, prix, quotas, règles, taxes, commissions et promotions.",
   "admin.adminMonetizationPage.versionPubliee": "Version publiée",
   "admin.adminMonetizationPage.creerUnBrouillon": "Créer un brouillon",
   "admin.adminMonetizationPage.changementsPlanifies": "Changements planifiés",
   "admin.adminMonetizationPage.reglesActives": "Règles actives",
-  "admin.adminMonetizationPage.sectionsDeMonetisation": "Sections de monétisation",
+  "admin.adminMonetizationPage.sectionsDeMonetisation":
+    "Sections de monétisation",
   "admin.adminMonetizationPage.rechercherUneOffre": "Rechercher une offre",
-  "admin.adminMonetizationPage.rechercherUnProduitUnCode": "Rechercher un produit, un code…",
+  "admin.adminMonetizationPage.rechercherUnProduitUnCode":
+    "Rechercher un produit, un code…",
   "admin.adminMonetizationPage.toutesLesAudiences": "Toutes les audiences",
   "admin.adminMonetizationPage.toutesLesVerticales": "Toutes les verticales",
-  "admin.adminMonetizationPage.aucuneOffreNeCorrespondAuxFiltres": "Aucune offre ne correspond aux filtres.",
-  "admin.adminMonetizationPage.identifiantsStablesCategoriesEtCapacitesPubliesViaLeWorkflowVersionne": "Identifiants stables, catégories et capacités publiés via le workflow versionné.",
-  "admin.adminMonetizationPage.aucuneCategorieSpecialisee": "Aucune catégorie spécialisée",
+  "admin.adminMonetizationPage.aucuneOffreNeCorrespondAuxFiltres":
+    "Aucune offre ne correspond aux filtres.",
+  "admin.adminMonetizationPage.identifiantsStablesCategoriesEtCapacitesPubliesViaLeWorkflowVersionne":
+    "Identifiants stables, catégories et capacités publiés via le workflow versionné.",
+  "admin.adminMonetizationPage.aucuneCategorieSpecialisee":
+    "Aucune catégorie spécialisée",
   "admin.adminMonetizationPage.priorite": "· priorité",
   "admin.adminMonetizationPage.campagnesEtCoupons": "Campagnes et coupons",
-  "admin.adminMonetizationPage.lesChangementsSontAjoutesAUnBrouillonSoumisAuWorkflow": "Les changements sont ajoutés à un brouillon soumis au workflow d’approbation.",
+  "admin.adminMonetizationPage.lesChangementsSontAjoutesAUnBrouillonSoumisAuWorkflow":
+    "Les changements sont ajoutés à un brouillon soumis au workflow d’approbation.",
   "admin.adminMonetizationPage.duree": "Durée",
-  "admin.adminMonetizationPage.demanderUnAccesOffert": "Demander un accès offert",
-  "admin.adminMonetizationPage.laDemandeNeCreeAucunFauxPaiementEtAttendUne": "La demande ne crée aucun faux paiement et attend une approbation distincte.",
+  "admin.adminMonetizationPage.demanderUnAccesOffert":
+    "Demander un accès offert",
+  "admin.adminMonetizationPage.laDemandeNeCreeAucunFauxPaiementEtAttendUne":
+    "La demande ne crée aucun faux paiement et attend une approbation distincte.",
   "admin.adminMonetizationPage.compteBeneficiaire": "Compte bénéficiaire",
-  "admin.adminMonetizationPage.identifiantUtilisateurOuOrganisation": "Identifiant utilisateur ou organisation",
-  "admin.adminMonetizationPage.selectionnerUnForfait": "Sélectionner un forfait",
+  "admin.adminMonetizationPage.identifiantUtilisateurOuOrganisation":
+    "Identifiant utilisateur ou organisation",
+  "admin.adminMonetizationPage.selectionnerUnForfait":
+    "Sélectionner un forfait",
   "admin.adminMonetizationPage.debut": "Début",
   "admin.adminMonetizationPage.campagneOuReference": "Campagne ou référence",
   "admin.adminMonetizationPage.decisionFinale": "Décision finale",
-  "admin.adminMonetizationPage.reserveeAuRoleProprietaireLeDemandeurNePeutPasApprouver": "Réservée au rôle propriétaire. Le demandeur ne peut pas approuver sa propre demande.",
+  "admin.adminMonetizationPage.reserveeAuRoleProprietaireLeDemandeurNePeutPasApprouver":
+    "Réservée au rôle propriétaire. Le demandeur ne peut pas approuver sa propre demande.",
   "admin.adminMonetizationPage.identifiantDeDemande": "Identifiant de demande",
   "admin.adminMonetizationPage.decision": "Décision",
   "admin.adminMonetizationPage.motifDeDecision": "Motif de décision",
-  "admin.adminMonetizationPage.enregistrerLaDecision": "Enregistrer la décision",
+  "admin.adminMonetizationPage.enregistrerLaDecision":
+    "Enregistrer la décision",
   "admin.adminMonetizationPage.droitsMaterialises": "Droits matérialisés",
   "admin.adminMonetizationPage.paiementsReussis": "Paiements réussis",
   "admin.adminMonetizationPage.abonnementsParCompte": "Abonnements par compte",
-  "admin.adminMonetizationPage.aucunAbonnementAAfficher": "Aucun abonnement à afficher.",
+  "admin.adminMonetizationPage.aucunAbonnementAAfficher":
+    "Aucun abonnement à afficher.",
   "admin.adminMonetizationPage.reference": "Référence",
-  "admin.adminMonetizationPage.aucunMouvementFinancierAAfficher": "Aucun mouvement financier à afficher.",
+  "admin.adminMonetizationPage.aucunMouvementFinancierAAfficher":
+    "Aucun mouvement financier à afficher.",
   "admin.adminMonetizationPage.commandesRecentes": "Commandes récentes",
-  "admin.adminMonetizationPage.aucuneCommandeCentralisee": "Aucune commande centralisée.",
+  "admin.adminMonetizationPage.aucuneCommandeCentralisee":
+    "Aucune commande centralisée.",
   "admin.adminMonetizationPage.auditRecent": "Audit récent",
-  "admin.adminMonetizationPage.aucunEvenementDAudit": "Aucun événement d’audit.",
+  "admin.adminMonetizationPage.aucunEvenementDAudit":
+    "Aucun événement d’audit.",
   "admin.adminMonetizationPage.regles": "règles",
   "admin.adminMonetizationPage.preparerLeRollback": "Préparer le rollback",
-  "admin.adminMonetizationPage.simulationEtExplication": "Simulation et explication",
+  "admin.adminMonetizationPage.simulationEtExplication":
+    "Simulation et explication",
   "admin.adminMonetizationPage.pourquoiCeResultat": "Pourquoi ce résultat ?",
-  "admin.adminMonetizationPage.simulezUnContexteSansPublierNiModifierLaConfiguration": "Simulez un contexte sans publier ni modifier la configuration.",
+  "admin.adminMonetizationPage.simulezUnContexteSansPublierNiModifierLaConfiguration":
+    "Simulez un contexte sans publier ni modifier la configuration.",
   "admin.adminMonetizationPage.generique": "Générique",
   "admin.adminMonetizationPage.specificite": "· spécificité",
   "admin.adminMonetizationPage.selection": "Sélection",
-  "admin.adminMonetizationPage.transitionsConfigurees": "Transitions configurées",
+  "admin.adminMonetizationPage.transitionsConfigurees":
+    "Transitions configurées",
   "admin.adminMonetizationPage.montee": "Montée :",
   "admin.adminMonetizationPage.consommateursAffectes": "Consommateurs affectés",
-  "admin.adminMonetizationPage.modifierDansUnBrouillon": "Modifier dans un brouillon",
+  "admin.adminMonetizationPage.modifierDansUnBrouillon":
+    "Modifier dans un brouillon",
   "admin.adminMonetizationPage.tracabilite": "Traçabilité",
-  "admin.adminMonetizationPage.chaquePublicationConserveLeMotifLeDiffLAuteurL": "Chaque publication conserve le motif, le diff, l’auteur, l’approbateur et le snapshot utilisé par les devis.",
-  "admin.adminMonetizationPage.leChangementCreeUnBrouillonVersionneEtNeModifieJamais": "Le changement crée un brouillon versionné et ne modifie jamais directement le catalogue publié.",
+  "admin.adminMonetizationPage.chaquePublicationConserveLeMotifLeDiffLAuteurL":
+    "Chaque publication conserve le motif, le diff, l’auteur, l’approbateur et le snapshot utilisé par les devis.",
+  "admin.adminMonetizationPage.leChangementCreeUnBrouillonVersionneEtNeModifieJamais":
+    "Le changement crée un brouillon versionné et ne modifie jamais directement le catalogue publié.",
   "admin.adminMonetizationPage.mobilite": "Mobilité",
   "admin.adminMonetizationPage.categoriesAssociees": "Catégories associées",
   "admin.adminMonetizationPage.capacites": "Capacités",
   "admin.adminMonetizationPage.desactivee": "Désactivée",
   "admin.adminMonetizationPage.motifDuChangement": "Motif du changement",
-  "admin.adminMonetizationPage.exOuvertureControleeDeLaVerticaleApresValidationCommerciale": "Ex. Ouverture contrôlée de la verticale après validation commerciale…",
-  "admin.adminMonetizationPage.creerUneCampagnePromotionnelle": "Créer une campagne promotionnelle",
-  "admin.adminMonetizationPage.laCampagneEstEnregistreeDansUnBrouillonVersionneElleN": "La campagne est enregistrée dans un brouillon versionné ; elle n’est jamais activée directement.",
+  "admin.adminMonetizationPage.exOuvertureControleeDeLaVerticaleApresValidationCommerciale":
+    "Ex. Ouverture contrôlée de la verticale après validation commerciale…",
+  "admin.adminMonetizationPage.creerUneCampagnePromotionnelle":
+    "Créer une campagne promotionnelle",
+  "admin.adminMonetizationPage.laCampagneEstEnregistreeDansUnBrouillonVersionneElleN":
+    "La campagne est enregistrée dans un brouillon versionné ; elle n’est jamais activée directement.",
   "admin.adminMonetizationPage.nomDeCampagne": "Nom de campagne",
   "admin.adminMonetizationPage.typeDeRemise": "Type de remise",
   "admin.adminMonetizationPage.periodeGratuite": "Période gratuite",
   "admin.adminMonetizationPage.clientsEligibles": "Clients éligibles",
   "admin.adminMonetizationPage.tousLesClients": "Tous les clients",
-  "admin.adminMonetizationPage.utilisationsParCompte": "Utilisations par compte",
-  "admin.adminMonetizationPage.periodeGratuiteJours": "Période gratuite (jours)",
+  "admin.adminMonetizationPage.utilisationsParCompte":
+    "Utilisations par compte",
+  "admin.adminMonetizationPage.periodeGratuiteJours":
+    "Période gratuite (jours)",
   "admin.adminMonetizationPage.periodesRemisees": "Périodes remisées",
-  "admin.adminMonetizationPage.engagementMinimalPeriodes": "Engagement minimal (périodes)",
+  "admin.adminMonetizationPage.engagementMinimalPeriodes":
+    "Engagement minimal (périodes)",
   "admin.adminMonetizationPage.couponDuPrestataire": "Coupon du prestataire",
-  "admin.adminMonetizationPage.laCampagneResteInactiveJusquAPublicationDuBrouillonSon": "La campagne reste inactive jusqu’à publication du brouillon. Son type, son éligibilité, son cumul et ses plafonds sont appliqués par le même moteur lors du devis et du checkout.",
+  "admin.adminMonetizationPage.laCampagneResteInactiveJusquAPublicationDuBrouillonSon":
+    "La campagne reste inactive jusqu’à publication du brouillon. Son type, son éligibilité, son cumul et ses plafonds sont appliqués par le même moteur lors du devis et du checkout.",
   "admin.adminMonetizationPage.ajouterAuBrouillon": "Ajouter au brouillon",
-  "admin.adminNewsletterPage.audiencesCampagnesModelesConformiteEtDelivrabiliteMarketing": "Audiences, campagnes, modèles, conformité et délivrabilité Marketing.",
+  "admin.adminNewsletterPage.audiencesCampagnesModelesConformiteEtDelivrabiliteMarketing":
+    "Audiences, campagnes, modèles, conformité et délivrabilité Marketing.",
   "admin.adminNewsletterPage.decouvrirLaSelection": "Découvrir la sélection",
   "admin.adminNewsletterPage.meDesabonnerEnUnClic": "Me désabonner en un clic",
   "admin.adminNewsletterPage.modeles": "Modèles",
   "admin.adminNewsletterPage.conformite": "Conformité",
-  "admin.adminNewsletterPage.providerPlatformPartagee": "Provider Platform partagée",
-  "admin.adminNewsletterPage.audiencesCrmEtMarketingCampagnesVersionneesConsentementDelivrabiliteEtAnalyse": "Audiences CRM et marketing, campagnes versionnées, consentement, délivrabilité et analyse depuis un domaine multi-tenant unique.",
-  "admin.adminNewsletterPage.lesExclusionsLegalesEtOperationnellesSontEvalueesCoteService": "Les exclusions légales et opérationnelles sont évaluées côté service.",
+  "admin.adminNewsletterPage.providerPlatformPartagee":
+    "Provider Platform partagée",
+  "admin.adminNewsletterPage.audiencesCrmEtMarketingCampagnesVersionneesConsentementDelivrabiliteEtAnalyse":
+    "Audiences CRM et marketing, campagnes versionnées, consentement, délivrabilité et analyse depuis un domaine multi-tenant unique.",
+  "admin.adminNewsletterPage.lesExclusionsLegalesEtOperationnellesSontEvalueesCoteService":
+    "Les exclusions légales et opérationnelles sont évaluées côté service.",
   "admin.adminNewsletterPage.eligibles": "éligibles ·",
   "admin.adminNewsletterPage.selectionnes": "sélectionnés",
   "admin.adminNewsletterPage.creerUneCampagne": "Créer une campagne",
-  "admin.adminNewsletterPage.leBrouillonResteraModifiableJusquAuSnapshotDEnvoi": "Le brouillon restera modifiable jusqu’au snapshot d’envoi.",
-  "admin.adminNewsletterPage.selectionProSeptembre": "Sélection Pro · septembre",
+  "admin.adminNewsletterPage.leBrouillonResteraModifiableJusquAuSnapshotDEnvoi":
+    "Le brouillon restera modifiable jusqu’au snapshot d’envoi.",
+  "admin.adminNewsletterPage.selectionProSeptembre":
+    "Sélection Pro · septembre",
   "admin.adminNewsletterPage.objetDeLEmail2": "Objet de l’email",
-  "admin.adminNewsletterPage.lesNouveautesChoisiesPourVous": "Les nouveautés choisies pour vous",
+  "admin.adminNewsletterPage.lesNouveautesChoisiesPourVous":
+    "Les nouveautés choisies pour vous",
   "admin.adminNewsletterPage.texteDApercu": "Texte d’aperçu",
-  "admin.adminNewsletterPage.laSelectionDeLaSemaineEnUnCoupDOeil": "La sélection de la semaine en un coup d’œil",
+  "admin.adminNewsletterPage.laSelectionDeLaSemaineEnUnCoupDOeil":
+    "La sélection de la semaine en un coup d’œil",
   "admin.adminNewsletterPage.audienceDeLaCampagne": "Audience de la campagne",
-  "admin.adminNewsletterPage.choisirUneListeOuUnSegment": "Choisir une liste ou un segment",
-  "admin.adminNewsletterPage.cetteSemaineSurShongre": "Cette semaine sur Shongre",
-  "admin.adminNewsletterPage.presentezLInformationEssentielleEnQuelquesPhrases": "Présentez l’information essentielle en quelques phrases.",
-  "admin.adminNewsletterPage.leBlocPreferencesEtLeDesabonnementSontAjoutesAutomatiquementLes": "Le bloc préférences et le désabonnement sont ajoutés automatiquement. Les suppressions restent prioritaires sur l’audience.",
-  "admin.adminOverviewPage.surLePerimetreTerritorial": "sur le périmètre territorial",
-  "admin.adminOverviewPage.traiterLesSignalements": "Traiter les signalements (",
+  "admin.adminNewsletterPage.choisirUneListeOuUnSegment":
+    "Choisir une liste ou un segment",
+  "admin.adminNewsletterPage.cetteSemaineSurShongre":
+    "Cette semaine sur Shongre",
+  "admin.adminNewsletterPage.presentezLInformationEssentielleEnQuelquesPhrases":
+    "Présentez l’information essentielle en quelques phrases.",
+  "admin.adminNewsletterPage.leBlocPreferencesEtLeDesabonnementSontAjoutesAutomatiquementLes":
+    "Le bloc préférences et le désabonnement sont ajoutés automatiquement. Les suppressions restent prioritaires sur l’audience.",
+  "admin.adminOverviewPage.surLePerimetreTerritorial":
+    "sur le périmètre territorial",
+  "admin.adminOverviewPage.traiterLesSignalements":
+    "Traiter les signalements (",
   "admin.adminOverviewPage.indicateursDeLaConsole": "Indicateurs de la console",
   "admin.adminOverviewPage.partitionnesParRole": "partitionnés par rôle",
   "admin.adminOverviewPage.filesOperationnelles": "Files opérationnelles",
   "admin.adminOverviewPage.aucunDossierEnAttente": "Aucun dossier en attente",
-  "admin.adminPlanDraftModal.configurerLOffreDansUnBrouillon": "Configurer l’offre dans un brouillon",
-  "admin.adminPlanDraftModal.prixQuotasFonctionnalitesEtEssaiSontVersionnesEnsembleLaVersion": "Prix, quotas, fonctionnalités et essai sont versionnés ensemble. La version publiée reste inchangée jusqu’à approbation.",
-  "admin.adminPlanDraftModal.apercuAvantPublication": "Aperçu avant publication",
-  "admin.adminPlanDraftModal.lesFonctionnalitesIncompletesOuEnMaintenanceSontExcluesDeCet": "Les fonctionnalités incomplètes ou en maintenance sont exclues de cet aperçu et ne seront pas accordées.",
-  "admin.adminPlanDraftModal.presentationEtDisponibilite": "Présentation et disponibilité",
+  "admin.adminPlanDraftModal.configurerLOffreDansUnBrouillon":
+    "Configurer l’offre dans un brouillon",
+  "admin.adminPlanDraftModal.prixQuotasFonctionnalitesEtEssaiSontVersionnesEnsembleLaVersion":
+    "Prix, quotas, fonctionnalités et essai sont versionnés ensemble. La version publiée reste inchangée jusqu’à approbation.",
+  "admin.adminPlanDraftModal.apercuAvantPublication":
+    "Aperçu avant publication",
+  "admin.adminPlanDraftModal.lesFonctionnalitesIncompletesOuEnMaintenanceSontExcluesDeCet":
+    "Les fonctionnalités incomplètes ou en maintenance sont exclues de cet aperçu et ne seront pas accordées.",
+  "admin.adminPlanDraftModal.presentationEtDisponibilite":
+    "Présentation et disponibilité",
   "admin.adminPlanDraftModal.actifApresPublication": "Actif après publication",
   "admin.adminPlanDraftModal.offreRecommandee": "Offre recommandée",
   "admin.adminPlanDraftModal.categoriesCiblees": "Catégories ciblées",
   "admin.adminPlanDraftModal.tvaPointsDeBase": "TVA (points de base)",
   "admin.adminPlanDraftModal.debutDuPrix": "Début du prix",
   "admin.adminPlanDraftModal.finDuPrix": "Fin du prix",
-  "admin.adminPlanDraftModal.quotasEtFonctionnalites": "Quotas et fonctionnalités",
-  "admin.adminPlanDraftModal.cesValeursAlimententLaComparaisonLUsageEtLesControles": "Ces valeurs alimentent la comparaison, l’usage et les contrôles serveur.",
+  "admin.adminPlanDraftModal.quotasEtFonctionnalites":
+    "Quotas et fonctionnalités",
+  "admin.adminPlanDraftModal.cesValeursAlimententLaComparaisonLUsageEtLesControles":
+    "Ces valeurs alimentent la comparaison, l’usage et les contrôles serveur.",
   "admin.adminPlanDraftModal.disponibilite": "Disponibilité",
   "admin.adminPlanDraftModal.active": "Activé",
   "admin.adminPlanDraftModal.beta": "Bêta",
@@ -4537,18 +4675,23 @@ export const messagesFr = {
   "admin.adminPlanDraftModal.moyenDePaiementRequis": "Moyen de paiement requis",
   "admin.adminPlanDraftModal.marchesEligibles": "Marchés éligibles",
   "admin.adminPlanDraftModal.audiencesEligibles": "Audiences éligibles",
-  "admin.adminPlanDraftModal.debutDeCampagneDEssai": "Début de campagne d’essai",
+  "admin.adminPlanDraftModal.debutDeCampagneDEssai":
+    "Début de campagne d’essai",
   "admin.adminPlanDraftModal.finDeCampagneDEssai": "Fin de campagne d’essai",
   "admin.adminPlanDraftModal.monteesAutorisees": "Montées autorisées",
   "admin.adminPlanDraftModal.baissesAutorisees": "Baisses autorisées",
   "admin.adminPlanDraftModal.activationPlanifiee": "Activation planifiée",
-  "admin.adminRolesMatrixPage.spectreDElevationDesPrivileges": "Spectre d'Élévation des Privilèges (",
+  "admin.adminRolesMatrixPage.spectreDElevationDesPrivileges":
+    "Spectre d'Élévation des Privilèges (",
   "admin.adminRolesMatrixPage.rolesDefinis": "Rôles Définis)",
   "admin.adminRolesMatrixPage.categorie": "Catégorie :",
-  "admin.adminSolutionsPage.catalogueDesSolutionsConsoleShongre": "Catalogue des solutions — Console Shongre",
-  "admin.adminSolutionsPage.gouvernanceDuCycleDeVieEtDesDestinationsDesApplications": "Gouvernance du cycle de vie et des destinations des applications Shongre.",
+  "admin.adminSolutionsPage.catalogueDesSolutionsConsoleShongre":
+    "Catalogue des solutions — Console Shongre",
+  "admin.adminSolutionsPage.gouvernanceDuCycleDeVieEtDesDestinationsDesApplications":
+    "Gouvernance du cycle de vie et des destinations des applications Shongre.",
   "admin.adminSolutionsPage.catalogueDesSolutions": "Catalogue des solutions",
-  "admin.adminSolutionsPage.pilotezLaVisibiliteLesDestinationsEtLeCycleDeVie": "Pilotez la visibilité, les destinations et le cycle de vie des applications Shongre.",
+  "admin.adminSolutionsPage.pilotezLaVisibiliteLesDestinationsEtLeCycleDeVie":
+    "Pilotez la visibilité, les destinations et le cycle de vie des applications Shongre.",
   "admin.adminSolutionsPage.resumeDuCatalogue": "Résumé du catalogue",
   "admin.adminSolutionsPage.toutesLesSolutions": "Toutes les solutions",
   "admin.adminSolutionsPage.rechercherUneSolution": "Rechercher une solution",
@@ -4560,427 +4703,644 @@ export const messagesFr = {
   "admin.adminSolutionsPage.solutionDeRemplacement": "Solution de remplacement",
   "admin.adminSolutionsPage.descriptionComplete": "Description complète",
   "admin.adminSolutionsPage.messageDeMaintenance": "Message de maintenance",
-  "admin.adminSolutionsPage.lesNomsDHoteSontResolusParLaConfigurationD": "Les noms d’hôte sont résolus par la configuration d’exécution. Ils ne sont pas modifiables ici.",
+  "admin.adminSolutionsPage.lesNomsDHoteSontResolusParLaConfigurationD":
+    "Les noms d’hôte sont résolus par la configuration d’exécution. Ils ne sont pas modifiables ici.",
   "admin.adminSolutionsPage.cheminDeLancement": "Chemin de lancement",
-  "admin.adminSolutionsPage.derniereNoteDeVersionFacultatif": "Dernière note de version (facultatif)",
+  "admin.adminSolutionsPage.derniereNoteDeVersionFacultatif":
+    "Dernière note de version (facultatif)",
   "admin.adminSolutionsPage.titreDeLaNote": "Titre de la note",
   "admin.adminSolutionsPage.dateDePublication": "Date de publication",
   "admin.adminSolutionsPage.contenuDeLaNote": "Contenu de la note",
   "admin.adminSolutionsPage.retirerCetteNote": "Retirer cette note",
-  "admin.adminSolutionsPage.faireEvoluerLeCycleDeVie": "Faire évoluer le cycle de vie",
+  "admin.adminSolutionsPage.faireEvoluerLeCycleDeVie":
+    "Faire évoluer le cycle de vie",
   "admin.adminSolutionsPage.nouveauCycleDeVie": "Nouveau cycle de vie",
-  "admin.adminSolutionsPage.motifOperationnel10CaracteresMinimum": "Motif opérationnel (10 caractères minimum)",
+  "admin.adminSolutionsPage.motifOperationnel10CaracteresMinimum":
+    "Motif opérationnel (10 caractères minimum)",
   "admin.adminSolutionsPage.appliquerLaTransition": "Appliquer la transition",
-  "admin.adminSolutionsPage.aucuneTransitionEnregistree": "Aucune transition enregistrée.",
-  "admin.adminSupportPage.fileOperationnelleDesDemandesDAssistanceShongre": "File opérationnelle des demandes d’assistance Shongre.",
+  "admin.adminSolutionsPage.aucuneTransitionEnregistree":
+    "Aucune transition enregistrée.",
+  "admin.adminSupportPage.fileOperationnelleDesDemandesDAssistanceShongre":
+    "File opérationnelle des demandes d’assistance Shongre.",
   "admin.adminSupportPage.slaDepasse": "SLA dépassé",
   "admin.adminSupportPage.nonAffectes": "Non affectés",
   "admin.adminSupportPage.operationsSupport": "Opérations Support",
-  "admin.adminSupportPage.affectationReponsesClientNotesInternesEtSuiviDesEngagementsDe": "Affectation, réponses client, notes internes et suivi des engagements de service.",
+  "admin.adminSupportPage.affectationReponsesClientNotesInternesEtSuiviDesEngagementsDe":
+    "Affectation, réponses client, notes internes et suivi des engagements de service.",
   "admin.adminSupportPage.filtrerParStatut": "Filtrer par statut",
-  "admin.adminSupportPage.aucunDossierDansCetteFile": "Aucun dossier dans cette file",
+  "admin.adminSupportPage.aucunDossierDansCetteFile":
+    "Aucun dossier dans cette file",
   "admin.adminSupportPage.selectionnezUnDossier": "Sélectionnez un dossier.",
   "admin.adminTaxonomyPage.brouillonSAPublier": "brouillon(s) à publier",
   "admin.adminTaxonomyPage.arborescenceNoeuds": "Arborescence & Nœuds",
   "admin.adminTaxonomyPage.registreDesAttributs": "Registre des Attributs",
   "admin.adminTaxonomyPage.schemaV4Migration": "Schéma v4 & Migration",
   "admin.adminTaxonomyPage.validationQualite": "Validation & Qualité",
-  "admin.adminTrendingPage.tendancesDeLaPageDAccueil": "Tendances de la page d’accueil",
-  "admin.adminTrendingPage.piloterLaSectionEnCeMomentSurShongre": "Piloter la section En ce moment sur Shongre.",
+  "admin.adminTrendingPage.tendancesDeLaPageDAccueil":
+    "Tendances de la page d’accueil",
+  "admin.adminTrendingPage.piloterLaSectionEnCeMomentSurShongre":
+    "Piloter la section En ce moment sur Shongre.",
   "admin.adminTrendingPage.decouverteEditoriale": "Découverte éditoriale",
   "admin.adminTrendingPage.enCeMomentSurShongre": "En ce moment sur Shongre",
-  "admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu": "Les thèmes sont calculés à partir de l’activité du marché puis ajustés ici. Les données de classement restent internes à la console.",
+  "admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu":
+    "Les thèmes sont calculés à partir de l’activité du marché puis ajustés ici. Les données de classement restent internes à la console.",
   "admin.adminTrendingPage.reglesDAffichage": "Règles d’affichage",
   "admin.adminTrendingPage.modeDeSelection": "Mode de sélection",
   "admin.adminTrendingPage.annoncesParSousSection": "Annonces par sous-section",
   "admin.adminTrendingPage.maximumDeSousSections": "Maximum de sous-sections",
   "admin.adminTrendingPage.minimumDActivite": "Minimum d’activité",
   "admin.adminTrendingPage.periodeJours": "Période (jours)",
-  "admin.adminTrendingPage.categoriesExcluesSlugsSeparesParDesVirgules": "Catégories exclues (slugs séparés par des virgules)",
+  "admin.adminTrendingPage.categoriesExcluesSlugsSeparesParDesVirgules":
+    "Catégories exclues (slugs séparés par des virgules)",
   "admin.adminTrendingPage.apercuDuMarche": "Aperçu du marché",
   "admin.adminTrendingPage.sousSectionsAffichees": "sous-sections affichées",
   "admin.adminTrendingPage.annoncesTendance": "annonces · tendance",
   "admin.adminTrendingPage.epingle": "Épinglé",
-  "admin.adminTrendingPage.editionEditorialeAvancee": "Édition éditoriale avancée",
+  "admin.adminTrendingPage.editionEditorialeAvancee":
+    "Édition éditoriale avancée",
   "admin.adminTrendingPage.titrePersonnalise": "Titre personnalisé",
   "admin.adminTrendingPage.scoreDeBoost01": "Score de boost (0–1)",
   "admin.adminTrendingPage.sousTitrePersonnalise": "Sous-titre personnalisé",
   "admin.adminTrendingPage.urlDeLImage": "URL de l’image",
   "admin.adminTrendingPage.debutProgramme": "Début programmé",
   "admin.adminTrendingPage.finProgrammee": "Fin programmée",
-  "admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels": "Aucun thème ne remplit les critères actuels.",
+  "admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels":
+    "Aucun thème ne remplit les critères actuels.",
   "admin.adminTrendingPage.overridesSansCode": "overrides sans code",
   "admin.adminUsersPage.tousLesRoles": "Tous les rôles (",
-  "admin.adminUsersPage.exExamenTermineEtMesuresCorrectivesConfirmees": "Ex. Examen terminé et mesures correctives confirmées",
-  "admin.adminVerificationsPage.conformiteProgressiveAdministrationShongre": "Conformité progressive | Administration Shongre",
-  "admin.adminVerificationsPage.revueManuellePolitiquesEtAuditDeConformite": "Revue manuelle, politiques et audit de conformité.",
-  "admin.adminVerificationsPage.accesConformiteRestreint": "Accès conformité restreint",
-  "admin.adminVerificationsPage.verificationsReglesEtRevueHumaine": "Vérifications, règles et revue humaine",
-  "admin.adminVerificationsPage.lesAgentsVoientLesStatutsNecessairesALeurMissionLes": "Les agents voient les statuts nécessaires à leur mission. Les documents, numéros fiscaux, coordonnées bancaires et scores de risque ne sont pas exposés dans cette file générale.",
+  "admin.adminUsersPage.exExamenTermineEtMesuresCorrectivesConfirmees":
+    "Ex. Examen terminé et mesures correctives confirmées",
+  "admin.adminVerificationsPage.conformiteProgressiveAdministrationShongre":
+    "Conformité progressive | Administration Shongre",
+  "admin.adminVerificationsPage.revueManuellePolitiquesEtAuditDeConformite":
+    "Revue manuelle, politiques et audit de conformité.",
+  "admin.adminVerificationsPage.accesConformiteRestreint":
+    "Accès conformité restreint",
+  "admin.adminVerificationsPage.verificationsReglesEtRevueHumaine":
+    "Vérifications, règles et revue humaine",
+  "admin.adminVerificationsPage.lesAgentsVoientLesStatutsNecessairesALeurMissionLes":
+    "Les agents voient les statuts nécessaires à leur mission. Les documents, numéros fiscaux, coordonnées bancaires et scores de risque ne sont pas exposés dans cette file générale.",
   "admin.adminVerificationsPage.sectionsDeConformite": "Sections de conformité",
   "admin.adminVerificationsPage.registreDesRegles": "Registre des règles",
-  "admin.adminVerificationsPage.dossiersNecessitantUneDecision": "Dossiers nécessitant une décision",
-  "admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable": "Toute décision exige un motif et reste traçable.",
-  "admin.adminVerificationsPage.aucunDossierEnAttente": "Aucun dossier en attente.",
+  "admin.adminVerificationsPage.dossiersNecessitantUneDecision":
+    "Dossiers nécessitant une décision",
+  "admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable":
+    "Toute décision exige un motif et reste traçable.",
+  "admin.adminVerificationsPage.aucunDossierEnAttente":
+    "Aucun dossier en attente.",
   "admin.adminVerificationsPage.registreVersionne": "Registre versionné",
-  "admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur": "Les modifications juridiques sont planifiées, sourcées et auditées côté serveur.",
-  "admin.adminVerificationsPage.evenementsDeConformite": "Événements de conformité",
-  "admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues": "Les valeurs sensibles et réponses brutes des prestataires sont exclues.",
-  "admin.adminVerificationsPage.referenceUtilisateur": "· Référence utilisateur :",
+  "admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur":
+    "Les modifications juridiques sont planifiées, sourcées et auditées côté serveur.",
+  "admin.adminVerificationsPage.evenementsDeConformite":
+    "Événements de conformité",
+  "admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues":
+    "Les valeurs sensibles et réponses brutes des prestataires sont exclues.",
+  "admin.adminVerificationsPage.referenceUtilisateur":
+    "· Référence utilisateur :",
   "admin.adminVerificationsPage.decisionMotivee": "Décision motivée",
-  "admin.adminVerificationsPage.decrivezLesElementsControlesEtLaJustificationDeLaDecision": "Décrivez les éléments contrôlés et la justification de la décision.",
-  "admin.employmentAdminPage.configurationConformiteCatalogueEtOperationsDuVerticalShongreEmploi": "Configuration, conformité, catalogue et opérations du vertical Shongre Emploi.",
+  "admin.adminVerificationsPage.decrivezLesElementsControlesEtLaJustificationDeLaDecision":
+    "Décrivez les éléments contrôlés et la justification de la décision.",
+  "admin.employmentAdminPage.configurationConformiteCatalogueEtOperationsDuVerticalShongreEmploi":
+    "Configuration, conformité, catalogue et opérations du vertical Shongre Emploi.",
   "admin.employmentAdminPage.schemaV": "Schéma v",
   "admin.employmentAdminPage.pilotageDuMarche": "Pilotage du marché",
-  "admin.employmentAdminPage.sansDupliquerLaCategorieCanoniqueEmploi": ", sans dupliquer la catégorie canonique « Emploi ».",
+  "admin.employmentAdminPage.sansDupliquerLaCategorieCanoniqueEmploi":
+    ", sans dupliquer la catégorie canonique « Emploi ».",
   "admin.employmentAdminPage.configurationDuMarche": "Configuration du marché",
-  "admin.employmentAdminPage.dureeDePublicationJours": "Durée de publication (jours)",
-  "admin.employmentAdminPage.retentionDesBrouillonsJours": "Rétention des brouillons (jours)",
-  "admin.employmentAdminPage.retentionDesCandidaturesJours": "Rétention des candidatures (jours)",
-  "admin.employmentAdminPage.delaiAvantNouvelleCandidatureJours": "Délai avant nouvelle candidature (jours)",
+  "admin.employmentAdminPage.dureeDePublicationJours":
+    "Durée de publication (jours)",
+  "admin.employmentAdminPage.retentionDesBrouillonsJours":
+    "Rétention des brouillons (jours)",
+  "admin.employmentAdminPage.retentionDesCandidaturesJours":
+    "Rétention des candidatures (jours)",
+  "admin.employmentAdminPage.delaiAvantNouvelleCandidatureJours":
+    "Délai avant nouvelle candidature (jours)",
   "admin.employmentAdminPage.langageARevoir": "Langage à revoir",
   "admin.employmentAdminPage.principesDeConformite": "Principes de conformité",
-  "admin.employmentAdminPage.donneesCandidatsPriveesEtRlsParDefaut": "Données candidats privées et RLS par défaut",
-  "admin.employmentAdminPage.aucuneDecisionJuridiqueAutomatique": "Aucune décision juridique automatique",
-  "admin.employmentAdminPage.aucunAttributSensibleDansLeClassement": "Aucun attribut sensible dans le classement",
-  "admin.employmentAdminPage.aucunPaiementDemandeAuxCandidats": "Aucun paiement demandé aux candidats",
-  "admin.employmentAdminPage.retentionEtConsentementsVersionnes": "Rétention et consentements versionnés",
-  "admin.employmentAdminPage.catalogueDesOffresEmployeur": "Catalogue des offres employeur",
-  "admin.employmentAdminPage.valeursActivesCouvrantSecteursFamillesMetiersCompetencesContratsRythmesDiplomes": "valeurs actives couvrant secteurs, familles, métiers, compétences, contrats, rythmes, diplômes et langues.",
+  "admin.employmentAdminPage.donneesCandidatsPriveesEtRlsParDefaut":
+    "Données candidats privées et RLS par défaut",
+  "admin.employmentAdminPage.aucuneDecisionJuridiqueAutomatique":
+    "Aucune décision juridique automatique",
+  "admin.employmentAdminPage.aucunAttributSensibleDansLeClassement":
+    "Aucun attribut sensible dans le classement",
+  "admin.employmentAdminPage.aucunPaiementDemandeAuxCandidats":
+    "Aucun paiement demandé aux candidats",
+  "admin.employmentAdminPage.retentionEtConsentementsVersionnes":
+    "Rétention et consentements versionnés",
+  "admin.employmentAdminPage.catalogueDesOffresEmployeur":
+    "Catalogue des offres employeur",
+  "admin.employmentAdminPage.valeursActivesCouvrantSecteursFamillesMetiersCompetencesContratsRythmesDiplomes":
+    "valeurs actives couvrant secteurs, familles, métiers, compétences, contrats, rythmes, diplômes et langues.",
   "admin.financeRevenueTrendChart.evolutionDesRevenus": "Évolution des revenus",
-  "admin.financeRevenueTrendChart.revenusReconnusHorsTvaEtFondsVendeurs": "Revenus reconnus, hors TVA et fonds vendeurs.",
+  "admin.financeRevenueTrendChart.revenusReconnusHorsTvaEtFondsVendeurs":
+    "Revenus reconnus, hors TVA et fonds vendeurs.",
   "admin.financeRevenueTrendChart.legendeDuGraphique": "Légende du graphique",
-  "admin.financeRevenueTrendChart.aucuneDonneeDeRevenusDisponiblePourCettePeriode": "Aucune donnée de revenus disponible pour cette période.",
-  "admin.financeRevenueTrendChart.donneesDuGraphiqueDEvolutionDesRevenus": "Données du graphique d’évolution des revenus",
-  "admin.homepageConfigurationPanel.chargementDeLaPageDAccueil": "Chargement de la page d’accueil…",
-  "admin.homepageConfigurationPanel.configurationCentralisee": "Configuration centralisée",
+  "admin.financeRevenueTrendChart.aucuneDonneeDeRevenusDisponiblePourCettePeriode":
+    "Aucune donnée de revenus disponible pour cette période.",
+  "admin.financeRevenueTrendChart.donneesDuGraphiqueDEvolutionDesRevenus":
+    "Données du graphique d’évolution des revenus",
+  "admin.homepageConfigurationPanel.chargementDeLaPageDAccueil":
+    "Chargement de la page d’accueil…",
+  "admin.homepageConfigurationPanel.configurationCentralisee":
+    "Configuration centralisée",
   "admin.homepageConfigurationPanel.revision": "· révision",
-  "admin.homepageConfigurationPanel.nombreMaximalDElements": "Nombre maximal d’éléments",
+  "admin.homepageConfigurationPanel.nombreMaximalDElements":
+    "Nombre maximal d’éléments",
   "admin.homepageConfigurationPanel.visibleSurMobile": "Visible sur mobile",
   "admin.homepageConfigurationPanel.visibleSurDesktop": "Visible sur desktop",
-  "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres": "Règles d’éligibilité des offres",
-  "admin.homepageConfigurationPanel.inclureLesVendeursProfessionnels": "Inclure les vendeurs professionnels",
-  "admin.homepageConfigurationPanel.marchesAutorisesCodesSeparesParDesVirgules": "Marchés autorisés (codes séparés par des virgules)",
-  "admin.homepageConfigurationPanel.branchesTaxonomiquesAutoriseesSlugsSeparesParDesVirgules": "Branches taxonomiques autorisées (slugs séparés par des virgules)",
-  "admin.homepageConfigurationPanel.annoncesManuellesEpingleesIdentifiantsSeparesParDesVirgules": "Annonces manuelles/épinglées (identifiants séparés par des virgules)",
-  "admin.homepageConfigurationPanel.annoncesAMasquerIdentifiantsSeparesParDesVirgules": "Annonces à masquer (identifiants séparés par des virgules)",
-  "admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces": "Programmation des overrides d’annonces",
-  "admin.homepageConfigurationPanel.apercuDeLaPageComplete": "Aperçu de la page complète",
-  "admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour": "Résolution réelle du brouillon pour",
-  "admin.homepageConfigurationPanel.viewportDePrevisualisation": "Viewport de prévisualisation",
-  "admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu": "Lancez l’aperçu pour résoudre le contenu.",
-  "admin.homepageConfigurationPanel.motifDeModificationPublication": "Motif de modification / publication",
-  "admin.homepageConfigurationPanel.expliquezLeChangementPourLHistoriqueDAudit": "Expliquez le changement pour l’historique d’audit.",
-  "admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche": "Les versions publiées sont historisées avec l’acteur, le marché, la langue et le motif. La publication n’invente ni remise ni disponibilité : les offres sont recalculées depuis les données éligibles.",
-  "admin.crmAutomationsPage.workflowsEtSequencesCrm": "Workflows et séquences CRM.",
-  "admin.crmAutomationsPage.workflowsEvenementielsEtSequencesCommercialesAvecGardeFous": "Workflows événementiels et séquences commerciales avec garde-fous.",
-  "admin.crmAutomationsPage.activezDAbordUnWorkerDAutomatisationBackend": "Activez d’abord un worker d’automatisation backend",
-  "admin.crmAutomationsPage.moteurNonActiveDansCetEnvironnement": "Moteur non activé dans cet environnement",
-  "admin.crmAutomationsPage.leModelePersistantLIsolationTenantLesExecutionsIdempotentesEt": "Le modèle persistant, l’isolation tenant, les exécutions idempotentes et la file de reprise sont provisionnés. Aucun workflow n’est exécutable tant qu’un worker CRM explicite et ses fournisseurs autorisés ne sont pas actifs. Cette interface ne simule pas une exécution de production.",
+  "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres":
+    "Règles d’éligibilité des offres",
+  "admin.homepageConfigurationPanel.inclureLesVendeursProfessionnels":
+    "Inclure les vendeurs professionnels",
+  "admin.homepageConfigurationPanel.marchesAutorisesCodesSeparesParDesVirgules":
+    "Marchés autorisés (codes séparés par des virgules)",
+  "admin.homepageConfigurationPanel.branchesTaxonomiquesAutoriseesSlugsSeparesParDesVirgules":
+    "Branches taxonomiques autorisées (slugs séparés par des virgules)",
+  "admin.homepageConfigurationPanel.annoncesManuellesEpingleesIdentifiantsSeparesParDesVirgules":
+    "Annonces manuelles/épinglées (identifiants séparés par des virgules)",
+  "admin.homepageConfigurationPanel.annoncesAMasquerIdentifiantsSeparesParDesVirgules":
+    "Annonces à masquer (identifiants séparés par des virgules)",
+  "admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces":
+    "Programmation des overrides d’annonces",
+  "admin.homepageConfigurationPanel.apercuDeLaPageComplete":
+    "Aperçu de la page complète",
+  "admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour":
+    "Résolution réelle du brouillon pour",
+  "admin.homepageConfigurationPanel.viewportDePrevisualisation":
+    "Viewport de prévisualisation",
+  "admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu":
+    "Lancez l’aperçu pour résoudre le contenu.",
+  "admin.homepageConfigurationPanel.motifDeModificationPublication":
+    "Motif de modification / publication",
+  "admin.homepageConfigurationPanel.expliquezLeChangementPourLHistoriqueDAudit":
+    "Expliquez le changement pour l’historique d’audit.",
+  "admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche":
+    "Les versions publiées sont historisées avec l’acteur, le marché, la langue et le motif. La publication n’invente ni remise ni disponibilité : les offres sont recalculées depuis les données éligibles.",
+  "admin.crmAutomationsPage.workflowsEtSequencesCrm":
+    "Workflows et séquences CRM.",
+  "admin.crmAutomationsPage.workflowsEvenementielsEtSequencesCommercialesAvecGardeFous":
+    "Workflows événementiels et séquences commerciales avec garde-fous.",
+  "admin.crmAutomationsPage.activezDAbordUnWorkerDAutomatisationBackend":
+    "Activez d’abord un worker d’automatisation backend",
+  "admin.crmAutomationsPage.moteurNonActiveDansCetEnvironnement":
+    "Moteur non activé dans cet environnement",
+  "admin.crmAutomationsPage.leModelePersistantLIsolationTenantLesExecutionsIdempotentesEt":
+    "Le modèle persistant, l’isolation tenant, les exécutions idempotentes et la file de reprise sont provisionnés. Aucun workflow n’est exécutable tant qu’un worker CRM explicite et ses fournisseurs autorisés ne sont pas actifs. Cette interface ne simule pas une exécution de production.",
   "admin.crmAutomationsPage.reglesDActivation": "Règles d’activation",
-  "admin.crmAutomationsPage.consommationDeLaQueueAvecRetriesBornesEtDeadLetter": "Consommation de la queue avec retries bornés et dead-letter.",
-  "admin.crmAutomationsPage.aucunEmailOuAppelSansConnexionAutorisee": "Aucun email ou appel sans connexion autorisée.",
-  "admin.crmAutomationsPage.arretSurOptOutRefusOuStatutNePasContacter": "Arrêt sur opt-out, refus ou statut ne pas contacter.",
-  "admin.crmAutomationsPage.lesActionsARisqueRestentSoumisesAApprobation": "Les actions à risque restent soumises à approbation.",
+  "admin.crmAutomationsPage.consommationDeLaQueueAvecRetriesBornesEtDeadLetter":
+    "Consommation de la queue avec retries bornés et dead-letter.",
+  "admin.crmAutomationsPage.aucunEmailOuAppelSansConnexionAutorisee":
+    "Aucun email ou appel sans connexion autorisée.",
+  "admin.crmAutomationsPage.arretSurOptOutRefusOuStatutNePasContacter":
+    "Arrêt sur opt-out, refus ou statut ne pas contacter.",
+  "admin.crmAutomationsPage.lesActionsARisqueRestentSoumisesAApprobation":
+    "Les actions à risque restent soumises à approbation.",
   "admin.crmCompaniesPage.rechercherUneEntreprise": "Rechercher une entreprise",
   "admin.crmCompaniesPage.nomDomaineOuSecteur": "Nom, domaine ou secteur…",
   "admin.crmCompaniesPage.vueEnregistree": "Vue enregistrée",
-  "admin.crmCompaniesPage.supprimerLaVueSelectionnee": "Supprimer la vue sélectionnée",
+  "admin.crmCompaniesPage.supprimerLaVueSelectionnee":
+    "Supprimer la vue sélectionnée",
   "admin.crmCompaniesPage.enregistrerLaVue": "Enregistrer la vue",
-  "admin.crmCompaniesPage.aucuneEntrepriseDansCetteVue": "Aucune entreprise dans cette vue",
-  "admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche": "Modifiez les filtres ou créez une nouvelle fiche.",
+  "admin.crmCompaniesPage.aucuneEntrepriseDansCetteVue":
+    "Aucune entreprise dans cette vue",
+  "admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche":
+    "Modifiez les filtres ou créez une nouvelle fiche.",
   "admin.crmCompaniesPage.proprietaire": "Propriétaire",
   "admin.crmCompaniesPage.resultat": "résultat",
-  "admin.crmCompaniesPage.isolationParTenantActive": "Isolation par tenant active",
+  "admin.crmCompaniesPage.isolationParTenantActive":
+    "Isolation par tenant active",
   "admin.crmCompaniesPage.creerUneEntreprise": "Créer une entreprise",
-  "admin.crmCompaniesPage.ajoutezUnCompteCrmGeneriqueSansCreerDOrganisationShongre": "Ajoutez un compte CRM générique, sans créer d’organisation Shongre.",
+  "admin.crmCompaniesPage.ajoutezUnCompteCrmGeneriqueSansCreerDOrganisationShongre":
+    "Ajoutez un compte CRM générique, sans créer d’organisation Shongre.",
   "admin.crmCompaniesPage.nomDeLEntreprise": "Nom de l’entreprise",
-  "admin.crmCompaniesPage.conservezLaRechercheEtLeCycleDeVieActuellementAffiches": "Conservez la recherche et le cycle de vie actuellement affichés.",
+  "admin.crmCompaniesPage.conservezLaRechercheEtLeCycleDeVieActuellementAffiches":
+    "Conservez la recherche et le cycle de vie actuellement affichés.",
   "admin.crmCompaniesPage.nomDeLaVue": "Nom de la vue",
   "admin.crmCompaniesPage.visibilite": "Visibilité",
   "admin.crmCompaniesPage.visibiliteDeLaVue": "Visibilité de la vue",
-  "admin.crmCompaniesPage.partageeAvecLeWorkspace": "Partagée avec le workspace",
+  "admin.crmCompaniesPage.partageeAvecLeWorkspace":
+    "Partagée avec le workspace",
   "admin.crmCompaniesPage.supprimerCetteVue": "Supprimer cette vue ?",
-  "admin.crmCompanyDetailPage.vueCompleteDuCompteCrm": "Vue complète du compte CRM.",
-  "admin.crmCompanyDetailPage.cycleDeVieDeLEntreprise": "Cycle de vie de l’entreprise",
+  "admin.crmCompanyDetailPage.vueCompleteDuCompteCrm":
+    "Vue complète du compte CRM.",
+  "admin.crmCompanyDetailPage.cycleDeVieDeLEntreprise":
+    "Cycle de vie de l’entreprise",
   "admin.crmCompanyDetailPage.opportunitesOuvertes": "Opportunités ouvertes",
   "admin.crmCompanyDetailPage.pipeline": "Pipeline",
-  "admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces": "Lecture des domaines canoniques ; le CRM ne modifie ni annonces ni facturation.",
+  "admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces":
+    "Lecture des domaines canoniques ; le CRM ne modifie ni annonces ni facturation.",
   "admin.crmCompanyDetailPage.synchroniseLe": "Synchronisé le",
-  "admin.crmCompanyDetailPage.aucuneOrganisationShongreLiee": "Aucune organisation Shongre liée",
-  "admin.crmCompanyDetailPage.cetteFicheResteUnCompteCrmAutonomeUneReferenceExterne": "Cette fiche reste un compte CRM autonome. Une référence externe vérifiée est requise avant d’afficher des données marketplace.",
+  "admin.crmCompanyDetailPage.aucuneOrganisationShongreLiee":
+    "Aucune organisation Shongre liée",
+  "admin.crmCompanyDetailPage.cetteFicheResteUnCompteCrmAutonomeUneReferenceExterne":
+    "Cette fiche reste un compte CRM autonome. Une référence externe vérifiée est requise avant d’afficher des données marketplace.",
   "admin.crmCompanyDetailPage.telephone": "· Téléphone",
   "admin.crmCompanyDetailPage.publiees": "publiées",
   "admin.crmCompanyDetailPage.periodeJusquAu": "Période jusqu’au",
-  "admin.crmCompanyDetailPage.pipelineAssocieACeCompte": "Pipeline associé à ce compte",
-  "admin.crmCompanyDetailPage.aucuneOpportuniteAssociee": "Aucune opportunité associée.",
+  "admin.crmCompanyDetailPage.pipelineAssocieACeCompte":
+    "Pipeline associé à ce compte",
+  "admin.crmCompanyDetailPage.aucuneOpportuniteAssociee":
+    "Aucune opportunité associée.",
   "admin.crmCompanyDetailPage.activiteRecente": "Activité récente",
-  "admin.crmCompanyDetailPage.notesEtInteractionsDuCompte": "Notes et interactions du compte",
-  "admin.crmCompanyDetailPage.aucuneActiviteEnregistree": "Aucune activité enregistrée.",
+  "admin.crmCompanyDetailPage.notesEtInteractionsDuCompte":
+    "Notes et interactions du compte",
+  "admin.crmCompanyDetailPage.aucuneActiviteEnregistree":
+    "Aucune activité enregistrée.",
   "admin.crmCompanyDetailPage.personnesLiees": "Personnes liées",
   "admin.crmCompanyDetailPage.aucunContactLie": "Aucun contact lié.",
-  "admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite": "Donnée déclarative · aucune géolocalisation implicite",
-  "admin.crmCompanyDetailPage.ajouterUneNoteEntreprise": "Ajouter une note entreprise",
-  "admin.crmCompanyDetailPage.laNoteEstAjouteeALHistoriqueCrmDuCompte": "La note est ajoutée à l’historique CRM du compte.",
+  "admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite":
+    "Donnée déclarative · aucune géolocalisation implicite",
+  "admin.crmCompanyDetailPage.ajouterUneNoteEntreprise":
+    "Ajouter une note entreprise",
+  "admin.crmCompanyDetailPage.laNoteEstAjouteeALHistoriqueCrmDuCompte":
+    "La note est ajoutée à l’historique CRM du compte.",
   "admin.crmCompanyDetailPage.gererLesTags": "Gérer les tags",
-  "admin.crmCompanyDetailPage.lesTagsSontNormalisesDansLeCatalogueDuTenantEt": "Les tags sont normalisés dans le catalogue du tenant et utilisables dans les filtres CRM.",
-  "admin.crmCompanyDetailPage.tagsSeparesParDesVirgules": "Tags séparés par des virgules",
-  "admin.crmCompanyDetailPage.compteCleMobilierRelanceQ4": "Compte clé, Mobilier, Relance Q4",
-  "admin.crmConfigurationPage.configurationDuTenantCrm": "Configuration du tenant CRM.",
-  "admin.crmConfigurationPage.parametresPropresAuTenantLesSecretsFournisseursRestentDansLe": "Paramètres propres au tenant. Les secrets fournisseurs restent dans le backend et ne sont jamais exposés à cette interface.",
-  "admin.crmContactDetailPage.vueCompleteDuContactCrm": "Vue complète du contact CRM.",
+  "admin.crmCompanyDetailPage.lesTagsSontNormalisesDansLeCatalogueDuTenantEt":
+    "Les tags sont normalisés dans le catalogue du tenant et utilisables dans les filtres CRM.",
+  "admin.crmCompanyDetailPage.tagsSeparesParDesVirgules":
+    "Tags séparés par des virgules",
+  "admin.crmCompanyDetailPage.compteCleMobilierRelanceQ4":
+    "Compte clé, Mobilier, Relance Q4",
+  "admin.crmConfigurationPage.configurationDuTenantCrm":
+    "Configuration du tenant CRM.",
+  "admin.crmConfigurationPage.parametresPropresAuTenantLesSecretsFournisseursRestentDansLe":
+    "Paramètres propres au tenant. Les secrets fournisseurs restent dans le backend et ne sont jamais exposés à cette interface.",
+  "admin.crmContactDetailPage.vueCompleteDuContactCrm":
+    "Vue complète du contact CRM.",
   "admin.crmContactDetailPage.tache2": "Tâche",
   "admin.crmContactDetailPage.pipelineOuvert": "Pipeline ouvert",
   "admin.crmContactDetailPage.tachesOuvertes": "Tâches ouvertes",
-  "admin.crmContactDetailPage.interactionsImmuablesDuContact": "Interactions immuables du contact",
+  "admin.crmContactDetailPage.interactionsImmuablesDuContact":
+    "Interactions immuables du contact",
   "admin.crmContactDetailPage.opportunitesLiees": "Opportunités liées",
-  "admin.crmContactDetailPage.influenceEtEngagementsEnCours": "Influence et engagements en cours",
-  "admin.crmContactDetailPage.aucuneOpportuniteLiee": "Aucune opportunité liée.",
+  "admin.crmContactDetailPage.influenceEtEngagementsEnCours":
+    "Influence et engagements en cours",
+  "admin.crmContactDetailPage.aucuneOpportuniteLiee":
+    "Aucune opportunité liée.",
   "admin.crmContactDetailPage.donneesDuContact": "Données du contact",
   "admin.crmContactDetailPage.ajouterUneNote": "Ajouter une note",
-  "admin.crmContactDetailPage.relancerPourConfirmerLeRendezVous": "Relancer pour confirmer le rendez-vous",
-  "admin.crmContactsPage.personnesRolesEtConsentements": "Personnes, rôles et consentements ·",
+  "admin.crmContactDetailPage.relancerPourConfirmerLeRendezVous":
+    "Relancer pour confirmer le rendez-vous",
+  "admin.crmContactsPage.personnesRolesEtConsentements":
+    "Personnes, rôles et consentements ·",
   "admin.crmContactsPage.rechercherUnContact": "Rechercher un contact",
-  "admin.crmContactsPage.nomEmailPosteOuEntreprise": "Nom, email, poste ou entreprise…",
-  "admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi": "Les préférences de contact sont appliquées avant tout envoi.",
+  "admin.crmContactsPage.nomEmailPosteOuEntreprise":
+    "Nom, email, poste ou entreprise…",
+  "admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi":
+    "Les préférences de contact sont appliquées avant tout envoi.",
   "admin.crmContactsPage.aucunContactTrouve": "Aucun contact trouvé",
-  "admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche": "Essayez une autre recherche ou créez une fiche.",
+  "admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche":
+    "Essayez une autre recherche ou créez une fiche.",
   "admin.crmContactsPage.coordonnees": "Coordonnées",
   "admin.crmContactsPage.sansEntreprise": "Sans entreprise",
   "admin.crmContactsPage.deContact": "de contact",
   "admin.crmContactsPage.creerUnContact": "Créer un contact",
-  "admin.crmContactsPage.laFicheResteDistincteDUnCompteUtilisateurShongre": "La fiche reste distincte d’un compte utilisateur Shongre.",
+  "admin.crmContactsPage.laFicheResteDistincteDUnCompteUtilisateurShongre":
+    "La fiche reste distincte d’un compte utilisateur Shongre.",
   "admin.crmContactsPage.entrepriseAssociee": "Entreprise associée",
-  "admin.crmCustomFieldsPage.champsPersonnalisesCrmShongre": "Champs personnalisés CRM | Shongre",
-  "admin.crmCustomFieldsPage.configurationDuModeleDeDonneesCrm": "Configuration du modèle de données CRM.",
+  "admin.crmCustomFieldsPage.champsPersonnalisesCrmShongre":
+    "Champs personnalisés CRM | Shongre",
+  "admin.crmCustomFieldsPage.configurationDuModeleDeDonneesCrm":
+    "Configuration du modèle de données CRM.",
   "admin.crmCustomFieldsPage.champsPersonnalises": "Champs personnalisés",
-  "admin.crmCustomFieldsPage.etendezLeModeleSansModifierLesTablesOuLesComposants": "Étendez le modèle sans modifier les tables ou les composants.",
+  "admin.crmCustomFieldsPage.etendezLeModeleSansModifierLesTablesOuLesComposants":
+    "Étendez le modèle sans modifier les tables ou les composants.",
   "admin.crmCustomFieldsPage.entite": "Entité",
-  "admin.crmCustomFieldsPage.aucunChampPersonnalise": "Aucun champ personnalisé",
+  "admin.crmCustomFieldsPage.aucunChampPersonnalise":
+    "Aucun champ personnalisé",
   "admin.crmCustomFieldsPage.creerUnChamp": "Créer un champ",
-  "admin.crmCustomFieldsPage.laCleDevientStableApresCreationEtSertAuxImports": "La clé devient stable après création et sert aux imports, vues et API.",
+  "admin.crmCustomFieldsPage.laCleDevientStableApresCreationEtSertAuxImports":
+    "La clé devient stable après création et sert aux imports, vues et API.",
   "admin.crmCustomFieldsPage.cleApi": "Clé API",
   "admin.crmCustomFieldsPage.typeDeChamp": "Type de champ",
   "admin.crmCustomFieldsPage.optionsUneParLigne": "Options, une par ligne",
-  "admin.crmOpportunityDetailPage.vueCommercialeCompleteDeLOpportunite": "Vue commerciale complète de l’opportunité.",
-  "admin.crmOpportunityDetailPage.opportuniteIntrouvable": "Opportunité introuvable",
+  "admin.crmOpportunityDetailPage.vueCommercialeCompleteDeLOpportunite":
+    "Vue commerciale complète de l’opportunité.",
+  "admin.crmOpportunityDetailPage.opportuniteIntrouvable":
+    "Opportunité introuvable",
   "admin.crmOpportunityDetailPage.cloture": "Clôture",
   "admin.crmOpportunityDetailPage.deProbabilite": "% de probabilité",
   "admin.crmOpportunityDetailPage.gagnee": "Gagnée",
-  "admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements": "Journal immuable des échanges et changements",
+  "admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements":
+    "Journal immuable des échanges et changements",
   "admin.crmOpportunityDetailPage.aucuneActivite": "Aucune activité",
-  "admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci": "Les appels, emails, notes et transitions apparaîtront ici.",
+  "admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci":
+    "Les appels, emails, notes et transitions apparaîtront ici.",
   "admin.crmOpportunityDetailPage.tachesLiees": "Tâches liées",
-  "admin.crmOpportunityDetailPage.relancesEtProchainesEtapes": "Relances et prochaines étapes",
+  "admin.crmOpportunityDetailPage.relancesEtProchainesEtapes":
+    "Relances et prochaines étapes",
   "admin.crmOpportunityDetailPage.toutesLesTaches": "Toutes les tâches",
-  "admin.crmOpportunityDetailPage.aucuneTacheAssociee": "Aucune tâche associée.",
-  "admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite": "Propositions chiffrées liées à l’opportunité",
+  "admin.crmOpportunityDetailPage.aucuneTacheAssociee":
+    "Aucune tâche associée.",
+  "admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite":
+    "Propositions chiffrées liées à l’opportunité",
   "admin.crmOpportunityDetailPage.aucunDevisAssocie": "Aucun devis associé.",
   "admin.crmOpportunityDetailPage.prochaineEtape": "Prochaine étape",
-  "admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur": "Rédigez une relance ou résumez l’historique avec le fournisseur IA autorisé par votre tenant.",
-  "admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel": "Aucun fournisseur IA personnel actif. Le CRM reste entièrement fonctionnel sans IA.",
-  "admin.crmOpportunityDetailPage.configurerLesFournisseurs": "Configurer les fournisseurs",
-  "admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite": "L’envoi exige une connexion Mailbox ou Email Delivery explicite. Aucun fallback financé par Shongre.",
-  "admin.crmOpportunityDetailPage.connecterUneMessagerie": "Connecter une messagerie",
-  "admin.crmOpportunityDetailPage.laNoteSeraAjouteeALHistoriqueImmuableDeL": "La note sera ajoutée à l’historique immuable de l’opportunité.",
-  "admin.crmOpportunityDetailPage.decisionsObjectionsEngagementsOuProchaineEtape": "Décisions, objections, engagements ou prochaine étape…",
+  "admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur":
+    "Rédigez une relance ou résumez l’historique avec le fournisseur IA autorisé par votre tenant.",
+  "admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel":
+    "Aucun fournisseur IA personnel actif. Le CRM reste entièrement fonctionnel sans IA.",
+  "admin.crmOpportunityDetailPage.configurerLesFournisseurs":
+    "Configurer les fournisseurs",
+  "admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite":
+    "L’envoi exige une connexion Mailbox ou Email Delivery explicite. Aucun fallback financé par Shongre.",
+  "admin.crmOpportunityDetailPage.connecterUneMessagerie":
+    "Connecter une messagerie",
+  "admin.crmOpportunityDetailPage.laNoteSeraAjouteeALHistoriqueImmuableDeL":
+    "La note sera ajoutée à l’historique immuable de l’opportunité.",
+  "admin.crmOpportunityDetailPage.decisionsObjectionsEngagementsOuProchaineEtape":
+    "Décisions, objections, engagements ou prochaine étape…",
   "admin.crmOpportunityDetailPage.creerUnDevis": "Créer un devis",
-  "admin.crmOpportunityDetailPage.lesTotauxEtTaxesSontCalculesEnUnitesMonetairesMineures": "Les totaux et taxes sont calculés en unités monétaires mineures côté service.",
+  "admin.crmOpportunityDetailPage.lesTotauxEtTaxesSontCalculesEnUnitesMonetairesMineures":
+    "Les totaux et taxes sont calculés en unités monétaires mineures côté service.",
   "admin.crmOpportunityDetailPage.produitDuDevis": "Produit du devis",
   "admin.crmOpportunityDetailPage.selectionner": "Sélectionner…",
   "admin.crmOpportunityDetailPage.valableJusquAu": "Valable jusqu’au",
-  "admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes": "TVA de démonstration : 20 %. Le backend reste autoritaire sur les totaux.",
-  "admin.crmOpportunityDetailPage.ceProduitNAPasDePrixActif": "Ce produit n’a pas de prix actif.",
+  "admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes":
+    "TVA de démonstration : 20 %. Le backend reste autoritaire sur les totaux.",
+  "admin.crmOpportunityDetailPage.ceProduitNAPasDePrixActif":
+    "Ce produit n’a pas de prix actif.",
   "admin.crmOpportunityDetailPage.contratDe": "Contrat de",
-  "admin.crmOpportunityDetailPage.laClotureEstAuditeeEtPrepareLOnboardingSansModifier": "La clôture est auditée et prépare l’onboarding sans modifier la source de vérité Billing.",
+  "admin.crmOpportunityDetailPage.laClotureEstAuditeeEtPrepareLOnboardingSansModifier":
+    "La clôture est auditée et prépare l’onboarding sans modifier la source de vérité Billing.",
   "admin.crmOpportunityDetailPage.motifDePerte": "Motif de perte",
   "admin.crmOpportunityDetailPage.calendrierReporte": "Calendrier reporté",
   "admin.crmOpportunityDetailPage.besoinNonConfirme": "Besoin non confirmé",
   "admin.crmOpportunityDetailPage.absenceDeReponse": "Absence de réponse",
   "admin.crmOpportunityDetailPage.precisions": "Précisions",
-  "admin.crmOverviewPage.chargementDuTableauDeBordCrm": "Chargement du tableau de bord CRM",
-  "admin.crmOverviewPage.tableauDeBordIndisponible": "Tableau de bord indisponible",
+  "admin.crmOverviewPage.chargementDuTableauDeBordCrm":
+    "Chargement du tableau de bord CRM",
+  "admin.crmOverviewPage.tableauDeBordIndisponible":
+    "Tableau de bord indisponible",
   "admin.crmOverviewPage.pipelinePondere": "Pipeline pondéré",
   "admin.crmOverviewPage.aTraiter": "À traiter",
   "admin.crmOverviewPage.donneesSynchronisees": "Données synchronisées",
-  "admin.crmOverviewPage.pipelinePrevisionsTachesEtComptesClesReunisDansUnEspace": "Pipeline, prévisions, tâches et comptes clés réunis dans un espace tenant-isolé.",
+  "admin.crmOverviewPage.pipelinePrevisionsTachesEtComptesClesReunisDansUnEspace":
+    "Pipeline, prévisions, tâches et comptes clés réunis dans un espace tenant-isolé.",
   "admin.crmOverviewPage.prospectionAssistee": "Prospection assistée",
   "admin.crmOverviewPage.pipelineCommercial": "Pipeline commercial",
-  "admin.crmOverviewPage.repartitionPondereeParEtape": "Répartition pondérée par étape",
+  "admin.crmOverviewPage.repartitionPondereeParEtape":
+    "Répartition pondérée par étape",
   "admin.crmOverviewPage.ouvrirLePipeline": "Ouvrir le pipeline",
   "admin.crmOverviewPage.previsionCommit": "Prévision commit",
   "admin.crmOverviewPage.revenuGagne": "Revenu gagné",
   "admin.crmOverviewPage.priorites": "Priorités",
   "admin.crmOverviewPage.opportunitesASuivre": "Opportunités à suivre",
-  "admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite": "Dossiers ouverts, triés par dernière activité",
-  "admin.crmOverviewPage.rechercherDansLesOpportunites": "Rechercher dans les opportunités",
+  "admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite":
+    "Dossiers ouverts, triés par dernière activité",
+  "admin.crmOverviewPage.rechercherDansLesOpportunites":
+    "Rechercher dans les opportunités",
   "admin.crmOverviewPage.opportunite": "Opportunité",
   "admin.crmOverviewPage.etape": "Étape",
   "admin.crmOverviewPage.probabilite": "Probabilité",
-  "admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche": "Aucune opportunité ne correspond à cette recherche.",
-  "admin.crmOverviewPage.previsionDeterministeAucuneDonneeEnvoyeeAUnFournisseurIa": "Prévision déterministe · aucune donnée envoyée à un fournisseur IA",
-  "admin.crmOverviewPage.afficherLePipelineComplet": "Afficher le pipeline complet",
+  "admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche":
+    "Aucune opportunité ne correspond à cette recherche.",
+  "admin.crmOverviewPage.previsionDeterministeAucuneDonneeEnvoyeeAUnFournisseurIa":
+    "Prévision déterministe · aucune donnée envoyée à un fournisseur IA",
+  "admin.crmOverviewPage.afficherLePipelineComplet":
+    "Afficher le pipeline complet",
   "admin.crmPipelinePage.chargementDuPipelineCrm": "Chargement du pipeline CRM",
   "admin.crmPipelinePage.opportunites": "opportunités ·",
   "admin.crmPipelinePage.pipelineActif": "Pipeline actif",
-  "admin.crmPipelinePage.rechercherUneOpportunite": "Rechercher une opportunité",
-  "admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise": "Rechercher une opportunité ou une entreprise…",
-  "admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser": "Utilisez les flèches sur chaque carte pour déplacer sans glisser-déposer.",
-  "admin.crmPipelinePage.colonnesDuPipelineCommercial": "Colonnes du pipeline commercial",
+  "admin.crmPipelinePage.rechercherUneOpportunite":
+    "Rechercher une opportunité",
+  "admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise":
+    "Rechercher une opportunité ou une entreprise…",
+  "admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser":
+    "Utilisez les flèches sur chaque carte pour déplacer sans glisser-déposer.",
+  "admin.crmPipelinePage.colonnesDuPipelineCommercial":
+    "Colonnes du pipeline commercial",
   "admin.crmPipelinePage.creerUneOpportunite": "Créer une opportunité",
   "admin.crmPipelinePage.nomDeLOpportunite": "Nom de l’opportunité",
   "admin.crmPipelinePage.cloturePrevue": "Clôture prévue",
-  "admin.crmPipelinePage.cetteTransitionEstAuditeeEtMetAJourLesPrevisions": "Cette transition est auditée et met à jour les prévisions commerciales.",
+  "admin.crmPipelinePage.cetteTransitionEstAuditeeEtMetAJourLesPrevisions":
+    "Cette transition est auditée et met à jour les prévisions commerciales.",
   "admin.crmPipelinePage.aPlanifier": "À planifier",
   "admin.crmPipelinePage.pretADemarrer": "Prêt à démarrer",
-  "admin.crmPipelinePage.contexteConcurrentOuProchaineFenetreDeContact": "Contexte, concurrent ou prochaine fenêtre de contact…",
-  "admin.crmPipelineSettingsPage.configurationDesEtapesCrm": "Configuration des étapes CRM.",
+  "admin.crmPipelinePage.contexteConcurrentOuProchaineFenetreDeContact":
+    "Contexte, concurrent ou prochaine fenêtre de contact…",
+  "admin.crmPipelineSettingsPage.configurationDesEtapesCrm":
+    "Configuration des étapes CRM.",
   "admin.crmPipelineSettingsPage.nouvelleEtape": "Nouvelle étape",
   "admin.crmPipelineSettingsPage.pipelinesEtapes": "Pipelines & étapes",
   "admin.crmPipelineSettingsPage.nouveauPipeline": "Nouveau pipeline",
-  "admin.crmPipelineSettingsPage.lesEtapesProbabilitesEtEtatsTerminauxSontConfiguresParTenant": "Les étapes, probabilités et états terminaux sont configurés par tenant, puis validés atomiquement côté backend.",
+  "admin.crmPipelineSettingsPage.lesEtapesProbabilitesEtEtatsTerminauxSontConfiguresParTenant":
+    "Les étapes, probabilités et états terminaux sont configurés par tenant, puis validés atomiquement côté backend.",
   "admin.crmPipelineSettingsPage.parDefaut": "Par défaut",
   "admin.crmPipelineSettingsPage.gagne": "Gagné",
-  "admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne": "Les mises à jour utilisent un contrôle de version. Une étape déjà utilisée ne peut pas être supprimée.",
-  "admin.crmPipelineSettingsPage.definissezUnParcoursOrdonneAvecUneIssueGagneeEtUne": "Définissez un parcours ordonné avec une issue gagnée et une issue perdue.",
+  "admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne":
+    "Les mises à jour utilisent un contrôle de version. Une étape déjà utilisée ne peut pas être supprimée.",
+  "admin.crmPipelineSettingsPage.definissezUnParcoursOrdonneAvecUneIssueGagneeEtUne":
+    "Définissez un parcours ordonné avec une issue gagnée et une issue perdue.",
   "admin.crmPipelineSettingsPage.pipelineParDefaut": "Pipeline par défaut",
   "admin.crmPipelineSettingsPage.etapesOrdonnees": "Étapes ordonnées",
   "admin.crmPipelineSettingsPage.ajouterUneEtape": "Ajouter une étape",
-  "admin.crmProductsPage.catalogueCommercialEtTarifsCrm": "Catalogue commercial et tarifs CRM.",
-  "admin.crmProductsPage.uneSourceCommercialeIndependanteDeLaFacturationShongre": "Une source commerciale indépendante de la facturation Shongre.",
+  "admin.crmProductsPage.catalogueCommercialEtTarifsCrm":
+    "Catalogue commercial et tarifs CRM.",
+  "admin.crmProductsPage.uneSourceCommercialeIndependanteDeLaFacturationShongre":
+    "Une source commerciale indépendante de la facturation Shongre.",
   "admin.crmProductsPage.rechercherUnProduit": "Rechercher un produit",
   "admin.crmProductsPage.nomOuSku": "Nom ou SKU…",
   "admin.crmProductsPage.aucunProduit": "Aucun produit",
-  "admin.crmProductsPage.creezLePremierProduitDuCatalogueCommercial": "Créez le premier produit du catalogue commercial.",
+  "admin.crmProductsPage.creezLePremierProduitDuCatalogueCommercial":
+    "Créez le premier produit du catalogue commercial.",
   "admin.crmProductsPage.creerUnProduit": "Créer un produit",
-  "admin.crmProductsPage.lePrixEstStockeEnUniteMonetaireMineureEtAssocie": "Le prix est stocké en unité monétaire mineure et associé au marché actif.",
+  "admin.crmProductsPage.lePrixEstStockeEnUniteMonetaireMineureEtAssocie":
+    "Le prix est stocké en unité monétaire mineure et associé au marché actif.",
   "admin.crmProductsPage.typeDeProduit": "Type de produit",
   "admin.crmProductsPage.intervalleDeFacturation": "Intervalle de facturation",
-  "admin.crmProviderSettingsPage.connexionsFournisseursPartageesDuCrm": "Connexions fournisseurs partagées du CRM.",
-  "admin.crmProviderSettingsPage.leCrmReutiliseLaPlateformeFournisseurShongreUneConnexionPersonnelle": "Le CRM réutilise la plateforme fournisseur Shongre. Une connexion personnelle autorisée prévaut sur celle du tenant, puis un éventuel fallback plateforme explicitement permis. Les credentials saisis sont envoyés au coffre backend, jamais persistés dans le navigateur ni retournés par l’API.",
+  "admin.crmProviderSettingsPage.connexionsFournisseursPartageesDuCrm":
+    "Connexions fournisseurs partagées du CRM.",
+  "admin.crmProviderSettingsPage.leCrmReutiliseLaPlateformeFournisseurShongreUneConnexionPersonnelle":
+    "Le CRM réutilise la plateforme fournisseur Shongre. Une connexion personnelle autorisée prévaut sur celle du tenant, puis un éventuel fallback plateforme explicitement permis. Les credentials saisis sont envoyés au coffre backend, jamais persistés dans le navigateur ni retournés par l’API.",
   "admin.crmProviderSettingsPage.references": "Référencés",
   "admin.crmProviderSettingsPage.implementes": "Implémentés",
   "admin.crmProviderSettingsPage.operationnels": "Opérationnels",
-  "admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement": "Connexions du tenant et connexions personnelles du compte courant uniquement.",
+  "admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement":
+    "Connexions du tenant et connexions personnelles du compte courant uniquement.",
   "admin.crmProviderSettingsPage.credentialConfigure": "Credential configuré",
   "admin.crmProviderSettingsPage.registrePartage": "Registre partagé",
-  "admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable": "Capacités déclarées et état runtime vérifiable.",
+  "admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable":
+    "Capacités déclarées et état runtime vérifiable.",
   "admin.crmProviderSettingsPage.santeRuntime": "Santé runtime",
   "admin.crmProviderSettingsPage.preparation": "Préparation",
-  "admin.crmProviderSettingsPage.resolutionFailClosed": "Résolution fail-closed.",
-  "admin.crmProviderSettingsPage.enModeApiUneCapaciteSansConnexionActiveEtAutorisee": "En mode API, une capacité sans connexion active et autorisée échoue explicitement ; elle n’utilise jamais le fournisseur démo ni des crédits Shongre silencieux.",
-  "admin.crmProviderSettingsPage.laConnexionResteEnBrouillonTantQuUnAdapterEt": "La connexion reste en brouillon tant qu’un adapter et un test de validation ne l’ont pas activée.",
+  "admin.crmProviderSettingsPage.resolutionFailClosed":
+    "Résolution fail-closed.",
+  "admin.crmProviderSettingsPage.enModeApiUneCapaciteSansConnexionActiveEtAutorisee":
+    "En mode API, une capacité sans connexion active et autorisée échoue explicitement ; elle n’utilise jamais le fournisseur démo ni des crédits Shongre silencieux.",
+  "admin.crmProviderSettingsPage.laConnexionResteEnBrouillonTantQuUnAdapterEt":
+    "La connexion reste en brouillon tant qu’un adapter et un test de validation ne l’ont pas activée.",
   "admin.crmProviderSettingsPage.nomDeLaConnexion": "Nom de la connexion",
-  "admin.crmProviderSettingsPage.lAncienCredentialEstRevoqueAtomiquementLaConnexionRepasseEn": "L’ancien credential est révoqué atomiquement. La connexion repasse en brouillon jusqu’à validation.",
-  "admin.crmReportsPage.indicateursCalculesDepuisLesOpportunitesEtTachesDuTenant": "Indicateurs calculés depuis les opportunités et tâches du tenant.",
+  "admin.crmProviderSettingsPage.lAncienCredentialEstRevoqueAtomiquementLaConnexionRepasseEn":
+    "L’ancien credential est révoqué atomiquement. La connexion repasse en brouillon jusqu’à validation.",
+  "admin.crmReportsPage.indicateursCalculesDepuisLesOpportunitesEtTachesDuTenant":
+    "Indicateurs calculés depuis les opportunités et tâches du tenant.",
   "admin.crmReportsPage.entonnoirParEtape": "Entonnoir par étape",
   "admin.crmReportsPage.pondere": "Pondéré :",
   "admin.crmReportsPage.execution": "Exécution",
   "admin.crmReportsPage.resultats": "Résultats",
   "admin.crmTasksPage.tachesCrmShongre": "Tâches CRM | Shongre",
-  "admin.crmTasksPage.planificationEtSuiviDesRelancesCommerciales": "Planification et suivi des relances commerciales.",
+  "admin.crmTasksPage.planificationEtSuiviDesRelancesCommerciales":
+    "Planification et suivi des relances commerciales.",
   "admin.crmTasksPage.crmExecution": "CRM · Exécution",
   "admin.crmTasksPage.tachesRelances": "Tâches & relances",
-  "admin.crmTasksPage.uneFileDActionPartageeRelieeAuxComptesEtOpportunites": "Une file d’action partagée, reliée aux comptes et opportunités.",
+  "admin.crmTasksPage.uneFileDActionPartageeRelieeAuxComptesEtOpportunites":
+    "Une file d’action partagée, reliée aux comptes et opportunités.",
   "admin.crmTasksPage.aFaire": "À faire",
   "admin.crmTasksPage.terminees": "Terminées",
   "admin.crmTasksPage.filtrerLesTaches": "Filtrer les tâches",
-  "admin.crmTasksPage.lesProchainesActionsCommercialesApparaitrontIci": "Les prochaines actions commerciales apparaîtront ici.",
-  "admin.crmTasksPage.planifiezUneActionEtRattachezLaAuBonContexteCrm": "Planifiez une action et rattachez-la au bon contexte CRM.",
-  "admin.crmTasksPage.relancerApresLaDemonstration": "Relancer après la démonstration",
+  "admin.crmTasksPage.lesProchainesActionsCommercialesApparaitrontIci":
+    "Les prochaines actions commerciales apparaîtront ici.",
+  "admin.crmTasksPage.planifiezUneActionEtRattachezLaAuBonContexteCrm":
+    "Planifiez une action et rattachez-la au bon contexte CRM.",
+  "admin.crmTasksPage.relancerApresLaDemonstration":
+    "Relancer après la démonstration",
   "admin.crmTasksPage.typeDeRelation": "Type de relation",
   "admin.crmTasksPage.aucune": "Aucune",
   "admin.crmTasksPage.elementLie": "Élément lié",
   "admin.adminProviderDetailPage.modifieLe": "Modifié le :",
   "admin.adminProviderDetailPage.actifPriorite": "Actif (Priorité",
-  "admin.adminProviderDetailPage.capacitesCataloguees": "Capacités cataloguées :",
-  "admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans": "Inventaire de code, configuration runtime et preuves de santé — sans confondre démo, implémentation et production.",
-  "admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable": "Le control plane backend n’est pas joignable :",
-  "admin.adminProvidersPage.catalogueDesIntegrations": "Catalogue des intégrations (",
-  "admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn": "Le backend exécute uniquement un probe non destructif enregistré. En mode démo, aucun fournisseur externe n’est contacté.",
+  "admin.adminProviderDetailPage.capacitesCataloguees":
+    "Capacités cataloguées :",
+  "admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans":
+    "Inventaire de code, configuration runtime et preuves de santé — sans confondre démo, implémentation et production.",
+  "admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable":
+    "Le control plane backend n’est pas joignable :",
+  "admin.adminProvidersPage.catalogueDesIntegrations":
+    "Catalogue des intégrations (",
+  "admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn":
+    "Le backend exécute uniquement un probe non destructif enregistré. En mode démo, aucun fournisseur externe n’est contacté.",
   "admin.adminProvidersPage.capacitesAnnoncees": "Capacités annoncées :",
   "admin.providerAuditLogsTab.evenementS": "événement(s)",
-  "admin.providerCatalogTable.filtrerParEtatDeSante": "Filtrer par état de santé",
+  "admin.providerCatalogTable.filtrerParEtatDeSante":
+    "Filtrer par état de santé",
   "admin.providerCatalogTable.integrationSSur": "intégration(s) sur",
-  "admin.providerCatalogTable.capacitesViseesImplementees": "Capacités visées / implémentées",
+  "admin.providerCatalogTable.capacitesViseesImplementees":
+    "Capacités visées / implémentées",
   "admin.providerCatalogTable.demoUniquement": "Démo uniquement",
   "admin.providerCatalogTable.implementeNonVerifie": "Implémenté · non vérifié",
   "admin.providerCatalogTable.nonImplemente": "Non implémenté",
-  "admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve": "Autorise uniquement l’adaptateur disponible dans cet environnement ; ne prouve pas sa santé.",
-  "admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe": "Valeur non exposée. Le backend dérive ce statut depuis le gestionnaire de secrets ; il ne peut pas être déclaré « configuré » depuis ce formulaire.",
-  "admin.providerHealthSimulator.santeFondeeSurDesPreuves": "Santé fondée sur des preuves",
-  "admin.providerHealthSimulator.laSanteVientDUnProbeLiveOuDUn": "La santé vient d’un probe live ou d’un signal runtime. Elle ne peut pas être modifiée manuellement.",
+  "admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve":
+    "Autorise uniquement l’adaptateur disponible dans cet environnement ; ne prouve pas sa santé.",
+  "admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe":
+    "Valeur non exposée. Le backend dérive ce statut depuis le gestionnaire de secrets ; il ne peut pas être déclaré « configuré » depuis ce formulaire.",
+  "admin.providerHealthSimulator.santeFondeeSurDesPreuves":
+    "Santé fondée sur des preuves",
+  "admin.providerHealthSimulator.laSanteVientDUnProbeLiveOuDUn":
+    "La santé vient d’un probe live ou d’un signal runtime. Elle ne peut pas être modifiée manuellement.",
   "admin.providerHealthSimulator.implementation": "Implémentation",
-  "admin.providerHealthSimulator.capacitesImplementees": "Capacités implémentées",
+  "admin.providerHealthSimulator.capacitesImplementees":
+    "Capacités implémentées",
   "admin.providerHealthSimulator.dernierePreuve": "Dernière preuve",
   "admin.providerHealthSimulator.testDIntegrationSur": "Test d’intégration sûr",
-  "admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun": "Exécute uniquement un probe non destructif enregistré côté backend. Aucun paiement, email ou webhook fictif n’est créé.",
+  "admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun":
+    "Exécute uniquement un probe non destructif enregistré côté backend. Aucun paiement, email ou webhook fictif n’est créé.",
   "admin.providerHealthSimulator.lancerLeDiagnostic": "Lancer le diagnostic",
-  "admin.providerMarketMatrix.chaqueCelluleResulteDUneAffectationPropreAuMarcheUne": "Chaque cellule résulte d'une affectation propre au marché. Une cellule non configurée reste indisponible et ne reprend jamais le fournisseur d'un autre pays.",
+  "admin.providerMarketMatrix.chaqueCelluleResulteDUneAffectationPropreAuMarcheUne":
+    "Chaque cellule résulte d'une affectation propre au marché. Une cellule non configurée reste indisponible et ne reprend jamais le fournisseur d'un autre pays.",
   "admin.providerMarketMatrix.tousLesDomaines": "Tous les domaines (",
   "admin.providerMarketMatrix.preuveLiveVerifiee": "Preuve live vérifiée",
-  "admin.providerMarketMatrix.affectationNonVerifiee": "Affectation non vérifiée",
+  "admin.providerMarketMatrix.affectationNonVerifiee":
+    "Affectation non vérifiée",
   "admin.providerMarketMatrix.simulationDemo": "Simulation démo",
   "admin.providerMarketMatrix.aucunAdaptateur": "Aucun adaptateur",
   "admin.providerMarketOverridesTab.affecte": "Affecté",
   "admin.providerMarketOverridesTab.marcheParDefaut": "(marché par défaut)",
-  "admin.providerMarketOverridesTab.valeursAfficheesUniquementATitreDeComparaisonEllesNeSe": "Valeurs affichées uniquement à titre de comparaison. Elles ne se propagent à aucun autre marché.",
+  "admin.providerMarketOverridesTab.valeursAfficheesUniquementATitreDeComparaisonEllesNeSe":
+    "Valeurs affichées uniquement à titre de comparaison. Elles ne se propagent à aucun autre marché.",
   "admin.providerMarketOverridesTab.aucuneAffectation": "Aucune affectation",
-  "admin.providerMarketOverridesTab.attentionLePrestataire": "Attention : Le prestataire",
-  "admin.providerMarketOverridesTab.neSupportePasOfficiellementLePays": "ne supporte pas officiellement le pays",
+  "admin.providerMarketOverridesTab.attentionLePrestataire":
+    "Attention : Le prestataire",
+  "admin.providerMarketOverridesTab.neSupportePasOfficiellementLePays":
+    "ne supporte pas officiellement le pays",
   "admin.providerOverviewDashboard.avecAdaptateur": "avec adaptateur",
-  "admin.providerOverviewDashboard.pretsPourProduction": "Prêts pour production",
+  "admin.providerOverviewDashboard.pretsPourProduction":
+    "Prêts pour production",
   "admin.providerOverviewDashboard.categories": "catégories",
-  "admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire": "Seuls les adaptateurs compatibles, configurés et vérifiés peuvent devenir primaire ou secours.",
-  "admin.providerRoutingManager.aucunFournisseurVerifie": "Aucun fournisseur vérifié",
+  "admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire":
+    "Seuls les adaptateurs compatibles, configurés et vérifiés peuvent devenir primaire ou secours.",
+  "admin.providerRoutingManager.aucunFournisseurVerifie":
+    "Aucun fournisseur vérifié",
   "admin.providerRoutingManager.aucunSecoursVerifie": "Aucun secours vérifié",
-  "admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes": "Gérez le dictionnaire des",
-  "admin.taxonomyAttributeRegistryTab.attributsNormalisesPartagesEntreLesDifferentesCategories": "attributs normalisés partagés entre les différentes catégories.",
-  "admin.taxonomyAttributeRegistryTab.filtrerParTypeDeDonnees": "Filtrer par type de données",
-  "admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication": "Brouillons en Attente de Publication (",
+  "admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes":
+    "Gérez le dictionnaire des",
+  "admin.taxonomyAttributeRegistryTab.attributsNormalisesPartagesEntreLesDifferentesCategories":
+    "attributs normalisés partagés entre les différentes catégories.",
+  "admin.taxonomyAttributeRegistryTab.filtrerParTypeDeDonnees":
+    "Filtrer par type de données",
+  "admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication":
+    "Brouillons en Attente de Publication (",
   "admin.taxonomyDraftPublishTab.archivee": "archivée",
   "admin.taxonomyNodeEditor.transactionsLivraison": "Transactions & Livraison",
   "admin.taxonomyNodeEditor.marchesHeritage": "Marchés & Héritage",
   "admin.taxonomyNodeEditor.apercusDirects": "Aperçus Directs",
   "admin.taxonomyNodeEditor.impactSecurite": "Impact & Sécurité",
   "admin.taxonomyNodeEditor.changerLIcone": "Changer l'icône (",
-  "admin.taxonomyNodeEditor.aliasSynonymesDeRecherche": "Alias & Synonymes de recherche (",
-  "admin.taxonomyNodeEditor.pourLaRetirerDesNouvellesPublicationsSansToucherAL": "pour la retirer des nouvelles publications sans toucher à l'existant.",
-  "admin.taxonomyNodeEditor.attributsHeritesDesParents": "Attributs hérités des parents (",
-  "admin.taxonomyNodeEditor.attributsSpecifiquesAssignes": "Attributs spécifiques assignés (",
-  "admin.taxonomyNodeEditor.ajouterUnAttributDuRegistre": "Ajouter un attribut du registre",
-  "admin.taxonomyNodeEditor.deLaCategorieExPeutOnVendreEnLigneEnvoyer": "de la catégorie (ex: peut-on vendre en ligne ? envoyer par colis ?). Les transporteurs réels (Mondial Relay, Colissimo) sont gérés dans le",
-  "admin.taxonomyNodeEditor.expeditionParColisStandardRelaisDomicile": "Expédition par colis standard (Relais / Domicile)",
-  "admin.taxonomyNodeEditor.telechargementNumeriqueAccesDirect": "Téléchargement numérique / Accès direct",
-  "admin.taxonomyNodeEditor.prestationSurPlaceInterventionADomicile": "Prestation sur place / Intervention à domicile",
-  "admin.taxonomyNodeEditor.architectureMultiMarchesEtHeritageCanonique": "Architecture multi-marchés et héritage canonique",
-  "admin.taxonomyNodeEditor.constitueLaReferenceCanoniqueLesAutresMarchesHeritentAutomatiquementDe": "constitue la référence canonique. Les autres marchés héritent automatiquement de tous les paramètres non surchargés.",
-  "admin.taxonomyNodeEditor.autoriserLePaiementSecuriseDirectPourLeMarche": "Autoriser le paiement sécurisé direct pour le marché",
+  "admin.taxonomyNodeEditor.aliasSynonymesDeRecherche":
+    "Alias & Synonymes de recherche (",
+  "admin.taxonomyNodeEditor.pourLaRetirerDesNouvellesPublicationsSansToucherAL":
+    "pour la retirer des nouvelles publications sans toucher à l'existant.",
+  "admin.taxonomyNodeEditor.attributsHeritesDesParents":
+    "Attributs hérités des parents (",
+  "admin.taxonomyNodeEditor.attributsSpecifiquesAssignes":
+    "Attributs spécifiques assignés (",
+  "admin.taxonomyNodeEditor.ajouterUnAttributDuRegistre":
+    "Ajouter un attribut du registre",
+  "admin.taxonomyNodeEditor.deLaCategorieExPeutOnVendreEnLigneEnvoyer":
+    "de la catégorie (ex: peut-on vendre en ligne ? envoyer par colis ?). Les transporteurs réels (Mondial Relay, Colissimo) sont gérés dans le",
+  "admin.taxonomyNodeEditor.expeditionParColisStandardRelaisDomicile":
+    "Expédition par colis standard (Relais / Domicile)",
+  "admin.taxonomyNodeEditor.telechargementNumeriqueAccesDirect":
+    "Téléchargement numérique / Accès direct",
+  "admin.taxonomyNodeEditor.prestationSurPlaceInterventionADomicile":
+    "Prestation sur place / Intervention à domicile",
+  "admin.taxonomyNodeEditor.architectureMultiMarchesEtHeritageCanonique":
+    "Architecture multi-marchés et héritage canonique",
+  "admin.taxonomyNodeEditor.constitueLaReferenceCanoniqueLesAutresMarchesHeritentAutomatiquementDe":
+    "constitue la référence canonique. Les autres marchés héritent automatiquement de tous les paramètres non surchargés.",
+  "admin.taxonomyNodeEditor.autoriserLePaiementSecuriseDirectPourLeMarche":
+    "Autoriser le paiement sécurisé direct pour le marché",
   "admin.taxonomyNodeEditor.enregistrerLaSurcharge": "Enregistrer la surcharge",
-  "admin.taxonomyNodeEditor.profilDePrevisualisation": "Profil de prévisualisation",
-  "admin.taxonomyNodeEditor.estPermanentTouteModificationDeNomOuDePositionPreserve": "est permanent. Toute modification de nom ou de position préserve la validité des annonces sans risque de rupture.",
-  "admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere": "Gouvernance du schéma v4 généré",
-  "admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt": "Projection publique en lecture seule. Les règles privées, juridiques et de risque restent exclusivement côté backend.",
-  "admin.taxonomyV4GovernanceTab.ressourcesDeTaxonomieV4": "Ressources de taxonomie v4",
-  "admin.taxonomyV4GovernanceTab.rechercherUnTypeDAnnonce": "Rechercher un type d’annonce",
+  "admin.taxonomyNodeEditor.profilDePrevisualisation":
+    "Profil de prévisualisation",
+  "admin.taxonomyNodeEditor.estPermanentTouteModificationDeNomOuDePositionPreserve":
+    "est permanent. Toute modification de nom ou de position préserve la validité des annonces sans risque de rupture.",
+  "admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere":
+    "Gouvernance du schéma v4 généré",
+  "admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt":
+    "Projection publique en lecture seule. Les règles privées, juridiques et de risque restent exclusivement côté backend.",
+  "admin.taxonomyV4GovernanceTab.ressourcesDeTaxonomieV4":
+    "Ressources de taxonomie v4",
+  "admin.taxonomyV4GovernanceTab.rechercherUnTypeDAnnonce":
+    "Rechercher un type d’annonce",
   "admin.taxonomyV4GovernanceTab.marchesActifs": "Marchés actifs",
-  "admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur": "100 résultats affichés sur",
-  "admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans": "liens parent-enfant explicites pilotent les sélecteurs en cascade sans dupliquer les options.",
+  "admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur":
+    "100 résultats affichés sur",
+  "admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans":
+    "liens parent-enfant explicites pilotent les sélecteurs en cascade sans dupliquer les options.",
   "admin.taxonomyV4GovernanceTab.matriceResolue": "Matrice résolue",
-  "admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps": "liaisons sources, filtrées dans cette projection pour exclure les champs privés.",
-  "admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn": "FR, BE et CH sont disponibles selon chaque enregistrement. SN et BF restent « bientôt disponible », non publiables et non indexables.",
-  "admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes": "L’éligibilité particulier/professionnel est portée par les catégories, types d’annonce et attributs, puis résolue côté backend.",
+  "admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps":
+    "liaisons sources, filtrées dans cette projection pour exclure les champs privés.",
+  "admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn":
+    "FR, BE et CH sont disponibles selon chaque enregistrement. SN et BF restent « bientôt disponible », non publiables et non indexables.",
+  "admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes":
+    "L’éligibilité particulier/professionnel est portée par les catégories, types d’annonce et attributs, puis résolue côté backend.",
   "admin.taxonomyV4GovernanceTab.sourceNormalisee": "… · source normalisée",
   "admin.taxonomyV4GovernanceTab.identitesV3Revues": "identités v3 revues ·",
-  "admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu": "annonces de démonstration conservées · aucun référencement ambigu.",
-  "admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration": "Dry-run des annonces de démonstration",
+  "admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu":
+    "annonces de démonstration conservées · aucun référencement ambigu.",
+  "admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration":
+    "Dry-run des annonces de démonstration",
   "admin.taxonomyValidationTab.reanalyser": "Réanalyser (",
   "admin.taxonomyValidationTab.tous": "Tous (",
   "admin.taxonomyValidationTab.actionSuggeree": "Action suggérée :",
   "admin.attributeEditModal.valeursPredefinies": "Valeurs prédéfinies (",
-  "admin.deleteNodeModal.cetteCategoriePlutotQueDeLaSupprimer": "cette catégorie plutôt que de la supprimer.",
-  "admin.moveNodeModal.sousCategoriesTypesEnfantsSerontDeplaces": "sous-catégories / types enfants seront déplacés.",
-  "admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture": "annonces actives conserveront leur liaison d'ID stable sans rupture.",
+  "admin.deleteNodeModal.cetteCategoriePlutotQueDeLaSupprimer":
+    "cette catégorie plutôt que de la supprimer.",
+  "admin.moveNodeModal.sousCategoriesTypesEnfantsSerontDeplaces":
+    "sous-catégories / types enfants seront déplacés.",
+  "admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture":
+    "annonces actives conserveront leur liaison d'ID stable sans rupture.",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

@@ -154,6 +154,7 @@ test("switches all 19 demo personas as real account sessions @serial", async ({
 }) => {
   test.setTimeout(120_000);
   await page.goto(VEHICLE_DETAIL_URL, { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
   // Use the control itself rather than re-seeding localStorage after every
   // navigation, so persistence and role-directed destinations are exercised.
   await selectPersona(page, PERSONA_STORAGE.guest);
@@ -247,6 +248,23 @@ test("switches all 19 demo personas as real account sessions @serial", async ({
       .getByRole("link", { name: "Retour à la place de marché" })
       .click();
     await expect(page).toHaveURL((url) => url.pathname === "/");
+    await expect(
+      page.locator('button[aria-label^="Menu du compte"]'),
+    ).toBeVisible();
+    await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
+      "data-mode",
+      persona.key === "ops_elena" ? "demo" : "read-only",
+    );
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          JSON.parse(
+            window.localStorage.getItem("shongre_current_user_key_v1") ||
+              "null",
+          ),
+        ),
+      )
+      .toBe(persona.key);
   }
 
   await selectPersona(page, PERSONA_STORAGE.buyer);

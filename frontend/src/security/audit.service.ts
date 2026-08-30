@@ -68,6 +68,24 @@ const INITIAL_AUDIT_LOGS: SecurityAuditLog[] = [
     ipAddress: "82.64.12.89",
     market: "FR",
   },
+  {
+    id: "audit-staff-marketplace-demo-grant",
+    timestamp: "2026-08-20T09:00:00Z",
+    actorId: "user_super_admin_alex",
+    actorName: "Alexandre Meyer",
+    actorRole: "super_admin",
+    targetId: "user_ops_elena",
+    targetName: "Elena Rossi",
+    action: "capability_overrides_updated",
+    details:
+      "Autorisation temporaire et révocable pour les démonstrations marketplace dans le bac à sable local isolé.",
+    previousValue: { customPermissions: [] },
+    newValue: {
+      customPermissions: ["staff.marketplace.demo"],
+      dataMode: "demo",
+    },
+    market: "FR",
+  },
 ];
 
 class AuditService {

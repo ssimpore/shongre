@@ -9,6 +9,13 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const demoCapabilityMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/00084_staff_marketplace_demo_capability.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 describe("Staff/customer marketplace separation migration", () => {
   it("keeps the database deny-list in parity with the canonical contract", () => {
@@ -69,5 +76,13 @@ describe("Staff/customer marketplace separation migration", () => {
     expect(migration).toContain("'crm_teams'");
     expect(migration).toContain("'marketing_sender_identities'");
     expect(migration).toContain("staff_customer_profile_update_separation");
+  });
+
+  it("registers the sensitive demo permission without granting production authority to a role", () => {
+    expect(demoCapabilityMigration).toContain(
+      "VALUES ('staff.marketplace.demo', TRUE)",
+    );
+    expect(demoCapabilityMigration).not.toContain("access_role_grants");
+    expect(migration).not.toContain("'staff.marketplace.demo'");
   });
 });

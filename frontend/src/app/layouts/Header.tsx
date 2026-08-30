@@ -33,8 +33,8 @@ import {
   ChevronRight,
   Layers,
   Shield,
+  Headphones,
 } from "lucide-react";
-import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 import { useAuth } from "../providers/AuthProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useFavorites } from "../providers/FavoritesProvider";
@@ -58,6 +58,13 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { useAuthorization } from "../../security/useAuthorization";
+import {
+  resolveHeaderAccountMenuItems,
+  type HeaderAccountMenuItem,
+  type HeaderAccountMenuItemId,
+} from "./account-menu.model";
 
 const HEADER_SCROLL_BEHAVIOR = {
   hideTravel: 48,
@@ -97,6 +104,91 @@ function VerifiedAccountName({
   );
 }
 
+function AccountMenuItemIcon({
+  id,
+  className,
+}: {
+  id: HeaderAccountMenuItemId;
+  className: string;
+}) {
+  const props = { className, "aria-hidden": true } as const;
+  switch (id) {
+    case "admin":
+      return <Shield {...props} />;
+    case "demo_workspace":
+    case "pro_solutions":
+      return <Sparkles {...props} />;
+    case "listings":
+      return <List {...props} />;
+    case "favorites":
+      return <Heart {...props} />;
+    case "purchases":
+      return <ShoppingBag {...props} />;
+    case "support":
+      return <Headphones {...props} />;
+    case "account":
+    case "public_profile":
+      return <User {...props} />;
+  }
+}
+
+function AccountMenuDestinationLink({
+  item,
+  label,
+  demoBadgeLabel,
+  mobile = false,
+  onNavigate,
+}: {
+  item: HeaderAccountMenuItem;
+  label: string;
+  demoBadgeLabel: string;
+  mobile?: boolean;
+  onNavigate: () => void;
+}) {
+  const tone =
+    item.emphasis === "primary"
+      ? "text-primary hover:bg-primary-light"
+      : item.emphasis === "warning"
+        ? "text-warning hover:bg-warning-surface"
+        : "text-stone-800 hover:bg-bg-subtle";
+  const iconTone =
+    item.emphasis === "primary"
+      ? "text-primary"
+      : item.emphasis === "warning"
+        ? "text-amber-500"
+        : "text-stone-400";
+
+  return (
+    <Link
+      to={item.to}
+      data-account-menu-item={item.id}
+      data-marketplace-action={item.marketplaceAction}
+      data-staff-demo-destination={item.isDemo || undefined}
+      onClick={onNavigate}
+      className={`${mobile ? "touch-row w-full min-w-0 gap-2.5 rounded-xl p-2.5" : "flex items-center gap-2.5 px-4 py-2"} text-xs font-semibold transition-colors ${tone}`}
+    >
+      <AccountMenuItemIcon
+        id={item.id}
+        className={`h-icon-md w-icon-md shrink-0 ${iconTone}`}
+      />
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {item.count !== undefined ? (
+        <span
+          className="shrink-0 text-micro tabular-nums text-stone-500"
+          aria-label={`${item.count}`}
+        >
+          {item.count}
+        </span>
+      ) : null}
+      {item.isDemo && !mobile ? (
+        <Badge variant="warning" size="sm">
+          {demoBadgeLabel}
+        </Badge>
+      ) : null}
+    </Link>
+  );
+}
+
 export const Header: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -104,8 +196,9 @@ export const Header: React.FC = () => {
      search slot below. */
   const isSearchRoute = location.pathname === "/recherche";
   const { currentUser, isAuthenticated, logout } = useAuth();
-  const isStaffIdentity = isStaffSeparatedSubject(currentUser);
-  const isActiveStaffIdentity = currentUser?.staffStatus === "active";
+  const { can, canAccessRoute } = useAuthorization();
+  const { isStaff: isStaffIdentity, canUseDemoMarketplace } =
+    useStaffMarketplaceAccess();
   const staffStatusLabel =
     currentUser?.staffStatus === "active"
       ? t("admin.staff.status.active")
@@ -114,6 +207,22 @@ export const Header: React.FC = () => {
         : currentUser?.staffStatus === "revoked"
           ? t("admin.staff.status.revoked")
           : "";
+  const customerStatusLabel =
+    currentUser?.status === "pending" ||
+    currentUser?.status === "pending_verification"
+      ? t("shell.header.accountMenu.status.pending")
+      : currentUser?.status === "restricted" ||
+          currentUser?.status === "limited"
+        ? t("shell.header.accountMenu.status.restricted")
+        : currentUser?.status === "suspended"
+          ? t("shell.header.accountMenu.status.suspended")
+          : currentUser?.status === "banned" ||
+              currentUser?.status === "closed" ||
+              currentUser?.status === "disabled" ||
+              currentUser?.status === "archived" ||
+              currentUser?.status === "deleted"
+            ? t("shell.header.accountMenu.status.inactive")
+            : null;
   const { activeMarket, marketContext } = useMarketLocation();
 
   const navigate = useNavigate();
@@ -123,7 +232,6 @@ export const Header: React.FC = () => {
   const shouldShowCategoryBar = useMemo(() => {
     const path = location.pathname;
     // Always show on homepage
-    if (isStaffIdentity) return false;
     if (path === "/") return true;
     // Show on search and taxonomy exploration
     if (
@@ -137,7 +245,7 @@ export const Header: React.FC = () => {
 
     // Smartly hide on specialized, focused, transactional, and admin routes
     return false;
-  }, [isStaffIdentity, location.pathname]);
+  }, [location.pathname]);
 
   const [isCategoryNavVisible, setIsCategoryNavVisible] = useState(true);
   const categoryNavRef = useRef<HTMLElement>(null);
@@ -333,6 +441,21 @@ export const Header: React.FC = () => {
   );
 
   const { count: favCount } = useFavorites();
+  const listingCount = currentUser
+    ? storageService
+        .getListings()
+        .filter((listing) => listing.sellerId === currentUser.id).length
+    : 0;
+  const accountMenuItems = currentUser
+    ? resolveHeaderAccountMenuItems({
+        user: currentUser,
+        canAccessRoute,
+        hasCapability: can,
+        canUseDemoMarketplace,
+        listingCount,
+        favoriteCount: favCount,
+      })
+    : [];
   const unreadMessagesCount = isStaffIdentity
     ? 0
     : storageService.getUnreadMessageCount(currentUser?.id);
@@ -370,13 +493,7 @@ export const Header: React.FC = () => {
               wider than the viewport. */}
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:flex-none lg:shrink-0 lg:gap-4">
             <Link
-              to={
-                isActiveStaffIdentity
-                  ? routes.admin.overview()
-                  : isStaffIdentity
-                    ? routes.contact()
-                    : routes.home()
-              }
+              to={routes.home()}
               className="flex items-center gap-2 select-none group min-w-0"
             >
               <div
@@ -423,7 +540,7 @@ export const Header: React.FC = () => {
             onBlurCapture={handleHeaderSearchBlur}
             className={`flex-1 min-w-0 hidden md:block motion-layout ${isHeaderSearchExpanded ? "max-w-none" : "max-w-xl xl:max-w-2xl"}`}
           >
-            {!isStaffIdentity && !isSearchRoute && (
+            {!isSearchRoute && (
               <GlobalSearchBar
                 variant="header"
                 idPrefix="header-desktop"
@@ -444,70 +561,68 @@ export const Header: React.FC = () => {
               the right edge at exactly 1024px. */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
-            {!isStaffIdentity && (
-              <div
-                data-header-publish-cta
-                aria-hidden={isHeaderSearchExpanded}
-                className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchExpanded ? "max-w-0 opacity-0 pointer-events-none" : "max-w-56 opacity-100"}`}
+            <div
+              data-header-publish-cta
+              aria-hidden={isHeaderSearchExpanded}
+              className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchExpanded ? "max-w-0 opacity-0 pointer-events-none" : "max-w-56 opacity-100"}`}
+            >
+              <Button
+                to={publishCta.to}
+                data-marketplace-action="listing.publish"
+                aria-label={t(publishCta.labelKey)}
+                tabIndex={isHeaderSearchExpanded ? -1 : undefined}
+                variant="pro"
+                size="compact"
+                leftIcon={
+                  <PlusCircle className="w-icon-md h-icon-md text-primary" />
+                }
+                className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
               >
-                <Button
-                  to={publishCta.to}
-                  aria-label={t(publishCta.labelKey)}
-                  tabIndex={isHeaderSearchExpanded ? -1 : undefined}
-                  variant="pro"
-                  size="compact"
-                  leftIcon={
-                    <PlusCircle className="w-icon-md h-icon-md text-primary" />
-                  }
-                  className="hidden md:flex px-3 lg:px-4 shrink-0 mr-1 lg:mr-2"
-                >
-                  {/* Tablet keeps the publish action but not its label — it is the
-                    one action that must survive the narrower row. */}
-                  <span className="hidden lg:inline whitespace-nowrap">
-                    {t(publishCta.labelKey)}
-                  </span>
-                </Button>
-              </div>
-            )}
+                {/* Tablet keeps the publish action but not its label — it is the
+                  one action that must survive the narrower row. */}
+                <span className="hidden lg:inline whitespace-nowrap">
+                  {t(publishCta.labelKey)}
+                </span>
+              </Button>
+            </div>
 
             {/* Favorites */}
-            {!isStaffIdentity && (
-              <Link
-                to="/compte/favoris"
-                className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
-                aria-label="Favoris"
-              >
-                <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
-                {favCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
-                    {favCount}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              to="/compte/favoris"
+              data-marketplace-action="favorite.manage"
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
+              aria-label="Favoris"
+            >
+              <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
+              {favCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                  {favCount}
+                </span>
+              )}
+            </Link>
 
             {/* Messages */}
-            {!isStaffIdentity && (
-              <Link
-                to="/compte/messages"
-                className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
-                aria-label="Messagerie"
-              >
-                <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
-                {unreadMessagesCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
-                    {unreadMessagesCount}
-                  </span>
-                )}
-              </Link>
-            )}
+            <Link
+              to="/compte/messages"
+              data-marketplace-action="message.open"
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
+              aria-label="Messagerie"
+            >
+              <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
+              {unreadMessagesCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                  {unreadMessagesCount}
+                </span>
+              )}
+            </Link>
 
             {/* Notifications */}
-            {!isStaffIdentity && (
-              <div className="hidden lg:flex items-center justify-center">
-                <NotificationBell />
-              </div>
-            )}
+            <div
+              data-marketplace-action="notification.open"
+              className="hidden lg:flex items-center justify-center"
+            >
+              <NotificationBell />
+            </div>
 
             {/* User Account Menu (Desktop) */}
             <div className="relative hidden md:block ml-1" ref={accountMenuRef}>
@@ -516,10 +631,9 @@ export const Header: React.FC = () => {
                   type="button"
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
                   aria-expanded={isAccountMenuOpen}
-                  /* The panel is a labelled group of links, not a `menu`, and
-                     it now says so on both ends — the trigger used to promise
-                     `menu` while the container carried no role at all. */
-                  aria-haspopup="dialog"
+                  /* This is a disclosure for a labelled group of links, not an
+                     application menu or modal dialog. Expanded + controls
+                     communicates the relationship without promising either. */
                   aria-controls="header-account-menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
                   className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${isAccountMenuOpen ? "bg-bg-muted border-border-hover shadow-inner" : "bg-bg-surface border-border-base hover:bg-bg-subtle hover:border-border-hover hover:shadow-2xs"}`}
@@ -567,7 +681,7 @@ export const Header: React.FC = () => {
                     <div className="text-xs text-stone-500 truncate">
                       {currentUser.email}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-1.5">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                       {isStaffIdentity ? (
                         <Badge variant="neutral" size="sm">
                           {staffStatusLabel}
@@ -581,90 +695,44 @@ export const Header: React.FC = () => {
                           Particulier
                         </Badge>
                       )}
+                      {canUseDemoMarketplace ? (
+                        <Badge variant="warning" size="sm">
+                          {t("shell.header.accountMenu.demoAuthorized")}
+                        </Badge>
+                      ) : null}
+                      {!isStaffIdentity && customerStatusLabel ? (
+                        <Badge variant="warning" size="sm">
+                          {customerStatusLabel}
+                        </Badge>
+                      ) : null}
                     </div>
                   </div>
 
                   <div className="py-1">
-                    {isActiveStaffIdentity && (
-                      <Link
-                        to={routes.admin.overview()}
-                        onClick={() => setIsAccountMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <Shield className="w-icon-md h-icon-md text-stone-400" />
-                        {t("meta.adminOverview.title")}
-                      </Link>
-                    )}
-                    {!isStaffIdentity && (
-                      <>
-                        <Link
-                          to="/compte"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                        >
-                          <User className="w-icon-md h-icon-md text-stone-400" />
-                          {t("shell.header.tableauDeBordCompte")}
-                        </Link>
-                        <Link
-                          to="/compte/annonces"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                        >
-                          <List className="w-icon-md h-icon-md text-stone-400" />
-                          Mes annonces (
-                          {
-                            storageService
-                              .getListings()
-                              .filter((l) => l.sellerId === currentUser.id)
-                              .length
-                          }
-                          )
-                        </Link>
-                        <Link
-                          to="/compte/favoris"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                        >
-                          <Heart className="w-icon-md h-icon-md text-stone-400" />
-                          Mes favoris
-                        </Link>
-                        <Link
-                          to="/compte/achats"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                        >
-                          <ShoppingBag className="w-icon-md h-icon-md text-stone-400" />
-                          Achats & Transactions
-                        </Link>
+                    <div className="px-4 pb-1 pt-1 text-micro font-bold uppercase tracking-wider text-stone-500">
+                      {t("shell.header.accountMenu.availableAccess")}
+                    </div>
+                    {accountMenuItems.map((item) => (
+                      <React.Fragment key={item.id}>
+                        {item.separatorBefore ? (
+                          <div
+                            role="separator"
+                            className="my-1 border-t border-border-subtle"
+                          />
+                        ) : null}
+                        <AccountMenuDestinationLink
+                          item={item}
+                          label={t(item.labelKey)}
+                          demoBadgeLabel={t("shell.demoRoleSwitcher.modeDemo")}
+                          onNavigate={() => setIsAccountMenuOpen(false)}
+                        />
+                      </React.Fragment>
+                    ))}
 
-                        <Link
-                          to={
-                            isProSeller(currentUser)
-                              ? `/boutique/${currentUser.storeSlug || currentUser.slug || currentUser.id}`
-                              : `/profil/${currentUser.slug || currentUser.id}`
-                          }
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-primary hover:bg-primary-light transition-colors"
-                        >
-                          <User className="w-icon-md h-icon-md text-primary" />
-                          {isProSeller(currentUser)
-                            ? "Voir ma vitrine boutique"
-                            : "Voir mon profil public"}
-                        </Link>
-
-                        <div className="border-t border-border-subtle my-1" />
-
-                        <Link
-                          to="/solutions-pro"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-stone-700 hover:bg-bg-subtle transition-colors"
-                        >
-                          <Sparkles className="w-icon-md h-icon-md text-amber-500" />
-                          Solutions & Abonnements Pro
-                        </Link>
-                      </>
-                    )}
-
+                    <div
+                      role="separator"
+                      className="my-1 border-t border-border-subtle"
+                    />
                     <button
                       type="button"
                       onClick={() => {
@@ -765,13 +833,7 @@ export const Header: React.FC = () => {
               {/* Drawer Header (Targeted element 1: Non-shrinkable, clean border & spacing) */}
               <div className="p-4 border-b border-border-base flex items-center justify-between bg-bg-subtle shrink-0 sticky top-0 z-sticky">
                 <Link
-                  to={
-                    isActiveStaffIdentity
-                      ? routes.admin.overview()
-                      : isStaffIdentity
-                        ? routes.contact()
-                        : routes.home()
-                  }
+                  to={routes.home()}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-2.5 select-none"
                 >
@@ -837,6 +899,16 @@ export const Header: React.FC = () => {
                               Particulier
                             </Badge>
                           )}
+                          {canUseDemoMarketplace ? (
+                            <Badge variant="warning" size="sm">
+                              {t("shell.header.accountMenu.demoAuthorized")}
+                            </Badge>
+                          ) : null}
+                          {!isStaffIdentity && customerStatusLabel ? (
+                            <Badge variant="warning" size="sm">
+                              {customerStatusLabel}
+                            </Badge>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -866,164 +938,141 @@ export const Header: React.FC = () => {
                 </div>
 
                 {/* Mobile Global Search Bar */}
-                {!isStaffIdentity && (
-                  <div className="p-4 border-b border-border-base shrink-0">
-                    <GlobalSearchBar
-                      variant="minimal"
-                      idPrefix="header-mobile"
-                      showCategory={true}
-                      showLocation={true}
-                      onSubmitComplete={() => setIsMobileMenuOpen(false)}
-                    />
-                  </div>
-                )}
+                <div className="p-4 border-b border-border-base shrink-0">
+                  <GlobalSearchBar
+                    variant="minimal"
+                    idPrefix="header-mobile"
+                    showCategory={true}
+                    showLocation={true}
+                    onSubmitComplete={() => setIsMobileMenuOpen(false)}
+                  />
+                </div>
 
                 {/* Mobile CTA: Déposer une annonce */}
-                {!isStaffIdentity && (
-                  <div className="p-4 border-b border-border-base shrink-0">
-                    <PublishCtaButton
-                      fullWidth
-                      onNavigate={() => setIsMobileMenuOpen(false)}
-                    />
-                  </div>
-                )}
+                <div className="p-4 border-b border-border-base shrink-0">
+                  <PublishCtaButton
+                    fullWidth
+                    onNavigate={() => setIsMobileMenuOpen(false)}
+                  />
+                </div>
 
                 {/* Navigation Links */}
                 <div className="p-4 space-y-1">
-                  {!isStaffIdentity && (
-                    <>
-                      {/* Explorer sur la carte */}
-                      <Link
-                        to="/recherche?view=map"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
+                  <>
+                    {/* Explorer sur la carte */}
+                    <Link
+                      to="/recherche?view=map"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <MapIcon className="w-icon-md h-icon-md text-primary" />
+                        {t("shell.header.explorerSurLaCarte")}
+                      </span>
+                      <ChevronRight className="w-icon-md h-icon-md text-primary" />
+                    </Link>
+
+                    {/* Promotions */}
+                    <Link
+                      to={routes.deals()}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Sparkles className="w-icon-md h-icon-md text-amber-500" />
+                        {t("shell.header.bonsPlansPrixReduits")}
+                      </span>
+                      <ChevronRight className="w-icon-md h-icon-md text-amber-400" />
+                    </Link>
+
+                    {/* Boutiques Professionnelles */}
+                    <Link
+                      to="/professionnels"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Briefcase className="w-icon-md h-icon-md text-primary" />
+                        Boutiques Professionnelles
+                      </span>
+                      <ChevronRight className="w-icon-md h-icon-md text-stone-400" />
+                    </Link>
+
+                    {/* Categories Collapsible */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
+                        }
+                        className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
-                          <MapIcon className="w-icon-md h-icon-md text-primary" />
-                          {t("shell.header.explorerSurLaCarte")}
+                          <Layers className="w-icon-md h-icon-md text-primary" />
+                          Catégories ({TAXONOMY.length})
                         </span>
-                        <ChevronRight className="w-icon-md h-icon-md text-primary" />
-                      </Link>
+                        <ChevronDown
+                          className={`w-icon-md h-icon-md text-stone-400 transition-transform ${
+                            isMobileCategoriesOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
 
-                      {/* Promotions */}
-                      <Link
-                        to={routes.deals()}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <Sparkles className="w-icon-md h-icon-md text-amber-500" />
-                          {t("shell.header.bonsPlansPrixReduits")}
-                        </span>
-                        <ChevronRight className="w-icon-md h-icon-md text-amber-400" />
-                      </Link>
+                      {isMobileCategoriesOpen && (
+                        <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast">
+                          {TAXONOMY.map((cat) => (
+                            <Link
+                              key={cat.id}
+                              to={`/categorie/${cat.slug}`}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-stone-700 hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
+                              title={getTaxonomyLabel(cat, "compact")}
+                            >
+                              <div className="flex items-center gap-2">
+                                <CategoryIcon category={cat} size="xs" />
+                                <span>{getTaxonomyLabel(cat, "compact")}</span>
+                              </div>
+                              <span className="text-micro text-stone-500">
+                                {cat.subCategories.length}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
 
-                      {/* Boutiques Professionnelles */}
-                      <Link
-                        to="/professionnels"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <Briefcase className="w-icon-md h-icon-md text-primary" />
-                          Boutiques Professionnelles
-                        </span>
-                        <ChevronRight className="w-icon-md h-icon-md text-stone-400" />
-                      </Link>
-
-                      {/* Categories Collapsible */}
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
-                          }
-                          className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
-                        >
-                          <span className="flex items-center gap-2.5">
-                            <Layers className="w-icon-md h-icon-md text-primary" />
-                            Catégories ({TAXONOMY.length})
-                          </span>
-                          <ChevronDown
-                            className={`w-icon-md h-icon-md text-stone-400 transition-transform ${
-                              isMobileCategoriesOpen ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        {isMobileCategoriesOpen && (
-                          <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast">
-                            {TAXONOMY.map((cat) => (
-                              <Link
-                                key={cat.id}
-                                to={`/categorie/${cat.slug}`}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-stone-700 hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
-                                title={getTaxonomyLabel(cat, "compact")}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <CategoryIcon category={cat} size="xs" />
-                                  <span>
-                                    {getTaxonomyLabel(cat, "compact")}
-                                  </span>
-                                </div>
-                                <span className="text-micro text-stone-500">
-                                  {cat.subCategories.length}
-                                </span>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {/* User Logged In Links */}
-                  {!isStaffIdentity && isAuthenticated && currentUser && (
+                  {/* Personalized destinations use the same route policy as the
+                      desktop panel and router guards. Marketplace discovery
+                      links above intentionally remain identical for everyone. */}
+                  {isAuthenticated && currentUser && (
                     <div className="pt-3 border-t border-border-base mt-3 space-y-1">
                       <div className="px-2.5 text-micro font-bold uppercase tracking-wider text-stone-500">
-                        Mon Espace
+                        {t("shell.header.accountMenu.availableAccess")}
                       </div>
-                      <Link
-                        to="/compte"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <User className="w-icon-md h-icon-md text-stone-500" />
-                        {t("shell.header.tableauDeBord")}
-                      </Link>
-                      <Link
-                        to="/compte/annonces"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <List className="w-icon-md h-icon-md text-stone-500" />
-                        {t("shell.header.mesAnnonces")}
-                      </Link>
-                      <Link
-                        to="/compte/favoris"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <Heart className="w-icon-md h-icon-md text-stone-500" />
-                        Mes favoris ({favCount})
-                      </Link>
-                      <Link
-                        to="/compte/achats"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <ShoppingBag className="w-icon-md h-icon-md text-stone-500" />
-                        Achats & Transactions
-                      </Link>
-                      <Link
-                        to="/solutions-pro"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-warning hover:bg-warning-surface transition-colors"
-                      >
-                        <Sparkles className="w-icon-md h-icon-md text-amber-500" />
-                        Solutions Pro
-                      </Link>
+                      {accountMenuItems.map((item) => (
+                        <React.Fragment key={item.id}>
+                          {item.separatorBefore ? (
+                            <div
+                              role="separator"
+                              className="my-1 border-t border-border-subtle"
+                            />
+                          ) : null}
+                          <AccountMenuDestinationLink
+                            item={item}
+                            label={t(item.labelKey)}
+                            demoBadgeLabel={t(
+                              "shell.demoRoleSwitcher.modeDemo",
+                            )}
+                            mobile
+                            onNavigate={() => setIsMobileMenuOpen(false)}
+                          />
+                        </React.Fragment>
+                      ))}
+                      <div
+                        role="separator"
+                        className="my-1 border-t border-border-subtle"
+                      />
                       <button
                         type="button"
                         onClick={() => {
@@ -1037,57 +1086,6 @@ export const Header: React.FC = () => {
                       </button>
                     </div>
                   )}
-
-                  {isActiveStaffIdentity && isAuthenticated && currentUser && (
-                    <div className="pt-3 space-y-1">
-                      <Link
-                        to={routes.admin.overview()}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                      >
-                        <Shield className="w-icon-md h-icon-md text-stone-500" />
-                        {t("meta.adminOverview.title")}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          logout();
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="w-full touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
-                      >
-                        <LogOut className="w-icon-md h-icon-md text-danger" />
-                        {t("shell.header.deconnexion")}
-                      </button>
-                    </div>
-                  )}
-
-                  {isStaffIdentity &&
-                    !isActiveStaffIdentity &&
-                    isAuthenticated &&
-                    currentUser && (
-                      <div className="pt-3 space-y-1">
-                        <Link
-                          to={routes.contact()}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
-                        >
-                          <Shield className="w-icon-md h-icon-md text-stone-500" />
-                          {t("footer.contactSupport")}
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            logout();
-                            setIsMobileMenuOpen(false);
-                          }}
-                          className="w-full touch-row gap-2.5 p-2.5 rounded-xl text-xs font-semibold text-danger hover:bg-danger-surface transition-colors text-left cursor-pointer"
-                        >
-                          <LogOut className="w-icon-md h-icon-md text-danger" />
-                          {t("shell.header.deconnexion")}
-                        </button>
-                      </div>
-                    )}
 
                   {/* Mobile Language Selector */}
                   <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-4">

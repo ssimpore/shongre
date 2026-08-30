@@ -257,6 +257,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 <div className="absolute right-3 top-3 flex gap-2">
                   <button
                     type="button"
+                    data-marketplace-action="favorite.manage"
                     onClick={toggleFavorite}
                     aria-pressed={vehicle.isFavorite}
                     className="rounded-control bg-bg-surface p-2 shadow-xs"
@@ -510,6 +511,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 </p>
               </div>
               <Button
+                data-marketplace-action="message.send"
                 fullWidth
                 className="mt-5"
                 leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
@@ -518,6 +520,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 Contacter le vendeur
               </Button>
               <Button
+                data-marketplace-action="appointment.request"
                 fullWidth
                 variant="outline"
                 className="mt-2"
@@ -568,7 +571,11 @@ export const AutoVehicleDetailPage: React.FC = () => {
         title="Contacter le vendeur"
         description={`À propos de ${vehicle.title}`}
       >
-        <form onSubmit={sendLead} className="space-y-4">
+        <form
+          data-marketplace-action="message.send"
+          onSubmit={sendLead}
+          className="space-y-4"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Nom" required>
               <Input
@@ -659,7 +666,12 @@ export const AutoVehicleDetailPage: React.FC = () => {
             >
               Annuler
             </Button>
-            <Button type="submit" fullWidth isLoading={submitting}>
+            <Button
+              data-marketplace-action="message.send"
+              type="submit"
+              fullWidth
+              isLoading={submitting}
+            >
               Envoyer la demande
             </Button>
           </div>

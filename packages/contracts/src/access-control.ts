@@ -167,6 +167,7 @@ export const CAPABILITIES = [
   "user.reactivate",
   "user.verify",
   "staff.internal.access",
+  "staff.marketplace.demo",
   "staff.support.access",
   "staff.operations.access",
   "staff.finance.access",
@@ -414,6 +415,27 @@ export function isCustomerMarketplaceCapability(
   capability: Capability,
 ): boolean {
   return CUSTOMER_MARKETPLACE_CAPABILITY_SET.has(capability);
+}
+
+/** Public discovery capabilities Staff may use without customer authority. */
+export const STAFF_MARKETPLACE_READ_CAPABILITIES = [
+  "profile.read",
+  "seller.profile.read",
+  "listing.read",
+  "course.read",
+  "auto.read",
+  "immo.read",
+  "employment.read",
+] as const satisfies readonly Capability[];
+
+const STAFF_MARKETPLACE_READ_CAPABILITY_SET = new Set<Capability>(
+  STAFF_MARKETPLACE_READ_CAPABILITIES,
+);
+
+export function isStaffMarketplaceReadCapability(
+  capability: Capability,
+): boolean {
+  return STAFF_MARKETPLACE_READ_CAPABILITY_SET.has(capability);
 }
 
 /**
@@ -997,9 +1019,13 @@ export interface CapabilityOverrideUpdate {
   expectedVersion: number;
 }
 
-const STAFF_CAPABILITY_SET = new Set<Capability>(
-  Object.values(STAFF_ROLE_CAPABILITIES).flat(),
-);
+const STAFF_CAPABILITY_SET = new Set<Capability>([
+  ...Object.values(STAFF_ROLE_CAPABILITIES).flat(),
+  // Deliberately never inherited by a Staff role. This direct, audited grant
+  // only unlocks customer-flow simulation inside isolated demo adapters; API
+  // and database marketplace mutations continue to reject Staff identities.
+  "staff.marketplace.demo",
+]);
 const CUSTOMER_CAPABILITY_SET = new Set<Capability>([
   ...PUBLIC_CAPABILITIES,
   ...INDIVIDUAL_CAPABILITIES,

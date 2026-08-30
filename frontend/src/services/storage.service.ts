@@ -66,10 +66,23 @@ const KEYS = {
 };
 
 function normalizeLegacyStaffProfile(user: UserProfile): UserProfile {
-  if (!["staff", "internal"].includes(String(user.accountType))) return user;
   const canonicalFixture = Object.values(DEMO_USERS).find(
     (fixture) => fixture.id === user.id,
   );
+  const shouldAdoptCanonicalCapabilityOverride =
+    (canonicalFixture?.capabilityOverrideVersion ?? 0) >
+    (user.capabilityOverrideVersion ?? 0);
+  const canonicalCapabilityOverride = shouldAdoptCanonicalCapabilityOverride
+    ? {
+        customPermissions: canonicalFixture?.customPermissions,
+        capabilityOverrideVersion: canonicalFixture?.capabilityOverrideVersion,
+      }
+    : {};
+
+  if (!["staff", "internal"].includes(String(user.accountType))) {
+    return { ...user, ...canonicalCapabilityOverride };
+  }
+
   const accountType = canonicalFixture?.accountType ?? "individual";
   return {
     ...user,
@@ -80,6 +93,10 @@ function normalizeLegacyStaffProfile(user: UserProfile): UserProfile {
     primaryRole: canonicalFixture?.primaryRole ?? "buyer",
     role: canonicalFixture?.role ?? "individual_buyer",
     sellerType: accountType === "professional" ? "pro" : "individual",
+    // Versioned fixture grants are demo-data migrations, not role defaults.
+    // Adopt them only when they are newer so an audited local grant/revocation
+    // made through the admin service (which increments the version) still wins.
+    ...canonicalCapabilityOverride,
   };
 }
 

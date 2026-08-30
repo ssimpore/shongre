@@ -497,7 +497,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async submitLead(input: PropertyLeadDraft) {
-    requireDemoCapability("immo.read");
+    requireDemoCapability("message.send");
     await simulateNetworkDelay();
     if (!input.consentGiven)
       throw new Error(
@@ -528,7 +528,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async requestAppointment(leadId: string, startsAt: string) {
-    requireDemoCapability("immo.read");
+    requireDemoCapability("message.send");
     await simulateNetworkDelay();
     const lead = this.leads.get(leadId);
     if (!lead) throw new Error("Demande introuvable.");

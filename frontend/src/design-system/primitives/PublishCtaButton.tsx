@@ -43,6 +43,7 @@ export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
   return (
     <Button
       to={publishCta.to}
+      data-marketplace-action="listing.publish"
       onClick={onNavigate}
       variant="pro"
       size={size}

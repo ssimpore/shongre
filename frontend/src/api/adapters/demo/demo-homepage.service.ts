@@ -29,7 +29,6 @@ import { authorizationService } from "../../../security/authorization.service";
 import { storageService } from "../../../services/storage.service";
 import { auditService } from "../../../security/audit.service";
 import type { SecurityAuditAction } from "../../../types";
-import { forbidDemoStaffMarketplaceAccess } from "./demo-authorization";
 
 function assertHomepageAdministrator(marketCode: string): void {
   authorizationService.assertCan(
@@ -159,7 +158,6 @@ async function buildHomepage(
 
 export class DemoHomepageService implements HomepageServiceContract {
   getHomepage(query: HomepageQuery): Promise<HomepageExperience> {
-    forbidDemoStaffMarketplaceAccess();
     return buildHomepage(
       getPublishedHomepageConfiguration(query.marketCode, query.locale),
       query,

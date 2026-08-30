@@ -38,6 +38,33 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(false);
   });
 
+  it("opens customer routes only to explicitly granted Staff in isolated demo mode", () => {
+    const tester = persona({
+      staffStatus: "active",
+      staffRole: "operations",
+      customPermissions: ["staff.marketplace.demo"],
+    });
+
+    expect(canAccessRoutePolicy(tester, "publishListing")).toBe(false);
+    expect(
+      canAccessRoutePolicy(tester, "publishListing", {
+        allowStaffMarketplaceDemo: true,
+      }),
+    ).toBe(true);
+    expect(
+      canAccessRoutePolicy(tester, "accountMessages", {
+        allowStaffMarketplaceDemo: true,
+      }),
+    ).toBe(true);
+    expect(
+      canAccessRoutePolicy(
+        { ...tester, customPermissions: [] },
+        "publishListing",
+        { allowStaffMarketplaceDemo: true },
+      ),
+    ).toBe(false);
+  });
+
   it("keeps professional workspaces vertical-specific", () => {
     const automotive = persona({
       accountType: "professional",

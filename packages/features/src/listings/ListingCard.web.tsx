@@ -12,12 +12,18 @@ export interface ListingCardProps {
   listing: ListingCardView;
   href: string;
   locale?: string;
-  variant?: "grid" | "list" | "compact";
+  variant?: "grid" | "list" | "compact" | "showcase";
   image?: ReactNode;
   isFavorite?: boolean;
   favoriteLabel?: string;
   onFavoriteToggle?: () => void;
+  /** Optional non-favorite quick action rendered beside the favorite control. */
+  quickAction?: ReactNode;
   className?: string;
+  renderCharacteristicIcon?: (
+    characteristic: string,
+    index: number,
+  ) => ReactNode;
   renderLink?: (props: {
     href: string;
     className: string;
@@ -35,12 +41,14 @@ export function ListingCard({
   isFavorite,
   favoriteLabel = "Ajouter aux favoris",
   onFavoriteToggle,
+  quickAction,
   className,
+  renderCharacteristicIcon,
   renderLink,
 }: ListingCardProps) {
   const price = listing.isFreeDonation
     ? "Gratuit"
-    : formatMoney(listing.price, locale);
+    : listing.priceLabel || formatMoney(listing.price, locale);
   const originalPrice = listing.originalPrice
     ? formatMoney(listing.originalPrice, locale)
     : undefined;
@@ -49,19 +57,24 @@ export function ListingCard({
     style: "short",
   });
   const badges = getListingPromotionBadges(listing);
-  const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
+  const characteristics = getListingCardCharacteristics(listing).slice(
+    0,
+    variant === "list" ? 2 : 3,
+  );
   const horizontal = variant === "list";
+  const compact = variant === "compact";
+  const showcase = variant === "showcase";
   const toggle = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
     onFavoriteToggle?.();
   };
   const ariaLabel = listingAccessibilityLabel(listing, price);
-  const linkClassName = `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${horizontal ? "flex w-full" : "block"}`;
+  const linkClassName = `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${horizontal ? "listing-card-list-link flex w-full" : "flex h-full flex-col"}`;
   const linkContent = (
     <>
       <div
-        className={`${horizontal ? "listing-card-list-image" : "aspect-media w-full"} relative overflow-hidden bg-bg-muted`}
+        className={`${horizontal ? "listing-card-list-image" : `${compact ? "aspect-video" : "aspect-media"} w-full`} relative shrink-0 overflow-hidden bg-bg-muted`}
       >
         {image ??
           (listing.imageUrl ? (
@@ -78,18 +91,14 @@ export function ListingCard({
         {(listing.photoCount ?? 0) > 1 ? (
           <span
             aria-label={`${listing.photoCount} photos`}
-            className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs"
+            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs ${showcase ? "bottom-3 right-3" : "bottom-2 left-2"}`}
           >
             <SemanticIcon name="camera" size="xs" />
             {listing.photoCount}
           </span>
         ) : null}
-      </div>
-      <div
-        className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
-      >
         {badges.length ? (
-          <div className="mb-2 flex flex-wrap gap-1">
+          <div className="absolute left-2 top-2 flex max-w-3/4 flex-wrap gap-1">
             {badges.map((badge) => (
               <Badge
                 key={badge.tone}
@@ -100,11 +109,15 @@ export function ListingCard({
             ))}
           </div>
         ) : null}
+      </div>
+      <div
+        className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
+      >
         {listing.categoryLabel || listing.seller ? (
           <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
-            <span className="flex min-w-0 items-center gap-1.5">
+            <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
               {listing.categoryLabel ? (
-                <span className="min-w-0 truncate">
+                <span className="min-w-0 shrink truncate">
                   {listing.categoryLabel}
                 </span>
               ) : null}
@@ -145,11 +158,19 @@ export function ListingCard({
             ) : null}
           </div>
         ) : null}
-        <h3 className="line-clamp-2 text-card-title font-bold text-text-main group-hover:text-primary">
+        <h3
+          title={listing.title}
+          className={`line-clamp-2 text-card-title font-bold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
+        >
           {listing.title}
         </h3>
-        <div className="mt-1 flex flex-wrap items-baseline gap-2">
-          <Text as="span" size="body-lg" weight="bold">
+        <div className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <Text
+            as="span"
+            size="body-lg"
+            weight="bold"
+            className="min-w-0 break-words"
+          >
             {price}
           </Text>
           {originalPrice ? (
@@ -169,34 +190,50 @@ export function ListingCard({
           ) : null}
         </div>
         {listing.conditionLabel ? (
-          <Text as="div" size="caption" tone="muted" className="mt-1">
+          <Text
+            as="div"
+            size={showcase ? "body-sm" : "caption"}
+            tone="muted"
+            className="mt-1"
+          >
             {listing.conditionLabel}
           </Text>
         ) : null}
         {characteristics.length ? (
           <ul
-            className="mt-2 flex min-w-0 flex-wrap gap-1.5"
+            className={`mt-2 flex min-w-0 gap-1.5 overflow-hidden ${horizontal ? "flex-nowrap" : "flex-wrap"}`}
             aria-label="Caractéristiques principales"
           >
-            {characteristics.map((characteristic) => (
+            {characteristics.map((characteristic, index) => (
               <li
                 key={characteristic}
-                className="max-w-full truncate rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
+                className="inline-flex min-w-0 max-w-full items-center gap-1.5 truncate rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
               >
+                {renderCharacteristicIcon?.(characteristic, index)}
                 {characteristic}
               </li>
             ))}
           </ul>
         ) : null}
-        <div className="mt-auto grid min-w-0 gap-1 border-t border-border-subtle pt-2 text-micro text-text-muted">
+        <div className="mt-auto grid min-w-0 gap-1.5 border-t border-border-subtle pt-2 text-micro text-text-muted">
           <span className="flex min-w-0 items-center gap-2">
             <span className="inline-flex min-w-0 flex-1 items-center gap-1">
-              <SemanticIcon name="map-pin" size="xs" />
-              <span className="min-w-0 break-words">{listing.city}</span>
+              <SemanticIcon
+                name="map-pin"
+                size="xs"
+                className="shrink-0 text-primary"
+              />
+              <span className="min-w-0 truncate" title={listing.city}>
+                {listing.city}
+              </span>
             </span>
             {!listing.deliveryAvailable ? (
               <span className="inline-flex shrink-0 items-center gap-1">
-                <SemanticIcon name="calendar" size="xs" />
+                <SemanticIcon
+                  name="calendar"
+                  size="xs"
+                  className="shrink-0 text-primary"
+                />
                 <span>{published}</span>
               </span>
             ) : null}
@@ -204,12 +241,20 @@ export function ListingCard({
           {listing.deliveryAvailable ? (
             <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
               <span className="inline-flex shrink-0 items-center gap-1">
-                <SemanticIcon name="truck" size="xs" />
+                <SemanticIcon
+                  name="truck"
+                  size="xs"
+                  className="shrink-0 text-primary"
+                />
                 Livraison
               </span>
               <span className="inline-flex min-w-0 items-center gap-1">
-                <SemanticIcon name="calendar" size="xs" />
-                <span className="min-w-0 break-words">{published}</span>
+                <SemanticIcon
+                  name="calendar"
+                  size="xs"
+                  className="shrink-0 text-primary"
+                />
+                <span className="min-w-0 truncate">{published}</span>
               </span>
             </span>
           ) : null}
@@ -222,7 +267,9 @@ export function ListingCard({
       as="article"
       padding="none"
       elevation="xs"
-      className={`group relative overflow-hidden ${horizontal ? "listing-card-list flex min-h-32" : "listing-card-standard flex flex-col"} ${className ?? ""}`}
+      data-listing-card="true"
+      data-listing-card-variant={variant}
+      className={`group listing-card-shell relative overflow-hidden ${horizontal ? "listing-card-list flex" : `${showcase ? "listing-card-showcase" : "listing-card-standard"} flex h-full flex-col`} ${className ?? ""}`}
     >
       {renderLink ? (
         renderLink({
@@ -236,20 +283,26 @@ export function ListingCard({
           {linkContent}
         </a>
       )}
-      {onFavoriteToggle ? (
-        <button
-          type="button"
-          onClick={toggle}
-          aria-label={favoriteLabel}
-          aria-pressed={isFavorite}
-          className="absolute right-2 top-2 flex h-control-sm w-control-sm items-center justify-center rounded-control bg-bg-surface/95 text-primary shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <SemanticIcon
-            name="heart"
-            size="md"
-            className={isFavorite ? "fill-current" : undefined}
-          />
-        </button>
+      {quickAction || onFavoriteToggle ? (
+        <div className="absolute right-2 top-2 flex items-center gap-1">
+          {quickAction}
+          {onFavoriteToggle ? (
+            <button
+              type="button"
+              data-marketplace-action="favorite.manage"
+              onClick={toggle}
+              aria-label={favoriteLabel}
+              aria-pressed={isFavorite}
+              className="flex h-control-sm w-control-sm items-center justify-center rounded-pill bg-bg-surface/95 text-primary shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <SemanticIcon
+                name="heart"
+                size="md"
+                className={isFavorite ? "fill-current" : undefined}
+              />
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </Card>
   );

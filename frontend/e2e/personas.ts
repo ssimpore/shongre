@@ -24,6 +24,7 @@ export const PERSONAS = {
   moderator: { key: "moderator_claire", role: "moderator" },
   trust_safety: { key: "trust_nadia", role: "operations" },
   support: { key: "support_hugo", role: "support" },
+  operations: { key: "ops_elena", role: "operations" },
   finance: { key: "finance_marc", role: "finance" },
   commercial: { key: "commercial_lea", role: "commercial" },
   admin: { key: "admin_antoine", role: "admin" },

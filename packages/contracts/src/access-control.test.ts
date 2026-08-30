@@ -246,6 +246,31 @@ describe("canonical access-control policy", () => {
     expect(revokedStaff.has("listing.read")).toBe(false);
   });
 
+  it("allows only an explicit active-Staff grant to enter the isolated marketplace demo", () => {
+    const staffTester = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "operations",
+      customPermissions: ["staff.marketplace.demo"],
+    });
+    const ordinaryStaff = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "operations",
+    });
+    const customer = capabilities({
+      accountType: "individual",
+      customPermissions: ["staff.marketplace.demo"],
+    });
+
+    expect(staffTester.has("staff.marketplace.demo")).toBe(true);
+    expect(ordinaryStaff.has("staff.marketplace.demo")).toBe(false);
+    expect(customer.has("staff.marketplace.demo")).toBe(false);
+    expect(staffTester.has("listing.publish")).toBe(false);
+    expect(staffTester.has("payment.initiate")).toBe(false);
+    expect(staffTester.has("message.send")).toBe(false);
+  });
+
   it("requires a resolved Staff role even when the membership status says active", () => {
     const inconsistentMembership = capabilities({
       accountType: "individual",

@@ -368,7 +368,7 @@ describe("API v1 Endpoints Integration", () => {
     expect(Array.isArray(data.items)).toBe(true);
   });
 
-  it("denies public marketplace discovery when the request carries a Staff session", async () => {
+  it("keeps Staff signed in for public discovery while denying customer mutations", async () => {
     const listingUrl = `${baseUrl}/api/v1/listings?marketCode=FR`;
     const anonymous = await fetch(listingUrl);
     const customer = await fetch(listingUrl, {
@@ -379,6 +379,11 @@ describe("API v1 Endpoints Integration", () => {
     });
     const staffNotifications = await fetch(`${baseUrl}/api/v1/notifications`, {
       headers: auth(adminToken),
+    });
+    const staffPublication = await fetch(`${baseUrl}/api/v1/listings/publish`, {
+      method: "POST",
+      headers: auth(adminToken),
+      body: JSON.stringify({}),
     });
     const staffSupportCase = await fetch(`${baseUrl}/api/v1/support/cases`, {
       method: "POST",
@@ -392,11 +397,19 @@ describe("API v1 Endpoints Integration", () => {
 
     expect(anonymous.status).toBe(200);
     expect(customer.status).toBe(200);
-    expect(staff.status).toBe(403);
+    expect(staff.status).toBe(200);
+    expect(Array.isArray((await staff.json()).listings)).toBe(true);
     expect(staffNotifications.status).toBe(403);
+    expect(staffPublication.status).toBe(403);
     expect(staffSupportCase.status).toBe(403);
-    expect(await staff.json()).toMatchObject({
-      error: { code: "FORBIDDEN" },
+
+    const stillSignedIn = await fetch(`${baseUrl}/api/v1/auth/me`, {
+      headers: auth(adminToken),
+    });
+    expect(stillSignedIn.status).toBe(200);
+    expect(await stillSignedIn.json()).toMatchObject({
+      staffStatus: "active",
+      staffRole: "admin",
     });
   });
 

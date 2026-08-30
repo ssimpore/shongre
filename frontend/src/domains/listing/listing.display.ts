@@ -70,6 +70,37 @@ const FALLBACK_VALUE_LABELS: Record<string, string> = {
   velours: "Velours",
 };
 
+/**
+ * Compatibility priorities for demo/imported records that still carry legacy
+ * root slugs or attribute keys. Canonical v4 `cardAttributeIds` always run
+ * first; these values only fill an otherwise sparse card and can disappear as
+ * those records are migrated.
+ */
+const LEGACY_CARD_ATTRIBUTE_PRIORITIES: Record<string, string[]> = {
+  immobilier: ["property_type", "living_area", "rooms"],
+  vehicules: ["model_year", "mileage", "fuel_type", "transmission"],
+  mode: ["size", "brand", "clothingCategory", "clothing_category"],
+  electronique: ["storage_capacity_gb", "storage", "brand", "model"],
+  "maison-deco": [
+    "furniture_type",
+    "material",
+    "dimensions_width",
+    "dimensions_length",
+  ],
+  maison: [
+    "furniture_type",
+    "material",
+    "dimensions_width",
+    "dimensions_length",
+  ],
+  emploi: ["contract_type", "remote_work", "working_arrangement"],
+  "outils-pro": ["equipment_type", "brand", "model"],
+  "bebe-famille": ["size", "age_range", "brand"],
+  "loisirs-culture": ["instrument_type", "platform", "brand"],
+  education: ["service_type", "delivery_modes", "level"],
+  autres: ["brand", "model", "material"],
+};
+
 export interface FormattedCharacteristicItem {
   code: string;
   label: string;
@@ -126,9 +157,12 @@ export class ListingDisplayResolver {
           ]),
         );
     summaryIds.forEach((attrId) => {
-      const attrDef = ATTRIBUTE_REGISTRY[attrId];
+      const attrDef = this.findAttributeDefinition(attrId);
       const code = attrDef?.code || attrId.split(".").pop() || attrId;
       const val = attrs[code] ?? attrs[attrId];
+      // Price has a dedicated, locale-aware card field. Internal money units
+      // must never leak into decision chips or duplicate the displayed price.
+      if (attrDef?.unit === "currency_minor") return;
       if (val !== undefined && val !== null && val !== "") {
         const formattedValue = this.formatAttributeValue(attrDef, val);
         summary.push(
@@ -136,6 +170,31 @@ export class ListingDisplayResolver {
         );
       }
     });
+
+    const legacyPriorities =
+      LEGACY_CARD_ATTRIBUTE_PRIORITIES[listing.categorySlug] ||
+      LEGACY_CARD_ATTRIBUTE_PRIORITIES[listing.subCategorySlug] ||
+      [];
+    for (const attributeKey of legacyPriorities) {
+      if (summary.length >= 3) break;
+      const rawValue = attrs[attributeKey];
+      if (rawValue === undefined || rawValue === null || rawValue === "") {
+        continue;
+      }
+      const attribute = this.findAttributeDefinition(attributeKey);
+      if (attribute?.unit === "currency_minor") continue;
+      const formatted = this.formatAttributeValue(attribute, rawValue);
+      if (
+        formatted &&
+        !summary.some(
+          (existing) =>
+            existing.toLocaleLowerCase("fr-FR") ===
+            formatted.toLocaleLowerCase("fr-FR"),
+        )
+      ) {
+        summary.push(formatted);
+      }
+    }
 
     if (listing.condition && summary.length < 3) {
       const conditionLabel = this.resolveConditionLabel(
@@ -409,6 +468,21 @@ export class ListingDisplayResolver {
     return attrDef?.displayPrefix
       ? `${attrDef.displayPrefix}${formatted}`
       : formatted;
+  }
+
+  private findAttributeDefinition(
+    attributeIdOrCode: string,
+  ): TaxonomyAttribute | undefined {
+    return (
+      ATTRIBUTE_REGISTRY[attributeIdOrCode] ||
+      Object.values(ATTRIBUTE_REGISTRY).find(
+        (attribute) =>
+          attribute.code === attributeIdOrCode ||
+          attribute.id === attributeIdOrCode ||
+          attribute.id.endsWith(`.${attributeIdOrCode}`),
+      ) ||
+      taxonomyService.getAttribute(attributeIdOrCode)
+    );
   }
 
   private formatOptionLabel(attributeId: string, value: any): string {

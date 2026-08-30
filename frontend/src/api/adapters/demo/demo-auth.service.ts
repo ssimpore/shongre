@@ -29,6 +29,7 @@ import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
 import { minutesToMilliseconds } from "../../../utilities/time";
 import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 import { requireDemoCapability } from "./demo-authorization";
+import { platformRoleForStaffRole } from "../../../security/roles.config";
 
 const IDENTITIES_KEY = "shongre_demo_auth_identities_v2";
 const RECENT_AUTH_KEY = "shongre_demo_recent_auth_v1";
@@ -218,7 +219,11 @@ export class DemoAuthService implements AuthServiceContract {
     // Keep the persisted role and exact persona key in sync. `setCurrentRole`
     // maps to the default account for that role, so the explicit key is written
     // last to preserve non-default personas that share the same permission set.
-    storageService.setCurrentRole(user.primaryRole || user.role);
+    storageService.setCurrentRole(
+      isStaffSeparatedSubject(user) && user.staffRole
+        ? platformRoleForStaffRole(user.staffRole)
+        : user.primaryRole || user.role,
+    );
     storageService.setCurrentUserKey(userKey);
     if (!isStaffSeparatedSubject(user)) {
       storageService.mergeGuestFavorites(userKey);

@@ -1259,6 +1259,14 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
   {
+    id: "staff.marketplace.demo",
+    name: "Tester la marketplace en bac à sable",
+    category: "Administration Système",
+    description:
+      "Autoriser explicitement un membre Staff actif à simuler des parcours client uniquement avec les adaptateurs Démo isolés et audités.",
+    isSensitive: true,
+  },
+  {
     id: "analytics.marketing.read",
     name: "Consulter les analytics marketing",
     category: "Marketing & Communication",

@@ -7,19 +7,18 @@ import { useAuth } from "../providers/AuthProvider";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Icon } from "../../design-system";
-import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { currentUser } = useAuth();
   const publishCta = usePublishCta();
   const { t } = useTranslation();
+  const { isStaff } = useStaffMarketplaceAccess();
 
-  if (isStaffSeparatedSubject(currentUser)) return null;
-
-  const unreadMessagesCount = storageService.getUnreadMessageCount(
-    currentUser?.id,
-  );
+  const unreadMessagesCount = isStaff
+    ? 0
+    : storageService.getUnreadMessageCount(currentUser?.id);
 
   // Hide bottom bar on fullscreen wizards / creation tunnels for maximum screen ergonomics
   if (location.pathname.startsWith("/deposer")) {
@@ -104,6 +103,7 @@ export const MobileBottomNav: React.FC = () => {
             vendeur" there. */}
         <NavLink
           to={publishCta.to}
+          data-marketplace-action="listing.publish"
           aria-label={t(publishCta.labelKey)}
           className="group relative flex h-full w-full min-w-0 flex-col items-center justify-center"
         >
@@ -122,6 +122,7 @@ export const MobileBottomNav: React.FC = () => {
         {/* Messages */}
         <NavLink
           to="/compte/messages"
+          data-marketplace-action="message.open"
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
@@ -165,6 +166,7 @@ export const MobileBottomNav: React.FC = () => {
         {/* Account */}
         <NavLink
           to="/compte"
+          data-marketplace-action="account.open"
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive

@@ -33,7 +33,7 @@ import type {
   MarketingServiceContract,
 } from "../../contracts/marketing.contract";
 import {
-  forbidDemoStaffMarketplaceAccess,
+  requireDemoMarketplaceAction,
   requireDemoCapability,
 } from "./demo-authorization";
 
@@ -364,7 +364,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async subscribePublic(input: MarketingPublicSubscriptionInput) {
-    forbidDemoStaffMarketplaceAccess();
+    requireDemoMarketplaceAction("marketing.public.subscribe");
     const email = input.email.trim().toLowerCase();
     const existing = this.profiles.find(
       (profile) => profile.normalizedEmail === email,
@@ -394,7 +394,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async confirmPublic(token: string) {
-    forbidDemoStaffMarketplaceAccess();
+    requireDemoMarketplaceAction("marketing.public.confirm");
     const action = this.actionTokens.get(token);
     if (!action || action.purpose !== "CONFIRM")
       throw new Error("Ce lien est invalide ou a expiré.");
@@ -403,7 +403,6 @@ export class DemoMarketingService implements MarketingServiceContract {
     );
   }
   async getPublicPreferences(token: string) {
-    forbidDemoStaffMarketplaceAccess();
     const action = this.actionTokens.get(token);
     const profile =
       action && action.purpose === "PREFERENCES"
@@ -413,7 +412,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     return this.subscriptionView(profile);
   }
   async updatePublicPreferences(input: MarketingPublicPreferencesUpdate) {
-    forbidDemoStaffMarketplaceAccess();
+    requireDemoMarketplaceAction("marketing.public.preferences.update");
     const action = this.actionTokens.get(input.token);
     const profile =
       action && action.purpose === "PREFERENCES"
@@ -425,7 +424,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     return this.subscriptionView(profile);
   }
   async unsubscribePublic(token: string) {
-    forbidDemoStaffMarketplaceAccess();
+    requireDemoMarketplaceAction("marketing.public.unsubscribe");
     const action = this.actionTokens.get(token);
     if (!action || action.purpose !== "UNSUBSCRIBE")
       throw new Error("Ce lien est invalide ou a expiré.");

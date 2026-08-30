@@ -54,7 +54,7 @@ export const SearchResultsSkeleton: React.FC<{
   <div
     aria-hidden="true"
     className={cn(
-      "listing-grid grid grid-cols-2 gap-3 sm:grid-cols-listing-grid-fixed sm:justify-start sm:gap-4",
+      "listing-grid grid grid-cols-1 gap-3 sm:grid-cols-listing-grid-fixed sm:justify-start sm:gap-4",
       className,
     )}
   >

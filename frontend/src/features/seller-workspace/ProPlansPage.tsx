@@ -47,6 +47,8 @@ import { BillingHistoryModal } from "./components/BillingHistoryModal";
 import { FormField, Input } from "../../design-system/primitives/FormField";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useAuthorization } from "../../security/useAuthorization";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 
 type BillingInterval = "month" | "year";
 
@@ -126,6 +128,8 @@ function PriceDisplay({
 export const ProPlansPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
+  const { can } = useAuthorization();
+  const { canUseDemoMarketplace } = useStaffMarketplaceAccess();
   const { activeMarket } = useMarketLocation();
   const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
   const toast = useToast();
@@ -151,6 +155,8 @@ export const ProPlansPage: React.FC = () => {
   const [completedMessage, setCompletedMessage] = useState<string | null>(null);
   const [billingHistoryOpen, setBillingHistoryOpen] = useState(false);
   const [promotionCode, setPromotionCode] = useState("");
+  const canManageSubscriptions =
+    can("subscription.manage.own") || canUseDemoMarketplace;
 
   usePageMeta({
     title: "Offres et forfaits professionnels",
@@ -159,18 +165,30 @@ export const ProPlansPage: React.FC = () => {
     canonicalPath: "/solutions-pro",
   });
 
-  const loadCommercialState = useCallback(async () => {
-    const [nextCatalog, nextBilling] = await Promise.all([
-      services.businessRules.getCatalog(activeMarket.code),
-      services.businessRules.getBillingOverview(),
-    ]);
+  const loadCatalog = useCallback(async () => {
+    const nextCatalog = await services.businessRules.getCatalog(
+      activeMarket.code,
+    );
     setCatalog(nextCatalog);
-    setBilling(nextBilling);
   }, [activeMarket.code]);
+
+  const loadBilling = useCallback(async () => {
+    if (!canManageSubscriptions) {
+      setBilling(null);
+      return;
+    }
+    setBilling(await services.businessRules.getBillingOverview());
+  }, [canManageSubscriptions]);
+
+  const refreshCommercialState = useCallback(
+    () => Promise.all([loadCatalog(), loadBilling()]),
+    [loadBilling, loadCatalog],
+  );
 
   useEffect(() => {
     let active = true;
-    loadCommercialState().catch((error) => {
+    setCatalogError(null);
+    loadCatalog().catch((error) => {
       if (active) {
         setCatalogError(
           error instanceof Error ? error.message : "Offres indisponibles",
@@ -180,7 +198,13 @@ export const ProPlansPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [loadCommercialState]);
+  }, [loadCatalog]);
+
+  useEffect(() => {
+    void loadBilling().catch(() => {
+      setBilling(null);
+    });
+  }, [loadBilling]);
 
   useEffect(() => {
     const verticalByProfile = {
@@ -296,6 +320,13 @@ export const ProPlansPage: React.FC = () => {
     replacementSource?: MonetizationSubscription,
   ) => {
     if (product.id === currentSubscription?.productId) return;
+    if (!canManageSubscriptions) {
+      toast.warning(
+        t("pro.plans.subscriptionUnavailable.description"),
+        t("pro.plans.subscriptionUnavailable.title"),
+      );
+      return;
+    }
     const sourceSubscription = replacementSource || currentSubscription;
     setSelectedProduct(product);
     setSelectedPrice(price);
@@ -399,7 +430,7 @@ export const ProPlansPage: React.FC = () => {
               : "Votre paiement est en cours de traitement.",
         );
       }
-      await loadCommercialState();
+      await refreshCommercialState();
       toast.success("Votre espace de facturation a été mis à jour.");
     } catch (error) {
       toast.error(
@@ -417,7 +448,7 @@ export const ProPlansPage: React.FC = () => {
         subscriptionId: currentSubscription.id,
         cancelAtPeriodEnd: !currentSubscription.cancelAtPeriodEnd,
       });
-      await loadCommercialState();
+      await refreshCommercialState();
       toast.success(
         currentSubscription.cancelAtPeriodEnd
           ? "Votre abonnement est réactivé."
@@ -682,6 +713,7 @@ export const ProPlansPage: React.FC = () => {
                             to="/inscription/particulier"
                             variant="outline"
                             fullWidth
+                            data-marketplace-action="subscription.start"
                           >
                             Commencer gratuitement
                           </Button>
@@ -690,6 +722,7 @@ export const ProPlansPage: React.FC = () => {
                             to="/inscription/professionnel"
                             variant={plan.recommended ? "primary" : "outline"}
                             fullWidth
+                            data-marketplace-action="subscription.start"
                           >
                             Créer un compte Pro
                           </Button>
@@ -697,6 +730,7 @@ export const ProPlansPage: React.FC = () => {
                           <Button
                             variant={plan.recommended ? "primary" : "outline"}
                             fullWidth
+                            data-marketplace-action="subscription.start"
                             disabled={isCurrent || !canTransition}
                             onClick={() => void prepareOffer(plan, price)}
                           >
@@ -721,6 +755,7 @@ export const ProPlansPage: React.FC = () => {
                               variant="ghost"
                               size="sm"
                               fullWidth
+                              data-marketplace-action="subscription.change"
                               onClick={() =>
                                 void prepareOffer(
                                   plan,
@@ -869,6 +904,7 @@ export const ProPlansPage: React.FC = () => {
                                 ? "/compte/annonces"
                                 : "/connexion"
                             }
+                            data-marketplace-action="promotion.start"
                             variant="outline"
                             size="sm"
                             rightIcon={
@@ -889,196 +925,208 @@ export const ProPlansPage: React.FC = () => {
               </p>
             </section>
 
-            <section
-              aria-labelledby="billing-title"
-              className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6 shadow-xs"
-            >
-              <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2
-                    id="billing-title"
-                    className="text-xl font-black text-text-main"
-                  >
-                    Votre abonnement et votre usage
-                  </h2>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    État du forfait, quotas, échéance et documents au même
-                    endroit.
-                  </p>
-                </div>
-                {currentSubscription && (
-                  <Badge
-                    variant={
-                      currentSubscription.status === "past_due"
-                        ? "urgent"
-                        : "verified"
-                    }
-                  >
-                    {STATUS_LABELS[currentSubscription.status] ||
-                      currentSubscription.status}
-                  </Badge>
-                )}
-              </div>
-              {billing?.subscriptions.some((subscription) =>
-                [
-                  "trialing",
-                  "active",
-                  "past_due",
-                  "cancellation_pending",
-                ].includes(subscription.status),
-              ) && (
-                <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  {billing.subscriptions
-                    .filter((subscription) =>
-                      [
-                        "trialing",
-                        "active",
-                        "past_due",
-                        "cancellation_pending",
-                      ].includes(subscription.status),
-                    )
-                    .map((subscription) => {
-                      const product = catalog.products.find(
-                        (candidate) => candidate.id === subscription.productId,
-                      );
-                      const vertical = catalog.verticals.find(
-                        (candidate) =>
-                          candidate.id ===
-                          (product?.commercialProfile.verticalId || "general"),
-                      );
-                      return (
-                        <button
-                          key={subscription.id}
-                          type="button"
-                          onClick={() =>
-                            setSelectedVertical(
-                              product?.commercialProfile.verticalId ||
-                                "general",
-                            )
-                          }
-                          className="rounded-card border border-border-base bg-bg-subtle p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
-                        >
-                          <span className="text-micro font-black uppercase tracking-wide text-primary-hover">
-                            {vertical?.name || "Général"}
-                          </span>
-                          <span className="mt-1 block text-sm font-black text-text-main">
-                            {product?.name || subscription.productId}
-                          </span>
-                          <span className="mt-1 block text-xs text-text-secondary">
-                            {STATUS_LABELS[subscription.status] ||
-                              subscription.status}{" "}
-                            · au {formatDate(subscription.currentPeriodEnd)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                </div>
-              )}
-              <div className="grid gap-6 lg:grid-cols-plans-tiers lg:divide-x lg:divide-border-subtle">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-                    Forfait actuel
-                  </p>
-                  <p className="mt-2 text-lg font-black text-text-main">
-                    {currentProduct?.name || "Aucun forfait actif"}
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-                    {currentSubscription
-                      ? `${currentSubscription.billingPeriod === "year" ? "Annuel" : "Mensuel"} · prochaine échéance le ${formatDate(currentSubscription.currentPeriodEnd)}`
-                      : "Choisissez un forfait professionnel pour activer vos droits."}
-                  </p>
-                  {currentSubscription?.scheduledProductId && (
-                    <p className="mt-3 rounded-control bg-info-surface px-3 py-2 text-xs font-semibold text-info">
-                      Changement programmé au{" "}
-                      {formatDate(currentSubscription.scheduledChangeAt)}.
+            {canManageSubscriptions ? (
+              <section
+                aria-labelledby="billing-title"
+                className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6 shadow-xs"
+              >
+                <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2
+                      id="billing-title"
+                      className="text-xl font-black text-text-main"
+                    >
+                      Votre abonnement et votre usage
+                    </h2>
+                    <p className="mt-1 text-sm text-text-secondary">
+                      État du forfait, quotas, échéance et documents au même
+                      endroit.
                     </p>
+                  </div>
+                  {currentSubscription && (
+                    <Badge
+                      variant={
+                        currentSubscription.status === "past_due"
+                          ? "urgent"
+                          : "verified"
+                      }
+                    >
+                      {STATUS_LABELS[currentSubscription.status] ||
+                        currentSubscription.status}
+                    </Badge>
                   )}
                 </div>
-                <div className="lg:px-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-                    Usage de la période
-                  </p>
-                  <div className="mt-3 space-y-4">
-                    {billing?.usage.length ? (
-                      billing.usage.map((usage) => {
-                        const percent = usage.limit
-                          ? Math.min(
-                              100,
-                              Math.round((usage.used / usage.limit) * 100),
-                            )
-                          : 0;
-                        return (
-                          <div key={usage.key}>
-                            <div className="mb-1.5 flex items-center justify-between gap-4 text-xs">
-                              <span className="font-semibold text-text-secondary">
-                                {usage.label}
-                              </span>
-                              <span className="font-bold text-text-main">
-                                {usage.used} / {usage.limit ?? "∞"}
-                              </span>
-                            </div>
-                            <ProgressBar value={percent} label={usage.label} />
-                          </div>
+                {billing?.subscriptions.some((subscription) =>
+                  [
+                    "trialing",
+                    "active",
+                    "past_due",
+                    "cancellation_pending",
+                  ].includes(subscription.status),
+                ) && (
+                  <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {billing.subscriptions
+                      .filter((subscription) =>
+                        [
+                          "trialing",
+                          "active",
+                          "past_due",
+                          "cancellation_pending",
+                        ].includes(subscription.status),
+                      )
+                      .map((subscription) => {
+                        const product = catalog.products.find(
+                          (candidate) =>
+                            candidate.id === subscription.productId,
                         );
-                      })
-                    ) : (
-                      <p className="text-xs text-text-muted">
-                        Aucun quota consommé pour le moment.
+                        const vertical = catalog.verticals.find(
+                          (candidate) =>
+                            candidate.id ===
+                            (product?.commercialProfile.verticalId ||
+                              "general"),
+                        );
+                        return (
+                          <button
+                            key={subscription.id}
+                            type="button"
+                            onClick={() =>
+                              setSelectedVertical(
+                                product?.commercialProfile.verticalId ||
+                                  "general",
+                              )
+                            }
+                            className="rounded-card border border-border-base bg-bg-subtle p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
+                          >
+                            <span className="text-micro font-black uppercase tracking-wide text-primary-hover">
+                              {vertical?.name || "Général"}
+                            </span>
+                            <span className="mt-1 block text-sm font-black text-text-main">
+                              {product?.name || subscription.productId}
+                            </span>
+                            <span className="mt-1 block text-xs text-text-secondary">
+                              {STATUS_LABELS[subscription.status] ||
+                                subscription.status}{" "}
+                              · au {formatDate(subscription.currentPeriodEnd)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                )}
+                <div className="grid gap-6 lg:grid-cols-plans-tiers lg:divide-x lg:divide-border-subtle">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                      Forfait actuel
+                    </p>
+                    <p className="mt-2 text-lg font-black text-text-main">
+                      {currentProduct?.name || "Aucun forfait actif"}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                      {currentSubscription
+                        ? `${currentSubscription.billingPeriod === "year" ? "Annuel" : "Mensuel"} · prochaine échéance le ${formatDate(currentSubscription.currentPeriodEnd)}`
+                        : "Choisissez un forfait professionnel pour activer vos droits."}
+                    </p>
+                    {currentSubscription?.scheduledProductId && (
+                      <p className="mt-3 rounded-control bg-info-surface px-3 py-2 text-xs font-semibold text-info">
+                        Changement programmé au{" "}
+                        {formatDate(currentSubscription.scheduledChangeAt)}.
                       </p>
                     )}
                   </div>
-                </div>
-                <div className="space-y-2 lg:pl-6">
-                  <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-                    Actions
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setBillingHistoryOpen(true)}
-                    className="flex w-full items-center justify-between rounded-control px-2 py-2 text-left text-xs font-semibold text-text-secondary hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <FileText
+                  <div className="lg:px-6">
+                    <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                      Usage de la période
+                    </p>
+                    <div className="mt-3 space-y-4">
+                      {billing?.usage.length ? (
+                        billing.usage.map((usage) => {
+                          const percent = usage.limit
+                            ? Math.min(
+                                100,
+                                Math.round((usage.used / usage.limit) * 100),
+                              )
+                            : 0;
+                          return (
+                            <div key={usage.key}>
+                              <div className="mb-1.5 flex items-center justify-between gap-4 text-xs">
+                                <span className="font-semibold text-text-secondary">
+                                  {usage.label}
+                                </span>
+                                <span className="font-bold text-text-main">
+                                  {usage.used} / {usage.limit ?? "∞"}
+                                </span>
+                              </div>
+                              <ProgressBar
+                                value={percent}
+                                label={usage.label}
+                              />
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-xs text-text-muted">
+                          Aucun quota consommé pour le moment.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2 lg:pl-6">
+                    <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
+                      Actions
+                    </p>
+                    <button
+                      type="button"
+                      data-marketplace-action="billing.history"
+                      onClick={() => setBillingHistoryOpen(true)}
+                      className="flex w-full items-center justify-between rounded-control px-2 py-2 text-left text-xs font-semibold text-text-secondary hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <FileText
+                          className="h-icon-md w-icon-md"
+                          aria-hidden="true"
+                        />{" "}
+                        Factures ({billing?.invoices.length || 0})
+                      </span>
+                      <ChevronRight
                         className="h-icon-md w-icon-md"
                         aria-hidden="true"
-                      />{" "}
-                      Factures ({billing?.invoices.length || 0})
-                    </span>
-                    <ChevronRight
-                      className="h-icon-md w-icon-md"
-                      aria-hidden="true"
-                    />
-                  </button>
-                  <Button
-                    to="/compte"
-                    variant="ghost"
-                    size="sm"
-                    fullWidth
-                    className="justify-between"
-                    rightIcon={<ChevronRight className="h-icon-md w-icon-md" />}
-                  >
-                    Gérer le profil de facturation
-                  </Button>
-                  {currentSubscription && (
+                      />
+                    </button>
                     <Button
-                      variant={
-                        currentSubscription.cancelAtPeriodEnd
-                          ? "outline"
-                          : "ghost"
-                      }
+                      to="/compte"
+                      data-marketplace-action="billing.manage"
+                      variant="ghost"
                       size="sm"
                       fullWidth
-                      onClick={() => void toggleCancellation()}
-                      leftIcon={<RotateCcw className="h-icon-md w-icon-md" />}
+                      className="justify-between"
+                      rightIcon={
+                        <ChevronRight className="h-icon-md w-icon-md" />
+                      }
                     >
-                      {currentSubscription.cancelAtPeriodEnd
-                        ? "Réactiver le forfait"
-                        : "Résilier à l’échéance"}
+                      Gérer le profil de facturation
                     </Button>
-                  )}
+                    {currentSubscription && (
+                      <Button
+                        variant={
+                          currentSubscription.cancelAtPeriodEnd
+                            ? "outline"
+                            : "ghost"
+                        }
+                        size="sm"
+                        fullWidth
+                        data-marketplace-action="subscription.cancel"
+                        onClick={() => void toggleCancellation()}
+                        leftIcon={<RotateCcw className="h-icon-md w-icon-md" />}
+                      >
+                        {currentSubscription.cancelAtPeriodEnd
+                          ? "Réactiver le forfait"
+                          : "Résilier à l’échéance"}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
+            ) : null}
 
             <section aria-labelledby="faq-title" className="py-10">
               <div className="mb-4 flex items-center gap-2">
@@ -1234,6 +1282,7 @@ export const ProPlansPage: React.FC = () => {
                   </FormField>
                   <Button
                     variant="outline"
+                    data-marketplace-action="promotion.apply"
                     onClick={() => void applyPromotion()}
                     disabled={!promotionCode.trim() || isPreparing}
                   >
@@ -1363,6 +1412,7 @@ export const ProPlansPage: React.FC = () => {
                 Annuler
               </Button>
               <Button
+                data-marketplace-action="subscription.confirm"
                 onClick={() => void confirmOffer()}
                 isLoading={isConfirming}
                 leftIcon={<CreditCard className="h-icon-md w-icon-md" />}
@@ -1376,11 +1426,13 @@ export const ProPlansPage: React.FC = () => {
         )}
       </Modal>
 
-      <BillingHistoryModal
-        isOpen={billingHistoryOpen}
-        onClose={() => setBillingHistoryOpen(false)}
-        userType="professional"
-      />
+      {canManageSubscriptions ? (
+        <BillingHistoryModal
+          isOpen={billingHistoryOpen}
+          onClose={() => setBillingHistoryOpen(false)}
+          userType="professional"
+        />
+      ) : null}
     </div>
   );
 };

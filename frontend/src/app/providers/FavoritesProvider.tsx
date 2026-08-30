@@ -11,8 +11,8 @@ import { services } from "../../api/client/service-registry";
 import { storageService } from "../../services/storage.service";
 import { useAuth } from "./AuthProvider";
 import { analyticsService } from "../../services/analytics.service";
-import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 import { ForbiddenError } from "../../security/authorization.service";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
@@ -23,6 +23,8 @@ interface FavoritesContextValue {
   /** Returns the resulting state, so callers can react without re-reading. */
   toggleFavorite: (listingId: string) => Promise<boolean>;
   clearFavorites: () => Promise<void>;
+  /** False for ordinary Staff sessions; true for customers and Staff demo sandboxes. */
+  canModifyFavorites: boolean;
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | undefined>(
@@ -50,7 +52,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser, isRestoring } = useAuth();
   const identity = currentUser?.id ?? null;
-  const isStaffIdentity = isStaffSeparatedSubject(currentUser);
+  const { isReadOnly: isReadOnlyStaff } = useStaffMarketplaceAccess();
   const previousIdentity = useRef<string | null | undefined>(undefined);
 
   /**
@@ -67,7 +69,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
     let cancelled = false;
     if (isRestoring) return () => undefined;
 
-    if (isStaffIdentity) {
+    if (isReadOnlyStaff) {
       previousIdentity.current = identity;
       setFavoriteIds([]);
       setIsLoading(false);
@@ -127,16 +129,16 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       cancelled = true;
     };
-  }, [identity, isRestoring, isStaffIdentity]);
+  }, [identity, isRestoring, isReadOnlyStaff]);
 
   const isFavorite = useCallback(
-    (listingId: string) => !isStaffIdentity && favoriteIds.includes(listingId),
-    [favoriteIds, isStaffIdentity],
+    (listingId: string) => !isReadOnlyStaff && favoriteIds.includes(listingId),
+    [favoriteIds, isReadOnlyStaff],
   );
 
   const toggleFavorite = useCallback(
     async (listingId: string) => {
-      if (isStaffIdentity) {
+      if (isReadOnlyStaff) {
         throw new ForbiddenError(
           "Les comptes Staff ne peuvent pas utiliser les favoris de la place de marché.",
         );
@@ -177,11 +179,11 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
     },
-    [identity, isStaffIdentity],
+    [identity, isReadOnlyStaff],
   );
 
   const clearFavorites = useCallback(async () => {
-    if (isStaffIdentity) {
+    if (isReadOnlyStaff) {
       throw new ForbiddenError(
         "Les comptes Staff ne peuvent pas utiliser les favoris de la place de marché.",
       );
@@ -203,16 +205,17 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       setFavoriteIds(previous);
       throw new Error("Impossible de vider vos favoris pour le moment.");
     }
-  }, [favoriteIds, identity, isStaffIdentity]);
+  }, [favoriteIds, identity, isReadOnlyStaff]);
 
   const value = useMemo<FavoritesContextValue>(
     () => ({
-      favoriteIds: isStaffIdentity ? [] : favoriteIds,
-      count: isStaffIdentity ? 0 : favoriteIds.length,
-      isLoading: isStaffIdentity ? false : isLoading,
+      favoriteIds: isReadOnlyStaff ? [] : favoriteIds,
+      count: isReadOnlyStaff ? 0 : favoriteIds.length,
+      isLoading: isReadOnlyStaff ? false : isLoading,
       isFavorite,
       toggleFavorite,
       clearFavorites,
+      canModifyFavorites: !isReadOnlyStaff,
     }),
     [
       favoriteIds,
@@ -220,7 +223,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       isFavorite,
       toggleFavorite,
       clearFavorites,
-      isStaffIdentity,
+      isReadOnlyStaff,
     ],
   );
 

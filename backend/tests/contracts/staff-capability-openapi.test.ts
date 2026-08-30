@@ -32,7 +32,7 @@ describe("Staff capability-management OpenAPI contract", () => {
     expect(update.security).toEqual([{ CookieAuth: [] }, { BearerAuth: [] }]);
   });
 
-  it("marks public marketplace discovery as forbidden to authenticated Staff", () => {
+  it("allows authenticated Staff to use read-only public marketplace discovery", () => {
     for (const [path, method] of [
       ["/home", "get"],
       ["/listings", "get"],
@@ -41,7 +41,21 @@ describe("Staff capability-management OpenAPI contract", () => {
       ["/education/search", "post"],
       ["/employment/search", "post"],
       ["/real-estate/search", "post"],
+    ] as const) {
+      expect(specification.paths[path][method]).toMatchObject({
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+      });
+    }
+  });
+
+  it("keeps public marketplace mutations forbidden to authenticated Staff", () => {
+    for (const [path, method] of [
+      ["/auto/leads", "post"],
+      ["/real-estate/leads", "post"],
       ["/marketing/public/subscriptions", "post"],
+      ["/marketing/public/preferences", "put"],
+      ["/marketing/public/unsubscribe", "post"],
     ] as const) {
       expect(specification.paths[path][method]).toMatchObject({
         "x-shongre-access": "public",

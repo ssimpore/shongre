@@ -42,18 +42,12 @@ export interface PublishCtaKeys {
 export function usePublishCta(): PublishCtaKeys {
   const { can, currentUser, accountType, isSuspended, isDeactivated } =
     useAuthorization();
-
   return useMemo(() => {
     if (isStaffSeparatedSubject(currentUser)) {
-      const isActiveStaff = currentUser?.staffStatus === "active";
       return {
-        to: isActiveStaff ? routes.admin.overview() : routes.contact(),
-        labelKey: isActiveStaff
-          ? "publishCta.internalConsole"
-          : "footer.contactSupport",
-        shortLabelKey: isActiveStaff
-          ? "publishCta.internalConsoleShort"
-          : "footer.contactSupport",
+        to: routes.listing.publish(),
+        labelKey: "publishCta.postListing",
+        shortLabelKey: "publishCta.postListingShort",
       };
     }
 

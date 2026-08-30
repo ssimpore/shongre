@@ -82,6 +82,7 @@ export type SecurityAuditAction =
   | "plan_modified"
   | "permission_overridden"
   | "capability_overrides_updated"
+  | "staff_marketplace_demo_action"
   | "listing_hidden"
   | "listing_restored"
   | "password_reset_completed"
@@ -128,6 +129,7 @@ export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
     plan_modified: "Forfait modifié",
     permission_overridden: "Permission surchargée",
     capability_overrides_updated: "Surcharges de permissions modifiées",
+    staff_marketplace_demo_action: "Action marketplace Staff simulée",
     listing_hidden: "Annonce masquée",
     listing_restored: "Annonce restaurée",
     password_reset_completed: "Mot de passe réinitialisé",

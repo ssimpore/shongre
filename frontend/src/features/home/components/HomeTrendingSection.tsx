@@ -3,7 +3,12 @@ import { ArrowRight, RefreshCw, ScanSearch } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import type { TrendingTopic } from "../../../domains/trending/trending.types";
-import { Container, EmptyState, ListingCardSkeleton, StatePanel } from "../../../design-system";
+import {
+  Container,
+  EmptyState,
+  ListingCardSkeleton,
+  StatePanel,
+} from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
 import { ListingCard } from "../../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../../design-system/primitives/ListingRail";
@@ -90,7 +95,11 @@ const TrendingTopicRail: React.FC<TrendingTopicRailProps> = ({
       >
         <ListingRail label={topic.title}>
           {topic.listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              variant="showcase"
+            />
           ))}
         </ListingRail>
       </div>
@@ -155,7 +164,10 @@ export const HomeTrendingSection: React.FC<HomeTrendingSectionProps> = ({
               <div className="mb-4 h-6 w-40 animate-pulse rounded-control bg-bg-muted motion-reduce:animate-none" />
               <ListingRail label={t("common.loading")}>
                 {Array.from({ length: 6 }).map((__, listingIndex) => (
-                  <ListingCardSkeleton key={listingIndex} />
+                  <ListingCardSkeleton
+                    key={listingIndex}
+                    className="listing-card-showcase-skeleton"
+                  />
                 ))}
               </ListingRail>
             </div>

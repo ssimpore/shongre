@@ -116,7 +116,11 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   // FOOTER COMPACT VARIANT
   if (variant === "footer") {
     return (
-      <form onSubmit={handleSubmit} className={`space-y-2 ${className}`}>
+      <form
+        data-marketplace-action="newsletter.subscribe"
+        onSubmit={handleSubmit}
+        className={`space-y-2 ${className}`}
+      >
         {/* Stacked, not side by side. This sits in the footer's narrowest
             column, where a row left the field about 100px wide — enough to show
             "thomas" and nothing else, so the reader could not check what they
@@ -179,7 +183,11 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         </div>
 
         <div className="lg:col-span-6">
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form
+            data-marketplace-action="newsletter.subscribe"
+            onSubmit={handleSubmit}
+            className="space-y-3"
+          >
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Mail className="w-icon-lg h-icon-lg text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />

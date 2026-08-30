@@ -200,6 +200,51 @@ describe("AdminService capability overrides", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
+  it("grants the dedicated Staff demo capability through the audited override workflow only", async () => {
+    const staffTarget: UserProfile = {
+      ...target,
+      id: "staff-demo-target",
+      email: "staff-demo-target@example.test",
+      staffStatus: "active",
+      staffRole: "operations",
+      customPermissions: [],
+    };
+    const subject = setup({ [staffTarget.email]: staffTarget });
+    const auditSpy = vi.spyOn(subject.audits, "saveAuditLog");
+
+    const updated = await subject.service.updateCapabilityOverrides({
+      userId: staffTarget.id,
+      actor: principal(),
+      customPermissions: ["staff.marketplace.demo"],
+      revokedPermissions: [],
+      reason: "Accès temporaire au bac à sable pour une démonstration contrôlée",
+      expectedVersion: 1,
+      requestId: "req-staff-demo-grant",
+    });
+
+    expect(
+      updated.capabilities.find(
+        (entry) => entry.capability === "staff.marketplace.demo",
+      ),
+    ).toMatchObject({ directlyGranted: true, effective: true });
+    expect(
+      updated.capabilities.some((entry) =>
+        CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          entry.capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+      ),
+    ).toBe(false);
+    expect(auditSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "capability_overrides_updated",
+        metadata: expect.objectContaining({
+          newCustomPermissions: ["staff.marketplace.demo"],
+          requestId: "req-staff-demo-grant",
+        }),
+      }),
+    );
+  });
+
   it("rejects self-management, contradictory inputs, unknown capabilities, and owner escalation", async () => {
     const ownerTarget: UserProfile = {
       ...target,

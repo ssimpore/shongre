@@ -13,6 +13,7 @@ import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
 import type { MarketContext } from "@shongre/contracts";
 import type { PublicRouteData } from "../../platform/seo/public-route-data";
 import { PublicRouteDataProvider } from "./PublicRouteDataProvider";
+import { StaffMarketplaceActionGuard } from "../../security/components/StaffMarketplaceActionGuard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,9 +40,11 @@ export const AppProviders: React.FC<{
                 <MarketLocationProvider initialMarketContext={marketContext}>
                   <I18nProvider>
                     <ToastProvider>
-                      <NotificationProvider>
-                        <FavoritesProvider>{children}</FavoritesProvider>
-                      </NotificationProvider>
+                      <StaffMarketplaceActionGuard>
+                        <NotificationProvider>
+                          <FavoritesProvider>{children}</FavoritesProvider>
+                        </NotificationProvider>
+                      </StaffMarketplaceActionGuard>
                     </ToastProvider>
                   </I18nProvider>
                 </MarketLocationProvider>

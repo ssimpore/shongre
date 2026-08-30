@@ -10,6 +10,12 @@ export const listingCardSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   price: moneySchema,
+  /**
+   * Optional category-aware display text for ranges or periods (for example a
+   * salary range or a monthly rent). The structured `price` remains available
+   * for sorting, analytics, and machine-readable consumers.
+   */
+  priceLabel: z.string().min(1).optional(),
   originalPrice: moneySchema.optional(),
   imageUrl: z.string().url().optional(),
   city: z.string(),

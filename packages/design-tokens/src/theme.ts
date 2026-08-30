@@ -100,9 +100,8 @@ export const themeColors = {
 
 /**
  * Radius scale. Semantics, not decoration:
- * `xl` is the control radius. `card` and `overlay` are the two outer-shell
- * radii — they are named rather than numbered because the shell is a role, and
- * neither 20px nor 28px sits on the numbered scale.
+ * `xl` is the control radius. `listing-card`, `card`, and `overlay` are
+ * outer-shell radii named for their semantic roles rather than their size.
  */
 export const themeRadii = {
   xs: "0.125rem",
@@ -113,6 +112,7 @@ export const themeRadii = {
   control: "0.625rem",
   "2xl": "0.875rem",
   "3xl": "1.125rem",
+  "listing-card": "0.875rem",
   card: "1.25rem",
   overlay: "1.75rem",
   pill: "9999px",
@@ -228,25 +228,26 @@ export const themeSpacing = {
   "control-target": "1.5rem",
   "select-chevron-size": "0.25rem",
   "select-chevron-offset": "0.75rem",
-  /* Shared width for standard listing cards in rails and desktop grids. This
-     leaves room for titles and attributes while keeping the next card visible
-     as an affordance that the rail continues horizontally. */
-  "listing-card": "15rem",
+  /* Shared compact width for listing cards in rails and desktop grids. Five
+     cards plus four standard gaps fit a 69rem discovery row. */
+  "listing-card": "13rem",
   /* Dense result grids may compress standard cards slightly so an available
      listing can use an otherwise empty desktop column. The card component and
      height remain shared with homepage rails. */
-  "listing-card-grid-min": "13rem",
-  /* Standard vertical footprint for grid and rail cards. It includes the
-     wrapping delivery/publication metadata row, so long labels remain fully
-     readable without changing the rhythm between listing sections. */
-  "listing-card-height": "25rem",
+  "listing-card-grid-min": "12.5rem",
+  /* Minimum card rhythm; real content may grow, and stretched grid/rail items
+     keep neighbours aligned without clipping missing or long metadata. */
+  "listing-card-height": "23rem",
+  /* Homepage discovery keeps a slightly taller editorial rhythm while sharing
+     the canonical card width with every other listing rail. */
+  "listing-card-showcase-height": "24rem",
   /* Horizontal result cards share one footprint. The image steps up with the
      available viewport so list mode remains useful on desktop without
      squeezing the copy column on phones. */
-  "listing-card-list-height": "15rem",
-  "listing-card-list-image": "9rem",
-  "listing-card-list-image-md": "12rem",
-  "listing-card-list-image-lg": "14rem",
+  "listing-card-list-height": "12.5rem",
+  "listing-card-list-image": "8rem",
+  "listing-card-list-image-md": "10rem",
+  "listing-card-list-image-lg": "11rem",
   "collection-card": "9.6875rem",
   "collection-card-wide": "11.875rem",
   "recent-search-card": "17rem",

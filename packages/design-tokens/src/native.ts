@@ -40,6 +40,7 @@ export const nativeRadius = {
   md: 6,
   lg: 8,
   control: 10,
+  listingCard: 14,
   card: 20,
   overlay: 28,
   pill: 9999,

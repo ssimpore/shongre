@@ -6,6 +6,7 @@ import {
   nativeSpacing,
   radius,
   themeColors,
+  themeSpacing,
 } from "../src/index";
 
 const luminance = (hex: string): number => {
@@ -39,6 +40,14 @@ describe("canonical design tokens", () => {
   it("keeps native scale adapters aligned with canonical geometry", () => {
     expect(nativeSpacing.lg).toBe(16);
     expect(nativeRadius.control).toBe(Number.parseFloat(radius.control) * 16);
+    expect(nativeRadius.listingCard).toBe(
+      Number.parseFloat(radius["listing-card"]) * 16,
+    );
     expect(nativeRadius.card).toBe(Number.parseFloat(radius.card) * 16);
+  });
+
+  it("keeps listing cards compact through semantic shared tokens", () => {
+    expect(themeSpacing["listing-card"]).toBe("13rem");
+    expect(radius["listing-card"]).toBe("0.875rem");
   });
 });

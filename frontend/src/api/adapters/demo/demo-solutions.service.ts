@@ -18,10 +18,7 @@ import {
   demoSolutionsStore,
   type DemoSolutionsStore,
 } from "./demo-solutions.store";
-import {
-  forbidDemoStaffMarketplaceAccess,
-  requireDemoCapability,
-} from "./demo-authorization";
+import { requireDemoCapability } from "./demo-authorization";
 
 const DEMO_NOW = "2026-08-28T12:00:00.000Z";
 const clone = <T>(value: T): T => structuredClone(value);
@@ -178,7 +175,6 @@ export class DemoSolutionsService implements SolutionsServiceContract {
   async listPublicSolutions(
     options: SolutionListOptions = {},
   ): Promise<SolutionDefinition[]> {
-    forbidDemoStaffMarketplaceAccess();
     const market = options.marketCode?.toUpperCase();
     const language = options.language?.toLowerCase();
     return (await this.values())
@@ -203,7 +199,6 @@ export class DemoSolutionsService implements SolutionsServiceContract {
     slug: string,
     options: SolutionListOptions & { includeAdminOnly?: boolean } = {},
   ): Promise<SolutionDefinition | null> {
-    if (!options.includeAdminOnly) forbidDemoStaffMarketplaceAccess();
     const solution = (await this.values()).find((value) => value.slug === slug);
     if (!solution) return null;
     if (

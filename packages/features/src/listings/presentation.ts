@@ -85,7 +85,12 @@ export function getListingCardCharacteristics(
 
   return listing.characteristics.filter((characteristic) => {
     const normalized = normalizeCharacteristic(characteristic);
-    if (!normalized || normalized === condition || seen.has(normalized)) {
+    if (
+      !normalized ||
+      normalized === condition ||
+      normalized.includes("currency_minor") ||
+      seen.has(normalized)
+    ) {
       return false;
     }
     seen.add(normalized);

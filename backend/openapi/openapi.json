@@ -8402,7 +8402,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:886"
       }
     },
@@ -9266,7 +9266,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:889",
         "requestBody": {
           "required": true,
@@ -9422,7 +9422,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:892"
       }
     },
@@ -9574,7 +9574,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1655"
       }
     },
@@ -11377,7 +11377,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "put": {
@@ -15216,7 +15216,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:733"
       }
     },
@@ -15912,7 +15912,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:736",
         "requestBody": {
           "required": true,
@@ -15991,7 +15991,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:739"
       },
       "put": {
@@ -17535,7 +17535,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1207"
       }
     },
@@ -18862,7 +18862,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1213"
       }
     },
@@ -19175,7 +19175,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1216"
       }
     },
@@ -19298,7 +19298,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1210",
         "requestBody": {
           "required": true,
@@ -20164,7 +20164,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -20266,7 +20266,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:554"
       }
     },
@@ -20538,7 +20538,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:544"
       }
     },
@@ -20680,7 +20680,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:548"
       },
       "put": {
@@ -21199,7 +21199,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:551",
         "requestBody": {
           "required": true,
@@ -23595,7 +23595,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1658"
       }
     },
@@ -27517,7 +27517,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1015"
       }
     },
@@ -28224,7 +28224,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1021"
       }
     },
@@ -28291,7 +28291,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1027"
       }
     },
@@ -28576,7 +28576,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:1018",
         "requestBody": {
           "required": true,
@@ -28809,7 +28809,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:2383"
       }
     },
@@ -29375,7 +29375,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29423,7 +29423,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29509,7 +29509,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29592,7 +29592,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29662,7 +29662,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:704"
       }
     },
@@ -29732,7 +29732,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:716"
       }
     },
@@ -29800,7 +29800,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:710"
       }
     },
@@ -29861,7 +29861,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:701"
       }
     },
@@ -29930,7 +29930,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:722"
       }
     },
@@ -30000,7 +30000,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:707"
       }
     },
@@ -30067,7 +30067,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:514"
       },
       "put": {
@@ -31491,6 +31491,7 @@
           "user.reactivate",
           "user.verify",
           "staff.internal.access",
+          "staff.marketplace.demo",
           "staff.support.access",
           "staff.operations.access",
           "staff.finance.access",

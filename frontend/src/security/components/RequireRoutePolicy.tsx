@@ -15,6 +15,8 @@ import { RequireAuth } from "./RequireAuth";
 import { RequirePermission } from "./RequirePermission";
 import { hasProductAccess } from "../../domains/user/user.domain";
 import type { RoutePolicy } from "../access-policy.registry";
+import { useDataMode } from "../../app/providers/DataModeProvider";
+import { resolveStaffMarketplaceMode } from "../useStaffMarketplaceAccess";
 
 /**
  * Enforces the same named route policy used to build workspace navigation.
@@ -27,6 +29,7 @@ export const RequireRoutePolicy: React.FC<{
   children: React.ReactNode;
 }> = ({ policyId, standalone, children }) => {
   const { currentUser, isRestoring } = useAuth();
+  const { mode: dataMode } = useDataMode();
   const location = useLocation();
   const policy: RoutePolicy = ROUTE_POLICIES[policyId];
 
@@ -36,9 +39,14 @@ export const RequireRoutePolicy: React.FC<{
   }
 
   const access = canonicalAccessContext(currentUser);
+  const staffMarketplaceMode = resolveStaffMarketplaceMode(
+    currentUser,
+    dataMode,
+  );
   if (
     access.staffStatus !== "none" &&
-    (policy.access === "customer" || policy.access === "professional")
+    (policy.access === "customer" || policy.access === "professional") &&
+    staffMarketplaceMode !== "demo"
   ) {
     return (
       <Navigate
@@ -57,7 +65,10 @@ export const RequireRoutePolicy: React.FC<{
   ) {
     return <Navigate to={routes.workspace.overview()} replace />;
   }
-  if (!policy.accountTypes.some((type) => type === access.accountType)) {
+  if (
+    !policy.accountTypes.some((type) => type === access.accountType) &&
+    staffMarketplaceMode !== "demo"
+  ) {
     if (policy.access === "staff_capability") {
       return <Navigate to={routes.workspace.overview()} replace />;
     }
@@ -72,7 +83,13 @@ export const RequireRoutePolicy: React.FC<{
     );
   }
 
-  if (canAccessRoutePolicy(currentUser, policyId)) return <>{children}</>;
+  if (
+    canAccessRoutePolicy(currentUser, policyId, {
+      allowStaffMarketplaceDemo: staffMarketplaceMode === "demo",
+    })
+  ) {
+    return <>{children}</>;
+  }
   if (policy.productId && !hasProductAccess(currentUser, policy.productId)) {
     return (
       <Navigate

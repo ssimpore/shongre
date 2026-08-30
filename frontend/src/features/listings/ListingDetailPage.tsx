@@ -39,6 +39,7 @@ import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
 import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import {
   formatPrice,
   formatRelativeDate,
@@ -95,6 +96,7 @@ export const ListingDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentUser } = useAuth();
+  const { isReadOnly: isReadOnlyStaff } = useStaffMarketplaceAccess();
   const toast = useToast();
   const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
   const publicRouteData = usePublicRouteData();
@@ -380,7 +382,7 @@ export const ListingDetailPage: React.FC = () => {
   usePageMeta(pageMeta);
 
   useEffect(() => {
-    if (!listing || !currentUser) return;
+    if (!listing || !currentUser || isReadOnlyStaff) return;
     const shouldContact = searchParams.get("contact") === "1";
     const shouldOffer = searchParams.get("offer") === "1";
     if (!shouldContact && !shouldOffer) return;
@@ -390,7 +392,7 @@ export const ListingDetailPage: React.FC = () => {
     next.delete("contact");
     next.delete("offer");
     setSearchParams(next, { replace: true });
-  }, [currentUser, listing, searchParams, setSearchParams]);
+  }, [currentUser, isReadOnlyStaff, listing, searchParams, setSearchParams]);
 
   // Handlers
   /**
@@ -571,6 +573,7 @@ export const ListingDetailPage: React.FC = () => {
           </button>
           <button
             type="button"
+            data-marketplace-action="listing.report"
             onClick={() => setIsReportModalOpen(true)}
             aria-label={t("listings.listingDetailPage.signalerCetteAnnonce")}
             className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
@@ -642,6 +645,7 @@ export const ListingDetailPage: React.FC = () => {
               {/* Favorite Action Button */}
               <button
                 type="button"
+                data-marketplace-action="favorite.manage"
                 onClick={handleFavoriteToggle}
                 aria-label={
                   isListingFavorite(listing.id)
@@ -874,6 +878,7 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <Button
+                    data-marketplace-action="listing.publish"
                     to={`/deposer?edit=${listing.id}`}
                     variant="primary"
                     size="md"
@@ -883,6 +888,7 @@ export const ListingDetailPage: React.FC = () => {
                     {t("listings.listingDetailPage.modifierMonAnnonce")}
                   </Button>
                   <Button
+                    data-marketplace-action="listing.manage"
                     to="/compte/annonces"
                     variant="outline"
                     size="md"
@@ -905,6 +911,7 @@ export const ListingDetailPage: React.FC = () => {
                 </p>
                 {actions.statusNotice.isBuyerReserver && (
                   <Button
+                    data-marketplace-action="purchase.manage"
                     to="/compte/achats"
                     variant="primary"
                     size="md"
@@ -932,6 +939,7 @@ export const ListingDetailPage: React.FC = () => {
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
                   <Button
+                    data-marketplace-action="purchase.start"
                     variant={
                       actions.primaryAction === "direct_purchase"
                         ? "primary"
@@ -950,6 +958,7 @@ export const ListingDetailPage: React.FC = () => {
                 {/* 2. Reservation (Secondary or Primary CTA if available) */}
                 {actions.canReserve && (
                   <Button
+                    data-marketplace-action="reservation.start"
                     variant={
                       actions.primaryAction === "reservation"
                         ? "primary"
@@ -970,6 +979,7 @@ export const ListingDetailPage: React.FC = () => {
                   {/* 3. Price Negotiation Offer */}
                   {actions.canMakeOffer && (
                     <Button
+                      data-marketplace-action="offer.create"
                       variant="outline"
                       size="md"
                       fullWidth
@@ -995,6 +1005,7 @@ export const ListingDetailPage: React.FC = () => {
                   {/* 4. Direct Contact Message */}
                   {actions.canContact && (
                     <Button
+                      data-marketplace-action="message.send"
                       variant={
                         actions.primaryAction === "contact"
                           ? "primary"
@@ -1128,6 +1139,7 @@ export const ListingDetailPage: React.FC = () => {
               Annuler
             </Button>
             <Button
+              data-marketplace-action="message.send"
               variant="primary"
               fullWidth
               onClick={handleSendMessage}
@@ -1167,7 +1179,12 @@ export const ListingDetailPage: React.FC = () => {
             >
               Annuler
             </Button>
-            <Button variant="primary" fullWidth onClick={handleSendOffer}>
+            <Button
+              data-marketplace-action="offer.create"
+              variant="primary"
+              fullWidth
+              onClick={handleSendOffer}
+            >
               Transmettre l'offre
             </Button>
           </div>
@@ -1225,6 +1242,7 @@ export const ListingDetailPage: React.FC = () => {
               Annuler
             </Button>
             <Button
+              data-marketplace-action="listing.report"
               variant="danger"
               fullWidth
               onClick={() => {
@@ -1283,6 +1301,7 @@ export const ListingDetailPage: React.FC = () => {
         >
           {actions.isOwner ? (
             <Button
+              data-marketplace-action="listing.publish"
               to={routes.listing.publish({ edit: listing.id })}
               variant="primary"
               size="md"
@@ -1299,6 +1318,7 @@ export const ListingDetailPage: React.FC = () => {
             <>
               {actions.canMakeOffer && (
                 <Button
+                  data-marketplace-action="offer.create"
                   variant="outline"
                   size="md"
                   className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
@@ -1322,6 +1342,7 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {actions.canReserve && (
                 <Button
+                  data-marketplace-action="reservation.start"
                   variant={
                     actions.primaryAction === "reservation"
                       ? "primary"
@@ -1339,6 +1360,7 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {actions.canContact && (
                 <Button
+                  data-marketplace-action="message.send"
                   variant={
                     actions.primaryAction === "contact"
                       ? "primary"
@@ -1364,6 +1386,7 @@ export const ListingDetailPage: React.FC = () => {
               )}
               {actions.canDirectPurchase && (
                 <Button
+                  data-marketplace-action="purchase.start"
                   variant={
                     actions.primaryAction === "direct_purchase"
                       ? "primary"

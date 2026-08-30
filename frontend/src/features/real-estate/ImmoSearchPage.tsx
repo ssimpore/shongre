@@ -626,6 +626,7 @@ export const ImmoSearchPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button
+              data-marketplace-action="saved-search.create"
               variant="outline"
               size="sm"
               onClick={saveAlert}

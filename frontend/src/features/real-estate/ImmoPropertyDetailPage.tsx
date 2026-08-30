@@ -262,6 +262,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   ) : null}
                 </div>
                 <Button
+                  data-marketplace-action="favorite.manage"
                   variant="secondary"
                   size="sm"
                   className="absolute right-3 top-3"
@@ -398,7 +399,11 @@ export const ImmoPropertyDetailPage: React.FC = () => {
 
           <aside className="sticky top-24 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
             {!sentLeadId ? (
-              <form onSubmit={submitLead} className="space-y-3">
+              <form
+                data-marketplace-action="message.send"
+                onSubmit={submitLead}
+                className="space-y-3"
+              >
                 <div>
                   <p className="text-sm font-black text-text-main">
                     Contacter l’annonceur
@@ -477,6 +482,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   </span>
                 </label>
                 <Button
+                  data-marketplace-action="message.send"
                   type="submit"
                   variant="primary"
                   className="w-full"
@@ -486,6 +492,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   Envoyer la demande
                 </Button>
                 <Button
+                  data-marketplace-action="message.prepare"
                   type="button"
                   variant="outline"
                   className="w-full"
@@ -522,6 +529,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   />
                 </FormField>
                 <Button
+                  data-marketplace-action="appointment.request"
                   variant="primary"
                   className="w-full"
                   onClick={requestVisit}

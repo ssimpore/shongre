@@ -300,16 +300,20 @@ component → hook/controller → service contract → demo or HTTP adapter
   customer marketplace capability plane for that identity; direct grants must
   never bridge the two planes. Active Staff receive only their least-privilege
   internal role and approved internal overrides, while inactive Staff receive
-  neither plane. In demo mode, entering the public marketplace root with a
-  retained Staff persona must switch to the signed-out guest persona before
-  public content renders; production Staff sessions remain denied. Membership
-  and capability-override changes require active Staff, MFA, recent
-  authentication, self/owner governance, session revocation, and an audit
-  trail; capability overrides additionally require `admin.permissions.manage`.
+  neither plane. Staff sessions may remain signed in while browsing public
+  marketplace discovery, but are read-only by default. The direct, audited
+  `staff.marketplace.demo` capability may unlock customer-flow simulation only
+  through clearly labelled, isolated client demo adapters; it never grants API,
+  provider, notification, payment, messaging, or production publication
+  authority. Membership and capability-override changes require active Staff,
+  MFA, recent authentication, self/owner governance, session revocation, and an
+  audit trail; capability overrides additionally require
+  `admin.permissions.manage`.
 - Every public OpenAPI operation must explicitly declare whether authenticated
   Staff are denied through `x-shongre-deny-staff-marketplace`; customer
-  discovery and entry points use `true`, while only neutral authentication,
-  platform, health, or signed-provider entry points may use `false`.
+  read-only discovery and neutral authentication/platform/health entry points
+  use `false`, while public marketplace mutations and signed customer action
+  entry points use `true`.
 - Social identities are matched by provider plus provider subject, never by
   email alone. Linking requires authenticated recent user intent; never silently
   merge accounts because an email matches or allow removal of the last usable
@@ -525,6 +529,14 @@ France-only happy path is insufficient for market-sensitive work.
 - Shared Web/native APIs must preserve behavior and accessibility while allowing
   narrow platform adapters. Do not use a WebView as a code-sharing shortcut or
   widen a Next.js client boundary merely to share presentation.
+- Marketplace listing grids, rails, search results, recommendations, favorites,
+  and seller catalogues must render the canonical `@shongre/features` listing
+  card through the client adapter. Structured category services map their
+  records to `ListingCardView`; generic listings use taxonomy
+  `presentation.cardAttributeIds`. Do not add category-specific card markup or
+  conditional fields in page components. Profile results, hero media slides,
+  operational rows, and map popups may remain specialized when they are not
+  listing-card equivalents.
 - Target WCAG 2.2 AA. Verify semantic landmarks and heading order, labels and
   descriptions, errors, keyboard navigation, focus visibility/trapping/
   restoration, menus, tabs, dialogs, sheets, tables, carousels, contrast,

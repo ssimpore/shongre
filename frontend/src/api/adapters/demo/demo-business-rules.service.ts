@@ -376,11 +376,6 @@ function digest(value: string) {
 
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async getCatalog(marketCode = DEFAULT_MARKET_CODE) {
-    requireDemoAnyCapability([
-      "marketplace.customer.access",
-      "monetization.manage",
-      "commercial_rules.read",
-    ]);
     await simulateNetworkDelay();
     const version = versions.find(
       (entry) => entry.marketCode === marketCode && entry.status === "active",

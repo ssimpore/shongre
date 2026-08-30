@@ -73,4 +73,33 @@ describe("vertical Pro demo personas", () => {
       primaryRole: "buyer",
     });
   });
+
+  it("adopts newer versioned Staff demo grants without overwriting later admin changes", () => {
+    storageService.set("shongre_users_v1", {
+      ops_elena: {
+        ...DEMO_USERS.ops_elena,
+        customPermissions: undefined,
+        capabilityOverrideVersion: undefined,
+      } as any,
+    });
+
+    expect(storageService.getUsers().ops_elena).toMatchObject({
+      accountType: "individual",
+      customPermissions: ["staff.marketplace.demo"],
+      capabilityOverrideVersion: 1,
+    });
+
+    storageService.set("shongre_users_v1", {
+      ops_elena: {
+        ...DEMO_USERS.ops_elena,
+        customPermissions: [],
+        capabilityOverrideVersion: 2,
+      },
+    });
+
+    expect(storageService.getUsers().ops_elena).toMatchObject({
+      customPermissions: [],
+      capabilityOverrideVersion: 2,
+    });
+  });
 });

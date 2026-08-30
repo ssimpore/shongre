@@ -96,6 +96,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   return (
     <button
       type="button"
+      data-marketplace-action="favorite.manage"
       onClick={onToggle}
       aria-pressed={isFavorite}
       aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}

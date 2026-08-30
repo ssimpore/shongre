@@ -357,7 +357,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async submitLead(input: AutoLeadDraft): Promise<AutoLead> {
-    requireDemoCapability("auto.read");
+    requireDemoCapability("message.send");
     await simulateNetworkDelay();
     const suspicious = /(telegram|western union|crypto|gift card)/i.test(
       input.message,

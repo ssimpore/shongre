@@ -621,6 +621,7 @@ export const AutoSearchPage: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
+            data-marketplace-action="saved-search.create"
             variant="outline"
             size="compact"
             leftIcon={<Bell className="h-icon-sm w-icon-sm" />}
@@ -628,7 +629,11 @@ export const AutoSearchPage: React.FC = () => {
           >
             Créer une alerte
           </Button>
-          <Button to="/deposer/auto" size="compact">
+          <Button
+            data-marketplace-action="listing.publish"
+            to="/deposer/auto"
+            size="compact"
+          >
             Vendre un véhicule
           </Button>
         </div>

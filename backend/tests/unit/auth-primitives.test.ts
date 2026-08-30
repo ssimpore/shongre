@@ -245,6 +245,23 @@ describe("Principal guards", () => {
     expect(() => forbidStaffMarketplaceAccess(GUEST_PRINCIPAL)).not.toThrow();
   });
 
+  it("never treats the Staff demo grant as production marketplace authority", () => {
+    const staffTester = {
+      ...admin,
+      capabilities: ["staff.marketplace.demo" as const],
+    };
+
+    expect(() => requirePermission(staffTester, "listing.publish")).toThrow(
+      /droits/i,
+    );
+    expect(() => requirePermission(staffTester, "payment.initiate")).toThrow(
+      /droits/i,
+    );
+    expect(() => requirePermission(staffTester, "message.send")).toThrow(
+      /droits/i,
+    );
+  });
+
   it("requires a fresh authentication proof for Staff administration", () => {
     expect(() =>
       requireRecentAuthentication({ ...admin, recentlyAuthenticated: false }),

@@ -9,10 +9,15 @@ import {
 } from "./authorization.service";
 import { Permission, PlatformRole } from "../types";
 import { normalizePlatformRole } from "./roles.config";
-import type { RoutePolicyId } from "./access-policy.registry";
+import {
+  canAccessRoutePolicy,
+  type RoutePolicyId,
+} from "./access-policy.registry";
+import { useDataMode } from "../app/providers/DataModeProvider";
 
 export function useAuthorization() {
   const { currentUser } = useAuth();
+  const { mode: dataMode } = useDataMode();
 
   const effectivePermissions = useMemo(() => {
     return authorizationService.getEffectivePermissions(currentUser);
@@ -59,8 +64,10 @@ export function useAuthorization() {
 
   const canAccessRoute = useMemo(
     () => (policyId: RoutePolicyId) =>
-      authorizationService.canAccessRoute(currentUser, policyId),
-    [currentUser],
+      canAccessRoutePolicy(currentUser, policyId, {
+        allowStaffMarketplaceDemo: dataMode === "demo",
+      }),
+    [currentUser, dataMode],
   );
 
   const isSuspended =

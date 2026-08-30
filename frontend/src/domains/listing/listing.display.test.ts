@@ -126,6 +126,29 @@ describe("Listing Detail Display & Action Resolvers", () => {
       );
     });
 
+    it("fills legacy clothing cards with size and brand at the presentation boundary", () => {
+      const clothingListing = {
+        id: "list-fashion-1",
+        title: "Manteau en laine",
+        price: 195,
+        categorySlug: "mode",
+        subCategorySlug: "vetements",
+        condition: "very_good",
+        attributes: {
+          clothingCategory: "manteaux",
+          size: "m_38",
+          brand: "Sézane",
+        },
+      } as unknown as Listing;
+
+      expect(
+        listingDisplayResolver.resolveSummaryAttributes(clothingListing),
+      ).toEqual(["M 38", "Sézane", "Manteaux"]);
+      expect(
+        listingDisplayResolver.resolveConditionLabel(clothingListing.condition),
+      ).toBe("Très bon état");
+    });
+
     it("keeps furniture cards concise while preserving v4 details", () => {
       const furnitureListing: Partial<Listing> = {
         id: "list-furn-1",
@@ -147,7 +170,12 @@ describe("Listing Detail Display & Action Resolvers", () => {
         .resolveGroupedCharacteristics(listing)
         .flatMap((group) => group.items);
 
-      expect(summary).toEqual(["Très bon état"]);
+      expect(summary).toEqual(["Bois", "160 cm", "90 cm"]);
+      expect(
+        listingDisplayResolver.resolveConditionLabel(
+          furnitureListing.condition!,
+        ),
+      ).toBe("Très bon état");
       expect(detailItems.find((item) => item.code === "material")?.value).toBe(
         "Bois",
       );

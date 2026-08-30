@@ -7,6 +7,7 @@ import { authService as demoAuthEngine } from "../../../domains/auth/auth.servic
 import { demoAiService } from "./demo-ai.service";
 import { demoAuthService } from "./demo-auth.service";
 import { demoAutoService } from "./demo-auto.service";
+import { demoRealEstateService } from "./demo-real-estate.service";
 import { demoCoursesService } from "./demo-courses.service";
 import { demoFinanceService } from "./demo-finance.service";
 import { demoHomepageService } from "./demo-homepage.service";
@@ -20,6 +21,8 @@ import { demoFeatureFlagService } from "./demo-feature-flag.service";
 import { demoProviderControlPlaneService } from "./demo-provider-control-plane.service";
 import { demoSupportService } from "./demo-support.service";
 import { demoMarketingService } from "./demo-marketing.service";
+import { demoBusinessRulesService } from "./demo-business-rules.service";
+import { auditService } from "../../../security/audit.service";
 
 const ACTIVE_STAFF_PERSONAS = [
   "support_hugo",
@@ -38,8 +41,15 @@ const ACTIVE_STAFF_PERSONAS = [
 afterEach(() => storageService.setCurrentUserKey("buyer_thomas"));
 
 describe("demo Staff/customer marketplace separation", () => {
+  it("persists the internal Staff role when switching personas", async () => {
+    await demoAuthService.switchDemoUser("support_hugo");
+
+    expect(storageService.getCurrentUserKey()).toBe("support_hugo");
+    expect(storageService.getCurrentRole()).toBe("support");
+  });
+
   it.each(ACTIVE_STAFF_PERSONAS)(
-    "denies every customer capability and listing discovery to %s",
+    "keeps %s outside customer authority while allowing public discovery",
     async (persona) => {
       storageService.setCurrentUserKey(persona);
       const user = storageService.getCurrentUser();
@@ -49,8 +59,8 @@ describe("demo Staff/customer marketplace separation", () => {
           authorizationService.can(user, capability),
         ),
       ).toBe(false);
-      await expect(demoListingsService.getListings()).rejects.toMatchObject({
-        code: "FORBIDDEN",
+      await expect(demoListingsService.getListings()).resolves.toMatchObject({
+        listings: expect.any(Array),
       });
     },
   );
@@ -71,8 +81,8 @@ describe("demo Staff/customer marketplace separation", () => {
       expect(() => demoAuthEngine.createSession(user.id)).toThrow(
         /Staff inactive/i,
       );
-      await expect(demoListingsService.getListings()).rejects.toMatchObject({
-        code: "FORBIDDEN",
+      await expect(demoListingsService.getListings()).resolves.toMatchObject({
+        listings: expect.any(Array),
       });
       await expect(demoAuthService.switchDemoUser(user.id)).rejects.toThrow(
         /Staff interne n'est pas actif/i,
@@ -108,6 +118,12 @@ describe("demo Staff/customer marketplace separation", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
       demoPromotionsService.getProSubscriptionPlans(),
+    ).resolves.toEqual(expect.any(Array));
+    await expect(
+      demoBusinessRulesService.getCatalog("FR"),
+    ).resolves.toMatchObject({ marketCode: "FR", products: expect.any(Array) });
+    await expect(
+      demoBusinessRulesService.getBillingOverview(),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
       demoFinanceService.getAccountDashboard(),
@@ -118,12 +134,31 @@ describe("demo Staff/customer marketplace separation", () => {
     await expect(
       demoAiService.generateListingAssistance({ rawInput: "Objet" }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    await expect(demoAutoService.getCatalog("FR")).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
-    await expect(demoCoursesService.getCatalog("FR")).rejects.toMatchObject({
-      code: "FORBIDDEN",
-    });
+    await expect(demoAutoService.getCatalog("FR")).resolves.toBeDefined();
+    await expect(
+      demoAutoService.submitLead({
+        vehicleId: "vehicle_3008_petrol",
+        contactName: "Staff interne",
+        contactEmail: "staff@example.test",
+        intention: "availability",
+        message: "Demande qui doit rester bloquée.",
+        source: "vehicle_page",
+        marketingConsent: false,
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(
+      demoRealEstateService.submitLead({
+        propertyId: "property_house_ecully",
+        type: "information",
+        requesterName: "Staff interne",
+        requesterEmail: "staff@example.test",
+        message: "Demande qui doit rester bloquée.",
+        preferredContactChannel: "message",
+        consentGiven: true,
+        qualificationAnswers: { source: "staff-separation-test" },
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(demoCoursesService.getCatalog("FR")).resolves.toBeDefined();
     await expect(
       demoMarketingService.subscribePublic({
         email: "staff@example.test",
@@ -134,13 +169,66 @@ describe("demo Staff/customer marketplace separation", () => {
         consentGiven: true,
       }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    expect(() =>
+    await expect(
       demoHomepageService.getHomepage({
         marketCode: "FR",
         country: "FR",
         locale: "fr-FR",
       }),
-    ).toThrow();
+    ).resolves.toBeDefined();
+  });
+
+  it("allows only the dedicated Staff tester to mutate isolated demo data and audits every action", async () => {
+    storageService.setCurrentUserKey("ops_elena");
+    const user = storageService.getCurrentUser();
+    expect(authorizationService.can(user, "staff.marketplace.demo")).toBe(true);
+    expect(authorizationService.can(user, "listing.create")).toBe(false);
+
+    const before = auditService.getLogs({
+      action: "staff_marketplace_demo_action",
+    }).length;
+    await expect(
+      demoListingsService.createListingDraft("user_ops_elena"),
+    ).resolves.toMatchObject({ marketCode: "FR", currentStep: 1 });
+    await expect(
+      demoPromotionsService.getAvailableBoosts("listing-demo"),
+    ).resolves.toEqual(expect.any(Array));
+    await expect(
+      demoMarketingService.subscribePublic({
+        email: "staff-demo@example.test",
+        marketCode: "FR",
+        locale: "fr-FR",
+        topics: ["editorial"],
+        source: "FOOTER",
+        consentGiven: true,
+      }),
+    ).resolves.toMatchObject({ accepted: true });
+    await expect(
+      demoRealEstateService.submitLead({
+        propertyId: "property_house_ecully",
+        type: "information",
+        requesterName: "Démonstration Staff",
+        requesterEmail: "staff-demo@example.test",
+        message: "Demande isolée de démonstration.",
+        preferredContactChannel: "message",
+        consentGiven: true,
+        qualificationAnswers: { source: "staff-demo-test" },
+      }),
+    ).resolves.toMatchObject({ status: "new" });
+
+    const events = auditService.getLogs({
+      action: "staff_marketplace_demo_action",
+    });
+    expect(events.length).toBeGreaterThanOrEqual(before + 4);
+    expect(
+      events
+        .slice(0, 4)
+        .every(
+          (event) =>
+            event.actorId === "user_ops_elena" &&
+            (event.newValue as { isolated?: boolean }).isolated === true,
+        ),
+    ).toBe(true);
   });
 
   it("keeps internal demo operations scoped to each Staff role", async () => {
