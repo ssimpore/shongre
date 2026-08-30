@@ -47,7 +47,7 @@ export const EmploymentAdminPage: React.FC = () => {
   usePageMeta({
     title: "Administration Emploi",
     description:
-      "Configuration, conformité, catalogue et opérations du vertical Shongre Emploi.",
+      t("admin.employmentAdminPage.configurationConformiteCatalogueEtOperationsDuVerticalShongreEmploi"),
     canonicalPath: "/admin/emploi",
     noIndex: true,
   });
@@ -128,7 +128,7 @@ export const EmploymentAdminPage: React.FC = () => {
         variant="error"
         title="Console Emploi indisponible"
         description={error}
-        action={<Button onClick={load}>Réessayer</Button>}
+        action={<Button onClick={load}>{t("common.retry")}</Button>}
       />
     );
   if (!overview || !config)
@@ -201,7 +201,7 @@ export const EmploymentAdminPage: React.FC = () => {
               {config.isEnabled ? "Actif" : "Désactivé"}
             </Badge>
             <span className="text-xs text-text-muted">
-              Schéma v{config.schemaVersion} · politique{" "}
+              {t("admin.employmentAdminPage.schemaV")}{config.schemaVersion} · politique{" "}
               {config.regulatoryContentVersion}
             </span>
           </div>
@@ -209,8 +209,7 @@ export const EmploymentAdminPage: React.FC = () => {
             Shongre Emploi
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Pilotage du marché {activeMarket.name}, sans dupliquer la catégorie
-            canonique « Emploi ».
+            {t("admin.employmentAdminPage.pilotageDuMarche")} {activeMarket.name}{t("admin.employmentAdminPage.sansDupliquerLaCategorieCanoniqueEmploi")}
           </p>
         </div>
         <Button onClick={save} disabled={saving}>
@@ -239,10 +238,10 @@ export const EmploymentAdminPage: React.FC = () => {
         <section className="rounded-card border border-border-base bg-bg-surface p-5">
           <h2 className="flex items-center gap-2 text-lg font-black">
             <Globe2 className="h-icon-md w-icon-md text-primary" />
-            Configuration du marché
+            {t("admin.employmentAdminPage.configurationDuMarche")}
           </h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <FormField label="Durée de publication (jours)">
+            <FormField label={t("admin.employmentAdminPage.dureeDePublicationJours")}>
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -262,7 +261,7 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label="Rétention des brouillons (jours)">
+            <FormField label={t("admin.employmentAdminPage.retentionDesBrouillonsJours")}>
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -280,7 +279,7 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label="Rétention des candidatures (jours)">
+            <FormField label={t("admin.employmentAdminPage.retentionDesCandidaturesJours")}>
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -298,7 +297,7 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label="Délai avant nouvelle candidature (jours)">
+            <FormField label={t("admin.employmentAdminPage.delaiAvantNouvelleCandidatureJours")}>
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.cooldownDays.min}
@@ -320,7 +319,7 @@ export const EmploymentAdminPage: React.FC = () => {
             </FormField>
           </div>
           <div className="mt-6 border-t border-border-subtle pt-5">
-            <h3 className="text-sm font-black">Fonctionnalités</h3>
+            <h3 className="text-sm font-black">{t("invoicing.product.nav.features")}</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {featureFlags.map(([flag, label, description]) => (
                 <div
@@ -361,7 +360,7 @@ export const EmploymentAdminPage: React.FC = () => {
             </h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-3">
-                <dt>Langage à revoir</dt>
+                <dt>{t("admin.employmentAdminPage.langageARevoir")}</dt>
                 <dd className="font-black">
                   {overview.prohibitedLanguageReviewCount}
                 </dd>
@@ -381,21 +380,21 @@ export const EmploymentAdminPage: React.FC = () => {
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <h2 className="flex items-center gap-2 text-sm font-black">
               <Settings2 className="h-icon-sm w-icon-sm text-primary" />
-              Principes de conformité
+              {t("admin.employmentAdminPage.principesDeConformite")}
             </h2>
             <ul className="mt-3 space-y-2 text-xs leading-relaxed text-text-secondary">
-              <li>Données candidats privées et RLS par défaut</li>
-              <li>Aucune décision juridique automatique</li>
-              <li>Aucun attribut sensible dans le classement</li>
-              <li>Aucun paiement demandé aux candidats</li>
-              <li>Rétention et consentements versionnés</li>
+              <li>{t("admin.employmentAdminPage.donneesCandidatsPriveesEtRlsParDefaut")}</li>
+              <li>{t("admin.employmentAdminPage.aucuneDecisionJuridiqueAutomatique")}</li>
+              <li>{t("admin.employmentAdminPage.aucunAttributSensibleDansLeClassement")}</li>
+              <li>{t("admin.employmentAdminPage.aucunPaiementDemandeAuxCandidats")}</li>
+              <li>{t("admin.employmentAdminPage.retentionEtConsentementsVersionnes")}</li>
             </ul>
           </div>
         </aside>
       </div>
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
-        <h2 className="text-lg font-black">Catalogue des offres employeur</h2>
+        <h2 className="text-lg font-black">{t("admin.employmentAdminPage.catalogueDesOffresEmployeur")}</h2>
         <ScrollableRegion
           aria-label={t("admin.employment.tableLabel")}
           className="mt-4"
@@ -405,9 +404,9 @@ export const EmploymentAdminPage: React.FC = () => {
               <tr>
                 <th className="p-3">Offre</th>
                 <th className="p-3">Audience</th>
-                <th className="p-3">Modèle</th>
+                <th className="p-3">{t("admin.adminCommissionPolicyEditor.modele")}</th>
                 <th className="p-3">Prix</th>
-                <th className="p-3">État</th>
+                <th className="p-3">{t("search.searchPage.etat")}</th>
                 <th className="p-3 text-right">Action</th>
               </tr>
             </thead>
@@ -462,9 +461,7 @@ export const EmploymentAdminPage: React.FC = () => {
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
         <h2 className="text-lg font-black">Dictionnaires administrables</h2>
         <p className="mt-1 text-sm text-text-secondary">
-          {overview.catalog.dictionaries.length} valeurs actives couvrant
-          secteurs, familles, métiers, compétences, contrats, rythmes, diplômes
-          et langues.
+          {overview.catalog.dictionaries.length} {t("admin.employmentAdminPage.valeursActivesCouvrantSecteursFamillesMetiersCompetencesContratsRythmesDiplomes")}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {Array.from(

@@ -97,8 +97,8 @@ export const ProviderConfigurationForm: React.FC<
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. General Operational Controls */}
-      <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-        <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
+      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
+        <h2 className="text-sm font-bold text-text-main border-b border-stone-100 pb-2">
           {t(
             "admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement",
           )}
@@ -107,12 +107,11 @@ export const ProviderConfigurationForm: React.FC<
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable Toggle */}
           <div className="flex flex-col justify-between p-3 rounded-lg border border-stone-200 bg-stone-50/60">
-            <span className="text-xs font-bold text-stone-900">
+            <span className="text-xs font-bold text-text-main">
               {t("admin.providerConfigurationForm.etatDActivation")}
             </span>
             <p className="text-micro text-stone-500 mb-2">
-              Autorise uniquement l’adaptateur disponible dans cet environnement
-              ; ne prouve pas sa santé.
+              {t("admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve")}
             </p>
             <div className="flex items-center gap-2">
               <Switch
@@ -143,7 +142,7 @@ export const ProviderConfigurationForm: React.FC<
                 labels wired by `htmlFor`. */}
             <label
               htmlFor="provider-environment"
-              className="text-xs font-bold text-stone-900"
+              className="text-xs font-bold text-text-main"
             >
               Environnement
             </label>
@@ -172,7 +171,7 @@ export const ProviderConfigurationForm: React.FC<
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
             <label
               htmlFor="provider-priority"
-              className="text-xs font-bold text-stone-900"
+              className="text-xs font-bold text-text-main"
             >
               {t("admin.providerConfigurationForm.prioriteDeRoutage")}
             </label>
@@ -192,17 +191,17 @@ export const ProviderConfigurationForm: React.FC<
                     PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
                 )
               }
-              className="py-1 px-2 text-xs rounded border border-stone-200 bg-white font-bold text-stone-800 w-24 h-control-touch"
+              className="py-1 px-2 text-xs rounded border border-stone-200 bg-bg-surface font-bold text-stone-800 w-24 h-control-touch"
             />
           </div>
         </div>
       </div>
 
       {/* 2. Schema-driven Settings & Safe Credentials */}
-      <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
+      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div>
-            <h2 className="text-sm font-bold text-stone-900">
+            <h2 className="text-sm font-bold text-text-main">
               {t(
                 "admin.providerConfigurationForm.parametresTechniquesClesDApi",
               )}
@@ -212,7 +211,7 @@ export const ProviderConfigurationForm: React.FC<
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-stone-600 bg-stone-100 px-2.5 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary bg-stone-100 px-2.5 py-1 rounded-pill">
             <Lock className="w-icon-sm h-icon-sm text-warning" />
             <span>
               {t("admin.providerConfigurationForm.securiteCertifiee")}
@@ -250,20 +249,18 @@ export const ProviderConfigurationForm: React.FC<
                   {isSecret ? (
                     <div className="p-3 rounded-lg border border-warning-border bg-warning-surface/40 space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-stone-600">
+                        <span className="text-text-secondary">
                           {t(
                             "admin.providerConfigurationForm.statutDesIdentifiants",
                           )}
                         </span>
-                        <span className="py-1 px-2 text-xs rounded border border-warning-border bg-white font-semibold text-warning uppercase">
+                        <span className="py-1 px-2 text-xs rounded border border-warning-border bg-bg-surface font-semibold text-warning uppercase">
                           {credentialStatus.replaceAll("_", " ")}
                         </span>
                       </div>
 
-                      <p className="text-xs text-stone-700 rounded border border-stone-200 bg-white px-2.5 py-2">
-                        Valeur non exposée. Le backend dérive ce statut depuis
-                        le gestionnaire de secrets ; il ne peut pas être déclaré
-                        « configuré » depuis ce formulaire.
+                      <p className="text-xs text-stone-700 rounded border border-stone-200 bg-bg-surface px-2.5 py-2">
+                        {t("admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe")}
                       </p>
                       <p className="text-micro text-stone-500">
                         {t(

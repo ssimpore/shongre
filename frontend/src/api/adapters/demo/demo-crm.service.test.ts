@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DemoCrmService } from "./demo-crm.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoCrmService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("admin_antoine"));
+  afterEach(() => storageService.setCurrentUserKey("guest"));
+
   it("provides a deterministic asynchronous CRM dashboard", async () => {
     const first = await new DemoCrmService().getDashboard();
     const second = await new DemoCrmService().getDashboard();

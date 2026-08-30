@@ -1,7 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect } from "vitest";
 import { demoAiService } from "./demo-ai.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoAiService - Listing Assistance & Anti-Fraud Safety Analysis", () => {
+  beforeEach(() => storageService.setCurrentUserKey("buyer_thomas"));
+
   it("generates structured listing content with title, description, category and price range", async () => {
     const result = await demoAiService.generateListingAssistance({
       rawInput: "Vélo de route Trek Emonda carbone",

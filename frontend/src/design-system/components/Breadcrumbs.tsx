@@ -19,15 +19,18 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => (
   <nav
     aria-label="Fil d'Ariane"
-    className={cn("flex items-center text-xs text-text-muted", className)}
+    className={cn(
+      "flex w-full min-w-0 max-w-full items-center text-xs text-text-muted",
+      className,
+    )}
   >
-    <ol className="flex flex-wrap items-center gap-1.5">
+    <ol className="flex w-full min-w-0 max-w-full flex-wrap items-center gap-1.5">
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
           <li
             key={`${item.label}-${index}`}
-            className="flex items-center gap-1.5"
+            className="flex min-w-0 max-w-full items-center gap-1.5"
           >
             {item.href && !isLast ? (
               <Link
@@ -40,7 +43,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               <span
                 className={
                   isLast
-                    ? "max-w-60 truncate font-bold text-text-main"
+                    ? "min-w-0 max-w-full truncate font-bold text-text-main sm:max-w-60"
                     : "font-medium"
                 }
                 title={isLast ? item.label : undefined}

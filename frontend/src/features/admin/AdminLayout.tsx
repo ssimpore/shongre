@@ -115,7 +115,7 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/crm",
-      label: "CRM & Pipeline Ventes",
+      label: t("admin.adminLayout.crmPipelineVentes"),
       icon: Briefcase,
       show: canAccessRoute("adminCrm"),
     },
@@ -151,7 +151,7 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/moderation",
-      label: "Modération & Signalements",
+      label: t("admin.adminRolesMatrixPage.moderationSignalements"),
       icon: ShieldAlert,
       show: canAccessRoute("adminModeration"),
     },
@@ -163,19 +163,19 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/verifications",
-      label: "Conformité KYC / KYB",
+      label: t("admin.adminLayout.conformiteKycKyb"),
       icon: Shield,
       show: canAccessRoute("adminVerifications"),
     },
     {
       to: "/admin/marches",
-      label: "Marchés & Territoires",
+      label: t("admin.adminRolesMatrixPage.marchesTerritoires"),
       icon: Globe,
       show: canAccessRoute("adminMarkets"),
     },
     {
       to: "/admin/fournisseurs",
-      label: "Fournisseurs & Intégrations",
+      label: t("admin.adminLayout.fournisseursIntegrations"),
       icon: Cpu,
       show: canAccessRoute("adminProviders"),
     },
@@ -193,7 +193,7 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/monetisation",
-      label: "Monétisation & Forfaits Pro",
+      label: t("admin.adminLayout.monetisationForfaitsPro"),
       icon: CreditCard,
       show: canAccessRoute("adminMonetization"),
     },
@@ -211,7 +211,7 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/fonctionnalites",
-      label: "Fonctionnalités",
+      label: t("invoicing.product.nav.features"),
       icon: Flag,
       show: canAccessRoute("adminFeatureFlags"),
     },
@@ -223,13 +223,13 @@ export const AdminLayout: React.FC = () => {
     },
     {
       to: "/admin/roles",
-      label: "Matrice Rôles & Permissions",
+      label: t("admin.adminLayout.matriceRolesPermissions"),
       icon: KeyRound,
       show: canAccessRoute("adminRoles"),
     },
     {
       to: "/admin/audit",
-      label: "Registre d'Audit Sécurité",
+      label: t("admin.adminAuditLogsPage.registreDAuditSecurite"),
       icon: FileSpreadsheet,
       show: canAccessRoute("adminAudit"),
     },
@@ -247,18 +247,18 @@ export const AdminLayout: React.FC = () => {
     .sort((a, b) => b.to.length - a.to.length)[0];
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-stone-900">
+    <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
-      <header className="bg-stone-900 text-white sticky top-0 z-header border-b border-stone-800 shadow-sm">
+      <header className="bg-stone-900 text-text-inverse sticky top-0 z-header border-b border-stone-800 shadow-sm">
         <Container
           width="page"
           className="h-14 flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/admin" className="flex items-center gap-2 group min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-primary text-text-inverse flex items-center justify-center font-black text-sm shadow-xs shrink-0">
                 S
               </div>
               <div className="flex flex-col min-w-0">
@@ -271,10 +271,10 @@ export const AdminLayout: React.FC = () => {
               </div>
             </Link>
 
-            <span className="hidden md:inline-block text-stone-600">|</span>
+            <span className="hidden md:inline-block text-text-secondary">|</span>
 
             {/* Scope pill */}
-            <div className="hidden md:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700 text-stone-300 text-xs px-2.5 py-1 rounded-full">
+            <div className="hidden md:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700 text-stone-300 text-xs px-2.5 py-1 rounded-pill">
               <Globe className="w-icon-sm h-icon-sm text-sky-400" />
               <span>{marketLabel}</span>
             </div>
@@ -289,7 +289,7 @@ export const AdminLayout: React.FC = () => {
               }`}
             >
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
+                className={`h-1.5 w-1.5 rounded-pill ${
                   mode === "demo" ? "bg-primary" : "bg-success"
                 }`}
                 aria-hidden="true"
@@ -309,13 +309,13 @@ export const AdminLayout: React.FC = () => {
                 }
                 alt={accountName}
                 sizes="28px"
-                className="w-7 h-7 rounded-full object-cover border border-stone-700 shrink-0"
+                className="w-7 h-7 rounded-pill object-cover border border-stone-700 shrink-0"
               />
               <div className="hidden lg:flex flex-col text-right">
                 <span className="text-xs font-bold text-stone-100 leading-tight">
                   {accountName}
                 </span>
-                <span className="text-micro text-stone-400 font-medium">
+                <span className="text-micro text-text-disabled font-medium">
                   {staffRoleMeta.title}
                 </span>
               </div>
@@ -325,21 +325,21 @@ export const AdminLayout: React.FC = () => {
               role="img"
               aria-label={staffRoleMeta.shortLabel}
               title={staffRoleMeta.shortLabel}
-              className={`hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border sm:inline-flex ${roleMeta.badgeColor}`}
+              className={`hidden h-7 w-7 shrink-0 items-center justify-center rounded-pill border sm:inline-flex ${roleMeta.badgeColor}`}
             >
               <Shield className="h-icon-xs w-icon-xs" aria-hidden="true" />
             </span>
 
             {/* Back to public marketplace. A styled Link rather than a Button
                 inside a Link: nesting a <button> in an <a> is invalid and gave
-                two tab stops, and Button's `outline` variant sets text-stone-900,
+                two tab stops, and Button's `outline` variant sets text-text-main,
                 which won the utility-order conflict against the override here and
                 rendered the label at 1.15:1 on the dark bar.
                 Collapses to an icon on phones so the staff bar fits 320px. */}
             <Link
               to={routes.home()}
               aria-label={t("admin.adminLayout.retourALaPlaceDe")}
-              className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-xl text-xs font-bold bg-stone-800 text-stone-200 border border-stone-700 hover:bg-stone-700 hover:text-white transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-control text-xs font-bold bg-stone-800 text-stone-200 border border-stone-700 hover:bg-stone-700 hover:text-text-inverse transition-colors"
             >
               <ArrowLeft className="w-icon-sm h-icon-sm" />
               <span className="hidden md:inline">
@@ -368,7 +368,7 @@ export const AdminLayout: React.FC = () => {
             aria-expanded={isSectionMenuOpen}
             aria-haspopup="menu"
             aria-controls="admin-section-menu"
-            className="w-full flex items-center justify-between gap-3 bg-white rounded-control border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
+            className="w-full flex items-center justify-between gap-3 bg-bg-surface rounded-control border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
           >
             <span className="flex items-center gap-2.5 min-w-0">
               {activeNavItem ? (
@@ -380,7 +380,7 @@ export const AdminLayout: React.FC = () => {
                 <span className="text-micro font-bold uppercase tracking-wider text-stone-500 leading-none">
                   Console
                 </span>
-                <span className="text-xs font-bold text-stone-900 truncate max-w-full">
+                <span className="text-xs font-bold text-text-main truncate max-w-full">
                   {activeNavItem?.label || "Vue d'ensemble"}
                 </span>
               </span>
@@ -397,7 +397,7 @@ export const AdminLayout: React.FC = () => {
               id="admin-section-menu"
               role="menu"
               aria-label={t("admin.adminLayout.sectionsDeLaConsole")}
-              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-white rounded-xl border border-stone-200 shadow-xl py-1.5 max-h-admin-menu-max overflow-y-auto animate-in fade-in slide-in-from-top"
+              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-bg-surface rounded-control border border-stone-200 shadow-xl py-1.5 max-h-admin-menu-max overflow-y-auto animate-in fade-in slide-in-from-top"
             >
               {visibleNavItems.map((item) => {
                 const Icon = item.icon;
@@ -429,7 +429,7 @@ export const AdminLayout: React.FC = () => {
             column, which is narrower than the phone layout they were designed
             to fall back to. */}
         <aside className="hidden lg:block w-64 shrink-0">
-          <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-3 sticky top-20">
+          <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-3 sticky top-20">
             <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-stone-500">
               Espace Interne & Gouvernance
             </div>
@@ -445,8 +445,8 @@ export const AdminLayout: React.FC = () => {
                     className={({ isActive }) =>
                       `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
                         isActive
-                          ? "bg-primary text-white font-bold shadow-xs"
-                          : "text-stone-700 hover:bg-stone-100 hover:text-stone-900"
+                          ? "bg-primary text-text-inverse font-bold shadow-xs"
+                          : "text-stone-700 hover:bg-stone-100 hover:text-text-main"
                       }`
                     }
                   >
@@ -462,7 +462,7 @@ export const AdminLayout: React.FC = () => {
                 {t("admin.adminLayout.statutDeSession")}
               </div>
               <div className="flex items-center gap-2 text-xs text-success font-semibold bg-success-surface px-2.5 py-1.5 rounded-md border border-success-border">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                <span className="w-2 h-2 rounded-pill bg-success animate-pulse" />
                 <span>{t("admin.adminLayout.sessionAuthentifieeRbac")}</span>
               </div>
             </div>

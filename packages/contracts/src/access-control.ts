@@ -88,6 +88,7 @@ export const PLATFORM_ROLES = [
 export type PlatformRole = (typeof PLATFORM_ROLES)[number];
 
 export const CAPABILITIES = [
+  "marketplace.customer.access",
   "profile.read",
   "profile.update.own",
   "seller.profile.read",
@@ -335,6 +336,87 @@ export const CAPABILITIES = [
 export type Capability = (typeof CAPABILITIES)[number];
 
 /**
+ * Capabilities belonging to the customer marketplace plane or directly
+ * manipulating a customer's marketplace participation.
+ *
+ * A Staff membership and customer marketplace authority must never be active
+ * on the same identity. Internal moderation, refunds and finance audit use
+ * separate capabilities; featuring a customer listing is intentionally
+ * forbidden even though it was historically modeled as an editorial action.
+ */
+export const CUSTOMER_MARKETPLACE_CAPABILITIES = [
+  "marketplace.customer.access",
+  "profile.read",
+  "profile.update.own",
+  "seller.profile.read",
+  "seller.profile.update.own",
+  "listing.read",
+  "listing.create",
+  "listing.update.own",
+  "listing.delete.own",
+  "listing.publish",
+  "listing.mark_reserved",
+  "listing.mark_sold",
+  "listing.promote",
+  "listing.bulk_import",
+  "listing.feature",
+  "message.read.own",
+  "message.send",
+  "message.block",
+  "conversation.manage.own",
+  "favorite.manage.own",
+  "saved_search.manage.own",
+  "order.create",
+  "order.read.own",
+  "order.manage.seller",
+  "finance.account.read.own",
+  "finance.organization.read.own",
+  "payment.initiate",
+  "review.create",
+  "review.update.own",
+  "store.manage.own",
+  "store.analytics.read.own",
+  "store.customization.manage",
+  "subscription.manage.own",
+  "subscription.upgrade",
+  "report.create",
+  "course.read",
+  "course.request.create",
+  "course.profile.manage.own",
+  "course.offer.manage.own",
+  "course.lead.read.own",
+  "course.lead.respond.own",
+  "course.organization.manage.own",
+  "course.booking.create",
+  "auto.read",
+  "auto.vehicle.manage.own",
+  "auto.dealer.manage.own",
+  "auto.lead.manage.own",
+  "auto.inventory.import.own",
+  "immo.read",
+  "immo.property.manage.own",
+  "immo.agency.manage.own",
+  "immo.lead.manage.own",
+  "immo.inventory.import.own",
+  "employment.read",
+  "employment.candidate.manage.own",
+  "employment.job.manage.own",
+  "employment.recruiter.manage.own",
+  "employment.application.manage.own",
+  "employment.import.own",
+] as const satisfies readonly Capability[];
+
+const CUSTOMER_MARKETPLACE_CAPABILITY_SET = new Set<Capability>(
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
+);
+
+export function isCustomerMarketplaceCapability(
+  capability: Capability,
+): boolean {
+  return CUSTOMER_MARKETPLACE_CAPABILITY_SET.has(capability);
+}
+
+/**
  * Direct grants for these governance capabilities are reserved for active
  * owners. A non-owner permission manager may still place them in the direct
  * revocation set to remediate an improper historical grant.
@@ -462,6 +544,7 @@ const PUBLIC_CAPABILITIES = [
 
 const CUSTOMER_CORE_CAPABILITIES = [
   ...PUBLIC_CAPABILITIES,
+  "marketplace.customer.access",
   "profile.update.own",
   "seller.profile.update.own",
   "favorite.manage.own",
@@ -497,6 +580,7 @@ const INDIVIDUAL_CAPABILITIES = [
   "auto.vehicle.manage.own",
   "immo.property.manage.own",
   "employment.candidate.manage.own",
+  "employment.application.manage.own",
   "employment.job.manage.own",
 ] as const satisfies readonly Capability[];
 
@@ -587,8 +671,6 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
     moderator: [
       "staff.internal.access",
       "admin.access",
-      "profile.read",
-      "listing.read",
       "listing.moderate",
       "report.review",
       "moderation.review",
@@ -699,7 +781,6 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "staff.internal.access",
       "admin.access",
       "taxonomy.manage",
-      "listing.feature",
       ...MARKETING_EDITOR_CAPABILITIES,
       "analytics.marketing.read",
     ],
@@ -709,7 +790,6 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "market.manage",
       "market.configure",
       "taxonomy.manage",
-      "listing.feature",
       "provider.read",
       "provider.configuration.read",
       "provider.configuration.manage",
@@ -880,7 +960,11 @@ export interface AccessSubject {
 }
 
 export type CapabilityIneffectiveReason =
-  "directly_revoked" | "inactive_staff" | "account_status" | "not_granted";
+  | "directly_revoked"
+  | "inactive_staff"
+  | "staff_separation"
+  | "account_status"
+  | "not_granted";
 
 export interface CapabilityResolutionFact {
   capability: Capability;
@@ -1046,35 +1130,47 @@ export function resolveEffectiveCapabilities(
 
   if (context.accountType === "guest") {
     PUBLIC_CAPABILITIES.forEach((capability) => capabilities.add(capability));
-  } else if (context.accountType === "professional") {
+  } else if (
+    context.staffStatus === "none" &&
+    context.accountType === "professional"
+  ) {
     PROFESSIONAL_CORE_CAPABILITIES.forEach((capability) =>
       capabilities.add(capability),
     );
     VERTICAL_CAPABILITIES[context.professionalVertical ?? "generic"].forEach(
       (capability) => capabilities.add(capability),
     );
-  } else {
+  } else if (context.staffStatus === "none") {
     INDIVIDUAL_CAPABILITIES.forEach((capability) =>
       capabilities.add(capability),
     );
   }
 
-  // Activating Staff adds only the explicitly selected employee role. The
-  // account's Individual/Professional capabilities remain independently
-  // derived from its account type.
+  // A Staff lifecycle record replaces the customer capability plane for this
+  // identity. Only an active membership with an explicit role can add internal
+  // authority; suspended and revoked memberships add neither plane.
   if (context.staffStatus === "active" && context.staffRole) {
-    STAFF_ROLE_CAPABILITIES[context.staffRole].forEach((capability) =>
-      capabilities.add(capability),
-    );
+    STAFF_ROLE_CAPABILITIES[context.staffRole].forEach((capability) => {
+      if (!isCustomerMarketplaceCapability(capability)) {
+        capabilities.add(capability);
+      }
+    });
   }
 
   subject?.customPermissions?.forEach((capability) => {
-    // Direct overrides can refine an active employee's role, but they must not
-    // turn a customer—or a suspended/revoked employee—into Staff authority.
-    if (
-      !isStaffCapability(capability) ||
-      (context.staffStatus === "active" && context.staffRole)
-    ) {
+    if (context.staffStatus !== "none") {
+      if (
+        context.staffStatus === "active" &&
+        context.staffRole &&
+        !isCustomerMarketplaceCapability(capability)
+      ) {
+        capabilities.add(capability);
+      }
+      return;
+    }
+    // A customer identity must not acquire a Staff-only capability through a
+    // direct override. Active Staff overrides were handled by the branch above.
+    if (!isStaffCapability(capability)) {
       capabilities.add(capability);
     }
   });
@@ -1127,14 +1223,17 @@ export function resolveCapabilityFacts(
     PUBLIC_CAPABILITIES.forEach((capability) =>
       customerCapabilities.add(capability),
     );
-  } else if (context.accountType === "professional") {
+  } else if (
+    context.staffStatus === "none" &&
+    context.accountType === "professional"
+  ) {
     PROFESSIONAL_CORE_CAPABILITIES.forEach((capability) =>
       customerCapabilities.add(capability),
     );
     VERTICAL_CAPABILITIES[context.professionalVertical ?? "generic"].forEach(
       (capability) => customerCapabilities.add(capability),
     );
-  } else {
+  } else if (context.staffStatus === "none") {
     INDIVIDUAL_CAPABILITIES.forEach((capability) =>
       customerCapabilities.add(capability),
     );
@@ -1158,6 +1257,18 @@ export function resolveCapabilityFacts(
     if (!effective) {
       if (directlyRevoked) {
         ineffectiveReason = "directly_revoked";
+      } else if (
+        context.staffStatus !== "none" &&
+        isCustomerMarketplaceCapability(capability) &&
+        directlyGranted
+      ) {
+        ineffectiveReason = "staff_separation";
+      } else if (
+        context.staffStatus !== "none" &&
+        context.staffStatus !== "active" &&
+        directlyGranted
+      ) {
+        ineffectiveReason = "inactive_staff";
       } else if (
         isStaffCapability(capability) &&
         (context.staffStatus !== "active" || !context.staffRole) &&
@@ -1212,6 +1323,13 @@ export function isActiveStaffSubject(
   subject: AccessSubject | null | undefined,
 ): boolean {
   return canonicalAccessContext(subject).staffStatus === "active";
+}
+
+/** True for every retained Staff lifecycle state, including suspended/revoked. */
+export function isStaffSeparatedSubject(
+  subject: AccessSubject | null | undefined,
+): boolean {
+  return canonicalAccessContext(subject).staffStatus !== "none";
 }
 
 export function capabilitiesForLegacyRole(role: PlatformRole): Capability[] {

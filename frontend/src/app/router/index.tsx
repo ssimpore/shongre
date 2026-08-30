@@ -20,6 +20,7 @@ import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
 import { RequireRoutePolicy } from "../../security/components/RequireRoutePolicy";
 import { RequirePermission } from "../../security/components/RequirePermission";
 import { RequireStaffMfa } from "../../security/components/RequireStaffMfa";
+import { StaffCustomerSurfaceBoundary } from "../../security/components/StaffCustomerSurfaceBoundary";
 import { AdminLayout } from "../../features/admin/AdminLayout";
 import type { Permission } from "../../types";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
@@ -697,7 +698,11 @@ const LegacyPathRedirect: React.FC<{ to: string }> = ({ to }) => {
 export const APP_ROUTES: RouteObject[] = [
   {
     path: "/solutions",
-    element: <SolutionsLayout />,
+    element: (
+      <StaffCustomerSurfaceBoundary>
+        <SolutionsLayout />
+      </StaffCustomerSurfaceBoundary>
+    ),
     children: [
       { index: true, element: withSuspense(SolutionsPage) },
       { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },
@@ -709,15 +714,17 @@ export const APP_ROUTES: RouteObject[] = [
   {
     path: "/facturation",
     element: (
-      <ProductLayout
-        productId="facturation"
-        productName="Facturation"
-        productPath={routes.facturation.product()}
-        workspacePath={routes.facturation.workspace()}
-        navigation={invoicingProductNavigation}
-        workspacePolicyId="standaloneInvoicing"
-        footerDescription="La facturation multi-marché de votre organisation, avec des contrôles de production explicites."
-      />
+      <StaffCustomerSurfaceBoundary>
+        <ProductLayout
+          productId="facturation"
+          productName="Facturation"
+          productPath={routes.facturation.product()}
+          workspacePath={routes.facturation.workspace()}
+          navigation={invoicingProductNavigation}
+          workspacePolicyId="standaloneInvoicing"
+          footerDescription="La facturation multi-marché de votre organisation, avec des contrôles de production explicites."
+        />
+      </StaffCustomerSurfaceBoundary>
     ),
     children: [
       { index: true, element: withSuspense(FacturationProductPage) },
@@ -750,14 +757,16 @@ export const APP_ROUTES: RouteObject[] = [
   {
     path: "/",
     element: (
-      <ProductLayout
-        productId="prospects"
-        productName="Prospects"
-        productPath={routes.prospects.product()}
-        workspacePath={routes.prospects.workspace()}
-        navigation={prospectsProductNavigation}
-        workspacePolicyId="standaloneProspects"
-      />
+      <StaffCustomerSurfaceBoundary>
+        <ProductLayout
+          productId="prospects"
+          productName="Prospects"
+          productPath={routes.prospects.product()}
+          workspacePath={routes.prospects.workspace()}
+          navigation={prospectsProductNavigation}
+          workspacePolicyId="standaloneProspects"
+        />
+      </StaffCustomerSurfaceBoundary>
     ),
     children: [
       { path: "prospects", element: withSuspense(ProspectsProductPage) },
@@ -962,7 +971,11 @@ export const APP_ROUTES: RouteObject[] = [
   },
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <StaffCustomerSurfaceBoundary allowNeutralPublicPaths exitDemoStaffAtRoot>
+        <MainLayout />
+      </StaffCustomerSurfaceBoundary>
+    ),
     children: [
       { index: true, element: withSuspense(HomePage) },
       { path: "categories", element: withSuspense(CategoriesPage) },

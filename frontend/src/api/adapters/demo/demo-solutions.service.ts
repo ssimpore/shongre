@@ -1,7 +1,5 @@
 import type { SolutionsServiceContract } from "../../contracts/solutions.contract";
-import {
-  PUBLIC_SOLUTION_LIFECYCLES,
-} from "../../../domains/solutions/solutions.presentation";
+import { PUBLIC_SOLUTION_LIFECYCLES } from "../../../domains/solutions/solutions.presentation";
 import {
   MIN_SOLUTION_SORT_ORDER,
   SOLUTION_LIFECYCLES,
@@ -20,11 +18,16 @@ import {
   demoSolutionsStore,
   type DemoSolutionsStore,
 } from "./demo-solutions.store";
+import {
+  forbidDemoStaffMarketplaceAccess,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const DEMO_NOW = "2026-08-28T12:00:00.000Z";
 const clone = <T>(value: T): T => structuredClone(value);
 
 function assertAdmin(actor: SolutionsAdminActor): void {
+  requireDemoCapability("admin.configuration.manage");
   if (!actor.canManage) {
     throw new Error("Vous n’avez pas la capacité de gérer les solutions.");
   }
@@ -32,11 +35,16 @@ function assertAdmin(actor: SolutionsAdminActor): void {
 
 function validateSlug(slug: string): void {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    throw new Error("Le slug doit utiliser des minuscules, chiffres et tirets.");
+    throw new Error(
+      "Le slug doit utiliser des minuscules, chiffres et tirets.",
+    );
   }
 }
 
-function validateOptionalIsoDate(value: string | undefined, label: string): void {
+function validateOptionalIsoDate(
+  value: string | undefined,
+  label: string,
+): void {
   if (value && Number.isNaN(Date.parse(value))) {
     throw new Error(`${label} doit être une date et une heure valides.`);
   }
@@ -65,7 +73,10 @@ function validateSolution(solution: SolutionDefinition): void {
   if (solution.markets.length === 0 || solution.languages.length === 0) {
     throw new Error("Sélectionnez au moins un marché et une langue.");
   }
-  if (!Number.isInteger(solution.sortOrder) || solution.sortOrder < MIN_SOLUTION_SORT_ORDER) {
+  if (
+    !Number.isInteger(solution.sortOrder) ||
+    solution.sortOrder < MIN_SOLUTION_SORT_ORDER
+  ) {
     throw new Error("L’ordre d’affichage doit être un entier positif ou nul.");
   }
   if (
@@ -81,7 +92,9 @@ function validateSolution(solution: SolutionDefinition): void {
     throw new Error("Une solution disponible exige une destination valide.");
   }
   if (solution.requiresEntitlement && !solution.entitlementKey?.trim()) {
-    throw new Error("Un accès soumis à entitlement exige une clé d’entitlement.");
+    throw new Error(
+      "Un accès soumis à entitlement exige une clé d’entitlement.",
+    );
   }
   if (solution.requiresEntitlement && !solution.requiresAuthentication) {
     throw new Error("Un entitlement ne peut être vérifié sans connexion.");
@@ -122,7 +135,9 @@ function applyScenario(
 ): SolutionDefinition[] {
   if (scenario === "empty") return [];
   const solutions = clone(values);
-  const facturation = solutions.find((solution) => solution.slug === "facturation");
+  const facturation = solutions.find(
+    (solution) => solution.slug === "facturation",
+  );
   if (facturation && scenario === "maintenance") {
     facturation.lifecycle = "MAINTENANCE";
     facturation.maintenanceMessage = "Maintenance planifiée jusqu’à 16 h 00.";
@@ -163,10 +178,13 @@ export class DemoSolutionsService implements SolutionsServiceContract {
   async listPublicSolutions(
     options: SolutionListOptions = {},
   ): Promise<SolutionDefinition[]> {
+    forbidDemoStaffMarketplaceAccess();
     const market = options.marketCode?.toUpperCase();
     const language = options.language?.toLowerCase();
     return (await this.values())
-      .filter((solution) => PUBLIC_SOLUTION_LIFECYCLES.includes(solution.lifecycle))
+      .filter((solution) =>
+        PUBLIC_SOLUTION_LIFECYCLES.includes(solution.lifecycle),
+      )
       .filter((solution) => solution.catalogVisible)
       .filter((solution) => !market || solution.markets.includes(market))
       .filter(
@@ -176,13 +194,16 @@ export class DemoSolutionsService implements SolutionsServiceContract {
             value.toLowerCase().startsWith(language.split("-")[0]),
           ),
       )
-      .sort((a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name));
+      .sort(
+        (a, b) => a.sortOrder - b.sortOrder || a.name.localeCompare(b.name),
+      );
   }
 
   async getSolutionBySlug(
     slug: string,
     options: SolutionListOptions & { includeAdminOnly?: boolean } = {},
   ): Promise<SolutionDefinition | null> {
+    if (!options.includeAdminOnly) forbidDemoStaffMarketplaceAccess();
     const solution = (await this.values()).find((value) => value.slug === slug);
     if (!solution) return null;
     if (

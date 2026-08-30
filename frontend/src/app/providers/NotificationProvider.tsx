@@ -15,6 +15,7 @@ import { notificationRealtimeClient } from "../../domains/notifications/notifica
 import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
 import { useAuth } from "./AuthProvider";
 import { useToast } from "./ToastProvider";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 
 interface NotificationContextValue {
   unreadCount: number;
@@ -39,6 +40,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const { currentUser, isRestoring } = useAuth();
   const toast = useToast();
   const currentUserId = currentUser?.id ?? null;
+  const isStaffIdentity = isStaffSeparatedSubject(currentUser);
 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [recentNotifications, setRecentNotifications] = useState<
@@ -49,7 +51,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   // Load recent notifications & unread count
   const refresh = useCallback(async () => {
     if (isRestoring) return;
-    if (!currentUserId) {
+    if (!currentUserId || isStaffIdentity) {
       setRecentNotifications([]);
       setUnreadCount(0);
       setIsLoading(false);
@@ -73,7 +75,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [currentUserId, isRestoring]);
+  }, [currentUserId, isRestoring, isStaffIdentity]);
 
   useEffect(() => {
     void refresh();
@@ -81,7 +83,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Subscribe to real-time events
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId || isStaffIdentity) return;
 
     const unsubscribe = notificationRealtimeClient.subscribe(
       currentUserId,
@@ -118,7 +120,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       unsubscribe();
     };
-  }, [currentUserId, toast]);
+  }, [currentUserId, isStaffIdentity, toast]);
 
   const markAsRead = async (id: string) => {
     if (!currentUserId) return;
@@ -165,9 +167,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <NotificationContext.Provider
       value={{
-        unreadCount,
-        recentNotifications,
-        isLoading,
+        unreadCount: isStaffIdentity ? 0 : unreadCount,
+        recentNotifications: isStaffIdentity ? [] : recentNotifications,
+        isLoading: isStaffIdentity ? false : isLoading,
         markAsRead,
         markAllAsRead,
         refresh,

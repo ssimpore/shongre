@@ -10,8 +10,13 @@ import { CookieConsent } from "./CookieConsent";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { SkipLink } from "../../design-system";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
+import { useAuth } from "../providers/AuthProvider";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 
 export const MainLayout: React.FC = () => {
+  const { currentUser } = useAuth();
+  const isStaffIdentity = isStaffSeparatedSubject(currentUser);
+
   return (
     /* `--page-bottom-inset` is how a page declares that it pins something over
        the bottom of the viewport (the listing detail action bar is the only one
@@ -33,7 +38,7 @@ export const MainLayout: React.FC = () => {
       >
         <Outlet />
       </main>
-      <Footer />
+      {!isStaffIdentity && <Footer />}
       <MobileBottomNav />
       <LocationPickerModal />
       <PreferencesModal />

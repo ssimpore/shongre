@@ -14,6 +14,7 @@ import { EmptyState, Skeleton } from "../../../design-system";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 const typeLabels: Record<CrmProduct["productType"], string> = {
   subscription: "Abonnement",
@@ -32,9 +33,10 @@ const intervalLabels = {
 } as const;
 
 export const CrmProductsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Produits CRM | Shongre",
-    description: "Catalogue commercial et tarifs CRM.",
+    description: t("admin.crmProductsPage.catalogueCommercialEtTarifsCrm"),
     canonicalPath: "/admin/crm/produits",
     noIndex: true,
   });
@@ -141,7 +143,7 @@ export const CrmProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
@@ -150,8 +152,8 @@ export const CrmProductsPage: React.FC = () => {
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
               Produits & tarifs
             </h1>
-            <p className="mt-1 text-xs text-stone-400">
-              Une source commerciale indépendante de la facturation Shongre.
+            <p className="mt-1 text-xs text-text-disabled">
+              {t("admin.crmProductsPage.uneSourceCommercialeIndependanteDeLaFacturationShongre")}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -159,27 +161,27 @@ export const CrmProductsPage: React.FC = () => {
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">Produits</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">Produits</span>
             <strong className="block text-xl font-black">
               {products.length}
             </strong>
           </div>
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">Actifs</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">Actifs</span>
             <strong className="block text-xl font-black text-emerald-300">
               {products.filter((item) => item.isActive).length}
             </strong>
           </div>
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">Marché</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">{t("invoicing.product.previewMarket")}</span>
             <strong className="block text-xl font-black">
               {activeMarket.code}
             </strong>
           </div>
         </div>
       </section>
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -188,13 +190,13 @@ export const CrmProductsPage: React.FC = () => {
           className="flex items-center gap-2 border-b border-border-subtle p-3"
         >
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
+            <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
             <Input
-              aria-label="Rechercher un produit"
+              aria-label={t("admin.crmProductsPage.rechercherUnProduit")}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="pl-9"
-              placeholder="Nom ou SKU…"
+              placeholder={t("admin.crmProductsPage.nomOuSku")}
             />
           </div>
           <Button type="submit" variant="outline" size="sm">
@@ -204,18 +206,18 @@ export const CrmProductsPage: React.FC = () => {
         {loading ? (
           <div className="space-y-3 p-5">
             {[1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-20 rounded-xl" />
+              <Skeleton key={item} className="h-20 rounded-control" />
             ))}
           </div>
         ) : products.length === 0 ? (
           <EmptyState
             icon={<Box className="h-8 w-8" />}
-            title="Aucun produit"
-            description="Créez le premier produit du catalogue commercial."
+            title={t("admin.crmProductsPage.aucunProduit")}
+            description={t("admin.crmProductsPage.creezLePremierProduitDuCatalogueCommercial")}
             className="border-0 shadow-none"
             action={
               <Button size="sm" onClick={() => setModalOpen(true)}>
-                Créer un produit
+                {t("admin.crmProductsPage.creerUnProduit")}
               </Button>
             }
           />
@@ -232,7 +234,7 @@ export const CrmProductsPage: React.FC = () => {
                   className="grid gap-3 px-4 py-4 sm:grid-cols-4 sm:items-center"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
                       <Tag className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0">
@@ -241,7 +243,7 @@ export const CrmProductsPage: React.FC = () => {
                           {product.name}
                         </strong>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-micro font-bold ${product.isActive ? "bg-success-surface text-success" : "bg-stone-100 text-stone-500"}`}
+                          className={`rounded-pill px-2 py-0.5 text-micro font-bold ${product.isActive ? "bg-success-surface text-success" : "bg-stone-100 text-stone-500"}`}
                         >
                           {product.isActive ? "Actif" : "Inactif"}
                         </span>
@@ -294,7 +296,7 @@ export const CrmProductsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Nouveau produit"
-        description="Le prix est stocké en unité monétaire mineure et associé au marché actif."
+        description={t("admin.crmProductsPage.lePrixEstStockeEnUniteMonetaireMineureEtAssocie")}
       >
         <form onSubmit={createProduct} className="space-y-3.5 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -324,7 +326,7 @@ export const CrmProductsPage: React.FC = () => {
           <div className="grid gap-3 sm:grid-cols-3">
             <FormField label="Type">
               <Select
-                aria-label="Type de produit"
+                aria-label={t("admin.crmProductsPage.typeDeProduit")}
                 value={productType}
                 onChange={(event) =>
                   setProductType(
@@ -348,7 +350,7 @@ export const CrmProductsPage: React.FC = () => {
             </FormField>
             <FormField label="Facturation">
               <Select
-                aria-label="Intervalle de facturation"
+                aria-label={t("admin.crmProductsPage.intervalleDeFacturation")}
                 value={billingInterval}
                 onChange={(event) =>
                   setBillingInterval(

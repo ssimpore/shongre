@@ -53,7 +53,7 @@ const lifecycleTone: Record<CrmAccount["lifecycle"], string> = {
   customer: "bg-success-surface text-success",
   partner: "bg-violet-50 text-violet-700",
   do_not_contact: "bg-danger-surface text-danger",
-  archived: "bg-stone-100 text-stone-600",
+  archived: "bg-stone-100 text-text-secondary",
 };
 
 export const CrmCompaniesPage: React.FC = () => {
@@ -256,10 +256,10 @@ export const CrmCompaniesPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.overview}
-          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
         </Link>
@@ -268,7 +268,7 @@ export const CrmCompaniesPage: React.FC = () => {
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
               {isListsSurface ? "Listes d’entreprises" : "Entreprises"}
             </h1>
-            <p className="mt-1 text-sm text-stone-400">
+            <p className="mt-1 text-sm text-text-disabled">
               {isListsSurface
                 ? "Vues personnelles et partagées de l’organisation"
                 : "Comptes, prospects et clients de l’organisation"}{" "}
@@ -281,10 +281,10 @@ export const CrmCompaniesPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs lg:flex-row lg:items-center">
+      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs lg:flex-row lg:items-center">
         <label className="relative min-w-0 flex-1 lg:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
-          <span className="sr-only">Rechercher une entreprise</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
+          <span className="sr-only">{t("admin.crmCompaniesPage.rechercherUneEntreprise")}</span>
           <input
             type="search"
             value={search}
@@ -292,13 +292,13 @@ export const CrmCompaniesPage: React.FC = () => {
               setSearch(event.target.value);
               setSelectedViewId("");
             }}
-            placeholder="Nom, domaine ou secteur…"
+            placeholder={t("admin.crmCompaniesPage.nomDomaineOuSecteur")}
             className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
           <SlidersHorizontal
-            className="h-icon-md w-icon-md shrink-0 text-stone-400"
+            className="h-icon-md w-icon-md shrink-0 text-text-disabled"
             aria-hidden="true"
           />
           {(
@@ -312,7 +312,7 @@ export const CrmCompaniesPage: React.FC = () => {
                 setSelectedViewId("");
               }}
               aria-pressed={lifecycle === value}
-              className={`shrink-0 rounded-lg px-2.5 py-2 text-micro font-bold transition ${lifecycle === value ? "bg-stone-950 text-white" : "text-stone-600 hover:bg-stone-100"}`}
+              className={`shrink-0 rounded-lg px-2.5 py-2 text-micro font-bold transition ${lifecycle === value ? "bg-stone-950 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
             >
               {value === "all" ? "Toutes" : lifecycleLabel[value]}
             </button>
@@ -320,14 +320,14 @@ export const CrmCompaniesPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="flex flex-col gap-2 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-2 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-2">
           <Bookmark
             className="h-icon-md w-icon-md shrink-0 text-primary"
             aria-hidden="true"
           />
           <label htmlFor="crm-account-saved-view" className="sr-only">
-            Vue enregistrée
+            {t("admin.crmCompaniesPage.vueEnregistree")}
           </label>
           <Select
             size="compact"
@@ -359,7 +359,7 @@ export const CrmCompaniesPage: React.FC = () => {
                   )
                 }
                 className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                aria-label="Supprimer la vue sélectionnée"
+                aria-label={t("admin.crmCompaniesPage.supprimerLaVueSelectionnee")}
               >
                 <Trash2 className="h-icon-md w-icon-md" />
               </button>
@@ -371,25 +371,25 @@ export const CrmCompaniesPage: React.FC = () => {
           size="sm"
           onClick={() => setSaveViewOpen(true)}
         >
-          <BookmarkPlus className="h-icon-md w-icon-md" /> Enregistrer la vue
+          <BookmarkPlus className="h-icon-md w-icon-md" /> {t("admin.crmCompaniesPage.enregistrerLaVue")}
         </Button>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         {loading ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-16 rounded-xl" />
+              <Skeleton key={item} className="h-16 rounded-control" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <Building2 className="mx-auto h-8 w-8 text-stone-400" />
+            <Building2 className="mx-auto h-8 w-8 text-text-disabled" />
             <h2 className="mt-3 text-sm font-black text-stone-800">
-              Aucune entreprise dans cette vue
+              {t("admin.crmCompaniesPage.aucuneEntrepriseDansCetteVue")}
             </h2>
             <p className="mt-1 text-xs text-stone-500">
-              Modifiez les filtres ou créez une nouvelle fiche.
+              {t("admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche")}
             </p>
           </div>
         ) : (
@@ -398,11 +398,11 @@ export const CrmCompaniesPage: React.FC = () => {
               <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
                 <tr>
                   <th className="px-5 py-3">Entreprise</th>
-                  <th className="px-4 py-3">Cycle de vie</th>
+                  <th className="px-4 py-3">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</th>
                   <th className="px-4 py-3">Localisation</th>
-                  <th className="px-4 py-3">Propriétaire</th>
+                  <th className="px-4 py-3">{t("admin.crmCompaniesPage.proprietaire")}</th>
                   <th className="px-4 py-3 text-right">Fit</th>
-                  <th className="px-5 py-3 text-right">Mise à jour</th>
+                  <th className="px-5 py-3 text-right">{t("admin.adminFeatureFlagsPage.miseAJour")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
@@ -441,20 +441,20 @@ export const CrmCompaniesPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3.5">
                       <span
-                        className={`rounded-full px-2 py-1 text-micro font-bold ${lifecycleTone[account.lifecycle]}`}
+                        className={`rounded-pill px-2 py-1 text-micro font-bold ${lifecycleTone[account.lifecycle]}`}
                       >
                         {lifecycleLabel[account.lifecycle]}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-stone-600">
+                    <td className="px-4 py-3.5 text-text-secondary">
                       <span className="inline-flex items-center gap-1">
-                        <MapPin className="h-icon-sm w-icon-sm text-stone-400" />{" "}
+                        <MapPin className="h-icon-sm w-icon-sm text-text-disabled" />{" "}
                         {[account.city, account.country]
                           .filter(Boolean)
                           .join(", ") || "Non renseignée"}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-stone-600">
+                    <td className="px-4 py-3.5 text-text-secondary">
                       {account.ownerId ? "Léa Bertin" : "Non assignée"}
                     </td>
                     <td className="px-4 py-3.5 text-right">
@@ -480,20 +480,20 @@ export const CrmCompaniesPage: React.FC = () => {
         )}
         <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
           <span>
-            {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+            {filtered.length} {t("admin.crmCompaniesPage.resultat")}{filtered.length > 1 ? "s" : ""}
           </span>
-          <span>Isolation par tenant active</span>
+          <span>{t("admin.crmCompaniesPage.isolationParTenantActive")}</span>
         </div>
       </section>
 
       <Modal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Créer une entreprise"
-        description="Ajoutez un compte CRM générique, sans créer d’organisation Shongre."
+        title={t("admin.crmCompaniesPage.creerUneEntreprise")}
+        description={t("admin.crmCompaniesPage.ajoutezUnCompteCrmGeneriqueSansCreerDOrganisationShongre")}
       >
         <form onSubmit={createAccount} className="space-y-4 text-xs">
-          <FormField label="Nom de l’entreprise" required>
+          <FormField label={t("admin.crmCompaniesPage.nomDeLEntreprise")} required>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -523,9 +523,9 @@ export const CrmCompaniesPage: React.FC = () => {
                 onChange={(event) => setCity(event.target.value)}
               />
             </FormField>
-            <FormField label="Marché">
+            <FormField label={t("invoicing.product.previewMarket")}>
               <Select
-                aria-label="Marché"
+                aria-label={t("invoicing.product.previewMarket")}
                 value={activeMarket.code}
                 options={[
                   {
@@ -561,11 +561,11 @@ export const CrmCompaniesPage: React.FC = () => {
       <Modal
         isOpen={saveViewOpen}
         onClose={() => setSaveViewOpen(false)}
-        title="Enregistrer la vue"
-        description="Conservez la recherche et le cycle de vie actuellement affichés."
+        title={t("admin.crmCompaniesPage.enregistrerLaVue")}
+        description={t("admin.crmCompaniesPage.conservezLaRechercheEtLeCycleDeVieActuellementAffiches")}
       >
         <form onSubmit={saveCurrentView} className="space-y-4 text-xs">
-          <FormField label="Nom de la vue" required>
+          <FormField label={t("admin.crmCompaniesPage.nomDeLaVue")} required>
             <Input
               value={viewName}
               onChange={(event) => setViewName(event.target.value)}
@@ -573,9 +573,9 @@ export const CrmCompaniesPage: React.FC = () => {
               required
             />
           </FormField>
-          <FormField label="Visibilité">
+          <FormField label={t("admin.crmCompaniesPage.visibilite")}>
             <Select
-              aria-label="Visibilité de la vue"
+              aria-label={t("admin.crmCompaniesPage.visibiliteDeLaVue")}
               value={viewVisibility}
               onChange={(event) =>
                 setViewVisibility(event.target.value as CrmSavedViewVisibility)
@@ -586,14 +586,14 @@ export const CrmCompaniesPage: React.FC = () => {
                   ? [
                       {
                         value: "workspace",
-                        label: "Partagée avec le workspace",
+                        label: t("admin.crmCompaniesPage.partageeAvecLeWorkspace"),
                       },
                     ]
                   : []),
               ]}
             />
           </FormField>
-          <p className="rounded-lg bg-stone-50 px-3 py-2 text-micro leading-relaxed text-stone-600">
+          <p className="rounded-lg bg-stone-50 px-3 py-2 text-micro leading-relaxed text-text-secondary">
             {canManageSharedViews
               ? "Les vues partagées sont visibles dans tout le workspace. Les vues personnelles restent privées à votre compte."
               : "Cette vue restera privée à votre compte."}
@@ -620,7 +620,7 @@ export const CrmCompaniesPage: React.FC = () => {
       <Modal
         isOpen={Boolean(deleteView)}
         onClose={() => setDeleteView(null)}
-        title="Supprimer cette vue ?"
+        title={t("admin.crmCompaniesPage.supprimerCetteVue")}
         description={
           deleteView
             ? `La vue « ${deleteView.name} » ne sera plus disponible.`

@@ -23,7 +23,7 @@ describe("protected route policy registry", () => {
     });
   });
 
-  it("adds Staff tools without replacing the customer's account workspace", () => {
+  it("separates Staff tools from the customer account workspace", () => {
     const individual = persona({});
     const admin = persona({
       accountType: "individual",
@@ -35,7 +35,7 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(individual, "accountOverview")).toBe(true);
     expect(canAccessRoutePolicy(individual, "adminOverview")).toBe(false);
     expect(canAccessRoutePolicy(admin, "adminOverview")).toBe(true);
-    expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(true);
+    expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(false);
   });
 
   it("keeps professional workspaces vertical-specific", () => {
@@ -149,7 +149,7 @@ describe("protected route policy registry", () => {
         staffRole: "admin",
       });
       expect(canAccessRoutePolicy(formerAdmin, "adminOverview")).toBe(false);
-      expect(canAccessRoutePolicy(formerAdmin, "accountOverview")).toBe(true);
+      expect(canAccessRoutePolicy(formerAdmin, "accountOverview")).toBe(false);
     }
   });
 

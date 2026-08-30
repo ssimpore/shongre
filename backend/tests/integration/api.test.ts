@@ -341,7 +341,7 @@ describe("API v1 Endpoints Integration", () => {
     expect(await response.json()).toBeNull();
   });
 
-  it("returns privacy-safe public profiles without leaking Staff identity", async () => {
+  it("returns public sellers while excluding Staff identities", async () => {
     const sellerResponse = await fetch(`${baseUrl}/api/v1/users/user_camille`);
     expect(sellerResponse.status).toBe(200);
     const seller = await sellerResponse.json();
@@ -354,16 +354,7 @@ describe("API v1 Endpoints Integration", () => {
     const staffResponse = await fetch(`${baseUrl}/api/v1/users/user_admin`);
     expect(staffResponse.status).toBe(200);
     const staffSeller = await staffResponse.json();
-    expect(staffSeller).toMatchObject({
-      id: "user_admin",
-      accountType: "individual",
-      sellerType: "individual",
-    });
-    expect(staffSeller).not.toHaveProperty("staffStatus");
-    expect(staffSeller).not.toHaveProperty("staffRole");
-    expect(staffSeller).not.toHaveProperty("customPermissions");
-    expect(staffSeller).not.toHaveProperty("revokedPermissions");
-    expect(staffSeller).not.toHaveProperty("capabilityOverrideVersion");
+    expect(staffSeller).toBeNull();
   });
 
   it("POST /api/v1/listings/search executes structured search query", async () => {
@@ -375,6 +366,38 @@ describe("API v1 Endpoints Integration", () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data.items)).toBe(true);
+  });
+
+  it("denies public marketplace discovery when the request carries a Staff session", async () => {
+    const listingUrl = `${baseUrl}/api/v1/listings?marketCode=FR`;
+    const anonymous = await fetch(listingUrl);
+    const customer = await fetch(listingUrl, {
+      headers: auth(buyerToken),
+    });
+    const staff = await fetch(listingUrl, {
+      headers: auth(adminToken),
+    });
+    const staffNotifications = await fetch(`${baseUrl}/api/v1/notifications`, {
+      headers: auth(adminToken),
+    });
+    const staffSupportCase = await fetch(`${baseUrl}/api/v1/support/cases`, {
+      method: "POST",
+      headers: auth(adminToken),
+      body: JSON.stringify({
+        category: "account",
+        subject: "Staff customer-case attempt",
+        description: "This customer-plane operation must be denied.",
+      }),
+    });
+
+    expect(anonymous.status).toBe(200);
+    expect(customer.status).toBe(200);
+    expect(staff.status).toBe(403);
+    expect(staffNotifications.status).toBe(403);
+    expect(staffSupportCase.status).toBe(403);
+    expect(await staff.json()).toMatchObject({
+      error: { code: "FORBIDDEN" },
+    });
   });
 
   it("returns the standard validation envelope for an invalid domain request", async () => {

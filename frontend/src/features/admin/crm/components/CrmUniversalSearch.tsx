@@ -153,7 +153,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       className={`relative w-full max-w-2xl ${className}`}
     >
       <div className="relative">
-        <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={query}
@@ -174,7 +174,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? resultsId : undefined}
           aria-busy={isLoading || undefined}
-          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-text-muted focus:bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-text-muted focus:bg-bg-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
         />
         {query && (
           <button
@@ -192,7 +192,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       {isOpen && (
         <div
           id={resultsId}
-          className="absolute left-0 right-0 top-full z-popover mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-stone-200 bg-white shadow-dropdown animate-in fade-in"
+          className="absolute left-0 right-0 top-full z-popover mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-dropdown animate-in fade-in"
           aria-live="polite"
         >
           <div className="p-2 bg-stone-50 text-micro font-bold text-stone-500 uppercase tracking-wider">
@@ -220,11 +220,11 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
                     className="flex w-full items-center justify-between gap-3 p-3 text-left transition-colors duration-fast hover:bg-stone-50 focus-visible:bg-stone-50"
                   >
                     <span className="flex min-w-0 items-center gap-3">
-                      <span className="shrink-0 rounded-xl bg-stone-100 p-2">
+                      <span className="shrink-0 rounded-control bg-stone-100 p-2">
                         {getItemIcon(hit.type)}
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-xs font-bold text-stone-900">
+                        <span className="block truncate text-xs font-bold text-text-main">
                           {hit.title}
                         </span>
                         <span className="block truncate text-micro text-stone-500">

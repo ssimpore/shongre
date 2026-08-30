@@ -15,6 +15,7 @@ import {
 import { services } from "../../../../api/client/service-registry";
 import { Button } from "../../../../design-system/primitives/Button";
 import { useToast } from "../../../../app/providers/ToastProvider";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 interface ProviderHealthSimulatorProps {
   provider: Provider;
@@ -26,6 +27,7 @@ interface ProviderHealthSimulatorProps {
 export const ProviderHealthSimulator: React.FC<
   ProviderHealthSimulatorProps
 > = ({ provider, configuration }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [isRunningTest, setIsRunningTest] = useState(false);
   const [lastTestResult, setLastTestResult] =
@@ -61,20 +63,19 @@ export const ProviderHealthSimulator: React.FC<
 
   return (
     <div className="space-y-5">
-      <section className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
+      <section className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-stone-100 pb-4">
           <div>
-            <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+            <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Activity className="w-icon-md h-icon-md text-primary" />
-              Santé fondée sur des preuves
+              {t("admin.providerHealthSimulator.santeFondeeSurDesPreuves")}
             </h4>
             <p className="text-xs text-stone-500 mt-1 max-w-2xl">
-              La santé vient d’un probe live ou d’un signal runtime. Elle ne
-              peut pas être modifiée manuellement.
+              {t("admin.providerHealthSimulator.laSanteVientDUnProbeLiveOuDUn")}
             </p>
           </div>
           <span
-            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${
+            className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-pill border shrink-0 ${
               isDemo || configuration.health === "unknown"
                 ? "bg-stone-100 text-stone-700 border-stone-200"
                 : configuration.health === "healthy"
@@ -101,27 +102,27 @@ export const ProviderHealthSimulator: React.FC<
 
         <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">Implémentation</dt>
-            <dd className="font-bold text-stone-900 mt-1">
+            <dt className="text-stone-500">{t("admin.providerHealthSimulator.implementation")}</dt>
+            <dd className="font-bold text-text-main mt-1">
               {implementationLabel}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">Cycle de vie</dt>
-            <dd className="font-bold text-stone-900 mt-1">
+            <dt className="text-stone-500">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</dt>
+            <dd className="font-bold text-text-main mt-1">
               {operational.lifecycle}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">Capacités implémentées</dt>
-            <dd className="font-bold text-stone-900 mt-1">
+            <dt className="text-stone-500">{t("admin.providerHealthSimulator.capacitesImplementees")}</dt>
+            <dd className="font-bold text-text-main mt-1">
               {operational.implementedCapabilities.length} /{" "}
               {operational.capabilities.length}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">Dernière preuve</dt>
-            <dd className="font-bold text-stone-900 mt-1">
+            <dt className="text-stone-500">{t("admin.providerHealthSimulator.dernierePreuve")}</dt>
+            <dd className="font-bold text-text-main mt-1">
               {configuration.healthLastCheckedAt || "Aucune"}
             </dd>
           </div>
@@ -139,16 +140,15 @@ export const ProviderHealthSimulator: React.FC<
         )}
       </section>
 
-      <section className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
+      <section className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+            <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Terminal className="w-icon-md h-icon-md text-stone-700" />
-              Test d’intégration sûr
+              {t("admin.providerHealthSimulator.testDIntegrationSur")}
             </h4>
             <p className="text-xs text-stone-500 mt-1">
-              Exécute uniquement un probe non destructif enregistré côté
-              backend. Aucun paiement, email ou webhook fictif n’est créé.
+              {t("admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun")}
             </p>
           </div>
           <Button
@@ -159,7 +159,7 @@ export const ProviderHealthSimulator: React.FC<
             isLoading={isRunningTest}
             leftIcon={<Play className="w-icon-sm h-icon-sm" />}
           >
-            Lancer le diagnostic
+            {t("admin.providerHealthSimulator.lancerLeDiagnostic")}
           </Button>
         </div>
 
@@ -179,12 +179,12 @@ export const ProviderHealthSimulator: React.FC<
                 <AlertTriangle className="w-icon-md h-icon-md text-warning mt-0.5" />
               )}
               <div className="min-w-0">
-                <p className="text-xs font-bold text-stone-900">
+                <p className="text-xs font-bold text-text-main">
                   {lastTestResult.success
                     ? "Preuve enregistrée"
                     : "Aucune preuve de santé enregistrée"}
                 </p>
-                <p className="text-xs text-stone-600 mt-1">
+                <p className="text-xs text-text-secondary mt-1">
                   {lastTestResult.message}
                 </p>
                 <p className="text-micro text-stone-500 mt-2 font-mono">

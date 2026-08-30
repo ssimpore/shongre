@@ -17,6 +17,7 @@ import type {
   TrendingTopicCandidate,
 } from "../../../domains/trending/trending.types";
 import type { TrendingServiceContract } from "../../contracts/trending.contract";
+import { requireDemoCapability } from "./demo-authorization";
 
 function hashSeed(value: string): number {
   return (
@@ -199,6 +200,7 @@ export function buildDemoTrendingCandidates(
 
 export class DemoTrendingService implements TrendingServiceContract {
   async getTrending(query: TrendingQuery): Promise<TrendingSectionResponse> {
+    requireDemoCapability("listing.read");
     await simulateNetworkDelay();
     const now = query.now || new Date();
     const config = getTrendingAdminConfig(query.marketCode);

@@ -104,7 +104,7 @@ export const AdminOverviewPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -115,14 +115,14 @@ export const AdminOverviewPage: React.FC = () => {
               Shongre Security Core
             </span>
           </div>
-          <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-2xl font-black text-text-main tracking-tight">
             Bonjour, {currentUser?.name || "Collaborateur"}
           </h1>
-          <p className="text-xs text-stone-600 mt-0.5">
+          <p className="text-xs text-text-secondary mt-0.5">
             {t("admin.adminOverviewPage.vousOperezAvecLeRole")}{" "}
-            <strong className="text-stone-900">{staffRoleMeta.title}</strong>{" "}
-            sur le périmètre territorial{" "}
-            <strong className="text-stone-900">
+            <strong className="text-text-main">{staffRoleMeta.title}</strong>{" "}
+            {t("admin.adminOverviewPage.surLePerimetreTerritorial")}{" "}
+            <strong className="text-text-main">
               {currentUser?.marketScope?.countries.join(", ") ||
                 activeMarket.code}
             </strong>
@@ -140,7 +140,7 @@ export const AdminOverviewPage: React.FC = () => {
           )}
           {canReviewReports && (
             <Button to="/admin/moderation" size="sm">
-              Traiter les signalements ({reportsCount ?? "…"})
+              {t("admin.adminOverviewPage.traiterLesSignalements")}{reportsCount ?? "…"})
             </Button>
           )}
         </div>
@@ -149,29 +149,29 @@ export const AdminOverviewPage: React.FC = () => {
       {/* KPI Stats Cards */}
       {(canReadPlatformStats || canReviewVerification || canReviewReports) && (
         <section
-          aria-label="Indicateurs de la console"
+          aria-label={t("admin.adminOverviewPage.indicateursDeLaConsole")}
           className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
         >
           {canReadPlatformStats && (
-            <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
+            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
               <div className="flex items-center justify-between text-stone-500 mb-2">
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.utilisateursEnregistres")}
                 </span>
-                <Users className="w-icon-md h-icon-md text-stone-400" />
+                <Users className="w-icon-md h-icon-md text-text-disabled" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-black text-text-main">
                 {stats?.totalUsers ?? "…"}
               </div>
               <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
                 <span className="text-success font-bold">100%</span>{" "}
-                partitionnés par rôle
+                {t("admin.adminOverviewPage.partitionnesParRole")}
               </div>
             </div>
           )}
 
           {canReviewVerification && (
-            <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
+            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
               <div className="flex items-center justify-between text-stone-500 mb-2">
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.verificationsProEnAttente")}
@@ -190,7 +190,7 @@ export const AdminOverviewPage: React.FC = () => {
           )}
 
           {canReviewReports && (
-            <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
+            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
               <div className="flex items-center justify-between text-stone-500 mb-2">
                 <span className="text-xs font-semibold">
                   Signalements ouverts
@@ -207,14 +207,14 @@ export const AdminOverviewPage: React.FC = () => {
           )}
 
           {canReadPlatformStats && (
-            <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs">
+            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
               <div className="flex items-center justify-between text-stone-500 mb-2">
                 <span className="text-xs font-semibold">
                   {t("admin.adminOverviewPage.catalogueDAnnonces")}
                 </span>
                 <TrendingUp className="w-icon-md h-icon-md text-success" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-black text-text-main">
                 {stats?.totalListings ?? "…"}
               </div>
               <div className="text-xs text-stone-500 mt-1">
@@ -228,18 +228,18 @@ export const AdminOverviewPage: React.FC = () => {
       {/* Grid: Pending Pro Dossiers & Recent Audit Log */}
       {(canReviewVerification || canReadAudit) && (
         <section
-          aria-label="Files opérationnelles"
+          aria-label={t("admin.adminOverviewPage.filesOperationnelles")}
           className={`grid grid-cols-1 gap-6 ${
             visibleOperationalPanelCount > 1 ? "lg:grid-cols-2" : ""
           }`}
         >
           {/* Pending Pro Verifications */}
           {canReviewVerification && (
-            <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 flex flex-col">
+            <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-icon-md h-icon-md text-stone-700" />
-                  <h2 className="text-sm font-bold text-stone-900">
+                  <h2 className="text-sm font-bold text-text-main">
                     {t(
                       "admin.adminOverviewPage.dossiersProfessionnelsAVerifier",
                     )}
@@ -258,7 +258,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-stone-50 rounded-lg border border-dashed border-stone-200">
                   <CheckCircle2 className="w-8 h-8 text-success mb-2" />
                   <div className="text-xs font-bold text-stone-700">
-                    Aucun dossier en attente
+                    {t("admin.adminOverviewPage.aucunDossierEnAttente")}
                   </div>
                   <div className="text-xs text-stone-500">
                     {t(
@@ -278,10 +278,10 @@ export const AdminOverviewPage: React.FC = () => {
                           src={pro.avatarUrl}
                           alt={pro.name}
                           sizes="36px"
-                          className="w-9 h-9 rounded-full object-cover border border-stone-200"
+                          className="w-9 h-9 rounded-pill object-cover border border-stone-200"
                         />
                         <div>
-                          <div className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <div className="text-xs font-bold text-text-main flex items-center gap-1.5">
                             <span>{pro.companyName || pro.name}</span>
                             <span className="text-micro bg-warning-surface text-warning font-bold px-2 py-1 rounded-sm">
                               En attente
@@ -310,11 +310,11 @@ export const AdminOverviewPage: React.FC = () => {
 
           {/* Live Security Audit Trail */}
           {canReadAudit && (
-            <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 flex flex-col">
+            <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-icon-md h-icon-md text-stone-700" />
-                  <h2 className="text-sm font-bold text-stone-900">
+                  <h2 className="text-sm font-bold text-text-main">
                     {t(
                       "admin.adminOverviewPage.dernieresActionsDAuditSecurite",
                     )}
@@ -338,15 +338,15 @@ export const AdminOverviewPage: React.FC = () => {
                     className="p-2.5 bg-stone-50 rounded-lg border border-stone-200 text-xs flex flex-col gap-1"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-stone-900 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="font-bold text-text-main flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-pill bg-primary" />
                         {auditActionLabel(log.action)}
                       </span>
                       <span className="text-micro text-stone-500 shrink-0">
                         {formatLogTimestamp(log.timestamp)}
                       </span>
                     </div>
-                    <div className="text-xs text-stone-600 line-clamp-1">
+                    <div className="text-xs text-text-secondary line-clamp-1">
                       {log.target}
                     </div>
                     <div className="text-micro text-stone-500">

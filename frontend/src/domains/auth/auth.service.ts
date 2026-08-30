@@ -297,6 +297,16 @@ class AuthService {
   // Session Management
   // -------------------------------------------------------------
   public createSession(userId: string, rememberMe = true): UserSession {
+    const sessionUser = this.getUserById(userId);
+    if (
+      sessionUser?.staffStatus &&
+      sessionUser.staffStatus !== "none" &&
+      sessionUser.staffStatus !== "active"
+    ) {
+      throw new Error(
+        "Une identité Staff inactive ne peut pas ouvrir de session.",
+      );
+    }
     const sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
     const { browser, os, deviceType } = detectClientEnvironment();
 
@@ -452,6 +462,18 @@ class AuthService {
       };
     }
 
+    if (
+      user.staffStatus &&
+      user.staffStatus !== "none" &&
+      user.staffStatus !== "active"
+    ) {
+      return {
+        success: false,
+        errorCode: "ACCOUNT_DISABLED",
+        errorMessage: "Cet accès Staff n’est plus actif.",
+      };
+    }
+
     // Password is valid -> reset rate limit
     this.resetRateLimit(`login_${normalizedEmail}`);
 
@@ -524,6 +546,18 @@ class AuthService {
         success: false,
         errorCode: "INVALID_CREDENTIALS",
         errorMessage: "Utilisateur introuvable.",
+      };
+    }
+    if (
+      user.staffStatus &&
+      user.staffStatus !== "none" &&
+      user.staffStatus !== "active"
+    ) {
+      storageService.remove(`mfa_pending_${tempToken}`);
+      return {
+        success: false,
+        errorCode: "ACCOUNT_DISABLED",
+        errorMessage: "Cet accès Staff n’est plus actif.",
       };
     }
 

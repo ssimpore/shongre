@@ -20,14 +20,14 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
   }, [providerId]);
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5 space-y-4">
+    <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 space-y-4">
       <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-        <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-          <Clock className="w-icon-md h-icon-md text-stone-600" />
+        <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
+          <Clock className="w-icon-md h-icon-md text-text-secondary" />
           {t("admin.providerAuditLogsTab.journalDAuditTracabiliteDes")}
         </h4>
         <span className="text-xs text-stone-500 font-mono">
-          {auditLogs.length} événement(s)
+          {auditLogs.length} {t("admin.providerAuditLogsTab.evenementS")}
         </span>
       </div>
 
@@ -44,20 +44,20 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-stone-900">
+                  <span className="font-bold text-text-main">
                     {PROVIDER_AUDIT_ACTION_LABELS[log.action]}
                   </span>
                   {log.marketCode && (
                     <span className="text-micro font-bold bg-info-surface text-info px-1.5 py-0.5 rounded">
-                      Marché {log.marketCode}
+                      {t("invoicing.product.previewMarket")} {log.marketCode}
                     </span>
                   )}
                 </div>
-                <p className="text-stone-600 text-micro">{log.details}</p>
+                <p className="text-text-secondary text-micro">{log.details}</p>
               </div>
 
               <div className="flex sm:flex-col items-start sm:items-end text-micro text-stone-500 shrink-0">
-                <span className="font-medium text-stone-600">
+                <span className="font-medium text-text-secondary">
                   {log.actorName} ({roleLabel(log.actorRole)})
                 </span>
                 <span>{formatDateTime(log.timestamp)}</span>

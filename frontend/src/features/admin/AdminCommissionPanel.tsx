@@ -22,6 +22,7 @@ import { useAuthorization } from "../../security/useAuthorization";
 import { AdminCommissionPolicyEditor } from "./AdminCommissionPolicyEditor";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 function modelLabel(policy: CommissionPolicy) {
   const effect = policy.rules[0]?.effect;
@@ -69,6 +70,7 @@ interface AdminCommissionPanelProps {
 }
 
 export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
+  const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const { formatMoneyMinor } = useRegionalFormatters();
   const { can } = useAuthorization();
@@ -111,7 +113,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       value: catalog.commissionPolicies.length,
       Icon: CircleDollarSign,
     },
-    { label: "Règles versionnées", value: ruleCount, Icon: ShieldCheck },
+    { label: t("admin.adminCommissionPanel.reglesVersionnees"), value: ruleCount, Icon: ShieldCheck },
     {
       label: "Actives",
       value: catalog.commissionPolicies.filter(
@@ -224,9 +226,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       </div>
 
       <div className="rounded-lg border border-success-border bg-success-surface p-3 text-xs text-stone-700">
-        <strong>Défaut sûr :</strong> aucune commission n’est prélevée sans
-        politique active, contexte éligible et événement d’acquisition atteint.
-        Une simple annonce publiée ne déclenche jamais de commission.
+        <strong>{t("admin.adminCommissionPanel.defautSur")}</strong> {t("admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible")}
       </div>
 
       {draftVersion && (
@@ -242,7 +242,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               onClick={() => void submitDraft()}
               isLoading={transitioning}
             >
-              Soumettre à approbation
+              {t("admin.adminCommissionPanel.soumettreAApprobation")}
             </Button>
           )}
         </div>
@@ -255,11 +255,10 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
         >
           <div className="mb-4">
             <h2 className="text-sm font-black text-stone-950">
-              Simulateur de commission
+              {t("admin.adminCommissionPanel.simulateurDeCommission")}
             </h2>
             <p className="mt-1 text-micro text-stone-500">
-              Utilise exactement le même résolveur que le checkout et la
-              comptabilisation serveur.
+              {t("admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -292,7 +291,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               />
             </label>
             <label className="text-xs font-bold text-stone-700">
-              Type vendeur
+              {t("admin.adminCommissionPanel.typeVendeur")}
               <Select
                 className="mt-1 w-full"
                 labelledByAncestor
@@ -330,7 +329,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               </Select>
             </label>
             <label className="text-xs font-bold text-stone-700">
-              Catégorie (identifiant)
+              {t("admin.adminCommissionPanel.categorieIdentifiant")}
               <Input
                 className="mt-1"
                 value={input.categoryId}
@@ -372,11 +371,10 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
           className="rounded-lg border border-border-base p-4"
           aria-live="polite"
         >
-          <h2 className="text-sm font-black text-stone-950">Résultat</h2>
+          <h2 className="text-sm font-black text-stone-950">{t("admin.adminCommissionPanel.resultat")}</h2>
           {!result ? (
             <p className="mt-3 text-xs text-stone-500">
-              Renseignez le contexte pour voir la politique, le calcul et sa
-              justification.
+              {t("admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt")}
             </p>
           ) : (
             <div className="mt-3 space-y-3">
@@ -401,23 +399,23 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 ].map(([label, value]) => (
                   <div key={String(label)}>
                     <dt className="text-stone-500">{label}</dt>
-                    <dd className="font-black text-stone-900">
+                    <dd className="font-black text-text-main">
                       {formatMoneyMinor(Number(value), result.currency)}
                     </dd>
                   </div>
                 ))}
               </dl>
               <div className="rounded-control bg-bg-subtle p-3 text-xs">
-                <div className="font-bold text-stone-900">
+                <div className="font-bold text-text-main">
                   {result.appliedPolicyId || "Défaut sûr"}
                 </div>
-                <div className="mt-1 text-stone-600">{result.reasonCode}</div>
+                <div className="mt-1 text-text-secondary">{result.reasonCode}</div>
                 <ul className="mt-2 space-y-1 text-micro text-stone-500">
                   {result.explanation
                     .filter((entry) => entry.matched)
                     .map((entry) => (
                       <li key={`${entry.policyId}:${entry.ruleId}`}>
-                        {entry.policyName} · {entry.ruleName} · précédence{" "}
+                        {entry.policyName} · {entry.ruleName} {t("admin.adminCommissionPanel.precedence")}{" "}
                         {entry.precedence}
                       </li>
                     ))}
@@ -431,7 +429,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-sm font-black text-stone-950">
-            Politiques du catalogue publié
+            {t("admin.adminCommissionPanel.politiquesDuCataloguePublie")}
           </h2>
           <Button
             size="sm"
@@ -465,7 +463,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   {policy.status === "active" ? "Active" : "Désactivée"}
                 </Badge>
               </div>
-              <p className="mt-3 text-xs text-stone-600">
+              <p className="mt-3 text-xs text-text-secondary">
                 {policy.description}
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
@@ -476,7 +474,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-stone-500">Portée / héritage</dt>
+                  <dt className="text-stone-500">{t("admin.adminCommissionPanel.porteeHeritage")}</dt>
                   <dd className="font-bold text-stone-800">
                     {scopeLabel(policy)}
                   </dd>
@@ -502,7 +500,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   disabled={!can("commissions.manage") || transitioning}
                   onClick={() => void disablePolicy(policy.id)}
                 >
-                  Désactiver via brouillon
+                  {t("admin.adminCommissionPanel.desactiverViaBrouillon")}
                 </Button>
               )}
             </article>

@@ -23,12 +23,14 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const AdminVerificationsPage: React.FC = () => {
+  const { t } = useTranslation();
   const { formatDateTime } = useRegionalFormatters();
   usePageMeta({
-    title: "Conformité progressive | Administration Shongre",
-    description: "Revue manuelle, politiques et audit de conformité.",
+    title: t("admin.adminVerificationsPage.conformiteProgressiveAdministrationShongre"),
+    description: t("admin.adminVerificationsPage.revueManuellePolitiquesEtAuditDeConformite"),
     canonicalPath: "/admin/verifications",
     noIndex: true,
   });
@@ -92,22 +94,20 @@ export const AdminVerificationsPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-6">
+      <section className="rounded-2xl border border-stone-200 bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-surface text-success">
             <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-wider text-success">
-              Accès conformité restreint
+              {t("admin.adminVerificationsPage.accesConformiteRestreint")}
             </p>
             <h1 className="mt-1 text-2xl font-black text-stone-950">
-              Vérifications, règles et revue humaine
+              {t("admin.adminVerificationsPage.verificationsReglesEtRevueHumaine")}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-stone-600">
-              Les agents voient les statuts nécessaires à leur mission. Les
-              documents, numéros fiscaux, coordonnées bancaires et scores de
-              risque ne sont pas exposés dans cette file générale.
+            <p className="mt-2 max-w-3xl text-sm text-text-secondary">
+              {t("admin.adminVerificationsPage.lesAgentsVoientLesStatutsNecessairesALeurMissionLes")}
             </p>
           </div>
         </div>
@@ -115,7 +115,7 @@ export const AdminVerificationsPage: React.FC = () => {
 
       <Tabs
         variant="segmented"
-        label="Sections de conformité"
+        label={t("admin.adminVerificationsPage.sectionsDeConformite")}
         idPrefix="admin-progressive-compliance"
         activeTab={activeTab}
         onChange={(tab) => setActiveTab(tab as typeof activeTab)}
@@ -128,7 +128,7 @@ export const AdminVerificationsPage: React.FC = () => {
           },
           {
             id: "policies",
-            label: "Registre des règles",
+            label: t("admin.adminVerificationsPage.registreDesRegles"),
             count: policies.length,
             icon: <Scale className="h-icon-md w-icon-md" aria-hidden="true" />,
           },
@@ -145,18 +145,18 @@ export const AdminVerificationsPage: React.FC = () => {
 
       <TabPanel tab={activeTab} idPrefix="admin-progressive-compliance">
         {activeTab === "queue" ? (
-          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
+          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-xs">
             <div className="border-b border-stone-100 p-4">
               <h2 className="font-bold text-stone-950">
-                Dossiers nécessitant une décision
+                {t("admin.adminVerificationsPage.dossiersNecessitantUneDecision")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                Toute décision exige un motif et reste traçable.
+                {t("admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable")}
               </p>
             </div>
             {queue.length === 0 ? (
               <p className="p-8 text-center text-sm text-stone-500">
-                Aucun dossier en attente.
+                {t("admin.adminVerificationsPage.aucunDossierEnAttente")}
               </p>
             ) : (
               <div className="divide-y divide-stone-100">
@@ -166,7 +166,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100 text-stone-700">
                         {review.dimension === "identity" ? (
                           <FileKey2
                             className="h-icon-lg w-icon-lg"
@@ -228,17 +228,16 @@ export const AdminVerificationsPage: React.FC = () => {
         ) : null}
 
         {activeTab === "policies" ? (
-          <section className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs sm:p-5">
+          <section className="rounded-2xl border border-stone-200 bg-bg-surface p-4 shadow-xs sm:p-5">
             <div className="mb-4 flex items-start gap-3">
               <BookOpenCheck
                 className="mt-0.5 h-icon-lg w-icon-lg text-success"
                 aria-hidden="true"
               />
               <div>
-                <h2 className="font-bold text-stone-950">Registre versionné</h2>
+                <h2 className="font-bold text-stone-950">{t("admin.adminVerificationsPage.registreVersionne")}</h2>
                 <p className="mt-1 text-xs text-stone-500">
-                  Les modifications juridiques sont planifiées, sourcées et
-                  auditées côté serveur.
+                  {t("admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur")}
                 </p>
               </div>
             </div>
@@ -249,7 +248,7 @@ export const AdminVerificationsPage: React.FC = () => {
                   className="grid gap-2 py-4 sm:grid-cols-admin-verification sm:items-center"
                 >
                   <div>
-                    <h3 className="text-sm font-bold text-stone-900">
+                    <h3 className="text-sm font-bold text-text-main">
                       {labelIdentifier(policy.action)}
                     </h3>
                     <p className="mt-0.5 text-micro font-mono text-stone-500">
@@ -257,7 +256,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-stone-600">
+                    <p className="text-xs text-text-secondary">
                       {policy.description}
                     </p>
                     <p className="mt-1 text-micro text-stone-500">
@@ -269,7 +268,7 @@ export const AdminVerificationsPage: React.FC = () => {
                   </div>
                   <div className="sm:text-right">
                     <span
-                      className={`inline-flex rounded-full border px-2.5 py-1 text-micro font-bold ${
+                      className={`inline-flex rounded-pill border px-2.5 py-1 text-micro font-bold ${
                         policy.status === "LEGAL_REVIEW_REQUIRED"
                           ? "border-warning-border bg-warning-surface text-warning"
                           : "border-success-border bg-success-surface text-success"
@@ -288,14 +287,13 @@ export const AdminVerificationsPage: React.FC = () => {
         ) : null}
 
         {activeTab === "audit" ? (
-          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-xs">
+          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-xs">
             <div className="border-b border-stone-100 p-4">
               <h2 className="font-bold text-stone-950">
-                Événements de conformité
+                {t("admin.adminVerificationsPage.evenementsDeConformite")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                Les valeurs sensibles et réponses brutes des prestataires sont
-                exclues.
+                {t("admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues")}
               </p>
             </div>
             <div className="divide-y divide-stone-100">
@@ -305,13 +303,12 @@ export const AdminVerificationsPage: React.FC = () => {
                   className="flex items-start justify-between gap-4 p-4"
                 >
                   <div>
-                    <p className="text-sm font-bold text-stone-900">
+                    <p className="text-sm font-bold text-text-main">
                       {labelIdentifier(log.dimension || "policy")} ·{" "}
                       {labelIdentifier(log.newState || log.eventType)}
                     </p>
                     <p className="mt-1 text-xs text-stone-500">
-                      Acteur : {log.actorId || log.actorType} · Référence
-                      utilisateur : {log.userId}
+                      Acteur : {log.actorId || log.actorType} {t("admin.adminVerificationsPage.referenceUtilisateur")} {log.userId}
                     </p>
                   </div>
                   <time
@@ -336,9 +333,9 @@ export const AdminVerificationsPage: React.FC = () => {
             ? "Motif d’approbation"
             : "Motif du refus"
         }
-        label="Décision motivée"
+        label={t("admin.adminVerificationsPage.decisionMotivee")}
         hint="Minimum 10 caractères. Le motif est conservé dans l’audit et sert au recours utilisateur."
-        placeholder="Décrivez les éléments contrôlés et la justification de la décision."
+        placeholder={t("admin.adminVerificationsPage.decrivezLesElementsControlesEtLaJustificationDeLaDecision")}
         confirmText={decision?.outcome === "approve" ? "Approuver" : "Refuser"}
         multiline
       />

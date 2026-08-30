@@ -27,11 +27,13 @@ import {
 } from "../../design-system/primitives/FormField";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { HomepageConfigurationPanel } from "./HomepageConfigurationPanel";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const AdminTrendingPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
-    title: "Tendances de la page d’accueil",
-    description: "Piloter la section En ce moment sur Shongre.",
+    title: t("admin.adminTrendingPage.tendancesDeLaPageDAccueil"),
+    description: t("admin.adminTrendingPage.piloterLaSectionEnCeMomentSurShongre"),
     canonicalPath: "/admin/tendances",
     noIndex: true,
   });
@@ -166,7 +168,7 @@ export const AdminTrendingPage: React.FC = () => {
     return (
       <div className="flex min-h-64 items-center justify-center text-sm font-medium text-stone-500">
         <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
-        Chargement de la configuration…
+        {t("admin.taxonomyHeader.loading")}
       </div>
     );
   }
@@ -178,18 +180,16 @@ export const AdminTrendingPage: React.FC = () => {
         locale={currentLocale}
       />
 
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
+      <div className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <Flame className="h-icon-md w-icon-md" /> Découverte éditoriale
+            <Flame className="h-icon-md w-icon-md" /> {t("admin.adminTrendingPage.decouverteEditoriale")}
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-stone-900">
-            En ce moment sur Shongre
+          <h2 className="text-2xl font-black tracking-tight text-text-main">
+            {t("admin.adminTrendingPage.enCeMomentSurShongre")}
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
-            Les thèmes sont calculés à partir de l’activité du marché puis
-            ajustés ici. Les données de classement restent internes à la
-            console.
+            {t("admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu")}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -216,16 +216,16 @@ export const AdminTrendingPage: React.FC = () => {
 
       <div className="grid gap-6 xl:grid-cols-trending-columns">
         <section
-          className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs"
+          className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-settings-title"
         >
           <div className="mb-5 flex items-center gap-2">
             <Settings2 className="h-icon-md w-icon-md text-primary" />
             <h2
               id="trending-settings-title"
-              className="text-sm font-bold text-stone-900"
+              className="text-sm font-bold text-text-main"
             >
-              Règles d’affichage
+              {t("admin.adminTrendingPage.reglesDAffichage")}
             </h2>
           </div>
           <div className="space-y-4">
@@ -237,7 +237,7 @@ export const AdminTrendingPage: React.FC = () => {
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Mode de sélection">
+              <FormField label={t("admin.adminTrendingPage.modeDeSelection")}>
                 <select
                   value={config.selectionMode}
                   onChange={(event) =>
@@ -253,7 +253,7 @@ export const AdminTrendingPage: React.FC = () => {
                   <option value="hybrid">Hybride</option>
                 </select>
               </FormField>
-              <FormField label="Annonces par sous-section">
+              <FormField label={t("admin.adminTrendingPage.annoncesParSousSection")}>
                 <Input
                   type="number"
                   min={TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.min}
@@ -265,7 +265,7 @@ export const AdminTrendingPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <FormField label="Maximum de sous-sections">
+              <FormField label={t("admin.adminTrendingPage.maximumDeSousSections")}>
                 <Input
                   type="number"
                   min={Math.max(
@@ -283,7 +283,7 @@ export const AdminTrendingPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <FormField label="Minimum d’activité">
+              <FormField label={t("admin.adminTrendingPage.minimumDActivite")}>
                 <Input
                   type="number"
                   min={TRENDING_ADMIN_CONSTRAINTS.minimumActivity.min}
@@ -295,7 +295,7 @@ export const AdminTrendingPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <FormField label="Période (jours)">
+              <FormField label={t("admin.adminTrendingPage.periodeJours")}>
                 <Input
                   type="number"
                   min={TRENDING_ADMIN_CONSTRAINTS.displayPeriodDays.min}
@@ -358,7 +358,7 @@ export const AdminTrendingPage: React.FC = () => {
                 Desktop visible
               </label>
             </div>
-            <FormField label="Catégories exclues (slugs séparés par des virgules)">
+            <FormField label={t("admin.adminTrendingPage.categoriesExcluesSlugsSeparesParDesVirgules")}>
               <Input
                 value={config.excludedCategories.join(", ")}
                 onChange={(event) =>
@@ -376,7 +376,7 @@ export const AdminTrendingPage: React.FC = () => {
         </section>
 
         <section
-          className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs"
+          className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-preview-title"
         >
           <div className="mb-5 flex items-center justify-between gap-3">
@@ -384,13 +384,13 @@ export const AdminTrendingPage: React.FC = () => {
               <TrendingUp className="h-icon-md w-icon-md text-success" />
               <h2
                 id="trending-preview-title"
-                className="text-sm font-bold text-stone-900"
+                className="text-sm font-bold text-text-main"
               >
-                Aperçu du marché {marketCode}
+                {t("admin.adminTrendingPage.apercuDuMarche")} {marketCode}
               </h2>
             </div>
             <span className="text-xs font-medium text-stone-500">
-              {preview?.topics.length || 0} sous-sections affichées
+              {preview?.topics.length || 0} {t("admin.adminTrendingPage.sousSectionsAffichees")}
             </span>
           </div>
           <div className="space-y-2">
@@ -405,28 +405,28 @@ export const AdminTrendingPage: React.FC = () => {
                   className="rounded-control border border-stone-200 bg-stone-50 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-5 text-center text-xs font-black text-stone-400">
+                    <span className="w-5 text-center text-xs font-black text-text-disabled">
                       {position + 1}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-bold text-stone-900">
+                      <div className="truncate text-sm font-bold text-text-main">
                         {topic.title}
                       </div>
                       <div className="text-xs text-stone-500">
-                        {topic.listings.length} annonces · tendance{" "}
+                        {topic.listings.length} {t("admin.adminTrendingPage.annoncesTendance")}{" "}
                         {topic.trend.direction === "up" ? "en hausse" : "stable"}
                       </div>
                     </div>
                     {pinned.has(topicKey) ? (
-                      <span className="rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                        Épinglé
+                      <span className="rounded-pill bg-success-surface px-2 py-1 text-micro font-bold text-success">
+                        {t("admin.adminTrendingPage.epingle")}
                       </span>
                     ) : null}
                     <button
                       type="button"
                       onClick={() => void toggleOverride(topicKey, "pin")}
                       aria-label={`${pinned.has(topicKey) ? "Désépingler" : "Épingler"} ${topic.title}`}
-                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-stone-200 bg-bg-surface text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <Pin
                         className={`h-icon-md w-icon-md ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
@@ -436,7 +436,7 @@ export const AdminTrendingPage: React.FC = () => {
                       type="button"
                       onClick={() => void toggleOverride(topicKey, "hide")}
                       aria-label={`${hidden.has(topicKey) ? "Afficher" : "Masquer"} ${topic.title}`}
-                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-stone-200 bg-bg-surface text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <EyeOff
                         className={`h-icon-md w-icon-md ${hidden.has(topicKey) ? "text-danger" : ""}`}
@@ -445,10 +445,10 @@ export const AdminTrendingPage: React.FC = () => {
                   </div>
                   <details className="mt-3 border-t border-stone-200 pt-3">
                     <summary className="cursor-pointer text-xs font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary">
-                      Édition éditoriale avancée
+                      {t("admin.adminTrendingPage.editionEditorialeAvancee")}
                     </summary>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <FormField label="Titre personnalisé">
+                      <FormField label={t("admin.adminTrendingPage.titrePersonnalise")}>
                         <Input
                           defaultValue={override?.customTitle || ""}
                           onBlur={(event) =>
@@ -458,7 +458,7 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label="Score de boost (0–1)">
+                      <FormField label={t("admin.adminTrendingPage.scoreDeBoost01")}>
                         <Input
                           type="number"
                           min={TRENDING_ADMIN_CONSTRAINTS.editorialBoost.min}
@@ -472,7 +472,7 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label="Sous-titre personnalisé" className="sm:col-span-2">
+                      <FormField label={t("admin.adminTrendingPage.sousTitrePersonnalise")} className="sm:col-span-2">
                         <Textarea
                           defaultValue={override?.customSubtitle || ""}
                           onBlur={(event) =>
@@ -482,7 +482,7 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label="URL de l’image">
+                      <FormField label={t("admin.adminTrendingPage.urlDeLImage")}>
                         <Input
                           type="url"
                           defaultValue={override?.customImage?.src || ""}
@@ -513,7 +513,7 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label="Début programmé">
+                      <FormField label={t("admin.adminTrendingPage.debutProgramme")}>
                         <Input
                           type="datetime-local"
                           defaultValue={override?.startsAt?.slice(0, 16) || ""}
@@ -526,7 +526,7 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label="Fin programmée">
+                      <FormField label={t("admin.adminTrendingPage.finProgrammee")}>
                         <Input
                           type="datetime-local"
                           defaultValue={override?.endsAt?.slice(0, 16) || ""}
@@ -546,7 +546,7 @@ export const AdminTrendingPage: React.FC = () => {
             })}
             {!preview?.topics.length && (
               <div className="rounded-control border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500">
-                Aucun thème ne remplit les critères actuels.
+                {t("admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels")}
               </div>
             )}
           </div>
@@ -556,8 +556,7 @@ export const AdminTrendingPage: React.FC = () => {
               dynamique
             </span>
             <span className="inline-flex items-center gap-1">
-              <Pin className="h-icon-sm w-icon-sm text-primary" /> overrides
-              sans code
+              <Pin className="h-icon-sm w-icon-sm text-primary" /> {t("admin.adminTrendingPage.overridesSansCode")}
             </span>
           </div>
         </section>

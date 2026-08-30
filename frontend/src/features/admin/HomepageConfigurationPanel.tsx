@@ -28,6 +28,7 @@ import {
   Select,
   Textarea,
 } from "../../design-system/primitives/FormField";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const SECTION_LABELS: Record<HomepageSectionType, string> = {
   hero: "En-tête et recherche",
@@ -59,6 +60,7 @@ interface HomepageConfigurationPanelProps {
 export const HomepageConfigurationPanel: React.FC<
   HomepageConfigurationPanelProps
 > = ({ marketCode, locale }) => {
+  const { t } = useTranslation();
   const toast = useToast();
   const [configuration, setConfiguration] =
     useState<HomepageConfiguration | null>(null);
@@ -201,9 +203,9 @@ export const HomepageConfigurationPanel: React.FC<
 
   if (isLoading || !configuration) {
     return (
-      <div className="flex min-h-64 items-center justify-center rounded-xl border border-stone-200 bg-white text-sm font-medium text-stone-500">
+      <div className="flex min-h-64 items-center justify-center rounded-control border border-stone-200 bg-bg-surface text-sm font-medium text-stone-500">
         <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
-        Chargement de la page d’accueil…
+        {t("admin.homepageConfigurationPanel.chargementDeLaPageDAccueil")}
       </div>
     );
   }
@@ -212,20 +214,19 @@ export const HomepageConfigurationPanel: React.FC<
 
   return (
     <section className="space-y-6" aria-labelledby="homepage-config-title">
-      <div className="flex flex-col justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
+      <div className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <LayoutDashboard className="h-icon-md w-icon-md" /> Page d’accueil
           </div>
           <h1
             id="homepage-config-title"
-            className="text-2xl font-black tracking-tight text-stone-900"
+            className="text-2xl font-black tracking-tight text-text-main"
           >
-            Configuration centralisée
+            {t("admin.homepageConfigurationPanel.configurationCentralisee")}
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
-            Marché <strong>{marketCode}</strong> · langue <strong>{locale}</strong> ·
-            révision {configuration.revision}. Les modifications restent en
+            {t("invoicing.product.previewMarket")} <strong>{marketCode}</strong> · langue <strong>{locale}</strong> {t("admin.homepageConfigurationPanel.revision")} {configuration.revision}. Les modifications restent en
             brouillon jusqu’à publication.
           </p>
         </div>
@@ -238,7 +239,7 @@ export const HomepageConfigurationPanel: React.FC<
             disabled={action !== null}
             leftIcon={<Eye className="h-icon-md w-icon-md" />}
           >
-            Aperçu
+            {t("admin.adminNewsletterPage.apercu")}
           </Button>
           <Button
             type="button"
@@ -248,7 +249,7 @@ export const HomepageConfigurationPanel: React.FC<
             disabled={action !== null}
             leftIcon={<Save className="h-icon-md w-icon-md" />}
           >
-            Enregistrer le brouillon
+            {t("invoicing.workspace.saveDraft")}
           </Button>
           <Button
             type="button"
@@ -267,14 +268,14 @@ export const HomepageConfigurationPanel: React.FC<
           {sections.map((section, index) => (
             <article
               key={section.key}
-              className="rounded-xl border border-stone-200 bg-white p-4 shadow-xs sm:p-5"
+              className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs sm:p-5"
               data-testid={`homepage-admin-section-${section.key}`}
             >
               <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-light text-xs font-black text-primary">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-primary-light text-xs font-black text-primary">
                   {index + 1}
                 </span>
-                <h2 className="min-w-0 flex-1 text-sm font-black text-stone-900">
+                <h2 className="min-w-0 flex-1 text-sm font-black text-text-main">
                   {SECTION_LABELS[section.type]}
                 </h2>
                 <Button
@@ -328,7 +329,7 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
-                <FormField label="Nombre maximal d’éléments">
+                <FormField label={t("admin.homepageConfigurationPanel.nombreMaximalDElements")}>
                   <Input
                     type="number"
                     min={HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.min}
@@ -357,7 +358,7 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
-                <FormField label="Début programmé">
+                <FormField label={t("admin.adminTrendingPage.debutProgramme")}>
                   <Input
                     type="datetime-local"
                     value={toLocalDateTime(section.startsAt)}
@@ -369,7 +370,7 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
-                <FormField label="Fin programmée">
+                <FormField label={t("admin.adminTrendingPage.finProgrammee")}>
                   <Input
                     type="datetime-local"
                     value={toLocalDateTime(section.endsAt)}
@@ -383,7 +384,7 @@ export const HomepageConfigurationPanel: React.FC<
                 </FormField>
                 <div className="flex flex-wrap gap-5 sm:col-span-2">
                   <Checkbox
-                    label="Visible sur mobile"
+                    label={t("admin.homepageConfigurationPanel.visibleSurMobile")}
                     checked={section.mobileVisible}
                     onChange={(event) =>
                       replaceSection(section.key, (current) => ({
@@ -393,7 +394,7 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                   <Checkbox
-                    label="Visible sur desktop"
+                    label={t("admin.homepageConfigurationPanel.visibleSurDesktop")}
                     checked={section.desktopVisible}
                     onChange={(event) =>
                       replaceSection(section.key, (current) => ({
@@ -406,10 +407,10 @@ export const HomepageConfigurationPanel: React.FC<
                 {section.type === "deals" ? (
                   <div className="space-y-3 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
                     <h3 className="text-xs font-black uppercase tracking-wide text-primary">
-                      Règles d’éligibilité des offres
+                      {t("admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres")}
                     </h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <FormField label="Mode de sélection">
+                      <FormField label={t("admin.adminTrendingPage.modeDeSelection")}>
                         <Select
                           labelledByAncestor
                           value={section.settings.selectionMode || "hybrid"}
@@ -476,7 +477,7 @@ export const HomepageConfigurationPanel: React.FC<
                       ))}
                     </div>
                     <Checkbox
-                      label="Inclure les vendeurs professionnels"
+                      label={t("admin.homepageConfigurationPanel.inclureLesVendeursProfessionnels")}
                       checked={
                         section.settings.includeProfessionalSellers !== false
                       }
@@ -490,7 +491,7 @@ export const HomepageConfigurationPanel: React.FC<
                         }))
                       }
                     />
-                    <FormField label="Marchés autorisés (codes séparés par des virgules)">
+                    <FormField label={t("admin.homepageConfigurationPanel.marchesAutorisesCodesSeparesParDesVirgules")}>
                       <Input
                         value={(section.settings.allowedMarkets || []).join(", ")}
                         onChange={(event) =>
@@ -507,7 +508,7 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label="Branches taxonomiques autorisées (slugs séparés par des virgules)">
+                    <FormField label={t("admin.homepageConfigurationPanel.branchesTaxonomiquesAutoriseesSlugsSeparesParDesVirgules")}>
                       <Input
                         value={(section.settings.taxonomyBranches || []).join(", ")}
                         onChange={(event) =>
@@ -524,7 +525,7 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label="Annonces manuelles/épinglées (identifiants séparés par des virgules)">
+                    <FormField label={t("admin.homepageConfigurationPanel.annoncesManuellesEpingleesIdentifiantsSeparesParDesVirgules")}>
                       <Input
                         value={(section.settings.offerOverrides || [])
                           .filter((item) => item.isPinned)
@@ -564,7 +565,7 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label="Annonces à masquer (identifiants séparés par des virgules)">
+                    <FormField label={t("admin.homepageConfigurationPanel.annoncesAMasquerIdentifiantsSeparesParDesVirgules")}>
                       <Input
                         value={(section.settings.offerOverrides || [])
                           .filter((item) => item.isHidden)
@@ -606,12 +607,12 @@ export const HomepageConfigurationPanel: React.FC<
                     {(section.settings.offerOverrides || []).length ? (
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-stone-700">
-                          Programmation des overrides d’annonces
+                          {t("admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces")}
                         </h4>
                         {section.settings.offerOverrides?.map((override) => (
                           <div
                             key={override.listingId}
-                            className="grid gap-2 rounded-control border border-stone-200 bg-white p-3 sm:grid-cols-3"
+                            className="grid gap-2 rounded-control border border-stone-200 bg-bg-surface p-3 sm:grid-cols-3"
                           >
                             <div className="self-center truncate text-xs font-bold text-stone-700">
                               {override.listingId}
@@ -678,15 +679,15 @@ export const HomepageConfigurationPanel: React.FC<
         </div>
 
         <aside className="min-w-0 space-y-4 2xl:sticky 2xl:top-4 2xl:self-start">
-          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
-            <h2 className="text-sm font-black text-stone-900">
-              Aperçu de la page complète
+          <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
+            <h2 className="text-sm font-black text-text-main">
+              {t("admin.homepageConfigurationPanel.apercuDeLaPageComplete")}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-stone-500">
-              Résolution réelle du brouillon pour {marketCode}. Les sections en
+              {t("admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour")} {marketCode}. Les sections en
               erreur restent isolées des autres.
             </p>
-            <FormField label="Viewport de prévisualisation" className="mt-4">
+            <FormField label={t("admin.homepageConfigurationPanel.viewportDePrevisualisation")} className="mt-4">
               <Select
                 labelledByAncestor
                 value={previewViewport}
@@ -717,11 +718,11 @@ export const HomepageConfigurationPanel: React.FC<
                     className="rounded-control border border-stone-200 bg-stone-50 p-3"
                   >
                     <div className="flex items-start gap-2">
-                      <span className="text-xs font-black text-stone-400">
+                      <span className="text-xs font-black text-text-disabled">
                         {position + 1}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-bold text-stone-900">
+                        <div className="truncate text-sm font-bold text-text-main">
                           {section.title}
                         </div>
                         <div className="mt-0.5 text-xs text-stone-500">
@@ -735,26 +736,23 @@ export const HomepageConfigurationPanel: React.FC<
                 })}
               {!preview ? (
                 <li className="rounded-control border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">
-                  Lancez l’aperçu pour résoudre le contenu.
+                  {t("admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu")}
                 </li>
               ) : null}
             </ol>
           </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-5 shadow-xs">
-            <FormField label="Motif de modification / publication">
+          <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
+            <FormField label={t("admin.homepageConfigurationPanel.motifDeModificationPublication")}>
               <Textarea
                 value={changeReason}
                 minLength={HOMEPAGE_ADMIN_CONSTRAINTS.changeReason.minLength}
                 maxLength={HOMEPAGE_ADMIN_CONSTRAINTS.changeReason.maxLength}
                 onChange={(event) => setChangeReason(event.target.value)}
-                placeholder="Expliquez le changement pour l’historique d’audit."
+                placeholder={t("admin.homepageConfigurationPanel.expliquezLeChangementPourLHistoriqueDAudit")}
               />
             </FormField>
             <p className="mt-3 text-xs leading-relaxed text-stone-500">
-              Les versions publiées sont historisées avec l’acteur, le marché,
-              la langue et le motif. La publication n’invente ni remise ni
-              disponibilité : les offres sont recalculées depuis les données
-              éligibles.
+              {t("admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche")}
             </p>
           </div>
         </aside>

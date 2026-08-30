@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
+import {
+  StyleSheet,
+  View,
+  type StyleProp,
+  type ViewProps,
+  type ViewStyle,
+} from "react-native";
 import {
   nativeColors,
   nativePalette,
@@ -7,12 +13,11 @@ import {
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 
-export interface CardProps {
+export interface CardProps extends Omit<ViewProps, "children" | "style"> {
   children: ReactNode;
   tone?: "default" | "subtle" | "inverse";
   padding?: "none" | "sm" | "md" | "lg";
   style?: StyleProp<ViewStyle>;
-  accessibilityLabel?: string;
 }
 export function Card({
   children,

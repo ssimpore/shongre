@@ -13,6 +13,7 @@ import type {
   ProviderConnectionInput,
   ProviderCredentialRotation,
 } from "@shongre/contracts/provider-connections";
+import { requireDemoCapability } from "./demo-authorization";
 
 const demoEvidence = (
   adapterStatus: string,
@@ -71,12 +72,14 @@ export class DemoProviderControlPlaneService implements ProviderControlPlaneServ
   ];
 
   async listConnections(): Promise<ProviderConnection[]> {
+    requireDemoCapability("provider.configuration.read");
     return structuredClone(this.connections);
   }
 
   async createConnection(
     input: ProviderConnectionInput,
   ): Promise<ProviderConnection> {
+    requireDemoCapability("provider.configuration.manage");
     const now = new Date().toISOString();
     const connection: ProviderConnection = {
       id: crypto.randomUUID(),
@@ -109,6 +112,7 @@ export class DemoProviderControlPlaneService implements ProviderControlPlaneServ
     connectionId: string,
     input: ProviderCredentialRotation,
   ): Promise<ProviderConnection> {
+    requireDemoCapability("provider.credentials.manage");
     const connection = this.connections.find(
       (item) => item.id === connectionId,
     );
@@ -129,6 +133,7 @@ export class DemoProviderControlPlaneService implements ProviderControlPlaneServ
   }
 
   async getSnapshot(): Promise<ProviderControlPlaneSnapshot> {
+    requireDemoCapability("provider.read");
     const providers = SHONGRE_PROVIDER_REGISTRY.map((definition) => {
       const runtime = demoEvidence(definition.adapterStatus, definition.kind);
       return {
@@ -197,6 +202,7 @@ export class DemoProviderControlPlaneService implements ProviderControlPlaneServ
   }
 
   async testProvider(providerId: string): Promise<ProviderDiagnosticResult> {
+    requireDemoCapability("provider.test");
     const definition = SHONGRE_PROVIDER_REGISTRY.find(
       ({ id }) => id === providerId,
     );

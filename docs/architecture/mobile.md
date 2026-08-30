@@ -13,6 +13,13 @@ Authentication tokens use `expo-secure-store`; web fallback is process memory, n
 
 Expo config is environment-driven through `mobile/app.config.ts`. Run `make mobile-prebuild-clean` after native configuration changes and review generated manifests before release.
 
+The stable Expo SDK does not yet generate the iOS scene lifecycle required by
+the current Apple SDK. `mobile/plugins/with-ios-scene-lifecycle.cjs` backports
+Expo's upstream scene-owned window bootstrap, lifecycle subscriber forwarding,
+and cold/warm deep-link forwarding during prebuild. Remove this compatibility
+plugin only after a stable Expo-generated project provides the same behavior and
+passes clean-prebuild, simulator-launch, and link-routing verification.
+
 For a local unsigned iOS Release verification, run `pod install` in `mobile/ios`
 and invoke `xcodebuild` from a Bash process that first sources
 `../../scripts/env.sh` and exports `NODE_ENV=production`. The exact command is

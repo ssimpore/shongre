@@ -32,6 +32,7 @@ import {
   CAPABILITIES,
   CAPABILITY_OVERRIDE_REASON_MAX_LENGTH,
   CAPABILITY_OVERRIDE_REASON_MIN_LENGTH,
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
   OWNER_ONLY_CAPABILITIES,
   canonicalAccessContext,
   resolveCapabilityFacts,
@@ -41,6 +42,10 @@ import {
 } from "@shongre/contracts/access-control";
 import { ALL_PERMISSIONS } from "../../../security/permissions";
 import { authService as demoAuthEngine } from "../../../domains/auth/auth.service";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 export class DemoAdminService implements AdminServiceContract {
   private discoveryConfiguration = structuredClone(
@@ -49,6 +54,7 @@ export class DemoAdminService implements AdminServiceContract {
   private discoveryVersion = 1;
   async getPlatformStats(): Promise<AdminStatsSummary> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.access");
     const users = await userRepository.getAllUsers();
     const { total } = await listingRepository.getListings();
     const purchases = await transactionRepository.getPurchases("buyer_thomas");
@@ -69,6 +75,7 @@ export class DemoAdminService implements AdminServiceContract {
 
   async getAllUsers(): Promise<UserProfile[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("user.read");
     return userRepository.getAllUsers();
   }
 
@@ -123,6 +130,18 @@ export class DemoAdminService implements AdminServiceContract {
     }
     const user = await userRepository.getUserById(userId);
     if (!user) throw new Error("Utilisateur introuvable");
+    if (
+      (user.staffStatus ?? "none") !== "none" &&
+      customPermissions.some((capability) =>
+        CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+      )
+    ) {
+      throw new Error(
+        "Les permissions marketplace client ne peuvent pas être accordées à une identité Staff.",
+      );
+    }
     if (user.staffRole === "owner" && actor.staffRole !== "owner") {
       throw new Error("Seul un propriétaire peut modifier un propriétaire.");
     }
@@ -205,13 +224,21 @@ export class DemoAdminService implements AdminServiceContract {
       staffStatus: access.staffStatus,
       staffRole: access.staffRole ?? null,
       version: user.capabilityOverrideVersion ?? 1,
-      capabilities: resolveCapabilityFacts(user).map((fact) => ({
-        ...fact,
-        label: presentation.get(fact.capability)?.name ?? fact.capability,
-        category:
-          presentation.get(fact.capability)?.category ??
-          "Administration Système",
-      })),
+      capabilities: resolveCapabilityFacts(user)
+        .filter(
+          (fact) =>
+            access.staffStatus === "none" ||
+            !CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+              fact.capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+            ),
+        )
+        .map((fact) => ({
+          ...fact,
+          label: presentation.get(fact.capability)?.name ?? fact.capability,
+          category:
+            presentation.get(fact.capability)?.category ??
+            "Administration Système",
+        })),
     };
   }
 
@@ -221,6 +248,12 @@ export class DemoAdminService implements AdminServiceContract {
     reason: string,
   ): Promise<UserProfile> {
     await simulateNetworkDelay();
+    requireDemoAnyCapability([
+      "user.manage",
+      "user.suspend",
+      "user.reactivate",
+      "compliance.restrict_account",
+    ]);
     if (status === "active") return userRepository.reactivateUser(userId);
     if (status === "suspended") {
       return userRepository.suspendUser(userId, reason);
@@ -279,10 +312,22 @@ export class DemoAdminService implements AdminServiceContract {
     ) {
       throw new Error("Seul un propriétaire peut gérer ce niveau d’accès.");
     }
+    const retainedCustomPermissions = (user.customPermissions ?? []).filter(
+      (capability) =>
+        !CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+    );
     const updated: UserProfile = {
       ...user,
       staffStatus: status,
       staffRole,
+      customPermissions: retainedCustomPermissions,
+      capabilityOverrideVersion:
+        retainedCustomPermissions.length !==
+        (user.customPermissions ?? []).length
+          ? (user.capabilityOverrideVersion ?? 1) + 1
+          : (user.capabilityOverrideVersion ?? 1),
     };
     storageService.saveUser(updated);
     auditService.logEvent({
@@ -308,6 +353,7 @@ export class DemoAdminService implements AdminServiceContract {
     notes: string,
   ): Promise<UserProfile> {
     await simulateNetworkDelay();
+    requireDemoAnyCapability(["user.verify", "compliance.review"]);
     return userRepository.verifyUser(userId, { approve, notes });
   }
 
@@ -321,6 +367,7 @@ export class DemoAdminService implements AdminServiceContract {
     }>
   > {
     await simulateNetworkDelay();
+    requireDemoAnyCapability(["report.review", "moderation.review"]);
     return [
       {
         id: "rep-1",
@@ -366,6 +413,7 @@ export class DemoAdminService implements AdminServiceContract {
     }>
   > {
     await simulateNetworkDelay();
+    requireDemoCapability("audit.read");
     return [
       {
         id: "log-1",
@@ -388,6 +436,7 @@ export class DemoAdminService implements AdminServiceContract {
     marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return getTrendingAdminConfig(marketCode);
   }
 
@@ -396,6 +445,7 @@ export class DemoAdminService implements AdminServiceContract {
     marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return updateTrendingAdminConfig(updates, marketCode);
   }
 
@@ -403,11 +453,13 @@ export class DemoAdminService implements AdminServiceContract {
     override: TrendingTopicOverride,
   ): Promise<TrendingAdminConfig> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return upsertTrendingOverride(override);
   }
 
   async getDiscoveryConfiguration(marketCode = DEFAULT_MARKET_CODE) {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return { ...structuredClone(this.discoveryConfiguration), marketCode };
   }
 
@@ -415,6 +467,7 @@ export class DemoAdminService implements AdminServiceContract {
     marketCode = DEFAULT_MARKET_CODE,
   ): Promise<DiscoveryMetrics> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return {
       marketCode,
       searchRequests: 1842,
@@ -437,6 +490,7 @@ export class DemoAdminService implements AdminServiceContract {
     activate: boolean,
   ) {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     const reason = discoveryChangeReasonSchema.safeParse(changeReason);
     if (!reason.success) throw new Error("Un motif détaillé est requis.");
     const parsed = discoveryConfigurationSchema.parse(configuration);

@@ -13,7 +13,7 @@ import type { CrmTaskPriority } from "../../../domains/crm/crm.labels";
  * copy lives in the message catalogue via `taskPriorityMessageKey`.
  */
 export const TASK_PRIORITY_TONE_CLASS: Record<CrmTaskPriority, string> = {
-  low: "bg-stone-100 text-stone-600",
+  low: "bg-stone-100 text-text-secondary",
   medium: "bg-info-surface text-info",
   high: "bg-warning-surface text-warning",
   urgent: "bg-danger-surface text-danger",

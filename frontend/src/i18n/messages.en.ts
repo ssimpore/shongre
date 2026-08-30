@@ -2980,6 +2980,8 @@ export const messagesEn: MessageCatalogue = {
   "publishCta.manageShort": "Manage",
   "publishCta.becomeSeller": "Become a seller",
   "publishCta.becomeSellerShort": "Sell",
+  "publishCta.internalConsole": "Open the internal console",
+  "publishCta.internalConsoleShort": "Console",
 
   // --- home.trust ---
 
@@ -3206,6 +3208,8 @@ export const messagesEn: MessageCatalogue = {
   "admin.capabilities.ineffective.directly_revoked": "Directly revoked.",
   "admin.capabilities.ineffective.inactive_staff":
     "Inactive without an active Staff membership.",
+  "admin.capabilities.ineffective.staff_separation":
+    "Unavailable to every Staff identity.",
   "admin.capabilities.ineffective.account_status":
     "Inactive because of the account status.",
   "admin.capabilities.ineffective.not_granted": "Not granted.",

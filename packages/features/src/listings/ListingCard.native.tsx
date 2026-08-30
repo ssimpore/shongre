@@ -49,6 +49,7 @@ export function ListingCard({
             <Image
               source={{ uri: listing.imageUrl }}
               style={styles.image}
+              accessible={false}
               accessibilityIgnoresInvertColors
             />
           ) : (

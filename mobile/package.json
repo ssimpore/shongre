@@ -4,15 +4,16 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
-    "ios": "expo run:ios",
-    "android": "expo run:android",
-    "web": "expo start --web",
+    "start": "node scripts/expo-cli.mjs start",
+    "ios": "node scripts/expo-cli.mjs run:ios",
+    "android": "node scripts/expo-cli.mjs run:android",
+    "web": "node scripts/expo-cli.mjs start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "dead-code": "node scripts/dead-code-check.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run dead-code"
+    "check:runtime-resolution": "node scripts/expo-cli.mjs --check-workspace-resolution",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run check:runtime-resolution && npm run dead-code"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

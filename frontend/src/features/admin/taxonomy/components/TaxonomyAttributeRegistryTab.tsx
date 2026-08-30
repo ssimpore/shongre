@@ -51,9 +51,9 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header & Stats Banner */}
-      <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+          <h3 className="text-base font-black text-text-main flex items-center gap-2">
             <Layers className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t(
@@ -62,8 +62,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             </span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
-            Gérez le dictionnaire des {attributes.length} attributs normalisés
-            partagés entre les différentes catégories.
+            {t("admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes")} {attributes.length} {t("admin.taxonomyAttributeRegistryTab.attributsNormalisesPartagesEntreLesDifferentesCategories")}
           </p>
         </div>
 
@@ -78,9 +77,9 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
         <div className="relative flex-1">
-          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t(
@@ -96,11 +95,11 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-icon-sm h-icon-sm text-stone-400" />
+          <Filter className="w-icon-sm h-icon-sm text-text-disabled" />
           <Select
             className="w-auto"
             size="compact"
-            aria-label="Filtrer par type de données"
+            aria-label={t("admin.taxonomyAttributeRegistryTab.filtrerParTypeDeDonnees")}
             value={dataTypeFilter}
             onChange={(e) => setDataTypeFilter(e.target.value)}
           >
@@ -134,14 +133,14 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           return (
             <div
               key={attr.id}
-              className="bg-white rounded-2xl border border-border-base p-4 shadow-xs hover:border-primary transition-all flex flex-col justify-between gap-3 group"
+              className="bg-bg-surface rounded-2xl border border-border-base p-4 shadow-xs hover:border-primary transition-all flex flex-col justify-between gap-3 group"
             >
               <div className="space-y-1.5">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-stone-900 text-xs">
+                  <span className="font-bold text-text-main text-xs">
                     {attr.label}
                   </span>
-                  <span className="text-micro bg-primary-light text-primary px-2 py-0.5 rounded-full font-mono font-bold shrink-0 uppercase">
+                  <span className="text-micro bg-primary-light text-primary px-2 py-0.5 rounded-pill font-mono font-bold shrink-0 uppercase">
                     {attr.dataType}
                   </span>
                 </div>

@@ -13,6 +13,7 @@ import type {
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
 import { analyticsService } from "../../../services/analytics.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const DEFINITIONS_KEY = "shongre_demo_feature_flags_v1";
 const RULES_KEY = "shongre_demo_feature_flag_rules_v1";
@@ -137,6 +138,7 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
 
   async getAdminSnapshot(): Promise<FeatureFlagAdminEntry[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     return definitions().map((definition) => ({
       definition,
       rules: rules()
@@ -147,6 +149,7 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
 
   async upsertDefinition(key: string, input: FeatureFlagDefinitionUpdate) {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     const current = definitions();
     const previous = current.find((value) => value.key === key);
     const now = new Date().toISOString();
@@ -174,6 +177,7 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
     input: FeatureFlagRuleUpdate,
   ) {
     await simulateNetworkDelay();
+    requireDemoCapability("admin.configuration.manage");
     const current = rules();
     const id = ruleId ?? `flag-rule-${current.length + 1}`;
     const previous = current.find((value) => value.id === id);

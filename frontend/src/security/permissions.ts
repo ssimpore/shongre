@@ -26,6 +26,15 @@ export interface PermissionDefinition {
 }
 
 const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
+  {
+    id: "marketplace.customer.access",
+    name: "Accéder à la marketplace client",
+    category: "Profil & Compte",
+    description:
+      "Autorise l’utilisation des surfaces client et conditionne toutes les capacités d’achat, de vente et de compte marketplace.",
+    isSensitive: true,
+  },
+
   // Shongre Emploi
   {
     id: "employment.read",

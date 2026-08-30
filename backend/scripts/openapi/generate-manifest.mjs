@@ -18,11 +18,22 @@ for (const [openApiPath, pathItem] of Object.entries(spec.paths)) {
   for (const method of ["get", "post", "put", "patch", "delete"]) {
     const operation = pathItem[method];
     if (!operation) continue;
+    if (
+      operation["x-shongre-access"] === "public" &&
+      typeof operation["x-shongre-deny-staff-marketplace"] !== "boolean"
+    ) {
+      throw new Error(
+        `${method.toUpperCase()} ${openApiPath} must explicitly declare x-shongre-deny-staff-marketplace`,
+      );
+    }
     if (operation["x-shongre-runtime"] === "server") continue;
     operations[`${method.toUpperCase()} ${routerPath}`] = {
       operationId: operation.operationId,
       access: operation["x-shongre-access"],
       permission: operation["x-shongre-permission"] || null,
+      denyStaffMarketplace: Boolean(
+        operation["x-shongre-deny-staff-marketplace"],
+      ),
       requestBodyRequired: Boolean(operation.requestBody?.required),
       successStatus: Number(
         Object.keys(operation.responses).find((status) =>

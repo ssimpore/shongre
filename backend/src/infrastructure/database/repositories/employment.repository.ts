@@ -736,8 +736,6 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     const privateEmployer = EMPLOYMENT_DEMO_JOBS.find(
       (job) => job.employer.id === "employer-private-martin",
     )!.employer;
-    if (userId === "user_admin_antoine")
-      return clone([this.recruiterWorkspace.employer, privateEmployer]);
     if (userId === "user_pro_atelier" || userId === "user_employment_recruiter")
       return clone([this.recruiterWorkspace.employer]);
     if (userId === "user_camille") return clone([privateEmployer]);

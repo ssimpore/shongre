@@ -174,7 +174,7 @@ const FooterColumn: React.FC<{
   const panelId = `footer-panel-${id}`;
 
   return (
-    <div className="border-b border-stone-800/60 py-3.5 md:border-b-0 md:py-0 lg:border-l lg:px-5 lg:first:border-l-0 lg:first:pl-0">
+    <div className="min-w-0 border-b border-stone-800/60 py-3.5 md:border-b-0 md:py-0 lg:border-l lg:px-5 lg:first:border-l-0 lg:first:pl-0">
       <h2>
         <button
           type="button"
@@ -183,12 +183,12 @@ const FooterColumn: React.FC<{
           aria-expanded={isOpen}
           aria-controls={panelId}
         >
-          <span className="flex items-center gap-2">
+          <span className="flex min-w-0 flex-1 items-center gap-2">
             <Icon
               className="h-4 w-4 shrink-0 text-primary-on-dark"
               aria-hidden="true"
             />
-            <span>{title}</span>
+            <span className="min-w-0 break-words">{title}</span>
           </span>
           <ChevronDown
             className={`h-icon-md w-icon-md shrink-0 transition-transform duration-normal md:hidden ${
@@ -229,7 +229,7 @@ export const Footer: React.FC = () => {
     <footer className="border-t border-stone-800 bg-stone-950 pb-36 pt-10 text-xs text-stone-300 lg:pb-10">
       <Container className="space-y-6">
         <div className={`${PANEL} p-5 sm:p-7`}>
-          <div className="grid gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-footer lg:gap-x-0 lg:gap-y-0">
+          <div className="grid min-w-0 gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-footer lg:gap-x-0 lg:gap-y-0">
             <FooterColumn
               id="categories"
               title={t("footer.sectionCategories")}
@@ -292,7 +292,7 @@ export const Footer: React.FC = () => {
 
             <aside
               aria-label={t("footer.newsletterHeading")}
-              className="pt-6 md:pt-0 lg:border-l lg:border-stone-800/60 lg:pl-6"
+              className="min-w-0 pt-6 md:pt-0 lg:border-l lg:border-stone-800/60 lg:pl-6"
             >
               <h2 className="text-sm font-bold text-white">
                 {t("footer.newsletterHeading")}

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DemoCommissionService } from "./demo-commission.service";
+import { storageService } from "../../../services/storage.service";
 
 const input = {
   eligibleCommercialEvent: true,
@@ -22,6 +23,9 @@ const input = {
 };
 
 describe("DemoCommissionService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("super_admin_alex"));
+  afterEach(() => storageService.setCurrentUserKey("guest"));
+
   it("returns the same server-shaped deterministic preview", async () => {
     const service = new DemoCommissionService();
     const first = await service.preview(input);

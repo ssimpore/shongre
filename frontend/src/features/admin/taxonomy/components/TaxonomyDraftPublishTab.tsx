@@ -85,13 +85,13 @@ export const TaxonomyDraftPublishTab: React.FC<
   return (
     <div className="space-y-8">
       {/* Draft Staging Banner */}
-      <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-              <h3 className="text-base font-black text-stone-900">
-                Brouillons en Attente de Publication ({draftChanges.length})
+              <span className="w-2.5 h-2.5 rounded-pill bg-amber-400 animate-pulse" />
+              <h3 className="text-base font-black text-text-main">
+                {t("admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication")}{draftChanges.length})
               </h3>
             </div>
             <p className="text-xs text-stone-500 mt-1">
@@ -127,7 +127,7 @@ export const TaxonomyDraftPublishTab: React.FC<
 
         {/* Blocking Error Notice if any */}
         {hasBlockingErrors && draftChanges.length > 0 && (
-          <div className="p-3.5 bg-danger-surface border border-danger-border rounded-xl text-xs text-danger flex items-center gap-2">
+          <div className="p-3.5 bg-danger-surface border border-danger-border rounded-control text-xs text-danger flex items-center gap-2">
             <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0" />
             <span>
               {t(
@@ -141,7 +141,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         {/* Draft Diff List */}
         {draftChanges.length > 0 && (
           <div className="space-y-2 pt-3 border-t border-border-subtle">
-            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
               <FileDiff className="w-icon-sm h-icon-sm text-stone-500" />
               <span>
                 {t("admin.taxonomyDraftPublishTab.detailDesChangementsEtages")}
@@ -152,11 +152,11 @@ export const TaxonomyDraftPublishTab: React.FC<
               {draftChanges.map((change) => (
                 <div
                   key={change.id}
-                  className="p-3 bg-bg-subtle rounded-xl border border-border-subtle flex items-center justify-between gap-3 text-xs"
+                  className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-2.5">
                     <span
-                      className={`text-micro px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
+                      className={`text-micro px-2 py-0.5 rounded-pill font-mono font-bold uppercase ${
                         change.changeType === "created"
                           ? "bg-success-surface text-success"
                           : change.changeType === "deprecated"
@@ -168,7 +168,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                     >
                       {change.changeType}
                     </span>
-                    <span className="font-bold text-stone-900">
+                    <span className="font-bold text-text-main">
                       {change.nodeLabel}
                     </span>
                     <span className="text-stone-500">{change.description}</span>
@@ -185,16 +185,16 @@ export const TaxonomyDraftPublishTab: React.FC<
       </div>
 
       {/* Version History Table */}
-      <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+          <h3 className="text-base font-black text-text-main flex items-center gap-2">
             <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees")}
             </span>
           </h3>
           <span className="text-xs text-stone-500 font-mono">
-            {versions.length} version{versions.length > 1 ? "s" : ""} archivée
+            {versions.length} version{versions.length > 1 ? "s" : ""} {t("admin.taxonomyDraftPublishTab.archivee")}
             {versions.length > 1 ? "s" : ""}
           </span>
         </div>
@@ -229,7 +229,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                   key={ver.id}
                   className="hover:bg-bg-subtle/50 transition-colors"
                 >
-                  <td className="py-3 px-3 font-mono font-bold text-stone-900 flex items-center gap-2">
+                  <td className="py-3 px-3 font-mono font-bold text-text-main flex items-center gap-2">
                     <GitCommit className="w-icon-sm h-icon-sm text-primary" />
                     <span>v{ver.versionNumber}.0</span>
                     {idx === 0 && (
@@ -239,7 +239,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                     )}
                   </td>
                   <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 rounded-full text-micro font-bold uppercase bg-success-surface text-success">
+                    <span className="px-2 py-0.5 rounded-pill text-micro font-bold uppercase bg-success-surface text-success">
                       {labelIdentifier(ver.status)}
                     </span>
                   </td>
@@ -249,7 +249,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                   <td className="py-3 px-3 text-stone-700 max-w-xs truncate">
                     {ver.description || "Mise à jour standard"}
                   </td>
-                  <td className="py-3 px-3 text-stone-600">
+                  <td className="py-3 px-3 text-text-secondary">
                     {ver.publishedBy || "Admin"}
                   </td>
                   <td className="py-3 px-3 text-stone-500 font-mono">

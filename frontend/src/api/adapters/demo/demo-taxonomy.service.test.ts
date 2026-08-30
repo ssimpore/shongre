@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
 import { DemoTaxonomyService } from "./demo-taxonomy.service";
+import { storageService } from "../../../services/storage.service";
 
 const infrastructure = {
   franceDomain: "shongre.fr",
@@ -20,6 +21,8 @@ const belgium = resolveMarketContext({
 });
 
 describe("DemoTaxonomyService header navigation", () => {
+  beforeEach(() => storageService.setCurrentUserKey("content_julien"));
+
   it("persists a minimal admin configuration and publishes only active items", async () => {
     const service = new DemoTaxonomyService();
     const initialFrance = await service.getAdminHeaderNavigation(france);

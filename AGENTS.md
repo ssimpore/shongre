@@ -162,6 +162,10 @@ component → hook/controller → service contract → demo or HTTP adapter
   service registry and generated OpenAPI types.
 - Components must not branch on data mode, call Supabase business tables/RPCs,
   construct `/api/v1` requests ad hoc, or contain fake backend behavior.
+- Keep service-registry domains lazily loaded in both demo and HTTP modes. A new
+  registry entry must not eagerly import every adapter into the application
+  shell, and service-contract methods must remain Promise-based so deferred
+  domain loading preserves the public boundary.
 - Demo adapters must be asynchronous, deterministic, and contract-compatible.
   Important payment, moderation, verification, subscription, fraud, messaging,
   inventory, and error outcomes must use reproducible scenarios rather than
@@ -291,12 +295,21 @@ component → hook/controller → service contract → demo or HTTP adapter
   verification state, account status, Staff capability, or administrative data;
   direct capability changes use only the dedicated capability-override workflow.
 - Individual and Professional are the only account types. Staff is an
-  orthogonal, server-managed membership status with an explicit role. Every
-  Staff role receives `staff.internal.access`, but it and all Staff-only direct
-  grants are effective only while membership is active. Membership and
-  capability-override changes require active Staff, MFA, recent authentication,
-  self/owner governance, session revocation, and an audit trail; capability
-  overrides additionally require `admin.permissions.manage`.
+  orthogonal, server-managed membership status with an explicit role. Any
+  retained Staff membership, including suspended or revoked, replaces the
+  customer marketplace capability plane for that identity; direct grants must
+  never bridge the two planes. Active Staff receive only their least-privilege
+  internal role and approved internal overrides, while inactive Staff receive
+  neither plane. In demo mode, entering the public marketplace root with a
+  retained Staff persona must switch to the signed-out guest persona before
+  public content renders; production Staff sessions remain denied. Membership
+  and capability-override changes require active Staff, MFA, recent
+  authentication, self/owner governance, session revocation, and an audit
+  trail; capability overrides additionally require `admin.permissions.manage`.
+- Every public OpenAPI operation must explicitly declare whether authenticated
+  Staff are denied through `x-shongre-deny-staff-marketplace`; customer
+  discovery and entry points use `true`, while only neutral authentication,
+  platform, health, or signed-provider entry points may use `false`.
 - Social identities are matched by provider plus provider subject, never by
   email alone. Linking requires authenticated recent user intent; never silently
   merge accounts because an email matches or allow removal of the last usable
@@ -602,6 +615,11 @@ France-only happy path is insufficient for market-sensitive work.
   of truth. `mobile/ios/` and `mobile/android/` are ignored generated output;
   regenerate them with `make mobile-prebuild-clean`, inspect the result, and
   never hand-edit generated projects.
+- Generated iOS targets must adopt the scene lifecycle and preserve lifecycle,
+  cold/warm deep-link, and universal-link forwarding. Keep
+  `mobile/plugins/with-ios-scene-lifecycle.cjs` until a stable Expo prebuild
+  generates equivalent behavior and a clean prebuild plus simulator launch and
+  link-routing checks pass without it.
 - Keep React aligned across workspaces and run Expo Doctor after dependency
   changes. Do not encode current SDK or store-policy dates as permanent rules;
   config and the compliance documentation own those values.

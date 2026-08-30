@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { taxonomyAdminRepository } from "../../../../repositories/taxonomy.repository";
+import { useTranslation } from "../../../../i18n/I18nProvider";
 
 type Section =
   | "listing_types"
@@ -19,6 +20,7 @@ const sections: Array<{ id: Section; label: string }> = [
 ];
 
 export function TaxonomyV4GovernanceTab() {
+  const { t } = useTranslation();
   const snapshot = useMemo(
     () => taxonomyAdminRepository.getV4GovernanceSnapshot(),
     [],
@@ -43,13 +45,12 @@ export function TaxonomyV4GovernanceTab() {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+      <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         <h2 className="text-base font-black text-text-main">
-          Gouvernance du schéma v4 généré
+          {t("admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere")}
         </h2>
         <p className="mt-1 text-xs text-text-muted">
-          Projection publique en lecture seule. Les règles privées, juridiques
-          et de risque restent exclusivement côté backend.
+          {t("admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt")}
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
           {[
@@ -76,7 +77,7 @@ export function TaxonomyV4GovernanceTab() {
       <div
         className="flex flex-wrap gap-2"
         role="tablist"
-        aria-label="Ressources de taxonomie v4"
+        aria-label={t("admin.taxonomyV4GovernanceTab.ressourcesDeTaxonomieV4")}
       >
         {sections.map((item) => (
           <button
@@ -87,7 +88,7 @@ export function TaxonomyV4GovernanceTab() {
             className={`rounded-control border px-3 py-2 text-xs font-bold ${
               section === item.id
                 ? "border-primary bg-primary-light text-primary"
-                : "border-border-base bg-white text-text-muted"
+                : "border-border-base bg-bg-surface text-text-muted"
             }`}
             onClick={() => setSection(item.id)}
           >
@@ -96,11 +97,11 @@ export function TaxonomyV4GovernanceTab() {
         ))}
       </div>
 
-      <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+      <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         {section === "listing_types" ? (
           <div className="space-y-4">
             <label className="block text-xs font-bold text-text-main">
-              Rechercher un type d’annonce
+              {t("admin.taxonomyV4GovernanceTab.rechercherUnTypeDAnnonce")}
               <input
                 type="search"
                 value={query}
@@ -113,10 +114,10 @@ export function TaxonomyV4GovernanceTab() {
                 <thead>
                   <tr className="border-b border-border-base text-text-muted">
                     <th className="p-2">Identifiant</th>
-                    <th className="p-2">Catégorie</th>
+                    <th className="p-2">{t("publishing.publishWizard.categorie")}</th>
                     <th className="p-2">Intention</th>
                     <th className="p-2">Vendeurs</th>
-                    <th className="p-2">Marchés actifs</th>
+                    <th className="p-2">{t("admin.taxonomyV4GovernanceTab.marchesActifs")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,7 +150,7 @@ export function TaxonomyV4GovernanceTab() {
             </div>
             {listingTypes.length > 100 ? (
               <p className="text-xs text-text-muted">
-                100 résultats affichés sur {listingTypes.length}. Affinez la
+                {t("admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur")} {listingTypes.length}. Affinez la
                 recherche.
               </p>
             ) : null}
@@ -173,19 +174,17 @@ export function TaxonomyV4GovernanceTab() {
               }))}
             />
             <p className="text-xs text-text-muted lg:col-span-2">
-              {snapshot.optionParentLinks.length} liens parent-enfant explicites
-              pilotent les sélecteurs en cascade sans dupliquer les options.
+              {snapshot.optionParentLinks.length} {t("admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans")}
             </p>
           </div>
         ) : null}
 
         {section === "bindings" ? (
           <div className="space-y-3">
-            <h3 className="font-black text-text-main">Matrice résolue</h3>
+            <h3 className="font-black text-text-main">{t("admin.taxonomyV4GovernanceTab.matriceResolue")}</h3>
             <p className="text-xs text-text-muted">
               {snapshot.metadata.sourceCounts.bindings.toLocaleString("fr-FR")}{" "}
-              liaisons sources, filtrées dans cette projection pour exclure les
-              champs privés.
+              {t("admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps")}
             </p>
             <ResourceList
               title="Extrait public"
@@ -219,14 +218,10 @@ export function TaxonomyV4GovernanceTab() {
         {section === "markets_sellers" ? (
           <div className="space-y-4 text-xs text-text-main">
             <p>
-              FR, BE et CH sont disponibles selon chaque enregistrement. SN et
-              BF restent « bientôt disponible », non publiables et non
-              indexables.
+              {t("admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn")}
             </p>
             <p>
-              L’éligibilité particulier/professionnel est portée par les
-              catégories, types d’annonce et attributs, puis résolue côté
-              backend.
+              {t("admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes")}
             </p>
           </div>
         ) : null}
@@ -234,17 +229,16 @@ export function TaxonomyV4GovernanceTab() {
         {section === "migration" ? (
           <div className="space-y-5">
             <p className="text-xs text-text-muted">
-              Classeur {snapshot.metadata.workbookSha256.slice(0, 12)}… · source
-              normalisée {snapshot.metadata.normalizedSha256.slice(0, 12)}… ·
+              Classeur {snapshot.metadata.workbookSha256.slice(0, 12)}{t("admin.taxonomyV4GovernanceTab.sourceNormalisee")} {snapshot.metadata.normalizedSha256.slice(0, 12)}… ·
               compilateur {snapshot.metadata.compilerVersion}
             </p>
             <p className="text-xs text-text-main">
-              {snapshot.crosswalk.length} identités v3 revues ·{" "}
+              {snapshot.crosswalk.length} {t("admin.taxonomyV4GovernanceTab.identitesV3Revues")}{" "}
               {mappedDemoListings}
-              annonces de démonstration conservées · aucun référencement ambigu.
+              {t("admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu")}
             </p>
             <ResourceList
-              title="Dry-run des annonces de démonstration"
+              title={t("admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration")}
               rows={snapshot.demoMigration.map((entry) => ({
                 id: entry.source,
                 label: `${entry.status} → ${entry.canonicalNodeId ?? "à revoir"} (${entry.affectedListingIds.length})`,

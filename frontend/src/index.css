@@ -613,8 +613,10 @@
 .listing-rail-cell {
   display: flex;
   flex-direction: column;
-  flex: 0 0 var(--spacing-listing-card);
-  min-width: var(--spacing-listing-card);
+  width: min(var(--spacing-listing-card), 100%);
+  max-width: 100%;
+  flex: 0 0 min(var(--spacing-listing-card), 100%);
+  min-width: min(var(--spacing-listing-card), 100%);
 }
 
 .listing-rail-cell > * {
@@ -659,7 +661,8 @@
 }
 
 .animate-marquee-vertical-down {
-  animation: vertical-scroll-down var(--duration-marquee-reverse) linear infinite;
+  animation: vertical-scroll-down var(--duration-marquee-reverse) linear
+    infinite;
 }
 
 .animate-marquee-horizontal {

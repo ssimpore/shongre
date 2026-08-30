@@ -14,6 +14,7 @@ import {
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type AdminPlanDraftModalProps = {
   product: MonetizationProduct;
@@ -43,6 +44,7 @@ export function AdminPlanDraftModal({
   onClose,
   onCreate,
 }: AdminPlanDraftModalProps) {
+  const { t } = useTranslation();
   const { formatMoneyMinor } = useRegionalFormatters();
   const [draft, setDraft] = useState<MonetizationProduct>(() =>
     structuredClone(product),
@@ -96,8 +98,8 @@ export function AdminPlanDraftModal({
     <Modal
       isOpen
       onClose={onClose}
-      title="Configurer l’offre dans un brouillon"
-      description="Prix, quotas, fonctionnalités et essai sont versionnés ensemble. La version publiée reste inchangée jusqu’à approbation."
+      title={t("admin.adminPlanDraftModal.configurerLOffreDansUnBrouillon")}
+      description={t("admin.adminPlanDraftModal.prixQuotasFonctionnalitesEtEssaiSontVersionnesEnsembleLaVersion")}
       maxWidth="xl"
     >
       <form onSubmit={submit} className="space-y-5">
@@ -112,7 +114,7 @@ export function AdminPlanDraftModal({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="text-micro font-black uppercase tracking-wide text-primary">
-                Aperçu avant publication
+                {t("admin.adminPlanDraftModal.apercuAvantPublication")}
               </div>
               <h3
                 id="plan-preview-heading"
@@ -154,7 +156,7 @@ export function AdminPlanDraftModal({
               .map((entitlement) => (
                 <span
                   key={entitlement.key}
-                  className="rounded-full border border-primary-border bg-bg-surface px-2 py-1 text-micro font-bold text-text-secondary"
+                  className="rounded-pill border border-primary-border bg-bg-surface px-2 py-1 text-micro font-bold text-text-secondary"
                 >
                   {entitlement.label}
                   {entitlement.availability === "beta" ? " · Bêta" : ""}
@@ -167,15 +169,14 @@ export function AdminPlanDraftModal({
               hasCommercialEntitlementValue(entitlement.value),
           ) ? (
             <p className="mt-3 text-xs font-bold text-warning">
-              Les fonctionnalités incomplètes ou en maintenance sont exclues de
-              cet aperçu et ne seront pas accordées.
+              {t("admin.adminPlanDraftModal.lesFonctionnalitesIncompletesOuEnMaintenanceSontExcluesDeCet")}
             </p>
           ) : null}
         </section>
 
         <section className="space-y-3" aria-labelledby="plan-identity-heading">
           <h3 id="plan-identity-heading" className="text-sm font-black">
-            Présentation et disponibilité
+            {t("admin.adminPlanDraftModal.presentationEtDisponibilite")}
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
             <FormField label="Nom public" required>
@@ -189,7 +190,7 @@ export function AdminPlanDraftModal({
                 }
               />
             </FormField>
-            <FormField label="État">
+            <FormField label={t("search.searchPage.etat")}>
               <Select
                 className="w-full"
                 labelledByAncestor
@@ -201,9 +202,9 @@ export function AdminPlanDraftModal({
                   }))
                 }
               >
-                <option value="active">Actif après publication</option>
-                <option value="disabled">Désactivé</option>
-                <option value="archived">Archivé</option>
+                <option value="active">{t("admin.adminPlanDraftModal.actifApresPublication")}</option>
+                <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
+                <option value="archived">{t("admin.adminMarketsPage.archive")}</option>
               </Select>
             </FormField>
           </div>
@@ -270,11 +271,11 @@ export function AdminPlanDraftModal({
                   }))
                 }
               />
-              Offre recommandée
+              {t("admin.adminPlanDraftModal.offreRecommandee")}
             </label>
           </div>
           <FormField
-            label="Catégories ciblées"
+            label={t("admin.adminPlanDraftModal.categoriesCiblees")}
             hint="Identifiants séparés par des virgules. Les règles serveur restent autoritaires."
           >
             <Input
@@ -322,7 +323,7 @@ export function AdminPlanDraftModal({
                     }
                   />
                 </FormField>
-                <FormField label="TVA (points de base)">
+                <FormField label={t("admin.adminPlanDraftModal.tvaPointsDeBase")}>
                   <Input
                     type="number"
                     min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
@@ -343,7 +344,7 @@ export function AdminPlanDraftModal({
                     }
                   />
                 </FormField>
-                <FormField label="Début du prix">
+                <FormField label={t("admin.adminPlanDraftModal.debutDuPrix")}>
                   <Input
                     type="datetime-local"
                     value={localDateTime(price.effectiveFrom)}
@@ -355,7 +356,7 @@ export function AdminPlanDraftModal({
                     }
                   />
                 </FormField>
-                <FormField label="Fin du prix">
+                <FormField label={t("admin.adminPlanDraftModal.finDuPrix")}>
                   <Input
                     type="datetime-local"
                     value={localDateTime(price.effectiveUntil)}
@@ -391,11 +392,10 @@ export function AdminPlanDraftModal({
         >
           <div>
             <h3 id="plan-entitlements-heading" className="text-sm font-black">
-              Quotas et fonctionnalités
+              {t("admin.adminPlanDraftModal.quotasEtFonctionnalites")}
             </h3>
             <p className="mt-1 text-micro text-text-muted">
-              Ces valeurs alimentent la comparaison, l’usage et les contrôles
-              serveur.
+              {t("admin.adminPlanDraftModal.cesValeursAlimententLaComparaisonLUsageEtLesControles")}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -409,7 +409,7 @@ export function AdminPlanDraftModal({
                     {entitlement.key}
                   </div>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-micro font-bold ${
+                    className={`rounded-pill px-2 py-0.5 text-micro font-bold ${
                       entitlement.implementationStatus === "ready"
                         ? "bg-success-surface text-success"
                         : "bg-warning-surface text-warning"
@@ -424,7 +424,7 @@ export function AdminPlanDraftModal({
                   </span>
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  <FormField label="Disponibilité">
+                  <FormField label={t("admin.adminPlanDraftModal.disponibilite")}>
                     <Select
                       className="w-full"
                       labelledByAncestor
@@ -438,10 +438,10 @@ export function AdminPlanDraftModal({
                         }))
                       }
                     >
-                      <option value="enabled">Activé</option>
-                      <option value="beta">Bêta</option>
+                      <option value="enabled">{t("admin.adminPlanDraftModal.active")}</option>
+                      <option value="beta">{t("admin.adminPlanDraftModal.beta")}</option>
                       <option value="maintenance">Maintenance</option>
-                      <option value="disabled">Désactivé</option>
+                      <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
                     </Select>
                   </FormField>
                   <FormField label="Type">
@@ -457,13 +457,13 @@ export function AdminPlanDraftModal({
                         }))
                       }
                     >
-                      <option value="boolean">Booléen</option>
+                      <option value="boolean">{t("admin.adminPlanDraftModal.booleen")}</option>
                       <option value="integer_quota">Quota entier</option>
                       <option value="additive_quota">Quota additionnel</option>
                       <option value="level">Niveau</option>
-                      <option value="monetary_credit">Crédit</option>
+                      <option value="monetary_credit">{t("admin.adminPlanDraftModal.credit")}</option>
                       <option value="scoped_permission">
-                        Permission ciblée
+                        {t("admin.adminPlanDraftModal.permissionCiblee")}
                       </option>
                     </Select>
                   </FormField>
@@ -529,7 +529,7 @@ export function AdminPlanDraftModal({
                   />
                 </FormField>
                 <FormField
-                  label="Dépendances"
+                  label={t("admin.adminPlanDraftModal.dependances")}
                   hint="Codes séparés par des virgules."
                   className="mt-2"
                 >
@@ -554,7 +554,7 @@ export function AdminPlanDraftModal({
         {draft.kind === "subscription" ? (
           <section className="space-y-3" aria-labelledby="plan-trial-heading">
             <h3 id="plan-trial-heading" className="text-sm font-black">
-              Essai et transitions
+              {t("admin.adminPlanDraftModal.essaiEtTransitions")}
             </h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
@@ -580,9 +580,9 @@ export function AdminPlanDraftModal({
                     }))
                   }
                 />
-                Essai activé
+                {t("admin.adminPlanDraftModal.essaiActive")}
               </label>
-              <FormField label="Durée (jours)">
+              <FormField label={t("admin.adminPlanDraftModal.dureeJours")}>
                 <Input
                   type="number"
                   min={MONETIZATION_ADMIN_CONSTRAINTS.trialDurationDays.min}
@@ -626,7 +626,7 @@ export function AdminPlanDraftModal({
                     }))
                   }
                 />
-                Moyen de paiement requis
+                {t("admin.adminPlanDraftModal.moyenDePaiementRequis")}
               </label>
               <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
                 <input
@@ -668,7 +668,7 @@ export function AdminPlanDraftModal({
                 />
                 Nouveaux clients uniquement
               </label>
-              <FormField label="Marchés éligibles">
+              <FormField label={t("admin.adminPlanDraftModal.marchesEligibles")}>
                 <Input
                   value={csv(
                     draft.commercialProfile.trialPolicy.eligibleMarketCodes,
@@ -689,7 +689,7 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label="Audiences éligibles">
+              <FormField label={t("admin.adminPlanDraftModal.audiencesEligibles")}>
                 <Input
                   value={csv(
                     draft.commercialProfile.trialPolicy.eligibleAudiences,
@@ -710,7 +710,7 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label="Début de campagne d’essai">
+              <FormField label={t("admin.adminPlanDraftModal.debutDeCampagneDEssai")}>
                 <Input
                   type="datetime-local"
                   value={localDateTime(
@@ -730,7 +730,7 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label="Fin de campagne d’essai">
+              <FormField label={t("admin.adminPlanDraftModal.finDeCampagneDEssai")}>
                 <Input
                   type="datetime-local"
                   value={localDateTime(
@@ -753,7 +753,7 @@ export function AdminPlanDraftModal({
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <FormField
-                label="Montées autorisées"
+                label={t("admin.adminPlanDraftModal.monteesAutorisees")}
                 hint="Identifiants séparés par des virgules."
               >
                 <Input
@@ -770,7 +770,7 @@ export function AdminPlanDraftModal({
                 />
               </FormField>
               <FormField
-                label="Baisses autorisées"
+                label={t("admin.adminPlanDraftModal.baissesAutorisees")}
                 hint="Identifiants séparés par des virgules."
               >
                 <Input
@@ -792,7 +792,7 @@ export function AdminPlanDraftModal({
 
         <section className="space-y-3 border-t border-border-subtle pt-4">
           <FormField
-            label="Motif du changement"
+            label={t("admin.adminMonetizationPage.motifDuChangement")}
             required
             hint="Visible dans l’audit et par l’approbateur."
           >
@@ -805,7 +805,7 @@ export function AdminPlanDraftModal({
             />
           </FormField>
           <FormField
-            label="Activation planifiée"
+            label={t("admin.adminPlanDraftModal.activationPlanifiee")}
             hint="Laissez vide pour une activation à la publication."
           >
             <Input

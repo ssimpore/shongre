@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DemoSolutionsService } from "./demo-solutions.service";
 import { demoSolutionsStore } from "./demo-solutions.store";
+import { storageService } from "../../../services/storage.service";
 
 const admin = {
   id: "admin-demo",
@@ -9,9 +10,14 @@ const admin = {
 };
 
 describe("DemoSolutionsService", () => {
-  beforeEach(() => demoSolutionsStore.reset());
+  beforeEach(() => {
+    demoSolutionsStore.reset();
+    storageService.setCurrentUserKey("admin_antoine");
+  });
+  afterEach(() => storageService.setCurrentUserKey("guest"));
 
   it("publishes only public lifecycle entries for an eligible market", async () => {
+    storageService.setCurrentUserKey("guest");
     const service = new DemoSolutionsService();
     const publicSolutions = await service.listPublicSolutions({
       marketCode: "FR",
@@ -23,8 +29,12 @@ describe("DemoSolutionsService", () => {
       "marketplace",
       "pilotage",
     ]);
-    expect(publicSolutions.some((value) => value.lifecycle === "RETIRED")).toBe(false);
-    expect(publicSolutions.some((value) => value.lifecycle === "DRAFT")).toBe(false);
+    expect(publicSolutions.some((value) => value.lifecycle === "RETIRED")).toBe(
+      false,
+    );
+    expect(publicSolutions.some((value) => value.lifecycle === "DRAFT")).toBe(
+      false,
+    );
     expect(
       publicSolutions.find((value) => value.slug === "marketplace"),
     ).toMatchObject({ icon: "marketplace" });
@@ -107,6 +117,7 @@ describe("DemoSolutionsService", () => {
       sortOrder: 12,
       documentationUrl: "https://docs.shongre.fr/planning",
     });
+    storageService.setCurrentUserKey("guest");
     expect(await service.getSolutionBySlug("planning")).toBeNull();
   });
 
@@ -128,12 +139,14 @@ describe("DemoSolutionsService", () => {
     expect(reordered.map((solution) => solution.sortOrder)).toEqual(
       orderedIds.map((_, index) => (index + 1) * 10),
     );
+    storageService.setCurrentUserKey("guest");
     const publicSolutions = await service.listPublicSolutions({
       marketCode: "FR",
       language: "fr-FR",
     });
     expect(publicSolutions[0]?.slug).toBe("marketplace");
 
+    storageService.setCurrentUserKey("admin_antoine");
     await expect(
       service.reorderSolutions(orderedIds.slice(1), admin),
     ).rejects.toThrow(/chaque solution/);
@@ -154,6 +167,7 @@ describe("DemoSolutionsService", () => {
       admin,
     );
 
+    storageService.setCurrentUserKey("guest");
     const publicSolutions = await service.listPublicSolutions({
       marketCode: "FR",
       language: "fr-FR",
@@ -161,12 +175,12 @@ describe("DemoSolutionsService", () => {
     expect(publicSolutions.map((solution) => solution.slug)).not.toContain(
       "facturation",
     );
-    await expect(service.getSolutionBySlug("facturation")).resolves.toMatchObject(
-      {
-        slug: "facturation",
-        catalogVisible: false,
-      },
-    );
+    await expect(
+      service.getSolutionBySlug("facturation"),
+    ).resolves.toMatchObject({
+      slug: "facturation",
+      catalogVisible: false,
+    });
   });
 
   it("rejects unsafe paths, incomplete entitlements and invalid availability", async () => {
@@ -235,6 +249,7 @@ describe("DemoSolutionsService", () => {
   });
 
   it("returns null for an unknown public slug and exposes deterministic errors", async () => {
+    storageService.setCurrentUserKey("guest");
     await expect(
       new DemoSolutionsService().getSolutionBySlug("inconnue"),
     ).resolves.toBeNull();
@@ -252,7 +267,9 @@ describe("DemoSolutionsService", () => {
       explanation: "Retrait validé après migration complète.",
       actor: admin,
     });
+    storageService.setCurrentUserKey("guest");
     expect(await service.getSolutionBySlug("facturation")).toBeNull();
+    storageService.setCurrentUserKey("admin_antoine");
     const history = await service.listLifecycleHistory(facturation.id, admin);
     expect(history).toHaveLength(1);
     expect(history[0]).toMatchObject({
@@ -273,6 +290,7 @@ describe("DemoSolutionsService", () => {
     "retired",
     "admin_draft",
   ] as const)("keeps the %s scenario deterministic", async (scenario) => {
+    storageService.setCurrentUserKey("guest");
     const service = new DemoSolutionsService(scenario);
     expect(await service.listPublicSolutions({ marketCode: "FR" })).toEqual(
       await service.listPublicSolutions({ marketCode: "FR" }),

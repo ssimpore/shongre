@@ -10,6 +10,7 @@ import { runUnifiedDiscovery } from "@shongre/shared";
 import { toDemoDiscoveryDocument } from "../../../domains/discovery/discovery.mapper";
 import { getCountryConfig } from "@shongre/contracts";
 import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
+import { requireDemoCapability } from "./demo-authorization";
 
 const POPULAR_KEYWORDS_BY_MARKET: Record<string, string[]> = {
   FR: [
@@ -66,6 +67,7 @@ export class DemoSearchService implements SearchServiceContract {
   ) {}
 
   async search(params: MarketScopedSearchFilters): Promise<SearchResponse> {
+    requireDemoCapability("listing.read");
     await simulateNetworkDelay();
     const marketCode = params.marketCode.trim().toUpperCase();
     if (!getCountryConfig(marketCode))
@@ -138,6 +140,7 @@ export class DemoSearchService implements SearchServiceContract {
   }
 
   async getPopularKeywords(marketCode: string): Promise<string[]> {
+    requireDemoCapability("listing.read");
     await simulateNetworkDelay();
     const normalized = marketCode.trim().toUpperCase();
     if (!getCountryConfig(normalized))
@@ -149,6 +152,7 @@ export class DemoSearchService implements SearchServiceContract {
     query: string,
     marketCode: string,
   ): Promise<string[]> {
+    requireDemoCapability("listing.read");
     await simulateNetworkDelay();
     if (!query || query.trim().length < 2) return [];
     const q = query.toLowerCase().trim();

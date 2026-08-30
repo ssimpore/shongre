@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DemoProviderControlPlaneService } from "./demo-provider-control-plane.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoProviderControlPlaneService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("super_admin_alex"));
+  afterEach(() => storageService.setCurrentUserKey("guest"));
+
   it("keeps credentials transient while simulating create and rotation", async () => {
     const service = new DemoProviderControlPlaneService();
     const credential = "customer-owned-A94D";

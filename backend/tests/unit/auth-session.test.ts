@@ -75,4 +75,21 @@ describe("server-side session lifecycle", () => {
       provider: "password",
     });
   });
+
+  it.each(["suspended", "revoked"] as const)(
+    "refuses to establish a session for %s Staff",
+    async (staffStatus) => {
+      const sessions = new SessionService(new DemoAuthRepository());
+      await expect(
+        sessions.create(
+          {
+            ...user,
+            staffStatus,
+            staffRole: "support_agent",
+          },
+          "password",
+        ),
+      ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
+    },
+  );
 });

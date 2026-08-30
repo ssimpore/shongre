@@ -17,6 +17,7 @@ import {
   CAPABILITIES,
   CAPABILITY_OVERRIDE_REASON_MAX_LENGTH,
   CAPABILITY_OVERRIDE_REASON_MIN_LENGTH,
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
   OWNER_ONLY_CAPABILITIES,
   STAFF_ACCESS_REASON_MAX_LENGTH,
   STAFF_ACCESS_REASON_MIN_LENGTH,
@@ -124,6 +125,20 @@ export class AdminService {
     }
     const actorIsOwner =
       input.actor.staffStatus === "active" && input.actor.staffRole === "owner";
+    if (
+      (previous.staffStatus ?? "none") !== "none" &&
+      customPermissions.some((capability) =>
+        CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+      )
+    ) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Les permissions marketplace client ne peuvent pas être accordées à une identité Staff.",
+      });
+    }
     if (!actorIsOwner && previous.staffRole === "owner") {
       throw new AppError({
         code: "FORBIDDEN",
@@ -223,7 +238,15 @@ export class AdminService {
       staffStatus: access.staffStatus,
       staffRole: access.staffRole ?? null,
       version: user.capabilityOverrideVersion ?? 1,
-      capabilities: resolveCapabilityFacts(user).map(presentCapabilityFact),
+      capabilities: resolveCapabilityFacts(user)
+        .filter(
+          (fact) =>
+            access.staffStatus === "none" ||
+            !CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+              fact.capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+            ),
+        )
+        .map(presentCapabilityFact),
     };
   }
 

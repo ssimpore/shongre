@@ -77,7 +77,7 @@ export const CrmContactDetailPage: React.FC = () => {
     title: contact
       ? `${contact.fullName} | CRM Shongre`
       : "Contact CRM | Shongre",
-    description: "Vue complète du contact CRM.",
+    description: t("admin.crmContactDetailPage.vueCompleteDuContactCrm"),
     canonicalPath: id ? crmPaths.contact(id) : undefined,
     noIndex: true,
   });
@@ -231,15 +231,15 @@ export const CrmContactDetailPage: React.FC = () => {
     );
   if (!contact)
     return (
-      <section className="rounded-2xl border border-border-base bg-white p-10 text-center">
-        <UserRound className="mx-auto h-8 w-8 text-stone-400" />
+      <section className="rounded-2xl border border-border-base bg-bg-surface p-10 text-center">
+        <UserRound className="mx-auto h-8 w-8 text-text-disabled" />
         <h1 className="mt-3 text-lg font-black">Contact introuvable</h1>
         <Button
           className="mt-4"
           size="sm"
           onClick={() => navigate(crmPaths.contacts)}
         >
-          Retour aux contacts
+          {t("admin.crmContactDetailPage.retourAuxContacts")}
         </Button>
       </section>
     );
@@ -253,16 +253,16 @@ export const CrmContactDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.contacts}
-          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Contacts
         </Link>
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-stone-700 bg-stone-900 text-lg font-black">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-pill border border-stone-700 bg-stone-900 text-lg font-black">
               {initials}
             </span>
             <div className="min-w-0">
@@ -271,20 +271,20 @@ export const CrmContactDetailPage: React.FC = () => {
                   {contact.fullName}
                 </h1>
                 {contact.doNotContact && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-red-950 px-2 py-1 text-micro font-bold text-red-300">
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-red-950 px-2 py-1 text-micro font-bold text-red-300">
                     <ShieldAlert className="h-icon-xs w-icon-xs" /> Ne pas
                     contacter
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-stone-400">
+              <p className="mt-1 text-sm text-text-disabled">
                 {contact.jobTitle ?? "Fonction non renseignée"}
                 {accounts[0] ? ` · ${accounts[0].name}` : ""}
               </p>
-              <div className="mt-2 flex flex-wrap gap-3 text-micro text-stone-400">
+              <div className="mt-2 flex flex-wrap gap-3 text-micro text-text-disabled">
                 {contact.email && (
                   <a
-                    className="inline-flex items-center gap-1 hover:text-white"
+                    className="inline-flex items-center gap-1 hover:text-text-inverse"
                     href={`mailto:${contact.email}`}
                   >
                     <Mail className="h-icon-xs w-icon-xs" /> {contact.email}
@@ -292,7 +292,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 )}
                 {contact.phone && (
                   <a
-                    className="inline-flex items-center gap-1 hover:text-white"
+                    className="inline-flex items-center gap-1 hover:text-text-inverse"
                     href={`tel:${contact.phone}`}
                   >
                     <Phone className="h-icon-xs w-icon-xs" /> {contact.phone}
@@ -303,7 +303,7 @@ export const CrmContactDetailPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <Select
-              aria-label="Cycle de vie du contact"
+              aria-label={t("admin.crmContactDetailPage.cycleDeVieDuContact")}
               value={contact.lifecycle}
               onChange={(event) =>
                 void updateLifecycle(
@@ -315,10 +315,10 @@ export const CrmContactDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
               onClick={() => setTaskOpen(true)}
             >
-              <CalendarClock className="h-icon-md w-icon-md" /> Tâche
+              <CalendarClock className="h-icon-md w-icon-md" /> {t("admin.crmContactDetailPage.tache2")}
             </Button>
             <Button size="sm" onClick={() => setNoteOpen(true)}>
               <MessageSquareText className="h-icon-md w-icon-md" /> Note
@@ -328,7 +328,7 @@ export const CrmContactDetailPage: React.FC = () => {
       </section>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             Entreprises
           </span>
@@ -336,17 +336,17 @@ export const CrmContactDetailPage: React.FC = () => {
             {accounts.length}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Opportunités
+            {t("admin.crmOverviewPage.opportunites")}
           </span>
           <strong className="mt-1 block text-2xl font-black">
             {opportunities.length}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Pipeline ouvert
+            {t("admin.crmContactDetailPage.pipelineOuvert")}
           </span>
           <strong className="mt-1 block text-2xl font-black text-primary">
             {new Intl.NumberFormat(currentLocale, {
@@ -356,9 +356,9 @@ export const CrmContactDetailPage: React.FC = () => {
             }).format(openPipeline / 100)}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Tâches ouvertes
+            {t("admin.crmContactDetailPage.tachesOuvertes")}
           </span>
           <strong className="mt-1 block text-2xl font-black">
             {tasks.filter((item) => item.status !== "completed").length}
@@ -368,12 +368,12 @@ export const CrmContactDetailPage: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-sm font-black">Historique</h2>
                 <p className="text-micro text-stone-500">
-                  Interactions immuables du contact
+                  {t("admin.crmContactDetailPage.interactionsImmuablesDuContact")}
                 </p>
               </div>
               <Button
@@ -387,12 +387,12 @@ export const CrmContactDetailPage: React.FC = () => {
             <div className="divide-y divide-border-subtle px-5">
               {activities.length === 0 ? (
                 <p className="py-8 text-center text-xs text-stone-500">
-                  Aucune activité enregistrée.
+                  {t("admin.crmCompanyDetailPage.aucuneActiviteEnregistree")}
                 </p>
               ) : (
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-100 text-text-secondary">
                       <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -407,11 +407,11 @@ export const CrmContactDetailPage: React.FC = () => {
                         </time>
                       </div>
                       {activity.description && (
-                        <p className="mt-1 text-xs text-stone-600">
+                        <p className="mt-1 text-xs text-text-secondary">
                           {activity.description}
                         </p>
                       )}
-                      <p className="mt-1 text-micro text-stone-400">
+                      <p className="mt-1 text-micro text-text-disabled">
                         {activity.actorName}
                       </p>
                     </div>
@@ -420,12 +420,12 @@ export const CrmContactDetailPage: React.FC = () => {
               )}
             </div>
           </section>
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">Opportunités liées</h2>
+                <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.opportunitesLiees")}</h2>
                 <p className="text-micro text-stone-500">
-                  Influence et engagements en cours
+                  {t("admin.crmContactDetailPage.influenceEtEngagementsEnCours")}
                 </p>
               </div>
               <Target className="h-icon-md w-icon-md text-primary" />
@@ -433,7 +433,7 @@ export const CrmContactDetailPage: React.FC = () => {
             <div className="divide-y divide-border-subtle px-5">
               {opportunities.length === 0 ? (
                 <p className="py-8 text-center text-xs text-stone-500">
-                  Aucune opportunité liée.
+                  {t("admin.crmContactDetailPage.aucuneOpportuniteLiee")}
                 </p>
               ) : (
                 opportunities.map((opportunity) => (
@@ -464,10 +464,10 @@ export const CrmContactDetailPage: React.FC = () => {
           </section>
         </div>
         <aside className="min-w-0 space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
-                <h2 className="text-sm font-black">Tâches associées</h2>
+                <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.tachesAssociees")}</h2>
                 <p className="text-micro text-stone-500">Prochaines actions</p>
               </div>
               <Button
@@ -481,7 +481,7 @@ export const CrmContactDetailPage: React.FC = () => {
             <div className="divide-y divide-border-subtle px-4">
               {tasks.length === 0 ? (
                 <p className="py-7 text-center text-xs text-stone-500">
-                  Aucune tâche planifiée.
+                  {t("admin.crmContactDetailPage.aucuneTachePlanifiee")}
                 </p>
               ) : (
                 tasks.map((task) => (
@@ -490,7 +490,7 @@ export const CrmContactDetailPage: React.FC = () => {
                       type="button"
                       disabled={task.status === "completed"}
                       onClick={() => void completeTask(task)}
-                      className="text-stone-400 enabled:hover:text-success disabled:text-success"
+                      className="text-text-disabled enabled:hover:text-success disabled:text-success"
                       aria-label={
                         task.status === "completed"
                           ? `${task.title}, terminée`
@@ -501,7 +501,7 @@ export const CrmContactDetailPage: React.FC = () => {
                     </button>
                     <span className="min-w-0 flex-1">
                       <strong
-                        className={`block truncate text-xs ${task.status === "completed" ? "text-stone-400 line-through" : ""}`}
+                        className={`block truncate text-xs ${task.status === "completed" ? "text-text-disabled line-through" : ""}`}
                       >
                         {task.title}
                       </strong>
@@ -517,8 +517,8 @@ export const CrmContactDetailPage: React.FC = () => {
               )}
             </div>
           </section>
-          <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
-            <h2 className="text-sm font-black">Données du contact</h2>
+          <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
+            <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.donneesDuContact")}</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Département", contact.department ?? "Non renseigné"],
@@ -543,7 +543,7 @@ export const CrmContactDetailPage: React.FC = () => {
               <Link
                 key={account.id}
                 to={crmPaths.company(account.id)}
-                className="mt-3 flex items-center gap-2 rounded-xl bg-stone-50 p-3 text-xs font-bold hover:text-primary"
+                className="mt-3 flex items-center gap-2 rounded-control bg-stone-50 p-3 text-xs font-bold hover:text-primary"
               >
                 <Building2 className="h-icon-md w-icon-md" /> {account.name}
               </Link>
@@ -555,7 +555,7 @@ export const CrmContactDetailPage: React.FC = () => {
       <Modal
         isOpen={noteOpen}
         onClose={() => setNoteOpen(false)}
-        title="Ajouter une note"
+        title={t("admin.crmContactDetailPage.ajouterUneNote")}
         description={`Historique commercial de ${contact.fullName}.`}
       >
         <form onSubmit={addNote} className="space-y-4 text-xs">
@@ -585,7 +585,7 @@ export const CrmContactDetailPage: React.FC = () => {
       <Modal
         isOpen={taskOpen}
         onClose={() => setTaskOpen(false)}
-        title="Planifier une tâche"
+        title={t("admin.crmContactDetailPage.planifierUneTache")}
         description={`Action associée à ${contact.fullName}.`}
       >
         <form onSubmit={createTask} className="space-y-4 text-xs">
@@ -593,11 +593,11 @@ export const CrmContactDetailPage: React.FC = () => {
             <Input
               value={taskTitle}
               onChange={(event) => setTaskTitle(event.target.value)}
-              placeholder="Relancer pour confirmer le rendez-vous"
+              placeholder={t("admin.crmContactDetailPage.relancerPourConfirmerLeRendezVous")}
               required
             />
           </FormField>
-          <FormField label="Échéance" required>
+          <FormField label={t("invoicing.workspace.dueDate")} required>
             <Input
               type="datetime-local"
               value={taskDueAt}

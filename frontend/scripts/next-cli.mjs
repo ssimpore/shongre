@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 
@@ -27,7 +27,8 @@ process.env.NEXT_PUBLIC_INTL_URL ??= process.env.PUBLIC_INTL_URL;
 process.env.NEXT_PUBLIC_API_URL ??= `${process.env.API_URL || ""}${process.env.API_PREFIX || "/api/v1"}`;
 
 const command = process.argv[2] ?? "dev";
-const args = [
+let childCwd = frontendRoot;
+let args = [
   resolve(repositoryRoot, "node_modules/next/dist/bin/next"),
   command,
   ...process.argv.slice(3),
@@ -37,11 +38,39 @@ if (command === "dev" || command === "start") {
   const port = process.env.FRONTEND_PORT;
   if (!host || !port)
     throw new Error("FRONTEND_HOST and FRONTEND_PORT are required.");
-  args.push("--hostname", host, "--port", port);
+
+  if (command === "start") {
+    const standaloneRoot = resolve(frontendRoot, ".next/standalone/frontend");
+    const standaloneServer = resolve(standaloneRoot, "server.js");
+    if (!existsSync(standaloneServer)) {
+      throw new Error(
+        "The standalone Web artifact is missing. Run `make frontend-build` first.",
+      );
+    }
+
+    const standaloneStatic = resolve(standaloneRoot, ".next/static");
+    mkdirSync(standaloneStatic, { recursive: true });
+    cpSync(resolve(frontendRoot, ".next/static"), standaloneStatic, {
+      recursive: true,
+      force: true,
+    });
+    cpSync(resolve(frontendRoot, "public"), resolve(standaloneRoot, "public"), {
+      recursive: true,
+      force: true,
+    });
+
+    process.env.HOSTNAME = host;
+    process.env.PORT = port;
+    process.env.NODE_ENV = "production";
+    childCwd = standaloneRoot;
+    args = [standaloneServer, ...process.argv.slice(3)];
+  } else {
+    args.push("--hostname", host, "--port", port);
+  }
 }
 
 const child = spawn(process.execPath, args, {
-  cwd: frontendRoot,
+  cwd: childCwd,
   env: process.env,
   stdio: "inherit",
 });

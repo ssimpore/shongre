@@ -7,6 +7,10 @@ import {
 } from "../../../configuration/plans.config";
 import { listingRepository } from "../../../repositories/listing.repository";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import {
+  forbidDemoStaffMarketplaceAccess,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 export class DemoPromotionsService implements PromotionsServiceContract {
   private readonly activations = new Map<
@@ -16,11 +20,13 @@ export class DemoPromotionsService implements PromotionsServiceContract {
 
   async getAvailableBoosts(listingId?: string): Promise<ListingBoostOption[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.promote");
     return listingId ? LISTING_BOOSTS : [];
   }
 
   async getProSubscriptionPlans(): Promise<ProPlan[]> {
     await simulateNetworkDelay();
+    forbidDemoStaffMarketplaceAccess();
     return PRO_PLANS;
   }
 
@@ -30,6 +36,7 @@ export class DemoPromotionsService implements PromotionsServiceContract {
     input: { paymentMethod: string; idempotencyKey: string },
   ): Promise<{ success: boolean; expiresAt: string }> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.promote");
     const replay = this.activations.get(input.idempotencyKey);
     if (replay) return replay;
     if (!input.paymentMethod) throw new Error("Mode de paiement requis.");
@@ -74,6 +81,7 @@ export class DemoPromotionsService implements PromotionsServiceContract {
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }> {
     await simulateNetworkDelay();
+    requireDemoCapability("subscription.manage.own");
     const normalizedPlanId = ["pro_starter", "pro_enterprise"].includes(planId)
       ? "pro_business"
       : planId;

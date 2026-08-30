@@ -10,6 +10,9 @@ import {
 } from "@shongre/contracts";
 import { apiRequest, sessionStorage } from "@/api/http-client";
 import { mobileEnvironment } from "@/config/environment";
+import { requireMobileCustomer, StaffMobileAccessError } from "./staff-access";
+
+export { requireMobileCustomer, StaffMobileAccessError } from "./staff-access";
 
 export interface AuthService {
   restore(): Promise<AuthUser | null>;
@@ -43,7 +46,14 @@ export class DemoAuthService implements AuthService {
     const stored = await sessionStorage.read();
     if (!stored) return null;
     const parsed = authUserSchema.safeParse(stored.user);
-    return parsed.success ? parsed.data : null;
+    if (!parsed.success) return null;
+    try {
+      return requireMobileCustomer(parsed.data);
+    } catch (error) {
+      await sessionStorage.clear();
+      if (error instanceof StaffMobileAccessError) return null;
+      throw error;
+    }
   }
 
   async login(input: LoginRequest): Promise<AuthUser> {
@@ -103,7 +113,7 @@ export class HttpAuthService implements AuthService {
     if (!session) return null;
     try {
       const user = await apiRequest<unknown>("/auth/me");
-      return authUserSchema.parse(user);
+      return requireMobileCustomer(authUserSchema.parse(user));
     } catch {
       await sessionStorage.clear();
       return null;
@@ -118,6 +128,12 @@ export class HttpAuthService implements AuthService {
         body: JSON.stringify(credentials),
       }),
     );
+    try {
+      requireMobileCustomer(session.user);
+    } catch (error) {
+      await sessionStorage.clear();
+      throw error;
+    }
     await sessionStorage.write(session);
     return session.user;
   }
@@ -155,6 +171,12 @@ export class HttpAuthService implements AuthService {
         body: JSON.stringify({ code: exchangeCode }),
       }),
     );
+    try {
+      requireMobileCustomer(session.user);
+    } catch (error) {
+      await sessionStorage.clear();
+      throw error;
+    }
     await sessionStorage.write(session);
     return session.user;
   }

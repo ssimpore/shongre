@@ -30,6 +30,7 @@ import type {
   CrmServiceContract,
 } from "../../contracts/crm.contract";
 import { storageService } from "../../../services/storage.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const TENANT_ID = "10000000-0000-4000-8000-000000000001";
 const WORKSPACE_ID = "10000000-0000-4000-8000-000000000002";
@@ -655,6 +656,7 @@ export class DemoCrmService implements CrmServiceContract {
   }
 
   async getDashboard(): Promise<CrmDashboard> {
+    requireDemoCapability("crm.dashboard.read");
     const defaultPipeline =
       this.pipelines.find((item) => item.isDefault) ?? this.pipelines[0];
     const open = this.opportunities.filter((item) => item.status === "open");
@@ -716,9 +718,11 @@ export class DemoCrmService implements CrmServiceContract {
   }
 
   async listAccounts(options?: CrmListOptions) {
+    requireDemoCapability("crm.accounts.read");
     return page(this.accounts, options);
   }
   async getAccount(id: string) {
+    requireDemoCapability("crm.accounts.read");
     return this.required(
       this.accounts.find((item) => item.id === id),
       "Compte CRM introuvable.",
@@ -727,6 +731,7 @@ export class DemoCrmService implements CrmServiceContract {
   async findAccountDuplicates(
     input: CrmAccountDuplicateCheck,
   ): Promise<CrmDuplicateMatch[]> {
+    requireDemoCapability("crm.accounts.read");
     const domain = input.domain
       ?.trim()
       .toLocaleLowerCase("en-US")
@@ -775,6 +780,7 @@ export class DemoCrmService implements CrmServiceContract {
   async getAccountShongreIntelligence(
     id: string,
   ): Promise<CrmShongreIntelligence> {
+    requireDemoCapability("crm.accounts.read");
     if (id !== accountSeeds[0].id) {
       return {
         linked: false,
@@ -847,6 +853,7 @@ export class DemoCrmService implements CrmServiceContract {
     };
   }
   async createAccount(input: CrmAccountInput) {
+    requireDemoCapability("crm.accounts.create");
     const now = ACTION_AT;
     const value: CrmAccount = {
       id: nextId(2),
@@ -878,6 +885,7 @@ export class DemoCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmAccountInput>,
   ) {
+    requireDemoCapability("crm.accounts.update");
     const value = this.versioned(this.accounts, id, expectedVersion);
     Object.assign(value, changes, {
       ...(changes.tags ? { tags: normalizeTags(changes.tags) } : {}),
@@ -888,15 +896,18 @@ export class DemoCrmService implements CrmServiceContract {
   }
 
   async listContacts(options?: CrmListOptions) {
+    requireDemoCapability("crm.contacts.read");
     return page(this.contacts, options);
   }
   async getContact(id: string) {
+    requireDemoCapability("crm.contacts.read");
     return this.required(
       this.contacts.find((item) => item.id === id),
       "Contact CRM introuvable.",
     );
   }
   async createContact(input: CrmContactInput) {
+    requireDemoCapability("crm.contacts.create");
     const now = ACTION_AT;
     const value: CrmContact = {
       id: nextId(3),
@@ -929,6 +940,7 @@ export class DemoCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmContactInput>,
   ) {
+    requireDemoCapability("crm.contacts.update");
     const value = this.versioned(this.contacts, id, expectedVersion);
     Object.assign(value, changes, {
       ...(changes.tags ? { tags: normalizeTags(changes.tags) } : {}),
@@ -941,9 +953,11 @@ export class DemoCrmService implements CrmServiceContract {
   }
 
   async listPipelines() {
+    requireDemoCapability("crm.pipelines.read");
     return structuredClone(this.pipelines);
   }
   async createPipeline(input: CrmPipelineInput) {
+    requireDemoCapability("crm.pipelines.manage");
     const now = ACTION_AT;
     const id = nextId(8);
     const created: CrmPipeline = {
@@ -976,6 +990,7 @@ export class DemoCrmService implements CrmServiceContract {
     expectedVersion: number,
     input: CrmPipelineInput,
   ) {
+    requireDemoCapability("crm.pipelines.manage");
     const pipelineIndex = this.pipelines.findIndex((item) => item.id === id);
     const current = this.pipelines[pipelineIndex];
     if (!current || current.version !== expectedVersion) {
@@ -1010,15 +1025,18 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(updated);
   }
   async listOpportunities(options?: CrmListOptions) {
+    requireDemoCapability("crm.opportunities.read");
     return page(this.opportunities, options);
   }
   async getOpportunity(id: string) {
+    requireDemoCapability("crm.opportunities.read");
     return this.required(
       this.opportunities.find((item) => item.id === id),
       "Opportunité introuvable.",
     );
   }
   async createOpportunity(input: CrmOpportunityInput) {
+    requireDemoCapability("crm.opportunities.create");
     const now = ACTION_AT;
     const selectedPipeline = this.required(
       this.pipelines.find((item) => item.id === input.pipelineId),
@@ -1063,6 +1081,7 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(value);
   }
   async transitionOpportunity(id: string, input: CrmOpportunityTransition) {
+    requireDemoCapability("crm.opportunities.transition");
     const value = this.versioned(this.opportunities, id, input.expectedVersion);
     const previousStageName = value.stageName;
     const selectedPipeline = this.required(
@@ -1114,9 +1133,11 @@ export class DemoCrmService implements CrmServiceContract {
   }
 
   async listTasks(options?: CrmListOptions) {
+    requireDemoCapability("crm.tasks.read");
     return page(this.tasks, options);
   }
   async createTask(input: CrmTaskInput) {
+    requireDemoCapability("crm.tasks.create");
     const now = ACTION_AT;
     const value: CrmTask = {
       id: nextId(5),
@@ -1141,6 +1162,7 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(value);
   }
   async completeTask(id: string, expectedVersion: number, result?: string) {
+    requireDemoCapability("crm.tasks.complete");
     const value = this.versioned(this.tasks, id, expectedVersion);
     const now = ACTION_AT;
     Object.assign(value, {
@@ -1166,6 +1188,7 @@ export class DemoCrmService implements CrmServiceContract {
     entityId: string,
     limit = 100,
   ) {
+    requireDemoCapability("crm.activities.read");
     return structuredClone(
       this.activities
         .filter(
@@ -1182,13 +1205,16 @@ export class DemoCrmService implements CrmServiceContract {
     > &
       Partial<Pick<CrmActivity, "description" | "occurredAt">>,
   ) {
+    requireDemoCapability("crm.activities.create");
     return structuredClone(this.appendActivity(input));
   }
 
   async listProducts(options?: CrmListOptions) {
+    requireDemoCapability("crm.products.read");
     return page(this.products, options);
   }
   async createProduct(input: CrmProductInput) {
+    requireDemoCapability("crm.products.manage");
     const now = new Date().toISOString();
     const id = nextId(7);
     const value: CrmProduct = {
@@ -1224,6 +1250,7 @@ export class DemoCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmProductInput>,
   ) {
+    requireDemoCapability("crm.products.manage");
     const value = this.versioned(this.products, id, expectedVersion);
     Object.assign(value, changes, {
       version: value.version + 1,
@@ -1245,6 +1272,7 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(value);
   }
   async listQuotes(options: CrmListOptions & { opportunityId?: string } = {}) {
+    requireDemoCapability("crm.quotes.read");
     const values = options.opportunityId
       ? this.quotes.filter(
           (item) => item.opportunityId === options.opportunityId,
@@ -1253,6 +1281,7 @@ export class DemoCrmService implements CrmServiceContract {
     return page(values, options);
   }
   async createQuote(input: CrmQuoteInput) {
+    requireDemoCapability("crm.quotes.create");
     const now = new Date().toISOString();
     const account = this.required(
       this.accounts.find((item) => item.id === input.accountId),
@@ -1304,6 +1333,7 @@ export class DemoCrmService implements CrmServiceContract {
   async listCustomFields(
     entityType?: "account" | "contact" | "opportunity" | "task",
   ) {
+    requireDemoCapability("crm.custom_fields.read");
     return structuredClone(
       entityType
         ? this.customFields.filter((item) => item.entityType === entityType)
@@ -1311,6 +1341,7 @@ export class DemoCrmService implements CrmServiceContract {
     );
   }
   async createCustomField(input: CrmCustomFieldInput) {
+    requireDemoCapability("crm.custom_fields.manage");
     if (
       this.customFields.some(
         (item) =>
@@ -1342,6 +1373,7 @@ export class DemoCrmService implements CrmServiceContract {
   async listSavedViews(
     entityType?: "account" | "contact" | "opportunity" | "task",
   ) {
+    requireDemoCapability("crm.access");
     return structuredClone(
       entityType
         ? this.savedViews.filter((view) => view.entityType === entityType)
@@ -1349,6 +1381,7 @@ export class DemoCrmService implements CrmServiceContract {
     );
   }
   async createSavedView(input: CrmSavedViewInput) {
+    requireDemoCapability("crm.access");
     const now = new Date().toISOString();
     const value: CrmSavedView = {
       id: nextId(6),
@@ -1371,6 +1404,7 @@ export class DemoCrmService implements CrmServiceContract {
     expectedVersion: number,
     input: CrmSavedViewInput,
   ) {
+    requireDemoCapability("crm.access");
     const value = this.savedViews.find((item) => item.id === id);
     if (!value) throw new Error("Vue CRM introuvable.");
     if (value.version !== expectedVersion)
@@ -1382,6 +1416,7 @@ export class DemoCrmService implements CrmServiceContract {
     return structuredClone(value);
   }
   async deleteSavedView(id: string, expectedVersion: number) {
+    requireDemoCapability("crm.access");
     const value = this.versioned(this.savedViews, id, expectedVersion);
     const index = this.savedViews.findIndex((item) => item.id === value.id);
     if (index >= 0) this.savedViews.splice(index, 1);

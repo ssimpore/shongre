@@ -14,20 +14,24 @@ import { Transaction } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { minutesToMilliseconds } from "../../../utilities/time";
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoOrdersService implements OrdersServiceContract {
   async getOrderById(orderId: string): Promise<Transaction | null> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.read.own");
     return transactionRepository.getTransactionById(orderId);
   }
 
   async getPurchases(userId: string): Promise<Transaction[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.read.own");
     return transactionRepository.getPurchases(userId);
   }
 
   async getSales(userId: string): Promise<Transaction[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.manage.seller");
     return transactionRepository.getSales(userId);
   }
 
@@ -36,6 +40,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     deliveryMethod: Transaction["deliveryMethod"];
   }): Promise<DirectPurchaseQuote> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.create");
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
     const option = listing.deliveryOptions.find(
@@ -65,6 +70,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     input: CreateDirectPurchaseInput,
   ): Promise<OrderCheckoutResult> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.create");
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
 
@@ -106,6 +112,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     input: CreateReservationInput,
   ): Promise<OrderCheckoutResult> {
     await simulateNetworkDelay();
+    requireDemoCapability("order.create");
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
 
@@ -137,6 +144,7 @@ export class DemoOrdersService implements OrdersServiceContract {
 
   async issueHandoverCode(orderId: string) {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const order = await transactionRepository.getTransactionById(orderId);
     if (!order?.verificationCode) {
       throw new Error("Le code de remise n’est pas disponible.");
@@ -155,6 +163,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     enteredPin: string,
   ): Promise<{ success: boolean; message: string }> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const success = await transactionRepository.confirmHandoverPin(
       orderId,
       enteredPin,
@@ -173,6 +182,7 @@ export class DemoOrdersService implements OrdersServiceContract {
 
   async confirmDeliveryReceived(orderId: string): Promise<Transaction> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     return transactionRepository.updateTransactionStatus(orderId, "completed");
   }
 
@@ -181,6 +191,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     input: { carrierName: string; trackingNumber: string },
   ): Promise<Transaction> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const updated = await transactionRepository.updateTransactionStatus(
       orderId,
       "shipped",
@@ -194,6 +205,7 @@ export class DemoOrdersService implements OrdersServiceContract {
 
   async cancelUnpaidOrder(orderId: string): Promise<Transaction> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     return transactionRepository.updateTransactionStatus(orderId, "cancelled");
   }
 
@@ -203,6 +215,7 @@ export class DemoOrdersService implements OrdersServiceContract {
     details: string,
   ): Promise<Transaction> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const user = storageService.getCurrentUser();
     return transactionRepository.openDispute(orderId, {
       openedBy: user?.id || "buyer",

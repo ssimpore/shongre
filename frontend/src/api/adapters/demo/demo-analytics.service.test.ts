@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { analyticsProviderHealthSchema } from "@shongre/contracts/analytics";
 
 import { demoAnalyticsService } from "./demo-analytics.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoAnalyticsService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("admin_antoine"));
+
   it("exposes the marketplace overview and subscription intelligence", async () => {
     const scope = { range: "30d", marketCode: "FR" } as const;
     const [overview, monetization] = await Promise.all([

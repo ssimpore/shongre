@@ -365,7 +365,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
        order, since the header comes later. The role list rendered underneath
        the header and its first entry was unreadable. */
     <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-drawer">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">
             {t("shell.demoRoleSwitcher.modeDemo")}
@@ -378,7 +378,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
           <DataModeSettingsControl />
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+        <div className="flex min-w-0 basis-32 flex-1 items-center justify-end gap-2">
           {utility}
           <div ref={containerRef} className="relative min-w-0">
             <button

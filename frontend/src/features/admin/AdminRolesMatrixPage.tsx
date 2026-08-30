@@ -95,7 +95,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -107,12 +107,12 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 {t("admin.adminRolesMatrixPage.controleDAccesBaseSur")}
               </span>
             </div>
-            <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+            <h1 className="text-2xl font-black text-text-main tracking-tight">
               {t(
                 "admin.adminRolesMatrixPage.matriceInteractiveDesRolesPermissions",
               )}
             </h1>
-            <p className="text-xs text-stone-600 mt-1 max-w-3xl">
+            <p className="text-xs text-text-secondary mt-1 max-w-3xl">
               {t(
                 "admin.adminRolesMatrixPage.cartographieCompleteEtExhaustiveDes",
               )}
@@ -125,10 +125,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
               {t("admin.adminRolesMatrixPage.votreIdentiteActive")}
             </span>
             <div className="flex items-center gap-2">
-              <strong className="text-stone-900 font-bold">
+              <strong className="text-text-main font-bold">
                 {currentUser?.name}
               </strong>
-              <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded-full">
+              <span className="bg-primary text-text-inverse text-micro font-bold px-2 py-1 rounded-pill">
                 {roleLabel(presentedRole)}
               </span>
             </div>
@@ -137,10 +137,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Role Power Spectrum Cards */}
-      <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-xs">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-5 shadow-xs">
         <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-2">
           <ShieldCheck className="w-icon-md h-icon-md text-stone-700" />
-          Spectre d'Élévation des Privilèges ({roleStats.length} Rôles Définis)
+          {t("admin.adminRolesMatrixPage.spectreDElevationDesPrivileges")}{roleStats.length} {t("admin.adminRolesMatrixPage.rolesDefinis")}
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
@@ -158,7 +158,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <span
-                      className={`text-micro font-bold px-2 py-1 rounded-full border ${r.badgeColor}`}
+                      className={`text-micro font-bold px-2 py-1 rounded-pill border ${r.badgeColor}`}
                     >
                       Niv. {r.hierarchyLevel}
                     </span>
@@ -169,7 +169,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                     )}
                   </div>
                   <div
-                    className="font-bold text-stone-900 text-xs leading-tight truncate"
+                    className="font-bold text-text-main text-xs leading-tight truncate"
                     title={r.title}
                   >
                     {r.title}
@@ -189,11 +189,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="flex-1 flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
-            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -254,7 +254,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
         {/* Focusable so the matrix can be scrolled without a pointer — it is
             far wider than any viewport by design. */}
         <div
@@ -267,7 +267,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
         >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-stone-900 text-white font-bold border-b border-stone-800">
+              <tr className="bg-stone-900 text-text-inverse font-bold border-b border-stone-800">
                 <th
                   scope="col"
                   className="p-3 min-w-70 sticky left-0 bg-stone-900 z-raised"
@@ -282,7 +282,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                       scope="col"
                       key={r}
                       className={`p-2.5 text-center min-w-22.5 border-l border-stone-800 ${
-                        isCurrent ? "bg-primary-hover text-white" : ""
+                        isCurrent ? "bg-primary-hover text-text-inverse" : ""
                       }`}
                       title={`${def.title} (niveau ${def.hierarchyLevel})`}
                     >
@@ -329,7 +329,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               <ChevronRight className="w-icon-md h-icon-md text-stone-500" />
                             )}
                             <span className="uppercase text-xs tracking-wider text-stone-700">
-                              Catégorie : {group.category} (
+                              {t("admin.adminRolesMatrixPage.categorie")} {group.category} (
                               {plural(group.rows.length, "permission")})
                             </span>
                           </div>
@@ -345,11 +345,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               className="hover:bg-stone-50/80 transition-colors"
                             >
                               {/* Permission Info */}
-                              <td className="p-3 sticky left-0 bg-white hover:bg-stone-50 border-r border-stone-200 z-raised">
+                              <td className="p-3 sticky left-0 bg-bg-surface hover:bg-stone-50 border-r border-stone-200 z-raised">
                                 <div className="flex items-start justify-between gap-2">
                                   <div>
                                     <div
-                                      className="font-bold text-stone-900 text-xs"
+                                      className="font-bold text-text-main text-xs"
                                       title={row.permission.id}
                                     >
                                       {row.permission.name}
@@ -383,11 +383,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                     }`}
                                   >
                                     {isGranted ? (
-                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-success-surface text-success">
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-pill bg-success-surface text-success">
                                         <Check className="w-icon-sm h-icon-sm stroke-3" />
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-stone-300">
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-pill text-stone-300">
                                         <X className="w-icon-xs h-icon-xs stroke-2" />
                                       </span>
                                     )}

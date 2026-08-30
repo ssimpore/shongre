@@ -29,6 +29,7 @@ import { authorizationService } from "../../../security/authorization.service";
 import { storageService } from "../../../services/storage.service";
 import { auditService } from "../../../security/audit.service";
 import type { SecurityAuditAction } from "../../../types";
+import { forbidDemoStaffMarketplaceAccess } from "./demo-authorization";
 
 function assertHomepageAdministrator(marketCode: string): void {
   authorizationService.assertCan(
@@ -141,10 +142,10 @@ async function buildHomepage(
     query.now,
   );
   const results = await Promise.allSettled(
-    resolved.sections.map(async (section) => [
-      section.key,
-      await resolveSection(section, query),
-    ] as const),
+    resolved.sections.map(
+      async (section) =>
+        [section.key, await resolveSection(section, query)] as const,
+    ),
   );
   const content = new Map<string, Partial<HomepageSectionView>>();
   results.forEach((result, index) => {
@@ -158,6 +159,7 @@ async function buildHomepage(
 
 export class DemoHomepageService implements HomepageServiceContract {
   getHomepage(query: HomepageQuery): Promise<HomepageExperience> {
+    forbidDemoStaffMarketplaceAccess();
     return buildHomepage(
       getPublishedHomepageConfiguration(query.marketCode, query.locale),
       query,

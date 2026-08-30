@@ -77,14 +77,14 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
     >
       <div className="space-y-4">
         {/* Source Node Info */}
-        <div className="p-3 bg-bg-subtle rounded-xl border border-border-subtle flex items-center gap-3">
+        <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center gap-3">
           <CategoryIcon category={node} size="md" withBackground />
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded font-bold">
                 {node.level}
               </span>
-              <span className="font-bold text-stone-900">{node.name}</span>
+              <span className="font-bold text-text-main">{node.name}</span>
             </div>
             <p className="text-xs text-stone-500 font-mono mt-0.5">
               ID : {node.id} • Slug : /{node.slug}
@@ -93,7 +93,7 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
         </div>
 
         {/* Impact Warning */}
-        <div className="p-3.5 bg-warning-surface border border-warning-border rounded-xl space-y-1.5 text-xs text-warning">
+        <div className="p-3.5 bg-warning-surface border border-warning-border rounded-control space-y-1.5 text-xs text-warning">
           <div className="flex items-center gap-1.5 font-bold text-warning">
             <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
             <span>
@@ -102,12 +102,10 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           </div>
           <ul className="list-disc list-inside space-y-0.5 pl-1 text-warning/90">
             <li>
-              <strong>{impact.descendantsCount}</strong> sous-catégories / types
-              enfants seront déplacés.
+              <strong>{impact.descendantsCount}</strong> {t("admin.moveNodeModal.sousCategoriesTypesEnfantsSerontDeplaces")}
             </li>
             <li>
-              <strong>~{impact.activeListingsCount}</strong> annonces actives
-              conserveront leur liaison d'ID stable sans rupture.
+              <strong>~{impact.activeListingsCount}</strong> {t("admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture")}
             </li>
             <li>{t("admin.moveNodeModal.lesCapacitesEtAttributsHerites")}</li>
           </ul>

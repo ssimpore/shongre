@@ -1292,7 +1292,7 @@ export const SearchPage: React.FC = () => {
                 430px and 215px at 768px. It now claims the whole line, with
                 "Filtres" pinned left, the view toggle pinned right, and the
                 sort control absorbing whatever is left between them. */}
-            <div className="flex items-center gap-2 min-w-0 w-full lg:w-auto justify-between lg:justify-end">
+            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
               {/* Mobile Filter Button with active count indicator */}
               <button
                 type="button"

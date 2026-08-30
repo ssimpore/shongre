@@ -32,6 +32,10 @@ import type {
   MarketingAccountSubscriptionInput,
   MarketingServiceContract,
 } from "../../contracts/marketing.contract";
+import {
+  forbidDemoStaffMarketplaceAccess,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const TENANT_ID = "10000000-0000-4000-8000-000000000001";
 const WORKSPACE_ID = "10000000-0000-4000-8000-000000000101";
@@ -360,6 +364,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async subscribePublic(input: MarketingPublicSubscriptionInput) {
+    forbidDemoStaffMarketplaceAccess();
     const email = input.email.trim().toLowerCase();
     const existing = this.profiles.find(
       (profile) => profile.normalizedEmail === email,
@@ -371,7 +376,7 @@ export class DemoMarketingService implements MarketingServiceContract {
         message:
           "Si cette adresse est éligible, des instructions lui seront envoyées.",
       };
-    const profile = await this.createProfile({
+    const profile = await this.createProfileRecord({
       email,
       locale: input.locale,
       country: input.marketCode,
@@ -389,12 +394,16 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async confirmPublic(token: string) {
+    forbidDemoStaffMarketplaceAccess();
     const action = this.actionTokens.get(token);
     if (!action || action.purpose !== "CONFIRM")
       throw new Error("Ce lien est invalide ou a expiré.");
-    return this.subscriptionView(await this.confirmProfile(action.profileId));
+    return this.subscriptionView(
+      await this.confirmProfileRecord(action.profileId),
+    );
   }
   async getPublicPreferences(token: string) {
+    forbidDemoStaffMarketplaceAccess();
     const action = this.actionTokens.get(token);
     const profile =
       action && action.purpose === "PREFERENCES"
@@ -404,6 +413,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     return this.subscriptionView(profile);
   }
   async updatePublicPreferences(input: MarketingPublicPreferencesUpdate) {
+    forbidDemoStaffMarketplaceAccess();
     const action = this.actionTokens.get(input.token);
     const profile =
       action && action.purpose === "PREFERENCES"
@@ -415,10 +425,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     return this.subscriptionView(profile);
   }
   async unsubscribePublic(token: string) {
+    forbidDemoStaffMarketplaceAccess();
     const action = this.actionTokens.get(token);
     if (!action || action.purpose !== "UNSUBSCRIBE")
       throw new Error("Ce lien est invalide ou a expiré.");
-    await this.unsubscribeProfile(action.profileId);
+    await this.unsubscribeProfileRecord(action.profileId);
     return {
       accepted: true as const,
       status: "UNCHANGED" as const,
@@ -434,13 +445,15 @@ export class DemoMarketingService implements MarketingServiceContract {
     );
   }
   async getAccountSubscription(identity: MarketingAccountIdentity) {
+    requireDemoCapability("marketplace.customer.access");
     const profile = this.accountProfile(identity);
     return profile ? this.subscriptionView(profile) : null;
   }
   async subscribeAccount(input: MarketingAccountSubscriptionInput) {
+    requireDemoCapability("marketplace.customer.access");
     let profile = this.accountProfile(input);
     if (!profile)
-      profile = await this.createProfile({
+      profile = await this.createProfileRecord({
         accountUserId: input.userId,
         email: input.email,
         locale: input.locale,
@@ -467,6 +480,7 @@ export class DemoMarketingService implements MarketingServiceContract {
   async updateAccountPreferences(
     input: MarketingAccountIdentity & { topics: string[] },
   ) {
+    requireDemoCapability("marketplace.customer.access");
     const profile = this.accountProfile(input);
     if (!profile) throw new Error("Abonnement introuvable.");
     profile.topics = [...new Set(input.topics)];
@@ -474,11 +488,15 @@ export class DemoMarketingService implements MarketingServiceContract {
     return this.subscriptionView(profile);
   }
   async unsubscribeAccount(identity: MarketingAccountIdentity) {
+    requireDemoCapability("marketplace.customer.access");
     const profile = this.accountProfile(identity);
     if (!profile) throw new Error("Abonnement introuvable.");
-    return this.subscriptionView(await this.unsubscribeProfile(profile.id));
+    return this.subscriptionView(
+      await this.unsubscribeProfileRecord(profile.id),
+    );
   }
   async getDashboard(): Promise<MarketingDashboard> {
+    requireDemoCapability("marketing.dashboard.read");
     return {
       activeProfiles: 4680,
       pendingProfiles: 17,
@@ -500,6 +518,7 @@ export class DemoMarketingService implements MarketingServiceContract {
   async listProfiles(
     options: { limit?: number; query?: string; status?: string } = {},
   ) {
+    requireDemoCapability("marketing.profiles.read");
     const filtered = this.profiles.filter(
       (profile) =>
         (!options.query ||
@@ -512,6 +531,10 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async createProfile(input: MarketingProfileInput) {
+    requireDemoCapability("marketing.profiles.manage");
+    return this.createProfileRecord(input);
+  }
+  private async createProfileRecord(input: MarketingProfileInput) {
     const email = input.email.trim().toLowerCase();
     const existing = this.profiles.find(
       (profile) => profile.normalizedEmail === email,
@@ -547,6 +570,10 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async confirmProfile(id: string) {
+    requireDemoCapability("marketing.profiles.manage");
+    return this.confirmProfileRecord(id);
+  }
+  private async confirmProfileRecord(id: string) {
     const value = this.profiles.find((profile) => profile.id === id);
     if (!value) throw new Error("Profil introuvable.");
     value.status = "SUBSCRIBED";
@@ -555,6 +582,10 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async unsubscribeProfile(id: string) {
+    requireDemoCapability("marketing.profiles.manage");
+    return this.unsubscribeProfileRecord(id);
+  }
+  private async unsubscribeProfileRecord(id: string) {
     const value = this.profiles.find((profile) => profile.id === id);
     if (!value) throw new Error("Profil introuvable.");
     value.status = "UNSUBSCRIBED";
@@ -573,9 +604,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async listLists() {
+    requireDemoCapability("marketing.lists.read");
     return structuredClone(this.lists);
   }
   async createList(input: MarketingListInput) {
+    requireDemoCapability("marketing.lists.manage");
     const value: MarketingList = {
       id: nextUuid(),
       tenantId: TENANT_ID,
@@ -590,12 +623,15 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async addListMember() {
+    requireDemoCapability("marketing.lists.manage");
     return;
   }
   async listSegments() {
+    requireDemoCapability("marketing.segments.read");
     return structuredClone(this.segments);
   }
   async createSegment(input: MarketingSegmentInput) {
+    requireDemoCapability("marketing.segments.manage");
     const value: MarketingSegment = {
       id: nextUuid(),
       tenantId: TENANT_ID,
@@ -611,9 +647,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async listTemplates() {
+    requireDemoCapability("marketing.templates.read");
     return structuredClone(this.templates);
   }
   async createTemplate(input: MarketingTemplateInput) {
+    requireDemoCapability("marketing.templates.manage");
     const value: MarketingTemplate = {
       id: nextUuid(),
       tenantId: TENANT_ID,
@@ -627,14 +665,17 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(value);
   }
   async listCampaigns() {
+    requireDemoCapability("marketing.campaigns.read");
     return structuredClone(this.campaigns);
   }
   async getCampaign(id: string) {
+    requireDemoCapability("marketing.campaigns.read");
     return structuredClone(
       this.campaigns.find((campaign) => campaign.id === id) ?? null,
     );
   }
   async createCampaign(input: MarketingCampaignInput) {
+    requireDemoCapability("marketing.campaigns.create");
     const value: MarketingCampaign = {
       id: nextUuid(),
       tenantId: TENANT_ID,
@@ -655,6 +696,7 @@ export class DemoMarketingService implements MarketingServiceContract {
   async estimateAudience(
     audience: MarketingAudienceDefinition,
   ): Promise<MarketingAudienceEstimate> {
+    requireDemoCapability("marketing.campaigns.read");
     const selected = audience.includeSegmentIds.includes(segmentsSeed[0].id)
       ? 612
       : audience.includeSegmentIds.includes(segmentsSeed[1].id)
@@ -679,6 +721,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async preflight(id: string): Promise<MarketingPreflight> {
+    requireDemoCapability("marketing.campaigns.update");
     const campaign = await this.getCampaign(id);
     if (!campaign) throw new Error("Campagne introuvable.");
     const audience = await this.estimateAudience(campaign.audience);
@@ -721,12 +764,14 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async testSend(id: string, recipient: string) {
+    requireDemoCapability("marketing.campaigns.send");
     return {
       externalMessageId: `demo_test_${id}_${recipient.length}`,
       acceptedAt: NOW,
     };
   }
   async send(id: string) {
+    requireDemoCapability("marketing.campaigns.send");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     const validation = await this.preflight(id);
@@ -741,6 +786,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async schedule(id: string, scheduledAt: string) {
+    requireDemoCapability("marketing.campaigns.send");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "SCHEDULED";
@@ -748,24 +794,28 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(campaign);
   }
   async pause(id: string) {
+    requireDemoCapability("marketing.campaigns.pause");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "PAUSED";
     return structuredClone(campaign);
   }
   async resume(id: string) {
+    requireDemoCapability("marketing.campaigns.update");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "QUEUED";
     return structuredClone(campaign);
   }
   async submitForReview(id: string) {
+    requireDemoCapability("marketing.campaigns.update");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "REVIEW";
     return structuredClone(campaign);
   }
   async approve(id: string) {
+    requireDemoCapability("marketing.campaigns.approve");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "APPROVED";
@@ -773,6 +823,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(campaign);
   }
   async selectExperimentWinner(id: string, variantId?: string) {
+    requireDemoCapability("marketing.campaigns.update");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     const selected = variantId ?? campaign.experiment?.variants[0]?.id;
@@ -781,6 +832,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(campaign);
   }
   async cancel(id: string) {
+    requireDemoCapability("marketing.campaigns.cancel");
     const campaign = this.campaigns.find((item) => item.id === id);
     if (!campaign) throw new Error("Campagne introuvable.");
     campaign.status = "CANCELLED";
@@ -788,9 +840,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(campaign);
   }
   async listSuppressions() {
+    requireDemoCapability("marketing.compliance.read");
     return structuredClone(this.suppressions);
   }
   async generateCampaignDraft(): Promise<AiGenerationResult> {
+    requireDemoCapability("marketing.campaigns.create");
     return {
       text: "Proposition déterministe : une introduction concise, une preuve concrète et un appel à l’action unique.",
       model: "shongre-demo-deterministic-v1",
@@ -799,6 +853,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async aiAssist(input: MarketingAiAssistInput) {
+    requireDemoCapability("marketing.campaigns.update");
     return {
       text: `Proposition déterministe pour ${input.task}.`,
       model: "shongre-demo-deterministic-v1",
@@ -808,6 +863,7 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async getAnalytics(): Promise<MarketingAnalytics> {
+    requireDemoCapability("marketing.analytics.read");
     return {
       audienceSize: 4680,
       eligibleRecipients: 4653,
@@ -831,9 +887,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async recordConversion(_input: MarketingConversionInput) {
+    requireDemoCapability("marketing.campaigns.update");
     return { accepted: true as const, duplicate: false };
   }
   async getUsage(): Promise<MarketingUsage> {
+    requireDemoCapability("marketing.dashboard.read");
     return {
       period: "2026-08",
       activeProfiles: 4680,
@@ -862,9 +920,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     };
   }
   async listJourneys() {
+    requireDemoCapability("marketing.automation.read");
     return structuredClone(this.journeys);
   }
   async createJourney(input: MarketingJourneyInput) {
+    requireDemoCapability("marketing.automation.manage");
     const journey: MarketingJourney = {
       id: nextUuid(),
       tenantId: TENANT_ID,
@@ -880,18 +940,21 @@ export class DemoMarketingService implements MarketingServiceContract {
     return structuredClone(journey);
   }
   async activateJourney(id: string) {
+    requireDemoCapability("marketing.automation.manage");
     const journey = this.journeys.find((item) => item.id === id);
     if (!journey) throw new Error("Parcours introuvable.");
     journey.status = "ACTIVE";
     return structuredClone(journey);
   }
   async pauseJourney(id: string) {
+    requireDemoCapability("marketing.automation.manage");
     const journey = this.journeys.find((item) => item.id === id);
     if (!journey) throw new Error("Parcours introuvable.");
     journey.status = "PAUSED";
     return structuredClone(journey);
   }
   async listJourneyExecutions(journeyId?: string) {
+    requireDemoCapability("marketing.automation.read");
     return structuredClone(
       this.journeyExecutions.filter(
         (item) => !journeyId || item.journeyId === journeyId,
@@ -899,9 +962,11 @@ export class DemoMarketingService implements MarketingServiceContract {
     );
   }
   async listWebhookSubscriptions() {
+    requireDemoCapability("marketing.settings.manage");
     return structuredClone(this.webhookSubscriptions);
   }
   async createWebhookSubscription(input: MarketingWebhookSubscriptionInput) {
+    requireDemoCapability("marketing.settings.manage");
     const subscription: MarketingWebhookSubscription = {
       id: nextUuid(),
       tenantId: TENANT_ID,

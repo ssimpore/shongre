@@ -34,24 +34,23 @@ export const ProviderRoutingManager: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header bar with market selector */}
-      <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-text-main flex items-center gap-2">
             <Sliders className="w-icon-md h-icon-md text-primary" />
             {t(
               "admin.providerRoutingManager.gestionnaireDeRoutagePrioritesSecours",
             )}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            Seuls les adaptateurs compatibles, configurés et vérifiés peuvent
-            devenir primaire ou secours.
+            {t("admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire")}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <label
             htmlFor="provider-routing-target-market"
-            className="text-xs font-semibold text-stone-600"
+            className="text-xs font-semibold text-text-secondary"
           >
             {t("admin.providerRoutingManager.marcheCible")}
           </label>
@@ -78,14 +77,14 @@ export const ProviderRoutingManager: React.FC = () => {
             return (
               <div
                 key={capability.id}
-                className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Capability description */}
                 <div className="max-w-md">
                   <ProviderCapabilityLabel
                     capability={capability.id}
                     showCategory
-                    className="text-stone-900"
+                    className="text-text-main"
                   />
                   <p className="mt-2 text-xs text-stone-500">
                     {capability.description}
@@ -102,7 +101,7 @@ export const ProviderRoutingManager: React.FC = () => {
                         : "border-stone-200 bg-stone-50"
                     }`}
                   >
-                    <div className="text-micro font-bold uppercase tracking-wider text-stone-600 mb-1 flex items-center justify-between">
+                    <div className="text-micro font-bold uppercase tracking-wider text-text-secondary mb-1 flex items-center justify-between">
                       <span>1. Prestataire Primaire</span>
                       {primary && (
                         <span className="bg-emerald-200/70 text-success px-1 rounded text-micro">
@@ -114,18 +113,18 @@ export const ProviderRoutingManager: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <Link
                           to={`/admin/fournisseurs/${primary.id}`}
-                          className="font-bold text-xs text-stone-900 hover:text-primary transition-colors"
+                          className="font-bold text-xs text-text-main hover:text-primary transition-colors"
                         >
                           {primary.name}
                         </Link>
                         <span
-                          className="w-2 h-2 rounded-full bg-success"
+                          className="w-2 h-2 rounded-pill bg-success"
                           title={t("admin.providerRoutingManager.operationnel")}
                         />
                       </div>
                     ) : (
                       <span className="text-xs font-medium text-stone-500 italic">
-                        Aucun fournisseur vérifié
+                        {t("admin.providerRoutingManager.aucunFournisseurVerifie")}
                       </span>
                     )}
                   </div>
@@ -140,7 +139,7 @@ export const ProviderRoutingManager: React.FC = () => {
                         : "border-stone-200 bg-stone-50/50 border-dashed"
                     }`}
                   >
-                    <div className="text-micro font-bold uppercase tracking-wider text-stone-600 mb-1 flex items-center justify-between">
+                    <div className="text-micro font-bold uppercase tracking-wider text-text-secondary mb-1 flex items-center justify-between">
                       <span>2. Secours (Fallback)</span>
                       {fallback && (
                         <span className="bg-blue-200/70 text-info px-1 rounded text-micro">
@@ -152,12 +151,12 @@ export const ProviderRoutingManager: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <Link
                           to={`/admin/fournisseurs/${fallback.id}`}
-                          className="font-bold text-xs text-stone-900 hover:text-primary transition-colors"
+                          className="font-bold text-xs text-text-main hover:text-primary transition-colors"
                         >
                           {fallback.name}
                         </Link>
                         <span
-                          className="w-2 h-2 rounded-full bg-info"
+                          className="w-2 h-2 rounded-pill bg-info"
                           title={
                             automaticFailoverApproved
                               ? "Bascule automatique explicitement autorisée"
@@ -176,15 +175,15 @@ export const ProviderRoutingManager: React.FC = () => {
                 {/* Status Pill */}
                 <div className="shrink-0 flex items-center gap-2">
                   {fallback ? (
-                    <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-1 rounded-pill">
                       <ShieldCheck className="w-icon-sm h-icon-sm" />
                       {automaticFailoverApproved
                         ? "Bascule auto approuvée"
                         : "Secours manuel"}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">
-                      Aucun secours vérifié
+                    <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-pill">
+                      {t("admin.providerRoutingManager.aucunSecoursVerifie")}
                     </span>
                   )}
                 </div>

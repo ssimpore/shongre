@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 const entries = [
   {
@@ -59,17 +60,18 @@ const entries = [
 ];
 
 export const CrmConfigurationPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Configuration CRM | Shongre",
-    description: "Configuration du tenant CRM.",
+    description: t("admin.crmConfigurationPage.configurationDuTenantCrm"),
     canonicalPath: "/admin/crm/configuration",
     noIndex: true,
   });
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
             <Settings2 className="h-icon-lg w-icon-lg text-violet-300" />
           </span>
           <div>
@@ -81,9 +83,8 @@ export const CrmConfigurationPage: React.FC = () => {
             </h1>
           </div>
         </div>
-        <p className="mt-3 max-w-2xl text-xs leading-relaxed text-stone-400">
-          Paramètres propres au tenant. Les secrets fournisseurs restent dans le
-          backend et ne sont jamais exposés à cette interface.
+        <p className="mt-3 max-w-2xl text-xs leading-relaxed text-text-disabled">
+          {t("admin.crmConfigurationPage.parametresPropresAuTenantLesSecretsFournisseursRestentDansLe")}
         </p>
       </section>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -91,9 +92,9 @@ export const CrmConfigurationPage: React.FC = () => {
           <Link
             key={to}
             to={to}
-            className="group flex min-h-36 flex-col rounded-2xl border border-border-base bg-white p-5 shadow-xs transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-sm"
+            className="group flex min-h-36 flex-col rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-sm"
           >
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-primary-light text-primary">
               <Icon className="h-4 w-4" />
             </span>
             <h2 className="mt-4 text-sm font-black">{title}</h2>

@@ -12,6 +12,7 @@ import { simulateNetworkDelay } from "../../client/api-client.config";
 import type { CommissionServiceContract } from "../../contracts/commission.contract";
 import { demoBusinessRulesService } from "./demo-business-rules.service";
 import { convertDemoReportingMinorUnits } from "./demo-reporting-currency";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoCommissionService implements CommissionServiceContract {
   private readonly calculations = new Map(
@@ -21,6 +22,7 @@ export class DemoCommissionService implements CommissionServiceContract {
 
   async preview(input: CommissionCalculationInput) {
     await simulateNetworkDelay(60);
+    requireDemoCapability("commissions.simulate");
     const calculation = calculateCommission({
       configurationVersionId:
         BASELINE_MONETIZATION_CATALOG.configurationVersionId,
@@ -34,6 +36,7 @@ export class DemoCommissionService implements CommissionServiceContract {
 
   async getCalculation(calculationId: string) {
     await simulateNetworkDelay(40);
+    requireDemoCapability("commissions.read");
     const calculation = this.calculations.get(calculationId);
     if (!calculation) throw new Error("Calcul de commission introuvable.");
     return structuredClone(calculation);
@@ -47,6 +50,7 @@ export class DemoCommissionService implements CommissionServiceContract {
       occurredAt?: string;
     },
   ) {
+    requireDemoCapability("commissions.manage");
     const existing = [...this.reversals.values()].find(
       (reversal) => reversal.idempotencyKey === input.idempotencyKey,
     );
@@ -93,6 +97,7 @@ export class DemoCommissionService implements CommissionServiceContract {
 
   async getAnalytics(query: CommissionAnalyticsQuery) {
     await simulateNetworkDelay(60);
+    requireDemoCapability("commissions.analytics.read");
     const convert = (amountMinor: number) =>
       convertDemoReportingMinorUnits(amountMinor, query.currency);
     return [
@@ -119,6 +124,7 @@ export class DemoCommissionService implements CommissionServiceContract {
     reason: string;
     effectiveFrom?: string;
   }) {
+    requireDemoCapability("commissions.manage");
     return demoBusinessRulesService.createDraft({
       reason: input.reason,
       effectiveFrom: input.effectiveFrom,
@@ -131,6 +137,9 @@ export class DemoCommissionService implements CommissionServiceContract {
     action: "submit" | "approve" | "publish",
     reason: string,
   ) {
+    requireDemoCapability(
+      action === "publish" ? "commissions.publish" : "commissions.manage",
+    );
     return demoBusinessRulesService.transitionVersion(
       versionId,
       action,

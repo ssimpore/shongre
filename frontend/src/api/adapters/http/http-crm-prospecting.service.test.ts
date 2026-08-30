@@ -1,11 +1,15 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { storageService } from "../../../services/storage.service";
 import { demoCrmProspectingService } from "../demo/demo-prospecting.service";
 import { HttpCrmProspectingService } from "./http-crm-prospecting.service";
 import { httpClient } from "./http-client";
 
 describe("HttpCrmProspectingService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("pro_atelier"));
+
   afterEach(() => {
     vi.restoreAllMocks();
+    storageService.setCurrentUserKey("guest");
   });
 
   it("maps profile and source collection envelopes", async () => {

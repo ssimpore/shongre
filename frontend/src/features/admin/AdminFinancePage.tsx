@@ -42,6 +42,7 @@ import { useAuthorization } from "../../security/useAuthorization";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { FinanceRevenueTrendChart } from "./FinanceRevenueTrendChart";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type FinanceTab =
   "overview" | "transactions" | "reconciliation" | "subscriptions";
@@ -101,10 +102,10 @@ function downloadTextFile(fileName: string, mimeType: string, content: string) {
 function StatusPill({ status }: { status: FinanceTransactionStatus }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-micro font-bold ${STATUS_STYLES[status]}`}
+      className={`inline-flex items-center gap-1 rounded-pill border px-2 py-1 text-micro font-bold ${STATUS_STYLES[status]}`}
     >
       <span
-        className="h-1.5 w-1.5 rounded-full bg-current"
+        className="h-1.5 w-1.5 rounded-pill bg-current"
         aria-hidden="true"
       />
       {STATUS_LABELS[status]}
@@ -424,7 +425,7 @@ function OverviewTab({
             <h2 className="text-sm font-bold text-text-main">
               Exceptions opérationnelles
             </h2>
-            <span className="rounded-full bg-danger-surface px-2 py-0.5 text-micro font-bold text-danger">
+            <span className="rounded-pill bg-danger-surface px-2 py-0.5 text-micro font-bold text-danger">
               {dashboard.exceptions.reduce((sum, item) => sum + item.count, 0)}
             </span>
           </div>
@@ -880,7 +881,7 @@ function SubscriptionsTab({
               {dashboard.verticals.map((vertical) => (
                 <tr key={vertical.verticalId}>
                   <th className="px-4 py-3 font-bold text-text-main">
-                    <span className="mr-2 rounded-full bg-primary-light px-2 py-1 text-micro uppercase text-primary">
+                    <span className="mr-2 rounded-pill bg-primary-light px-2 py-1 text-micro uppercase text-primary">
                       {vertical.verticalId}
                     </span>
                     {vertical.label}
@@ -911,11 +912,12 @@ function SubscriptionsTab({
 }
 
 export const AdminFinancePage: React.FC = () => {
+  const { t } = useTranslation();
   const { availableMarkets, currentCurrency } = useMarketLocation();
   const { formatDate } = useRegionalFormatters();
   usePageMeta({
-    title: "Finance de la plateforme",
-    description: "Revenus, transactions et rapprochement financier Shongre.",
+    title: t("admin.adminFinancePage.financeDeLaPlateforme"),
+    description: t("admin.adminFinancePage.revenusTransactionsEtRapprochementFinancierShongre"),
     canonicalPath: "/admin/finance",
     noIndex: true,
   });
@@ -1039,7 +1041,7 @@ export const AdminFinancePage: React.FC = () => {
       <div className="flex min-h-105 items-center justify-center">
         <LoaderCircle
           className="h-icon-xl w-icon-xl animate-spin text-primary"
-          aria-label="Chargement des finances"
+          aria-label={t("admin.adminFinancePage.chargementDesFinances")}
         />
       </div>
     );
@@ -1047,9 +1049,9 @@ export const AdminFinancePage: React.FC = () => {
     return (
       <StatePanel
         title="Finance indisponible"
-        description="Les agrégats financiers n’ont pas pu être chargés."
+        description={t("admin.adminFinancePage.lesAgregatsFinanciersNOntPasPuEtreCharges")}
         technicalDetail={error ?? undefined}
-        action={<Button onClick={() => void load()}>Réessayer</Button>}
+        action={<Button onClick={() => void load()}>{t("common.retry")}</Button>}
       />
     );
 
@@ -1061,11 +1063,10 @@ export const AdminFinancePage: React.FC = () => {
             Finance & revenus
           </p>
           <h1 className="mt-1 text-2xl font-black tracking-tight text-text-main">
-            Finance de la plateforme
+            {t("admin.adminFinancePage.financeDeLaPlateforme")}
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
-            Registre financier immuable, revenus reconnus et contrôle des écarts
-            fournisseurs.
+            {t("admin.adminFinancePage.registreFinancierImmuableRevenusReconnusEtControleDesEcartsFournisseurs")}
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
             <CheckCircle2 className="h-icon-md w-icon-md" />
@@ -1097,7 +1098,7 @@ export const AdminFinancePage: React.FC = () => {
       </header>
       <div className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-3">
         <label className="text-micro font-bold text-text-muted">
-          <span className="sr-only">Période</span>
+          <span className="sr-only">{t("admin.adminAnalyticsPage.periode")}</span>
           <Select
             className="w-full"
             labelledByAncestor
@@ -1112,11 +1113,11 @@ export const AdminFinancePage: React.FC = () => {
             <option value="7d">7 jours</option>
             <option value="30d">30 jours</option>
             <option value="quarter">Trimestre</option>
-            <option value="year">Année</option>
+            <option value="year">{t("admin.adminCommissionPolicyEditor.annee")}</option>
           </Select>
         </label>
         <label>
-          <span className="sr-only">Marché</span>
+          <span className="sr-only">{t("invoicing.product.previewMarket")}</span>
           <Select
             className="w-full"
             labelledByAncestor
@@ -1128,7 +1129,7 @@ export const AdminFinancePage: React.FC = () => {
               }))
             }
           >
-            <option value="ALL">Tous les marchés</option>
+            <option value="ALL">{t("publishing.publishWizard.tousLesMarches")}</option>
             {availableMarkets.map((market) => (
               <option key={market.code} value={market.code}>
                 {market.name}
@@ -1176,7 +1177,7 @@ export const AdminFinancePage: React.FC = () => {
         <div className="flex flex-col gap-2 rounded-card border border-border-base bg-bg-surface p-3 sm:flex-row">
           <label className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-muted" />
-            <span className="sr-only">Rechercher une transaction</span>
+            <span className="sr-only">{t("admin.adminFinancePage.rechercherUneTransaction")}</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -1196,7 +1197,7 @@ export const AdminFinancePage: React.FC = () => {
                 )
               }
             >
-              <option value="all">Tous les statuts</option>
+              <option value="all">{t("admin.providerCatalogTable.tousLesStatuts")}</option>
               {Object.entries(STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}

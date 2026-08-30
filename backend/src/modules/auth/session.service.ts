@@ -11,6 +11,7 @@ import {
 } from "../../infrastructure/database/repositories/auth.repository.js";
 import { randomOAuthValue, sha256 } from "./oauth-provider.client.js";
 import type { PlatformRole } from "../../shared/auth/rbac.js";
+import { canonicalAccessContext } from "@shongre/contracts/access-control";
 
 export interface AuthRequestMetadata {
   ipPrefix?: string | null;
@@ -53,6 +54,10 @@ export class SessionService {
     recentlyAuthenticated = true,
     mfaVerified = false,
   ): Promise<SessionTokens> {
+    const access = canonicalAccessContext(user);
+    if (access.staffStatus !== "none" && access.staffStatus !== "active") {
+      throw unauthenticated();
+    }
     const refreshToken = randomOAuthValue(48);
     const now = Date.now();
     const session = await this.repository.createSession({

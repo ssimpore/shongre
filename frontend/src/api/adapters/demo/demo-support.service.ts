@@ -13,6 +13,8 @@ import type {
 } from "../../contracts/support.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
+import { requireDemoCapability } from "./demo-authorization";
 
 const CASES_KEY = "shongre_demo_support_cases_v2";
 const NOTES_KEY = "shongre_demo_support_notes_v2";
@@ -95,7 +97,7 @@ function currentActor() {
   const user = storageService.getCurrentUser();
   return {
     id: user?.id ?? "guest",
-    isStaff: user?.staffStatus === "active",
+    isStaff: isStaffSeparatedSubject(user),
   };
 }
 
@@ -116,6 +118,7 @@ function resolutionMinutes(priority: SupportCase["priority"]) {
 export class DemoSupportService implements SupportServiceContract {
   async createCase(input: SupportCaseCreate): Promise<SupportCase> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const actor = currentActor();
     const now = new Date();
     const priority = priorityFor(input.category);
@@ -148,6 +151,7 @@ export class DemoSupportService implements SupportServiceContract {
 
   async listOwnCases(): Promise<SupportCase[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const actor = currentActor();
     return readCases()
       .filter((item) => item.requesterId === actor.id)
@@ -157,6 +161,9 @@ export class DemoSupportService implements SupportServiceContract {
   async getCase(caseId: string): Promise<SupportCaseDetail> {
     await simulateNetworkDelay();
     const actor = currentActor();
+    requireDemoCapability(
+      actor.isStaff ? "support.case.read" : "marketplace.customer.access",
+    );
     const supportCase = readCases().find((item) => item.id === caseId);
     if (
       !supportCase ||
@@ -177,7 +184,7 @@ export class DemoSupportService implements SupportServiceContract {
 
   async listCases(filter: SupportCaseFilter = {}): Promise<SupportCase[]> {
     await simulateNetworkDelay();
-    if (!currentActor().isStaff) throw new Error("Accès support requis.");
+    requireDemoCapability("support.case.read");
     return readCases()
       .filter(
         (item) =>
@@ -191,7 +198,7 @@ export class DemoSupportService implements SupportServiceContract {
 
   async updateCase(caseId: string, input: SupportCaseUpdate) {
     await simulateNetworkDelay();
-    if (!currentActor().isStaff) throw new Error("Accès support requis.");
+    requireDemoCapability("support.case.manage");
     const cases = readCases();
     const index = cases.findIndex((item) => item.id === caseId);
     if (index < 0) throw new Error("Demande d’assistance introuvable.");
@@ -220,6 +227,9 @@ export class DemoSupportService implements SupportServiceContract {
   async addNote(caseId: string, input: SupportCaseNoteCreate) {
     await simulateNetworkDelay();
     const actor = currentActor();
+    requireDemoCapability(
+      actor.isStaff ? "support.case.manage" : "marketplace.customer.access",
+    );
     const cases = readCases();
     const index = cases.findIndex((item) => item.id === caseId);
     const supportCase = cases[index];
@@ -265,7 +275,7 @@ export class DemoSupportService implements SupportServiceContract {
 
   async getMetrics(): Promise<SupportCaseMetrics> {
     await simulateNetworkDelay();
-    if (!currentActor().isStaff) throw new Error("Accès support requis.");
+    requireDemoCapability("support.case.read");
     const now = new Date().toISOString();
     const open = readCases().filter(
       (item) => item.status !== "resolved" && item.status !== "closed",

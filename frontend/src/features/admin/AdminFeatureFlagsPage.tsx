@@ -15,6 +15,7 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 interface DefinitionDraft {
   description: string;
@@ -37,9 +38,10 @@ const toDraft = (value: FeatureFlagDefinition): DefinitionDraft => ({
 });
 
 export const AdminFeatureFlagsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
-    title: "Fonctionnalités — Console Shongre",
-    description: "Pilotage audité des activations progressives Shongre.",
+    title: t("admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre"),
+    description: t("admin.adminFeatureFlagsPage.pilotageAuditeDesActivationsProgressivesShongre"),
     canonicalPath: "/admin/fonctionnalites",
     noIndex: true,
   });
@@ -152,19 +154,18 @@ export const AdminFeatureFlagsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+      <header className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         <div className="flex items-center gap-2 text-primary">
           <Flag className="h-icon-md w-icon-md" aria-hidden="true" />
           <span className="text-xs font-bold uppercase tracking-wider">
             Gouvernance produit
           </span>
         </div>
-        <h1 className="mt-1 text-2xl font-black text-stone-900">
-          Fonctionnalités et déploiements progressifs
+        <h1 className="mt-1 text-2xl font-black text-text-main">
+          {t("admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs")}
         </h1>
-        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-stone-600">
-          Les valeurs absentes, expirées ou indisponibles restent désactivées.
-          Chaque modification exige un propriétaire et un motif d’audit.
+        <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-secondary">
+          {t("admin.adminFeatureFlagsPage.lesValeursAbsentesExpireesOuIndisponiblesRestentDesactiveesChaqueModification")}
         </p>
       </header>
 
@@ -176,8 +177,8 @@ export const AdminFeatureFlagsPage: React.FC = () => {
       ) : (
         <div className="grid gap-4 lg:grid-cols-sidebar-wide">
           <nav
-            aria-label="Fonctionnalités"
-            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+            aria-label={t("invoicing.product.nav.features")}
+            className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
           >
             <ul className="divide-y divide-border-subtle">
               {entries.map((entry) => (
@@ -190,7 +191,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     }
                     className={`w-full p-4 text-left ${selectedKey === entry.definition.key ? "bg-primary/5" : "hover:bg-stone-50"}`}
                   >
-                    <span className="block break-all font-mono text-xs font-bold text-stone-900">
+                    <span className="block break-all font-mono text-xs font-bold text-text-main">
                       {entry.definition.key}
                     </span>
                     <span className="mt-2 flex items-center gap-2">
@@ -207,7 +208,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                           : "Désactivée"}
                       </Badge>
                       <span className="text-micro text-stone-500">
-                        {entry.rules.length} règle(s)
+                        {entry.rules.length} {t("admin.adminFeatureFlagsPage.regleS")}
                       </span>
                     </span>
                   </button>
@@ -220,15 +221,15 @@ export const AdminFeatureFlagsPage: React.FC = () => {
             <div className="space-y-4">
               <form
                 onSubmit={saveDefinition}
-                className="space-y-4 rounded-2xl border border-border-base bg-white p-5 shadow-xs"
+                className="space-y-4 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
                   <div>
-                    <p className="font-mono text-sm font-black text-stone-900">
+                    <p className="font-mono text-sm font-black text-text-main">
                       {selected.definition.key}
                     </p>
                     <p className="mt-1 text-micro text-stone-500">
-                      Mise à jour{" "}
+                      {t("admin.adminFeatureFlagsPage.miseAJour")}{" "}
                       {new Date(selected.definition.updatedAt).toLocaleString(
                         "fr-FR",
                       )}
@@ -236,12 +237,12 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   </div>
                   <ShieldCheck
                     className="h-icon-lg w-icon-lg text-success"
-                    aria-label="Modifications auditées"
+                    aria-label={t("admin.adminFeatureFlagsPage.modificationsAuditees")}
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField label="Équipe propriétaire" required>
+                  <FormField label={t("admin.adminFeatureFlagsPage.equipeProprietaire")} required>
                     <Input
                       value={draft.owner}
                       onChange={(event) =>
@@ -290,7 +291,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     </Select>
                   </label>
                   <label className="text-xs font-semibold text-stone-700">
-                    Cycle de vie
+                    {t("admin.adminFeatureFlagsPage.cycleDeVie")}
                     <Select
                       className="mt-1 block w-full"
                       labelledByAncestor
@@ -304,7 +305,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       }
                     >
                       <option value="active">Active</option>
-                      <option value="archived">Archivée</option>
+                      <option value="archived">{t("admin.adminFeatureFlagsPage.archivee")}</option>
                     </Select>
                   </label>
                   <label className="flex items-center gap-2 self-end rounded-lg border border-border-base px-3 py-2.5 text-xs font-semibold text-stone-700">
@@ -318,17 +319,17 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         })
                       }
                     />
-                    Active par défaut
+                    {t("admin.adminFeatureFlagsPage.activeParDefaut")}
                   </label>
                 </div>
 
-                <FormField label="Motif de la modification" required>
+                <FormField label={t("admin.taxonomyHeader.reasonLabel")} required>
                   <Input
                     value={draft.reason}
                     onChange={(event) =>
                       setDraft({ ...draft, reason: event.target.value })
                     }
-                    placeholder="Pourquoi ce changement est-il nécessaire ?"
+                    placeholder={t("admin.adminFeatureFlagsPage.pourquoiCeChangementEstIlNecessaire")}
                   />
                 </FormField>
                 <div className="flex justify-end">
@@ -343,30 +344,30 @@ export const AdminFeatureFlagsPage: React.FC = () => {
               </form>
 
               <section
-                className="rounded-2xl border border-border-base bg-white p-5 shadow-xs"
+                className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs"
                 aria-labelledby="flag-rules-title"
               >
                 <h2
                   id="flag-rules-title"
-                  className="text-base font-black text-stone-900"
+                  className="text-base font-black text-text-main"
                 >
-                  Règles ciblées
+                  {t("admin.adminFeatureFlagsPage.reglesCiblees")}
                 </h2>
                 <div className="mt-3 space-y-2">
                   {selected.rules.length === 0 ? (
-                    <p className="rounded-xl bg-stone-50 p-4 text-xs text-stone-600">
-                      Aucune règle : la valeur par défaut s’applique.
+                    <p className="rounded-control bg-stone-50 p-4 text-xs text-text-secondary">
+                      {t("admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique")}
                     </p>
                   ) : (
                     selected.rules.map((rule: FeatureFlagRule) => (
                       <div
                         key={rule.id}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border-base p-3"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-control border border-border-base p-3"
                       >
                         <div>
-                          <p className="text-xs font-bold text-stone-900">
+                          <p className="text-xs font-bold text-text-main">
                             {rule.marketCode || "Tous les marchés"} ·{" "}
-                            {rule.rolloutPercentage}% · priorité {rule.priority}
+                            {rule.rolloutPercentage}{t("admin.adminFeatureFlagsPage.priorite")} {rule.priority}
                           </p>
                           <p className="mt-1 text-micro text-stone-500">
                             {rule.reason}
@@ -387,11 +388,11 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   onSubmit={addRule}
                   className="mt-5 space-y-3 border-t border-border-subtle pt-4"
                 >
-                  <h3 className="flex items-center gap-2 text-sm font-black text-stone-900">
-                    <Plus className="h-icon-md w-icon-md" /> Nouvelle règle
+                  <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
+                    <Plus className="h-icon-md w-icon-md" /> {t("admin.adminFeatureFlagsPage.nouvelleRegle")}
                   </h3>
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <FormField label="Marché">
+                    <FormField label={t("invoicing.product.previewMarket")}>
                       <Input
                         maxLength={FEATURE_FLAG_CONSTRAINTS.marketCodeLength}
                         value={newRule.marketCode}
@@ -403,7 +404,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         }
                       />
                     </FormField>
-                    <FormField label="Déploiement (%)">
+                    <FormField label={t("admin.adminFeatureFlagsPage.deploiement")}>
                       <Input
                         type="number"
                         min={FEATURE_FLAG_CONSTRAINTS.rolloutPercentageMin}
@@ -417,7 +418,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         }
                       />
                     </FormField>
-                    <FormField label="Priorité">
+                    <FormField label={t("admin.crmTasksPage.priorite")}>
                       <Input
                         type="number"
                         min={FEATURE_FLAG_CONSTRAINTS.priorityMin}
@@ -443,15 +444,15 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         })
                       }
                     />{" "}
-                    Valeur activée pour la cohorte
+                    {t("admin.adminFeatureFlagsPage.valeurActiveePourLaCohorte")}
                   </label>
-                  <FormField label="Motif de la règle" required>
+                  <FormField label={t("admin.adminFeatureFlagsPage.motifDeLaRegle")} required>
                     <Input
                       value={newRule.reason}
                       onChange={(event) =>
                         setNewRule({ ...newRule, reason: event.target.value })
                       }
-                      placeholder="Objectif et validation attendue du déploiement"
+                      placeholder={t("admin.adminFeatureFlagsPage.objectifEtValidationAttendueDuDeploiement")}
                     />
                   </FormField>
                   <div className="flex justify-end">
@@ -461,15 +462,15 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       size="sm"
                       disabled={saving || newRule.reason.trim().length < 10}
                     >
-                      Ajouter la règle
+                      {t("admin.adminFeatureFlagsPage.ajouterLaRegle")}
                     </Button>
                   </div>
                 </form>
               </section>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border-base bg-white p-8 text-center text-sm text-stone-500">
-              Aucune fonctionnalité sélectionnée.
+            <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center text-sm text-stone-500">
+              {t("admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee")}
             </div>
           )}
         </div>

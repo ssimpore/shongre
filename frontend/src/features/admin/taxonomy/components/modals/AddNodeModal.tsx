@@ -145,15 +145,15 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Parent & Level Context */}
-        <div className="p-3 bg-bg-subtle rounded-xl border border-border-subtle flex items-center justify-between text-xs">
+        <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="text-stone-500 font-semibold">Niveau cible :</span>
-            <span className="px-2 py-0.5 rounded-full bg-primary-light text-primary font-bold uppercase text-micro">
+            <span className="px-2 py-0.5 rounded-pill bg-primary-light text-primary font-bold uppercase text-micro">
               {targetLevel}
             </span>
           </div>
           {parentNode && (
-            <div className="flex items-center gap-1.5 text-stone-600">
+            <div className="flex items-center gap-1.5 text-text-secondary">
               <CategoryIcon category={parentNode} size="xs" />
               <span className="font-semibold">{parentNode.name}</span>
             </div>
@@ -187,7 +187,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
         </FormField>
 
         {/* Live UI Rendering Preview */}
-        <div className="p-3 bg-bg-base rounded-xl border border-border-base text-xs space-y-1">
+        <div className="p-3 bg-bg-base rounded-control border border-border-base text-xs space-y-1">
           <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">
             {t("admin.addNodeModal.apercuDuRenduUi")}
           </div>
@@ -195,7 +195,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             <span className="text-stone-500">
               {t("admin.addNodeModal.renduStandardDetailleSeo")}
             </span>
-            <span className="font-bold text-stone-900">
+            <span className="font-bold text-text-main">
               {name || "Nom complet"}
             </span>
           </div>

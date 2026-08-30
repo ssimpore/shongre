@@ -200,6 +200,26 @@ function checkIosSdk() {
       Number.parseFloat(deployment) >= 16.4 ? STATUS.pass : STATUS.fail,
       deployment || "Generated native configuration missing.",
     );
+    const infoPath = join(mobileRoot, "ios/Shongre/Info.plist");
+    const appDelegatePath = join(mobileRoot, "ios/Shongre/AppDelegate.swift");
+    const info = existsSync(infoPath) ? readFileSync(infoPath, "utf8") : "";
+    const appDelegate = existsSync(appDelegatePath)
+      ? readFileSync(appDelegatePath, "utf8")
+      : "";
+    const hasSceneManifest =
+      info.includes("UIApplicationSceneManifest") &&
+      info.includes("$(PRODUCT_MODULE_NAME).SceneDelegate");
+    const hasSceneDelegate =
+      appDelegate.includes("UIWindowSceneDelegate") &&
+      appDelegate.includes("UIWindow(windowScene: windowScene)") &&
+      !appDelegate.includes("UIWindow(frame: UIScreen.main.bounds)");
+    add(
+      "iOS scene lifecycle",
+      hasSceneManifest && hasSceneDelegate ? STATUS.pass : STATUS.fail,
+      hasSceneManifest && hasSceneDelegate
+        ? "Generated target owns its window through SceneDelegate."
+        : "Run make mobile-prebuild-clean and verify the generated scene manifest and delegate.",
+    );
   });
 }
 

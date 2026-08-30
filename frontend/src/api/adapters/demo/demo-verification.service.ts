@@ -22,6 +22,10 @@ import type {
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 import { complianceRuleSchema } from "@shongre/contracts/compliance";
 import { DEMO_COMPLIANCE_RULES } from "./demo-compliance-rules";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const ACTION_CAPABILITY: Record<ComplianceAction, MarketplaceCapability> = {
   browse: "browse",
@@ -53,6 +57,7 @@ export class DemoVerificationService implements VerificationServiceContract {
   private readonly requestedReviews = new Map<string, ManualReviewCase>();
   private readonly reviewOutcomes = new Map<string, VerificationRecord>();
   async listComplianceRules(): Promise<ComplianceRule[]> {
+    requireDemoCapability("compliance.policy.read");
     await simulateNetworkDelay();
     return structuredClone(DEMO_COMPLIANCE_RULES);
   }
@@ -61,6 +66,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     rule: ComplianceRule;
     reason: string;
   }): Promise<ComplianceRule> {
+    requireDemoCapability("compliance.policy.manage");
     await simulateNetworkDelay();
     if (input.reason.trim().length < 10)
       throw new Error("Un motif d’au moins 10 caractères est requis.");
@@ -86,6 +92,7 @@ export class DemoVerificationService implements VerificationServiceContract {
   async listManualReviews(
     state?: ManualReviewState,
   ): Promise<ManualReviewCase[]> {
+    requireDemoCapability("compliance.review");
     await simulateNetworkDelay();
     const reviews = Object.values(storageService.getUsers()).flatMap((user) => {
       const items: ManualReviewCase[] = [];
@@ -130,6 +137,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     >;
     reason: string;
   }): Promise<ManualReviewCase> {
+    requireDemoCapability("compliance.review");
     await simulateNetworkDelay();
     if (input.reason.trim().length < 10)
       throw new Error("Un motif d’au moins 10 caractères est requis.");
@@ -190,6 +198,7 @@ export class DemoVerificationService implements VerificationServiceContract {
   }
 
   async listComplianceAudit(limit = 100): Promise<ComplianceAuditEvent[]> {
+    requireDemoCapability("compliance.audit.read");
     await simulateNetworkDelay();
     return verificationService
       .getAuditLogs()
@@ -223,6 +232,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     userId: string;
     dimension: VerificationDimension;
   }): Promise<ManualReviewCase> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const key = `demo::${input.userId}::${input.dimension}`;
     const current = this.requestedReviews.get(key);
@@ -243,6 +253,10 @@ export class DemoVerificationService implements VerificationServiceContract {
   }
 
   async getComplianceStatus(userId: string): Promise<ComplianceSubject> {
+    requireDemoAnyCapability([
+      "marketplace.customer.access",
+      "compliance.review",
+    ]);
     await simulateNetworkDelay();
     const user =
       storageService.getUser(userId) || storageService.getCurrentUser();
@@ -301,6 +315,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     userId: string,
     input: ComplianceEvaluationInput,
   ): Promise<ComplianceRequirementDecision> {
+    requireDemoCapability("marketplace.customer.access");
     const subject = await this.getComplianceStatus(userId);
     const professional = subject.accountType === "professional";
     const requiredByAction: Record<ComplianceAction, VerificationDimension[]> =
@@ -373,6 +388,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     jurisdiction: string;
     returnTo: string;
   }): Promise<{ sessionId: string; redirectUrl: string; expiresAt: string }> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const sessionId = `demo_${input.userId}_${input.dimension}`;
     if (input.dimension === "identity") {
@@ -404,6 +420,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     onboardingUrl: string;
     required: VerificationDimension[];
   }> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const user = storageService.getUser(input.userId);
     if (user) {
@@ -430,6 +447,10 @@ export class DemoVerificationService implements VerificationServiceContract {
     isBusinessVerified: boolean;
     isBankPayoutConfigured: boolean;
   }> {
+    requireDemoAnyCapability([
+      "marketplace.customer.access",
+      "compliance.review",
+    ]);
     await simulateNetworkDelay();
     const user =
       storageService.getUser(userId) || storageService.getCurrentUser();
@@ -448,6 +469,10 @@ export class DemoVerificationService implements VerificationServiceContract {
   async lookupCompanyBySiret(
     siretOrSiren: string,
   ): Promise<KYBCompanyLookupResult | null> {
+    requireDemoAnyCapability([
+      "marketplace.customer.access",
+      "compliance.review",
+    ]);
     await simulateNetworkDelay();
     const res = verificationService.lookupCompanyBySiret(siretOrSiren);
     if (!res) return null;
@@ -467,6 +492,7 @@ export class DemoVerificationService implements VerificationServiceContract {
     userId: string,
     siret: string,
   ): Promise<{ status: "verified" }> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const company = await this.lookupCompanyBySiret(siret);
     if (!company?.isActive) {

@@ -137,7 +137,7 @@ export const ProviderOverviewDashboard: React.FC<
     <div className="space-y-6">
       {/* 1. Operational KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
               {t("admin.providerOverviewDashboard.integrationsRepertoriees")}
@@ -147,16 +147,16 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-stone-900">
+            <span className="text-2xl font-black text-text-main">
               {metrics.total}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
-              {metrics.implemented} avec adaptateur
+              {metrics.implemented} {t("admin.providerOverviewDashboard.avecAdaptateur")}
             </span>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
               {t("admin.providerOverviewDashboard.santeOperationnelle")}
@@ -164,7 +164,7 @@ export const ProviderOverviewDashboard: React.FC<
             <span
               className={`p-2 rounded-lg shrink-0 ${
                 metrics.healthScore === null
-                  ? "bg-stone-100 text-stone-600"
+                  ? "bg-stone-100 text-text-secondary"
                   : metrics.healthScore === 100
                     ? "bg-success-surface text-success"
                     : "bg-warning-surface text-warning"
@@ -174,7 +174,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-stone-900">
+            <span className="text-2xl font-black text-text-main">
               {metrics.healthScore === null ? "—" : `${metrics.healthScore}%`}
             </span>
             <span
@@ -193,17 +193,17 @@ export const ProviderOverviewDashboard: React.FC<
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
-              Prêts pour production
+              {t("admin.providerOverviewDashboard.pretsPourProduction")}
             </span>
             <span className="p-2 rounded-lg bg-info-surface text-info">
               <ShieldCheck className="w-icon-md h-icon-md" />
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-stone-900">
+            <span className="text-2xl font-black text-text-main">
               {metrics.productionReady}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
@@ -212,7 +212,7 @@ export const ProviderOverviewDashboard: React.FC<
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
               Actions Requises
@@ -228,7 +228,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-stone-900">
+            <span className="text-2xl font-black text-text-main">
               {metrics.requiresAction}
             </span>
             <span
@@ -245,10 +245,10 @@ export const ProviderOverviewDashboard: React.FC<
       </div>
 
       {/* 2. Critical platform capabilities matrix */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
               <ShieldCheck className="w-icon-md h-icon-md text-success" />
               {t("admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe")}
             </h2>
@@ -316,7 +316,7 @@ export const ProviderOverviewDashboard: React.FC<
                     <ProviderCapabilityLabel
                       capability={item.capability}
                       compact
-                      className="text-stone-900"
+                      className="text-text-main"
                     />
                     {status === "operational" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-1.5 py-0.5 rounded-sm">
@@ -339,13 +339,13 @@ export const ProviderOverviewDashboard: React.FC<
                     {status === "demo" && (
                       <span className="flex items-center gap-1 text-micro font-bold text-info bg-info-surface px-1.5 py-0.5 rounded-sm">
                         <CircleHelp className="w-icon-xs h-icon-xs" />
-                        Démo
+                        {t("shell.dataMode.demoTitle")}
                       </span>
                     )}
                     {status === "unknown" && (
-                      <span className="flex items-center gap-1 text-micro font-bold text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded-sm">
+                      <span className="flex items-center gap-1 text-micro font-bold text-text-secondary bg-stone-100 px-1.5 py-0.5 rounded-sm">
                         <CircleHelp className="w-icon-xs h-icon-xs" />
-                        Non vérifié
+                        {t("sellerworkspace.accountOverviewPage.nonVerifie")}
                       </span>
                     )}
                   </div>
@@ -378,16 +378,16 @@ export const ProviderOverviewDashboard: React.FC<
       {/* 3. Category Quick Filters & Recent Audit Logs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category breakdown */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-stone-200 shadow-xs p-5">
+        <div className="lg:col-span-2 bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Layers className="w-icon-md h-icon-md text-primary" />
               {t(
                 "admin.providerOverviewDashboard.repartitionParDomaineCategorie",
               )}
             </h2>
             <span className="text-xs text-stone-500 font-mono">
-              {Object.keys(PROVIDER_CATEGORIES).length} catégories
+              {Object.keys(PROVIDER_CATEGORIES).length} {t("admin.providerOverviewDashboard.categories")}
             </span>
           </div>
 
@@ -416,7 +416,7 @@ export const ProviderOverviewDashboard: React.FC<
                       >
                         {cat.shortLabel}
                       </span>
-                      <span className="text-xs font-medium text-stone-700 group-hover:text-stone-900 truncate">
+                      <span className="text-xs font-medium text-stone-700 group-hover:text-text-main truncate">
                         {cat.name}
                       </span>
                     </div>
@@ -430,10 +430,10 @@ export const ProviderOverviewDashboard: React.FC<
         </div>
 
         {/* Recent Audit events */}
-        <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-5">
+        <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-stone-900 flex items-center gap-2">
-              <Clock className="w-icon-md h-icon-md text-stone-600" />
+            <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
+              <Clock className="w-icon-md h-icon-md text-text-secondary" />
               {t("admin.providerOverviewDashboard.changementsRecents")}
             </h2>
           </div>
@@ -462,7 +462,7 @@ export const ProviderOverviewDashboard: React.FC<
                       })}
                     </span>
                   </div>
-                  <p className="text-stone-600 text-micro leading-relaxed">
+                  <p className="text-text-secondary text-micro leading-relaxed">
                     {evt.details}
                   </p>
                 </div>

@@ -11,6 +11,7 @@ import { storageService } from "../../../services/storage.service";
 import { Conversation, Message } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { translate } from "../../../i18n/i18n.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const DEMO_ATTACHMENT_LIBRARY = [
   {
@@ -40,16 +41,19 @@ const PRO_QUICK_REPLY_KEYS = [
 export class DemoMessagingService implements MessagingServiceContract {
   async getUserConversations(userId: string): Promise<Conversation[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.read.own");
     return messagingRepository.getUserConversations(userId);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.read.own");
     return messagingRepository.getConversationById(id);
   }
 
   async getMessages(conversationId: string): Promise<Message[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.read.own");
     return messagingRepository.getMessages(conversationId);
   }
 
@@ -57,6 +61,7 @@ export class DemoMessagingService implements MessagingServiceContract {
     input: MessageComposerOptionsInput,
   ): Promise<MessageComposerOptions> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     return {
       attachmentOptions: DEMO_ATTACHMENT_LIBRARY.map((option) => ({
         id: option.id,
@@ -73,6 +78,7 @@ export class DemoMessagingService implements MessagingServiceContract {
     input: CreateOrGetConversationInput,
   ): Promise<Conversation> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     return messagingRepository.createOrGetConversation({
       listingId: input.listingId,
       buyerId:
@@ -86,6 +92,7 @@ export class DemoMessagingService implements MessagingServiceContract {
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     const user = storageService.getCurrentUser();
     const senderName = user?.name || "Utilisateur Shongre";
     const attachmentUrl =
@@ -112,6 +119,7 @@ export class DemoMessagingService implements MessagingServiceContract {
     amount: number,
   ): Promise<Message> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     return messagingRepository.makeOffer(
       conversationId,
       senderId,
@@ -127,6 +135,7 @@ export class DemoMessagingService implements MessagingServiceContract {
     accept: boolean,
   ): Promise<Message> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     return messagingRepository.respondToOffer(
       offerId,
       userId,
@@ -137,6 +146,7 @@ export class DemoMessagingService implements MessagingServiceContract {
 
   async withdrawOffer(offerId: string, userId: string): Promise<Message> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     return messagingRepository.withdrawOffer(offerId, userId);
   }
 
@@ -147,6 +157,7 @@ export class DemoMessagingService implements MessagingServiceContract {
     address: string,
   ): Promise<Message> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.send");
     await messagingRepository.schedulePickup(
       conversationId,
       date,
@@ -167,21 +178,25 @@ export class DemoMessagingService implements MessagingServiceContract {
 
   async markAsRead(conversationId: string, userId: string): Promise<void> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.read.own");
     await messagingRepository.markAsRead(conversationId, userId);
   }
 
   async blockUser(_userId: string, targetUserId: string): Promise<void> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.block");
     userRepository.toggleBlock(targetUserId);
   }
 
   async unblockUser(_userId: string, targetUserId: string): Promise<void> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.block");
     storageService.unblockUser(targetUserId);
   }
 
   async getBlockedUserIds(_userId: string): Promise<string[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("message.block");
     return storageService.getBlockedUsers();
   }
 }

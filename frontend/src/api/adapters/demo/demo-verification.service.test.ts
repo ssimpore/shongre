@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DEMO_USERS } from "../../../mocks/initialDemoData";
 import { storageService } from "../../../services/storage.service";
 import { DemoVerificationService } from "./demo-verification.service";
@@ -7,6 +7,7 @@ const TEST_USER_ID = "progressive-compliance-demo-user";
 
 describe("DemoVerificationService progressive compliance", () => {
   beforeEach(() => {
+    storageService.setCurrentUserKey("buyer_thomas");
     storageService.saveUser({
       ...DEMO_USERS.seller_camille,
       id: TEST_USER_ID,
@@ -16,6 +17,7 @@ describe("DemoVerificationService progressive compliance", () => {
       bankPayoutVerification: undefined,
     });
   });
+  afterEach(() => storageService.setCurrentUserKey("guest"));
 
   it("does not require identity for an ordinary private listing", async () => {
     const service = new DemoVerificationService();
@@ -63,6 +65,7 @@ describe("DemoVerificationService progressive compliance", () => {
   });
 
   it("loads tax policy as legal-review-required from the adapter registry", async () => {
+    storageService.setCurrentUserKey("compliance_samia");
     const rules = await new DemoVerificationService().listComplianceRules();
     expect(
       rules.find(

@@ -107,7 +107,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
     return (
       <div key={node.id} className="space-y-1">
         <div
-          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs transition-all duration-fast border ${TREE_DEPTH_PADDING[Math.min(depth, TREE_DEPTH_PADDING.length - 1)]} ${
+          className={`group flex items-center justify-between px-2.5 py-1.5 rounded-control text-xs transition-all duration-fast border ${TREE_DEPTH_PADDING[Math.min(depth, TREE_DEPTH_PADDING.length - 1)]} ${
             isSelected
               ? "bg-primary-light/80 border-primary text-primary font-bold shadow-xs"
               : "border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle"
@@ -159,7 +159,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
                 {/* shortLabel pill if exists */}
                 {node.shortLabel && node.shortLabel !== node.name && (
-                  <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.5 rounded-full font-normal">
+                  <span className="shrink-0 text-micro bg-warning-surface text-warning border border-warning-border/80 px-1.5 py-0.5 rounded-pill font-normal">
                     {node.shortLabel}
                   </span>
                 )}
@@ -167,7 +167,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
               {/* Status indicators */}
               {node.status === "draft" && (
-                <span className="shrink-0 text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-bold uppercase">
+                <span className="shrink-0 text-micro bg-stone-100 text-text-secondary px-1.5 py-0.5 rounded font-bold uppercase">
                   Brouillon
                 </span>
               )}
@@ -254,7 +254,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
       {filteredRoots.length === 0 ? (
         <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
           <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-          <p className="font-semibold text-stone-600">
+          <p className="font-semibold text-text-secondary">
             {t("admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA")}
           </p>
           <p className="text-micro text-stone-500 mt-1">

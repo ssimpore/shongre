@@ -9,10 +9,7 @@ import {
   type SupportCaseFilter,
 } from "./support.types.js";
 import type { Principal } from "../../shared/auth/principal.js";
-import {
-  requireAuthenticated,
-  requirePermission,
-} from "../../shared/auth/principal.js";
+import { requirePermission } from "../../shared/auth/principal.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   createSupportCaseId,
@@ -22,6 +19,10 @@ import {
 
 function canReadSupportCases(principal: Principal): boolean {
   return Boolean(principal.capabilities?.includes("support.case.read"));
+}
+
+function isStaffIdentity(principal: Principal): boolean {
+  return Boolean(principal.staffStatus && principal.staffStatus !== "none");
 }
 
 function initialPriority(
@@ -37,7 +38,7 @@ export class SupportService {
   ) {}
 
   async createCase(principal: Principal, input: unknown): Promise<SupportCase> {
-    requireAuthenticated(principal);
+    requirePermission(principal, "marketplace.customer.access");
     const value = supportCaseCreateSchema.parse(input);
     const priority = initialPriority(value.category);
     const now = new Date();
@@ -70,7 +71,12 @@ export class SupportService {
     case: SupportCase;
     notes: Awaited<ReturnType<ISupportRepository["listNotes"]>>;
   }> {
-    requireAuthenticated(principal);
+    requirePermission(
+      principal,
+      isStaffIdentity(principal)
+        ? "support.case.read"
+        : "marketplace.customer.access",
+    );
     const supportCase = await this.repository.getCase(caseId);
     if (
       !supportCase ||
@@ -92,7 +98,7 @@ export class SupportService {
   }
 
   listOwnCases(principal: Principal): Promise<SupportCase[]> {
-    requireAuthenticated(principal);
+    requirePermission(principal, "marketplace.customer.access");
     return this.repository.listCases({ requesterId: principal.userId });
   }
 
@@ -142,7 +148,12 @@ export class SupportService {
   }
 
   async addNote(principal: Principal, caseId: string, input: unknown) {
-    requireAuthenticated(principal);
+    requirePermission(
+      principal,
+      isStaffIdentity(principal)
+        ? "support.case.manage"
+        : "marketplace.customer.access",
+    );
     const value = supportCaseNoteCreateSchema.parse(input);
     const current = await this.repository.getCase(caseId);
     const isStaff = canReadSupportCases(principal);

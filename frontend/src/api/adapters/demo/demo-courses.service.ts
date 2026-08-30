@@ -40,6 +40,7 @@ import {
 import { demoVerticalDiscoveryStore } from "../../../domains/discovery/demo-vertical-discovery.store";
 import { storageService } from "../../../services/storage.service";
 import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
+import { requireDemoCapability } from "./demo-authorization";
 
 const tutorDraftKey = (accountId: string) =>
   `shongre_courses_onboarding_v2:${accountId}`;
@@ -141,6 +142,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     marketCode: string,
     displayName?: string,
   ): Promise<TutorOnboardingDraft> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
     const individualPlan =
@@ -177,6 +179,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     accountId: string,
     draft: TutorOnboardingDraft,
   ): Promise<void> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     storageService.set(tutorDraftKey(accountId), draft);
   }
@@ -186,6 +189,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     marketCode: string,
     draft: TutorOnboardingDraft,
   ): Promise<{ profile: TutorProfile; offer: CourseOffer }> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
     const primarySubjectId = draft.subjectIds[0];
@@ -312,6 +316,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async clearTutorOnboardingDraft(accountId: string): Promise<void> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     storageService.remove(tutorDraftKey(accountId));
   }
@@ -321,6 +326,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     _marketCode: string,
     subjectId = "",
   ): Promise<LearnerRequestProgressDraft> {
+    requireDemoCapability("course.request.create");
     await simulateNetworkDelay();
     const stored = storageService.get<LearnerRequestProgressDraft | null>(
       learnerDraftKey(accountId),
@@ -347,11 +353,13 @@ export class DemoCoursesService implements CoursesServiceContract {
     accountId: string,
     draft: LearnerRequestProgressDraft,
   ): Promise<void> {
+    requireDemoCapability("course.request.create");
     await simulateNetworkDelay();
     storageService.set(learnerDraftKey(accountId), draft);
   }
 
   async clearLearnerRequestDraft(accountId: string): Promise<void> {
+    requireDemoCapability("course.request.create");
     await simulateNetworkDelay();
     storageService.remove(learnerDraftKey(accountId));
   }
@@ -369,6 +377,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async getCatalog(marketCode: string): Promise<CourseCatalog> {
+    requireDemoCapability("course.read");
     await simulateNetworkDelay();
     const catalog = clone(
       applyMonetizationToCourseCatalog(
@@ -392,6 +401,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
+    requireDemoCapability("course.admin.manage");
     await simulateNetworkDelay();
     return clone(
       applyMonetizationToCourseCatalog(
@@ -408,6 +418,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
+    requireDemoCapability("course.read");
     await simulateNetworkDelay();
     let pairs = Array.from(this.offers.values())
       .filter((offer) => offer.status === "published")
@@ -530,6 +541,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async getTutorProfile(idOrSlug: string) {
+    requireDemoCapability("course.read");
     await simulateNetworkDelay();
     const tutor =
       this.tutors.get(idOrSlug) ||
@@ -544,6 +556,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async saveTutorProfile(input: TutorProfileDraft): Promise<TutorProfile> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     const now = new Date().toISOString();
     const id = input.id || `demo_tutor_created_${this.sequence++}`;
@@ -567,6 +580,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async createCourseOffer(input: CourseOfferDraft): Promise<CourseOffer> {
+    requireDemoCapability("course.offer.manage.own");
     await simulateNetworkDelay();
     const tutor = this.tutors.get(input.tutorProfileId);
     if (!tutor) throw new Error("Profil professeur introuvable");
@@ -600,6 +614,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   async submitLearnerRequest(
     input: LearnerRequestDraft,
   ): Promise<LearnerRequest> {
+    requireDemoCapability("course.request.create");
     await simulateNetworkDelay();
     if (input.learnerAgeBand !== "adult" && !input.guardianContact) {
       throw new Error(
@@ -620,6 +635,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
+    requireDemoCapability("course.profile.manage.own");
     await simulateNetworkDelay();
     const tutor =
       this.tutors.get(tutorProfileId) || this.tutors.get("tutor_sophie");
@@ -655,6 +671,7 @@ export class DemoCoursesService implements CoursesServiceContract {
   async getOrganizationWorkspace(
     organizationId: string,
   ): Promise<CourseOrganizationWorkspace> {
+    requireDemoCapability("course.organization.manage.own");
     await simulateNetworkDelay();
     if (organizationId !== DEMO_COURSE_ORGANIZATION_WORKSPACE.organization.id) {
       throw new Error("Espace organisme introuvable");
@@ -669,6 +686,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     organizationId: string,
     input: CourseOrganizationInviteInput,
   ): Promise<CourseOrganizationWorkspace> {
+    requireDemoCapability("course.organization.manage.own");
     await simulateNetworkDelay();
     if (organizationId !== this.organizationWorkspace.organization.id) {
       throw new Error("Espace organisme introuvable");
@@ -684,6 +702,7 @@ export class DemoCoursesService implements CoursesServiceContract {
         "teamMembers",
       )
     ) {
+      requireDemoCapability("course.organization.manage.own");
       throw new Error("Fonction temporairement indisponible.");
     }
     if (
@@ -714,6 +733,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     organizationId: string,
     input: CourseOrganizationLocationInput,
   ): Promise<CourseOrganizationWorkspace> {
+    requireDemoCapability("course.organization.manage.own");
     await simulateNetworkDelay();
     if (organizationId !== this.organizationWorkspace.organization.id) {
       throw new Error("Espace organisme introuvable");
@@ -728,6 +748,7 @@ export class DemoCoursesService implements CoursesServiceContract {
         "locations",
       )
     ) {
+      requireDemoCapability("course.organization.manage.own");
       throw new Error("Fonction temporairement indisponible.");
     }
     const locationLimit = plan.entitlements.locations;
@@ -749,6 +770,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     decision: "accept" | "decline" | "invalid",
     declineReason?: string,
   ): Promise<CourseLead> {
+    requireDemoCapability("course.lead.respond.own");
     await simulateNetworkDelay();
     const lead = this.leads.get(leadId);
     if (!lead || lead.tutorProfileId !== tutorProfileId) {
@@ -774,11 +796,13 @@ export class DemoCoursesService implements CoursesServiceContract {
   }
 
   async getSavedTutorIds(accountId: string): Promise<string[]> {
+    requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
     return Array.from(this.savedTutors.get(accountId) || []);
   }
 
   async toggleSavedTutor(accountId: string, tutorProfileId: string) {
+    requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
     const saved = this.savedTutors.get(accountId) || new Set<string>();
     if (saved.has(tutorProfileId)) saved.delete(tutorProfileId);
@@ -791,6 +815,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     marketCode: string,
     config: CourseMarketConfig,
   ): Promise<CourseMarketConfig> {
+    requireDemoCapability("course.admin.manage");
     await simulateNetworkDelay();
     if (
       config.featureFlags.paymentsEnabled &&
@@ -814,6 +839,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     subjectId: string,
     patch: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
   ): Promise<CourseSubject> {
+    requireDemoCapability("course.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.subjects.findIndex(
       (subject) =>
@@ -836,6 +862,7 @@ export class DemoCoursesService implements CoursesServiceContract {
       >
     >,
   ): Promise<CoursePlan> {
+    requireDemoCapability("course.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.plans.findIndex(
       (plan) =>

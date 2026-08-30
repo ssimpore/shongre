@@ -296,7 +296,9 @@ mobile-typecheck:
 	@npm run typecheck --workspace=mobile
 mobile-test:
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile'
-mobile-check: mobile-lint mobile-typecheck mobile-test expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, and configuration
+mobile-runtime-resolution-check:
+	@npm run check:runtime-resolution --workspace=mobile
+mobile-check: mobile-lint mobile-typecheck mobile-test mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, runtime resolution, and configuration
 
 ##@ Infrastructure & database
 infra: infra-start

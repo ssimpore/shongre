@@ -52,8 +52,8 @@ export const CrmTasksPage: React.FC = () => {
     return key ? t(key) : priority;
   };
   usePageMeta({
-    title: "Tâches CRM | Shongre",
-    description: "Planification et suivi des relances commerciales.",
+    title: t("admin.crmTasksPage.tachesCrmShongre"),
+    description: t("admin.crmTasksPage.planificationEtSuiviDesRelancesCommerciales"),
     canonicalPath: crmPaths.tasks,
     noIndex: true,
   });
@@ -243,45 +243,45 @@ export const CrmTasksPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
-              CRM · Exécution
+              {t("admin.crmTasksPage.crmExecution")}
             </p>
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
-              Tâches & relances
+              {t("admin.crmTasksPage.tachesRelances")}
             </h1>
-            <p className="mt-1 text-xs text-stone-400">
-              Une file d’action partagée, reliée aux comptes et opportunités.
+            <p className="mt-1 text-xs text-text-disabled">
+              {t("admin.crmTasksPage.uneFileDActionPartageeRelieeAuxComptesEtOpportunites")}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
-            <Plus className="h-icon-md w-icon-md" /> Nouvelle tâche
+            <Plus className="h-icon-md w-icon-md" /> {t("admin.crmTasksPage.nouvelleTache")}
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">À faire</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">{t("admin.crmTasksPage.aFaire")}</span>
             <strong className="block text-xl font-black">
               {counts.pending}
             </strong>
           </div>
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">En retard</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">En retard</span>
             <strong className="block text-xl font-black text-red-300">
               {counts.overdue}
             </strong>
           </div>
-          <div className="rounded-xl bg-stone-900 p-3">
-            <span className="text-micro text-stone-400">Terminées</span>
+          <div className="rounded-control bg-stone-900 p-3">
+            <span className="text-micro text-text-disabled">{t("admin.crmTasksPage.terminees")}</span>
             <strong className="block text-xl font-black text-emerald-300">
               {counts.completed}
             </strong>
           </div>
         </div>
       </section>
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
           <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
             <Filter className="h-icon-sm w-icon-sm" /> Vue
@@ -289,7 +289,7 @@ export const CrmTasksPage: React.FC = () => {
           <div
             className="flex rounded-lg bg-stone-100 p-1"
             role="tablist"
-            aria-label="Filtrer les tâches"
+            aria-label={t("admin.crmTasksPage.filtrerLesTaches")}
           >
             {(["pending", "completed", "all"] as const).map((value) => (
               <button
@@ -298,7 +298,7 @@ export const CrmTasksPage: React.FC = () => {
                 role="tab"
                 aria-selected={filter === value}
                 onClick={() => setFilter(value)}
-                className={`rounded-md px-3 py-1.5 text-micro font-black ${filter === value ? "bg-white text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-black ${filter === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
               >
                 {value === "pending"
                   ? `À faire (${counts.pending})`
@@ -312,18 +312,18 @@ export const CrmTasksPage: React.FC = () => {
         {loading ? (
           <div className="space-y-3 p-5">
             {[1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-16 rounded-xl" />
+              <Skeleton key={item} className="h-16 rounded-control" />
             ))}
           </div>
         ) : visibleTasks.length === 0 ? (
           <EmptyState
             icon={<CheckSquare className="h-8 w-8" />}
-            title="Aucune tâche dans cette vue"
-            description="Les prochaines actions commerciales apparaîtront ici."
+            title={t("admin.crmTasksPage.aucuneTacheDansCetteVue")}
+            description={t("admin.crmTasksPage.lesProchainesActionsCommercialesApparaitrontIci")}
             className="border-0 shadow-none"
             action={
               <Button size="sm" onClick={() => setModalOpen(true)}>
-                Créer une tâche
+                {t("admin.crmTasksPage.creerUneTache")}
               </Button>
             }
           />
@@ -347,7 +347,7 @@ export const CrmTasksPage: React.FC = () => {
                         ? `${task.title}, terminée`
                         : `Marquer ${task.title} comme terminée`
                     }
-                    className="shrink-0 text-stone-400 enabled:hover:text-success disabled:text-success"
+                    className="shrink-0 text-text-disabled enabled:hover:text-success disabled:text-success"
                   >
                     {done ? (
                       <CheckCircle2 className="h-icon-lg w-icon-lg" />
@@ -357,7 +357,7 @@ export const CrmTasksPage: React.FC = () => {
                   </button>
                   <div className="min-w-0 flex-1">
                     <strong
-                      className={`block truncate text-xs ${done ? "text-stone-400 line-through" : "text-stone-900"}`}
+                      className={`block truncate text-xs ${done ? "text-text-disabled line-through" : "text-text-main"}`}
                     >
                       {task.title}
                     </strong>
@@ -377,7 +377,7 @@ export const CrmTasksPage: React.FC = () => {
                     </time>
                   </div>
                   <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
+                    className={`shrink-0 rounded-pill px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
                   >
                     {priorityLabel(task.priority)}
                   </span>
@@ -390,15 +390,15 @@ export const CrmTasksPage: React.FC = () => {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Créer une tâche"
-        description="Planifiez une action et rattachez-la au bon contexte CRM."
+        title={t("admin.crmTasksPage.creerUneTache")}
+        description={t("admin.crmTasksPage.planifiezUneActionEtRattachezLaAuBonContexteCrm")}
       >
         <form onSubmit={createTask} className="space-y-3.5 text-xs">
           <FormField label="Titre" required>
             <Input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Relancer après la démonstration"
+              placeholder={t("admin.crmTasksPage.relancerApresLaDemonstration")}
               required
             />
           </FormField>
@@ -410,7 +410,7 @@ export const CrmTasksPage: React.FC = () => {
             />
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Échéance" required>
+            <FormField label={t("invoicing.workspace.dueDate")} required>
               <Input
                 type="datetime-local"
                 value={dueAt}
@@ -418,9 +418,9 @@ export const CrmTasksPage: React.FC = () => {
                 required
               />
             </FormField>
-            <FormField label="Priorité">
+            <FormField label={t("admin.crmTasksPage.priorite")}>
               <Select
-                aria-label="Priorité"
+                aria-label={t("admin.crmTasksPage.priorite")}
                 value={priority}
                 onChange={(event) =>
                   setPriority(event.target.value as CrmTask["priority"])
@@ -433,30 +433,30 @@ export const CrmTasksPage: React.FC = () => {
             </FormField>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Type de relation">
+            <FormField label={t("admin.crmTasksPage.typeDeRelation")}>
               <Select
-                aria-label="Type de relation"
+                aria-label={t("admin.crmTasksPage.typeDeRelation")}
                 value={relatedType}
                 onChange={(event) => {
                   setRelatedType(event.target.value as RelatedType);
                   setRelatedId("");
                 }}
                 options={[
-                  { value: "none", label: "Aucune" },
+                  { value: "none", label: t("admin.crmTasksPage.aucune") },
                   { value: "account", label: "Entreprise" },
                   { value: "contact", label: "Contact" },
-                  { value: "opportunity", label: "Opportunité" },
+                  { value: "opportunity", label: t("admin.crmOverviewPage.opportunite") },
                 ]}
               />
             </FormField>
             {relatedType !== "none" && (
-              <FormField label="Élément lié" required>
+              <FormField label={t("admin.crmTasksPage.elementLie")} required>
                 <Select
-                  aria-label="Élément lié"
+                  aria-label={t("admin.crmTasksPage.elementLie")}
                   value={relatedId}
                   onChange={(event) => setRelatedId(event.target.value)}
                   options={[
-                    { value: "", label: "Sélectionner…" },
+                    { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
                     ...relatedOptions,
                   ]}
                   required

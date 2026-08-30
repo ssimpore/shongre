@@ -13,6 +13,7 @@ import {
 import { EmptyState, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 const entityLabels = {
   account: "Entreprise",
@@ -41,9 +42,10 @@ const fieldLabels: Record<CrmCustomField["fieldType"], string> = {
 };
 
 export const CrmCustomFieldsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
-    title: "Champs personnalisés CRM | Shongre",
-    description: "Configuration du modèle de données CRM.",
+    title: t("admin.crmCustomFieldsPage.champsPersonnalisesCrmShongre"),
+    description: t("admin.crmCustomFieldsPage.configurationDuModeleDeDonneesCrm"),
     canonicalPath: "/admin/crm/configuration/champs",
     noIndex: true,
   });
@@ -126,17 +128,17 @@ export const CrmCustomFieldsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               CRM · Configuration
             </p>
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
-              Champs personnalisés
+              {t("admin.crmCustomFieldsPage.champsPersonnalises")}
             </h1>
-            <p className="mt-1 text-xs text-stone-400">
-              Étendez le modèle sans modifier les tables ou les composants.
+            <p className="mt-1 text-xs text-text-disabled">
+              {t("admin.crmCustomFieldsPage.etendezLeModeleSansModifierLesTablesOuLesComposants")}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -144,10 +146,10 @@ export const CrmCustomFieldsPage: React.FC = () => {
           </Button>
         </div>
       </section>
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-3">
           <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
-            <SlidersHorizontal className="h-icon-sm w-icon-sm" /> Entité
+            <SlidersHorizontal className="h-icon-sm w-icon-sm" /> {t("admin.crmCustomFieldsPage.entite")}
           </div>
           <div
             className="flex flex-wrap rounded-lg bg-stone-100 p-1"
@@ -162,7 +164,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                 onClick={() =>
                   setEntityType(value as CrmCustomField["entityType"])
                 }
-                className={`rounded-md px-3 py-1.5 text-micro font-black ${entityType === value ? "bg-white text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-black ${entityType === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
               >
                 {label}
               </button>
@@ -171,18 +173,18 @@ export const CrmCustomFieldsPage: React.FC = () => {
         </div>
         {loading ? (
           <div className="space-y-3 p-5">
-            <Skeleton className="h-16 rounded-xl" />
-            <Skeleton className="h-16 rounded-xl" />
+            <Skeleton className="h-16 rounded-control" />
+            <Skeleton className="h-16 rounded-control" />
           </div>
         ) : fields.length === 0 ? (
           <EmptyState
             icon={<Braces className="h-8 w-8" />}
-            title="Aucun champ personnalisé"
+            title={t("admin.crmCustomFieldsPage.aucunChampPersonnalise")}
             description={`Le modèle ${entityLabels[entityType].toLowerCase()} utilise seulement les champs standards.`}
             className="border-0 shadow-none"
             action={
               <Button size="sm" onClick={() => setModalOpen(true)}>
-                Créer un champ
+                {t("admin.crmCustomFieldsPage.creerUnChamp")}
               </Button>
             }
           />
@@ -197,7 +199,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <strong className="text-xs font-black">{field.name}</strong>
                     {field.required && (
-                      <span className="rounded-full bg-danger-surface px-2 py-0.5 text-micro font-bold text-danger">
+                      <span className="rounded-pill bg-danger-surface px-2 py-0.5 text-micro font-bold text-danger">
                         Obligatoire
                       </span>
                     )}
@@ -214,7 +216,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                 <span className="text-xs font-bold text-stone-700">
                   {fieldLabels[field.fieldType]}
                 </span>
-                <span className="rounded-full bg-success-surface px-2 py-1 text-center text-micro font-bold text-success">
+                <span className="rounded-pill bg-success-surface px-2 py-1 text-center text-micro font-bold text-success">
                   {field.status}
                 </span>
               </article>
@@ -226,7 +228,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={`Nouveau champ · ${entityLabels[entityType]}`}
-        description="La clé devient stable après création et sert aux imports, vues et API."
+        description={t("admin.crmCustomFieldsPage.laCleDevientStableApresCreationEtSertAuxImports")}
       >
         <form onSubmit={createField} className="space-y-3.5 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -237,7 +239,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                 required
               />
             </FormField>
-            <FormField label="Clé API" required>
+            <FormField label={t("admin.crmCustomFieldsPage.cleApi")} required>
               <Input
                 value={key}
                 onChange={(event) => setKey(event.target.value)}
@@ -254,7 +256,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
           </FormField>
           <FormField label="Type">
             <Select
-              aria-label="Type de champ"
+              aria-label={t("admin.crmCustomFieldsPage.typeDeChamp")}
               value={fieldType}
               onChange={(event) =>
                 setFieldType(event.target.value as CrmCustomField["fieldType"])
@@ -266,7 +268,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
             />
           </FormField>
           {["single_select", "multi_select"].includes(fieldType) && (
-            <FormField label="Options, une par ligne" required>
+            <FormField label={t("admin.crmCustomFieldsPage.optionsUneParLigne")} required>
               <Textarea
                 rows={4}
                 value={options}
@@ -275,7 +277,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
               />
             </FormField>
           )}
-          <label className="flex items-center gap-2 rounded-xl bg-stone-50 p-3 font-bold">
+          <label className="flex items-center gap-2 rounded-control bg-stone-50 p-3 font-bold">
             <input
               type="checkbox"
               checked={required}

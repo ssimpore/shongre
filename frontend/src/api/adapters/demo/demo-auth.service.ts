@@ -27,6 +27,8 @@ import {
 import { resolveSafeReturn } from "../../../security/safe-return";
 import { AUTH_CONSTRAINTS } from "@shongre/contracts/auth";
 import { minutesToMilliseconds } from "../../../utilities/time";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
+import { requireDemoCapability } from "./demo-authorization";
 
 const IDENTITIES_KEY = "shongre_demo_auth_identities_v2";
 const RECENT_AUTH_KEY = "shongre_demo_recent_auth_v1";
@@ -54,6 +56,13 @@ function currentUserOrThrow(): UserProfile {
   return user;
 }
 
+function requireActiveStaffSession(user: UserProfile): void {
+  if (isStaffSeparatedSubject(user) && user.staffStatus !== "active") {
+    storageService.setCurrentRole("guest");
+    throw new Error("Ce compte Staff interne n'est pas actif.");
+  }
+}
+
 export class DemoAuthService implements AuthServiceContract {
   private pendingMfaSetup: MfaSetupView | null = null;
 
@@ -61,7 +70,7 @@ export class DemoAuthService implements AuthServiceContract {
     input: DomainHandoffStartInput,
   ): Promise<DomainHandoffStartResult> {
     await simulateNetworkDelay();
-    currentUserOrThrow();
+    requireDemoCapability("marketplace.customer.access");
     const params = new URLSearchParams({
       code: `demo-${input.sourceCountry}-${input.targetCountry}`,
     });
@@ -73,12 +82,18 @@ export class DemoAuthService implements AuthServiceContract {
 
   async exchangeDomainHandoff(): Promise<DomainHandoffExchangeResult> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     return { user: currentUserOrThrow(), returnTo: "/" };
   }
 
   async getCurrentUser(): Promise<UserProfile | null> {
     await simulateNetworkDelay();
-    return storageService.getCurrentUser();
+    const user = storageService.getCurrentUser();
+    if (isStaffSeparatedSubject(user) && user?.staffStatus !== "active") {
+      storageService.setCurrentRole("guest");
+      return null;
+    }
+    return user;
   }
 
   async login(credentials: LoginCredentials): Promise<AuthResult> {
@@ -178,11 +193,12 @@ export class DemoAuthService implements AuthServiceContract {
 
   async switchRole(role: UserRole): Promise<UserProfile | null> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const user = await userRepository.switchDemoRole(role);
     if (role === "guest") return null;
     if (!user)
       throw new Error("Ce rôle de démonstration n’est pas disponible.");
-    storageService.mergeGuestFavorites();
+    if (!isStaffSeparatedSubject(user)) storageService.mergeGuestFavorites();
     return user;
   }
 
@@ -197,13 +213,16 @@ export class DemoAuthService implements AuthServiceContract {
     if (!user) {
       throw new Error("Ce profil de démonstration n’est pas disponible.");
     }
+    requireActiveStaffSession(user);
 
     // Keep the persisted role and exact persona key in sync. `setCurrentRole`
     // maps to the default account for that role, so the explicit key is written
     // last to preserve non-default personas that share the same permission set.
     storageService.setCurrentRole(user.primaryRole || user.role);
     storageService.setCurrentUserKey(userKey);
-    storageService.mergeGuestFavorites(userKey);
+    if (!isStaffSeparatedSubject(user)) {
+      storageService.mergeGuestFavorites(userKey);
+    }
     return user;
   }
 
@@ -266,6 +285,7 @@ export class DemoAuthService implements AuthServiceContract {
     const signedIn = storageService.getCurrentUser();
     if (input.intent === "link") {
       const user = currentUserOrThrow();
+      requireActiveStaffSession(user);
       if (requiresRecentAuthentication()) {
         throw new Error(
           "Confirmez votre identité avant de connecter un compte.",
@@ -285,6 +305,7 @@ export class DemoAuthService implements AuthServiceContract {
     if (existingUserId) {
       const existing = await userRepository.getUserById(existingUserId);
       if (existing) {
+        requireActiveStaffSession(existing);
         const accountEntry = Object.entries(storageService.getUsers()).find(
           ([, candidate]) => candidate.id === existing.id,
         );
@@ -296,6 +317,7 @@ export class DemoAuthService implements AuthServiceContract {
     const providerUser = signedIn || (await userRepository.getAllUsers())[0];
     if (!providerUser)
       throw new Error("Aucun profil de démonstration disponible.");
+    requireActiveStaffSession(providerUser);
     identities[providerUser.id] = {
       ...(identities[providerUser.id] || {}),
       [input.provider]: `${input.provider}-${providerUser.id}`,
@@ -414,6 +436,7 @@ export class DemoAuthService implements AuthServiceContract {
 
   async deleteAccount(password: string, reason?: string): Promise<void> {
     await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
     const user = currentUserOrThrow();
     const result = demoEngine.deleteAccount(user.id, password, reason);
     if (!result.success) throw new Error(result.message);

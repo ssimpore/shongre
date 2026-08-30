@@ -27,7 +27,7 @@ export const AdminUserPrimaryBadge: React.FC<{ user: UserProfile }> = ({
   return (
     <span
       data-identity-badge={identity}
-      className={`rounded-full border px-2 py-1 text-micro font-bold ${role.badgeColor}`}
+      className={`rounded-pill border px-2 py-1 text-micro font-bold ${role.badgeColor}`}
     >
       {role.title}
     </span>

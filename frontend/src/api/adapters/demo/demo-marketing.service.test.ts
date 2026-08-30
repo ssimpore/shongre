@@ -1,8 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DemoMarketingService } from "./demo-marketing.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoMarketingService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("buyer_thomas"));
+  afterEach(() => storageService.setCurrentUserKey("guest"));
+
   it("returns deterministic marketing dashboards and campaign inventory", async () => {
+    storageService.setCurrentUserKey("content_julien");
     const first = new DemoMarketingService();
     const second = new DemoMarketingService();
     expect(await first.getDashboard()).toEqual(await second.getDashboard());
@@ -40,6 +45,7 @@ describe("DemoMarketingService", () => {
     expect(updated.topics).toEqual(["new_features"]);
 
     await service.unsubscribePublic(unsubscribeToken);
+    storageService.setCurrentUserKey("content_julien");
     expect(
       (await service.listProfiles({ query: "camille@example.fr" })).items[0]
         .status,
@@ -80,6 +86,7 @@ describe("DemoMarketingService", () => {
   });
 
   it("blocks campaigns missing a legal unsubscribe block", async () => {
+    storageService.setCurrentUserKey("content_julien");
     const service = new DemoMarketingService();
     const campaign = await service.createCampaign({
       name: "Invalid campaign",

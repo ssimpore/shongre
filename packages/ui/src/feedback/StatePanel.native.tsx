@@ -25,7 +25,11 @@ export function StatePanel({
 }: StatePanelProps) {
   const isError = variant === "error" || tone === "error";
   return (
-    <Card style={[styles.panel, isError && styles.error]}>
+    <Card
+      accessibilityRole={isError ? "alert" : undefined}
+      accessibilityLiveRegion={isError ? "assertive" : "polite"}
+      style={[styles.panel, isError && styles.error]}
+    >
       <Heading size="heading-sm">{title}</Heading>
       <Text tone="muted">{description ?? message ?? ""}</Text>
       {actionLabel && onAction ? (

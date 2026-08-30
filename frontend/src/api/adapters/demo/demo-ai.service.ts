@@ -6,6 +6,10 @@ import {
   ListingSafetyRequest,
 } from "../../contracts/ai.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 /**
  * Deterministic AI adapter.
@@ -20,6 +24,7 @@ export class DemoAiService implements AiServiceContract {
     request: ListingAssistanceRequest,
   ): Promise<ListingAssistanceResult> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.create");
     const rawText =
       request.rawInput.trim() ||
       request.existingTitle ||
@@ -35,6 +40,7 @@ export class DemoAiService implements AiServiceContract {
     request: ListingSafetyRequest,
   ): Promise<ListingSafetyAnalysis> {
     await simulateNetworkDelay();
+    requireDemoAnyCapability(["listing.create", "moderation.review"]);
     return this.evaluateSafetyHeuristics(request);
   }
 

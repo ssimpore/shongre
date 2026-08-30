@@ -6,6 +6,7 @@ describe("DemoFinanceService", () => {
   beforeEach(() => storageService.setCurrentUserKey("pro_atelier"));
 
   it("returns reconciled platform totals and balanced entries", async () => {
+    storageService.setCurrentUserKey("finance_marc");
     const service = new DemoFinanceService();
     const dashboard = await service.getPlatformDashboard({
       period: "30d",
@@ -61,6 +62,7 @@ describe("DemoFinanceService", () => {
   });
 
   it("keeps exact market net revenue reconciled after allocation", async () => {
+    storageService.setCurrentUserKey("finance_marc");
     const service = new DemoFinanceService();
     const dashboard = await service.getPlatformDashboard({
       period: "30d",
@@ -83,6 +85,7 @@ describe("DemoFinanceService", () => {
   ])(
     "converts every dashboard series to deterministic %s reporting money",
     async (currency, expectedPlatformRevenueMinor) => {
+      storageService.setCurrentUserKey("finance_marc");
       const dashboard = await new DemoFinanceService().getPlatformDashboard({
         period: "30d",
         marketCode: "ALL",
@@ -120,6 +123,7 @@ describe("DemoFinanceService", () => {
   );
 
   it("rejects unsupported demo reporting currencies instead of silently relabelling money", async () => {
+    storageService.setCurrentUserKey("finance_marc");
     await expect(
       new DemoFinanceService().getPlatformDashboard({
         period: "30d",
@@ -130,6 +134,7 @@ describe("DemoFinanceService", () => {
   });
 
   it("exports integer minor units instead of formatted floating point", async () => {
+    storageService.setCurrentUserKey("finance_marc");
     const service = new DemoFinanceService();
     const exported = await service.exportTransactions({
       period: "30d",

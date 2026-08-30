@@ -9,7 +9,7 @@ const customer: Principal = {
   role: "buyer",
   accountType: "individual",
   status: "active",
-  capabilities: [],
+  capabilities: ["marketplace.customer.access"],
 };
 
 const otherCustomer: Principal = {
@@ -28,6 +28,14 @@ const supportAgent: Principal = {
   status: "active",
   mfaVerified: true,
   capabilities: ["support.case.read", "support.case.manage"],
+};
+
+const moderator: Principal = {
+  ...supportAgent,
+  userId: "moderator-1",
+  email: "moderator@example.test",
+  staffRole: "moderator",
+  capabilities: ["moderation.review"],
 };
 
 function createService() {
@@ -120,5 +128,33 @@ describe("SupportService", () => {
       status: "assigned",
       assigneeId: supportAgent.userId,
     });
+  });
+
+  it("does not let Staff fall back to customer support-case authority", async () => {
+    const service = createService();
+    const created = await service.createCase(customer, {
+      category: "account",
+      subject: "Question de compte client",
+      description:
+        "Je souhaite obtenir de l’aide au sujet de mon espace de compte client.",
+    });
+
+    await expect(
+      service.createCase(supportAgent, {
+        category: "account",
+        subject: "Demande Staff interdite",
+        description:
+          "Une identité Staff ne doit jamais créer une demande comme cliente.",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(service.getCase(moderator, created.id)).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    await expect(
+      service.addNote(moderator, created.id, {
+        visibility: "customer",
+        body: "Réponse non autorisée.",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });

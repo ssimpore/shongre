@@ -150,10 +150,10 @@ export const CrmContactsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.overview}
-          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Vue d’ensemble
         </Link>
@@ -162,8 +162,8 @@ export const CrmContactsPage: React.FC = () => {
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
               Contacts
             </h1>
-            <p className="mt-1 text-sm text-stone-400">
-              Personnes, rôles et consentements · {contacts.length} fiches
+            <p className="mt-1 text-sm text-text-disabled">
+              {t("admin.crmContactsPage.personnesRolesEtConsentements")} {contacts.length} fiches
             </p>
           </div>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -172,39 +172,38 @@ export const CrmContactsPage: React.FC = () => {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <label className="relative block min-w-0 flex-1 sm:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400" />
-          <span className="sr-only">Rechercher un contact</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
+          <span className="sr-only">{t("admin.crmContactsPage.rechercherUnContact")}</span>
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Nom, email, poste ou entreprise…"
+            placeholder={t("admin.crmContactsPage.nomEmailPosteOuEntreprise")}
             className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
         <span className="inline-flex items-center gap-1.5 text-micro text-stone-500">
-          <ShieldAlert className="h-icon-sm w-icon-sm text-stone-400" /> Les
-          préférences de contact sont appliquées avant tout envoi.
+          <ShieldAlert className="h-icon-sm w-icon-sm text-text-disabled" /> {t("admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi")}
         </span>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         {loading ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2, 3].map((item) => (
-              <Skeleton key={item} className="h-16 rounded-xl" />
+              <Skeleton key={item} className="h-16 rounded-control" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <UserRound className="mx-auto h-8 w-8 text-stone-400" />
+            <UserRound className="mx-auto h-8 w-8 text-text-disabled" />
             <h2 className="mt-3 text-sm font-black text-stone-800">
-              Aucun contact trouvé
+              {t("admin.crmContactsPage.aucunContactTrouve")}
             </h2>
             <p className="mt-1 text-xs text-stone-500">
-              Essayez une autre recherche ou créez une fiche.
+              {t("admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche")}
             </p>
           </div>
         ) : (
@@ -214,8 +213,8 @@ export const CrmContactsPage: React.FC = () => {
                 <tr>
                   <th className="px-5 py-3">Contact</th>
                   <th className="px-4 py-3">Entreprise</th>
-                  <th className="px-4 py-3">Coordonnées</th>
-                  <th className="px-4 py-3">Cycle de vie</th>
+                  <th className="px-4 py-3">{t("admin.crmContactsPage.coordonnees")}</th>
+                  <th className="px-4 py-3">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</th>
                   <th className="px-4 py-3">Prochaine action</th>
                   <th className="px-5 py-3 text-right">Responsable</th>
                 </tr>
@@ -232,7 +231,7 @@ export const CrmContactsPage: React.FC = () => {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-black text-text-inverse">
                             {contact.firstName[0]}
                             {contact.lastName[0]}
                           </span>
@@ -259,22 +258,22 @@ export const CrmContactsPage: React.FC = () => {
                             {account.name}
                           </Link>
                         ) : (
-                          <span className="text-stone-400">
-                            Sans entreprise
+                          <span className="text-text-disabled">
+                            {t("admin.crmContactsPage.sansEntreprise")}
                           </span>
                         )}
                       </td>
                       <td className="px-4 py-3.5">
-                        <div className="space-y-1 text-micro text-stone-600">
+                        <div className="space-y-1 text-micro text-text-secondary">
                           {contact.email && (
                             <span className="flex items-center gap-1.5">
-                              <Mail className="h-icon-xs w-icon-xs text-stone-400" />{" "}
+                              <Mail className="h-icon-xs w-icon-xs text-text-disabled" />{" "}
                               {contact.email}
                             </span>
                           )}
                           {contact.phone && (
                             <span className="flex items-center gap-1.5">
-                              <Phone className="h-icon-xs w-icon-xs text-stone-400" />{" "}
+                              <Phone className="h-icon-xs w-icon-xs text-text-disabled" />{" "}
                               {contact.phone}
                             </span>
                           )}
@@ -285,14 +284,14 @@ export const CrmContactsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3.5">
                         <span
-                          className={`rounded-full px-2 py-1 text-micro font-bold ${contact.doNotContact ? "bg-danger-surface text-danger" : contact.lifecycle === "customer" ? "bg-success-surface text-success" : contact.lifecycle === "qualified" ? "bg-primary-light text-primary" : "bg-warning-surface text-warning"}`}
+                          className={`rounded-pill px-2 py-1 text-micro font-bold ${contact.doNotContact ? "bg-danger-surface text-danger" : contact.lifecycle === "customer" ? "bg-success-surface text-success" : contact.lifecycle === "qualified" ? "bg-primary-light text-primary" : "bg-warning-surface text-warning"}`}
                         >
                           {contact.doNotContact
                             ? "Ne pas contacter"
                             : lifecycleLabel[contact.lifecycle]}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-micro text-stone-600">
+                      <td className="px-4 py-3.5 text-micro text-text-secondary">
                         {contact.nextContactAt
                           ? new Intl.DateTimeFormat("fr-FR", {
                               dateStyle: "medium",
@@ -300,7 +299,7 @@ export const CrmContactsPage: React.FC = () => {
                             }).format(new Date(contact.nextContactAt))
                           : "À planifier"}
                       </td>
-                      <td className="px-5 py-3.5 text-right text-stone-600">
+                      <td className="px-5 py-3.5 text-right text-text-secondary">
                         {contact.ownerId ? "Léa Bertin" : "Non assigné"}
                       </td>
                     </tr>
@@ -312,7 +311,7 @@ export const CrmContactsPage: React.FC = () => {
         )}
         <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
           <span>
-            {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+            {filtered.length} {t("admin.crmCompaniesPage.resultat")}{filtered.length > 1 ? "s" : ""}
           </span>
           <span>
             {contacts.filter((contact) => contact.doNotContact).length}{" "}
@@ -320,7 +319,7 @@ export const CrmContactsPage: React.FC = () => {
             {contacts.filter((contact) => contact.doNotContact).length > 1
               ? "s"
               : ""}{" "}
-            de contact
+            {t("admin.crmContactsPage.deContact")}
           </span>
         </div>
       </section>
@@ -328,12 +327,12 @@ export const CrmContactsPage: React.FC = () => {
       <Modal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Créer un contact"
-        description="La fiche reste distincte d’un compte utilisateur Shongre."
+        title={t("admin.crmContactsPage.creerUnContact")}
+        description={t("admin.crmContactsPage.laFicheResteDistincteDUnCompteUtilisateurShongre")}
       >
         <form onSubmit={createContact} className="space-y-4 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Prénom" required>
+            <FormField label={t("admin.crmContactsPage.prenom")} required>
               <Input
                 value={firstName}
                 onChange={(event) => setFirstName(event.target.value)}
@@ -356,7 +355,7 @@ export const CrmContactsPage: React.FC = () => {
                 onChange={(event) => setEmail(event.target.value)}
               />
             </FormField>
-            <FormField label="Téléphone">
+            <FormField label={t("admin.crmContactsPage.telephone")}>
               <Input
                 type="tel"
                 value={phone}
@@ -372,11 +371,11 @@ export const CrmContactsPage: React.FC = () => {
           </FormField>
           <FormField label="Entreprise">
             <Select
-              aria-label="Entreprise associée"
+              aria-label={t("admin.crmContactsPage.entrepriseAssociee")}
               value={accountId}
               onChange={(event) => setAccountId(event.target.value)}
               options={[
-                { value: "", label: "Sans entreprise" },
+                { value: "", label: t("admin.crmContactsPage.sansEntreprise") },
                 ...accounts.map((account) => ({
                   value: account.id,
                   label: account.name,

@@ -78,7 +78,7 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
     >
       <div className="space-y-4">
         {/* Safety Guarantees Notice */}
-        <div className="p-3.5 bg-info-surface border border-info-border rounded-xl space-y-2 text-xs text-info">
+        <div className="p-3.5 bg-info-surface border border-info-border rounded-control space-y-2 text-xs text-info">
           <div className="flex items-center gap-2 font-bold text-info">
             <ShieldCheck className="w-icon-md h-icon-md text-info" />
             <span>
@@ -121,8 +121,8 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
         </FormField>
 
         {replacementId && (
-          <div className="p-3 bg-bg-subtle rounded-xl border border-border-subtle flex items-center justify-between text-xs">
-            <span className="font-semibold text-stone-600">{node.name}</span>
+          <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center justify-between text-xs">
+            <span className="font-semibold text-text-secondary">{node.name}</span>
             <ArrowRight className="w-icon-md h-icon-md text-primary" />
             <span className="font-bold text-primary">
               {allNodes.find((n) => n.id === replacementId)?.name}

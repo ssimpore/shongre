@@ -216,7 +216,7 @@ export const AdminUsersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-bold uppercase tracking-wider text-primary">
             {t("admin.adminUsersPage.gouvernanceDesIdentites")}
@@ -226,19 +226,19 @@ export const AdminUsersPage: React.FC = () => {
             {t("admin.adminUsersPage.gestionDesComptesVerificationsKbis")}
           </span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+        <h1 className="text-2xl font-black text-text-main tracking-tight">
           {t("admin.adminUsersPage.annuaireDesUtilisateursVerifications")}
         </h1>
-        <p className="text-xs text-stone-600 mt-1">
+        <p className="text-xs text-text-secondary mt-1">
           {t("admin.adminUsersPage.consultezEtAdministrezLEnsemble")}
         </p>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl border border-border-base p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
@@ -286,7 +286,7 @@ export const AdminUsersPage: React.FC = () => {
             onChange={(e) => setSelectedRole(e.target.value)}
           >
             <option value="all">
-              Tous les rôles ({ALL_PLATFORM_ROLES.length})
+              {t("admin.adminUsersPage.tousLesRoles")}{ALL_PLATFORM_ROLES.length})
             </option>
             {ALL_PLATFORM_ROLES.map((r) => (
               <option key={r} value={r}>
@@ -314,7 +314,7 @@ export const AdminUsersPage: React.FC = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
@@ -357,10 +357,10 @@ export const AdminUsersPage: React.FC = () => {
                           }
                           alt={u.name}
                           sizes="36px"
-                          className="w-9 h-9 rounded-full object-cover border border-border-base"
+                          className="w-9 h-9 rounded-pill object-cover border border-border-base"
                         />
                         <div>
-                          <div className="font-bold text-stone-900 flex items-center gap-1.5">
+                          <div className="font-bold text-text-main flex items-center gap-1.5">
                             <span>{u.name}</span>
                           </div>
                           <VerificationBadge
@@ -421,7 +421,7 @@ export const AdminUsersPage: React.FC = () => {
                           </span>
                         )}
                         {u.staffStatus && u.staffStatus !== "none" && (
-                          <span className="text-micro text-stone-600 font-semibold">
+                          <span className="text-micro text-text-secondary font-semibold">
                             {t(
                               `admin.staff.status.${u.staffStatus}` as MessageKey,
                             )}
@@ -431,7 +431,7 @@ export const AdminUsersPage: React.FC = () => {
                     </td>
 
                     {/* Location */}
-                    <td className="p-3.5 text-stone-600">
+                    <td className="p-3.5 text-text-secondary">
                       <div>{u.city || "Non renseigné"}</div>
                       <div className="text-micro text-stone-500 font-mono">
                         {u.marketScope?.countries.join(", ") ||
@@ -447,7 +447,7 @@ export const AdminUsersPage: React.FC = () => {
                           <Button
                             size="sm"
                             onClick={() => setKbisModalUser(u)}
-                            className="text-xs bg-success hover:bg-success text-white flex items-center gap-1"
+                            className="text-xs bg-success hover:bg-success text-text-inverse flex items-center gap-1"
                           >
                             <FileCheck className="w-icon-xs h-icon-xs" />
                             <span>Valider KBIS</span>
@@ -539,7 +539,7 @@ export const AdminUsersPage: React.FC = () => {
         maxWidth="md"
       >
         <form onSubmit={handleStaffSubmit} className="space-y-4">
-          <p className="text-xs text-stone-600">
+          <p className="text-xs text-text-secondary">
             {t("admin.staff.modalDescription", {
               name: staffModalUser?.name || "",
             })}
@@ -648,7 +648,7 @@ export const AdminUsersPage: React.FC = () => {
         onSubmit={handleConfirmReactivate}
         title={t("admin.adminUsersPage.reactiverLeCompte")}
         label={`Motif de réactivation pour ${reactivateModalUser?.name || "ce compte"}`}
-        placeholder="Ex. Examen terminé et mesures correctives confirmées"
+        placeholder={t("admin.adminUsersPage.exExamenTermineEtMesuresCorrectivesConfirmees")}
         confirmText="Réactiver le compte"
         required
       />

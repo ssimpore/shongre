@@ -7,15 +7,19 @@ import { useAuth } from "../providers/AuthProvider";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Icon } from "../../design-system";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
   const { currentUser } = useAuth();
+  const publishCta = usePublishCta();
+  const { t } = useTranslation();
+
+  if (isStaffSeparatedSubject(currentUser)) return null;
+
   const unreadMessagesCount = storageService.getUnreadMessageCount(
     currentUser?.id,
   );
-  const publishCta = usePublishCta();
-  const { t } = useTranslation();
 
   // Hide bottom bar on fullscreen wizards / creation tunnels for maximum screen ergonomics
   if (location.pathname.startsWith("/deposer")) {
@@ -35,7 +39,7 @@ export const MobileBottomNav: React.FC = () => {
           to={routes.home()}
           end
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
                 ? "text-stone-900"
                 : "text-stone-500 hover:text-stone-700 active:scale-95"
@@ -45,7 +49,7 @@ export const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <div
-                className={`flex items-center justify-center w-12 h-7 rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
+                className={`flex h-7 w-12 max-w-full items-center justify-center rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
               >
                 <Icon
                   icon={Home}
@@ -54,7 +58,7 @@ export const MobileBottomNav: React.FC = () => {
                 />
               </div>
               <span
-                className={`text-micro ${isActive ? "font-bold" : "font-medium"}`}
+                className={`max-w-full truncate text-micro ${isActive ? "font-bold" : "font-medium"}`}
               >
                 {t("nav.home")}
               </span>
@@ -66,7 +70,7 @@ export const MobileBottomNav: React.FC = () => {
         <NavLink
           to={routes.search()}
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
                 ? "text-stone-900"
                 : "text-stone-500 hover:text-stone-700 active:scale-95"
@@ -76,7 +80,7 @@ export const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <div
-                className={`flex items-center justify-center w-12 h-7 rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
+                className={`flex h-7 w-12 max-w-full items-center justify-center rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
               >
                 <Icon
                   icon={Search}
@@ -85,7 +89,7 @@ export const MobileBottomNav: React.FC = () => {
                 />
               </div>
               <span
-                className={`text-micro ${isActive ? "font-bold" : "font-medium"}`}
+                className={`max-w-full truncate text-micro ${isActive ? "font-bold" : "font-medium"}`}
               >
                 {t("nav.search")}
               </span>
@@ -101,7 +105,7 @@ export const MobileBottomNav: React.FC = () => {
         <NavLink
           to={publishCta.to}
           aria-label={t(publishCta.labelKey)}
-          className="relative flex flex-col items-center justify-center group w-full h-full"
+          className="group relative flex h-full w-full min-w-0 flex-col items-center justify-center"
         >
           {/* Raised by the same token the layout reserves clearance from, so the
               disc can never protrude into space the page believes is free. */}
@@ -109,7 +113,7 @@ export const MobileBottomNav: React.FC = () => {
             <div className="w-control-fab h-control-fab rounded-pill bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 motion-interactive border-3 border-bg-surface">
               <PlusCircle className="w-icon-xl h-icon-xl text-primary" />
             </div>
-            <span className="text-micro font-bold text-stone-900 mt-1 whitespace-nowrap">
+            <span className="mt-1 max-w-full truncate text-micro font-bold text-stone-900">
               {t(publishCta.shortLabelKey)}
             </span>
           </div>
@@ -119,7 +123,7 @@ export const MobileBottomNav: React.FC = () => {
         <NavLink
           to="/compte/messages"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
                 ? "text-stone-900"
                 : "text-stone-500 hover:text-stone-700 active:scale-95"
@@ -129,7 +133,7 @@ export const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <div
-                className={`relative flex items-center justify-center w-12 h-7 rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
+                className={`relative flex h-7 w-12 max-w-full items-center justify-center rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
               >
                 <Icon
                   icon={MessageSquare}
@@ -150,7 +154,7 @@ export const MobileBottomNav: React.FC = () => {
                 )}
               </div>
               <span
-                className={`text-micro ${isActive ? "font-bold" : "font-medium"}`}
+                className={`max-w-full truncate text-micro ${isActive ? "font-bold" : "font-medium"}`}
               >
                 {t("nav.messages")}
               </span>
@@ -162,7 +166,7 @@ export const MobileBottomNav: React.FC = () => {
         <NavLink
           to="/compte"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
                 ? "text-stone-900"
                 : "text-stone-500 hover:text-stone-700 active:scale-95"
@@ -172,7 +176,7 @@ export const MobileBottomNav: React.FC = () => {
           {({ isActive }) => (
             <>
               <div
-                className={`flex items-center justify-center w-12 h-7 rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
+                className={`flex h-7 w-12 max-w-full items-center justify-center rounded-pill motion-interactive ${isActive ? "bg-bg-muted" : "bg-transparent"}`}
               >
                 <Icon
                   icon={User}
@@ -181,7 +185,7 @@ export const MobileBottomNav: React.FC = () => {
                 />
               </div>
               <span
-                className={`text-micro ${isActive ? "font-bold" : "font-medium"}`}
+                className={`max-w-full truncate text-micro ${isActive ? "font-bold" : "font-medium"}`}
               >
                 {t("nav.account")}
               </span>

@@ -49,7 +49,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
     >
       <div className="space-y-5 p-1">
         {/* Warning banner */}
-        <div className="p-4 rounded-xl bg-warning-surface border border-warning-border flex items-start gap-3 text-warning">
+        <div className="p-4 rounded-control bg-warning-surface border border-warning-border flex items-start gap-3 text-warning">
           <AlertTriangle className="w-icon-lg h-icon-lg text-warning shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-bold text-warning">
@@ -68,7 +68,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
         <div className="space-y-4 text-xs">
           {/* Affected Markets */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
-            <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
+            <span className="font-bold text-text-main flex items-center gap-1.5 uppercase tracking-wider text-micro">
               <Globe className="w-icon-sm h-icon-sm text-info" />
               {t("admin.providerImpactModal.marchesTerritoriauxAffectes")}
             </span>
@@ -86,7 +86,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
 
           {/* Impacted Features */}
           <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
-            <span className="font-bold text-stone-900 flex items-center gap-1.5 uppercase tracking-wider text-micro">
+            <span className="font-bold text-text-main flex items-center gap-1.5 uppercase tracking-wider text-micro">
               <Layers className="w-icon-sm h-icon-sm text-primary" />
               {t(
                 "admin.providerImpactModal.fonctionnalitesDeLaMarketplaceConcernees",
@@ -107,7 +107,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           {/* Fallback Availability */}
           <div className="p-3.5 rounded-lg border flex items-center justify-between bg-stone-50 border-stone-200">
             <div>
-              <span className="font-bold text-stone-900 block">
+              <span className="font-bold text-text-main block">
                 {t("admin.providerImpactModal.disponibiliteDUnPrestataireDe")}
               </span>
               <span className="text-micro text-stone-500">

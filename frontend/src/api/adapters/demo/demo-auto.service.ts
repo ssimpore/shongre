@@ -29,6 +29,7 @@ import {
   toPublicVehicle,
 } from "../../../mocks/autoDemoData";
 import { storageService } from "../../../services/storage.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const clone = <T>(value: T): T => structuredClone(value);
 const autoDraftKey = (draftId: string) => `shongre_auto_draft_v2:${draftId}`;
@@ -152,6 +153,7 @@ export class DemoAutoService implements AutoServiceContract {
   private sequence = 1;
 
   async getCatalog(marketCode: string) {
+    requireDemoCapability("auto.read");
     await simulateNetworkDelay();
     const catalog = clone(
       applyMonetizationToAutoCatalog(
@@ -176,6 +178,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getAdminOverview(marketCode: string) {
+    requireDemoCapability("auto.admin.manage");
     await simulateNetworkDelay();
     return clone({
       ...AUTO_DEMO_ADMIN,
@@ -197,6 +200,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async searchVehicles(query: VehicleSearchQuery) {
+    requireDemoCapability("auto.read");
     await simulateNetworkDelay();
     const rows = Array.from(this.vehicles.values()).filter((row) =>
       matches(query, row),
@@ -229,6 +233,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getVehicle(idOrSlug: string) {
+    requireDemoCapability("auto.read");
     await simulateNetworkDelay();
     const row =
       this.vehicles.get(idOrSlug) ||
@@ -240,6 +245,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getOrCreateDraft(ownerUserId: string, marketCode: string) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     const activeId = storageService.get(
       activeAutoDraftKey(ownerUserId),
@@ -257,6 +263,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getDraft(draftId: string) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     const existing =
       this.drafts.get(draftId) ||
@@ -279,6 +286,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async saveDraft(draft: VehicleDraft) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     const next = clone({ ...draft, updatedAt: AUTO_DEMO_NOW });
     this.drafts.set(next.id, next);
@@ -292,6 +300,7 @@ export class DemoAutoService implements AutoServiceContract {
     vin?: string,
     registration?: string,
   ) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     const duplicate =
       vin?.replaceAll(/\s/g, "").toUpperCase() === "VF3DUPLICATE00001" ||
@@ -311,6 +320,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async submitDraft(draftId: string) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
     if (
@@ -335,6 +345,7 @@ export class DemoAutoService implements AutoServiceContract {
     _draftId: string,
     file: { name: string; type: string; size: number },
   ) {
+    requireDemoCapability("auto.vehicle.manage.own");
     await simulateNetworkDelay();
     if (!file.type.startsWith("image/"))
       throw new Error("Seules les images sont acceptées dans cette étape.");
@@ -346,6 +357,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async submitLead(input: AutoLeadDraft): Promise<AutoLead> {
+    requireDemoCapability("auto.read");
     await simulateNetworkDelay();
     const suspicious = /(telegram|western union|crypto|gift card)/i.test(
       input.message,
@@ -372,6 +384,7 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getDealerWorkspace(organizationId: string) {
+    requireDemoCapability("auto.dealer.manage.own");
     await simulateNetworkDelay();
     if (organizationId !== AUTO_DEMO_WORKSPACE.organization.id)
       throw new Error("Espace concession introuvable");
@@ -389,6 +402,7 @@ export class DemoAutoService implements AutoServiceContract {
       Pick<AutoLead, "status" | "assignedUserId" | "nextReminderAt">
     >,
   ) {
+    requireDemoCapability("auto.lead.manage.own");
     await simulateNetworkDelay();
     const current = this.leads.get(leadId);
     if (!current) throw new Error("Demande Auto introuvable");
@@ -403,6 +417,7 @@ export class DemoAutoService implements AutoServiceContract {
     fileName?: string,
     _idempotencyKey?: string,
   ) {
+    requireDemoCapability("auto.inventory.import.own");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog("FR");
     const plan = catalog.plans.find(
@@ -436,11 +451,13 @@ export class DemoAutoService implements AutoServiceContract {
   }
 
   async getFavoriteVehicleIds(accountId: string) {
+    requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
     return Array.from(this.favorites.get(accountId) || []);
   }
 
   async toggleFavoriteVehicle(accountId: string, vehicleId: string) {
+    requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
     const bucket = this.favorites.get(accountId) || new Set<string>();
     const next = !bucket.has(vehicleId);
@@ -454,6 +471,7 @@ export class DemoAutoService implements AutoServiceContract {
     marketCode: string,
     patch: Partial<AutoMarketConfig>,
   ) {
+    requireDemoCapability("auto.admin.manage");
     await simulateNetworkDelay();
     if (
       patch.featureFlags?.paidOffersEnabled ||
@@ -487,6 +505,7 @@ export class DemoAutoService implements AutoServiceContract {
       >
     >,
   ) {
+    requireDemoCapability("auto.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.plans.findIndex(
       (row) => row.id === planId && row.marketCode === marketCode,
@@ -513,6 +532,7 @@ export class DemoAutoService implements AutoServiceContract {
       >
     >,
   ) {
+    requireDemoCapability("auto.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.addOns.findIndex(
       (row) => row.id === addOnId && row.marketCode === marketCode,
@@ -540,6 +560,7 @@ export class DemoAutoService implements AutoServiceContract {
       >
     >,
   ) {
+    requireDemoCapability("auto.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.vehicleTypes.findIndex(
       (row) => row.type === type,

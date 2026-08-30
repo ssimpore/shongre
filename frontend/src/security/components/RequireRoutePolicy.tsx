@@ -37,6 +37,21 @@ export const RequireRoutePolicy: React.FC<{
 
   const access = canonicalAccessContext(currentUser);
   if (
+    access.staffStatus !== "none" &&
+    (policy.access === "customer" || policy.access === "professional")
+  ) {
+    return (
+      <Navigate
+        to={
+          access.staffStatus === "active"
+            ? routes.admin.overview()
+            : routes.contact()
+        }
+        replace
+      />
+    );
+  }
+  if (
     policy.requiresActiveStaff &&
     !hasEffectiveCapability(currentUser, "staff.internal.access")
   ) {

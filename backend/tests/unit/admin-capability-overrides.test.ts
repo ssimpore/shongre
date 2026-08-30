@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   CAPABILITIES,
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
   type Capability,
 } from "@shongre/contracts/access-control";
 import {
@@ -162,6 +163,41 @@ describe("AdminService capability overrides", () => {
     await expect(read(principal({ capabilities: [] }))).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
+  });
+
+  it("never grants or exposes customer capabilities for a Staff target", async () => {
+    const staffTarget: UserProfile = {
+      ...target,
+      id: "staff-target",
+      email: "staff-target@example.test",
+      staffStatus: "active",
+      staffRole: "support_agent",
+      customPermissions: ["listing.read"],
+    };
+    const subject = setup({ [staffTarget.email]: staffTarget });
+    const projection = await subject.service.getCapabilityOverrides({
+      userId: staffTarget.id,
+      actor: principal(),
+    });
+
+    expect(
+      projection.capabilities.some((entry) =>
+        CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          entry.capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+      ),
+    ).toBe(false);
+    await expect(
+      subject.service.updateCapabilityOverrides({
+        userId: staffTarget.id,
+        actor: principal(),
+        customPermissions: ["listing.create"],
+        revokedPermissions: [],
+        reason: "Tentative de pont vers la marketplace client interdite",
+        expectedVersion: 1,
+        requestId: "req-staff-marketplace-denied",
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
   it("rejects self-management, contradictory inputs, unknown capabilities, and owner escalation", async () => {

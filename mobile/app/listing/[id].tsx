@@ -127,7 +127,12 @@ export default function ListingDetailScreen() {
   return (
     <Screen>
       {listing.imageUrl ? (
-        <Image source={{ uri: listing.imageUrl }} style={styles.image} />
+        <Image
+          source={{ uri: listing.imageUrl }}
+          style={styles.image}
+          accessibilityLabel={`Photo de l’annonce : ${listing.title}`}
+          accessibilityIgnoresInvertColors
+        />
       ) : null}
       <View style={styles.titleGroup}>
         <View style={styles.badges}>

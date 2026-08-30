@@ -37,6 +37,7 @@ import {
   toPublicProperty,
 } from "../../../mocks/realEstateDemoData";
 import { storageService } from "../../../services/storage.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const clone = <T>(value: T): T => structuredClone(value);
 const propertyDraftKey = (draftId: string) =>
@@ -233,6 +234,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   private sequence = 1;
 
   async getCatalog(marketCode: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const commercialCatalog = applyMonetizationToRealEstateCatalog(
       this.catalog,
@@ -259,6 +261,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getAdminOverview(marketCode: string) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     return clone({
       ...IMMO_DEMO_ADMIN,
@@ -280,6 +283,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async searchProperties(query: PropertySearchQuery) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const rows = Array.from(this.properties.values()).filter((property) =>
       matches(query, property),
@@ -320,6 +324,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getProperty(idOrSlug: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const property =
       this.properties.get(idOrSlug) ||
@@ -329,6 +334,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getComparableProperties(propertyId: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const property = this.properties.get(propertyId);
     if (!property) return [];
@@ -345,6 +351,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getRecentlyViewed(accountId: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     return (this.recentlyViewed.get(accountId) || [])
       .map((id) => this.properties.get(id))
@@ -354,6 +361,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async markRecentlyViewed(accountId: string, propertyId: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const next = [
       propertyId,
@@ -369,6 +377,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     marketCode: string,
     sellerDisplayName?: string,
   ) {
+    requireDemoCapability("immo.property.manage.own");
     await simulateNetworkDelay();
     const activeId = storageService.get(
       activePropertyDraftKey(ownerUserId),
@@ -395,6 +404,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getDraft(draftId: string) {
+    requireDemoCapability("immo.property.manage.own");
     await simulateNetworkDelay();
     const draft =
       this.drafts.get(draftId) ||
@@ -417,6 +427,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async saveDraft(draft: PropertyDraft) {
+    requireDemoCapability("immo.property.manage.own");
     await simulateNetworkDelay();
     const next = clone({ ...draft, updatedAt: IMMO_DEMO_NOW });
     this.drafts.set(next.id, next);
@@ -426,6 +437,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async submitDraft(draftId: string) {
+    requireDemoCapability("immo.property.manage.own");
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
     if (
@@ -463,6 +475,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     file: { name: string; type: string; size: number },
     visibility: "public" | "private",
   ) {
+    requireDemoCapability("immo.property.manage.own");
     await simulateNetworkDelay();
     if (!file.type.startsWith("image/") && file.type !== "application/pdf")
       throw new Error("Format de fichier non pris en charge.");
@@ -484,6 +497,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async submitLead(input: PropertyLeadDraft) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     if (!input.consentGiven)
       throw new Error(
@@ -514,6 +528,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async requestAppointment(leadId: string, startsAt: string) {
+    requireDemoCapability("immo.read");
     await simulateNetworkDelay();
     const lead = this.leads.get(leadId);
     if (!lead) throw new Error("Demande introuvable.");
@@ -538,6 +553,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async getAgencyWorkspace(organizationId: string) {
+    requireDemoCapability("immo.agency.manage.own");
     await simulateNetworkDelay();
     if (organizationId !== IMMO_DEMO_WORKSPACE.organization.id)
       throw new Error("Espace agence introuvable.");
@@ -569,6 +585,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
       Pick<PropertyLead, "status" | "assignedUserId" | "nextReminderAt">
     >,
   ) {
+    requireDemoCapability("immo.lead.manage.own");
     await simulateNetworkDelay();
     const lead = this.leads.get(leadId);
     if (!lead || lead.organizationId !== organizationId)
@@ -579,6 +596,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async addLeadNote(organizationId: string, leadId: string, body: string) {
+    requireDemoCapability("immo.lead.manage.own");
     await simulateNetworkDelay();
     const lead = this.leads.get(leadId);
     if (!lead || lead.organizationId !== organizationId)
@@ -596,6 +614,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
   }
 
   async exportAgencyLeads(organizationId: string): Promise<PropertyLeadExport> {
+    requireDemoCapability("immo.lead.manage.own");
     await simulateNetworkDelay();
     const rows = Array.from(this.leads.values()).filter(
       (lead) => lead.organizationId === organizationId,
@@ -628,6 +647,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     fileName?: string,
     idempotencyKey = `immo-import-${this.sequence}`,
   ) {
+    requireDemoCapability("immo.inventory.import.own");
     await simulateNetworkDelay();
     const existing = Array.from(this.imports.values()).find(
       (job) =>
@@ -658,6 +678,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     idempotencyKey: string;
     scenario?: "success" | "pending" | "failed" | "requires_action";
   }) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const existing = this.checkouts.get(input.idempotencyKey);
     if (existing) return clone(existing);
@@ -710,6 +731,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     checkoutId: string,
     input: { amountMinor?: number; idempotencyKey: string },
   ) {
+    requireDemoCapability("payment.refund");
     await simulateNetworkDelay();
     const checkout = Array.from(this.checkouts.values()).find(
       (candidate) => candidate.id === checkoutId,
@@ -730,6 +752,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     marketCode: string,
     patch: Partial<(typeof this.catalog)["config"]>,
   ) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     if (marketCode.toUpperCase() !== this.catalog.config.marketCode)
       throw new Error("Marché Immo introuvable.");
@@ -743,6 +766,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     offerId: string,
     patch: Partial<(typeof this.catalog.offers)[number]>,
   ) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.offers.findIndex(
       (offer) =>
@@ -761,6 +785,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     addOnId: string,
     patch: Partial<(typeof this.catalog.addOns)[number]>,
   ) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.addOns.findIndex(
       (addOn) =>
@@ -779,6 +804,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     type: string,
     patch: Partial<(typeof this.catalog.propertyTypes)[number]>,
   ) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.propertyTypes.findIndex(
       (propertyType) =>
@@ -797,6 +823,7 @@ export class DemoRealEstateService implements RealEstateServiceContract {
     ruleId: string,
     patch: Partial<PropertyFieldRule>,
   ) {
+    requireDemoCapability("immo.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.fieldRules.findIndex(
       (row) => row.id === ruleId && row.marketCode === marketCode.toUpperCase(),

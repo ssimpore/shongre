@@ -22,6 +22,7 @@ import type {
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
 import { convertDemoReportingMoney } from "./demo-reporting-currency";
+import { requireDemoCapability } from "./demo-authorization";
 
 function convertDashboardReportingCurrency(
   dashboard: PlatformFinanceDashboard,
@@ -197,6 +198,7 @@ function matchingTransactions(
 export class DemoFinanceService implements FinanceServiceContract {
   async getPlatformDashboard(scope: FinanceScope) {
     await simulateNetworkDelay(90);
+    requireDemoCapability("finance.platform.read");
     const dashboard = scaledDashboard(scope);
     assertPlatformFinanceInvariants(dashboard);
     return dashboard;
@@ -204,6 +206,7 @@ export class DemoFinanceService implements FinanceServiceContract {
 
   async getAccountDashboard() {
     await simulateNetworkDelay(80);
+    requireDemoCapability("finance.account.read.own");
     const user = storageService.getCurrentUser();
     if (!user)
       throw new Error("Une session est requise pour consulter les finances.");
@@ -218,6 +221,7 @@ export class DemoFinanceService implements FinanceServiceContract {
 
   async getOrganizationDashboard() {
     await simulateNetworkDelay(80);
+    requireDemoCapability("finance.organization.read.own");
     const user = storageService.getCurrentUser();
     if (!user || user.accountType !== "professional") {
       throw new Error("Une adhésion professionnelle autorisée est requise.");
@@ -233,6 +237,7 @@ export class DemoFinanceService implements FinanceServiceContract {
     query: FinanceTransactionQuery,
   ): Promise<FinanceTransactionPage> {
     await simulateNetworkDelay(90);
+    requireDemoCapability("finance.transactions.read");
     const items = matchingTransactions(query);
     items.forEach(assertBalancedTransaction);
     const limit = query.limit ?? 25;
@@ -241,6 +246,7 @@ export class DemoFinanceService implements FinanceServiceContract {
 
   async getTransaction(transactionId: string) {
     await simulateNetworkDelay(40);
+    requireDemoCapability("finance.transactions.read");
     const transaction = DEMO_FINANCE_TRANSACTIONS.find(
       (item) => item.id === transactionId,
     );
@@ -251,12 +257,14 @@ export class DemoFinanceService implements FinanceServiceContract {
 
   async listReconciliationCases() {
     await simulateNetworkDelay(60);
+    requireDemoCapability("finance.reconciliation.manage");
     return structuredClone([...DEMO_RECONCILIATION_CASES]);
   }
 
   async exportTransactions(
     query: FinanceTransactionQuery,
   ): Promise<FinanceExport> {
+    requireDemoCapability("finance.exports.read");
     const transactions = matchingTransactions(query);
     const rows = [
       [

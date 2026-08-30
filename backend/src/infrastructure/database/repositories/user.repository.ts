@@ -7,10 +7,11 @@ import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
-import type {
-  Capability,
-  StaffRole,
-  StaffStatus,
+import {
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
+  type Capability,
+  type StaffRole,
+  type StaffStatus,
 } from "@shongre/contracts/access-control";
 import { AppError } from "../../../shared/errors/app-error.js";
 
@@ -336,6 +337,20 @@ export class DemoUserRepository implements IUserRepository {
       ...existing,
       staffStatus: input.status,
       staffRole: input.staffRole,
+      customPermissions: (existing.customPermissions ?? []).filter(
+        (capability) =>
+          !CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+            capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+          ),
+      ),
+      capabilityOverrideVersion: (existing.customPermissions ?? []).some(
+        (capability) =>
+          CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+            capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+          ),
+      )
+        ? (existing.capabilityOverrideVersion ?? 1) + 1
+        : (existing.capabilityOverrideVersion ?? 1),
     };
     this.users.set(input.userId, updated);
     return { ...updated };

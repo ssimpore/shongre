@@ -14,6 +14,7 @@ import {
 } from "../../src/shared/auth/tokens.js";
 import {
   GUEST_PRINCIPAL,
+  forbidStaffMarketplaceAccess,
   Principal,
   requireAuthenticated,
   requirePermission,
@@ -218,7 +219,7 @@ describe("Principal guards", () => {
     ).toThrow(/droits/i);
   });
 
-  it("requires MFA for Staff capabilities but not customer capabilities", () => {
+  it("requires MFA for Staff capabilities and rejects the customer plane", () => {
     const unverified = { ...admin, mfaVerified: false };
     expect(() => requirePermission(unverified, "admin.access")).toThrow(
       /deux facteurs/i,
@@ -228,7 +229,20 @@ describe("Principal guards", () => {
         { ...unverified, capabilities: ["listing.read"] },
         "listing.read",
       ),
-    ).not.toThrow();
+    ).toThrow(/droits/i);
+    expect(() => requirePermission(buyer, "listing.read")).not.toThrow();
+  });
+
+  it("rejects Staff on public marketplace surfaces even with a stale capability", () => {
+    expect(() =>
+      requirePermission(
+        { ...admin, capabilities: ["listing.read"] },
+        "listing.read",
+      ),
+    ).toThrow(/droits/i);
+    expect(() => forbidStaffMarketplaceAccess(admin)).toThrow(/droits/i);
+    expect(() => forbidStaffMarketplaceAccess(buyer)).not.toThrow();
+    expect(() => forbidStaffMarketplaceAccess(GUEST_PRINCIPAL)).not.toThrow();
   });
 
   it("requires a fresh authentication proof for Staff administration", () => {

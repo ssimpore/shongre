@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { VehicleDraft } from "@shongre/contracts/auto";
 import { DemoAutoService } from "./demo-auto.service";
+import { storageService } from "../../../services/storage.service";
 
 const draft = (id: string): VehicleDraft => ({
   id,
@@ -19,6 +20,8 @@ const draft = (id: string): VehicleDraft => ({
 });
 
 describe("DemoAutoService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("buyer_thomas"));
+
   it("filters and sorts deterministic vehicle results with minor-unit prices", async () => {
     const service = new DemoAutoService();
     const first = await service.searchVehicles({
@@ -130,6 +133,7 @@ describe("DemoAutoService", () => {
       marketingConsent: false,
     });
     expect(lead.status).toBe("spam");
+    storageService.setCurrentUserKey("pro_auto_michel");
     await expect(
       service.requestInventoryImport(
         "dealer_auto_select_lyon",
@@ -156,6 +160,7 @@ describe("DemoAutoService", () => {
     expect(catalog.vehicleTypes.some((type) => type.type === "boat")).toBe(
       false,
     );
+    storageService.setCurrentUserKey("market_mgr_fr");
     await expect(
       service.updateMarketConfig("FR", {
         featureFlags: {

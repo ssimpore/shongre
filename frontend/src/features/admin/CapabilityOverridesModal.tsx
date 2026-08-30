@@ -201,7 +201,7 @@ export const CapabilityOverridesModal: React.FC<
       <form onSubmit={submit} className="space-y-5">
         <p
           id="capability-editor-description"
-          className="text-xs text-stone-600"
+          className="text-xs text-text-secondary"
         >
           {t("admin.capabilities.description")}
         </p>
@@ -209,7 +209,7 @@ export const CapabilityOverridesModal: React.FC<
         {isLoading ? (
           <div
             role="status"
-            className="rounded-control border border-border-base bg-bg-base p-5 text-sm text-stone-600"
+            className="rounded-control border border-border-base bg-bg-base p-5 text-sm text-text-secondary"
           >
             {t("admin.capabilities.loading")}
           </div>
@@ -223,14 +223,14 @@ export const CapabilityOverridesModal: React.FC<
             </Button>
           </div>
         ) : projection?.capabilities.length === 0 ? (
-          <p role="status" className="text-sm text-stone-600">
+          <p role="status" className="text-sm text-text-secondary">
             {t("admin.capabilities.empty")}
           </p>
         ) : (
           <>
             <div className="relative">
               <Search
-                className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400"
+                className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled"
                 aria-hidden="true"
               />
               <input
@@ -245,7 +245,7 @@ export const CapabilityOverridesModal: React.FC<
 
             <div className="max-h-110 space-y-5 overflow-y-auto pr-1">
               {grouped.length === 0 ? (
-                <p role="status" className="text-sm text-stone-600">
+                <p role="status" className="text-sm text-text-secondary">
                   {t("admin.capabilities.searchEmpty")}
                 </p>
               ) : (
@@ -271,7 +271,7 @@ export const CapabilityOverridesModal: React.FC<
                             key={capability.capability}
                             className="rounded-control border border-border-base bg-bg-surface p-3 [contain-intrinsic-size:auto_128px] [content-visibility:auto]"
                           >
-                            <legend className="px-1 text-xs font-bold text-stone-900">
+                            <legend className="px-1 text-xs font-bold text-text-main">
                               {capability.label}
                             </legend>
                             <code className="text-micro text-stone-500">
@@ -279,20 +279,20 @@ export const CapabilityOverridesModal: React.FC<
                             </code>
                             <div className="mt-2 flex flex-wrap gap-1.5 text-micro">
                               {capability.fromCustomerAccount && (
-                                <span className="rounded-full bg-stone-100 px-2 py-1 text-stone-700">
+                                <span className="rounded-pill bg-stone-100 px-2 py-1 text-stone-700">
                                   {t("admin.capabilities.source.account")}
                                 </span>
                               )}
                               {capability.fromStaffRole && (
-                                <span className="rounded-full bg-violet-50 px-2 py-1 text-violet-800">
+                                <span className="rounded-pill bg-violet-50 px-2 py-1 text-violet-800">
                                   {t("admin.capabilities.source.staffRole")}
                                 </span>
                               )}
                               <span
-                                className={`rounded-full px-2 py-1 font-bold ${
+                                className={`rounded-pill px-2 py-1 font-bold ${
                                   capability.effective
                                     ? "bg-success-surface text-success"
-                                    : "bg-stone-100 text-stone-600"
+                                    : "bg-stone-100 text-text-secondary"
                                 }`}
                               >
                                 {capability.effective
@@ -301,7 +301,7 @@ export const CapabilityOverridesModal: React.FC<
                               </span>
                               {!capability.effective &&
                                 capability.ineffectiveReason && (
-                                  <span className="px-1 py-1 text-stone-600">
+                                  <span className="px-1 py-1 text-text-secondary">
                                     {t(reasonKey(capability.ineffectiveReason))}
                                   </span>
                                 )}
@@ -318,7 +318,7 @@ export const CapabilityOverridesModal: React.FC<
                                       key={option}
                                       className={`inline-flex items-center gap-1.5 text-xs ${
                                         grantBlocked
-                                          ? "cursor-not-allowed text-stone-400"
+                                          ? "cursor-not-allowed text-text-disabled"
                                           : "cursor-pointer text-stone-700"
                                       }`}
                                     >

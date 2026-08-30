@@ -171,7 +171,7 @@ export const AdminProvidersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -182,13 +182,12 @@ export const AdminProvidersPage: React.FC = () => {
               Control plane v3
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black text-text-main tracking-tight flex items-center gap-2.5">
             <Cpu className="w-icon-xl h-icon-xl text-primary" />
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
-          <p className="text-xs text-stone-600 mt-1 max-w-2xl">
-            Inventaire de code, configuration runtime et preuves de santé — sans
-            confondre démo, implémentation et production.
+          <p className="text-xs text-text-secondary mt-1 max-w-2xl">
+            {t("admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans")}
           </p>
         </div>
 
@@ -210,19 +209,19 @@ export const AdminProvidersPage: React.FC = () => {
           role="alert"
           className="rounded-lg border border-danger-border bg-danger-surface px-4 py-3 text-xs text-danger"
         >
-          Le control plane backend n’est pas joignable : {controlPlaneError}
+          {t("admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable")} {controlPlaneError}
         </div>
       )}
 
       {/* Main Tab Navigation Bar */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "overview"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <LayoutDashboard className="w-icon-sm h-icon-sm" />
@@ -234,12 +233,12 @@ export const AdminProvidersPage: React.FC = () => {
           onClick={() => setActiveTab("catalog")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "catalog"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Layers className="w-icon-sm h-icon-sm" />
-          <span>Catalogue des intégrations ({providers.length})</span>
+          <span>{t("admin.adminProvidersPage.catalogueDesIntegrations")}{providers.length})</span>
         </button>
 
         <button
@@ -247,8 +246,8 @@ export const AdminProvidersPage: React.FC = () => {
           onClick={() => setActiveTab("matrix")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "matrix"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Globe className="w-icon-sm h-icon-sm" />
@@ -260,8 +259,8 @@ export const AdminProvidersPage: React.FC = () => {
           onClick={() => setActiveTab("routing")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "routing"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Sliders className="w-icon-sm h-icon-sm" />
@@ -273,8 +272,8 @@ export const AdminProvidersPage: React.FC = () => {
           onClick={() => setActiveTab("audit")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "audit"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Clock className="w-icon-sm h-icon-sm" />
@@ -317,9 +316,8 @@ export const AdminProvidersPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4 p-1">
-            <p className="text-xs text-stone-600">
-              Le backend exécute uniquement un probe non destructif enregistré.
-              En mode démo, aucun fournisseur externe n’est contacté.
+            <p className="text-xs text-text-secondary">
+              {t("admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn")}
             </p>
 
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 text-xs space-y-1">
@@ -330,14 +328,14 @@ export const AdminProvidersPage: React.FC = () => {
                 </strong>
               </div>
               <div>
-                <span className="text-stone-500">Capacités annoncées :</span>
+                <span className="text-stone-500">{t("admin.adminProvidersPage.capacitesAnnoncees")}</span>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {activeTestProvider.capabilities.map((capability) => (
                     <ProviderCapabilityLabel
                       key={capability}
                       capability={capability}
                       compact
-                      className="max-w-64 rounded border border-stone-200 bg-white px-2 py-1 text-stone-800"
+                      className="max-w-64 rounded border border-stone-200 bg-bg-surface px-2 py-1 text-stone-800"
                     />
                   ))}
                 </div>

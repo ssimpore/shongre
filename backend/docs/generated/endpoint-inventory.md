@@ -5,13 +5,13 @@
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
 - Operations: **451**
-- Specification SHA-256: `4d1b4ab45dddb03f`
+- Specification SHA-256: `bb19262c494b5f63`
 
 ## account
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/account/delete` | `postAccountDelete` | `authenticated` | — | `200` |
+| `POST` | `/account/delete` | `postAccountDelete` | `permission` | `marketplace.customer.access` | `200` |
 
 ## admin-audit-logs
 
@@ -171,7 +171,7 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/auth/domain-handoff/exchange` | `postAuthDomainHandoffExchange` | `public` | — | `200` |
-| `POST` | `/auth/domain-handoff/start` | `postAuthDomainHandoffStart` | `authenticated` | — | `200` |
+| `POST` | `/auth/domain-handoff/start` | `postAuthDomainHandoffStart` | `permission` | `marketplace.customer.access` | `200` |
 | `DELETE` | `/auth/identities/{provider}` | `deleteAuthIdentitiesByProvider` | `authenticated` | — | `200` |
 | `POST` | `/auth/login` | `postAuthLogin` | `public` | — | `200` |
 | `POST` | `/auth/logout-all` | `postAuthLogoutAll` | `authenticated` | — | `200` |
@@ -201,10 +201,10 @@
 | `GET` | `/auth/security` | `getAuthSecurity` | `authenticated` | — | `200` |
 | `DELETE` | `/auth/sessions/{id}` | `deleteAuthSessionsById` | `authenticated` | — | `200` |
 | `GET` | `/auth/sessions` | `getAuthSessions` | `authenticated` | — | `200` |
-| `POST` | `/auth/switch-role` | `postAuthSwitchRole` | `authenticated` | — | `200` |
+| `POST` | `/auth/switch-role` | `postAuthSwitchRole` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/auth/verify-email/resend` | `postAuthVerifyEmailResend` | `public` | — | `200` |
 | `POST` | `/auth/verify-email` | `postAuthVerifyEmail` | `public` | — | `200` |
-| `POST` | `/auth/verify-phone` | `postAuthVerifyPhone` | `authenticated` | — | `200` |
+| `POST` | `/auth/verify-phone` | `postAuthVerifyPhone` | `permission` | `marketplace.customer.access` | `200` |
 
 ## auto
 
@@ -224,10 +224,10 @@
 | `GET` | `/auto/drafts/{id}` | `getAutoDraftsById` | `permission` | `auto.vehicle.manage.own` | `200` |
 | `PUT` | `/auto/drafts/{id}` | `putAutoDraftsById` | `permission` | `auto.vehicle.manage.own` | `200` |
 | `POST` | `/auto/drafts` | `postAutoDrafts` | `permission` | `auto.vehicle.manage.own` | `200` |
-| `GET` | `/auto/favorites` | `getAutoFavorites` | `authenticated` | — | `200` |
+| `GET` | `/auto/favorites` | `getAutoFavorites` | `permission` | `favorite.manage.own` | `200` |
 | `POST` | `/auto/leads` | `postAutoLeads` | `public` | — | `200` |
 | `POST` | `/auto/search` | `postAutoSearch` | `public` | — | `200` |
-| `POST` | `/auto/vehicles/{id}/favorite` | `postAutoVehiclesByIdFavorite` | `authenticated` | — | `200` |
+| `POST` | `/auto/vehicles/{id}/favorite` | `postAutoVehiclesByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/auto/vehicles/{id}` | `getAutoVehiclesById` | `public` | — | `200` |
 | `POST` | `/auto/vehicles` | `postAutoVehicles` | `permission` | `auto.vehicle.manage.own` | `200` |
 
@@ -236,17 +236,17 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/business-rules/catalog` | `getBusinessRulesCatalog` | `public` | — | `200` |
-| `POST` | `/business-rules/eligibility` | `postBusinessRulesEligibility` | `authenticated` | — | `200` |
+| `POST` | `/business-rules/eligibility` | `postBusinessRulesEligibility` | `permission` | `marketplace.customer.access` | `200` |
 
 ## compliance
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/compliance/identity/session` | `postComplianceIdentitySession` | `authenticated` | — | `200` |
-| `POST` | `/compliance/manual-review` | `postComplianceManualReview` | `authenticated` | — | `200` |
-| `POST` | `/compliance/payment/onboarding` | `postCompliancePaymentOnboarding` | `authenticated` | — | `200` |
-| `POST` | `/compliance/requirements` | `postComplianceRequirements` | `authenticated` | — | `200` |
-| `GET` | `/compliance/status` | `getComplianceStatus` | `authenticated` | — | `200` |
+| `POST` | `/compliance/identity/session` | `postComplianceIdentitySession` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/compliance/manual-review` | `postComplianceManualReview` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/compliance/payment/onboarding` | `postCompliancePaymentOnboarding` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/compliance/requirements` | `postComplianceRequirements` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/compliance/status` | `getComplianceStatus` | `permission` | `marketplace.customer.access` | `200` |
 
 ## crm
 
@@ -305,7 +305,7 @@
 | `PUT` | `/education/admin/markets/{marketCode}` | `putEducationAdminMarketsByMarketCode` | `permission` | `course.admin.manage` | `200` |
 | `POST` | `/education/bookings` | `postEducationBookings` | `permission` | `course.booking.create` | `200` |
 | `GET` | `/education/catalog` | `getEducationCatalog` | `public` | — | `200` |
-| `GET` | `/education/favorites` | `getEducationFavorites` | `authenticated` | — | `200` |
+| `GET` | `/education/favorites` | `getEducationFavorites` | `permission` | `favorite.manage.own` | `200` |
 | `PATCH` | `/education/leads/{leadId}` | `patchEducationLeadsByLeadId` | `permission` | `course.lead.respond.own` | `200` |
 | `POST` | `/education/learner-requests` | `postEducationLearnerRequests` | `permission` | `course.request.create` | `200` |
 | `POST` | `/education/offers` | `postEducationOffers` | `permission` | `course.offer.manage.own` | `200` |
@@ -314,7 +314,7 @@
 | `POST` | `/education/organizations/{organizationId}/members` | `postEducationOrganizationsByOrganizationIdMembers` | `permission` | `course.organization.manage.own` | `200` |
 | `GET` | `/education/organizations/{organizationId}/workspace` | `getEducationOrganizationsByOrganizationIdWorkspace` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/search` | `postEducationSearch` | `public` | — | `200` |
-| `POST` | `/education/tutors/{id}/favorite` | `postEducationTutorsByIdFavorite` | `authenticated` | — | `200` |
+| `POST` | `/education/tutors/{id}/favorite` | `postEducationTutorsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/education/tutors/{id}` | `getEducationTutorsById` | `public` | — | `200` |
 | `PUT` | `/education/tutors/{id}` | `putEducationTutorsById` | `permission` | `course.profile.manage.own` | `200` |
 | `DELETE` | `/education/workflow-drafts/learner-request` | `deleteEducationWorkflowdraftsLearnerrequest` | `permission` | `course.request.create` | `200` |
@@ -440,10 +440,10 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `PUT` | `/marketing/account/preferences` | `updateAccountMarketingPreferences` | `authenticated` | — | `200` |
-| `GET` | `/marketing/account/subscription` | `getAccountMarketingSubscription` | `authenticated` | — | `200` |
-| `POST` | `/marketing/account/subscription` | `subscribeAccountToMarketing` | `authenticated` | — | `200` |
-| `POST` | `/marketing/account/unsubscribe` | `unsubscribeAccountFromMarketing` | `authenticated` | — | `200` |
+| `PUT` | `/marketing/account/preferences` | `updateAccountMarketingPreferences` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/marketing/account/subscription` | `getAccountMarketingSubscription` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/marketing/account/subscription` | `subscribeAccountToMarketing` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/marketing/account/unsubscribe` | `unsubscribeAccountFromMarketing` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/marketing/ai/assist` | `assistMarketingWithAi` | `permission` | `marketing.campaigns.create` | `200` |
 | `POST` | `/marketing/ai/campaign-draft` | `generateMarketingCampaignDraft` | `permission` | `marketing.campaigns.create` | `200` |
 | `GET` | `/marketing/analytics` | `getMarketingAnalytics` | `permission` | `marketing.analytics.read` | `200` |
@@ -509,15 +509,15 @@
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/media/listings/uploads/{id}/complete` | `postMediaListingsUploadsByIdComplete` | `permission` | `listing.create` | `200` |
 | `POST` | `/media/listings/uploads` | `postMediaListingsUploads` | `permission` | `listing.create` | `200` |
-| `POST` | `/media/private-documents/uploads/{id}/complete` | `postMediaPrivateDocumentsUploadsByIdComplete` | `authenticated` | — | `200` |
-| `POST` | `/media/private-documents/uploads` | `postMediaPrivateDocumentsUploads` | `authenticated` | — | `200` |
+| `POST` | `/media/private-documents/uploads/{id}/complete` | `postMediaPrivateDocumentsUploadsByIdComplete` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/media/private-documents/uploads` | `postMediaPrivateDocumentsUploads` | `permission` | `marketplace.customer.access` | `200` |
 
 ## messaging
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `GET` | `/messaging/blocked` | `getMessagingBlocked` | `authenticated` | — | `200` |
-| `POST` | `/messaging/block` | `postMessagingBlock` | `authenticated` | — | `200` |
+| `GET` | `/messaging/blocked` | `getMessagingBlocked` | `permission` | `message.block` | `200` |
+| `POST` | `/messaging/block` | `postMessagingBlock` | `permission` | `message.block` | `200` |
 | `GET` | `/messaging/conversations/{id}/messages` | `getMessagingConversationsByIdMessages` | `permission` | `message.read.own` | `200` |
 | `POST` | `/messaging/conversations/{id}/messages` | `postMessagingConversationsByIdMessages` | `permission` | `message.send` | `200` |
 | `GET` | `/messaging/conversations/{id}` | `getMessagingConversationsById` | `permission` | `message.read.own` | `200` |
@@ -529,7 +529,7 @@
 | `POST` | `/messaging/offers/{id}/withdraw` | `postMessagingOffersIdWithdraw` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/read` | `postMessagingRead` | `permission` | `message.read.own` | `200` |
 | `POST` | `/messaging/schedule-pickup` | `postMessagingSchedulePickup` | `permission` | `message.send` | `200` |
-| `POST` | `/messaging/unblock` | `postMessagingUnblock` | `authenticated` | — | `200` |
+| `POST` | `/messaging/unblock` | `postMessagingUnblock` | `permission` | `message.block` | `200` |
 
 ## moderation
 
@@ -538,40 +538,40 @@
 | `POST` | `/admin/moderation/appeals/{appealId}/decision` | `postAdminModerationAppealDecision` | `permission` | `moderation.action` | `200` |
 | `GET` | `/admin/moderation/appeals` | `getAdminModerationAppeals` | `permission` | `moderation.review` | `200` |
 | `GET` | `/admin/moderation/cases` | `getAdminModerationCases` | `permission` | `moderation.review` | `200` |
-| `GET` | `/moderation/appeals/mine` | `getOwnModerationAppeals` | `authenticated` | — | `200` |
-| `POST` | `/moderation/cases/{caseId}/appeals` | `postModerationCaseAppeal` | `authenticated` | — | `200` |
-| `GET` | `/moderation/cases/mine` | `getOwnModerationCases` | `authenticated` | — | `200` |
+| `GET` | `/moderation/appeals/mine` | `getOwnModerationAppeals` | `permission` | `report.create` | `200` |
+| `POST` | `/moderation/cases/{caseId}/appeals` | `postModerationCaseAppeal` | `permission` | `report.create` | `200` |
+| `GET` | `/moderation/cases/mine` | `getOwnModerationCases` | `permission` | `report.create` | `200` |
 
 ## monetization
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `GET` | `/monetization/billing` | `getMonetizationBilling` | `authenticated` | — | `200` |
-| `POST` | `/monetization/checkouts` | `postMonetizationCheckouts` | `authenticated` | — | `200` |
-| `GET` | `/monetization/entitlements` | `getMonetizationEntitlements` | `authenticated` | — | `200` |
-| `GET` | `/monetization/invoices/{id}/document` | `getMonetizationInvoicesByIdDocument` | `authenticated` | — | `200` |
+| `GET` | `/monetization/billing` | `getMonetizationBilling` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/monetization/checkouts` | `postMonetizationCheckouts` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/monetization/entitlements` | `getMonetizationEntitlements` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/monetization/invoices/{id}/document` | `getMonetizationInvoicesByIdDocument` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/monetization/professional-plans` | `getMonetizationProfessionalPlans` | `public` | — | `200` |
-| `POST` | `/monetization/promotions/validate` | `postMonetizationPromotionsValidate` | `authenticated` | — | `200` |
-| `POST` | `/monetization/quotes` | `postMonetizationQuotes` | `authenticated` | — | `200` |
+| `POST` | `/monetization/promotions/validate` | `postMonetizationPromotionsValidate` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/monetization/quotes` | `postMonetizationQuotes` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/monetization/subscriptions/{id}/change-preview` | `postMonetizationSubscriptionsByIdChangePreview` | `permission` | `subscription.manage.own` | `200` |
 | `POST` | `/monetization/subscriptions/{id}/change` | `postMonetizationSubscriptionsByIdChange` | `permission` | `subscription.manage.own` | `200` |
 | `PATCH` | `/monetization/subscriptions/{id}` | `patchMonetizationSubscriptionsById` | `permission` | `subscription.manage.own` | `200` |
-| `GET` | `/monetization/subscriptions` | `getMonetizationSubscriptions` | `authenticated` | — | `200` |
+| `GET` | `/monetization/subscriptions` | `getMonetizationSubscriptions` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/monetization/trials` | `postMonetizationTrials` | `permission` | `subscription.manage.own` | `200` |
 
 ## notifications
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/notifications/{id}/read` | `postNotificationsByIdRead` | `authenticated` | — | `200` |
-| `DELETE` | `/notifications/{id}` | `deleteNotificationsById` | `authenticated` | — | `200` |
-| `POST` | `/notifications/devices/unregister` | `postNotificationsDevicesUnregister` | `authenticated` | — | `200` |
-| `POST` | `/notifications/devices` | `postNotificationsDevices` | `authenticated` | — | `200` |
-| `GET` | `/notifications/preferences` | `getNotificationPreferences` | `authenticated` | — | `200` |
-| `PUT` | `/notifications/preferences` | `putNotificationPreferences` | `authenticated` | — | `200` |
-| `POST` | `/notifications/read-all` | `postNotificationsReadAll` | `authenticated` | — | `200` |
-| `GET` | `/notifications/unread-count` | `getNotificationsUnreadCount` | `authenticated` | — | `200` |
-| `GET` | `/notifications` | `getNotifications` | `authenticated` | — | `200` |
+| `POST` | `/notifications/{id}/read` | `postNotificationsByIdRead` | `permission` | `marketplace.customer.access` | `200` |
+| `DELETE` | `/notifications/{id}` | `deleteNotificationsById` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/notifications/devices/unregister` | `postNotificationsDevicesUnregister` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/notifications/devices` | `postNotificationsDevices` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/notifications/preferences` | `getNotificationPreferences` | `permission` | `marketplace.customer.access` | `200` |
+| `PUT` | `/notifications/preferences` | `putNotificationPreferences` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/notifications/read-all` | `postNotificationsReadAll` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/notifications/unread-count` | `getNotificationsUnreadCount` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/notifications` | `getNotifications` | `permission` | `marketplace.customer.access` | `200` |
 
 ## operations
 
@@ -587,13 +587,13 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/orders/{id}/cancel` | `postOrdersByIdCancel` | `authenticated` | — | `200` |
-| `POST` | `/orders/{id}/confirm-delivery` | `postOrdersByIdConfirmDelivery` | `authenticated` | — | `200` |
-| `POST` | `/orders/{id}/confirm-pin` | `postOrdersByIdConfirmPin` | `authenticated` | — | `200` |
-| `POST` | `/orders/{id}/dispute` | `postOrdersByIdDispute` | `authenticated` | — | `200` |
-| `POST` | `/orders/{id}/handover-code` | `postOrdersByIdHandoverCode` | `authenticated` | — | `200` |
+| `POST` | `/orders/{id}/cancel` | `postOrdersByIdCancel` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/orders/{id}/confirm-delivery` | `postOrdersByIdConfirmDelivery` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/orders/{id}/confirm-pin` | `postOrdersByIdConfirmPin` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/orders/{id}/dispute` | `postOrdersByIdDispute` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/orders/{id}/handover-code` | `postOrdersByIdHandoverCode` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/orders/{id}/refund` | `postOrdersByIdRefund` | `permission` | `order.refund` | `200` |
-| `POST` | `/orders/{id}/ship` | `postOrdersByIdShip` | `authenticated` | — | `200` |
+| `POST` | `/orders/{id}/ship` | `postOrdersByIdShip` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/orders/{id}` | `getOrdersById` | `permission` | `order.read.own` | `200` |
 | `POST` | `/orders/direct-purchase/quote` | `postOrdersDirectPurchaseQuote` | `permission` | `order.create` | `200` |
 | `POST` | `/orders/direct-purchase` | `postOrdersDirectPurchase` | `permission` | `order.create` | `200` |
@@ -644,13 +644,13 @@
 | `GET` | `/real-estate/drafts/{id}` | `getRealEstateDraftsById` | `permission` | `immo.property.manage.own` | `200` |
 | `PUT` | `/real-estate/drafts/{id}` | `putRealEstateDraftsById` | `permission` | `immo.property.manage.own` | `200` |
 | `POST` | `/real-estate/drafts` | `postRealestateDrafts` | `permission` | `immo.property.manage.own` | `200` |
-| `POST` | `/real-estate/leads/{leadId}/appointments` | `postRealEstateLeadsByLeadIdAppointments` | `authenticated` | — | `200` |
+| `POST` | `/real-estate/leads/{leadId}/appointments` | `postRealEstateLeadsByLeadIdAppointments` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/real-estate/leads` | `postRealEstateLeads` | `public` | — | `200` |
 | `GET` | `/real-estate/properties/{id}/comparables` | `getRealEstatePropertiesByIdComparables` | `public` | — | `200` |
 | `GET` | `/real-estate/properties/{id}/documents/{documentId}/access` | `getRealEstatePropertiesByIdDocumentsByDocumentIdAccess` | `permission` | `immo.property.manage.own` | `200` |
 | `GET` | `/real-estate/properties/{id}` | `getRealEstatePropertiesById` | `public` | — | `200` |
-| `GET` | `/real-estate/recently-viewed` | `getRealEstateRecentlyViewed` | `authenticated` | — | `200` |
-| `POST` | `/real-estate/recently-viewed` | `postRealEstateRecentlyViewed` | `authenticated` | — | `200` |
+| `GET` | `/real-estate/recently-viewed` | `getRealEstateRecentlyViewed` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/real-estate/recently-viewed` | `postRealEstateRecentlyViewed` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/real-estate/search` | `postRealEstateSearch` | `public` | — | `200` |
 
 ## reports
@@ -673,9 +673,9 @@
 | `POST` | `/support/cases/{id}/notes` | `postSupportCasesByIdNotes` | `authenticated` | — | `200` |
 | `GET` | `/support/cases/{id}` | `getSupportCasesById` | `authenticated` | — | `200` |
 | `PATCH` | `/support/cases/{id}` | `patchSupportCasesById` | `permission` | `support.case.manage` | `200` |
-| `GET` | `/support/cases/mine` | `getSupportCasesMine` | `authenticated` | — | `200` |
+| `GET` | `/support/cases/mine` | `getSupportCasesMine` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/support/cases` | `getSupportCases` | `permission` | `support.case.read` | `200` |
-| `POST` | `/support/cases` | `postSupportCases` | `authenticated` | — | `200` |
+| `POST` | `/support/cases` | `postSupportCases` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/support/metrics` | `getSupportMetrics` | `permission` | `support.case.read` | `200` |
 
 ## taxonomy
@@ -704,9 +704,9 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/verification/business-registration` | `postVerificationBusinessRegistration` | `authenticated` | — | `200` |
-| `GET` | `/verification/siret-lookup/{siret}` | `getVerificationSiretLookupBySiret` | `authenticated` | — | `200` |
-| `GET` | `/verification/status/{userId}` | `getVerificationStatusByUserId` | `authenticated` | — | `200` |
+| `POST` | `/verification/business-registration` | `postVerificationBusinessRegistration` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/verification/siret-lookup/{siret}` | `getVerificationSiretLookupBySiret` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/verification/status/{userId}` | `getVerificationStatusByUserId` | `permission` | `marketplace.customer.access` | `200` |
 
 ## webhooks
 
@@ -721,5 +721,5 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/workspace/pro-analytics/{sellerId}` | `getWorkspaceProAnalyticsBySellerId` | `permission` | `store.manage.own` | `200` |
-| `GET` | `/workspace/summary/{userId}` | `getWorkspaceSummaryByUserId` | `authenticated` | — | `200` |
+| `GET` | `/workspace/summary/{userId}` | `getWorkspaceSummaryByUserId` | `permission` | `marketplace.customer.access` | `200` |
 

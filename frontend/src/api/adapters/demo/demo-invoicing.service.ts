@@ -16,9 +16,16 @@ import {
   type UpdateInvoicingInvoiceDraft,
 } from "@shongre/contracts/invoicing";
 import { getCountryConfig } from "@shongre/contracts";
+import type { Capability } from "@shongre/contracts/access-control";
 import type { InvoicingServiceContract } from "../../contracts/invoicing.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
+import { requireDemoCapability } from "./demo-authorization";
+
+function requireCustomerInvoicing(capability: Capability): void {
+  requireDemoCapability("marketplace.customer.access");
+  requireDemoCapability(capability);
+}
 
 const NOW = "2026-08-28T09:00:00.000Z";
 export const DEMO_INVOICING_TENANT_ID = "10000000-0000-4000-a000-000000000001";
@@ -322,6 +329,7 @@ function createStateForCurrentOrganization(): DemoInvoicingState {
 export class DemoInvoicingService implements InvoicingServiceContract {
   async activateForCurrentOrganization(marketCode: string) {
     await simulateNetworkDelay();
+    requireCustomerInvoicing("subscription.manage.own");
     const currentUser = storageService.getCurrentUser();
     if (!currentUser || currentUser.accountType !== "professional") {
       throw new Error("Un compte professionnel est requis.");
@@ -386,6 +394,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async getWorkspace(marketCode: string): Promise<InvoicingWorkspace> {
     await simulateNetworkDelay(80);
+    requireCustomerInvoicing("invoice.read");
     const market = getCountryConfig(marketCode);
     if (!market) throw new Error("Marché de facturation introuvable.");
     const operational =
@@ -491,6 +500,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async listLegalEntities(tenantId: string, marketCode: string) {
     await simulateNetworkDelay(40);
+    requireCustomerInvoicing("invoice.read");
     return [...this.legalEntities.values()].filter(
       (item) =>
         item.tenantId === tenantId && item.defaultMarketCode === marketCode,
@@ -499,6 +509,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async createLegalEntity(input: CreateInvoicingLegalEntity) {
     await simulateNetworkDelay(70);
+    requireCustomerInvoicing("invoicing.tenant.manage");
     const value = createInvoicingLegalEntitySchema.parse(input);
     const id = `demo-legal-entity-${this.legalEntities.size + 1}`;
     const created: InvoicingLegalEntity = {
@@ -523,6 +534,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     marketCode: string;
   }) {
     await simulateNetworkDelay(70);
+    requireCustomerInvoicing("invoicing.tenant.manage");
     const existing = [...this.legalEntities.values()].find(
       (item) =>
         item.tenantId === input.tenantId &&
@@ -551,6 +563,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async listParties(tenantId: string) {
     await simulateNetworkDelay(40);
+    requireCustomerInvoicing("invoice.read");
     return [...this.parties.values()].filter(
       (item) => item.tenantId === tenantId,
     );
@@ -558,6 +571,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async createParty(input: CreateInvoicingParty) {
     await simulateNetworkDelay(70);
+    requireCustomerInvoicing("invoice.party.manage");
     const value = createInvoicingPartySchema.parse(input);
     const id = `demo-party-${this.parties.size + 1}`;
     const created: InvoicingParty = {
@@ -583,6 +597,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     cursor?: string;
   }): Promise<InvoicingInvoicePage> {
     await simulateNetworkDelay(60);
+    requireCustomerInvoicing("invoice.read");
     const offset = Number(options.cursor ?? 0);
     const limit = options.limit ?? 25;
     const matching = [...this.invoices.values()].filter(
@@ -604,6 +619,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async getInvoice(invoiceId: string) {
     await simulateNetworkDelay(35);
+    requireCustomerInvoicing("invoice.read");
     const invoice = this.invoices.get(invoiceId);
     if (!invoice) throw new Error("Facture introuvable.");
     return structuredClone(invoice);
@@ -614,6 +630,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     input: UpdateInvoicingInvoiceDraft,
   ) {
     await simulateNetworkDelay(70);
+    requireCustomerInvoicing("invoice.create");
     const current = this.invoices.get(invoiceId);
     if (!current) throw new Error("Facture introuvable.");
     if (!["DRAFT", "READY_TO_FINALIZE"].includes(current.commercialState)) {
@@ -684,6 +701,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async createInvoice(input: CreateInvoicingInvoice, idempotencyKey: string) {
     await simulateNetworkDelay(90);
+    requireCustomerInvoicing("invoice.create");
     const existingId = this.createKeys.get(idempotencyKey);
     if (existingId) return this.getInvoice(existingId);
     const value = createInvoicingInvoiceSchema.parse(input);
@@ -763,6 +781,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
     idempotencyKey: string,
   ) {
     await simulateNetworkDelay(100);
+    requireCustomerInvoicing("invoice.finalize");
     const invoice = this.invoices.get(invoiceId);
     if (!invoice) throw new Error("Facture introuvable.");
     if (invoice.commercialState === "FINALIZED") {
@@ -850,6 +869,7 @@ export class DemoInvoicingService implements InvoicingServiceContract {
 
   async getDocument(invoiceId: string) {
     await simulateNetworkDelay(40);
+    requireCustomerInvoicing("invoice.read");
     let document = this.documents.get(invoiceId);
     if (!document) {
       const invoice = this.invoices.get(invoiceId);

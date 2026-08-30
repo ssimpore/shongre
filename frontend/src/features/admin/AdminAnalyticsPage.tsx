@@ -33,6 +33,7 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { services } from "../../api/client/service-registry";
 import { Button, ScrollableRegion, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type TabId =
   "overview" | "acquisition" | "search" | "monetization" | "seo" | "providers";
@@ -80,7 +81,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
           }).format(metric.value / 100)
         : metric.value.toLocaleString("fr-FR");
   return (
-    <article className="rounded-xl border border-stone-200 bg-white p-4 shadow-xs">
+    <article className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold text-stone-500">{metric.label}</p>
         <TrendingUp
@@ -88,7 +89,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
           aria-hidden="true"
         />
       </div>
-      <p className="mt-2 text-2xl font-black tracking-tight text-stone-900">
+      <p className="mt-2 text-2xl font-black tracking-tight text-text-main">
         {formatted}
       </p>
       {metric.previousValue !== undefined && (
@@ -119,12 +120,12 @@ function TrendChart({
 }) {
   return (
     <section
-      className="rounded-xl border border-stone-200 bg-white p-4 shadow-xs"
+      className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs"
       aria-labelledby="analytics-trend-title"
     >
       <h2
         id="analytics-trend-title"
-        className="mb-4 text-sm font-bold text-stone-900"
+        className="mb-4 text-sm font-bold text-text-main"
       >
         {title}
       </h2>
@@ -174,10 +175,11 @@ function TrendChart({
 }
 
 export const AdminAnalyticsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Analytics & Intelligence — Administration Shongre",
     description:
-      "Pilotage produit, acquisition, SEO, recherche et monétisation.",
+      t("admin.adminAnalyticsPage.pilotageProduitAcquisitionSeoRechercheEtMonetisation"),
     canonicalPath: "/admin/analytics",
     noIndex: true,
   });
@@ -275,33 +277,32 @@ export const AdminAnalyticsPage: React.FC = () => {
   if (!activeTab)
     return (
       <StatePanel
-        title="Accès limité"
-        description="Aucun périmètre analytics n’est attribué à votre rôle."
+        title={t("admin.adminAnalyticsPage.accesLimite")}
+        description={t("admin.adminAnalyticsPage.aucunPerimetreAnalyticsNEstAttribueAVotreRole")}
         variant="restricted"
       />
     );
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-col justify-between gap-4 rounded-xl border border-stone-200 bg-white p-5 shadow-xs lg:flex-row lg:items-end">
+      <header className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs lg:flex-row lg:items-end">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <BarChart3 className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
             Intelligence Shongre
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-stone-900">
-            Analytics, SEO & observabilité
+          <h1 className="text-2xl font-black tracking-tight text-text-main">
+            {t("admin.adminAnalyticsPage.analyticsSeoObservabilite")}
           </h1>
-          <p className="mt-1 max-w-3xl text-xs text-stone-600">
-            Indicateurs internes fiables, segmentés par marché. Les revenus sont
-            rapprochés du grand livre financier.
+          <p className="mt-1 max-w-3xl text-xs text-text-secondary">
+            {t("admin.adminAnalyticsPage.indicateursInternesFiablesSegmentesParMarcheLesRevenusSontRapproches")}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <label className="text-xs font-semibold text-stone-600">
-            Période
+          <label className="text-xs font-semibold text-text-secondary">
+            {t("admin.adminAnalyticsPage.periode")}
             <select
-              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-white px-3 text-xs"
+              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
               value={range}
               onChange={(event) => updateFilter("range", event.target.value)}
             >
@@ -313,17 +314,17 @@ export const AdminAnalyticsPage: React.FC = () => {
               <option value="month">Mois glissant</option>
               <option value="quarter">Trimestre</option>
               <option value="year">1 an</option>
-              <option value="custom">Personnalisée</option>
+              <option value="custom">{t("admin.adminAnalyticsPage.personnalisee")}</option>
             </select>
           </label>
-          <label className="text-xs font-semibold text-stone-600">
-            Marché
+          <label className="text-xs font-semibold text-text-secondary">
+            {t("invoicing.product.previewMarket")}
             <select
-              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-white px-3 text-xs"
+              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
               value={marketCode}
               onChange={(event) => updateFilter("market", event.target.value)}
             >
-              <option value="ALL">Tous les marchés</option>
+              <option value="ALL">{t("publishing.publishWizard.tousLesMarches")}</option>
               {availableMarkets.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name} ({item.code})
@@ -333,20 +334,20 @@ export const AdminAnalyticsPage: React.FC = () => {
           </label>
           {range === "custom" && (
             <>
-              <label className="text-xs font-semibold text-stone-600">
+              <label className="text-xs font-semibold text-text-secondary">
                 Du
                 <input
                   type="date"
-                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-white px-3 text-xs"
+                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
                   value={from || ""}
                   onChange={(event) => updateFilter("from", event.target.value)}
                 />
               </label>
-              <label className="text-xs font-semibold text-stone-600">
+              <label className="text-xs font-semibold text-text-secondary">
                 Au
                 <input
                   type="date"
-                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-white px-3 text-xs"
+                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
                   value={to || ""}
                   onChange={(event) => updateFilter("to", event.target.value)}
                 />
@@ -357,27 +358,27 @@ export const AdminAnalyticsPage: React.FC = () => {
       </header>
 
       {(activeTab === "acquisition" || activeTab === "search") && (
-        <details className="rounded-xl border border-stone-200 bg-white p-4">
+        <details className="rounded-control border border-stone-200 bg-bg-surface p-4">
           <summary className="cursor-pointer text-xs font-bold text-stone-700">
-            Dimensions avancées
+            {t("admin.adminAnalyticsPage.dimensionsAvancees")}
           </summary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {activeTab === "search" && (
-              <label className="text-xs font-semibold text-stone-600">
-                Catégorie
+              <label className="text-xs font-semibold text-text-secondary">
+                {t("publishing.publishWizard.categorie")}
                 <input
                   className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
                   value={categoryId || ""}
                   onChange={(event) =>
                     updateFilter("category", event.target.value)
                   }
-                  placeholder="Identifiant catégorie"
+                  placeholder={t("admin.adminAnalyticsPage.identifiantCategorie")}
                 />
               </label>
             )}
             {activeTab === "acquisition" && (
               <>
-                <label className="text-xs font-semibold text-stone-600">
+                <label className="text-xs font-semibold text-text-secondary">
                   Source
                   <input
                     className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
@@ -388,7 +389,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                     placeholder="google, direct…"
                   />
                 </label>
-                <label className="text-xs font-semibold text-stone-600">
+                <label className="text-xs font-semibold text-text-secondary">
                   Campagne
                   <input
                     className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
@@ -405,9 +406,9 @@ export const AdminAnalyticsPage: React.FC = () => {
       )}
 
       <div
-        className="overflow-x-auto rounded-xl border border-stone-200 bg-white p-1"
+        className="overflow-x-auto rounded-control border border-stone-200 bg-bg-surface p-1"
         role="tablist"
-        aria-label="Périmètres analytics"
+        aria-label={t("admin.adminAnalyticsPage.perimetresAnalytics")}
       >
         <div className="flex min-w-max gap-1">
           {tabs.map((tab) => (
@@ -416,7 +417,7 @@ export const AdminAnalyticsPage: React.FC = () => {
               type="button"
               role="tab"
               aria-selected={activeTab === tab.id}
-              className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${activeTab === tab.id ? "bg-stone-900 text-white" : "text-stone-600 hover:bg-stone-100"}`}
+              className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${activeTab === tab.id ? "bg-stone-900 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
               onClick={() => updateFilter("tab", tab.id)}
             >
               {tab.label}
@@ -428,18 +429,18 @@ export const AdminAnalyticsPage: React.FC = () => {
       {loading ? (
         <div
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
-          aria-label="Chargement des indicateurs"
+          aria-label={t("admin.adminAnalyticsPage.chargementDesIndicateurs")}
         >
           {[0, 1, 2, 3].map((item) => (
             <div
               key={item}
-              className="h-28 animate-pulse rounded-xl bg-stone-200"
+              className="h-28 animate-pulse rounded-control bg-stone-200"
             />
           ))}
         </div>
       ) : error ? (
         <StatePanel
-          title="Données indisponibles"
+          title={t("admin.adminAnalyticsPage.donneesIndisponibles")}
           description={error}
           variant="error"
           action={
@@ -448,7 +449,7 @@ export const AdminAnalyticsPage: React.FC = () => {
               onClick={() => setReloadKey((value) => value + 1)}
               leftIcon={<RefreshCw className="h-icon-sm w-icon-sm" />}
             >
-              Réessayer
+              {t("common.retry")}
             </Button>
           }
         />
@@ -459,15 +460,13 @@ export const AdminAnalyticsPage: React.FC = () => {
             "reconciliationStatus" in data &&
             data.reconciliationStatus === "partial" && (
               <p className="rounded-control border border-warning/30 bg-warning/10 p-3 text-xs text-stone-700">
-                Sélectionnez un marché pour un rapprochement complet dans sa
-                devise. La vue « Tous les marchés » ne fusionne jamais des
-                devises différentes.
+                {t("admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise")}
               </p>
             )}
           {activeTab === "overview" && "activity" in data && (
             <>
-              <TrendChart title="Activité produit" data={data.activity} />
-              <section className="rounded-xl border border-stone-200 bg-white p-4">
+              <TrendChart title={t("admin.adminAnalyticsPage.activiteProduit")} data={data.activity} />
+              <section className="rounded-control border border-stone-200 bg-bg-surface p-4">
                 <h2 className="mb-3 text-sm font-bold">Entonnoir principal</h2>
                 <div className="grid gap-2 sm:grid-cols-4">
                   {data.funnel.map((step) => (
@@ -489,11 +488,11 @@ export const AdminAnalyticsPage: React.FC = () => {
           )}
           {activeTab === "acquisition" && "channels" in data && (
             <ScrollableRegion
-              aria-label="Acquisition par canal"
-              className="rounded-xl border border-stone-200 bg-white"
+              aria-label={t("admin.adminAnalyticsPage.acquisitionParCanal")}
+              className="rounded-control border border-stone-200 bg-bg-surface"
             >
               <table className="w-full whitespace-nowrap text-left text-xs">
-                <thead className="bg-stone-50 text-stone-600">
+                <thead className="bg-stone-50 text-text-secondary">
                   <tr>
                     <th className="p-3">Canal</th>
                     <th>Visiteurs</th>
@@ -523,21 +522,21 @@ export const AdminAnalyticsPage: React.FC = () => {
           )}
           {activeTab === "search" && "opportunities" in data && (
             <ScrollableRegion
-              aria-label="Demandes de recherche sous-servies"
-              className="rounded-xl border border-stone-200 bg-white"
+              aria-label={t("admin.adminAnalyticsPage.demandesDeRechercheSousServies")}
+              className="rounded-control border border-stone-200 bg-bg-surface"
             >
               <div className="flex items-center gap-2 border-b border-stone-100 p-4">
                 <Search className="h-icon-sm w-icon-sm" />
                 <h2 className="text-sm font-bold">Demandes sous-servies</h2>
               </div>
               <table className="w-full whitespace-nowrap text-left text-xs">
-                <thead className="bg-stone-50 text-stone-600">
+                <thead className="bg-stone-50 text-text-secondary">
                   <tr>
-                    <th className="p-3">Requête</th>
-                    <th>Marché</th>
+                    <th className="p-3">{t("admin.adminAnalyticsPage.requete")}</th>
+                    <th>{t("invoicing.product.previewMarket")}</th>
                     <th>Recherches</th>
                     <th>Offre</th>
-                    <th>Sans résultat</th>
+                    <th>{t("admin.discovery.metric.noResults")}</th>
                     <th>CTR</th>
                   </tr>
                 </thead>
@@ -567,15 +566,15 @@ export const AdminAnalyticsPage: React.FC = () => {
           )}
           {activeTab === "seo" && "queries" in data && (
             <>
-              <TrendChart title="Visibilité organique" data={data.trend} />
+              <TrendChart title={t("admin.adminAnalyticsPage.visibiliteOrganique")} data={data.trend} />
               <ScrollableRegion
-                aria-label="Requêtes organiques Search Console"
-                className="rounded-xl border border-stone-200 bg-white"
+                aria-label={t("admin.adminAnalyticsPage.requetesOrganiquesSearchConsole")}
+                className="rounded-control border border-stone-200 bg-bg-surface"
               >
                 <table className="w-full whitespace-nowrap text-left text-xs">
                   <thead className="bg-stone-50">
                     <tr>
-                      <th className="p-3">Requête</th>
+                      <th className="p-3">{t("admin.adminAnalyticsPage.requete")}</th>
                       <th>Clics</th>
                       <th>Impressions</th>
                       <th>CTR</th>
@@ -608,7 +607,7 @@ export const AdminAnalyticsPage: React.FC = () => {
           {data.map((provider) => (
             <article
               key={provider.provider}
-              className="rounded-xl border border-stone-200 bg-white p-4"
+              className="rounded-control border border-stone-200 bg-bg-surface p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -625,11 +624,11 @@ export const AdminAnalyticsPage: React.FC = () => {
                   provider.status === "misconfigured" ? (
                   <AlertCircle className="h-icon-md w-icon-md text-warning" />
                 ) : (
-                  <Activity className="h-icon-md w-icon-md text-stone-400" />
+                  <Activity className="h-icon-md w-icon-md text-text-disabled" />
                 )}
               </div>
               <div className="mt-3 flex gap-4 text-micro text-stone-500">
-                <span>Échecs : {provider.failedEvents}</span>
+                <span>{t("admin.adminAnalyticsPage.echecs")} {provider.failedEvents}</span>
                 <span>File : {provider.queueBacklog}</span>
               </div>
             </article>

@@ -19,6 +19,10 @@ import {
   type TaxonomyV4TreeResponse,
 } from "@shongre/contracts";
 import { storageService } from "../../../services/storage.service";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
 const taxonomyV4Resolver = new TaxonomyV4PublicResolver(taxonomyV4Bundle);
@@ -113,22 +117,30 @@ function projectHeaderNavigation(
 }
 
 export class DemoTaxonomyService implements TaxonomyServiceContract {
+  private requireReadAccess() {
+    requireDemoAnyCapability(["listing.read", "taxonomy.manage"]);
+  }
+
   async getRootCategories(): Promise<Category[]> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyService.getRootCategories() as any;
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyService.getNode(id) || null;
   }
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyService.getNodeBySlug(slug) || null;
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyService.getChildren(nodeId);
   }
@@ -136,12 +148,14 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getAttributesForCategory(
     categoryId: string,
   ): Promise<TaxonomyAttribute[]> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     const schema = taxonomyService.resolvePublicationSchema(categoryId);
     return schema?.attributes ?? [];
   }
 
   async resolveSearchFilters(nodeId?: string): Promise<any[]> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyService.resolveSearchFilters(nodeId);
   }
@@ -149,6 +163,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getHeaderNavigation(
     marketContext: MarketContext,
   ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     if (!marketContext.countryCode) {
       throw new Error("Un marché explicite est requis.");
@@ -162,6 +177,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getAdminHeaderNavigation(
     marketContext: MarketContext,
   ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    requireDemoCapability("taxonomy.manage");
     await simulateNetworkDelay();
     if (!marketContext.countryCode) {
       throw new Error("Un marché explicite est requis.");
@@ -172,6 +188,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async saveHeaderNavigation(
     input: TaxonomyHeaderNavigationUpdate,
   ): Promise<TaxonomyHeaderNavigationConfiguration> {
+    requireDemoCapability("taxonomy.manage");
     await simulateNetworkDelay();
     const parsed = taxonomyHeaderNavigationUpdateSchema.parse(input);
     const storedByMarket = getStoredHeaderNavigation();
@@ -221,6 +238,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
     locale: string;
     taxonomyVersion?: string;
   }): Promise<TaxonomyV4TreeResponse> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyV4Resolver.tree(
       input.marketContext,
@@ -232,6 +250,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async resolveV4(
     input: ResolveTaxonomyV4PublicInput,
   ): Promise<TaxonomyV4ResolvedSchema> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     return taxonomyV4Resolver.resolve(input);
   }
@@ -246,6 +265,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
     locale?: string;
     taxonomyVersion?: string;
   }): Promise<TaxonomyV4OptionPage> {
+    this.requireReadAccess();
     await simulateNetworkDelay();
     taxonomyV4Resolver.tree(input.marketContext, input.locale ?? "fr-FR");
     return taxonomyV4Resolver.lookupOptions(input);

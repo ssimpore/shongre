@@ -26,7 +26,7 @@ interface AuditValueViewProps {
 
 const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
   if (field && isSensitiveAuditField(field)) {
-    return <span className="text-stone-600">Valeur masquée</span>;
+    return <span className="text-text-secondary">Valeur masquée</span>;
   }
 
   if (Array.isArray(value)) {
@@ -37,7 +37,7 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
         {value.map((item, index) => (
           <span
             key={`${String(item)}-${index}`}
-            className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-micro text-stone-700"
+            className="rounded-pill border border-stone-200 bg-stone-50 px-2 py-0.5 text-micro text-stone-700"
           >
             {formatAuditValue(item, field)}
           </span>
@@ -56,12 +56,12 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
         {entries.map(([key, item]) => (
           <div
             key={key}
-            className="grid gap-1 rounded-control border border-stone-200 bg-white p-2 sm:grid-cols-audit-row sm:gap-3"
+            className="grid gap-1 rounded-control border border-stone-200 bg-bg-surface p-2 sm:grid-cols-audit-row sm:gap-3"
           >
-            <dt className="font-semibold text-stone-600">
+            <dt className="font-semibold text-text-secondary">
               {auditFieldLabel(key)}
             </dt>
-            <dd className="min-w-0 text-stone-900">
+            <dd className="min-w-0 text-text-main">
               <AuditValueView value={item} field={key} />
             </dd>
           </div>
@@ -71,7 +71,7 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
   }
 
   return (
-    <span className="text-stone-900">{formatAuditValue(value, field)}</span>
+    <span className="text-text-main">{formatAuditValue(value, field)}</span>
   );
 };
 
@@ -144,7 +144,7 @@ export const AdminAuditLogsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -155,10 +155,10 @@ export const AdminAuditLogsPage: React.FC = () => {
               {t("admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme")}
             </span>
           </div>
-          <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-2xl font-black text-text-main tracking-tight">
             {t("admin.adminAuditLogsPage.registreDAuditSecurite")}
           </h1>
-          <p className="text-xs text-stone-600 mt-1">
+          <p className="text-xs text-text-secondary mt-1">
             {t(
               "admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe",
             )}
@@ -188,9 +188,9 @@ export const AdminAuditLogsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
+      <div className="bg-bg-surface rounded-control border border-stone-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
@@ -210,7 +210,7 @@ export const AdminAuditLogsPage: React.FC = () => {
           onChange={(e) => setSelectedAction(e.target.value)}
         >
           <option value="all">
-            Toutes les actions d'audit ({logs.length})
+            {t("admin.adminAuditLogsPage.toutesLesActionsDAudit")}{logs.length})
           </option>
           {uniqueActions.map((act) => (
             <option key={act} value={act}>
@@ -221,13 +221,13 @@ export const AdminAuditLogsPage: React.FC = () => {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
               <tr>
                 <th scope="col" className="p-3">
-                  Date et heure
+                  {t("admin.adminAuditLogsPage.dateEtHeure")}
                 </th>
                 <th scope="col" className="p-3">
                   Acteur (Initiateur)
@@ -268,7 +268,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       {formatLogTimestamp(log.timestamp)}
                     </td>
                     <td className="p-3">
-                      <div className="font-bold text-stone-900">
+                      <div className="font-bold text-text-main">
                         {log.actorName}
                       </div>
                       <div className="text-micro text-stone-500">
@@ -277,7 +277,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                     </td>
                     <td className="p-3">
                       <div
-                        className="font-semibold text-stone-900"
+                        className="font-semibold text-text-main"
                         title={`Code action : ${log.action}`}
                       >
                         {auditActionLabel(log.action)}
@@ -294,7 +294,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       {log.targetName || "Ressource technique"}
                     </td>
                     <td
-                      className="p-3 text-stone-600 max-w-xs truncate"
+                      className="p-3 text-text-secondary max-w-xs truncate"
                       title={log.details}
                     >
                       {log.details}
@@ -303,7 +303,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedLog(log)}
-                        className="text-stone-500 hover:text-stone-900 p-1 rounded-sm"
+                        className="text-stone-500 hover:text-text-main p-1 rounded-sm"
                         aria-label={t(
                           "admin.adminAuditLogsPage.voirLePayloadDe",
                           { action: auditActionLabel(log.action) },
@@ -323,14 +323,14 @@ export const AdminAuditLogsPage: React.FC = () => {
       <Modal
         isOpen={!!selectedLog}
         onClose={() => setSelectedLog(null)}
-        title="Détail de l’événement d’audit"
+        title={t("admin.adminAuditLogsPage.detailDeLEvenementDAudit")}
         maxWidth="lg"
       >
         {selectedLog && (
           <div className="space-y-5">
             <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-audit-row">
-              <dt className="font-semibold text-stone-600">Date et heure</dt>
-              <dd className="text-stone-900">
+              <dt className="font-semibold text-text-secondary">{t("admin.adminAuditLogsPage.dateEtHeure")}</dt>
+              <dd className="text-text-main">
                 <time
                   dateTime={selectedLog.timestamp}
                   title={`Horodatage ISO : ${selectedLog.timestamp}`}
@@ -339,25 +339,25 @@ export const AdminAuditLogsPage: React.FC = () => {
                 </time>
               </dd>
 
-              <dt className="font-semibold text-stone-600">Acteur</dt>
-              <dd className="text-stone-900">{selectedLog.actorName}</dd>
+              <dt className="font-semibold text-text-secondary">Acteur</dt>
+              <dd className="text-text-main">{selectedLog.actorName}</dd>
 
-              <dt className="font-semibold text-stone-600">
+              <dt className="font-semibold text-text-secondary">
                 {t("admin.adminAuditLogsPage.role")}
               </dt>
-              <dd className="text-stone-900">
+              <dd className="text-text-main">
                 {roleLabel(selectedLog.actorRole)}
               </dd>
 
-              <dt className="font-semibold text-stone-600">Action</dt>
-              <dd className="text-stone-900">
+              <dt className="font-semibold text-text-secondary">Action</dt>
+              <dd className="text-text-main">
                 {auditActionLabel(selectedLog.action)}
               </dd>
 
               {(selectedLog.targetName || selectedLog.targetId) && (
                 <>
-                  <dt className="font-semibold text-stone-600">Cible</dt>
-                  <dd className="text-stone-900">
+                  <dt className="font-semibold text-text-secondary">Cible</dt>
+                  <dd className="text-text-main">
                     {selectedLog.targetName || "Ressource technique"}
                   </dd>
                 </>
@@ -365,8 +365,8 @@ export const AdminAuditLogsPage: React.FC = () => {
 
               {selectedLog.market && (
                 <>
-                  <dt className="font-semibold text-stone-600">Marché</dt>
-                  <dd className="text-stone-900">
+                  <dt className="font-semibold text-text-secondary">{t("invoicing.product.previewMarket")}</dt>
+                  <dd className="text-text-main">
                     {formatAuditValue(selectedLog.market, "marketCode")}
                   </dd>
                 </>
@@ -404,12 +404,12 @@ export const AdminAuditLogsPage: React.FC = () => {
               </section>
             )}
 
-            <details className="rounded-control border border-stone-200 bg-white text-xs">
-              <summary className="cursor-pointer px-3 py-2 font-semibold text-stone-600">
-                Données techniques
+            <details className="rounded-control border border-stone-200 bg-bg-surface text-xs">
+              <summary className="cursor-pointer px-3 py-2 font-semibold text-text-secondary">
+                {t("admin.adminAuditLogsPage.donneesTechniques")}
               </summary>
               <dl className="grid gap-2 border-t border-stone-200 p-3 sm:grid-cols-audit-row">
-                <dt className="text-stone-500">Événement</dt>
+                <dt className="text-stone-500">{t("crm.source.event")}</dt>
                 <dd className="break-all font-mono text-micro text-stone-700">
                   {selectedLog.id}
                 </dd>

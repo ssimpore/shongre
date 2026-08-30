@@ -22,6 +22,7 @@ import { FormField, Textarea } from "../../design-system/primitives/FormField";
 import { supportService } from "../../domains/support/support.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatDate } from "../../utilities/formatters";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const STATUS_OPTIONS: Array<{ value: SupportCaseStatus; label: string }> = [
   { value: "open", label: "Nouveau" },
@@ -52,9 +53,10 @@ const EMPTY_METRICS: SupportCaseMetrics = {
 };
 
 export const AdminSupportPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Support client — Console Shongre",
-    description: "File opérationnelle des demandes d’assistance Shongre.",
+    description: t("admin.adminSupportPage.fileOperationnelleDesDemandesDAssistanceShongre"),
     canonicalPath: "/admin/support",
     noIndex: true,
   });
@@ -180,22 +182,21 @@ export const AdminSupportPage: React.FC = () => {
   const metricCards = [
     { label: "Dossiers ouverts", value: metrics.open, Icon: Headphones },
     { label: "Urgents", value: metrics.urgent, Icon: AlertTriangle },
-    { label: "SLA dépassé", value: metrics.overdue, Icon: Clock3 },
-    { label: "Non affectés", value: metrics.unassigned, Icon: UserRoundCheck },
+    { label: t("admin.adminSupportPage.slaDepasse"), value: metrics.overdue, Icon: Clock3 },
+    { label: t("admin.adminSupportPage.nonAffectes"), value: metrics.unassigned, Icon: UserRoundCheck },
   ];
 
   return (
     <div className="space-y-6">
-      <header className="bg-white rounded-2xl border border-border-base p-5 shadow-xs">
+      <header className="bg-bg-surface rounded-2xl border border-border-base p-5 shadow-xs">
         <p className="text-xs font-bold uppercase tracking-wider text-primary">
-          Opérations Support
+          {t("admin.adminSupportPage.operationsSupport")}
         </p>
-        <h1 className="mt-1 text-2xl font-black text-stone-900">
+        <h1 className="mt-1 text-2xl font-black text-text-main">
           File d’assistance client
         </h1>
-        <p className="mt-1 text-xs text-stone-600">
-          Affectation, réponses client, notes internes et suivi des engagements
-          de service.
+        <p className="mt-1 text-xs text-text-secondary">
+          {t("admin.adminSupportPage.affectationReponsesClientNotesInternesEtSuiviDesEngagementsDe")}
         </p>
       </header>
 
@@ -206,15 +207,15 @@ export const AdminSupportPage: React.FC = () => {
         {metricCards.map(({ label, value, Icon }) => (
           <div
             key={label}
-            className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"
+            className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs"
           >
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-semibold text-stone-600">
+              <span className="text-xs font-semibold text-text-secondary">
                 {label}
               </span>
               <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
             </div>
-            <strong className="mt-2 block text-2xl text-stone-900">
+            <strong className="mt-2 block text-2xl text-text-main">
               {value}
             </strong>
           </div>
@@ -223,18 +224,18 @@ export const AdminSupportPage: React.FC = () => {
 
       <div className="grid gap-4 xl:grid-cols-trending-columns">
         <section
-          className="rounded-2xl border border-border-base bg-white shadow-xs overflow-hidden"
+          className="rounded-2xl border border-border-base bg-bg-surface shadow-xs overflow-hidden"
           aria-labelledby="support-queue-title"
         >
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
             <h2
               id="support-queue-title"
-              className="text-sm font-black text-stone-900"
+              className="text-sm font-black text-text-main"
             >
               Dossiers
             </h2>
-            <label className="text-xs font-semibold text-stone-600">
-              <span className="sr-only">Filtrer par statut</span>
+            <label className="text-xs font-semibold text-text-secondary">
+              <span className="sr-only">{t("admin.adminSupportPage.filtrerParStatut")}</span>
               <Select
                 className="w-auto"
                 labelledByAncestor
@@ -245,7 +246,7 @@ export const AdminSupportPage: React.FC = () => {
                   )
                 }
               >
-                <option value="all">Tous les statuts</option>
+                <option value="all">{t("admin.providerCatalogTable.tousLesStatuts")}</option>
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -258,14 +259,14 @@ export const AdminSupportPage: React.FC = () => {
           {loading ? (
             <div className="space-y-2 p-4">
               {[1, 2, 3].map((item) => (
-                <Skeleton key={item} className="h-24 rounded-xl" />
+                <Skeleton key={item} className="h-24 rounded-control" />
               ))}
             </div>
           ) : cases.length === 0 ? (
             <div className="p-8 text-center">
               <CheckCircle2 className="mx-auto h-7 w-7 text-success" />
-              <p className="mt-2 text-sm font-bold text-stone-900">
-                Aucun dossier dans cette file
+              <p className="mt-2 text-sm font-bold text-text-main">
+                {t("admin.adminSupportPage.aucunDossierDansCetteFile")}
               </p>
             </div>
           ) : (
@@ -289,7 +290,7 @@ export const AdminSupportPage: React.FC = () => {
                           {meta.label}
                         </Badge>
                       </div>
-                      <p className="mt-2 line-clamp-1 text-sm font-black text-stone-900">
+                      <p className="mt-2 line-clamp-1 text-sm font-black text-text-main">
                         {item.subject}
                       </p>
                       <div className="mt-1 flex items-center justify-between gap-2 text-micro text-stone-500">
@@ -307,12 +308,12 @@ export const AdminSupportPage: React.FC = () => {
         </section>
 
         <section
-          className="rounded-2xl border border-border-base bg-white p-5 shadow-xs"
+          className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs"
           aria-labelledby="support-case-title"
         >
           {!selectedCase ? (
             <div className="flex min-h-64 items-center justify-center text-sm text-stone-500">
-              Sélectionnez un dossier.
+              {t("admin.adminSupportPage.selectionnezUnDossier")}
             </div>
           ) : (
             <div className="space-y-5">
@@ -324,7 +325,7 @@ export const AdminSupportPage: React.FC = () => {
                     </span>
                     <h2
                       id="support-case-title"
-                      className="mt-1 text-xl font-black text-stone-900"
+                      className="mt-1 text-xl font-black text-text-main"
                     >
                       {selectedCase.subject}
                     </h2>
@@ -349,7 +350,7 @@ export const AdminSupportPage: React.FC = () => {
                   {selectedCase.description}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <label className="text-xs font-semibold text-stone-600">
+                  <label className="text-xs font-semibold text-text-secondary">
                     Statut
                     <Select
                       className="mt-1 block w-full"
@@ -370,8 +371,8 @@ export const AdminSupportPage: React.FC = () => {
                       ))}
                     </Select>
                   </label>
-                  <label className="text-xs font-semibold text-stone-600">
-                    Priorité
+                  <label className="text-xs font-semibold text-text-secondary">
+                    {t("admin.crmTasksPage.priorite")}
                     <Select
                       className="mt-1 block w-full"
                       labelledByAncestor
@@ -397,7 +398,7 @@ export const AdminSupportPage: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="flex items-center gap-2 text-sm font-black text-stone-900">
+                <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
                   <MessageSquare
                     className="h-icon-md w-icon-md"
                     aria-hidden="true"
@@ -411,7 +412,7 @@ export const AdminSupportPage: React.FC = () => {
                   {notes.map((note) => (
                     <article
                       key={note.id}
-                      className={`rounded-xl border p-3 ${note.visibility === "internal" ? "border-warning-border bg-warning-surface" : "border-border-base bg-stone-50"}`}
+                      className={`rounded-control border p-3 ${note.visibility === "internal" ? "border-warning-border bg-warning-surface" : "border-border-base bg-stone-50"}`}
                     >
                       <div className="flex items-center justify-between gap-2 text-micro font-semibold text-stone-500">
                         <span>

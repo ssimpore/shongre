@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import type { ListingCardView } from "@shongre/contracts";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ListingCard } from "@/components/ListingCard";
@@ -16,54 +23,64 @@ export default function HomeScreen() {
   const { activeMarket } = useMarket();
   const [items, setItems] = useState<ListingCardView[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadedMarketCode, setLoadedMarketCode] = useState("");
   const [error, setError] = useState("");
+  const requestId = useRef(0);
 
-  const load = useCallback(async () => {
-    setError("");
-    setLoading(true);
-    try {
-      setItems(await listingsService.list(activeMarket.code));
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : "Chargement impossible.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [activeMarket.code]);
-
-  useEffect(() => {
-    let active = true;
-    listingsService
-      .list(activeMarket.code)
-      .then((results) => {
-        if (active) setItems(results);
-      })
-      .catch((reason) => {
-        if (active)
+  const fetchListings = useCallback(
+    async (marketCode: string, currentRequest: number) => {
+      try {
+        const results = await listingsService.list(marketCode);
+        if (currentRequest === requestId.current) {
+          setItems(results);
+          setError("");
+          setLoadedMarketCode(marketCode);
+        }
+      } catch (reason) {
+        if (currentRequest === requestId.current) {
+          setItems([]);
           setError(
             reason instanceof Error ? reason.message : "Chargement impossible.",
           );
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+          setLoadedMarketCode(marketCode);
+        }
+      } finally {
+        if (currentRequest === requestId.current) setLoading(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const currentRequest = ++requestId.current;
+    void fetchListings(activeMarket.code, currentRequest);
     return () => {
-      active = false;
+      requestId.current += 1;
     };
-  }, [activeMarket.code]);
+  }, [activeMarket.code, fetchListings]);
+
+  const refresh = useCallback(() => {
+    const currentRequest = ++requestId.current;
+    setError("");
+    setLoading(true);
+    void fetchListings(activeMarket.code, currentRequest);
+  }, [activeMarket.code, fetchListings]);
+
+  const marketIsLoading = loading || loadedMarketCode !== activeMarket.code;
+  const visibleItems = loadedMarketCode === activeMarket.code ? items : [];
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <FlatList
-        data={items}
+        data={visibleItems}
+        accessibilityState={{ busy: marketIsLoading }}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ListingCard listing={item} />}
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
-            refreshing={loading}
-            onRefresh={load}
+            refreshing={marketIsLoading}
+            onRefresh={refresh}
             tintColor={colors.primary}
           />
         }
@@ -82,14 +99,23 @@ export default function HomeScreen() {
           </View>
         }
         ListEmptyComponent={
-          loading ? null : (
+          marketIsLoading ? (
+            <View
+              accessibilityLiveRegion="polite"
+              accessibilityLabel="Chargement des annonces"
+              style={styles.loadingState}
+            >
+              <ActivityIndicator color={colors.primary} />
+              <Text style={styles.subtitle}>Chargement des annonces…</Text>
+            </View>
+          ) : (
             <StatePanel
               title={error ? "Un problème est survenu" : "Aucune annonce"}
               message={
                 error || "Revenez bientôt pour découvrir de nouvelles annonces."
               }
               actionLabel={error ? "Réessayer" : undefined}
-              onAction={error ? load : undefined}
+              onAction={error ? refresh : undefined}
               tone={error ? "error" : "neutral"}
             />
           )
@@ -103,6 +129,12 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
   header: { gap: spacing.sm, marginBottom: spacing.xl },
+  loadingState: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.xxl,
+  },
   eyebrow: {
     color: colors.primary,
     fontSize: nativeTypography.size.caption,

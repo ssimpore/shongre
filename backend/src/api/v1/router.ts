@@ -67,6 +67,7 @@ import {
   requireRecentAuthentication,
   resolveOwnerId,
   isAuthenticated,
+  forbidStaffMarketplaceAccess,
 } from "../../shared/auth/principal.js";
 import { extractBearerToken } from "../../shared/auth/tokens.js";
 import {
@@ -198,6 +199,7 @@ interface RouteDef {
   requestBodyRequired: boolean;
   successStatus: number;
   queryParameters: Readonly<Record<string, string>>;
+  denyStaffMarketplace: boolean;
 }
 
 export class ApiV1Router {
@@ -244,6 +246,7 @@ export class ApiV1Router {
             requestBodyRequired: boolean;
             successStatus: number;
             queryParameters: Readonly<Record<string, string>>;
+            denyStaffMarketplace: boolean;
           }
         >
       >
@@ -279,6 +282,7 @@ export class ApiV1Router {
       requestBodyRequired: operation.requestBodyRequired,
       successStatus: operation.successStatus,
       queryParameters: operation.queryParameters,
+      denyStaffMarketplace: operation.denyStaffMarketplace,
     });
   }
 
@@ -397,7 +401,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/auth/domain-handoff/start",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body, marketCode }) => {
         if (
           !marketCode ||
@@ -760,14 +764,14 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/auth/switch-role",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         authService.switchRole(principal, body?.role),
     );
     this.addRoute(
       "POST",
       "/auth/verify-phone",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) => {
         const verified = await authService.verifyPhone(
           principal,
@@ -846,7 +850,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/account/delete",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         usersService.deleteOwnAccount(
           principal.userId,
@@ -987,7 +991,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/media/private-documents/uploads",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         storageService.createPrivateDocumentUpload(
           principal.userId,
@@ -997,7 +1001,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/media/private-documents/uploads/:id/complete",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         storageService.completePrivateDocumentUpload(
           principal.userId,
@@ -1258,7 +1262,7 @@ export class ApiV1Router {
     this.addEducationRoute(
       "GET",
       "/favorites",
-      AUTHENTICATED,
+      permission("favorite.manage.own"),
       async ({ principal }) => ({
         tutorProfileIds: await coursesService.getSavedTutorIds(
           principal.userId,
@@ -1268,7 +1272,7 @@ export class ApiV1Router {
     this.addEducationRoute(
       "POST",
       "/tutors/:id/favorite",
-      AUTHENTICATED,
+      permission("favorite.manage.own"),
       async ({ principal, params }) => ({
         isFavorite: await coursesService.toggleSavedTutor(
           principal.userId,
@@ -1537,7 +1541,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/auto/favorites",
-      AUTHENTICATED,
+      permission("favorite.manage.own"),
       async ({ principal }) => ({
         vehicleIds: await autoService.getFavoriteVehicleIds(principal.userId),
       }),
@@ -1545,7 +1549,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/auto/vehicles/:id/favorite",
-      AUTHENTICATED,
+      permission("favorite.manage.own"),
       async ({ principal, params }) => ({
         isFavorite: await autoService.toggleFavoriteVehicle(
           principal.userId,
@@ -1734,7 +1738,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/real-estate/recently-viewed",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
         return (
@@ -1747,7 +1751,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/real-estate/recently-viewed",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         realEstateService.markRecentlyViewed(
           principal.userId,
@@ -1809,7 +1813,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/real-estate/leads/:leadId/appointments",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params, body }) =>
         realEstateService.requestAppointment(
           principal.userId,
@@ -2351,14 +2355,14 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/orders/:id/handover-code",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         ordersService.issueHandoverCode(params.id, principal.userId),
     );
     this.addRoute(
       "POST",
       "/orders/:id/confirm-pin",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params, body }) =>
         ordersService.confirmHandoverPIN(
           params.id,
@@ -2369,28 +2373,28 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/orders/:id/confirm-delivery",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         ordersService.confirmDeliveryReceived(params.id, principal.userId),
     );
     this.addRoute(
       "POST",
       "/orders/:id/ship",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params, body }) =>
         ordersService.markShipped(params.id, principal.userId, body),
     );
     this.addRoute(
       "POST",
       "/orders/:id/cancel",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         ordersService.cancelUnpaidOrder(params.id, principal.userId),
     );
     this.addRoute(
       "POST",
       "/orders/:id/dispute",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params, body }) =>
         ordersService.openDispute(
           params.id,
@@ -2490,14 +2494,14 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/business-rules/eligibility",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         businessRulesService.getAccountEligibility(principal.userId, body),
     );
     this.addRoute(
       "POST",
       "/monetization/quotes",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         businessRulesService.createQuote(principal.userId, body),
     );
@@ -2511,7 +2515,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/monetization/checkouts",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         businessRulesService.createCheckout(
           principal.userId,
@@ -2522,28 +2526,28 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/monetization/promotions/validate",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         businessRulesService.validatePromotion(principal.userId, body),
     );
     this.addRoute(
       "GET",
       "/monetization/entitlements",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) =>
         businessRulesService.getActiveEntitlements(principal.userId),
     );
     this.addRoute(
       "GET",
       "/monetization/subscriptions",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) =>
         businessRulesService.getSubscriptions(principal.userId),
     );
     this.addRoute(
       "GET",
       "/monetization/billing",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) =>
         businessRulesService.getBillingOverview(principal.userId),
     );
@@ -2630,7 +2634,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/monetization/invoices/:id/document",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         businessRulesService.getInvoiceDocument(principal.userId, params.id),
     );
@@ -2899,14 +2903,14 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/compliance/requirements",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         complianceService.evaluateForUser(principal.userId, body),
     );
     this.addRoute(
       "GET",
       "/compliance/status",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) => {
         const subject = await complianceService.getSubject(principal.userId);
         return {
@@ -2934,7 +2938,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/compliance/identity/session",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body, marketCode }) =>
         complianceService.startIdentitySession({
           userId: principal.userId,
@@ -2946,7 +2950,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/compliance/payment/onboarding",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body, marketCode }) =>
         complianceService.startPaymentOnboarding({
           userId: principal.userId,
@@ -2958,7 +2962,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/compliance/manual-review",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         complianceService.requestManualReviewForUser({
           userId: principal.userId,
@@ -2968,23 +2972,23 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/verification/status/:userId",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         verificationService.getUserVerificationStatus(
-          resolveOwnerId(principal, params.userId, "user.read"),
+          resolveOwnerId(principal, params.userId),
         ),
     );
     this.addRoute(
       "GET",
       "/verification/siret-lookup/:siret",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ params }) =>
         verificationService.lookupCompanyBySiret(params.siret),
     );
     this.addRoute(
       "POST",
       "/verification/business-registration",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         verificationService.submitBusinessRegistration(
           principal.userId,
@@ -3125,7 +3129,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/messaging/blocked",
-      AUTHENTICATED,
+      permission("message.block"),
       async ({ principal }) => ({
         userIds: await messagingService.getBlockedUserIds(principal.userId),
       }),
@@ -3133,7 +3137,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/messaging/block",
-      AUTHENTICATED,
+      permission("message.block"),
       async ({ principal, body }) => {
         await messagingService.blockUser(principal.userId, body?.targetUserId);
         return { success: true };
@@ -3142,7 +3146,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/messaging/unblock",
-      AUTHENTICATED,
+      permission("message.block"),
       async ({ principal, body }) => {
         await messagingService.unblockUser(
           principal.userId,
@@ -3158,14 +3162,14 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/notifications",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) =>
         notificationsService.getUserNotifications(principal.userId),
     );
     this.addRoute(
       "GET",
       "/notifications/unread-count",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) => {
         const count = await notificationsService.getUnreadCount(
           principal.userId,
@@ -3176,21 +3180,21 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/notifications/preferences",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) =>
         notificationsService.getPreferences(principal.userId),
     );
     this.addRoute(
       "PUT",
       "/notifications/preferences",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         notificationsService.updatePreferences(principal.userId, body || {}),
     );
     this.addRoute(
       "POST",
       "/notifications/:id/read",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) => {
         await this.assertNotificationOwnership(principal, params.id);
         await notificationsService.markAsRead(params.id);
@@ -3200,7 +3204,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/notifications/read-all",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) => {
         await notificationsService.markAllAsRead(principal.userId);
         return { success: true };
@@ -3209,7 +3213,7 @@ export class ApiV1Router {
     this.addRoute(
       "DELETE",
       "/notifications/:id",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) => {
         await this.assertNotificationOwnership(principal, params.id);
         await notificationsService.deleteNotification(params.id);
@@ -3219,7 +3223,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/notifications/devices",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) => {
         await notificationsService.registerDevice(
           principal.userId,
@@ -3233,7 +3237,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/notifications/devices/unregister",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) => {
         await notificationsService.unregisterDevice(
           principal.userId,
@@ -3267,7 +3271,7 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/moderation/cases/:caseId/appeals",
-      AUTHENTICATED,
+      permission("report.create"),
       async ({ principal, params, body }) =>
         moderationService.submitAppeal(
           principal.userId,
@@ -3278,7 +3282,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/moderation/cases/mine",
-      AUTHENTICATED,
+      permission("report.create"),
       async ({ principal }) => ({
         items: await moderationService.listOwnCases(principal.userId),
       }),
@@ -3286,7 +3290,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/moderation/appeals/mine",
-      AUTHENTICATED,
+      permission("report.create"),
       async ({ principal }) => ({
         items: await moderationService.listOwnAppeals(principal.userId),
       }),
@@ -3298,13 +3302,13 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/support/cases",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) => supportService.createCase(principal, body),
     );
     this.addRoute(
       "GET",
       "/support/cases/mine",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal }) => ({
         items: await supportService.listOwnCases(principal),
       }),
@@ -3477,7 +3481,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/marketing/account/subscription",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, query }) =>
         marketingService.getAccountSubscription(
           principal,
@@ -3487,21 +3491,21 @@ export class ApiV1Router {
     this.addRoute(
       "POST",
       "/marketing/account/subscription",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         marketingService.subscribeAccount(principal, body),
     );
     this.addRoute(
       "PUT",
       "/marketing/account/preferences",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         marketingService.updateAccountPreferences(principal, body),
     );
     this.addRoute(
       "POST",
       "/marketing/account/unsubscribe",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, body }) =>
         marketingService.unsubscribeAccount(principal, body?.marketCode),
     );
@@ -4355,7 +4359,7 @@ export class ApiV1Router {
     this.addRoute(
       "GET",
       "/workspace/summary/:userId",
-      AUTHENTICATED,
+      permission("marketplace.customer.access"),
       async ({ principal, params }) =>
         workspaceService.getUserWorkspaceSummary(
           resolveOwnerId(principal, params.userId),
@@ -5125,7 +5129,7 @@ export class ApiV1Router {
             authenticated,
           });
         }
-        this.enforceAccess(route.access, principal);
+        this.enforceAccess(route.access, principal, route.denyStaffMarketplace);
 
         // Bearer-authenticated native clients are not vulnerable to browser
         // CSRF. Cookie-authenticated mutations are, so require the double-
@@ -5198,7 +5202,12 @@ export class ApiV1Router {
     return authService.resolvePrincipal(token);
   }
 
-  private enforceAccess(access: RouteAccess, principal: Principal): void {
+  private enforceAccess(
+    access: RouteAccess,
+    principal: Principal,
+    denyStaffMarketplace: boolean,
+  ): void {
+    if (denyStaffMarketplace) forbidStaffMarketplaceAccess(principal);
     switch (access.kind) {
       case "public":
         return;

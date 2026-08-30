@@ -395,6 +395,10 @@ export class AuthService {
       // is real.
       throw invalidCredentials();
     }
+    const staffStatus = canonicalAccessContext(user).staffStatus;
+    if (staffStatus !== "none" && staffStatus !== "active") {
+      throw invalidCredentials();
+    }
 
     await this.authRepo.clearRateLimit(limitKey, "login");
     const mfaCredential = await this.authRepo.getMfaCredential(user.id);
@@ -1136,6 +1140,11 @@ export class AuthService {
     const rotated = await this.sessions.rotate(refreshToken, metadata);
     const user = await this.userRepo.findById(rotated.userId);
     if (!user || user.status !== "active") throw invalidCredentials();
+    const staffStatus = canonicalAccessContext(user).staffStatus;
+    if (staffStatus !== "none" && staffStatus !== "active") {
+      await this.sessions.revoke(rotated.tokens.sessionId, user.id);
+      throw invalidCredentials();
+    }
     rotated.tokens.token = this.sessions.issueAccessToken(
       user,
       rotated.tokens.sessionId,

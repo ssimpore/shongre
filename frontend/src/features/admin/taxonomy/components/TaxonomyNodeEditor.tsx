@@ -209,9 +209,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
   if (!node) {
     return (
-      <div className="bg-white rounded-2xl border border-border-base p-8 text-center text-xs text-stone-500">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-8 text-center text-xs text-stone-500">
         <Layers className="w-8 h-8 mx-auto text-stone-300 mb-2" />
-        <p className="font-semibold text-stone-600">
+        <p className="font-semibold text-text-secondary">
           {t("admin.taxonomyNodeEditor.selectionnezUneCategorieDansL")}
         </p>
       </div>
@@ -425,7 +425,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+    <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
       {/* Node Header Banner */}
       <div className="p-5 border-b border-border-subtle bg-gradient-to-r from-bg-subtle via-white to-bg-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
@@ -439,9 +439,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               <span className="text-micro bg-stone-200 text-stone-800 px-2 py-0.5 rounded font-mono uppercase font-bold">
                 {node.level}
               </span>
-              <h2 className="text-lg font-black text-stone-900">{node.name}</h2>
+              <h2 className="text-lg font-black text-text-main">{node.name}</h2>
               {node.shortLabel && (
-                <span className="text-xs bg-warning-surface text-warning border border-warning-border px-2 py-0.5 rounded-full font-bold">
+                <span className="text-xs bg-warning-surface text-warning border border-warning-border px-2 py-0.5 rounded-pill font-bold">
                   Alias : {node.shortLabel}
                 </span>
               )}
@@ -461,7 +461,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyId}
-                  className="p-1 hover:text-stone-900 rounded min-w-6 min-h-6 inline-flex items-center justify-center"
+                  className="p-1 hover:text-text-main rounded min-w-6 min-h-6 inline-flex items-center justify-center"
                   aria-label={t("admin.taxonomyNodeEditor.copierLIdStable", {
                     id: node.id,
                   })}
@@ -540,13 +540,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <span className="text-stone-300">/</span>
           </React.Fragment>
         ))}
-        <span className="font-bold text-stone-900 shrink-0">{node.name}</span>
+        <span className="font-bold text-text-main shrink-0">{node.name}</span>
       </div>
 
       {/* Editor Tabs Navigation */}
-      <div className="flex items-center gap-1 px-5 border-b border-border-base bg-white overflow-x-auto no-scrollbar text-xs font-semibold">
+      <div className="flex items-center gap-1 px-5 border-b border-border-base bg-bg-surface overflow-x-auto no-scrollbar text-xs font-semibold">
         {[
-          { id: "general", label: "Général", icon: Settings2 },
+          { id: "general", label: t("admin.attributeEditModal.general"), icon: Settings2 },
           {
             id: "attributes",
             label: `Attributs (${(node.attributeIds?.length || 0) + inheritedAttributeIds.size})`,
@@ -559,13 +559,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
           },
           {
             id: "capabilities",
-            label: "Transactions & Livraison",
+            label: t("admin.taxonomyNodeEditor.transactionsLivraison"),
             icon: Truck,
           },
-          { id: "markets", label: "Marchés & Héritage", icon: Globe },
+          { id: "markets", label: t("admin.taxonomyNodeEditor.marchesHeritage"), icon: Globe },
           { id: "seo", label: "SEO", icon: Search },
-          { id: "previews", label: "Aperçus Directs", icon: Eye },
-          { id: "impact", label: "Impact & Sécurité", icon: ShieldCheck },
+          { id: "previews", label: t("admin.taxonomyNodeEditor.apercusDirects"), icon: Eye },
+          { id: "impact", label: t("admin.taxonomyNodeEditor.impactSecurite"), icon: ShieldCheck },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -577,7 +577,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               className={`flex items-center gap-1.5 py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
                   ? "border-primary text-primary font-bold"
-                  : "border-transparent text-stone-500 hover:text-stone-900 hover:border-stone-300"
+                  : "border-transparent text-stone-500 hover:text-text-main hover:border-stone-300"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -618,7 +618,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Live UI Rendering Preview */}
-            <div className="p-3.5 bg-bg-base rounded-xl border border-border-base text-xs space-y-1.5">
+            <div className="p-3.5 bg-bg-base rounded-control border border-border-base text-xs space-y-1.5">
               <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">
                 {t("admin.taxonomyNodeEditor.apercuDuRenduVisuel")}
               </div>
@@ -626,7 +626,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <span className="text-stone-500">
                   {t("admin.taxonomyNodeEditor.renduStandardPageAnnonceH1")}
                 </span>
-                <span className="font-bold text-stone-900">
+                <span className="font-bold text-text-main">
                   {name || node.name}
                 </span>
               </div>
@@ -693,13 +693,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </FormField>
 
             {/* Icon & Color Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-bg-subtle rounded-xl border border-border-subtle">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-bg-subtle rounded-control border border-border-subtle">
               <div>
                 <label className="text-xs font-semibold text-stone-700 block mb-1.5">
                   {t("admin.taxonomyNodeEditor.iconeVectorielle")}
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white border border-border-base flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-control bg-bg-surface border border-border-base flex items-center justify-center">
                     <CategoryIcon
                       category={{ ...node, iconName, accentColor }}
                       size="md"
@@ -710,7 +710,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     size="sm"
                     onClick={() => setIsIconModalOpen(true)}
                   >
-                    Changer l'icône ({iconName})
+                    {t("admin.taxonomyNodeEditor.changerLIcone")}{iconName})
                   </Button>
                 </div>
               </div>
@@ -739,7 +739,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             {/* Aliases & Synonyms */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-stone-700 flex items-center justify-between">
-                <span>Alias & Synonymes de recherche ({aliases.length})</span>
+                <span>{t("admin.taxonomyNodeEditor.aliasSynonymesDeRecherche")}{aliases.length})</span>
                 <span className="text-micro text-stone-500 font-normal">
                   {t("admin.taxonomyNodeEditor.amelioreLesResultatsDuMoteur")}
                 </span>
@@ -764,7 +764,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 {aliases.map((alias) => (
                   <span
                     key={alias}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-800 text-xs font-medium rounded-full border border-stone-200"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-stone-100 text-stone-800 text-xs font-medium rounded-pill border border-stone-200"
                   >
                     <span>{alias}</span>
                     <button
@@ -783,8 +783,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Lifecycle & Status */}
-            <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+            <div className="p-4 bg-bg-base rounded-control border border-border-base space-y-3">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.cycleDeViePublication")}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -837,20 +837,19 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 Deleting a taxonomy node is irreversible and cascades into every
                 listing filed under it, so it is separated from the routine
                 actions, styled as a hazard, and still gated by ConfirmModal. */}
-            <div className="rounded-xl border border-danger-border bg-danger-surface p-4 sm:p-5">
+            <div className="rounded-control border border-danger-border bg-danger-surface p-4 sm:p-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="min-w-0">
                   <h4 className="text-sm font-bold text-danger flex items-center gap-2">
                     <AlertTriangle className="w-icon-md h-icon-md shrink-0" />
                     {t("admin.taxonomyNodeEditor.zoneDeDanger")}
                   </h4>
-                  <p className="text-xs text-stone-600 mt-1 max-w-prose">
+                  <p className="text-xs text-text-secondary mt-1 max-w-prose">
                     {t("admin.taxonomyNodeEditor.laSuppressionEstDefinitiveEt")}
                     <strong>
                       {t("admin.taxonomyNodeEditor.deprecier")}
                     </strong>{" "}
-                    pour la retirer des nouvelles publications sans toucher à
-                    l'existant.
+                    {t("admin.taxonomyNodeEditor.pourLaRetirerDesNouvellesPublicationsSansToucherAL")}
                   </p>
                 </div>
                 <Button
@@ -858,7 +857,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   size="sm"
                   onClick={() => setIsDeleteModalOpen(true)}
                   leftIcon={<Trash2 className="w-icon-sm h-icon-sm" />}
-                  className="border-danger-border text-danger hover:bg-danger hover:text-white shrink-0"
+                  className="border-danger-border text-danger hover:bg-danger hover:text-text-inverse shrink-0"
                 >
                   {t("admin.taxonomyNodeEditor.supprimerCeNUd")}
                 </Button>
@@ -875,9 +874,9 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             {/* Inherited Attributes */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-2">
                   <span>
-                    Attributs hérités des parents ({inheritedAttributeIds.size})
+                    {t("admin.taxonomyNodeEditor.attributsHeritesDesParents")}{inheritedAttributeIds.size})
                   </span>
                   <span className="text-micro font-normal text-stone-500 lowercase">
                     {t(
@@ -888,7 +887,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               </div>
 
               {inheritedAttributeIds.size === 0 ? (
-                <div className="p-3.5 text-xs text-stone-500 bg-bg-subtle rounded-xl border border-border-subtle">
+                <div className="p-3.5 text-xs text-stone-500 bg-bg-subtle rounded-control border border-border-subtle">
                   {t(
                     "admin.taxonomyNodeEditor.aucunAttributHeriteDesCategories",
                   )}
@@ -901,7 +900,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     return (
                       <div
                         key={attr.id}
-                        className="p-3 bg-stone-50 border border-stone-200 rounded-xl text-xs space-y-1"
+                        className="p-3 bg-stone-50 border border-stone-200 rounded-control text-xs space-y-1"
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-stone-800">
@@ -926,8 +925,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             <div className="space-y-3 pt-4 border-t border-border-subtle">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                    Attributs spécifiques assignés ({localAttributeIds.length})
+                  <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
+                    {t("admin.taxonomyNodeEditor.attributsSpecifiquesAssignes")}{localAttributeIds.length})
                   </h3>
                   <p className="text-xs text-stone-500">
                     {t(
@@ -941,7 +940,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <Select
                     size="compact"
                     className="max-w-xs w-auto"
-                    aria-label="Ajouter un attribut du registre"
+                    aria-label={t("admin.taxonomyNodeEditor.ajouterUnAttributDuRegistre")}
                     value={selectedRegistryAttrId}
                     onChange={(e) => setSelectedRegistryAttrId(e.target.value)}
                   >
@@ -967,7 +966,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               </div>
 
               {localAttributeIds.length === 0 ? (
-                <div className="p-6 text-center text-xs text-stone-500 border border-dashed rounded-xl">
+                <div className="p-6 text-center text-xs text-stone-500 border border-dashed rounded-control">
                   {t(
                     "admin.taxonomyNodeEditor.aucunAttributLocalAssigneChoisissez",
                   )}
@@ -980,11 +979,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     return (
                       <div
                         key={attr.id}
-                        className="p-3.5 bg-white border border-border-base rounded-xl flex items-center justify-between gap-4 shadow-xs"
+                        className="p-3.5 bg-bg-surface border border-border-base rounded-control flex items-center justify-between gap-4 shadow-xs"
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-stone-900">
+                            <span className="font-bold text-text-main">
                               {attr.label}
                             </span>
                             <span className="text-micro bg-primary-light text-primary px-1.5 py-0.5 rounded font-mono font-bold">
@@ -1034,7 +1033,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === "publication_filters" && resolvedSchema && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 rounded-xl border border-border-base bg-white p-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 rounded-control border border-border-base bg-bg-surface p-4 sm:grid-cols-2">
               <FormField label={t("admin.taxonomyNodeEditor.primaryCta")}>
                 <Select
                   size="compact"
@@ -1137,8 +1136,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Resolved publication schema summary */}
-            <div className="p-4 bg-bg-subtle rounded-xl border border-border-subtle space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+            <div className="p-4 bg-bg-subtle rounded-control border border-border-subtle space-y-3">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-2">
                 <FileCheck className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -1151,7 +1150,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <span className="text-stone-500">
                     Total champs attributs :
                   </span>
-                  <p className="font-bold text-stone-900">
+                  <p className="font-bold text-text-main">
                     {resolvedSchema.attributes.length}
                   </p>
                 </div>
@@ -1159,7 +1158,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.optionsDEtat")}
                   </span>
-                  <p className="font-bold text-stone-900">
+                  <p className="font-bold text-text-main">
                     {plural(resolvedSchema.conditionScheme.length, "palier")}
                   </p>
                 </div>
@@ -1186,7 +1185,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
             {/* Search filter facets */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.facettesDeFiltresDeriveesPour")}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1195,17 +1194,17 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   .map((attr, idx) => (
                     <div
                       key={attr.id}
-                      className="p-3 bg-white border border-border-base rounded-xl text-xs flex items-center justify-between"
+                      className="p-3 bg-bg-surface border border-border-base rounded-control text-xs flex items-center justify-between"
                     >
                       <div>
-                        <span className="font-bold text-stone-900">
+                        <span className="font-bold text-text-main">
                           {attr.label}
                         </span>
                         <p className="text-micro text-stone-500 font-mono">
                           Filtre type : {attr.dataType}
                         </p>
                       </div>
-                      <span className="text-micro bg-stone-100 text-stone-600 px-2 py-0.5 rounded font-mono">
+                      <span className="text-micro bg-stone-100 text-text-secondary px-2 py-0.5 rounded font-mono">
                         Rang #{idx + 1}
                       </span>
                     </div>
@@ -1220,7 +1219,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === "capabilities" && (
           <div className="space-y-6 max-w-3xl">
-            <div className="p-3.5 bg-info-surface border border-info-border rounded-xl text-xs text-info space-y-1">
+            <div className="p-3.5 bg-info-surface border border-info-border rounded-control text-xs text-info space-y-1">
               <div className="font-bold text-info flex items-center gap-1.5">
                 <HelpCircle className="w-icon-md h-icon-md text-info" />
                 <span>
@@ -1232,9 +1231,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <strong>
                   {t("admin.taxonomyNodeEditor.eligibiliteIntrinseque")}
                 </strong>{" "}
-                de la catégorie (ex: peut-on vendre en ligne ? envoyer par colis
-                ?). Les transporteurs réels (Mondial Relay, Colissimo) sont
-                gérés dans le{" "}
+                {t("admin.taxonomyNodeEditor.deLaCategorieExPeutOnVendreEnLigneEnvoyer")}{" "}
                 <strong>
                   {t("admin.taxonomyNodeEditor.gestionnaireDePrestataires")}
                 </strong>
@@ -1243,8 +1240,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Transactions Capabilities */}
-            <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+            <div className="p-4 bg-bg-base rounded-control border border-border-base space-y-3">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.modesDeTransactionAutorises")}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -1336,8 +1333,8 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Fulfillment Modes */}
-            <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+            <div className="p-4 bg-bg-base rounded-control border border-border-base space-y-3">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.modesDeLivraisonRemiseEligibles")}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -1348,7 +1345,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   },
                   {
                     id: "parcel_shipping",
-                    label: "Expédition par colis standard (Relais / Domicile)",
+                    label: t("admin.taxonomyNodeEditor.expeditionParColisStandardRelaisDomicile"),
                   },
                   {
                     id: "heavy_delivery",
@@ -1356,11 +1353,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   },
                   {
                     id: "digital_download",
-                    label: "Téléchargement numérique / Accès direct",
+                    label: t("admin.taxonomyNodeEditor.telechargementNumeriqueAccesDirect"),
                   },
                   {
                     id: "on_site_service",
-                    label: "Prestation sur place / Intervention à domicile",
+                    label: t("admin.taxonomyNodeEditor.prestationSurPlaceInterventionADomicile"),
                   },
                 ].map((mode) => (
                   <label
@@ -1388,17 +1385,16 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === "markets" && (
           <div className="space-y-6 max-w-3xl">
-            <div className="p-3.5 bg-bg-subtle rounded-xl border border-border-subtle text-xs space-y-1">
-              <div className="font-bold text-stone-900 flex items-center gap-1.5">
+            <div className="p-3.5 bg-bg-subtle rounded-control border border-border-subtle text-xs space-y-1">
+              <div className="font-bold text-text-main flex items-center gap-1.5">
                 <Globe className="w-icon-md h-icon-md text-primary" />
-                <span>Architecture multi-marchés et héritage canonique</span>
+                <span>{t("admin.taxonomyNodeEditor.architectureMultiMarchesEtHeritageCanonique")}</span>
               </div>
-              <p className="text-stone-600">
+              <p className="text-text-secondary">
                 <strong>
                   {defaultMarket.name} ({defaultMarket.code})
                 </strong>{" "}
-                constitue la référence canonique. Les autres marchés héritent
-                automatiquement de tous les paramètres non surchargés.
+                {t("admin.taxonomyNodeEditor.constitueLaReferenceCanoniqueLesAutresMarchesHeritentAutomatiquementDe")}
               </p>
             </div>
 
@@ -1412,16 +1408,16 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     key={code}
                     type="button"
                     onClick={() => setSelectedMarketCode(code)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-control text-xs font-bold transition-all flex items-center gap-1.5 ${
                       isSelected
-                        ? "bg-stone-900 text-white shadow-xs"
-                        : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
+                        ? "bg-stone-900 text-text-inverse shadow-xs"
+                        : "bg-bg-base text-text-secondary hover:bg-bg-subtle border border-border-base"
                     }`}
                   >
                     <span>{code}</span>
                     {hasOverride && (
                       <span
-                        className="w-1.5 h-1.5 rounded-full bg-amber-400"
+                        className="w-1.5 h-1.5 rounded-pill bg-amber-400"
                         title="Surcharge active"
                       />
                     )}
@@ -1431,11 +1427,11 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </div>
 
             {/* Market Override Controls */}
-            <div className="p-5 bg-white border border-border-base rounded-xl space-y-4 shadow-xs">
+            <div className="p-5 bg-bg-surface border border-border-base rounded-control space-y-4 shadow-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                    Marché : {selectedMarketCode}
+                  <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
+                    {t("admin.taxonomyNodeEditor.marche")} {selectedMarketCode}
                   </h3>
                   <p className="text-xs text-stone-500">
                     {marketOverrideEnabled
@@ -1469,7 +1465,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       }
                     />
                     <span>
-                      Autoriser le paiement sécurisé direct pour le marché{" "}
+                      {t("admin.taxonomyNodeEditor.autoriserLePaiementSecuriseDirectPourLeMarche")}{" "}
                       {selectedMarketCode}
                     </span>
                   </label>
@@ -1480,7 +1476,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                       size="sm"
                       onClick={handleSaveMarketOverride}
                     >
-                      Enregistrer la surcharge {selectedMarketCode}
+                      {t("admin.taxonomyNodeEditor.enregistrerLaSurcharge")} {selectedMarketCode}
                     </Button>
                   </div>
                 </div>
@@ -1530,7 +1526,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
             </label>
 
             {/* Google SERP Preview */}
-            <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-1">
+            <div className="p-4 bg-stone-50 border border-stone-200 rounded-control space-y-1">
               <div className="text-micro text-stone-500 font-bold uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.apercuGoogleSearch")}
               </div>
@@ -1544,7 +1540,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   route: `/categorie/${node.slug}`,
                 })}
               </div>
-              <div className="text-xs text-stone-600 line-clamp-2">
+              <div className="text-xs text-text-secondary line-clamp-2">
                 {metaDescriptionTemplate.replace("{category}", node.name) ||
                   `Découvrez toutes les annonces pour ${node.name} sur Shongre. Paiement sécurisé et livraison garantie.`}
               </div>
@@ -1565,7 +1561,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 <Select
                   className="w-auto"
                   size="sm"
-                  aria-label="Profil de prévisualisation"
+                  aria-label={t("admin.taxonomyNodeEditor.profilDePrevisualisation")}
                   value={previewUserType}
                   onChange={(e) => setPreviewUserType(e.target.value as any)}
                 >
@@ -1600,7 +1596,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
 
             {/* Form Fields Simulation */}
             <div className="p-5 bg-bg-subtle rounded-2xl border border-border-subtle space-y-4">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-2">
                 <Eye className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -1613,7 +1609,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                 {resolvedSchema.attributes.map((attr) => (
                   <div
                     key={attr.id}
-                    className="p-3 bg-white border border-border-base rounded-xl space-y-1"
+                    className="p-3 bg-bg-surface border border-border-base rounded-control space-y-1"
                   >
                     <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
                       <span>
@@ -1643,55 +1639,53 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         {/* ========================================================================= */}
         {activeTab === "impact" && (
           <div className="space-y-5 max-w-2xl">
-            <div className="p-4 bg-bg-subtle rounded-xl border border-border-subtle space-y-3">
-              <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+            <div className="p-4 bg-bg-subtle rounded-control border border-border-subtle space-y-3">
+              <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                 {t("admin.taxonomyNodeEditor.rapportDImpactRetrocompatibilite")}
               </h3>
               <div className="grid grid-cols-2 gap-4 text-xs">
-                <div className="p-3 bg-white rounded-lg border border-border-base">
+                <div className="p-3 bg-bg-surface rounded-lg border border-border-base">
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.annoncesActivesAssociees")}
                   </span>
-                  <p className="text-lg font-black text-stone-900">
+                  <p className="text-lg font-black text-text-main">
                     {impact.activeListingsCount}
                   </p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-border-base">
+                <div className="p-3 bg-bg-surface rounded-lg border border-border-base">
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.sousCategoriesDependantes")}
                   </span>
-                  <p className="text-lg font-black text-stone-900">
+                  <p className="text-lg font-black text-text-main">
                     {impact.descendantsCount}
                   </p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-border-base">
+                <div className="p-3 bg-bg-surface rounded-lg border border-border-base">
                   <span className="text-stone-500">Feuilles publiables :</span>
-                  <p className="text-lg font-black text-stone-900">
+                  <p className="text-lg font-black text-text-main">
                     {impact.publishableLeavesCount}
                   </p>
                 </div>
-                <div className="p-3 bg-white rounded-lg border border-border-base">
+                <div className="p-3 bg-bg-surface rounded-lg border border-border-base">
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.surchargesMarchesActives")}
                   </span>
-                  <p className="text-lg font-black text-stone-900">
+                  <p className="text-lg font-black text-text-main">
                     {impact.marketOverridesCount}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-stone-50 border border-stone-200 rounded-xl space-y-2 text-xs text-stone-700">
-              <div className="font-bold text-stone-900 flex items-center gap-1.5">
+            <div className="p-4 bg-stone-50 border border-stone-200 rounded-control space-y-2 text-xs text-stone-700">
+              <div className="font-bold text-text-main flex items-center gap-1.5">
                 <ShieldCheck className="w-icon-md h-icon-md text-success" />
                 <span>
                   {t("admin.taxonomyNodeEditor.politiqueDIntegriteCanonique")}
                 </span>
               </div>
               <p>
-                L'identifiant <code>{node.id}</code> est permanent. Toute
-                modification de nom ou de position préserve la validité des
-                annonces sans risque de rupture.
+                L'identifiant <code>{node.id}</code> {t("admin.taxonomyNodeEditor.estPermanentTouteModificationDeNomOuDePositionPreserve")}
               </p>
             </div>
           </div>

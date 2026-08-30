@@ -288,7 +288,7 @@ export const CrmPipelinePage: React.FC = () => {
 
   if (loading || !pipeline) {
     return (
-      <div className="space-y-4" aria-label="Chargement du pipeline CRM">
+      <div className="space-y-4" aria-label={t("admin.crmPipelinePage.chargementDuPipelineCrm")}>
         <Skeleton className="h-32 rounded-2xl" />
         <div className="flex gap-3 overflow-hidden">
           {[0, 1, 2].map((item) => (
@@ -301,31 +301,31 @@ export const CrmPipelinePage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
               to={crmPaths.overview}
-              className="mb-2 inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+              className="mb-2 inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
             >
               <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
               Vue d’ensemble
             </Link>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-              Pipeline commercial
+              {t("admin.crmOverviewPage.pipelineCommercial")}
             </h1>
-            <p className="mt-1 text-sm text-stone-400">
-              {visibleOpportunities.length} opportunités ·{" "}
+            <p className="mt-1 text-sm text-text-disabled">
+              {visibleOpportunities.length} {t("admin.crmPipelinePage.opportunites")}{" "}
               {money(pipelineValue, activeMarket.currency, currentLocale)}{" "}
               ouverts
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <label className="relative min-w-52 flex-1 xl:flex-none">
-              <span className="sr-only">Pipeline actif</span>
+              <span className="sr-only">{t("admin.crmPipelinePage.pipelineActif")}</span>
               <Select
                 size="compact"
-                className="w-full pl-3 pr-9 text-white"
+                className="w-full pl-3 pr-9 text-text-inverse"
                 labelledByAncestor
                 value={pipeline.id}
                 onChange={(event) => setSelectedPipelineId(event.target.value)}
@@ -337,7 +337,7 @@ export const CrmPipelinePage: React.FC = () => {
                 ))}
               </Select>
               <ChevronDown
-                className="pointer-events-none absolute right-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-stone-400"
+                className="pointer-events-none absolute right-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-disabled"
                 aria-hidden="true"
               />
             </label>
@@ -347,24 +347,24 @@ export const CrmPipelinePage: React.FC = () => {
               onClick={() => setCreateOpen(true)}
             >
               <Plus className="h-icon-md w-icon-md" aria-hidden="true" />{" "}
-              Nouvelle opportunité
+              {t("admin.crmPipelinePage.nouvelleOpportunite")}
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-white p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <label className="relative block min-w-0 flex-1 sm:max-w-sm">
           <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-400"
+            className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled"
             aria-hidden="true"
           />
-          <span className="sr-only">Rechercher une opportunité</span>
+          <span className="sr-only">{t("admin.crmPipelinePage.rechercherUneOpportunite")}</span>
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher une opportunité ou une entreprise…"
+            placeholder={t("admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise")}
             className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
@@ -377,14 +377,13 @@ export const CrmPipelinePage: React.FC = () => {
             Filtres
           </Button>
           <span className="hidden text-micro text-stone-500 sm:inline">
-            Utilisez les flèches sur chaque carte pour déplacer sans
-            glisser-déposer.
+            {t("admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser")}
           </span>
         </div>
       </section>
 
       <ScrollRail
-        label="Colonnes du pipeline commercial"
+        label={t("admin.crmPipelinePage.colonnesDuPipelineCommercial")}
         className="flex min-h-96 items-start gap-3 pb-4"
       >
         {pipeline.stages.map((stage, stageIndex) => {
@@ -401,20 +400,20 @@ export const CrmPipelinePage: React.FC = () => {
               aria-labelledby={`stage-${stage.id}`}
               className="w-68 shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100/80"
             >
-              <div className="border-b border-stone-200 bg-white px-3.5 py-3">
+              <div className="border-b border-stone-200 bg-bg-surface px-3.5 py-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${columnTone[stage.colorToken] ?? "bg-stone-400"}`}
+                      className={`h-2 w-2 shrink-0 rounded-pill ${columnTone[stage.colorToken] ?? "bg-stone-400"}`}
                       aria-hidden="true"
                     />
                     <h2
                       id={`stage-${stage.id}`}
-                      className="truncate text-xs font-black text-stone-900"
+                      className="truncate text-xs font-black text-text-main"
                     >
                       {stage.name}
                     </h2>
-                    <span className="rounded-full bg-stone-100 px-1.5 py-0.5 text-micro font-bold text-stone-600">
+                    <span className="rounded-pill bg-stone-100 px-1.5 py-0.5 text-micro font-bold text-text-secondary">
                       {stageItems.length}
                     </span>
                   </div>
@@ -431,14 +430,14 @@ export const CrmPipelinePage: React.FC = () => {
               </div>
               <div className="max-h-96 space-y-2 overflow-y-auto p-2.5">
                 {stageItems.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-stone-300 bg-white/60 px-3 py-8 text-center text-micro text-stone-500">
-                    Aucune opportunité
+                  <div className="rounded-control border border-dashed border-stone-300 bg-bg-surface/60 px-3 py-8 text-center text-micro text-stone-500">
+                    {t("admin.crmPipelinePage.aucuneOpportunite")}
                   </div>
                 ) : (
                   stageItems.map((opportunity) => (
                     <article
                       key={opportunity.id}
-                      className="rounded-xl border border-stone-200 bg-white p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm"
+                      className="rounded-control border border-stone-200 bg-bg-surface p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm"
                     >
                       <Link
                         to={crmPaths.opportunity(opportunity.id)}
@@ -498,7 +497,7 @@ export const CrmPipelinePage: React.FC = () => {
                             )
                           }
                           aria-label={`Déplacer « ${opportunity.name} » vers l’étape précédente`}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-bg-surface hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowLeft
                             className="h-icon-sm w-icon-sm"
@@ -525,7 +524,7 @@ export const CrmPipelinePage: React.FC = () => {
                             )
                           }
                           aria-label={`Déplacer « ${opportunity.name} » vers l’étape suivante`}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-white hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-bg-surface hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowRight
                             className="h-icon-sm w-icon-sm"
@@ -545,11 +544,11 @@ export const CrmPipelinePage: React.FC = () => {
       <Modal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Créer une opportunité"
+        title={t("admin.crmPipelinePage.creerUneOpportunite")}
         description={`Ajout dans ${pipeline.name}`}
       >
         <form onSubmit={createOpportunity} className="space-y-4 text-xs">
-          <FormField label="Nom de l’opportunité" required>
+          <FormField label={t("admin.crmPipelinePage.nomDeLOpportunite")} required>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -559,11 +558,11 @@ export const CrmPipelinePage: React.FC = () => {
           </FormField>
           <FormField label="Entreprise">
             <Select
-              aria-label="Entreprise associée"
+              aria-label={t("admin.crmContactsPage.entrepriseAssociee")}
               value={accountId}
               onChange={(event) => setAccountId(event.target.value)}
               options={[
-                { value: "", label: "Sans entreprise" },
+                { value: "", label: t("admin.crmContactsPage.sansEntreprise") },
                 ...availableAccounts.map((account) => ({
                   value: account.id,
                   label: account.name,
@@ -585,7 +584,7 @@ export const CrmPipelinePage: React.FC = () => {
                 required
               />
             </FormField>
-            <FormField label="Clôture prévue">
+            <FormField label={t("admin.crmPipelinePage.cloturePrevue")}>
               <Input
                 type="date"
                 value={expectedCloseDate}
@@ -625,7 +624,7 @@ export const CrmPipelinePage: React.FC = () => {
         {closing && (
           <form onSubmit={completeClosing} className="space-y-4 text-xs">
             <div
-              className={`flex items-start gap-3 rounded-xl border p-3 ${closing.stage.isWon ? "border-success-border bg-success-surface" : "border-danger-border bg-danger-surface"}`}
+              className={`flex items-start gap-3 rounded-control border p-3 ${closing.stage.isWon ? "border-success-border bg-success-surface" : "border-danger-border bg-danger-surface"}`}
             >
               {closing.stage.isWon ? (
                 <CheckCircle2
@@ -639,21 +638,20 @@ export const CrmPipelinePage: React.FC = () => {
                 />
               )}
               <div>
-                <strong className="font-black text-stone-900">
+                <strong className="font-black text-text-main">
                   {closing.stage.isWon
                     ? "Confirmer le contrat"
                     : "Capitaliser sur la perte"}
                 </strong>
-                <p className="mt-0.5 text-stone-600">
-                  Cette transition est auditée et met à jour les prévisions
-                  commerciales.
+                <p className="mt-0.5 text-text-secondary">
+                  {t("admin.crmPipelinePage.cetteTransitionEstAuditeeEtMetAJourLesPrevisions")}
                 </p>
               </div>
             </div>
             {closing.stage.isWon ? (
               <>
                 <FormField label="Valeur contractuelle">
-                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-black text-stone-900">
+                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-black text-text-main">
                     <CircleDollarSign
                       className="h-icon-md w-icon-md text-success"
                       aria-hidden="true"
@@ -673,8 +671,8 @@ export const CrmPipelinePage: React.FC = () => {
                       setOnboardingStatus(event.target.value)
                     }
                     options={[
-                      { value: "à_planifier", label: "À planifier" },
-                      { value: "prêt", label: "Prêt à démarrer" },
+                      { value: "à_planifier", label: t("admin.crmPipelinePage.aPlanifier") },
+                      { value: "prêt", label: t("admin.crmPipelinePage.pretADemarrer") },
                       { value: "en_cours", label: "En cours" },
                     ]}
                   />
@@ -682,27 +680,27 @@ export const CrmPipelinePage: React.FC = () => {
               </>
             ) : (
               <>
-                <FormField label="Motif de perte" required>
+                <FormField label={t("admin.crmOpportunityDetailPage.motifDePerte")} required>
                   <Select
-                    aria-label="Motif de perte"
+                    aria-label={t("admin.crmOpportunityDetailPage.motifDePerte")}
                     value={lossReason}
                     onChange={(event) => setLossReason(event.target.value)}
                     options={[
-                      { value: "", label: "Sélectionner…" },
+                      { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
                       { value: "budget", label: "Budget insuffisant" },
                       { value: "concurrent", label: "Concurrent retenu" },
-                      { value: "timing", label: "Calendrier reporté" },
-                      { value: "no_need", label: "Besoin non confirmé" },
-                      { value: "no_response", label: "Absence de réponse" },
+                      { value: "timing", label: t("admin.crmOpportunityDetailPage.calendrierReporte") },
+                      { value: "no_need", label: t("admin.crmOpportunityDetailPage.besoinNonConfirme") },
+                      { value: "no_response", label: t("admin.crmOpportunityDetailPage.absenceDeReponse") },
                       { value: "other", label: "Autre" },
                     ]}
                   />
                 </FormField>
-                <FormField label="Précisions">
+                <FormField label={t("admin.crmOpportunityDetailPage.precisions")}>
                   <Textarea
                     value={lossDetail}
                     onChange={(event) => setLossDetail(event.target.value)}
-                    placeholder="Contexte, concurrent ou prochaine fenêtre de contact…"
+                    placeholder={t("admin.crmPipelinePage.contexteConcurrentOuProchaineFenetreDeContact")}
                     rows={3}
                   />
                 </FormField>

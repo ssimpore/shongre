@@ -23,9 +23,9 @@ export const TaxonomyAuditTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header & Search */}
-      <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+          <h3 className="text-base font-black text-text-main flex items-center gap-2">
             <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyAuditTab.journalDAuditTracabiliteDes")}
@@ -37,7 +37,7 @@ export const TaxonomyAuditTab: React.FC = () => {
         </div>
 
         <div className="relative w-full sm:w-72">
-          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t("admin.taxonomyAuditTab.filtrerLesLogsDAudit")}
@@ -49,7 +49,7 @@ export const TaxonomyAuditTab: React.FC = () => {
       </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -88,20 +88,20 @@ export const TaxonomyAuditTab: React.FC = () => {
                     className="hover:bg-bg-subtle/40 transition-colors"
                   >
                     <td className="py-3 px-4 text-stone-500 font-mono flex items-center gap-1.5 whitespace-nowrap">
-                      <Clock className="w-icon-sm h-icon-sm text-stone-400" />
+                      <Clock className="w-icon-sm h-icon-sm text-text-disabled" />
                       <span>{new Date(log.timestamp).toLocaleString()}</span>
                     </td>
-                    <td className="py-3 px-4 font-bold text-stone-900">
+                    <td className="py-3 px-4 font-bold text-text-main">
                       {log.nodeLabel}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-full font-medium bg-stone-100 text-stone-700">
+                      <span className="px-2 py-0.5 rounded-pill font-medium bg-stone-100 text-stone-700">
                         {log.action}
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5 text-stone-700 font-medium">
-                        <User className="w-icon-sm h-icon-sm text-stone-400" />
+                        <User className="w-icon-sm h-icon-sm text-text-disabled" />
                         <span>{log.actor.name}</span>
                         <span className="text-micro text-stone-500 font-mono">
                           ({roleLabel(log.actor.role)})

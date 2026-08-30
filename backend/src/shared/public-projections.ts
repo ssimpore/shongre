@@ -18,7 +18,10 @@ const INTERNAL_ATTRIBUTE_KEYS = new Set([
 export function toPublicSellerProfile(
   profile: UserProfile,
 ): PublicSellerProfile | null {
-  if (profile.status !== "active") {
+  if (
+    profile.status !== "active" ||
+    (profile.staffStatus && profile.staffStatus !== "none")
+  ) {
     return null;
   }
   const accountType =

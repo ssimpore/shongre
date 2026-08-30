@@ -28,12 +28,14 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export const CrmProviderSettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const aiOnly = useLocation().pathname.endsWith("/ai");
   usePageMeta({
     title: `${aiOnly ? "IA" : "Fournisseurs"} CRM | Shongre`,
-    description: "Connexions fournisseurs partagées du CRM.",
+    description: t("admin.crmProviderSettingsPage.connexionsFournisseursPartageesDuCrm"),
     canonicalPath: aiOnly
       ? "/admin/crm/configuration/ai"
       : "/admin/crm/configuration/providers",
@@ -158,10 +160,10 @@ export const CrmProviderSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
               <Icon className="h-5 w-5 text-violet-300" />
             </span>
             <div>
@@ -185,19 +187,15 @@ export const CrmProviderSettingsPage: React.FC = () => {
               to="/admin/fournisseurs"
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
             >
               <ExternalLink className="h-icon-md w-icon-md" /> Console
               fournisseurs
             </Button>
           </div>
         </div>
-        <p className="mt-3 max-w-3xl text-xs leading-relaxed text-stone-400">
-          Le CRM réutilise la plateforme fournisseur Shongre. Une connexion
-          personnelle autorisée prévaut sur celle du tenant, puis un éventuel
-          fallback plateforme explicitement permis. Les credentials saisis sont
-          envoyés au coffre backend, jamais persistés dans le navigateur ni
-          retournés par l’API.
+        <p className="mt-3 max-w-3xl text-xs leading-relaxed text-text-disabled">
+          {t("admin.crmProviderSettingsPage.leCrmReutiliseLaPlateformeFournisseurShongreUneConnexionPersonnelle")}
         </p>
       </section>
       {!snapshot ? (
@@ -205,17 +203,17 @@ export const CrmProviderSettingsPage: React.FC = () => {
       ) : (
         <>
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <article className="rounded-2xl border border-border-base bg-white p-4">
+            <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
               <span className="text-micro font-bold uppercase text-stone-500">
-                Référencés
+                {t("admin.crmProviderSettingsPage.references")}
               </span>
               <strong className="mt-1 block text-2xl font-black">
                 {providers.length}
               </strong>
             </article>
-            <article className="rounded-2xl border border-border-base bg-white p-4">
+            <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
               <span className="text-micro font-bold uppercase text-stone-500">
-                Implémentés
+                {t("admin.crmProviderSettingsPage.implementes")}
               </span>
               <strong className="mt-1 block text-2xl font-black">
                 {
@@ -226,9 +224,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
                 }
               </strong>
             </article>
-            <article className="rounded-2xl border border-border-base bg-white p-4">
+            <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
               <span className="text-micro font-bold uppercase text-stone-500">
-                Opérationnels
+                {t("admin.crmProviderSettingsPage.operationnels")}
               </span>
               <strong className="mt-1 block text-2xl font-black text-success">
                 {
@@ -238,7 +236,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                 }
               </strong>
             </article>
-            <article className="rounded-2xl border border-border-base bg-white p-4">
+            <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
               <span className="text-micro font-bold uppercase text-stone-500">
                 Environnement
               </span>
@@ -247,12 +245,11 @@ export const CrmProviderSettingsPage: React.FC = () => {
               </strong>
             </article>
           </section>
-          <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
               <h2 className="text-sm font-black">Connexions visibles</h2>
               <p className="text-micro text-stone-500">
-                Connexions du tenant et connexions personnelles du compte
-                courant uniquement.
+                {t("admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement")}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -278,11 +275,11 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       {connection.credentialConfigured && (
                         <p className="mt-1 inline-flex items-center gap-1 text-micro font-bold text-success">
                           <KeyRound className="h-icon-xs w-icon-xs" />{" "}
-                          Credential configuré {connection.credentialHint}
+                          {t("admin.crmProviderSettingsPage.credentialConfigure")} {connection.credentialHint}
                         </p>
                       )}
                     </div>
-                    <span className="rounded-full bg-stone-100 px-2 py-1 text-center text-micro font-bold">
+                    <span className="rounded-pill bg-stone-100 px-2 py-1 text-center text-micro font-bold">
                       {connection.ownerType}
                     </span>
                     <span
@@ -305,11 +302,11 @@ export const CrmProviderSettingsPage: React.FC = () => {
                 ))}
             </div>
           </section>
-          <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
-              <h2 className="text-sm font-black">Registre partagé</h2>
+              <h2 className="text-sm font-black">{t("admin.crmProviderSettingsPage.registrePartage")}</h2>
               <p className="text-micro text-stone-500">
-                Capacités déclarées et état runtime vérifiable.
+                {t("admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable")}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -319,7 +316,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                   className="grid gap-3 px-5 py-4 lg:grid-cols-3"
                 >
                   <div className="flex gap-3">
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100">
                       {aiOnly ? (
                         <Bot className="h-icon-md w-icon-md" />
                       ) : (
@@ -339,7 +336,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                           .map((capability) => (
                             <code
                               key={capability}
-                              className="rounded bg-stone-100 px-1.5 py-0.5 text-micro text-stone-600"
+                              className="rounded bg-stone-100 px-1.5 py-0.5 text-micro text-text-secondary"
                             >
                               {capability}
                             </code>
@@ -349,7 +346,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-micro text-stone-500">
-                      Santé runtime
+                      {t("admin.crmProviderSettingsPage.santeRuntime")}
                     </span>
                     <span
                       className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-success" : "text-stone-500"}`}
@@ -364,7 +361,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-micro text-stone-500">
-                      Préparation
+                      {t("admin.crmProviderSettingsPage.preparation")}
                     </span>
                     <strong className="mt-1 block text-xs">
                       {readiness.productionReady
@@ -379,10 +376,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
           <div className="flex items-start gap-2 rounded-2xl border border-success-border bg-success-surface p-4 text-xs text-success">
             <ShieldCheck className="mt-0.5 h-icon-md w-icon-md shrink-0" />
             <span>
-              <strong>Résolution fail-closed.</strong> En mode API, une capacité
-              sans connexion active et autorisée échoue explicitement ; elle
-              n’utilise jamais le fournisseur démo ni des crédits Shongre
-              silencieux.
+              <strong>{t("admin.crmProviderSettingsPage.resolutionFailClosed")}</strong> {t("admin.crmProviderSettingsPage.enModeApiUneCapaciteSansConnexionActiveEtAutorisee")}
             </span>
           </div>
         </>
@@ -394,7 +388,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
           setCredential("");
         }}
         title="Nouvelle connexion fournisseur"
-        description="La connexion reste en brouillon tant qu’un adapter et un test de validation ne l’ont pas activée."
+        description={t("admin.crmProviderSettingsPage.laConnexionResteEnBrouillonTantQuUnAdapterEt")}
       >
         <form onSubmit={createConnection} className="space-y-3.5 text-xs">
           <FormField label="Fournisseur" required>
@@ -417,16 +411,16 @@ export const CrmProviderSettingsPage: React.FC = () => {
             />
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Nom de la connexion" required>
+            <FormField label={t("admin.crmProviderSettingsPage.nomDeLaConnexion")} required>
               <Input
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
                 required
               />
             </FormField>
-            <FormField label="Propriétaire">
+            <FormField label={t("admin.crmCompaniesPage.proprietaire")}>
               <Select
-                aria-label="Propriétaire"
+                aria-label={t("admin.crmCompaniesPage.proprietaire")}
                 value={ownerType}
                 onChange={(event) =>
                   setOwnerType(event.target.value as typeof ownerType)
@@ -479,7 +473,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
           setCredential("");
         }}
         title={`Rotation · ${rotating?.displayName ?? "connexion"}`}
-        description="L’ancien credential est révoqué atomiquement. La connexion repasse en brouillon jusqu’à validation."
+        description={t("admin.crmProviderSettingsPage.lAncienCredentialEstRevoqueAtomiquementLaConnexionRepasseEn")}
       >
         <form onSubmit={rotateCredential} className="space-y-3.5 text-xs">
           <FormField label="Nouveau credential" required>

@@ -99,7 +99,7 @@ export const AdminProviderDetailPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/admin/fournisseurs"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-secondary hover:text-text-main transition-colors"
         >
           <ArrowLeft className="w-icon-sm h-icon-sm" />
           <span>
@@ -126,19 +126,19 @@ export const AdminProviderDetailPage: React.FC = () => {
       </div>
 
       {/* Provider Header Card */}
-      <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-lg text-stone-800 shrink-0">
+            <div className="w-12 h-12 rounded-control bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-lg text-stone-800 shrink-0">
               {provider.name.charAt(0)}
             </div>
 
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-xl font-black text-stone-900">
+                <h1 className="text-xl font-black text-text-main">
                   {provider.name}
                 </h1>
-                <span className="text-xs font-mono font-bold bg-stone-100 text-stone-600 px-2 py-0.5 rounded border border-stone-200">
+                <span className="text-xs font-mono font-bold bg-stone-100 text-text-secondary px-2 py-0.5 rounded border border-stone-200">
                   {provider.code}
                 </span>
                 <span
@@ -151,7 +151,7 @@ export const AdminProviderDetailPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
                 {provider.metadata.companyName && (
                   <span className="flex items-center gap-1">
-                    <Building className="w-icon-sm h-icon-sm text-stone-400" />
+                    <Building className="w-icon-sm h-icon-sm text-text-disabled" />
                     {provider.metadata.companyName}
                     {provider.metadata.headquartersCountry &&
                       ` (${provider.metadata.headquartersCountry})`}
@@ -162,7 +162,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                   Version config : <strong>v{configuration.version}</strong>
                 </span>
                 <span>•</span>
-                <span>Modifié le : {formatDate(configuration.updatedAt)}</span>
+                <span>{t("admin.adminProviderDetailPage.modifieLe")} {formatDate(configuration.updatedAt)}</span>
               </div>
             </div>
           </div>
@@ -170,12 +170,12 @@ export const AdminProviderDetailPage: React.FC = () => {
           {/* Status & Health Indicators */}
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             {isActive ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-pill">
                 <CheckCircle2 className="w-icon-sm h-icon-sm" />
-                Actif (Priorité {configuration.priority})
+                {t("admin.adminProviderDetailPage.actifPriorite")} {configuration.priority})
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning-surface border border-warning-border px-2.5 py-1 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning-surface border border-warning-border px-2.5 py-1 rounded-pill">
                 {provider.operational.adapterStatus === "IMPLEMENTED"
                   ? "Implémenté · non actif"
                   : provider.operational.adapterStatus === "DEMO_ONLY"
@@ -185,7 +185,7 @@ export const AdminProviderDetailPage: React.FC = () => {
             )}
 
             <span
-              className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${
+              className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-pill border ${
                 configuration.environment === "demo" || health === "unknown"
                   ? "bg-stone-100 text-stone-700 border-stone-200"
                   : health === "healthy"
@@ -206,7 +206,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                       : "Santé inconnue"}
             </span>
 
-            <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-full uppercase">
+            <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-pill uppercase">
               {labelIdentifier(configuration.environment)}
             </span>
           </div>
@@ -215,7 +215,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         {/* Capabilities badges bar */}
         <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
           <span className="text-xs font-semibold text-stone-500 mr-1">
-            Capacités cataloguées :
+            {t("admin.adminProviderDetailPage.capacitesCataloguees")}
           </span>
           {provider.capabilities.map((cap) => {
             const implemented =
@@ -242,14 +242,14 @@ export const AdminProviderDetailPage: React.FC = () => {
       </div>
 
       {/* Detail Tab Navigation */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => setActiveTab("configuration")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "configuration"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Sliders className="w-icon-sm h-icon-sm" />
@@ -261,8 +261,8 @@ export const AdminProviderDetailPage: React.FC = () => {
           onClick={() => setActiveTab("markets")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "markets"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Globe className="w-icon-sm h-icon-sm" />
@@ -274,8 +274,8 @@ export const AdminProviderDetailPage: React.FC = () => {
           onClick={() => setActiveTab("health")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "health"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Activity className="w-icon-sm h-icon-sm" />
@@ -287,8 +287,8 @@ export const AdminProviderDetailPage: React.FC = () => {
           onClick={() => setActiveTab("dependencies")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "dependencies"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Layers className="w-icon-sm h-icon-sm" />
@@ -302,8 +302,8 @@ export const AdminProviderDetailPage: React.FC = () => {
           onClick={() => setActiveTab("audit")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
             activeTab === "audit"
-              ? "bg-primary text-white shadow-xs"
-              : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+              ? "bg-primary text-text-inverse shadow-xs"
+              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
           }`}
         >
           <Clock className="w-icon-sm h-icon-sm" />
@@ -341,8 +341,8 @@ export const AdminProviderDetailPage: React.FC = () => {
       )}
 
       {activeTab === "dependencies" && (
-        <div className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-stone-900 border-b border-stone-100 pb-2">
+        <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
+          <h2 className="text-sm font-bold text-text-main border-b border-stone-100 pb-2">
             {t(
               "admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe",
             )}
@@ -358,11 +358,11 @@ export const AdminProviderDetailPage: React.FC = () => {
                   <ProviderCapabilityLabel
                     capability={cap}
                     showCategory
-                    className="text-stone-900"
+                    className="text-text-main"
                   />
                   <p className="text-xs text-stone-500">{meta.description}</p>
                   <div className="pt-2 border-t border-stone-200/60">
-                    <span className="text-micro font-semibold text-stone-600 block mb-1">
+                    <span className="text-micro font-semibold text-text-secondary block mb-1">
                       {t(
                         "admin.adminProviderDetailPage.fonctionnalitesDirectes",
                       )}

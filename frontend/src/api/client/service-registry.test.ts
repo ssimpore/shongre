@@ -5,115 +5,64 @@ import {
   services,
 } from "./service-registry";
 import { isDemoMode } from "./data-mode.service";
-import {
-  HttpListingsService,
-  HttpSearchService,
-  HttpAuthService,
-  HttpMarketsService,
-  HttpTaxonomyService,
-  HttpMessagingService,
-  HttpNotificationsService,
-  HttpOrdersService,
-  HttpPaymentsService,
-  HttpPromotionsService,
-  HttpVerificationService,
-  HttpWorkspaceService,
-  HttpAdminService,
-  HttpReviewsService,
-  HttpBusinessRulesService,
-  HttpCommissionService,
-  HttpCrmService,
-  HttpCrmProspectingService,
-  HttpInvoicingService,
-} from "../adapters/http";
-import {
-  DemoListingsService,
-  DemoSearchService,
-  DemoAuthService,
-  DemoMarketsService,
-  DemoTaxonomyService,
-  DemoMessagingService,
-  DemoNotificationsService,
-  DemoOrdersService,
-  DemoPaymentsService,
-  DemoPromotionsService,
-  DemoVerificationService,
-  DemoWorkspaceService,
-  DemoAdminService,
-  DemoReviewsService,
-  DemoBusinessRulesService,
-  DemoCommissionService,
-  DemoCrmService,
-  DemoProspectingService,
-  DemoInvoicingService,
-} from "../adapters/demo";
+
+const SERVICE_KEYS = [
+  "listings",
+  "homepage",
+  "search",
+  "auth",
+  "markets",
+  "taxonomy",
+  "messaging",
+  "notifications",
+  "orders",
+  "payments",
+  "promotions",
+  "verification",
+  "workspace",
+  "admin",
+  "reviews",
+  "ai",
+  "trending",
+  "courses",
+  "auto",
+  "realEstate",
+  "employment",
+  "businessRules",
+  "finance",
+  "commissions",
+  "providerControlPlane",
+  "support",
+  "featureFlags",
+  "moderation",
+  "crm",
+  "crmProspecting",
+  "marketing",
+  "analytics",
+  "invoicing",
+  "solutions",
+] as const;
 
 describe("Service Registry & API Adapter Boundary", () => {
   afterEach(() => {
     activateServiceRegistry("demo");
   });
 
-  it("instantiates the service registry in demo mode by default", () => {
+  it("constructs the complete lazy registry in demo mode by default", () => {
     expect(isDemoMode()).toBe(true);
     const registry = createServiceRegistry("demo");
-    expect(registry).toBeDefined();
-    expect(registry.listings instanceof DemoListingsService).toBe(true);
-    expect(registry.search instanceof DemoSearchService).toBe(true);
-    expect(registry.auth instanceof DemoAuthService).toBe(true);
-    expect(registry.markets instanceof DemoMarketsService).toBe(true);
-    expect(registry.taxonomy instanceof DemoTaxonomyService).toBe(true);
-    expect(registry.messaging instanceof DemoMessagingService).toBe(true);
-    expect(registry.notifications instanceof DemoNotificationsService).toBe(
-      true,
-    );
-    expect(registry.orders instanceof DemoOrdersService).toBe(true);
-    expect(registry.payments instanceof DemoPaymentsService).toBe(true);
-    expect(registry.promotions instanceof DemoPromotionsService).toBe(true);
-    expect(registry.verification instanceof DemoVerificationService).toBe(true);
-    expect(registry.workspace instanceof DemoWorkspaceService).toBe(true);
-    expect(registry.admin instanceof DemoAdminService).toBe(true);
-    expect(registry.reviews instanceof DemoReviewsService).toBe(true);
-    expect(registry.businessRules instanceof DemoBusinessRulesService).toBe(
-      true,
-    );
-    expect(registry.commissions instanceof DemoCommissionService).toBe(true);
-    expect(registry.crm instanceof DemoCrmService).toBe(true);
-    expect(registry.crmProspecting instanceof DemoProspectingService).toBe(
-      true,
-    );
-    expect(registry.invoicing instanceof DemoInvoicingService).toBe(true);
+    expect(Object.keys(registry)).toEqual(SERVICE_KEYS);
+    for (const key of SERVICE_KEYS) expect(registry[key]).toBeDefined();
+    expect(registry.auth.completeDemoSocialAuth).toBeTypeOf("function");
+    expect(registry.notifications.simulateNotification).toBeTypeOf("function");
   });
 
-  it("instantiates the service registry in api mode when configured", () => {
+  it("constructs the complete lazy registry in api mode when configured", () => {
     const apiRegistry = createServiceRegistry("api");
-    expect(apiRegistry).toBeDefined();
-    expect(apiRegistry.listings instanceof HttpListingsService).toBe(true);
-    expect(apiRegistry.search instanceof HttpSearchService).toBe(true);
-    expect(apiRegistry.auth instanceof HttpAuthService).toBe(true);
-    expect(apiRegistry.markets instanceof HttpMarketsService).toBe(true);
-    expect(apiRegistry.taxonomy instanceof HttpTaxonomyService).toBe(true);
-    expect(apiRegistry.messaging instanceof HttpMessagingService).toBe(true);
-    expect(apiRegistry.notifications instanceof HttpNotificationsService).toBe(
-      true,
-    );
-    expect(apiRegistry.orders instanceof HttpOrdersService).toBe(true);
-    expect(apiRegistry.payments instanceof HttpPaymentsService).toBe(true);
-    expect(apiRegistry.promotions instanceof HttpPromotionsService).toBe(true);
-    expect(apiRegistry.verification instanceof HttpVerificationService).toBe(
-      true,
-    );
-    expect(apiRegistry.workspace instanceof HttpWorkspaceService).toBe(true);
-    expect(apiRegistry.admin instanceof HttpAdminService).toBe(true);
-    expect(apiRegistry.reviews instanceof HttpReviewsService).toBe(true);
-    expect(apiRegistry.businessRules instanceof HttpBusinessRulesService).toBe(
-      true,
-    );
-    expect(apiRegistry.commissions instanceof HttpCommissionService).toBe(true);
-    expect(apiRegistry.crm instanceof HttpCrmService).toBe(true);
-    expect(
-      apiRegistry.crmProspecting instanceof HttpCrmProspectingService,
-    ).toBe(true);
-    expect(apiRegistry.invoicing instanceof HttpInvoicingService).toBe(true);
+    expect(Object.keys(apiRegistry)).toEqual(SERVICE_KEYS);
+    for (const key of SERVICE_KEYS) expect(apiRegistry[key]).toBeDefined();
+    expect(apiRegistry.auth.completeDemoSocialAuth).toBeUndefined();
+    expect(apiRegistry.notifications.simulateNotification).toBeUndefined();
   });
 
   it("rebinds the stable registry object when the central mode changes", () => {
@@ -121,23 +70,13 @@ describe("Service Registry & API Adapter Boundary", () => {
 
     activateServiceRegistry("api");
     expect(services).toBe(stableRegistry);
-    expect(services.auth instanceof HttpAuthService).toBe(true);
-    expect(services.listings instanceof HttpListingsService).toBe(true);
-    expect(services.crm instanceof HttpCrmService).toBe(true);
-    expect(services.crmProspecting instanceof HttpCrmProspectingService).toBe(
-      true,
-    );
-    expect(services.invoicing instanceof HttpInvoicingService).toBe(true);
+    expect(services.auth.completeDemoSocialAuth).toBeUndefined();
+    expect(services.notifications.simulateNotification).toBeUndefined();
 
     activateServiceRegistry("demo");
     expect(services).toBe(stableRegistry);
-    expect(services.auth instanceof DemoAuthService).toBe(true);
-    expect(services.listings instanceof DemoListingsService).toBe(true);
-    expect(services.crm instanceof DemoCrmService).toBe(true);
-    expect(services.crmProspecting instanceof DemoProspectingService).toBe(
-      true,
-    );
-    expect(services.invoicing instanceof DemoInvoicingService).toBe(true);
+    expect(services.auth.completeDemoSocialAuth).toBeTypeOf("function");
+    expect(services.notifications.simulateNotification).toBeTypeOf("function");
   });
 
   it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {

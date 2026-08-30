@@ -229,6 +229,12 @@ export function canAccessRoutePolicy(
   const policy: RoutePolicy = ROUTE_POLICIES[id];
   const access = canonicalAccessContext(user);
   if (access.accountType === "guest") return false;
+  if (
+    access.staffStatus !== "none" &&
+    (policy.access === "customer" || policy.access === "professional")
+  ) {
+    return false;
+  }
   if (!policy.accountTypes.some((type) => type === access.accountType)) {
     return false;
   }

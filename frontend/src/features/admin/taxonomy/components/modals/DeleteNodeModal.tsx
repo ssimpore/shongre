@@ -69,7 +69,7 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
     >
       <div className="space-y-4">
         {!impact.isSafeToDelete ? (
-          <div className="p-4 bg-danger-surface border border-danger-border rounded-xl space-y-3 text-xs text-danger">
+          <div className="p-4 bg-danger-surface border border-danger-border rounded-control space-y-3 text-xs text-danger">
             <div className="flex items-center gap-2 font-bold text-danger">
               <AlertOctagon className="w-icon-lg h-icon-lg shrink-0" />
               <span>
@@ -81,15 +81,14 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
                 <li key={idx}>{reason}</li>
               ))}
             </ul>
-            <p className="pt-1 text-stone-600">
+            <p className="pt-1 text-text-secondary">
               {t("admin.deleteNodeModal.pourEviterDInvaliderDes")}
-              <strong>{t("admin.deleteNodeModal.deprecier")}</strong> cette
-              catégorie plutôt que de la supprimer.
+              <strong>{t("admin.deleteNodeModal.deprecier")}</strong> {t("admin.deleteNodeModal.cetteCategoriePlutotQueDeLaSupprimer")}
             </p>
           </div>
         ) : (
-          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-700">
-            <p className="font-semibold text-stone-900">
+          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-control text-xs text-stone-700">
+            <p className="font-semibold text-text-main">
               {t("admin.deleteNodeModal.ceNUdEstEligible")}
             </p>
             <p className="text-stone-500 mt-1">

@@ -83,7 +83,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
     title: account
       ? `${account.name} | CRM Shongre`
       : "Entreprise CRM | Shongre",
-    description: "Vue complète du compte CRM.",
+    description: t("admin.crmCompanyDetailPage.vueCompleteDuCompteCrm"),
     canonicalPath: id ? crmPaths.company(id) : undefined,
     noIndex: true,
   });
@@ -219,15 +219,15 @@ export const CrmCompanyDetailPage: React.FC = () => {
     );
   if (!account)
     return (
-      <section className="rounded-2xl border border-border-base bg-white p-10 text-center">
-        <Building2 className="mx-auto h-8 w-8 text-stone-400" />
+      <section className="rounded-2xl border border-border-base bg-bg-surface p-10 text-center">
+        <Building2 className="mx-auto h-8 w-8 text-text-disabled" />
         <h1 className="mt-3 text-lg font-black">Entreprise introuvable</h1>
         <Button
           className="mt-4"
           size="sm"
           onClick={() => navigate(crmPaths.companies)}
         >
-          Retour aux entreprises
+          {t("admin.crmCompanyDetailPage.retourAuxEntreprises")}
         </Button>
       </section>
     );
@@ -243,16 +243,16 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.companies}
-          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+          className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
         >
           <ArrowLeft className="h-icon-sm w-icon-sm" /> Entreprises
         </Link>
         <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-stone-700 bg-stone-900 text-lg font-black">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-control border border-stone-700 bg-stone-900 text-lg font-black">
               {account.name.slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
@@ -261,23 +261,23 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   {account.name}
                 </h1>
                 {account.fitScore !== undefined && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-950 px-2 py-1 text-micro font-bold text-violet-300">
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-violet-950 px-2 py-1 text-micro font-bold text-violet-300">
                     <Sparkles className="h-icon-xs w-icon-xs" /> Fit{" "}
                     {account.fitScore}
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-stone-400">
+              <p className="mt-1 text-sm text-text-disabled">
                 {account.industry ?? "Secteur non renseigné"} ·{" "}
                 {[account.city, account.country].filter(Boolean).join(", ")}
               </p>
-              <div className="mt-2 flex flex-wrap gap-3 text-micro text-stone-400">
+              <div className="mt-2 flex flex-wrap gap-3 text-micro text-text-disabled">
                 {account.website && (
                   <a
                     href={account.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 hover:text-white"
+                    className="inline-flex items-center gap-1 hover:text-text-inverse"
                   >
                     {account.domain ?? account.website}
                     <ExternalLink className="h-icon-xs w-icon-xs" />
@@ -302,7 +302,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   {account.tags.map((tag) => (
                     <span
                       key={tag.toLocaleLowerCase("fr")}
-                      className="rounded-full border border-stone-700 bg-stone-900 px-2 py-1 text-micro font-bold text-stone-300"
+                      className="rounded-pill border border-stone-700 bg-stone-900 px-2 py-1 text-micro font-bold text-stone-300"
                     >
                       {tag}
                     </span>
@@ -313,9 +313,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <label>
-              <span className="sr-only">Cycle de vie</span>
+              <span className="sr-only">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</span>
               <Select
-                aria-label="Cycle de vie de l’entreprise"
+                aria-label={t("admin.crmCompanyDetailPage.cycleDeVieDeLEntreprise")}
                 value={account.lifecycle}
                 onChange={(event) =>
                   void updateLifecycle(
@@ -328,7 +328,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
               onClick={() => setNoteOpen(true)}
             >
               <MessageSquareText className="h-icon-md w-icon-md" /> Note
@@ -336,7 +336,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
               onClick={() => {
                 setTagDraft(account.tags.join(", "));
                 setTagsOpen(true);
@@ -349,7 +349,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
       </section>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             Contacts
           </span>
@@ -357,25 +357,25 @@ export const CrmCompanyDetailPage: React.FC = () => {
             {contacts.length}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Opportunités ouvertes
+            {t("admin.crmCompanyDetailPage.opportunitesOuvertes")}
           </span>
           <strong className="mt-1 block text-2xl font-black">
             {opportunities.filter((item) => item.status === "open").length}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Pipeline
+            {t("admin.crmCompanyDetailPage.pipeline")}
           </span>
           <strong className="mt-1 block text-2xl font-black text-primary">
             {money(openValue, currency, currentLocale)}
           </strong>
         </article>
-        <article className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+        <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-            Marché
+            {t("invoicing.product.previewMarket")}
           </span>
           <strong className="mt-1 block text-2xl font-black">
             {account.marketCode}
@@ -383,7 +383,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-col gap-2 border-b border-border-subtle px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -392,20 +392,18 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </span>
               <h2 className="text-sm font-black">Intelligence Shongre</h2>
               {shongre?.organization?.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                  <BadgeCheck className="h-icon-xs w-icon-xs" /> Professionnel
-                  vérifié
+                <span className="inline-flex items-center gap-1 rounded-pill bg-success-surface px-2 py-1 text-micro font-bold text-success">
+                  <BadgeCheck className="h-icon-xs w-icon-xs" /> {t("identityBadge.verification.professional")}
                 </span>
               )}
             </div>
             <p className="mt-1 text-micro text-stone-500">
-              Lecture des domaines canoniques ; le CRM ne modifie ni annonces ni
-              facturation.
+              {t("admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces")}
             </p>
           </div>
           {shongre?.lastSynchronizedAt && (
             <time className="text-micro text-stone-500">
-              Synchronisé le{" "}
+              {t("admin.crmCompanyDetailPage.synchroniseLe")}{" "}
               {new Intl.DateTimeFormat(currentLocale, {
                 dateStyle: "medium",
                 timeStyle: "short",
@@ -414,14 +412,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
           )}
         </div>
         {!shongre?.linked ? (
-          <div className="flex items-start gap-3 p-5 text-xs text-stone-600">
-            <Unplug className="mt-0.5 h-icon-md w-icon-md shrink-0 text-stone-400" />
+          <div className="flex items-start gap-3 p-5 text-xs text-text-secondary">
+            <Unplug className="mt-0.5 h-icon-md w-icon-md shrink-0 text-text-disabled" />
             <div>
-              <strong className="block text-stone-900">
-                Aucune organisation Shongre liée
+              <strong className="block text-text-main">
+                {t("admin.crmCompanyDetailPage.aucuneOrganisationShongreLiee")}
               </strong>
-              Cette fiche reste un compte CRM autonome. Une référence externe
-              vérifiée est requise avant d’afficher des données marketplace.
+              {t("admin.crmCompanyDetailPage.cetteFicheResteUnCompteCrmAutonomeUneReferenceExterne")}
             </div>
           </div>
         ) : (
@@ -443,7 +440,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               <p className="mt-3 text-micro text-stone-500">
                 Email{" "}
                 {shongre.professional.emailVerified ? "vérifié" : "non vérifié"}{" "}
-                · Téléphone{" "}
+                {t("admin.crmCompanyDetailPage.telephone")}{" "}
                 {shongre.professional.phoneVerified ? "vérifié" : "non vérifié"}
               </p>
             </article>
@@ -451,21 +448,21 @@ export const CrmCompanyDetailPage: React.FC = () => {
               <div className="flex items-center gap-2 text-stone-500">
                 <Boxes className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
-                  Annonces
+                  {t("admin.adminMarketsPage.annonces")}
                 </span>
               </div>
               <strong className="mt-2 block text-2xl font-black">
                 {shongre.listings.published}
                 <span className="text-xs font-bold text-text-muted">
                   {" "}
-                  / {shongre.listings.total} publiées
+                  / {shongre.listings.total} {t("admin.crmCompanyDetailPage.publiees")}
                 </span>
               </strong>
               <ul className="mt-2 space-y-1.5">
                 {shongre.listings.recent.slice(0, 2).map((listing) => (
                   <li
                     key={listing.id}
-                    className="truncate text-micro text-stone-600"
+                    className="truncate text-micro text-text-secondary"
                   >
                     {listing.title}
                   </li>
@@ -489,7 +486,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               )}
               {shongre.subscription.currentPeriodEndsAt && (
                 <p className="mt-3 text-micro text-stone-500">
-                  Période jusqu’au{" "}
+                  {t("admin.crmCompanyDetailPage.periodeJusquAu")}{" "}
                   {new Intl.DateTimeFormat(currentLocale, {
                     dateStyle: "medium",
                   }).format(new Date(shongre.subscription.currentPeriodEndsAt))}
@@ -510,7 +507,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             ].map(([label, availability]) => (
               <span
                 key={label}
-                className="rounded-full border border-stone-200 bg-white px-2 py-1"
+                className="rounded-pill border border-stone-200 bg-bg-surface px-2 py-1"
               >
                 {label} ·{" "}
                 {availability === "not_connected"
@@ -530,12 +527,12 @@ export const CrmCompanyDetailPage: React.FC = () => {
           shrink; the `xl:` override already does. */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">Opportunités</h2>
+                <h2 className="text-sm font-black">{t("admin.crmOverviewPage.opportunites")}</h2>
                 <p className="text-micro text-stone-500">
-                  Pipeline associé à ce compte
+                  {t("admin.crmCompanyDetailPage.pipelineAssocieACeCompte")}
                 </p>
               </div>
               <Button to={crmPaths.pipeline} variant="outline" size="sm">
@@ -545,7 +542,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="divide-y divide-border-subtle px-5">
               {opportunities.length === 0 ? (
                 <p className="py-8 text-center text-xs text-stone-500">
-                  Aucune opportunité associée.
+                  {t("admin.crmCompanyDetailPage.aucuneOpportuniteAssociee")}
                 </p>
               ) : (
                 opportunities.map((opportunity) => (
@@ -565,7 +562,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                           inside a 320px viewport. */}
                       <Link
                         to={crmPaths.opportunity(opportunity.id)}
-                        className="block truncate text-xs font-black text-stone-900 hover:text-primary"
+                        className="block truncate text-xs font-black text-text-main hover:text-primary"
                       >
                         {opportunity.name}
                       </Link>
@@ -585,12 +582,12 @@ export const CrmCompanyDetailPage: React.FC = () => {
               )}
             </div>
           </section>
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">Activité récente</h2>
+                <h2 className="text-sm font-black">{t("admin.crmCompanyDetailPage.activiteRecente")}</h2>
                 <p className="text-micro text-stone-500">
-                  Notes et interactions du compte
+                  {t("admin.crmCompanyDetailPage.notesEtInteractionsDuCompte")}
                 </p>
               </div>
               <Button
@@ -604,12 +601,12 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="divide-y divide-border-subtle px-5">
               {activities.length === 0 ? (
                 <p className="py-8 text-center text-xs text-stone-500">
-                  Aucune activité enregistrée.
+                  {t("admin.crmCompanyDetailPage.aucuneActiviteEnregistree")}
                 </p>
               ) : (
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-stone-600">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-100 text-text-secondary">
                       <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -624,7 +621,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                         </time>
                       </div>
                       {activity.description && (
-                        <p className="mt-1 text-xs text-stone-600">
+                        <p className="mt-1 text-xs text-text-secondary">
                           {activity.description}
                         </p>
                       )}
@@ -636,18 +633,18 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </section>
         </div>
         <aside className="min-w-0 space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
                 <h2 className="text-sm font-black">Contacts</h2>
-                <p className="text-micro text-stone-500">Personnes liées</p>
+                <p className="text-micro text-stone-500">{t("admin.crmCompanyDetailPage.personnesLiees")}</p>
               </div>
               <UsersRound className="h-icon-md w-icon-md text-primary" />
             </div>
             <div className="divide-y divide-border-subtle px-4">
               {contacts.length === 0 ? (
                 <p className="py-7 text-center text-xs text-stone-500">
-                  Aucun contact lié.
+                  {t("admin.crmCompanyDetailPage.aucunContactLie")}
                 </p>
               ) : (
                 contacts.map((contact) => (
@@ -656,7 +653,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     to={crmPaths.contact(contact.id)}
                     className="flex items-center gap-3 py-3 hover:text-primary"
                   >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-black text-text-inverse">
                       {contact.firstName[0]}
                       {contact.lastName[0]}
                     </span>
@@ -673,7 +670,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               )}
             </div>
           </section>
-          <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
             <h2 className="text-sm font-black">Adresse & qualification</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
@@ -698,8 +695,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </dl>
             {account.city && (
               <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-stone-500">
-                <MapPin className="h-icon-sm w-icon-sm" /> Donnée déclarative ·
-                aucune géolocalisation implicite
+                <MapPin className="h-icon-sm w-icon-sm" /> {t("admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite")}
               </div>
             )}
           </section>
@@ -709,8 +705,8 @@ export const CrmCompanyDetailPage: React.FC = () => {
       <Modal
         isOpen={noteOpen}
         onClose={() => setNoteOpen(false)}
-        title="Ajouter une note entreprise"
-        description="La note est ajoutée à l’historique CRM du compte."
+        title={t("admin.crmCompanyDetailPage.ajouterUneNoteEntreprise")}
+        description={t("admin.crmCompanyDetailPage.laNoteEstAjouteeALHistoriqueCrmDuCompte")}
       >
         <form onSubmit={addNote} className="space-y-4 text-xs">
           <FormField label="Note" required>
@@ -739,18 +735,18 @@ export const CrmCompanyDetailPage: React.FC = () => {
       <Modal
         isOpen={tagsOpen}
         onClose={() => setTagsOpen(false)}
-        title="Gérer les tags"
-        description="Les tags sont normalisés dans le catalogue du tenant et utilisables dans les filtres CRM."
+        title={t("admin.crmCompanyDetailPage.gererLesTags")}
+        description={t("admin.crmCompanyDetailPage.lesTagsSontNormalisesDansLeCatalogueDuTenantEt")}
       >
         <form onSubmit={updateTags} className="space-y-4 text-xs">
           <FormField
-            label="Tags séparés par des virgules"
+            label={t("admin.crmCompanyDetailPage.tagsSeparesParDesVirgules")}
             hint="50 tags maximum, 80 caractères par tag."
           >
             <Input
               value={tagDraft}
               onChange={(event) => setTagDraft(event.target.value)}
-              placeholder="Compte clé, Mobilier, Relance Q4"
+              placeholder={t("admin.crmCompanyDetailPage.compteCleMobilierRelanceQ4")}
             />
           </FormField>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">

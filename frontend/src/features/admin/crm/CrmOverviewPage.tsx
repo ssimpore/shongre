@@ -112,7 +112,7 @@ export const CrmOverviewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-4" aria-label="Chargement du tableau de bord CRM">
+      <div className="space-y-4" aria-label={t("admin.crmOverviewPage.chargementDuTableauDeBordCrm")}>
         <Skeleton className="h-28 rounded-2xl" />
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
           {[0, 1, 2, 3, 4].map((item) => (
@@ -126,18 +126,18 @@ export const CrmOverviewPage: React.FC = () => {
 
   if (!dashboard || error) {
     return (
-      <div className="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-xs">
+      <div className="rounded-2xl border border-danger-border bg-bg-surface p-8 text-center shadow-xs">
         <CircleAlert
           className="mx-auto h-8 w-8 text-danger"
           aria-hidden="true"
         />
-        <h1 className="mt-3 text-lg font-black text-stone-900">
-          Tableau de bord indisponible
+        <h1 className="mt-3 text-lg font-black text-text-main">
+          {t("admin.crmOverviewPage.tableauDeBordIndisponible")}
         </h1>
-        <p className="mx-auto mt-1 max-w-lg text-sm text-stone-600">{error}</p>
+        <p className="mx-auto mt-1 max-w-lg text-sm text-text-secondary">{error}</p>
         <Button className="mt-5" size="sm" onClick={() => void loadDashboard()}>
           <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
-          Réessayer
+          {t("common.retry")}
         </Button>
       </div>
     );
@@ -152,14 +152,14 @@ export const CrmOverviewPage: React.FC = () => {
       tone: "text-info bg-info-surface border-info-border",
     },
     {
-      label: "Opportunités",
+      label: t("admin.crmOverviewPage.opportunites"),
       value: dashboard.openOpportunities.toLocaleString(currentLocale),
       detail: "En cours dans tous les pipelines",
       icon: Target,
       tone: "text-warning bg-warning-surface border-warning-border",
     },
     {
-      label: "Pipeline ouvert",
+      label: t("admin.crmContactDetailPage.pipelineOuvert"),
       value: money(
         dashboard.openPipelineMinor,
         dashboard.currency,
@@ -170,7 +170,7 @@ export const CrmOverviewPage: React.FC = () => {
       tone: "text-primary bg-primary-light border-primary/15",
     },
     {
-      label: "Pipeline pondéré",
+      label: t("admin.crmOverviewPage.pipelinePondere"),
       value: money(
         dashboard.weightedPipelineMinor,
         dashboard.currency,
@@ -181,7 +181,7 @@ export const CrmOverviewPage: React.FC = () => {
       tone: "text-violet-700 bg-violet-50 border-violet-100",
     },
     {
-      label: "À traiter",
+      label: t("admin.crmOverviewPage.aTraiter"),
       value: String(dashboard.tasksDueToday + dashboard.overdueTasks),
       detail: `${dashboard.overdueTasks} en retard`,
       icon: CalendarClock,
@@ -194,10 +194,10 @@ export const CrmOverviewPage: React.FC = () => {
   return (
     <div className="space-y-4 pb-8">
       <CrmUniversalSearch />
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-text-inverse shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wide text-stone-400">
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wide text-text-disabled">
               <span className="text-primary-on-dark">CRM commercial</span>
               <span aria-hidden="true">/</span>
               <span>
@@ -205,16 +205,15 @@ export const CrmOverviewPage: React.FC = () => {
                   dashboard.marketCode}{" "}
                 · {dashboard.currency}
               </span>
-              <span className="rounded-full border border-emerald-700/60 bg-emerald-950 px-2 py-0.5 text-emerald-300">
-                Données synchronisées
+              <span className="rounded-pill border border-emerald-700/60 bg-emerald-950 px-2 py-0.5 text-emerald-300">
+                {t("admin.crmOverviewPage.donneesSynchronisees")}
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
               Pilotez chaque relation commerciale
             </h1>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-400">
-              Pipeline, prévisions, tâches et comptes clés réunis dans un espace
-              tenant-isolé.
+            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-disabled">
+              {t("admin.crmOverviewPage.pipelinePrevisionsTachesEtComptesClesReunisDansUnEspace")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -222,17 +221,17 @@ export const CrmOverviewPage: React.FC = () => {
               to={crmPaths.discover}
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
             >
               <Sparkles
                 className="h-icon-md w-icon-md text-primary"
                 aria-hidden="true"
               />
-              Prospection assistée
+              {t("admin.crmOverviewPage.prospectionAssistee")}
             </Button>
             <Button to={crmPaths.pipeline} variant="primary" size="sm">
               <Plus className="h-icon-md w-icon-md" aria-hidden="true" />
-              Nouvelle opportunité
+              {t("admin.crmPipelinePage.nouvelleOpportunite")}
             </Button>
           </div>
         </div>
@@ -255,8 +254,8 @@ export const CrmOverviewPage: React.FC = () => {
                 aria-current={index === 0 ? "page" : undefined}
                 className={`shrink-0 border-b-2 px-3 py-3 text-xs font-bold transition-colors ${
                   index === 0
-                    ? "border-primary text-white"
-                    : "border-transparent text-stone-400 hover:text-white"
+                    ? "border-primary text-text-inverse"
+                    : "border-transparent text-text-disabled hover:text-text-inverse"
                 }`}
               >
                 {label}
@@ -273,7 +272,7 @@ export const CrmOverviewPage: React.FC = () => {
         {kpis.map(({ label, value, detail, icon: Icon, tone }) => (
           <article
             key={label}
-            className="rounded-2xl border border-border-base bg-white p-4 shadow-xs"
+            className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs"
           >
             <div className="flex items-start justify-between gap-2">
               <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
@@ -294,21 +293,21 @@ export const CrmOverviewPage: React.FC = () => {
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+        <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
             <div>
               <h2 className="text-sm font-black text-stone-950">
-                Pipeline commercial
+                {t("admin.crmOverviewPage.pipelineCommercial")}
               </h2>
               <p className="text-micro text-stone-500">
-                Répartition pondérée par étape
+                {t("admin.crmOverviewPage.repartitionPondereeParEtape")}
               </p>
             </div>
             <Link
               to={crmPaths.pipeline}
               className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
             >
-              Ouvrir le pipeline{" "}
+              {t("admin.crmOverviewPage.ouvrirLePipeline")}{" "}
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </Link>
           </div>
@@ -333,7 +332,7 @@ export const CrmOverviewPage: React.FC = () => {
                     className="min-w-0 flex-1"
                   />
                   <div className="min-w-24 text-right">
-                    <strong className="block font-black tabular-nums text-stone-900">
+                    <strong className="block font-black tabular-nums text-text-main">
                       {money(
                         stage.amountMinor,
                         dashboard.currency,
@@ -351,7 +350,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="grid grid-cols-2 border-t border-border-subtle bg-stone-50/70">
             <div className="border-r border-border-subtle p-4">
               <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-                Prévision commit
+                {t("admin.crmOverviewPage.previsionCommit")}
               </span>
               <strong className="mt-1 block text-lg font-black tabular-nums text-stone-950">
                 {money(
@@ -363,7 +362,7 @@ export const CrmOverviewPage: React.FC = () => {
             </div>
             <div className="p-4">
               <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
-                Revenu gagné
+                {t("admin.crmOverviewPage.revenuGagne")}
               </span>
               <strong className="mt-1 block text-lg font-black tabular-nums text-success">
                 {money(
@@ -376,10 +375,10 @@ export const CrmOverviewPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+        <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-stone-950">Priorités</h2>
+              <h2 className="text-sm font-black text-stone-950">{t("admin.crmOverviewPage.priorites")}</h2>
               <p className="text-micro text-stone-500">
                 Prochaines actions commerciales
               </p>
@@ -393,11 +392,11 @@ export const CrmOverviewPage: React.FC = () => {
             {dashboard.priorityTasks.slice(0, 5).map((task) => (
               <article key={task.id} className="flex gap-3 py-3">
                 <span
-                  className={`mt-1 h-2 w-2 shrink-0 rounded-full ${task.priority === "urgent" ? "bg-danger" : task.priority === "high" ? "bg-primary" : "bg-stone-400"}`}
+                  className={`mt-1 h-2 w-2 shrink-0 rounded-pill ${task.priority === "urgent" ? "bg-danger" : task.priority === "high" ? "bg-primary" : "bg-stone-400"}`}
                   aria-hidden="true"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-bold text-stone-900">
+                  <p className="truncate text-xs font-bold text-text-main">
                     {task.title}
                   </p>
                   <p className="mt-0.5 text-micro text-stone-500">
@@ -418,29 +417,29 @@ export const CrmOverviewPage: React.FC = () => {
               to={crmPaths.tasks}
               className="flex items-center justify-center gap-1 text-xs font-bold text-primary hover:underline"
             >
-              Voir toutes les tâches{" "}
+              {t("admin.crmTasksPage.voirToutesLesTaches")}{" "}
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </Link>
           </div>
         </section>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs">
+      <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-col gap-3 border-b border-border-subtle px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
             <h2 className="text-sm font-black text-stone-950">
-              Opportunités à suivre
+              {t("admin.crmOverviewPage.opportunitesASuivre")}
             </h2>
             <p className="text-micro text-stone-500">
-              Dossiers ouverts, triés par dernière activité
+              {t("admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite")}
             </p>
           </div>
           <label className="relative block sm:w-64">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-stone-400"
+              className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-disabled"
               aria-hidden="true"
             />
-            <span className="sr-only">Rechercher dans les opportunités</span>
+            <span className="sr-only">{t("admin.crmOverviewPage.rechercherDansLesOpportunites")}</span>
             <input
               type="search"
               placeholder="Rechercher…"
@@ -454,11 +453,11 @@ export const CrmOverviewPage: React.FC = () => {
           <table className="w-full min-w-3xl text-left text-xs">
             <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
               <tr>
-                <th className="px-5 py-2.5">Opportunité</th>
-                <th className="px-4 py-2.5">Étape</th>
-                <th className="px-4 py-2.5">Clôture</th>
+                <th className="px-5 py-2.5">{t("admin.crmOverviewPage.opportunite")}</th>
+                <th className="px-4 py-2.5">{t("admin.crmOverviewPage.etape")}</th>
+                <th className="px-4 py-2.5">{t("admin.crmOpportunityDetailPage.cloture")}</th>
                 <th className="px-4 py-2.5 text-right">Montant</th>
-                <th className="px-5 py-2.5 text-right">Probabilité</th>
+                <th className="px-5 py-2.5 text-right">{t("admin.crmOverviewPage.probabilite")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
@@ -480,11 +479,11 @@ export const CrmOverviewPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex rounded-full bg-primary-light px-2 py-1 text-micro font-bold text-primary">
+                    <span className="inline-flex rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-primary">
                       {opportunity.stageName}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-stone-600">
+                  <td className="px-4 py-3 text-text-secondary">
                     {shortDate(opportunity.expectedCloseDate, currentLocale)}
                   </td>
                   <td className="px-4 py-3 text-right font-black tabular-nums text-stone-950">
@@ -507,7 +506,7 @@ export const CrmOverviewPage: React.FC = () => {
                     colSpan={5}
                     className="px-5 py-10 text-center text-sm text-stone-500"
                   >
-                    Aucune opportunité ne correspond à cette recherche.
+                    {t("admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche")}
                   </td>
                 </tr>
               ) : null}
@@ -520,13 +519,13 @@ export const CrmOverviewPage: React.FC = () => {
               className="h-icon-sm w-icon-sm text-success"
               aria-hidden="true"
             />
-            Prévision déterministe · aucune donnée envoyée à un fournisseur IA
+            {t("admin.crmOverviewPage.previsionDeterministeAucuneDonneeEnvoyeeAUnFournisseurIa")}
           </span>
           <Link
             to={crmPaths.pipeline}
             className="font-bold text-primary hover:underline"
           >
-            Afficher le pipeline complet
+            {t("admin.crmOverviewPage.afficherLePipelineComplet")}
           </Link>
         </div>
       </section>

@@ -11,6 +11,7 @@ import {
   type TooltipContentProps,
 } from "recharts";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type RevenueTimeSeries = PlatformFinanceDashboard["timeSeries"];
 
@@ -74,7 +75,7 @@ function RevenueTooltip({
             >
               <dt className="flex items-center gap-2 text-text-secondary">
                 <span
-                  className={`h-2 w-2 rounded-full ${series.dotClass}`}
+                  className={`h-2 w-2 rounded-pill ${series.dotClass}`}
                   aria-hidden="true"
                 />
                 {series.label}
@@ -98,6 +99,7 @@ export function FinanceRevenueTrendChart({
   currency,
   timeSeries,
 }: FinanceRevenueTrendChartProps) {
+  const { t } = useTranslation();
   const { currentLocale, formatDate, formatMoneyMinor } =
     useRegionalFormatters();
 
@@ -158,15 +160,15 @@ export function FinanceRevenueTrendChart({
             id="finance-revenue-chart-title"
             className="text-sm font-bold text-text-main"
           >
-            Évolution des revenus
+            {t("admin.financeRevenueTrendChart.evolutionDesRevenus")}
           </h2>
           <p className="text-micro text-text-muted">
-            Revenus reconnus, hors TVA et fonds vendeurs.
+            {t("admin.financeRevenueTrendChart.revenusReconnusHorsTvaEtFondsVendeurs")}
           </p>
         </div>
         <div
           className="flex flex-wrap items-center gap-x-3 gap-y-1 text-micro text-text-secondary"
-          aria-label="Légende du graphique"
+          aria-label={t("admin.financeRevenueTrendChart.legendeDuGraphique")}
         >
           <span className="flex items-center gap-1.5">
             <i className="h-0.5 w-4 bg-primary" aria-hidden="true" />
@@ -187,7 +189,7 @@ export function FinanceRevenueTrendChart({
           className="mt-4 flex h-56 items-center justify-center rounded-control bg-bg-subtle px-4 text-center text-xs text-text-muted"
           role="status"
         >
-          Aucune donnée de revenus disponible pour cette période.
+          {t("admin.financeRevenueTrendChart.aucuneDonneeDeRevenusDisponiblePourCettePeriode")}
         </div>
       ) : (
         <>
@@ -270,7 +272,7 @@ export function FinanceRevenueTrendChart({
 
           <div className="sr-only">
             <table>
-              <caption>Données du graphique d’évolution des revenus</caption>
+              <caption>{t("admin.financeRevenueTrendChart.donneesDuGraphiqueDEvolutionDesRevenus")}</caption>
               <thead>
                 <tr>
                   <th scope="col">Date</th>

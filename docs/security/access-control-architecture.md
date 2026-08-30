@@ -60,6 +60,9 @@ legacy helpers derive from it; they do not maintain separate grants.
 - One protected-route registry used by route guards and workspace navigation.
 - Capability-scoped staff and customer layouts; unrelated links are removed,
   not disabled.
+- A retained Staff membership replaces the entire customer-marketplace plane
+  for that identity. Public customer surfaces, mobile customer authentication,
+  direct grants, and direct-table access all fail closed for Staff.
 - Professional signup asks for and transports the selected vertical through
   demo and future HTTP adapters.
 - Demo-only persona switcher now covers customer, vertical, and staff boundary
@@ -76,6 +79,10 @@ legacy helpers derive from it; they do not maintain separate grants.
 - Migration `00082_staff_capability_management.sql` adds the shared
   `staff.internal.access` gate and an optimistic, service-role-only capability
   override transaction with atomic audit and session revocation.
+- Migration `00083_staff_marketplace_separation.sql` removes customer grants
+  from Staff, retires Staff-owned inventory, prevents future listing ownership
+  and grant bridges, and adds restrictive RLS across customer marketplace and
+  customer-business state.
 
 ## D. Canonical account model
 
@@ -127,19 +134,21 @@ vertical grant alone never grants access to another organization.
 | Finance         | transaction audit, refunds, commercial approval      | moderation, Staff configuration, credentials     |
 | Operations      | provider health/read                                 | moderation, finance, Staff administration        |
 | Commercial      | CRM and commercial-rule editing                      | moderation, finance, platform configuration      |
-| Content manager | taxonomy and editorial featuring                     | users, finance, moderation                       |
+| Content manager | taxonomy and marketing content                       | listing promotion, users, finance, moderation    |
 | Market manager  | market/vertical configuration in assigned markets    | finance and Staff administration                 |
 | Admin           | platform configuration and staff administration      | moderation and refunds unless separately granted |
 | Owner           | permission governance and provider credentials       | moderation and refunds unless separately granted |
 
-Activating Staff adds only the selected employee role; it does not mutate or
-upgrade the account type. The account keeps the customer capabilities it
-already receives as an Individual or Professional account. Suspended and
-revoked Staff states add no employee capabilities. Every Staff role includes
-`staff.internal.access`; it gates shared employee entry while narrower
-capabilities continue to gate each tool. A stale direct grant cannot make that
-capability effective without active Staff membership. Non-owner Staff
-operations are also constrained by assigned market scope.
+Creating a Staff membership preserves the normalized Individual or
+Professional account-family value for compatibility, but replaces that
+identity's customer capability plane. Active Staff receive only the selected
+employee role and approved internal overrides. Suspended and revoked Staff
+receive neither customer nor employee capabilities and cannot establish a new
+session. Every Staff role includes `staff.internal.access`; narrower
+capabilities continue to gate each internal tool. Customer capabilities are
+not displayed in a Staff override projection and cannot be directly granted to
+Staff. Non-owner Staff operations are also constrained by assigned market
+scope.
 
 `admin` and `owner` receive `admin.permissions.manage`. Capability overrides
 are separate from Staff membership changes: they use complete canonical grant
@@ -153,25 +162,26 @@ mandatory.
 This is the domain-level projection of the complete code registry. `own` means
 resource ownership or authorized organization membership is still required.
 
-| Persona         |    Public    | Customer own | Pro core |   Vertical tools    | Support | Moderation | Verify/restrict | Refund |     Config      | Governance  |
-| --------------- | :----------: | :----------: | :------: | :-----------------: | :-----: | :--------: | :-------------: | :----: | :-------------: | :---------: |
-| Guest           |      ✓       |      —       |    —     |          —          |    —    |     —      |        —        |   —    |        —        |      —      |
-| Individual      |      ✓       |      ✓       |    —     | candidate/tutor own |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro generic     |      ✓       |      ✓       |    ✓     |          —          |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro real estate |      ✓       |      ✓       |    ✓     |        Immo         |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro automotive  |      ✓       |      ✓       |    ✓     |        Auto         |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro education   |      ✓       |      ✓       |    ✓     |    Education org    |    —    |     —      |        —        |   —    |        —        |      —      |
-| Pro employment  |      ✓       |      ✓       |    ✓     |      Recruiter      |    —    |     —      |        —        |   —    |        —        |      —      |
-| Support         |      —       |      —       |    —     |          —          |    ✓    |     —      |        —        |   —    |        —        |      —      |
-| Moderator       | limited read |      —       |    —     |          —          |    —    |     ✓      |        —        |   —    |        —        |      —      |
-| Trust & Safety  |      —       |      —       |    —     |          —          |    —    |  reports   |        ✓        |   —    |        —        |      —      |
-| Compliance      |      —       |      —       |    —     |          —          |    —    |     —      |        ✓        |   —    |        —        |      —      |
-| Finance         |      —       |      —       |    —     |          —          |    —    |     —      |        —        |   ✓    |        —        |      —      |
-| Operations      |      —       |      —       |    —     |    provider ops     |    —    |     —      |        —        |   —    |        —        |      —      |
-| Commercial      |      —       |      —       |    —     |         CRM         |    —    |     —      |        —        |   —    | commercial only |      —      |
-| Market manager  |      —       |      —       |    —     |   vertical admin    |    —    |     —      |        —        |   —    |   market only   |      —      |
-| Admin           |      —       |      —       |    —     |   vertical config   |    —    |     —      |        —        |   —    |        ✓        | staff/roles |
-| Owner           |      —       |      —       |    —     |          —          |    —    |     —      |        —        |   —    |        ✓        |      ✓      |
+| Persona         | Public | Customer own | Pro core |   Vertical tools    | Support | Moderation | Verify/restrict | Refund |     Config      | Governance  |
+| --------------- | :----: | :----------: | :------: | :-----------------: | :-----: | :--------: | :-------------: | :----: | :-------------: | :---------: |
+| Guest           |   ✓    |      —       |    —     |          —          |    —    |     —      |        —        |   —    |        —        |      —      |
+| Individual      |   ✓    |      ✓       |    —     | candidate/tutor own |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro generic     |   ✓    |      ✓       |    ✓     |          —          |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro real estate |   ✓    |      ✓       |    ✓     |        Immo         |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro automotive  |   ✓    |      ✓       |    ✓     |        Auto         |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro education   |   ✓    |      ✓       |    ✓     |    Education org    |    —    |     —      |        —        |   —    |        —        |      —      |
+| Pro employment  |   ✓    |      ✓       |    ✓     |      Recruiter      |    —    |     —      |        —        |   —    |        —        |      —      |
+| Support         |   —    |      —       |    —     |          —          |    ✓    |     —      |        —        |   —    |        —        |      —      |
+| Moderator       |   —    |      —       |    —     |          —          |    —    |     ✓      |        —        |   —    |        —        |      —      |
+| Trust & Safety  |   —    |      —       |    —     |          —          |    —    |  reports   |        ✓        |   —    |        —        |      —      |
+| Compliance      |   —    |      —       |    —     |          —          |    —    |     —      |        ✓        |   —    |        —        |      —      |
+| Finance         |   —    |      —       |    —     |          —          |    —    |     —      |        —        |   ✓    |        —        |      —      |
+| Operations      |   —    |      —       |    —     |    provider ops     |    —    |     —      |        —        |   —    |        —        |      —      |
+| Commercial      |   —    |      —       |    —     |         CRM         |    —    |     —      |        —        |   —    | commercial only |      —      |
+| Content manager |   —    |      —       |    —     | taxonomy/marketing  |    —    |     —      |        —        |   —    |  content only   |      —      |
+| Market manager  |   —    |      —       |    —     |   vertical admin    |    —    |     —      |        —        |   —    |   market only   |      —      |
+| Admin           |   —    |      —       |    —     |   vertical config   |    —    |     —      |        —        |   —    |        ✓        | staff/roles |
+| Owner           |   —    |      —       |    —     |          —          |    —    |     —      |        —        |   —    |        ✓        |      ✓      |
 
 The exact, machine-readable list is exported as `CAPABILITIES`,
 `VERTICAL_CAPABILITIES`, and `STAFF_ROLE_CAPABILITIES`.
@@ -200,14 +210,17 @@ The machine-readable matrix is
 | `/admin/roles`                                            | active Staff            | role or permission governance capability                        |
 | `/admin/audit`                                            | active Staff            | `audit.read`                                                    |
 
-Unlisted marketplace, search, category, listing-detail, legal, and onboarding
-routes remain public or guest-only as declared in the application router.
+Marketplace, search, category, listing-detail, acquisition, and onboarding
+routes remain available to anonymous visitors and customer identities as
+declared in the application router, but a Staff session is redirected before
+customer UI is rendered. Legal, security, help, support, and contact routes
+remain neutral Staff-safe public surfaces.
 
 ## I. Important API authorization matrix
 
 | Endpoint/action                             | Policy                                             | Additional scope                                                                                   |
 | ------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Public markets/taxonomy/search/detail       | public                                             | privacy-safe DTO only                                                                              |
+| Public marketplace taxonomy/search/detail   | public + Staff denial                              | anonymous/customer only; privacy-safe DTO; authenticated Staff receives 403                        |
 | Create/update/publish listing               | listing capability                                 | authenticated publisher + owner/org/branch + entitlement                                           |
 | Orders/messages/notifications/workspace     | own capability                                     | participant or owner; foreign IDs return 404                                                       |
 | Vertical recruiter/agency/dealer/org APIs   | vertical capability                                | active membership/ownership                                                                        |
@@ -259,6 +272,15 @@ unknown, contradictory, self, and owner-escalating changes, then updates the
 profile, revokes sessions, and inserts before/after audit metadata in one
 transaction. Browser roles cannot execute the function.
 
+The v83 migration adds `marketplace.customer.access`, removes every canonical
+customer capability from Staff role/direct grants, revokes affected sessions,
+archives Staff-owned listing inventory and promotions, and prevents new Staff
+listing lifecycles. Database capability resolution checks for any retained
+Staff membership before account-family, vertical, or direct grants. Restrictive
+RLS intersects existing policies on marketplace, vertical, monetization,
+finance, invoicing, CRM, and marketing customer state; backend service-role
+operations remain subject to their exact internal route capabilities.
+
 ## K. Security validation
 
 Automated coverage includes:
@@ -266,6 +288,8 @@ Automated coverage includes:
 - forged JWT and `alg:none` rejection;
 - self-registration and role-switch privilege escalation;
 - current-state/session capability resolution;
+- every Staff role and lifecycle state denied the customer capability plane;
+- Staff-authenticated public marketplace and demo-adapter denial;
 - staff/customer and cross-vertical separation;
 - admin/moderation/finance separation;
 - moderator ban and Trust & Safety listing-removal denial;
@@ -284,13 +308,16 @@ Automated coverage includes:
 ## L. UX validation
 
 - Navigation and direct-route guards share one named policy registry.
-- Active Staff can enter the Staff console while retaining the workspace for
-  their underlying Individual or Professional account.
+- Active Staff can enter only the Staff console and neutral legal/help/security
+  surfaces; customer navigation, acquisition, listing, messaging, transaction,
+  and professional workspaces are not rendered.
+- The customer-only mobile application clears and rejects every Staff session.
 - Internal identity surfaces present active Staff before Professional and
   Individual identity. Staff and customer-verification badges use distinct
   text, icons, accessible names, and semantic treatments.
-- User administration offers the complete searchable capability projection to
-  authorized admin/owner Staff through matching demo and HTTP adapters.
+- User administration offers a complete customer projection for customers and
+  an internal-only projection for Staff; forbidden customer capability names
+  are not shown as possible Staff grants.
 - Professional menus show only the selected vertical.
 - Pending professional registration lands in verification rather than a locked
   dashboard.
@@ -302,7 +329,7 @@ Automated coverage includes:
 
 ## M. Remaining production checks
 
-- Execute migrations `00023`, `00079`, and `00082` against a disposable
+- Execute migrations `00023`, `00079`, `00082`, and `00083` against a disposable
   Supabase/PostgreSQL clone and
   run SQL-level authenticated-role probes before production rollout. Static RLS
   tests validate its policy contract, but they do not replace a real database

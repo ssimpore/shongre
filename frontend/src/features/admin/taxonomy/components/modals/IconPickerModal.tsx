@@ -119,7 +119,7 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <div className="grid grid-cols-6 sm:grid-cols-8 gap-2.5 max-h-64 overflow-y-auto p-1 border border-border-base rounded-xl bg-bg-subtle">
+        <div className="grid grid-cols-6 sm:grid-cols-8 gap-2.5 max-h-64 overflow-y-auto p-1 border border-border-base rounded-control bg-bg-subtle">
           {filteredIcons.map((iconName) => {
             const IconComponent = AVAILABLE_ICONS[iconName];
             const isSelected = selectedIcon === iconName;
@@ -132,10 +132,10 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                   onSelectIcon(iconName);
                   onClose();
                 }}
-                className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all text-stone-700 hover:border-primary hover:bg-white hover:text-primary ${
+                className={`p-2.5 rounded-control border flex flex-col items-center justify-center gap-1.5 transition-all text-stone-700 hover:border-primary hover:bg-bg-surface hover:text-primary ${
                   isSelected
                     ? "border-primary bg-primary-light text-primary ring-2 ring-primary/20 shadow-xs"
-                    : "border-border-subtle bg-white"
+                    : "border-border-subtle bg-bg-surface"
                 }`}
                 title={iconName}
               >

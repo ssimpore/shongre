@@ -1,73 +1,5 @@
 import { apiClientConfig, type DataMode } from "./api-client.config";
 import { dataModeService } from "./data-mode.service";
-import { demoAdminService } from "../adapters/demo/demo-admin.service";
-import { demoAnalyticsService } from "../adapters/demo/demo-analytics.service";
-import { demoAiService } from "../adapters/demo/demo-ai.service";
-import { demoAuthService } from "../adapters/demo/demo-auth.service";
-import { demoAutoService } from "../adapters/demo/demo-auto.service";
-import { demoBusinessRulesService } from "../adapters/demo/demo-business-rules.service";
-import { demoCommissionService } from "../adapters/demo/demo-commission.service";
-import { demoCoursesService } from "../adapters/demo/demo-courses.service";
-import { demoCrmService } from "../adapters/demo/demo-crm.service";
-import { demoEmploymentService } from "../adapters/demo/demo-employment.service";
-import { demoFeatureFlagService } from "../adapters/demo/demo-feature-flag.service";
-import { demoHomepageService } from "../adapters/demo/demo-homepage.service";
-import { demoFinanceService } from "../adapters/demo/demo-finance.service";
-import { demoInvoicingService } from "../adapters/demo/demo-invoicing.service";
-import { demoSolutionsService } from "../adapters/demo/demo-solutions.service";
-import { demoListingsService } from "../adapters/demo/demo-listings.service";
-import { demoMarketingService } from "../adapters/demo/demo-marketing.service";
-import { demoMarketsService } from "../adapters/demo/demo-markets.service";
-import { demoMessagingService } from "../adapters/demo/demo-messaging.service";
-import { demoModerationService } from "../adapters/demo/demo-moderation.service";
-import { demoNotificationsService } from "../adapters/demo/demo-notifications.service";
-import { demoOrdersService } from "../adapters/demo/demo-orders.service";
-import { demoPaymentsService } from "../adapters/demo/demo-payments.service";
-import { demoPromotionsService } from "../adapters/demo/demo-promotions.service";
-import { demoProviderControlPlaneService } from "../adapters/demo/demo-provider-control-plane.service";
-import { demoRealEstateService } from "../adapters/demo/demo-real-estate.service";
-import { demoReviewsService } from "../adapters/demo/demo-reviews.service";
-import { demoSearchService } from "../adapters/demo/demo-search.service";
-import { demoSupportService } from "../adapters/demo/demo-support.service";
-import { demoTaxonomyService } from "../adapters/demo/demo-taxonomy.service";
-import { demoTrendingService } from "../adapters/demo/demo-trending.service";
-import { demoVerificationService } from "../adapters/demo/demo-verification.service";
-import { demoWorkspaceService } from "../adapters/demo/demo-workspace.service";
-import { httpAdminService } from "../adapters/http/http-admin.service";
-import { httpAnalyticsService } from "../adapters/http/http-analytics.service";
-import { httpAiService } from "../adapters/http/http-ai.service";
-import { httpAuthService } from "../adapters/http/http-auth.service";
-import { httpAutoService } from "../adapters/http/http-auto.service";
-import { httpBusinessRulesService } from "../adapters/http/http-business-rules.service";
-import { httpCommissionService } from "../adapters/http/http-commission.service";
-import { httpCoursesService } from "../adapters/http/http-courses.service";
-import { httpCrmProspectingService } from "../adapters/http/http-crm-prospecting.service";
-import { httpCrmService } from "../adapters/http/http-crm.service";
-import { httpEmploymentService } from "../adapters/http/http-employment.service";
-import { httpFeatureFlagService } from "../adapters/http/http-feature-flag.service";
-import { httpHomepageService } from "../adapters/http/http-homepage.service";
-import { httpFinanceService } from "../adapters/http/http-finance.service";
-import { httpInvoicingService } from "../adapters/http/http-invoicing.service";
-import { httpSolutionsService } from "../adapters/http/http-solutions.service";
-import { httpListingsService } from "../adapters/http/http-listings.service";
-import { httpMarketingService } from "../adapters/http/http-marketing.service";
-import { httpMarketsService } from "../adapters/http/http-markets.service";
-import { httpMessagingService } from "../adapters/http/http-messaging.service";
-import { httpModerationService } from "../adapters/http/http-moderation.service";
-import { httpNotificationsService } from "../adapters/http/http-notifications.service";
-import { httpOrdersService } from "../adapters/http/http-orders.service";
-import { httpPaymentsService } from "../adapters/http/http-payments.service";
-import { httpPromotionsService } from "../adapters/http/http-promotions.service";
-import { httpProviderControlPlaneService } from "../adapters/http/http-provider-control-plane.service";
-import { httpRealEstateService } from "../adapters/http/http-real-estate.service";
-import { httpReviewsService } from "../adapters/http/http-reviews.service";
-import { httpSearchService } from "../adapters/http/http-search.service";
-import { httpSupportService } from "../adapters/http/http-support.service";
-import { httpTaxonomyService } from "../adapters/http/http-taxonomy.service";
-import { httpTrendingService } from "../adapters/http/http-trending.service";
-import { httpVerificationService } from "../adapters/http/http-verification.service";
-import { httpWorkspaceService } from "../adapters/http/http-workspace.service";
-import { demoCrmProspectingService } from "../adapters/demo/demo-prospecting.service";
 import type { AdminServiceContract } from "../contracts/admin.contract";
 import type { AnalyticsServiceContract } from "../contracts/analytics.contract";
 import type { AiServiceContract } from "../contracts/ai.contract";
@@ -140,55 +72,356 @@ export interface ServiceRegistry {
   solutions: SolutionsServiceContract;
 }
 
+type ServiceLoaders = {
+  [Key in keyof ServiceRegistry]: () => Promise<ServiceRegistry[Key]>;
+};
+
+const demoServiceLoaders: ServiceLoaders = {
+  listings: () =>
+    import("../adapters/demo/demo-listings.service").then(
+      ({ demoListingsService }) => demoListingsService,
+    ),
+  homepage: () =>
+    import("../adapters/demo/demo-homepage.service").then(
+      ({ demoHomepageService }) => demoHomepageService,
+    ),
+  search: () =>
+    import("../adapters/demo/demo-search.service").then(
+      ({ demoSearchService }) => demoSearchService,
+    ),
+  auth: () =>
+    import("../adapters/demo/demo-auth.service").then(
+      ({ demoAuthService }) => demoAuthService,
+    ),
+  markets: () =>
+    import("../adapters/demo/demo-markets.service").then(
+      ({ demoMarketsService }) => demoMarketsService,
+    ),
+  taxonomy: () =>
+    import("../adapters/demo/demo-taxonomy.service").then(
+      ({ demoTaxonomyService }) => demoTaxonomyService,
+    ),
+  messaging: () =>
+    import("../adapters/demo/demo-messaging.service").then(
+      ({ demoMessagingService }) => demoMessagingService,
+    ),
+  notifications: () =>
+    import("../adapters/demo/demo-notifications.service").then(
+      ({ demoNotificationsService }) => demoNotificationsService,
+    ),
+  orders: () =>
+    import("../adapters/demo/demo-orders.service").then(
+      ({ demoOrdersService }) => demoOrdersService,
+    ),
+  payments: () =>
+    import("../adapters/demo/demo-payments.service").then(
+      ({ demoPaymentsService }) => demoPaymentsService,
+    ),
+  promotions: () =>
+    import("../adapters/demo/demo-promotions.service").then(
+      ({ demoPromotionsService }) => demoPromotionsService,
+    ),
+  verification: () =>
+    import("../adapters/demo/demo-verification.service").then(
+      ({ demoVerificationService }) => demoVerificationService,
+    ),
+  workspace: () =>
+    import("../adapters/demo/demo-workspace.service").then(
+      ({ demoWorkspaceService }) => demoWorkspaceService,
+    ),
+  admin: () =>
+    import("../adapters/demo/demo-admin.service").then(
+      ({ demoAdminService }) => demoAdminService,
+    ),
+  reviews: () =>
+    import("../adapters/demo/demo-reviews.service").then(
+      ({ demoReviewsService }) => demoReviewsService,
+    ),
+  ai: () =>
+    import("../adapters/demo/demo-ai.service").then(
+      ({ demoAiService }) => demoAiService,
+    ),
+  trending: () =>
+    import("../adapters/demo/demo-trending.service").then(
+      ({ demoTrendingService }) => demoTrendingService,
+    ),
+  courses: () =>
+    import("../adapters/demo/demo-courses.service").then(
+      ({ demoCoursesService }) => demoCoursesService,
+    ),
+  auto: () =>
+    import("../adapters/demo/demo-auto.service").then(
+      ({ demoAutoService }) => demoAutoService,
+    ),
+  realEstate: () =>
+    import("../adapters/demo/demo-real-estate.service").then(
+      ({ demoRealEstateService }) => demoRealEstateService,
+    ),
+  employment: () =>
+    import("../adapters/demo/demo-employment.service").then(
+      ({ demoEmploymentService }) => demoEmploymentService,
+    ),
+  businessRules: () =>
+    import("../adapters/demo/demo-business-rules.service").then(
+      ({ demoBusinessRulesService }) => demoBusinessRulesService,
+    ),
+  finance: () =>
+    import("../adapters/demo/demo-finance.service").then(
+      ({ demoFinanceService }) => demoFinanceService,
+    ),
+  commissions: () =>
+    import("../adapters/demo/demo-commission.service").then(
+      ({ demoCommissionService }) => demoCommissionService,
+    ),
+  providerControlPlane: () =>
+    import("../adapters/demo/demo-provider-control-plane.service").then(
+      ({ demoProviderControlPlaneService }) => demoProviderControlPlaneService,
+    ),
+  support: () =>
+    import("../adapters/demo/demo-support.service").then(
+      ({ demoSupportService }) => demoSupportService,
+    ),
+  featureFlags: () =>
+    import("../adapters/demo/demo-feature-flag.service").then(
+      ({ demoFeatureFlagService }) => demoFeatureFlagService,
+    ),
+  moderation: () =>
+    import("../adapters/demo/demo-moderation.service").then(
+      ({ demoModerationService }) => demoModerationService,
+    ),
+  crm: () =>
+    import("../adapters/demo/demo-crm.service").then(
+      ({ demoCrmService }) => demoCrmService,
+    ),
+  crmProspecting: () =>
+    import("../adapters/demo/demo-prospecting.service").then(
+      ({ demoCrmProspectingService }) => demoCrmProspectingService,
+    ),
+  marketing: () =>
+    import("../adapters/demo/demo-marketing.service").then(
+      ({ demoMarketingService }) => demoMarketingService,
+    ),
+  analytics: () =>
+    import("../adapters/demo/demo-analytics.service").then(
+      ({ demoAnalyticsService }) => demoAnalyticsService,
+    ),
+  invoicing: () =>
+    import("../adapters/demo/demo-invoicing.service").then(
+      ({ demoInvoicingService }) => demoInvoicingService,
+    ),
+  solutions: () =>
+    import("../adapters/demo/demo-solutions.service").then(
+      ({ demoSolutionsService }) => demoSolutionsService,
+    ),
+};
+
+const httpServiceLoaders: ServiceLoaders = {
+  listings: () =>
+    import("../adapters/http/http-listings.service").then(
+      ({ httpListingsService }) => httpListingsService,
+    ),
+  homepage: () =>
+    import("../adapters/http/http-homepage.service").then(
+      ({ httpHomepageService }) => httpHomepageService,
+    ),
+  search: () =>
+    import("../adapters/http/http-search.service").then(
+      ({ httpSearchService }) => httpSearchService,
+    ),
+  auth: () =>
+    import("../adapters/http/http-auth.service").then(
+      ({ httpAuthService }) => httpAuthService,
+    ),
+  markets: () =>
+    import("../adapters/http/http-markets.service").then(
+      ({ httpMarketsService }) => httpMarketsService,
+    ),
+  taxonomy: () =>
+    import("../adapters/http/http-taxonomy.service").then(
+      ({ httpTaxonomyService }) => httpTaxonomyService,
+    ),
+  messaging: () =>
+    import("../adapters/http/http-messaging.service").then(
+      ({ httpMessagingService }) => httpMessagingService,
+    ),
+  notifications: () =>
+    import("../adapters/http/http-notifications.service").then(
+      ({ httpNotificationsService }) => httpNotificationsService,
+    ),
+  orders: () =>
+    import("../adapters/http/http-orders.service").then(
+      ({ httpOrdersService }) => httpOrdersService,
+    ),
+  payments: () =>
+    import("../adapters/http/http-payments.service").then(
+      ({ httpPaymentsService }) => httpPaymentsService,
+    ),
+  promotions: () =>
+    import("../adapters/http/http-promotions.service").then(
+      ({ httpPromotionsService }) => httpPromotionsService,
+    ),
+  verification: () =>
+    import("../adapters/http/http-verification.service").then(
+      ({ httpVerificationService }) => httpVerificationService,
+    ),
+  workspace: () =>
+    import("../adapters/http/http-workspace.service").then(
+      ({ httpWorkspaceService }) => httpWorkspaceService,
+    ),
+  admin: () =>
+    import("../adapters/http/http-admin.service").then(
+      ({ httpAdminService }) => httpAdminService,
+    ),
+  reviews: () =>
+    import("../adapters/http/http-reviews.service").then(
+      ({ httpReviewsService }) => httpReviewsService,
+    ),
+  ai: () =>
+    import("../adapters/http/http-ai.service").then(
+      ({ httpAiService }) => httpAiService,
+    ),
+  trending: () =>
+    import("../adapters/http/http-trending.service").then(
+      ({ httpTrendingService }) => httpTrendingService,
+    ),
+  courses: () =>
+    import("../adapters/http/http-courses.service").then(
+      ({ httpCoursesService }) => httpCoursesService,
+    ),
+  auto: () =>
+    import("../adapters/http/http-auto.service").then(
+      ({ httpAutoService }) => httpAutoService,
+    ),
+  realEstate: () =>
+    import("../adapters/http/http-real-estate.service").then(
+      ({ httpRealEstateService }) => httpRealEstateService,
+    ),
+  employment: () =>
+    import("../adapters/http/http-employment.service").then(
+      ({ httpEmploymentService }) => httpEmploymentService,
+    ),
+  businessRules: () =>
+    import("../adapters/http/http-business-rules.service").then(
+      ({ httpBusinessRulesService }) => httpBusinessRulesService,
+    ),
+  finance: () =>
+    import("../adapters/http/http-finance.service").then(
+      ({ httpFinanceService }) => httpFinanceService,
+    ),
+  commissions: () =>
+    import("../adapters/http/http-commission.service").then(
+      ({ httpCommissionService }) => httpCommissionService,
+    ),
+  providerControlPlane: () =>
+    import("../adapters/http/http-provider-control-plane.service").then(
+      ({ httpProviderControlPlaneService }) => httpProviderControlPlaneService,
+    ),
+  support: () =>
+    import("../adapters/http/http-support.service").then(
+      ({ httpSupportService }) => httpSupportService,
+    ),
+  featureFlags: () =>
+    import("../adapters/http/http-feature-flag.service").then(
+      ({ httpFeatureFlagService }) => httpFeatureFlagService,
+    ),
+  moderation: () =>
+    import("../adapters/http/http-moderation.service").then(
+      ({ httpModerationService }) => httpModerationService,
+    ),
+  crm: () =>
+    import("../adapters/http/http-crm.service").then(
+      ({ httpCrmService }) => httpCrmService,
+    ),
+  crmProspecting: () =>
+    import("../adapters/http/http-crm-prospecting.service").then(
+      ({ httpCrmProspectingService }) => httpCrmProspectingService,
+    ),
+  marketing: () =>
+    import("../adapters/http/http-marketing.service").then(
+      ({ httpMarketingService }) => httpMarketingService,
+    ),
+  analytics: () =>
+    import("../adapters/http/http-analytics.service").then(
+      ({ httpAnalyticsService }) => httpAnalyticsService,
+    ),
+  invoicing: () =>
+    import("../adapters/http/http-invoicing.service").then(
+      ({ httpInvoicingService }) => httpInvoicingService,
+    ),
+  solutions: () =>
+    import("../adapters/http/http-solutions.service").then(
+      ({ httpSolutionsService }) => httpSolutionsService,
+    ),
+};
+
+/**
+ * Defers adapter code until a domain is actually used.
+ *
+ * Every service contract is Promise-based, so the proxy can preserve the
+ * public method signatures while keeping unrelated fixtures and provider
+ * adapters out of the initial route bundle. The resolved singleton is cached
+ * per domain, and methods retain their original receiver for class state.
+ */
+function createLazyService<Service extends object>(
+  load: () => Promise<Service>,
+  absentMethods: ReadonlySet<PropertyKey> = new Set(),
+): Service {
+  let servicePromise: Promise<Service> | undefined;
+  const methodCache = new Map<
+    PropertyKey,
+    (...args: unknown[]) => Promise<unknown>
+  >();
+
+  const resolveService = () => (servicePromise ??= load());
+
+  return new Proxy({} as Service, {
+    get(_target, property) {
+      // A `then` property would make the proxy itself Promise-like.
+      if (property === "then" || absentMethods.has(property)) return undefined;
+
+      const cached = methodCache.get(property);
+      if (cached) return cached;
+
+      const method = async (...args: unknown[]) => {
+        const service = await resolveService();
+        const implementation = Reflect.get(service, property);
+        if (typeof implementation !== "function") {
+          throw new TypeError(`Unknown service method: ${String(property)}`);
+        }
+        return Reflect.apply(implementation, service, args);
+      };
+      methodCache.set(property, method);
+      return method;
+    },
+    has(_target, property) {
+      return !absentMethods.has(property);
+    },
+  });
+}
+
 export function createServiceRegistry(
   mode: DataMode = dataModeService.getActiveMode(),
 ): ServiceRegistry {
-  const useDemo = mode === "demo";
+  const loaders = mode === "demo" ? demoServiceLoaders : httpServiceLoaders;
+  const absentByService: Partial<
+    Record<keyof ServiceRegistry, ReadonlySet<PropertyKey>>
+  > =
+    mode === "api"
+      ? {
+          auth: new Set<PropertyKey>(["completeDemoSocialAuth"]),
+          notifications: new Set<PropertyKey>(["simulateNotification"]),
+        }
+      : {};
 
-  return {
-    listings: useDemo ? demoListingsService : httpListingsService,
-    homepage: useDemo ? demoHomepageService : httpHomepageService,
-    search: useDemo ? demoSearchService : httpSearchService,
-    auth: useDemo ? demoAuthService : httpAuthService,
-    markets: useDemo ? demoMarketsService : httpMarketsService,
-    taxonomy: useDemo ? demoTaxonomyService : httpTaxonomyService,
-    messaging: useDemo ? demoMessagingService : httpMessagingService,
-    notifications: useDemo
-      ? demoNotificationsService
-      : httpNotificationsService,
-    orders: useDemo ? demoOrdersService : httpOrdersService,
-    payments: useDemo ? demoPaymentsService : httpPaymentsService,
-    promotions: useDemo ? demoPromotionsService : httpPromotionsService,
-    verification: useDemo ? demoVerificationService : httpVerificationService,
-    workspace: useDemo ? demoWorkspaceService : httpWorkspaceService,
-    admin: useDemo ? demoAdminService : httpAdminService,
-    reviews: useDemo ? demoReviewsService : httpReviewsService,
-    ai: useDemo ? demoAiService : httpAiService,
-    trending: useDemo ? demoTrendingService : httpTrendingService,
-    courses: useDemo ? demoCoursesService : httpCoursesService,
-    auto: useDemo ? demoAutoService : httpAutoService,
-    realEstate: useDemo ? demoRealEstateService : httpRealEstateService,
-    employment: useDemo ? demoEmploymentService : httpEmploymentService,
-    businessRules: useDemo
-      ? demoBusinessRulesService
-      : httpBusinessRulesService,
-    finance: useDemo ? demoFinanceService : httpFinanceService,
-    commissions: useDemo ? demoCommissionService : httpCommissionService,
-    providerControlPlane: useDemo
-      ? demoProviderControlPlaneService
-      : httpProviderControlPlaneService,
-    support: useDemo ? demoSupportService : httpSupportService,
-    featureFlags: useDemo ? demoFeatureFlagService : httpFeatureFlagService,
-    moderation: useDemo ? demoModerationService : httpModerationService,
-    crm: useDemo ? demoCrmService : httpCrmService,
-    crmProspecting: useDemo
-      ? demoCrmProspectingService
-      : httpCrmProspectingService,
-    marketing: useDemo ? demoMarketingService : httpMarketingService,
-    analytics: useDemo ? demoAnalyticsService : httpAnalyticsService,
-    invoicing: useDemo ? demoInvoicingService : httpInvoicingService,
-    solutions: useDemo ? demoSolutionsService : httpSolutionsService,
-  };
+  return Object.fromEntries(
+    (Object.keys(loaders) as Array<keyof ServiceRegistry>).map((key) => [
+      key,
+      createLazyService(
+        () => loaders[key]() as Promise<ServiceRegistry[keyof ServiceRegistry]>,
+        absentByService[key],
+      ),
+    ]),
+  ) as unknown as ServiceRegistry;
 }
 
 // Keep module evaluation deterministic across server and browser. A persisted

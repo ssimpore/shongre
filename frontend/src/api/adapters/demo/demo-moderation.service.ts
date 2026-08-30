@@ -6,6 +6,7 @@ import type {
 } from "../../contracts/moderation.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoModerationService implements ModerationServiceContract {
   private readonly cases: OwnModerationCase[] = [
@@ -25,11 +26,13 @@ export class DemoModerationService implements ModerationServiceContract {
 
   async listOwnCases(_userId: string): Promise<OwnModerationCase[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("report.create");
     return this.cases.map((item) => ({ ...item }));
   }
 
   async listOwnAppeals(userId: string): Promise<ModerationAppeal[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("report.create");
     return this.appeals
       .filter((item) => item.appellantId === userId)
       .map((item) => ({ ...item }));
@@ -41,6 +44,7 @@ export class DemoModerationService implements ModerationServiceContract {
     reason: string,
   ): Promise<ModerationAppeal> {
     await simulateNetworkDelay();
+    requireDemoCapability("report.create");
     const target = this.cases.find((item) => item.id === caseId);
     if (!target || target.status !== "actioned")
       throw new Error("Ce dossier n’est plus éligible à un recours.");
@@ -59,6 +63,7 @@ export class DemoModerationService implements ModerationServiceContract {
 
   async listCases(status?: ModerationCaseStatus): Promise<OwnModerationCase[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("moderation.review");
     return this.cases
       .filter((item) => !status || item.status === status)
       .map((item) => ({ ...item }));
@@ -68,6 +73,7 @@ export class DemoModerationService implements ModerationServiceContract {
     status?: ModerationAppeal["status"],
   ): Promise<ModerationAppeal[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("moderation.review");
     return this.appeals
       .filter((item) => !status || item.status === status)
       .map((item) => ({ ...item }));
@@ -79,6 +85,7 @@ export class DemoModerationService implements ModerationServiceContract {
     reason: string,
   ): Promise<ModerationAppeal> {
     await simulateNetworkDelay();
+    requireDemoCapability("moderation.action");
     const appeal = this.appeals.find((item) => item.id === appealId);
     if (!appeal || !["submitted", "under_review"].includes(appeal.status))
       throw new Error("Ce recours a déjà été traité.");

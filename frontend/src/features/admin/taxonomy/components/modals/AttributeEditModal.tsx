@@ -297,7 +297,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
         </FormField>
 
         {/* Behavioral Flags */}
-        <div className="p-3 bg-bg-subtle rounded-xl border border-border-subtle grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+        <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
             <Checkbox
               checked={required}
@@ -332,8 +332,8 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
         {(dataType === "select" || dataType === "multi_select") && (
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                Valeurs prédéfinies ({options.length})
+              <h4 className="text-xs font-bold text-text-main uppercase tracking-wider">
+                {t("admin.attributeEditModal.valeursPredefinies")}{options.length})
               </h4>
               <Button
                 variant="outline"
@@ -348,7 +348,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
 
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {options.length === 0 ? (
-                <div className="p-3 text-center text-xs text-stone-500 border border-dashed rounded-xl">
+                <div className="p-3 text-center text-xs text-stone-500 border border-dashed rounded-control">
                   {t("admin.attributeEditModal.aucuneOptionDefinieCliquezSur")}
                 </div>
               ) : (

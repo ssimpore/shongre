@@ -11,6 +11,7 @@ import { marketService } from "../../../domains/market/market.service";
 import { storageService } from "../../../services/storage.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { getCountryConfig, type CountryConfig } from "@shongre/contracts";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoMarketsService implements MarketsServiceContract {
   private readonly configurationChanges = new Map<
@@ -56,6 +57,7 @@ export class DemoMarketsService implements MarketsServiceContract {
     input: CountryConfigChangeInput,
   ): Promise<MarketConfigurationChangeRequest> {
     await simulateNetworkDelay();
+    requireDemoCapability("market.configure");
     const country = getCountryConfig(code);
     if (!country) throw new Error("Marché introuvable.");
     if (
@@ -97,6 +99,7 @@ export class DemoMarketsService implements MarketsServiceContract {
     code: string,
   ): Promise<readonly MarketConfigurationChangeRequest[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("market.manage");
     return [...this.configurationChanges.values()].filter(
       (request) => request.marketCode === code.toUpperCase(),
     );
@@ -108,6 +111,7 @@ export class DemoMarketsService implements MarketsServiceContract {
     reason: string,
   ): Promise<CountryConfig> {
     await simulateNetworkDelay();
+    requireDemoCapability("market.configure");
     if (reason.trim().length < 8) {
       throw new Error("Un motif d’approbation détaillé est requis.");
     }
@@ -141,6 +145,7 @@ export class DemoMarketsService implements MarketsServiceContract {
     reason: string,
   ): Promise<{ rejected: true }> {
     await simulateNetworkDelay();
+    requireDemoCapability("market.configure");
     if (reason.trim().length < 8) {
       throw new Error("Un motif de rejet détaillé est requis.");
     }

@@ -84,6 +84,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           microphonePermission: false,
         },
       ],
+      "./plugins/with-ios-scene-lifecycle",
     ],
     ios: {
       bundleIdentifier,

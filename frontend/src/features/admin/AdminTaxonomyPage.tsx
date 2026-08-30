@@ -167,13 +167,13 @@ export const AdminTaxonomyPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border-base shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-primary-light text-primary">
+            <div className="p-2 rounded-control bg-primary-light text-primary">
               <Layers className="w-icon-lg h-icon-lg" />
             </div>
-            <h1 className="text-xl font-black text-stone-900 tracking-tight">
+            <h1 className="text-xl font-black text-text-main tracking-tight">
               {t("admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie")}
             </h1>
           </div>
@@ -188,7 +188,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSelectTab("validation")}
-              className="px-3 py-1.5 rounded-xl bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-control bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
             >
               <AlertOctagon className="w-icon-md h-icon-md" />
               <span>{blockingErrors.length} bloquant(s)</span>
@@ -202,10 +202,10 @@ export const AdminTaxonomyPage: React.FC = () => {
               onClick={() => handleSelectTab("drafts")}
               leftIcon={<GitCommit className="w-icon-sm h-icon-sm" />}
             >
-              {draftChanges.length} brouillon(s) à publier
+              {draftChanges.length} {t("admin.adminTaxonomyPage.brouillonSAPublier")}
             </Button>
           ) : (
-            <span className="px-3 py-1.5 rounded-xl bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
+            <span className="px-3 py-1.5 rounded-control bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">
               <ShieldCheck className="w-icon-md h-icon-md text-success" />
               <span>{t("admin.adminTaxonomyPage.taxonomieSynchronisee")}</span>
             </span>
@@ -222,13 +222,13 @@ export const AdminTaxonomyPage: React.FC = () => {
           {[
             {
               id: "tree",
-              label: "Arborescence & Nœuds",
+              label: t("admin.adminTaxonomyPage.arborescenceNoeuds"),
               icon: FolderTree,
               badge: undefined,
             },
             {
               id: "attributes",
-              label: "Registre des Attributs",
+              label: t("admin.adminTaxonomyPage.registreDesAttributs"),
               icon: Layers,
               badge: undefined,
             },
@@ -240,19 +240,19 @@ export const AdminTaxonomyPage: React.FC = () => {
             },
             {
               id: "governance",
-              label: "Schéma v4 & Migration",
+              label: t("admin.adminTaxonomyPage.schemaV4Migration"),
               icon: Database,
               badge: undefined,
             },
             {
               id: "validation",
-              label: "Validation & Qualité",
+              label: t("admin.adminTaxonomyPage.validationQualite"),
               icon: ShieldCheck,
               badge:
                 blockingErrors.length > 0
                   ? `${blockingErrors.length}`
                   : undefined,
-              badgeClass: "bg-danger text-white",
+              badgeClass: "bg-danger text-text-inverse",
             },
             {
               id: "drafts",
@@ -260,7 +260,7 @@ export const AdminTaxonomyPage: React.FC = () => {
               icon: GitCommit,
               badge:
                 draftChanges.length > 0 ? `${draftChanges.length}` : undefined,
-              badgeClass: "bg-amber-500 text-white",
+              badgeClass: "bg-amber-500 text-text-inverse",
             },
             {
               id: "import_export",
@@ -284,15 +284,15 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onClick={() => handleSelectTab(tab.id)}
                 className={`flex items-center gap-2 py-3 px-4 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? "border-primary text-primary font-bold bg-white"
-                    : "border-transparent text-stone-500 hover:text-stone-900 hover:border-stone-300"
+                    ? "border-primary text-primary font-bold bg-bg-surface"
+                    : "border-transparent text-stone-500 hover:text-text-main hover:border-stone-300"
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {tab.badge && (
                   <span
-                    className={`text-micro px-1.5 py-0.5 rounded-full font-bold ${
+                    className={`text-micro px-1.5 py-0.5 rounded-pill font-bold ${
                       tab.badgeClass || "bg-stone-200 text-stone-700"
                     }`}
                   >
@@ -324,7 +324,7 @@ export const AdminTaxonomyPage: React.FC = () => {
               onAddRootCategory={() => handleOpenAdd(null)}
             />
 
-            <div className="bg-white rounded-2xl border border-border-base p-4 shadow-xs">
+            <div className="bg-bg-surface rounded-2xl border border-border-base p-4 shadow-xs">
               <TaxonomyHierarchyTree
                 nodes={treeNodes}
                 selectedNodeId={selectedNode?.id}
@@ -350,7 +350,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onSelectNode={handleSelectNode}
               />
             ) : (
-              <div className="bg-white rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">
+              <div className="bg-bg-surface rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">
                 {t("admin.adminTaxonomyPage.selectionnezUneCategorieDansL")}
               </div>
             )}

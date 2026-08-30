@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useAuthorization } from "./useAuthorization";
 import { MessageKey } from "../i18n/messages.fr";
 import { routes } from "../configuration/routes";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 
 export interface PublishCta {
   /** Where the button should actually take this user. */
@@ -43,6 +44,19 @@ export function usePublishCta(): PublishCtaKeys {
     useAuthorization();
 
   return useMemo(() => {
+    if (isStaffSeparatedSubject(currentUser)) {
+      const isActiveStaff = currentUser?.staffStatus === "active";
+      return {
+        to: isActiveStaff ? routes.admin.overview() : routes.contact(),
+        labelKey: isActiveStaff
+          ? "publishCta.internalConsole"
+          : "footer.contactSupport",
+        shortLabelKey: isActiveStaff
+          ? "publishCta.internalConsoleShort"
+          : "footer.contactSupport",
+      };
+    }
+
     if (isSuspended || isDeactivated) {
       return {
         to: "/compte",

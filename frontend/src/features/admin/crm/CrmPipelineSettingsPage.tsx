@@ -27,6 +27,7 @@ import {
 } from "../../../design-system/primitives/FormField";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 type DraftStage = CrmPipelineInput["stages"][number];
 type StageKind = "open" | "won" | "lost";
@@ -98,9 +99,10 @@ function toDraft(pipeline: CrmPipeline): CrmPipelineInput {
 }
 
 export const CrmPipelineSettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Pipelines CRM | Shongre",
-    description: "Configuration des étapes CRM.",
+    description: t("admin.crmPipelineSettingsPage.configurationDesEtapesCrm"),
     canonicalPath: "/admin/crm/configuration/pipelines",
     noIndex: true,
   });
@@ -186,7 +188,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
       const terminalIndex = stages.findIndex((stage) => !stage.isOpen);
       const insertAt = terminalIndex < 0 ? stages.length : terminalIndex;
       stages.splice(insertAt, 0, {
-        name: "Nouvelle étape",
+        name: t("admin.crmPipelineSettingsPage.nouvelleEtape"),
         position: insertAt,
         defaultProbability: 50,
         colorToken: "violet",
@@ -246,10 +248,10 @@ export const CrmPipelineSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white sm:p-6">
+      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-stone-900">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
               <GitBranch className="h-icon-lg w-icon-lg text-violet-300" />
             </span>
             <div>
@@ -257,17 +259,16 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 CRM · Configuration
               </p>
               <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-                Pipelines & étapes
+                {t("admin.crmPipelineSettingsPage.pipelinesEtapes")}
               </h1>
             </div>
           </div>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="h-icon-md w-icon-md" /> Nouveau pipeline
+            <Plus className="h-icon-md w-icon-md" /> {t("admin.crmPipelineSettingsPage.nouveauPipeline")}
           </Button>
         </div>
-        <p className="mt-3 text-xs text-stone-400">
-          Les étapes, probabilités et états terminaux sont configurés par
-          tenant, puis validés atomiquement côté backend.
+        <p className="mt-3 text-xs text-text-disabled">
+          {t("admin.crmPipelineSettingsPage.lesEtapesProbabilitesEtEtatsTerminauxSontConfiguresParTenant")}
         </p>
       </section>
 
@@ -277,15 +278,15 @@ export const CrmPipelineSettingsPage: React.FC = () => {
         pipelines.map((pipeline) => (
           <section
             key={pipeline.id}
-            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+            className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-5">
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-black">{pipeline.name}</h2>
                   {pipeline.isDefault && (
-                    <span className="rounded-full bg-primary-light px-2 py-1 text-micro font-bold text-primary">
-                      Par défaut
+                    <span className="rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-primary">
+                      {t("admin.crmPipelineSettingsPage.parDefaut")}
                     </span>
                   )}
                 </div>
@@ -295,7 +296,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-success-surface px-2 py-1 text-micro font-bold text-success">
+                <span className="inline-flex items-center gap-1 rounded-pill bg-success-surface px-2 py-1 text-micro font-bold text-success">
                   <CheckCircle2 className="h-icon-sm w-icon-sm" /> Actif
                 </span>
                 <Button
@@ -313,7 +314,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                   key={stage.id}
                   className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-stone-950 text-micro font-black text-white">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-stone-950 text-micro font-black text-text-inverse">
                     {index + 1}
                   </span>
                   <div>
@@ -323,7 +324,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                       </strong>
                       {stage.isWon && (
                         <span className="inline-flex items-center gap-1 text-micro font-bold text-success">
-                          <CheckCircle2 className="h-icon-xs w-icon-xs" /> Gagné
+                          <CheckCircle2 className="h-icon-xs w-icon-xs" /> {t("admin.crmPipelineSettingsPage.gagne")}
                         </span>
                       )}
                       {stage.isLost && (
@@ -340,7 +341,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-micro text-stone-500">
-                      Probabilité
+                      {t("admin.crmOverviewPage.probabilite")}
                     </span>
                     <strong className="block text-sm">
                       {stage.defaultProbability}%
@@ -357,8 +358,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             </div>
             <div className="flex items-start gap-2 border-t border-border-subtle bg-stone-50 p-4 text-micro text-stone-500">
               <LockKeyhole className="mt-0.5 h-icon-sm w-icon-sm shrink-0" />
-              Les mises à jour utilisent un contrôle de version. Une étape déjà
-              utilisée ne peut pas être supprimée.
+              {t("admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne")}
             </div>
           </section>
         ))
@@ -368,7 +368,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing ? `Modifier ${editing.name}` : "Nouveau pipeline"}
-        description="Définissez un parcours ordonné avec une issue gagnée et une issue perdue."
+        description={t("admin.crmPipelineSettingsPage.definissezUnParcoursOrdonneAvecUneIssueGagneeEtUne")}
         maxWidth="2xl"
       >
         <form onSubmit={save} className="space-y-4 text-xs">
@@ -385,7 +385,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 required
               />
             </FormField>
-            <label className="flex items-center gap-2 self-end rounded-xl bg-stone-50 px-3 py-2.5 font-bold">
+            <label className="flex items-center gap-2 self-end rounded-control bg-stone-50 px-3 py-2.5 font-bold">
               <input
                 type="checkbox"
                 checked={draft.isDefault}
@@ -396,7 +396,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                   }))
                 }
               />
-              Pipeline par défaut
+              {t("admin.crmPipelineSettingsPage.pipelineParDefaut")}
             </label>
           </div>
           <FormField label="Description">
@@ -414,22 +414,22 @@ export const CrmPipelineSettingsPage: React.FC = () => {
 
           <fieldset className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <legend className="font-black">Étapes ordonnées</legend>
+              <legend className="font-black">{t("admin.crmPipelineSettingsPage.etapesOrdonnees")}</legend>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={addStage}
               >
-                <Plus className="h-icon-sm w-icon-sm" /> Ajouter une étape
+                <Plus className="h-icon-sm w-icon-sm" /> {t("admin.crmPipelineSettingsPage.ajouterUneEtape")}
               </Button>
             </div>
             {draft.stages.map((stage, index) => (
               <div
                 key={stage.id ?? `new-${index}`}
-                className="grid gap-2 rounded-xl border border-border-subtle p-3 sm:grid-cols-5 sm:items-end"
+                className="grid gap-2 rounded-control border border-border-subtle p-3 sm:grid-cols-5 sm:items-end"
               >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-black text-white">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-black text-text-inverse">
                   {index + 1}
                 </span>
                 <FormField label={`Nom de l’étape ${index + 1}`} required>
@@ -441,7 +441,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     required
                   />
                 </FormField>
-                <FormField label="Probabilité" required>
+                <FormField label={t("admin.crmOverviewPage.probabilite")} required>
                   <Input
                     type="number"
                     min={CRM_FIELD_CONSTRAINTS.stageProbabilityMin}
@@ -465,7 +465,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     }
                     options={[
                       { value: "open", label: "Ouverte" },
-                      { value: "won", label: "Gagnée" },
+                      { value: "won", label: t("admin.crmOpportunityDetailPage.gagnee") },
                       { value: "lost", label: "Perdue" },
                     ]}
                   />
@@ -476,7 +476,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, -1)}
                     disabled={index === 0}
                     aria-label={`Remonter l’étape ${stage.name}`}
-                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-text-secondary enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
                     <ArrowUp className="h-icon-sm w-icon-sm" />
                   </button>
@@ -485,7 +485,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, 1)}
                     disabled={index === draft.stages.length - 1}
                     aria-label={`Descendre l’étape ${stage.name}`}
-                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-stone-600 enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-text-secondary enabled:hover:bg-stone-50 disabled:opacity-30"
                   >
                     <ArrowDown className="h-icon-sm w-icon-sm" />
                   </button>

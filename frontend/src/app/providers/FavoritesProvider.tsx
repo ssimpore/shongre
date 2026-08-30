@@ -11,6 +11,8 @@ import { services } from "../../api/client/service-registry";
 import { storageService } from "../../services/storage.service";
 import { useAuth } from "./AuthProvider";
 import { analyticsService } from "../../services/analytics.service";
+import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
+import { ForbiddenError } from "../../security/authorization.service";
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
@@ -48,6 +50,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const { currentUser, isRestoring } = useAuth();
   const identity = currentUser?.id ?? null;
+  const isStaffIdentity = isStaffSeparatedSubject(currentUser);
   const previousIdentity = useRef<string | null | undefined>(undefined);
 
   /**
@@ -63,6 +66,13 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     let cancelled = false;
     if (isRestoring) return () => undefined;
+
+    if (isStaffIdentity) {
+      previousIdentity.current = identity;
+      setFavoriteIds([]);
+      setIsLoading(false);
+      return () => undefined;
+    }
 
     // Only an observed signed-out -> signed-in transition merges. Merging on
     // mount instead would hand whoever is already signed in on a shared device
@@ -117,15 +127,21 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       cancelled = true;
     };
-  }, [identity, isRestoring]);
+  }, [identity, isRestoring, isStaffIdentity]);
 
   const isFavorite = useCallback(
-    (listingId: string) => favoriteIds.includes(listingId),
-    [favoriteIds],
+    (listingId: string) => !isStaffIdentity && favoriteIds.includes(listingId),
+    [favoriteIds, isStaffIdentity],
   );
 
   const toggleFavorite = useCallback(
     async (listingId: string) => {
+      if (isStaffIdentity) {
+        throw new ForbiddenError(
+          "Les comptes Staff ne peuvent pas utiliser les favoris de la place de marché.",
+        );
+      }
+
       // Optimistic: a heart that waits on a round trip feels broken. The service
       // result is authoritative and reconciles the set immediately after.
       let optimistic = false;
@@ -161,10 +177,16 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
     },
-    [identity],
+    [identity, isStaffIdentity],
   );
 
   const clearFavorites = useCallback(async () => {
+    if (isStaffIdentity) {
+      throw new ForbiddenError(
+        "Les comptes Staff ne peuvent pas utiliser les favoris de la place de marché.",
+      );
+    }
+
     const previous = favoriteIds;
     setFavoriteIds([]);
     try {
@@ -181,18 +203,25 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       setFavoriteIds(previous);
       throw new Error("Impossible de vider vos favoris pour le moment.");
     }
-  }, [favoriteIds, identity]);
+  }, [favoriteIds, identity, isStaffIdentity]);
 
   const value = useMemo<FavoritesContextValue>(
     () => ({
-      favoriteIds,
-      count: favoriteIds.length,
-      isLoading,
+      favoriteIds: isStaffIdentity ? [] : favoriteIds,
+      count: isStaffIdentity ? 0 : favoriteIds.length,
+      isLoading: isStaffIdentity ? false : isLoading,
       isFavorite,
       toggleFavorite,
       clearFavorites,
     }),
-    [favoriteIds, isLoading, isFavorite, toggleFavorite, clearFavorites],
+    [
+      favoriteIds,
+      isLoading,
+      isFavorite,
+      toggleFavorite,
+      clearFavorites,
+      isStaffIdentity,
+    ],
   );
 
   return (

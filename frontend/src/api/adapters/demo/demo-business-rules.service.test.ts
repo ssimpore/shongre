@@ -205,7 +205,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     });
   });
 
-  it("requires a second actor for an audited complimentary plan grant", async () => {
+  it("requires an authorized second actor for an audited complimentary plan grant", async () => {
     storageService.setCurrentUserKey("admin_antoine");
     const service = new DemoBusinessRulesService();
     const catalog = await service.getCatalog("FR");
@@ -227,7 +227,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
         reason: "Validation direction",
         idempotencyKey: "complimentary-decision-course-self-001",
       }),
-    ).rejects.toThrow("deuxième personne");
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
     storageService.setCurrentUserKey("super_admin_alex");
     const decision = await service.decideComplimentaryGrant(request.id, {

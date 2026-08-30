@@ -7,7 +7,10 @@ import type {
   StaffRole,
   StaffStatus,
 } from "@shongre/contracts/access-control";
-import { isStaffCapability } from "@shongre/contracts/access-control";
+import {
+  isCustomerMarketplaceCapability,
+  isStaffCapability,
+} from "@shongre/contracts/access-control";
 
 /**
  * The authenticated caller for a single request.
@@ -73,6 +76,20 @@ export function requirePermission(
   permission: Permission,
 ): Principal {
   requireAuthenticated(principal);
+  // Defense in depth: even a stale/forged in-memory capability projection may
+  // never bridge a Staff identity back into the customer marketplace plane.
+  if (
+    principal.staffStatus &&
+    principal.staffStatus !== "none" &&
+    isCustomerMarketplaceCapability(permission)
+  ) {
+    throw new AppError({
+      code: "FORBIDDEN",
+      message:
+        "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+      details: { reason: "staff_marketplace_separation" },
+    });
+  }
   if (isStaffCapability(permission)) {
     if (principal.staffStatus !== "active") {
       throw new AppError({
@@ -102,6 +119,25 @@ export function requirePermission(
     });
   }
   return principal;
+}
+
+/**
+ * Public marketplace endpoints remain anonymous, but an authenticated Staff
+ * identity must not use that anonymous surface as a customer account.
+ */
+export function forbidStaffMarketplaceAccess(principal: Principal): void {
+  if (
+    isAuthenticated(principal) &&
+    principal.staffStatus &&
+    principal.staffStatus !== "none"
+  ) {
+    throw new AppError({
+      code: "FORBIDDEN",
+      message:
+        "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+      details: { reason: "staff_marketplace_separation" },
+    });
+  }
 }
 
 /** Require a fresh sign-in proof for high-impact employee administration. */

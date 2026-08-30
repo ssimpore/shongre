@@ -93,6 +93,11 @@ returns a neutral cancelled result and creates no account or session.
   membership with `active`, `suspended`, or `revoked` status and one explicit
   Staff role. Request principals reload that membership and its capabilities
   from the database on every request.
+- Any retained Staff membership excludes the customer marketplace capability
+  plane for the same identity. Active Staff receive only internal role
+  capabilities; suspended and revoked Staff receive neither plane and cannot
+  create or refresh a session. The customer-only mobile client rejects every
+  Staff lifecycle state.
 - Staff-only capabilities require an MFA-verified session. Granting, changing,
   suspending, reactivating, or revoking Staff access also requires recent
   authentication, forbids self-management, revokes all target sessions, and

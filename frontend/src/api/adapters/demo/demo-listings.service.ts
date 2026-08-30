@@ -12,6 +12,7 @@ import { publicationService } from "../../../domains/publication/publication.ser
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { marketService } from "../../../domains/market/market.service";
 import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const BULK_IMPORT_SAMPLE: BulkListingImportTemplate = {
   fileName: "modele_import_annonces_shongre.csv",
@@ -53,11 +54,13 @@ export class DemoListingsService implements ListingsServiceContract {
     filter?: SearchFilters,
   ): Promise<{ listings: Listing[]; total: number }> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.read");
     return listingRepository.getListings(filter);
   }
 
   async getListingById(id: string): Promise<Listing | null> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.read");
     return listingRepository.getListingById(id);
   }
 
@@ -68,6 +71,7 @@ export class DemoListingsService implements ListingsServiceContract {
     totalPages: number;
   }> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.read");
     const res = await listingRepository.getListings(params);
     return {
       items: res.listings,
@@ -79,6 +83,7 @@ export class DemoListingsService implements ListingsServiceContract {
 
   async createListingDraft(userId?: string): Promise<PublicationDraftState> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.create");
     const existing = publicationService.getDraft(userId);
     if (existing) return existing;
 
@@ -128,11 +133,13 @@ export class DemoListingsService implements ListingsServiceContract {
 
   async getListingDraft(): Promise<PublicationDraftState | null> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.create");
     return publicationService.getDraft(storageService.getCurrentUser()?.id);
   }
 
   async uploadListingPhoto(file: File) {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.create");
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       file.size <= 0 ||
@@ -155,11 +162,13 @@ export class DemoListingsService implements ListingsServiceContract {
     _locale: string,
   ): Promise<BulkListingImportTemplate> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.bulk_import");
     return { ...BULK_IMPORT_SAMPLE };
   }
 
   async parseBulkImportCsv(input: ParseBulkListingImportInput) {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.bulk_import");
     const lines = input.content.trim().split(/\r?\n/);
     const currency = marketService.getEffectiveConfig(input.marketCode)
       .localization.defaultCurrency;
@@ -205,6 +214,7 @@ export class DemoListingsService implements ListingsServiceContract {
     input: PublishBulkListingsInput,
   ): Promise<Listing[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.bulk_import");
     const seller = storageService.getCurrentUser();
     if (!seller || seller.id !== input.sellerId) {
       throw new Error(
@@ -276,6 +286,7 @@ export class DemoListingsService implements ListingsServiceContract {
     userId?: string,
   ): Promise<void> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.create");
     publicationService.saveDraft(draft, userId);
   }
 
@@ -284,6 +295,10 @@ export class DemoListingsService implements ListingsServiceContract {
     sellerId: string,
   ): Promise<Listing> {
     await simulateNetworkDelay();
+    const currentUser = requireDemoCapability("listing.publish");
+    if (!currentUser || currentUser.id !== sellerId) {
+      throw new Error("Le compte vendeur actif ne correspond pas à l’annonce.");
+    }
     const allUsers = Object.values(storageService.getUsers());
     const user = allUsers.find((u) => u.id === sellerId) || {
       id: sellerId,
@@ -301,6 +316,7 @@ export class DemoListingsService implements ListingsServiceContract {
 
   async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.update.own");
     const updated = await listingRepository.updateListing(id, updates);
     if (!updated) throw new Error(`Listing with ID ${id} not found.`);
     return updated;
@@ -308,16 +324,19 @@ export class DemoListingsService implements ListingsServiceContract {
 
   async deleteListing(id: string): Promise<boolean> {
     await simulateNetworkDelay();
+    requireDemoCapability("listing.delete.own");
     return listingRepository.deleteListing(id);
   }
 
   async toggleFavorite(listingId: string): Promise<boolean> {
     await simulateNetworkDelay();
+    requireDemoCapability("favorite.manage.own");
     return storageService.toggleFavorite(listingId);
   }
 
   async getFavorites(): Promise<string[]> {
     await simulateNetworkDelay();
+    requireDemoCapability("favorite.manage.own");
     return storageService.getFavorites();
   }
 }

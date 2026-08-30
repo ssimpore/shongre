@@ -18,6 +18,7 @@ import type {
 import type { CrmServiceContract } from "../../contracts/crm.contract";
 import { storageService } from "../../../services/storage.service";
 import { demoCrmService } from "./demo-crm.service";
+import { requireDemoCapability } from "./demo-authorization";
 
 const SNAPSHOT_AT = "2026-08-15T10:00:00.000Z";
 const IMPORTED_AT = "2026-08-15T10:05:00.000Z";
@@ -450,6 +451,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   }
 
   async listProfiles(): Promise<ProspectingProfile[]> {
+    requireDemoCapability("crm.prospecting.read");
     this.assertAvailable();
     const key = tenantKey();
     if (!this.profiles.has(key)) this.profiles.set(key, [defaultProfile()]);
@@ -457,6 +459,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   }
 
   async createProfile(input: ProspectingProfileInput) {
+    requireDemoCapability("crm.prospecting.profiles.manage");
     this.assertAvailable();
     const key = tenantKey();
     const current = await this.listProfiles();
@@ -472,6 +475,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   }
 
   async listSources(marketCode: string) {
+    requireDemoCapability("crm.prospecting.read");
     this.assertAvailable();
     const items = sourceDefinitions.filter((source) =>
       source.supportedMarketCodes.includes(marketCode),
@@ -494,6 +498,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   async discover(
     input: ProspectDiscoveryRequest,
   ): Promise<ProspectDiscoveryResult> {
+    requireDemoCapability("crm.prospecting.discover");
     this.assertAvailable();
     const market = getCountryConfig(input.filters.marketCode);
     if (
@@ -559,6 +564,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   async getOpportunityBrief(
     candidateId: string,
   ): Promise<ProspectOpportunityBrief> {
+    requireDemoCapability("crm.ai_prospecting.use");
     this.assertAvailable();
     const candidate = (this.candidates.get(tenantKey()) || prospects).find(
       (item) => item.company.id === candidateId,
@@ -592,6 +598,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   async importCandidate(
     input: ProspectImportRequest,
   ): Promise<ProspectImportResult> {
+    requireDemoCapability("crm.prospecting.import");
     this.assertAvailable();
     const importKey = `${tenantKey()}:${input.idempotencyKey}`;
     const previous = this.imports.get(importKey);
@@ -642,6 +649,7 @@ export class DemoProspectingService implements CrmProspectingServiceContract {
   }
 
   async getUsage(_marketCode: string): Promise<ProspectingUsage> {
+    requireDemoCapability("crm.prospecting.read");
     this.assertPermitted();
     const expired = this.scenario === "subscription_expired";
     const exhausted = this.scenario === "quota_exhausted";

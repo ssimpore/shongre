@@ -93,10 +93,10 @@ export const TaxonomyImportExportTab: React.FC<
   return (
     <div className="space-y-8 max-w-4xl">
       {/* Export Section */}
-      <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+            <h3 className="text-base font-black text-text-main flex items-center gap-2">
               <Download className="w-icon-lg h-icon-lg text-primary" />
               <span>
                 {t(
@@ -121,9 +121,9 @@ export const TaxonomyImportExportTab: React.FC<
       </div>
 
       {/* Import Section */}
-      <div className="bg-white p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div>
-          <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+          <h3 className="text-base font-black text-text-main flex items-center gap-2">
             <Upload className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t(
@@ -150,7 +150,7 @@ export const TaxonomyImportExportTab: React.FC<
 
         {importResult && (
           <div
-            className={`p-4 rounded-xl border text-xs space-y-2 ${
+            className={`p-4 rounded-control border text-xs space-y-2 ${
               importResult.success
                 ? "bg-success-surface border-success-border text-success"
                 : "bg-danger-surface border-danger-border text-danger"

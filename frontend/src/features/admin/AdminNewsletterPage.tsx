@@ -43,6 +43,7 @@ import { EmptyState, Skeleton } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatDate } from "../../utilities/formatters";
 import { NewsletterPreviewModal } from "../newsletter/components/NewsletterPreviewModal";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type MarketingTab =
   | "overview"
@@ -103,10 +104,11 @@ const statusLabel: Record<MarketingCampaign["status"], string> = {
 };
 
 export const AdminNewsletterPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Marketing & Newsletter | Administration Shongre",
     description:
-      "Audiences, campagnes, modèles, conformité et délivrabilité Marketing.",
+      t("admin.adminNewsletterPage.audiencesCampagnesModelesConformiteEtDelivrabiliteMarketing"),
     canonicalPath: "/admin/marketing",
     noIndex: true,
   });
@@ -287,18 +289,18 @@ export const AdminNewsletterPage: React.FC = () => {
             {
               id: "cta",
               type: "BUTTON",
-              label: "Découvrir la sélection",
+              label: t("admin.adminNewsletterPage.decouvrirLaSelection"),
               href: "https://shongre.example/recherche",
             },
             {
               id: "preferences",
               type: "PREFERENCE_CENTER",
-              text: "Gérer mes préférences",
+              text: t("newsletter.newsletterPreviewModal.gererMesPreferences"),
             },
             {
               id: "unsubscribe",
               type: "UNSUBSCRIBE",
-              text: "Me désabonner en un clic",
+              text: t("admin.adminNewsletterPage.meDesabonnerEnUnClic"),
             },
           ],
         },
@@ -345,7 +347,7 @@ export const AdminNewsletterPage: React.FC = () => {
     },
     {
       id: "templates",
-      label: "Modèles",
+      label: t("admin.adminNewsletterPage.modeles"),
       icon: LayoutTemplate,
       count: snapshot.templates.length,
     },
@@ -362,7 +364,7 @@ export const AdminNewsletterPage: React.FC = () => {
     },
     {
       id: "compliance",
-      label: "Conformité",
+      label: t("admin.adminNewsletterPage.conformite"),
       icon: ShieldCheck,
       count: snapshot.suppressions.length,
     },
@@ -370,20 +372,19 @@ export const AdminNewsletterPage: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-8">
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 p-5 text-white shadow-sm sm:p-6">
+      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-violet-300">
               <span>CRM · Marketing</span>
               <span aria-hidden>·</span>
-              <span>Provider Platform partagée</span>
+              <span>{t("admin.adminNewsletterPage.providerPlatformPartagee")}</span>
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
               Marketing & Newsletter
             </h1>
-            <p className="mt-2 text-xs leading-relaxed text-stone-400 sm:text-sm">
-              Audiences CRM et marketing, campagnes versionnées, consentement,
-              délivrabilité et analyse depuis un domaine multi-tenant unique.
+            <p className="mt-2 text-xs leading-relaxed text-text-disabled sm:text-sm">
+              {t("admin.adminNewsletterPage.audiencesCrmEtMarketingCampagnesVersionneesConsentementDelivrabiliteEtAnalyse")}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -411,7 +412,7 @@ export const AdminNewsletterPage: React.FC = () => {
 
       <nav
         aria-label="Sections Marketing"
-        className="flex gap-1 overflow-x-auto rounded-2xl border border-border-base bg-white p-1.5 shadow-xs"
+        className="flex gap-1 overflow-x-auto rounded-2xl border border-border-base bg-bg-surface p-1.5 shadow-xs"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -423,17 +424,17 @@ export const AdminNewsletterPage: React.FC = () => {
               aria-current={activeTab === tab.id ? "page" : undefined}
               className={`flex min-h-control-sm shrink-0 items-center gap-2 rounded-control px-3 text-xs font-bold transition-colors ${
                 activeTab === tab.id
-                  ? "bg-stone-950 text-white"
-                  : "text-stone-600 hover:bg-stone-100 hover:text-stone-950"
+                  ? "bg-stone-950 text-text-inverse"
+                  : "text-text-secondary hover:bg-stone-100 hover:text-stone-950"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
               {tab.label}
               {tab.count !== undefined && (
                 <span
-                  className={`rounded-full px-1.5 py-0.5 text-micro ${
+                  className={`rounded-pill px-1.5 py-0.5 text-micro ${
                     activeTab === tab.id
-                      ? "bg-white/15 text-white"
+                      ? "bg-bg-surface/15 text-text-inverse"
                       : "bg-stone-100 text-stone-500"
                   }`}
                 >
@@ -506,17 +507,17 @@ export const AdminNewsletterPage: React.FC = () => {
           setPreflight(null);
         }}
         title={`Pré-vol · ${preflightCampaign?.name ?? ""}`}
-        description="Les exclusions légales et opérationnelles sont évaluées côté service."
+        description={t("admin.adminNewsletterPage.lesExclusionsLegalesEtOperationnellesSontEvalueesCoteService")}
       >
         {checkingPreflight || !preflight ? (
           <div className="space-y-3">
-            <Skeleton className="h-20 rounded-xl" />
-            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-20 rounded-control" />
+            <Skeleton className="h-28 rounded-control" />
           </div>
         ) : (
           <div className="space-y-4 text-xs">
             <div
-              className={`rounded-xl border p-4 ${
+              className={`rounded-control border p-4 ${
                 preflight.canSend
                   ? "border-success-border bg-success-surface"
                   : "border-danger-border bg-danger-surface"
@@ -535,10 +536,9 @@ export const AdminNewsletterPage: React.FC = () => {
                 </strong>
               </div>
               <p className="mt-2 text-stone-700">
-                {preflight.audience.eligible.toLocaleString("fr-FR")} éligibles
-                · {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
+                {preflight.audience.eligible.toLocaleString("fr-FR")} {t("admin.adminNewsletterPage.eligibles")} {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
                 {preflight.audience.selected.toLocaleString("fr-FR")}{" "}
-                sélectionnés
+                {t("admin.adminNewsletterPage.selectionnes")}
               </p>
             </div>
             {[
@@ -594,38 +594,38 @@ export const AdminNewsletterPage: React.FC = () => {
       <Modal
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Créer une campagne"
-        description="Le brouillon restera modifiable jusqu’au snapshot d’envoi."
+        title={t("admin.adminNewsletterPage.creerUneCampagne")}
+        description={t("admin.adminNewsletterPage.leBrouillonResteraModifiableJusquAuSnapshotDEnvoi")}
       >
         <form onSubmit={createCampaign} className="space-y-4 text-xs">
           <FormField label="Nom interne" required>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Sélection Pro · septembre"
+              placeholder={t("admin.adminNewsletterPage.selectionProSeptembre")}
             />
           </FormField>
-          <FormField label="Objet de l’email" required>
+          <FormField label={t("admin.adminNewsletterPage.objetDeLEmail2")} required>
             <Input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              placeholder="Les nouveautés choisies pour vous"
+              placeholder={t("admin.adminNewsletterPage.lesNouveautesChoisiesPourVous")}
             />
           </FormField>
-          <FormField label="Texte d’aperçu">
+          <FormField label={t("admin.adminNewsletterPage.texteDApercu")}>
             <Input
               value={previewText}
               onChange={(event) => setPreviewText(event.target.value)}
-              placeholder="La sélection de la semaine en un coup d’œil"
+              placeholder={t("admin.adminNewsletterPage.laSelectionDeLaSemaineEnUnCoupDOeil")}
             />
           </FormField>
           <FormField label="Audience" required>
             <Select
-              aria-label="Audience de la campagne"
+              aria-label={t("admin.adminNewsletterPage.audienceDeLaCampagne")}
               value={audienceKey}
               onChange={(event) => setAudienceKey(event.target.value)}
               options={[
-                { value: "", label: "Choisir une liste ou un segment" },
+                { value: "", label: t("admin.adminNewsletterPage.choisirUneListeOuUnSegment") },
                 ...audienceOptions,
               ]}
             />
@@ -634,7 +634,7 @@ export const AdminNewsletterPage: React.FC = () => {
             <Input
               value={heading}
               onChange={(event) => setHeading(event.target.value)}
-              placeholder="Cette semaine sur Shongre"
+              placeholder={t("admin.adminNewsletterPage.cetteSemaineSurShongre")}
             />
           </FormField>
           <FormField label="Introduction">
@@ -642,13 +642,11 @@ export const AdminNewsletterPage: React.FC = () => {
               rows={4}
               value={body}
               onChange={(event) => setBody(event.target.value)}
-              placeholder="Présentez l’information essentielle en quelques phrases."
+              placeholder={t("admin.adminNewsletterPage.presentezLInformationEssentielleEnQuelquesPhrases")}
             />
           </FormField>
-          <div className="rounded-xl border border-success-border bg-success-surface p-3 text-success">
-            Le bloc préférences et le désabonnement sont ajoutés
-            automatiquement. Les suppressions restent prioritaires sur
-            l’audience.
+          <div className="rounded-control border border-success-border bg-success-surface p-3 text-success">
+            {t("admin.adminNewsletterPage.leBlocPreferencesEtLeDesabonnementSontAjoutesAutomatiquementLes")}
           </div>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
             <Button
@@ -675,7 +673,7 @@ const MetricCard: React.FC<{
   detail: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = ({ label, value, detail, icon: Icon }) => (
-  <article className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+  <article className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="flex items-start justify-between gap-3">
       <div>
         <p className="text-micro font-bold uppercase tracking-wider text-stone-500">
@@ -686,7 +684,7 @@ const MetricCard: React.FC<{
         </p>
         <p className="mt-1 text-xs text-stone-500">{detail}</p>
       </div>
-      <span className="rounded-xl bg-violet-50 p-2.5 text-violet-700">
+      <span className="rounded-control bg-violet-50 p-2.5 text-violet-700">
         <Icon className="h-4 w-4" />
       </span>
     </div>
@@ -736,12 +734,12 @@ const Overview: React.FC<{
           compact
         />
       </div>
-      <section className="min-w-0 rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+      <section className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-icon-md w-icon-md text-success" />
           <h2 className="text-sm font-black">Garde-fous actifs</h2>
         </div>
-        <ul className="mt-4 space-y-3 text-xs text-stone-600">
+        <ul className="mt-4 space-y-3 text-xs text-text-secondary">
           {[
             "Consentement MARKETING distinct du transactionnel",
             "Suppression prioritaire sur listes, segments, imports et IA",
@@ -775,7 +773,7 @@ const Campaigns: React.FC<{
   sending,
   compact = false,
 }) => (
-  <section className="min-w-0 rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+  <section className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="mb-4 flex items-center justify-between gap-3">
       <div>
         <h2 className="text-sm font-black text-stone-950">
@@ -811,14 +809,14 @@ const Campaigns: React.FC<{
                 <Badge variant={statusVariant(campaign.status)} size="sm">
                   {statusLabel[campaign.status]}
                 </Badge>
-                <span className="text-micro font-bold text-stone-600">
+                <span className="text-micro font-bold text-text-secondary">
                   v{campaign.currentVersion}
                 </span>
               </div>
-              <p className="mt-1 truncate text-xs text-stone-600">
+              <p className="mt-1 truncate text-xs text-text-secondary">
                 {campaign.subject}
               </p>
-              <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-micro text-stone-600">
+              <p className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-micro text-text-secondary">
                 <span>{campaign.campaignType}</span>
                 <span>{campaign.locale}</span>
                 <span>
@@ -875,7 +873,7 @@ const Audiences: React.FC<{
   profiles: MarketingProfile[];
 }> = ({ lists, segments, profiles }) => (
   <div className="grid gap-5 xl:grid-cols-2">
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <Users className="h-icon-md w-icon-md text-primary" />
         <h2 className="text-sm font-black">Listes statiques</h2>
@@ -884,7 +882,7 @@ const Audiences: React.FC<{
         {lists.map((list) => (
           <article
             key={list.id}
-            className="rounded-xl border border-border-subtle p-4"
+            className="rounded-control border border-border-subtle p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -901,7 +899,7 @@ const Audiences: React.FC<{
         ))}
       </div>
     </section>
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <ListFilter className="h-icon-md w-icon-md text-violet-700" />
         <h2 className="text-sm font-black">Segments dynamiques</h2>
@@ -910,7 +908,7 @@ const Audiences: React.FC<{
         {segments.map((segment) => (
           <article
             key={segment.id}
-            className="rounded-xl border border-border-subtle p-4"
+            className="rounded-control border border-border-subtle p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -918,7 +916,7 @@ const Audiences: React.FC<{
                 <p className="mt-1 text-xs leading-relaxed text-stone-500">
                   {segment.description}
                 </p>
-                <p className="mt-2 text-micro font-bold uppercase tracking-wider text-stone-600">
+                <p className="mt-2 text-micro font-bold uppercase tracking-wider text-text-secondary">
                   {segment.definition.combinator} ·{" "}
                   {segment.definition.conditions.length} conditions
                 </p>
@@ -931,7 +929,7 @@ const Audiences: React.FC<{
         ))}
       </div>
     </section>
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs xl:col-span-2">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-black">Profils récents</h2>
@@ -959,7 +957,7 @@ const Audiences: React.FC<{
               <tr key={profile.id}>
                 <td className="px-3 py-3">
                   <strong className="block">{profile.email}</strong>
-                  <span className="text-stone-600">
+                  <span className="text-text-secondary">
                     {[profile.firstName, profile.lastName]
                       .filter(Boolean)
                       .join(" ") || "Marketing-only"}
@@ -979,15 +977,15 @@ const Audiences: React.FC<{
                     {profile.status}
                   </Badge>
                 </td>
-                <td className="px-3 py-3 text-stone-600">{profile.source}</td>
-                <td className="px-3 py-3 text-stone-600">
+                <td className="px-3 py-3 text-text-secondary">{profile.source}</td>
+                <td className="px-3 py-3 text-text-secondary">
                   {profile.topics.join(", ") || "—"}
                 </td>
                 <td className="px-3 py-3">
                   {profile.crmContactId ? (
                     <CheckCircle2 className="h-icon-md w-icon-md text-success" />
                   ) : (
-                    <span className="text-stone-600">—</span>
+                    <span className="text-text-secondary">—</span>
                   )}
                 </td>
               </tr>
@@ -1002,7 +1000,7 @@ const Audiences: React.FC<{
 const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
   templates,
 }) => (
-  <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+  <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="flex items-center gap-2">
       <LayoutTemplate className="h-icon-md w-icon-md text-primary" />
       <div>
@@ -1019,7 +1017,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
           className="rounded-2xl border border-border-subtle p-4"
         >
           <div className="flex items-start justify-between gap-3">
-            <span className="rounded-xl bg-violet-50 p-2 text-violet-700">
+            <span className="rounded-control bg-violet-50 p-2 text-violet-700">
               <Sparkles className="h-icon-md w-icon-md" />
             </span>
             <Badge variant="neutral" size="sm">
@@ -1028,7 +1026,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
           </div>
           <h3 className="mt-4 text-sm font-black">{template.name}</h3>
           <p className="mt-1 text-xs text-stone-500">{template.subject}</p>
-          <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-600">
+          <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-secondary">
             {template.category} · {template.locale} ·{" "}
             {template.content.blocks.length} blocs
           </p>
@@ -1043,7 +1041,7 @@ const Automation: React.FC<{
   usage: MarketingUsage | null;
 }> = ({ journeys, usage }) => (
   <div className="grid gap-5 xl:grid-cols-3">
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs xl:col-span-2">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-black">Parcours marketing</h2>
@@ -1063,7 +1061,7 @@ const Automation: React.FC<{
         {journeys.map((journey) => (
           <article
             key={journey.id}
-            className="rounded-xl border border-border-subtle p-4"
+            className="rounded-control border border-border-subtle p-4"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1081,7 +1079,7 @@ const Automation: React.FC<{
                 {journey.status} · v{journey.currentVersion}
               </Badge>
             </div>
-            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-600">
+            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-secondary">
               {journey.definition.trigger.type} ·{" "}
               {journey.definition.nodes.length} étapes · profondeur max.{" "}
               {journey.definition.maxExecutionDepth}
@@ -1090,9 +1088,9 @@ const Automation: React.FC<{
         ))}
       </div>
     </section>
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <h2 className="text-sm font-black">Sécurité d’exécution</h2>
-      <ul className="mt-4 space-y-3 text-xs text-stone-600">
+      <ul className="mt-4 space-y-3 text-xs text-text-secondary">
         {[
           "Boucles rejetées à l’activation",
           "Clé idempotente par événement et version",
@@ -1140,22 +1138,22 @@ const Analytics: React.FC<{
         icon={Send}
       />
     </section>
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <h2 className="text-sm font-black">Qualité et délivrabilité</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-xs">
-        <div className="rounded-xl bg-stone-100 p-3">
+        <div className="rounded-control bg-stone-100 p-3">
           <strong className="block text-lg">{analytics.softBounces}</strong>
           Bounces temporaires
         </div>
-        <div className="rounded-xl bg-stone-100 p-3">
+        <div className="rounded-control bg-stone-100 p-3">
           <strong className="block text-lg">{analytics.hardBounces}</strong>
           Bounces durs
         </div>
-        <div className="rounded-xl bg-stone-100 p-3">
+        <div className="rounded-control bg-stone-100 p-3">
           <strong className="block text-lg">{analytics.complaints}</strong>
           Plaintes
         </div>
-        <div className="rounded-xl bg-stone-100 p-3">
+        <div className="rounded-control bg-stone-100 p-3">
           <strong className="block text-lg">{analytics.unsubscribes}</strong>
           Désabonnements
         </div>
@@ -1171,7 +1169,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
   suppressions,
 }) => (
   <div className="grid gap-5 xl:grid-cols-3">
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs xl:col-span-2">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center gap-2">
         <Ban className="h-icon-md w-icon-md text-danger" />
         <div>
@@ -1204,23 +1202,23 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
           ))}
         </div>
       ) : (
-        <div className="mt-5 rounded-xl border border-success-border bg-success-surface p-4 text-xs text-success">
+        <div className="mt-5 rounded-control border border-success-border bg-success-surface p-4 text-xs text-success">
           Aucune suppression ajoutée pendant cette session de démonstration. Les
           profils non éligibles restent exclus par leur statut.
         </div>
       )}
     </section>
-    <section className="rounded-2xl border border-border-base bg-white p-5 shadow-xs">
+    <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <Clock3 className="h-icon-md w-icon-md text-violet-700" />
         <h2 className="text-sm font-black">Finalités séparées</h2>
       </div>
       <div className="mt-4 space-y-3 text-xs">
-        <div className="rounded-xl bg-violet-50 p-3 text-violet-950">
+        <div className="rounded-control bg-violet-50 p-3 text-violet-950">
           <strong className="block">MARKETING</strong>
           Bloqué par désabonnement, plainte, bounce dur ou suppression légale.
         </div>
-        <div className="rounded-xl bg-stone-100 p-3 text-stone-700">
+        <div className="rounded-control bg-stone-100 p-3 text-stone-700">
           <strong className="block">TRANSACTIONAL / SECURITY</strong>
           N’est pas bloqué automatiquement par un désabonnement Newsletter.
         </div>

@@ -46,6 +46,10 @@ import type {
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
 import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const createdAt = BASELINE_MONETIZATION_CATALOG.generatedAt;
 const versions: CommercialConfigurationVersion[] = [
@@ -372,6 +376,11 @@ function digest(value: string) {
 
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async getCatalog(marketCode = DEFAULT_MARKET_CODE) {
+    requireDemoAnyCapability([
+      "marketplace.customer.access",
+      "monetization.manage",
+      "commercial_rules.read",
+    ]);
     await simulateNetworkDelay();
     const version = versions.find(
       (entry) => entry.marketCode === marketCode && entry.status === "active",
@@ -384,6 +393,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async evaluate(
     context: RuleEvaluationContext,
   ): Promise<RuleEvaluationResult> {
+    requireDemoAnyCapability([
+      "marketplace.customer.access",
+      "commercial_rules.read",
+    ]);
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(context.marketCode);
     const ordered = [...catalog.rules].sort((a, b) => b.priority - a.priority);
@@ -443,6 +456,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async createQuote(request: QuoteRequest) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -644,6 +658,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async createCheckout(quoteId: string, idempotencyKey: string) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     const orderKey = `${accountId}:${idempotencyKey}`;
@@ -782,6 +797,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async validatePromotion(request: PromotionValidationRequest) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(request.marketCode);
     const promotion = catalog.promotions.find(
@@ -865,6 +881,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async getActiveEntitlements() {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -876,6 +893,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async getSubscriptions() {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -885,6 +903,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async getBillingOverview(): Promise<BillingOverview> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     const user = storageService.getCurrentUser();
@@ -988,6 +1007,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async getInvoiceDocument(invoiceId: string) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -1016,6 +1036,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async previewSubscriptionChange(request: SubscriptionChangeRequest) {
+    requireDemoCapability("subscription.manage.own");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -1080,6 +1101,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async applySubscriptionChange(request: SubscriptionChangeRequest) {
+    requireDemoCapability("subscription.manage.own");
     const preview = await this.previewSubscriptionChange(request);
     await simulateNetworkDelay();
     const subscription = subscriptions.find(
@@ -1139,6 +1161,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   async updateSubscriptionCancellation(
     request: SubscriptionCancellationRequest,
   ) {
+    requireDemoCapability("subscription.manage.own");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
@@ -1164,6 +1187,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async getAdminOverview(marketCode = DEFAULT_MARKET_CODE) {
+    requireDemoCapability("monetization.manage");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
     const marketVersions = versions.filter(
@@ -1204,6 +1228,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async requestComplimentaryGrant(input: ComplimentaryGrantRequestInput) {
+    requireDemoCapability("monetization.complimentary_grants.request");
     await simulateNetworkDelay();
     const parsed = complimentaryGrantRequestInputSchema.safeParse(input);
     if (!parsed.success)
@@ -1229,6 +1254,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     requestId: string,
     input: ComplimentaryGrantDecisionInput,
   ) {
+    requireDemoCapability("monetization.complimentary_grants.create");
     await simulateNetworkDelay();
     const parsed = complimentaryGrantDecisionInputSchema.safeParse(input);
     if (!parsed.success)
@@ -1285,6 +1311,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async createDraft(patch: CommercialDraftPatch) {
+    requireDemoAnyCapability(["commercial_rules.edit", "commissions.manage"]);
     await simulateNetworkDelay();
     patch = commercialDraftPatchSchema.parse(patch);
     const current = await this.getCatalog("FR");
@@ -1375,6 +1402,13 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     action: "submit" | "approve" | "publish" | "rollback",
     reason: string,
   ) {
+    requireDemoAnyCapability(
+      action === "submit"
+        ? ["commercial_rules.edit", "commissions.manage"]
+        : action === "approve"
+          ? ["commercial_rules.approve", "commissions.manage"]
+          : ["commercial_rules.publish", "commissions.publish"],
+    );
     await simulateNetworkDelay();
     const version = versions.find((entry) => entry.id === versionId);
     if (!version) throw new Error("Version introuvable");

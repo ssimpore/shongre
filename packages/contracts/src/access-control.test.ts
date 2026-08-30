@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
   STAFF_ROLES,
   canonicalAccessContext,
   resolveCapabilityFacts,
@@ -90,7 +91,7 @@ describe("canonical access-control policy", () => {
   });
 
   it.each(STAFF_ROLES)(
-    "adds %s Staff access without changing the underlying account type",
+    "gives %s only its internal Staff plane",
     (staffRole) => {
       const staff = capabilities({
         accountType: "individual",
@@ -98,9 +99,9 @@ describe("canonical access-control policy", () => {
         staffRole,
       });
       expect(staff.has("staff.internal.access")).toBe(true);
-      expect(staff.has("favorite.manage.own")).toBe(true);
-      expect(staff.has("listing.create")).toBe(true);
-      expect(staff.has("subscription.manage.own")).toBe(false);
+      for (const capability of CUSTOMER_MARKETPLACE_CAPABILITIES) {
+        expect(staff.has(capability)).toBe(false);
+      }
     },
   );
 
@@ -114,7 +115,7 @@ describe("canonical access-control policy", () => {
       expect(staff.has("admin.access")).toBe(false);
       expect(staff.has("staff.internal.access")).toBe(false);
       expect(staff.has("admin.staff.manage")).toBe(false);
-      expect(staff.has("listing.create")).toBe(true);
+      expect(staff.size).toBe(0);
     }
   });
 
@@ -242,7 +243,7 @@ describe("canonical access-control policy", () => {
 
     expect(customer.has("admin.configuration.manage")).toBe(false);
     expect(revokedStaff.has("admin.configuration.manage")).toBe(false);
-    expect(revokedStaff.has("listing.read")).toBe(true);
+    expect(revokedStaff.has("listing.read")).toBe(false);
   });
 
   it("requires a resolved Staff role even when the membership status says active", () => {
@@ -283,11 +284,11 @@ describe("canonical access-control policy", () => {
     });
     expect(byId.get("listing.read")).toMatchObject({
       directlyGranted: true,
-      effective: true,
-      ineffectiveReason: null,
+      effective: false,
+      ineffectiveReason: "staff_separation",
     });
     expect(byId.get("listing.create")).toMatchObject({
-      fromCustomerAccount: true,
+      fromCustomerAccount: false,
       directlyRevoked: true,
       effective: false,
       ineffectiveReason: "directly_revoked",

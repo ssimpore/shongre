@@ -615,7 +615,12 @@ export default function PublishScreen() {
       })}
 
       {images[0] ? (
-        <Image source={{ uri: images[0] }} style={styles.preview} />
+        <Image
+          source={{ uri: images[0] }}
+          style={styles.preview}
+          accessibilityLabel="Aperçu de la première photo sélectionnée"
+          accessibilityIgnoresInvertColors
+        />
       ) : null}
       <Button
         label={

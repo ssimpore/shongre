@@ -356,9 +356,9 @@ export const AdminMarketsPage: React.FC = () => {
       case "active":
         return <Badge variant="success">Actif</Badge>;
       case "beta":
-        return <Badge variant="success">Bêta publique</Badge>;
+        return <Badge variant="success">{t("admin.adminMarketsPage.betaPublique")}</Badge>;
       case "private_beta":
-        return <Badge variant="warning">Bêta privée</Badge>;
+        return <Badge variant="warning">{t("admin.adminMarketsPage.betaPrivee")}</Badge>;
       case "coming_soon":
         return (
           <Badge variant="warning">
@@ -370,7 +370,7 @@ export const AdminMarketsPage: React.FC = () => {
       case "paused":
         return <Badge variant="urgent">En pause</Badge>;
       case "disabled":
-        return <Badge variant="urgent">Désactivé</Badge>;
+        return <Badge variant="urgent">{t("admin.providerCatalogTable.desactive")}</Badge>;
       case "archived":
         return (
           <Badge variant="neutral">{t("admin.adminMarketsPage.archive")}</Badge>
@@ -402,20 +402,20 @@ export const AdminMarketsPage: React.FC = () => {
       : String(resolution.baselineReferenceValue);
 
     return (
-      <div className="py-3.5 px-4 rounded-xl border border-border-subtle bg-white hover:border-border-base transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="py-3.5 px-4 rounded-control border border-border-subtle bg-bg-surface hover:border-border-base transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex-1 space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-stone-900">{label}</span>
+            <span className="text-xs font-bold text-text-main">{label}</span>
             <span className="text-micro font-mono text-stone-500">
               ({path})
             </span>
 
             {isBaseline ? (
-              <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-full border border-stone-200">
-                Marché par défaut : {baselineMarket.name}
+              <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-pill border border-stone-200">
+                {t("admin.adminMarketsPage.marcheParDefaut")} {baselineMarket.name}
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-full border border-warning-border">
+              <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-pill border border-warning-border">
                 Politique locale explicite ({selectedMarket.code})
               </span>
             )}
@@ -426,7 +426,7 @@ export const AdminMarketsPage: React.FC = () => {
         {/* Value and Actions */}
         <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
           <div className="text-right">
-            <div className="text-xs font-extrabold text-stone-900 font-mono">
+            <div className="text-xs font-extrabold text-text-main font-mono">
               {displayValue}
             </div>
             {!isBaseline && isOverridden && (
@@ -465,8 +465,8 @@ export const AdminMarketsPage: React.FC = () => {
                 )}
                 onClick={() => handleResetOverride(path)}
               >
-                <RefreshCw className="w-icon-xs h-icon-xs text-stone-400 mr-1" />
-                Restaurer la valeur locale validée
+                <RefreshCw className="w-icon-xs h-icon-xs text-text-disabled mr-1" />
+                {t("admin.adminMarketsPage.restaurerLaValeurLocaleValidee")}
               </Button>
             )}
           </div>
@@ -481,18 +481,16 @@ export const AdminMarketsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-base pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-stone-900">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-text-main">
               {t("admin.adminMarketsPage.gestionMultiMarchesTerritoires")}
             </h1>
-            <span className="text-xs bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">
-              Registre multi-marchés
+            <span className="text-xs bg-primary-light text-primary font-bold px-2 py-0.5 rounded-pill">
+              {t("admin.adminMarketsPage.registreMultiMarches")}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
             {t("admin.adminMarketsPage.gerezLesPaysActivesDevises")}
-            Chaque marché possède une politique complète et explicite. La France
-            reste le marché initial par défaut, sans propager ses valeurs aux
-            autres pays.
+            {t("admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance")}
           </p>
         </div>
 
@@ -518,7 +516,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-900"
+              : "border-transparent text-stone-500 hover:text-text-main"
           }`}
         >
           Vue d'ensemble ({plural(markets.length, "marché")})
@@ -529,7 +527,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
             activeTab === "editor"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-900"
+              : "border-transparent text-stone-500 hover:text-text-main"
           }`}
         >
           <Settings2
@@ -546,7 +544,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
             activeTab === "matrix"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-stone-900"
+              : "border-transparent text-stone-500 hover:text-text-main"
           }`}
         >
           <BarChart3
@@ -583,7 +581,7 @@ export const AdminMarketsPage: React.FC = () => {
                   className={`p-4 rounded-2xl border transition-all relative flex flex-col justify-between ${
                     isDefault
                       ? "border-primary/50 bg-gradient-to-b from-white to-primary-light/10 shadow-sm"
-                      : "border-border-base bg-white hover:border-border-hover"
+                      : "border-border-base bg-bg-surface hover:border-border-hover"
                   }`}
                 >
                   <div className="space-y-3">
@@ -591,7 +589,7 @@ export const AdminMarketsPage: React.FC = () => {
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-2xl shrink-0">{m.flag}</span>
                         <div className="min-w-0">
-                          <div className="font-bold text-sm text-stone-900 flex items-center gap-1.5 min-w-0">
+                          <div className="font-bold text-sm text-text-main flex items-center gap-1.5 min-w-0">
                             <span className="truncate">{m.name}</span>
                             <span className="font-mono text-xs text-stone-500 shrink-0">
                               ({m.code})
@@ -620,10 +618,10 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <span className="text-success">
-                              {metrics.percentOverridden}% configuré localement
+                              {metrics.percentOverridden}{t("admin.adminMarketsPage.configureLocalement")}
                             </span>
                             <span className="text-warning">
-                              Aucun héritage inter-marché
+                              {t("admin.adminMarketsPage.aucunHeritageInterMarche")}
                             </span>
                           </>
                         )}
@@ -673,10 +671,10 @@ export const AdminMarketsPage: React.FC = () => {
                         <option value="coming_soon">
                           {t("admin.adminMarketsPage.bientot")}
                         </option>
-                        <option value="private_beta">Bêta privée</option>
-                        <option value="beta">Bêta publique</option>
+                        <option value="private_beta">{t("admin.adminMarketsPage.betaPrivee")}</option>
+                        <option value="beta">{t("admin.adminMarketsPage.betaPublique")}</option>
                         <option value="paused">En pause</option>
-                        <option value="disabled">Désactivé</option>
+                        <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
                         <option value="draft">Brouillon</option>
                         <option value="archived">
                           {t("admin.adminMarketsPage.archive")}
@@ -695,18 +693,18 @@ export const AdminMarketsPage: React.FC = () => {
       {activeTab === "editor" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
           {/* Market Picker Selector for Editor */}
-          <div className="p-4 rounded-2xl bg-white border border-border-base flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 rounded-2xl bg-bg-surface border border-border-base flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{selectedMarket.flag}</span>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-bold text-stone-900">
-                    Configuration de {selectedMarket.name} (
+                  <h2 className="text-base font-bold text-text-main">
+                    {t("admin.adminMarketsPage.configurationDe")} {selectedMarket.name} (
                     {selectedMarket.code})
                   </h2>
                   {renderStatusBadge(selectedMarket.status)}
                   {selectedMarket.isDefault && (
-                    <span className="text-micro bg-primary-light text-primary font-bold px-2 py-0.5 rounded-full">
+                    <span className="text-micro bg-primary-light text-primary font-bold px-2 py-0.5 rounded-pill">
                       {t("admin.adminMarketsPage.referenceCanonique")}
                     </span>
                   )}
@@ -740,7 +738,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-xs text-stone-600 hover:text-danger"
+                  className="text-xs text-text-secondary hover:text-danger"
                   onClick={() =>
                     handleRestoreReviewedPolicy(selectedMarket.code)
                   }
@@ -772,36 +770,36 @@ export const AdminMarketsPage: React.FC = () => {
           {/* Domain Subtabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle">
             {[
-              { id: "general", label: "Général", Icon: Tag },
+              { id: "general", label: t("admin.attributeEditModal.general"), Icon: Tag },
               { id: "routing", label: "Domaine & lancement", Icon: Globe },
               { id: "localization", label: "Localisation", Icon: Globe },
               {
                 id: "taxonomy",
-                label: "Taxonomie & Catégories",
+                label: t("admin.adminMarketsPage.taxonomieCategories"),
                 Icon: FolderTree,
               },
-              { id: "listings", label: "Annonces", Icon: Package },
+              { id: "listings", label: t("admin.adminMarketsPage.annonces"), Icon: Package },
               {
                 id: "payments",
                 label: "Paiements & Versements",
                 Icon: CreditCard,
               },
-              { id: "reservation", label: "Réservation", Icon: Handshake },
-              { id: "delivery", label: "Livraison", Icon: Truck },
+              { id: "reservation", label: t("admin.adminMarketsPage.reservation"), Icon: Handshake },
+              { id: "delivery", label: t("ui.listingCard.livraisonCourt"), Icon: Truck },
               { id: "pro", label: "Professionnels", Icon: Briefcase },
-              { id: "taxes", label: "Fiscalité & TVA", Icon: Landmark },
-              { id: "monetization", label: "Monétisation", Icon: Rocket },
-              { id: "features", label: "Fonctionnalités", Icon: Settings2 },
+              { id: "taxes", label: t("admin.adminMarketsPage.fiscaliteTva"), Icon: Landmark },
+              { id: "monetization", label: t("admin.adminMarketsPage.monetisation"), Icon: Rocket },
+              { id: "features", label: t("invoicing.product.nav.features"), Icon: Settings2 },
             ].map((tab) => (
               <button
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveDomainTab(tab.id as DomainTab)}
                 aria-current={activeDomainTab === tab.id ? "true" : undefined}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
                   activeDomainTab === tab.id
-                    ? "bg-stone-900 text-white"
-                    : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                    ? "bg-stone-900 text-text-inverse"
+                    : "bg-stone-100 text-text-secondary hover:bg-stone-200"
                 }`}
               >
                 <tab.Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -834,12 +832,12 @@ export const AdminMarketsPage: React.FC = () => {
                   ].map(([label, value]) => (
                     <div
                       key={label}
-                      className="rounded-xl border border-border-subtle bg-white p-4"
+                      className="rounded-control border border-border-subtle bg-bg-surface p-4"
                     >
                       <p className="text-micro font-bold uppercase tracking-wide text-stone-500">
                         {label}
                       </p>
-                      <p className="mt-1 break-words font-mono text-xs font-extrabold text-stone-900">
+                      <p className="mt-1 break-words font-mono text-xs font-extrabold text-text-main">
                         {value}
                       </p>
                     </div>
@@ -848,7 +846,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <div className="flex flex-col gap-3 rounded-2xl border border-info-border bg-info-surface p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1 text-xs text-info">
                     <p className="font-bold">
-                      État {selectedMarket.status} · SEO{" "}
+                      {t("search.searchPage.etat")} {selectedMarket.status} · SEO{" "}
                       {(selectedMarket.routing?.seoIndexable ??
                       selectedCountryConfig.seo.indexable)
                         ? "indexable"
@@ -867,7 +865,7 @@ export const AdminMarketsPage: React.FC = () => {
                       size="sm"
                       onClick={openRoutingEditor}
                     >
-                      Modifier le routage
+                      {t("admin.adminMarketsPage.modifierLeRoutage")}
                     </Button>
                   ) : null}
                 </div>
@@ -966,9 +964,7 @@ export const AdminMarketsPage: React.FC = () => {
                       )}
                     </span>
                     <p>
-                      La taxonomie est partagée, mais sa disponibilité est
-                      configurée explicitement par marché. Activez ou désactivez
-                      des catégories ou sous-catégories pour{" "}
+                      {t("admin.adminMarketsPage.laTaxonomieEstPartageeMaisSaDisponibiliteEstConfigureeExplicitement")}{" "}
                       {selectedMarket.name} ({selectedMarket.code}).
                     </p>
                   </div>
@@ -987,7 +983,7 @@ export const AdminMarketsPage: React.FC = () => {
                         key={rootCat.id}
                         className={`p-4 rounded-2xl border transition-all ${
                           isRootEnabled
-                            ? "bg-white border-border-base shadow-xs"
+                            ? "bg-bg-surface border-border-base shadow-xs"
                             : "bg-stone-50/80 border-stone-200 opacity-75"
                         }`}
                       >
@@ -998,7 +994,7 @@ export const AdminMarketsPage: React.FC = () => {
                               className="w-5 h-5 text-primary"
                             />
                             <div>
-                              <div className="text-xs font-bold text-stone-900">
+                              <div className="text-xs font-bold text-text-main">
                                 {getTaxonomyLabel(rootCat, "compact")}
                               </div>
                               <div className="text-micro text-stone-500">
@@ -1009,7 +1005,7 @@ export const AdminMarketsPage: React.FC = () => {
 
                           <div className="flex items-center gap-2">
                             <span
-                              className={`text-micro font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-micro font-bold px-2 py-0.5 rounded-pill ${
                                 isRootEnabled
                                   ? "bg-success-surface text-success"
                                   : "bg-stone-200 text-stone-700"
@@ -1050,7 +1046,7 @@ export const AdminMarketsPage: React.FC = () => {
                         {rootCat.children && rootCat.children.length > 0 && (
                           <div className="pt-3 space-y-1.5">
                             <div className="text-micro font-bold text-stone-500 uppercase tracking-wider">
-                              Sous-catégories ({rootCat.children.length})
+                              {t("admin.adminMarketsPage.sousCategories")}{rootCat.children.length})
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                               {rootCat.children.map((sub) => {
@@ -1063,7 +1059,7 @@ export const AdminMarketsPage: React.FC = () => {
                                 return (
                                   <div
                                     key={sub.id}
-                                    className={`p-2 rounded-xl border flex items-center justify-between text-xs ${
+                                    className={`p-2 rounded-control border flex items-center justify-between text-xs ${
                                       isSubEnabled
                                         ? "bg-bg-base/40 border-border-subtle text-stone-800"
                                         : "bg-stone-100 border-stone-200 text-stone-500 line-through"
@@ -1474,18 +1470,18 @@ export const AdminMarketsPage: React.FC = () => {
       {/* TAB 3: COMPARATIVE MATRIX */}
       {activeTab === "matrix" && (
         <div className="space-y-6 animate-in fade-in duration-fast">
-          <div className="p-4 rounded-2xl bg-white border border-border-base overflow-x-auto">
+          <div className="p-4 rounded-2xl bg-bg-surface border border-border-base overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border-base bg-stone-50">
-                  <th scope="col" className="p-3 font-bold text-stone-900">
+                  <th scope="col" className="p-3 font-bold text-text-main">
                     {t("admin.adminMarketsPage.parametreRegle")}
                   </th>
                   {markets.map((m) => (
                     <th
                       scope="col"
                       key={m.code}
-                      className="p-3 font-bold text-stone-900 min-w-40"
+                      className="p-3 font-bold text-text-main min-w-40"
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="text-base">{m.flag}</span>
@@ -1523,7 +1519,7 @@ export const AdminMarketsPage: React.FC = () => {
                     );
                     return (
                       <td key={m.code} className="p-3">
-                        <div className="font-mono font-bold text-stone-900">
+                        <div className="font-mono font-bold text-text-main">
                           {cfg.localization.defaultCurrency} (
                           {cfg.localization.currencySymbol})
                         </div>
@@ -1548,7 +1544,7 @@ export const AdminMarketsPage: React.FC = () => {
                     );
                     return (
                       <td key={m.code} className="p-3">
-                        <div className="font-mono font-bold text-stone-900">
+                        <div className="font-mono font-bold text-text-main">
                           {(cfg.taxes.vatRateStandard * 100).toFixed(1)} %
                         </div>
                         {res.overrideDefined && (
@@ -1572,7 +1568,7 @@ export const AdminMarketsPage: React.FC = () => {
                     );
                     return (
                       <td key={m.code} className="p-3">
-                        <div className="font-mono font-bold text-stone-900">
+                        <div className="font-mono font-bold text-text-main">
                           {cfg.payments.buyerProtectionFixedFee.toFixed(2)}{" "}
                           {cfg.localization.currencySymbol} +{" "}
                           {(
@@ -1601,7 +1597,7 @@ export const AdminMarketsPage: React.FC = () => {
                     );
                     return (
                       <td key={m.code} className="p-3">
-                        <div className="font-semibold text-stone-900">
+                        <div className="font-semibold text-text-main">
                           {cfg.pro.businessIdentifierLabel}
                         </div>
                         {res.overrideDefined && (
@@ -1634,7 +1630,7 @@ export const AdminMarketsPage: React.FC = () => {
                         </span>
                         {res.overrideDefined && (
                           <span className="block text-micro text-warning font-bold">
-                            ✏️ Surchargé ({String(res.value)})
+                            {t("admin.adminMarketsPage.surcharge2")}{String(res.value)})
                           </span>
                         )}
                       </td>
@@ -1651,13 +1647,13 @@ export const AdminMarketsPage: React.FC = () => {
         isOpen={isRoutingModalOpen}
         onClose={() => setIsRoutingModalOpen(false)}
         title={`Routage public — ${selectedMarket.name}`}
-        description="Le mode de domaine et le préfixe sont uniques. Les noms d’hôte concrets viennent exclusivement de la configuration du déploiement."
+        description={t("admin.adminMarketsPage.leModeDeDomaineEtLePrefixeSontUniquesLes")}
         maxWidth="md"
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="space-y-1 text-xs font-bold text-stone-700">
-              Mode de domaine canonique
+              {t("admin.adminMarketsPage.modeDeDomaineCanonique")}
               <Select
                 size="compact"
                 className="w-full font-mono"
@@ -1674,7 +1670,7 @@ export const AdminMarketsPage: React.FC = () => {
               </Select>
             </label>
             <label className="space-y-1 text-xs font-bold text-stone-700">
-              Préfixe public
+              {t("admin.adminMarketsPage.prefixePublic")}
               <input
                 value={routingBasePath}
                 onChange={(event) => setRoutingBasePath(event.target.value)}
@@ -1683,8 +1679,8 @@ export const AdminMarketsPage: React.FC = () => {
               />
             </label>
           </div>
-          <label className="flex items-center justify-between rounded-xl border border-border-subtle p-3 text-xs font-bold text-stone-700">
-            Visible sur le portail international
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-bold text-stone-700">
+            {t("admin.adminMarketsPage.visibleSurLePortailInternational")}
             <input
               type="checkbox"
               checked={routingGatewayVisible}
@@ -1694,7 +1690,7 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
-          <label className="flex items-center justify-between rounded-xl border border-border-subtle p-3 text-xs font-bold text-stone-700">
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-bold text-stone-700">
             Autoriser l’indexation SEO
             <input
               type="checkbox"
@@ -1704,7 +1700,7 @@ export const AdminMarketsPage: React.FC = () => {
             />
           </label>
           <label className="block space-y-1 text-xs font-bold text-stone-700">
-            Motif de la modification
+            {t("admin.taxonomyHeader.reasonLabel")}
             <textarea
               value={routingChangeReason}
               onChange={(event) => setRoutingChangeReason(event.target.value)}
@@ -1712,7 +1708,7 @@ export const AdminMarketsPage: React.FC = () => {
               maxLength={MARKET_CONFIGURATION_REASON_MAX_LENGTH}
               required
               rows={3}
-              placeholder="Expliquez le changement et son impact opérationnel."
+              placeholder={t("admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel")}
               className="min-h-control-touch w-full resize-y rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
@@ -1734,7 +1730,7 @@ export const AdminMarketsPage: React.FC = () => {
               }
               onClick={() => void saveRouting()}
             >
-              Soumettre pour approbation
+              {t("admin.adminMarketsPage.soumettrePourApprobation")}
             </Button>
           </div>
         </div>
@@ -1859,13 +1855,13 @@ export const AdminMarketsPage: React.FC = () => {
               <option value="coming_soon">
                 {t("admin.adminMarketsPage.bientotDisponibleVitrine")}
               </option>
-              <option value="private_beta">Bêta privée</option>
-              <option value="beta">Bêta publique</option>
+              <option value="private_beta">{t("admin.adminMarketsPage.betaPrivee")}</option>
+              <option value="beta">{t("admin.adminMarketsPage.betaPublique")}</option>
               <option value="active">
                 {t("admin.adminMarketsPage.actifOperationnel")}
               </option>
               <option value="paused">En pause</option>
-              <option value="disabled">Désactivé</option>
+              <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
             </Select>
           </div>
 
@@ -1879,7 +1875,7 @@ export const AdminMarketsPage: React.FC = () => {
               Annuler
             </Button>
             <Button variant="primary" size="sm" type="submit">
-              Créer le brouillon sécurisé
+              {t("admin.adminMarketsPage.creerLeBrouillonSecurise")}
             </Button>
           </div>
         </form>
@@ -1899,7 +1895,7 @@ export const AdminMarketsPage: React.FC = () => {
               htmlFor="admin-edit-override-value"
               className="text-xs font-bold text-stone-700 uppercase"
             >
-              Nouvelle Valeur pour {selectedMarket.name}
+              {t("admin.adminMarketsPage.nouvelleValeurPour")} {selectedMarket.name}
             </label>
 
             {editingValueType === "boolean" ? (
@@ -1946,7 +1942,7 @@ export const AdminMarketsPage: React.FC = () => {
             )}
           </div>
 
-          <div className="p-3 rounded-xl bg-stone-50 border border-stone-200 text-micro text-stone-600 space-y-1">
+          <div className="p-3 rounded-control bg-stone-50 border border-stone-200 text-micro text-text-secondary space-y-1">
             <div className="font-bold text-stone-800">
               {t("admin.adminMarketsPage.regleDePersistance")}
             </div>

@@ -140,7 +140,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
     title: opportunity
       ? `${opportunity.name} | CRM Shongre`
       : "Opportunité CRM | Shongre",
-    description: "Vue commerciale complète de l’opportunité.",
+    description: t("admin.crmOpportunityDetailPage.vueCommercialeCompleteDeLOpportunite"),
     canonicalPath: id ? crmPaths.opportunity(id) : undefined,
     noIndex: true,
   });
@@ -348,13 +348,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
   if (!opportunity || !pipeline || error) {
     return (
-      <section className="rounded-2xl border border-border-base bg-white p-8 text-center shadow-xs">
+      <section className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center shadow-xs">
         <CircleAlert
           className="mx-auto h-8 w-8 text-danger"
           aria-hidden="true"
         />
-        <h1 className="mt-3 text-lg font-black text-stone-900">
-          Opportunité introuvable
+        <h1 className="mt-3 text-lg font-black text-text-main">
+          {t("admin.crmOpportunityDetailPage.opportuniteIntrouvable")}
         </h1>
         <p className="mt-1 text-sm text-stone-500">{error}</p>
         <div className="mt-5 flex justify-center gap-2">
@@ -363,10 +363,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             size="sm"
             onClick={() => navigate(crmPaths.pipeline)}
           >
-            <ArrowLeft className="h-icon-md w-icon-md" /> Pipeline
+            <ArrowLeft className="h-icon-md w-icon-md" /> {t("admin.crmCompanyDetailPage.pipeline")}
           </Button>
           <Button size="sm" onClick={() => void load()}>
-            <RefreshCw className="h-icon-md w-icon-md" /> Réessayer
+            <RefreshCw className="h-icon-md w-icon-md" /> {t("common.retry")}
           </Button>
         </div>
       </section>
@@ -389,31 +389,31 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-text-inverse shadow-sm">
         <div className="p-5 sm:p-6">
           <Link
             to={crmPaths.pipeline}
-            className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-400 hover:text-white"
+            className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
           >
             <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
-            Pipeline
+            {t("admin.crmCompanyDetailPage.pipeline")}
           </Link>
           <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`rounded-full px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-emerald-950 text-emerald-300" : opportunity.status === "lost" ? "bg-rose-950 text-rose-300" : "bg-primary/15 text-orange-200"}`}
+                  className={`rounded-pill px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-emerald-950 text-emerald-300" : opportunity.status === "lost" ? "bg-rose-950 text-rose-300" : "bg-primary/15 text-orange-200"}`}
                 >
                   {opportunity.stageName}
                 </span>
-                <span className="text-micro font-bold uppercase tracking-wider text-stone-400">
+                <span className="text-micro font-bold uppercase tracking-wider text-text-disabled">
                   {forecastLabel}
                 </span>
               </div>
               <h1 className="mt-2 max-w-3xl text-2xl font-black leading-tight tracking-tight sm:text-3xl">
                 {opportunity.name}
               </h1>
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-400">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-disabled">
                 <span className="inline-flex items-center gap-1.5">
                   <Building2 className="h-icon-sm w-icon-sm" />{" "}
                   {opportunity.accountName ?? "Sans entreprise"}
@@ -424,7 +424,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 </span>
                 {opportunity.expectedCloseDate && (
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-icon-sm w-icon-sm" /> Clôture{" "}
+                    <CalendarDays className="h-icon-sm w-icon-sm" /> {t("admin.crmOpportunityDetailPage.cloture")}{" "}
                     {new Intl.DateTimeFormat(currentLocale, {
                       day: "numeric",
                       month: "long",
@@ -444,23 +444,22 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   currentLocale,
                 )}
               </strong>
-              <span className="text-xs text-stone-400">
-                {opportunity.probability}% de probabilité
+              <span className="text-xs text-text-disabled">
+                {opportunity.probability}{t("admin.crmOpportunityDetailPage.deProbabilite")}
               </span>
               <div className="mt-3 flex flex-wrap gap-2 xl:justify-end">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+                  className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
                   onClick={() => setNoteOpen(true)}
                 >
-                  <MessageSquareText className="h-icon-md w-icon-md" /> Ajouter
-                  une note
+                  <MessageSquareText className="h-icon-md w-icon-md" /> {t("admin.crmContactDetailPage.ajouterUneNote")}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+                  className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
                   onClick={() => setQuoteOpen(true)}
                   disabled={!opportunity.accountId}
                 >
@@ -472,14 +471,14 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     size="sm"
                     onClick={() => setCloseMode("won")}
                   >
-                    <CheckCircle2 className="h-icon-md w-icon-md" /> Gagnée
+                    <CheckCircle2 className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.gagnee")}
                   </Button>
                 )}
                 {opportunity.status === "open" && (
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+                    className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
                     onClick={() => setCloseMode("lost")}
                   >
                     <XCircle className="h-icon-md w-icon-md" /> Perdue
@@ -518,7 +517,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     />
                   )}
                   <span
-                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-full border-2 text-micro font-black ${current ? "border-primary bg-primary text-white ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-white" : "border-stone-600 bg-stone-900 text-stone-400"}`}
+                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-black ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-text-inverse" : "border-stone-600 bg-stone-900 text-text-disabled"}`}
                   >
                     {complete ? (
                       <Check
@@ -530,7 +529,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     )}
                   </span>
                   <span
-                    className={`text-micro font-bold ${current ? "text-white" : "text-stone-400 group-hover:text-stone-200"}`}
+                    className={`text-micro font-bold ${current ? "text-text-inverse" : "text-text-disabled group-hover:text-stone-200"}`}
                   >
                     {stage.name}
                   </span>
@@ -543,14 +542,14 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-sm font-black text-stone-950">
                   Historique commercial
                 </h2>
                 <p className="text-micro text-stone-500">
-                  Journal immuable des échanges et changements
+                  {t("admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements")}
                 </p>
               </div>
               <Button
@@ -563,13 +562,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
             <div className="p-5">
               {activities.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-stone-200 p-8 text-center">
-                  <Clock3 className="mx-auto h-icon-xl w-icon-xl text-stone-400" />
+                <div className="rounded-control border border-dashed border-stone-200 p-8 text-center">
+                  <Clock3 className="mx-auto h-icon-xl w-icon-xl text-text-disabled" />
                   <p className="mt-2 text-xs font-bold text-stone-700">
-                    Aucune activité
+                    {t("admin.crmOpportunityDetailPage.aucuneActivite")}
                   </p>
                   <p className="text-micro text-stone-500">
-                    Les appels, emails, notes et transitions apparaîtront ici.
+                    {t("admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci")}
                   </p>
                 </div>
               ) : (
@@ -586,13 +585,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     return (
                       <li key={activity.id} className="relative flex gap-3">
                         <span
-                          className={`relative z-raised inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${presentation.tone}`}
+                          className={`relative z-raised inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill ${presentation.tone}`}
                         >
                           <Icon className="h-4 w-4" aria-hidden="true" />
                         </span>
                         <div className="min-w-0 flex-1 pt-0.5">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <strong className="text-xs font-black text-stone-900">
+                            <strong className="text-xs font-black text-text-main">
                               {activity.title}
                             </strong>
                             <time className="text-micro text-stone-500">
@@ -619,27 +618,27 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-sm font-black text-stone-950">
-                  Tâches liées
+                  {t("admin.crmOpportunityDetailPage.tachesLiees")}
                 </h2>
                 <p className="text-micro text-stone-500">
-                  Relances et prochaines étapes
+                  {t("admin.crmOpportunityDetailPage.relancesEtProchainesEtapes")}
                 </p>
               </div>
               <Link
                 to={crmPaths.tasks}
                 className="text-xs font-bold text-primary hover:underline"
               >
-                Toutes les tâches
+                {t("admin.crmOpportunityDetailPage.toutesLesTaches")}
               </Link>
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {tasks.length === 0 ? (
                 <p className="py-7 text-center text-xs text-stone-500">
-                  Aucune tâche associée.
+                  {t("admin.crmOpportunityDetailPage.aucuneTacheAssociee")}
                 </p>
               ) : (
                 tasks.map((task) => (
@@ -650,13 +649,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                         task.status !== "completed" && void completeTask(task)
                       }
                       aria-label={`Marquer « ${task.title} » comme terminée`}
-                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border ${task.status === "completed" ? "border-success-border bg-success-surface text-success" : "border-stone-200 text-stone-400 hover:border-success-border hover:text-success"}`}
+                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill border ${task.status === "completed" ? "border-success-border bg-success-surface text-success" : "border-stone-200 text-text-disabled hover:border-success-border hover:text-success"}`}
                     >
                       <Check className="h-icon-md w-icon-md" />
                     </button>
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`truncate text-xs font-bold ${task.status === "completed" ? "text-text-muted line-through" : "text-stone-900"}`}
+                        className={`truncate text-xs font-bold ${task.status === "completed" ? "text-text-muted line-through" : "text-text-main"}`}
                       >
                         {task.title}
                       </p>
@@ -669,7 +668,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                       </p>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
+                      className={`shrink-0 rounded-pill px-2 py-1 text-micro font-bold ${taskPriorityToneClass(task.priority)}`}
                     >
                       {priorityLabel(task.priority)}
                     </span>
@@ -678,12 +677,12 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               )}
             </div>
           </section>
-          <section className="rounded-2xl border border-border-base bg-white shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-sm font-black text-stone-950">Devis</h2>
                 <p className="text-micro text-stone-500">
-                  Propositions chiffrées liées à l’opportunité
+                  {t("admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite")}
                 </p>
               </div>
               <Button
@@ -692,13 +691,13 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 onClick={() => setQuoteOpen(true)}
                 disabled={!opportunity.accountId}
               >
-                <Plus className="h-icon-md w-icon-md" /> Créer
+                <Plus className="h-icon-md w-icon-md" /> {t("invoicing.product.stepCreateTitle")}
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {quotes.length === 0 ? (
                 <p className="py-7 text-center text-xs text-stone-500">
-                  Aucun devis associé.
+                  {t("admin.crmOpportunityDetailPage.aucunDevisAssocie")}
                 </p>
               ) : (
                 quotes.map((quote) => (
@@ -722,7 +721,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                           : "sans échéance"}
                       </p>
                     </div>
-                    <span className="rounded-full bg-stone-100 px-2 py-1 text-micro font-bold text-stone-600">
+                    <span className="rounded-pill bg-stone-100 px-2 py-1 text-micro font-bold text-text-secondary">
                       {quote.status}
                     </span>
                     <strong className="text-xs tabular-nums">
@@ -736,7 +735,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
         </div>
 
         <aside className="min-w-0 space-y-4">
-          <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
             <h2 className="text-sm font-black text-stone-950">Informations</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
@@ -759,9 +758,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               ))}
             </dl>
             {opportunity.nextStep && (
-              <div className="mt-3 rounded-xl border border-primary/15 bg-primary-light p-3">
+              <div className="mt-3 rounded-control border border-primary/15 bg-primary-light p-3">
                 <span className="text-micro font-bold uppercase tracking-wider text-primary">
-                  Prochaine étape
+                  {t("admin.crmOpportunityDetailPage.prochaineEtape")}
                 </span>
                 <p className="mt-1 text-xs font-semibold text-stone-800">
                   {opportunity.nextStep}
@@ -770,32 +769,29 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             )}
           </section>
 
-          <section className="rounded-2xl border border-stone-800 bg-stone-950 p-4 text-white shadow-xs">
+          <section className="rounded-2xl border border-stone-800 bg-stone-950 p-4 text-text-inverse shadow-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="h-icon-md w-icon-md text-primary" />
               <h2 className="text-sm font-black">Assistant commercial</h2>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-stone-400">
-              Rédigez une relance ou résumez l’historique avec le fournisseur IA
-              autorisé par votre tenant.
+            <p className="mt-2 text-xs leading-relaxed text-text-disabled">
+              {t("admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur")}
             </p>
-            <div className="mt-3 rounded-xl border border-stone-800 bg-stone-900 p-3 text-micro text-stone-400">
+            <div className="mt-3 rounded-control border border-stone-800 bg-stone-900 p-3 text-micro text-text-disabled">
               <Bot className="mb-1.5 h-icon-md w-icon-md text-stone-500" />
-              Aucun fournisseur IA personnel actif. Le CRM reste entièrement
-              fonctionnel sans IA.
+              {t("admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel")}
             </div>
             <Button
               to="/admin/fournisseurs"
               variant="outline"
               size="sm"
-              className="mt-3 w-full border-stone-700 bg-stone-900 text-white hover:bg-stone-800"
+              className="mt-3 w-full border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
             >
-              <Settings2 className="h-icon-md w-icon-md" /> Configurer les
-              fournisseurs
+              <Settings2 className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.configurerLesFournisseurs")}
             </Button>
           </section>
 
-          <section className="rounded-2xl border border-border-base bg-white p-4 shadow-xs">
+          <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center gap-2">
               <Mail className="h-icon-md w-icon-md text-primary" />
               <h2 className="text-sm font-black text-stone-950">
@@ -803,8 +799,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               </h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-stone-500">
-              L’envoi exige une connexion Mailbox ou Email Delivery explicite.
-              Aucun fallback financé par Shongre.
+              {t("admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite")}
             </p>
             <Button
               to="/admin/fournisseurs"
@@ -812,7 +807,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               size="sm"
               className="mt-3 w-full"
             >
-              <Mail className="h-icon-md w-icon-md" /> Connecter une messagerie
+              <Mail className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.connecterUneMessagerie")}
             </Button>
           </section>
         </aside>
@@ -821,8 +816,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
       <Modal
         isOpen={noteOpen}
         onClose={() => setNoteOpen(false)}
-        title="Ajouter une note"
-        description="La note sera ajoutée à l’historique immuable de l’opportunité."
+        title={t("admin.crmContactDetailPage.ajouterUneNote")}
+        description={t("admin.crmOpportunityDetailPage.laNoteSeraAjouteeALHistoriqueImmuableDeL")}
       >
         <form onSubmit={addNote} className="space-y-4 text-xs">
           <FormField label="Note commerciale" required>
@@ -830,7 +825,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={5}
-              placeholder="Décisions, objections, engagements ou prochaine étape…"
+              placeholder={t("admin.crmOpportunityDetailPage.decisionsObjectionsEngagementsOuProchaineEtape")}
               required
             />
           </FormField>
@@ -853,17 +848,17 @@ export const CrmOpportunityDetailPage: React.FC = () => {
       <Modal
         isOpen={quoteOpen}
         onClose={() => setQuoteOpen(false)}
-        title="Créer un devis"
-        description="Les totaux et taxes sont calculés en unités monétaires mineures côté service."
+        title={t("admin.crmOpportunityDetailPage.creerUnDevis")}
+        description={t("admin.crmOpportunityDetailPage.lesTotauxEtTaxesSontCalculesEnUnitesMonetairesMineures")}
       >
         <form onSubmit={createQuote} className="space-y-4 text-xs">
           <FormField label="Produit" required>
             <Select
-              aria-label="Produit du devis"
+              aria-label={t("admin.crmOpportunityDetailPage.produitDuDevis")}
               value={quoteProductId}
               onChange={(event) => setQuoteProductId(event.target.value)}
               options={[
-                { value: "", label: "Sélectionner…" },
+                { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
                 ...products.map((product) => ({
                   value: product.id,
                   label: product.name,
@@ -873,7 +868,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             />
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Quantité" required>
+            <FormField label={t("invoicing.workspace.quantity")} required>
               <Input
                 type="number"
                 min={CRM_FIELD_CONSTRAINTS.quoteQuantityMin}
@@ -883,7 +878,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 required
               />
             </FormField>
-            <FormField label="Valable jusqu’au">
+            <FormField label={t("admin.crmOpportunityDetailPage.valableJusquAu")}>
               <Input
                 type="date"
                 value={quoteValidUntil}
@@ -898,7 +893,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               );
               const price = product?.prices[0];
               return price ? (
-                <div className="rounded-xl bg-stone-50 p-3">
+                <div className="rounded-control bg-stone-50 p-3">
                   <span className="text-stone-500">Prix unitaire</span>
                   <strong className="ml-2">
                     {money(
@@ -908,13 +903,12 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     )}
                   </strong>
                   <p className="mt-1 text-micro text-stone-500">
-                    TVA de démonstration : 20 %. Le backend reste autoritaire
-                    sur les totaux.
+                    {t("admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes")}
                   </p>
                 </div>
               ) : (
-                <p className="rounded-xl bg-warning-surface p-3 text-warning">
-                  Ce produit n’a pas de prix actif.
+                <p className="rounded-control bg-warning-surface p-3 text-warning">
+                  {t("admin.crmOpportunityDetailPage.ceProduitNAPasDePrixActif")}
                 </p>
               );
             })()}
@@ -950,9 +944,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
       >
         <form onSubmit={closeOpportunity} className="space-y-4 text-xs">
           {closeMode === "won" ? (
-            <div className="rounded-xl border border-success-border bg-success-surface p-4">
+            <div className="rounded-control border border-success-border bg-success-surface p-4">
               <div className="flex items-center gap-2 font-black text-success">
-                <CheckCircle2 className="h-icon-lg w-icon-lg" /> Contrat de{" "}
+                <CheckCircle2 className="h-icon-lg w-icon-lg" /> {t("admin.crmOpportunityDetailPage.contratDe")}{" "}
                 {money(
                   opportunity.amount.amountMinor,
                   opportunity.amount.currency,
@@ -960,29 +954,28 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 )}
               </div>
               <p className="mt-1 text-success">
-                La clôture est auditée et prépare l’onboarding sans modifier la
-                source de vérité Billing.
+                {t("admin.crmOpportunityDetailPage.laClotureEstAuditeeEtPrepareLOnboardingSansModifier")}
               </p>
             </div>
           ) : (
             <>
-              <FormField label="Motif de perte" required>
+              <FormField label={t("admin.crmOpportunityDetailPage.motifDePerte")} required>
                 <Select
-                  aria-label="Motif de perte"
+                  aria-label={t("admin.crmOpportunityDetailPage.motifDePerte")}
                   value={lossReason}
                   onChange={(event) => setLossReason(event.target.value)}
                   options={[
-                    { value: "", label: "Sélectionner…" },
+                    { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
                     { value: "budget", label: "Budget insuffisant" },
                     { value: "concurrent", label: "Concurrent retenu" },
-                    { value: "timing", label: "Calendrier reporté" },
-                    { value: "no_need", label: "Besoin non confirmé" },
-                    { value: "no_response", label: "Absence de réponse" },
+                    { value: "timing", label: t("admin.crmOpportunityDetailPage.calendrierReporte") },
+                    { value: "no_need", label: t("admin.crmOpportunityDetailPage.besoinNonConfirme") },
+                    { value: "no_response", label: t("admin.crmOpportunityDetailPage.absenceDeReponse") },
                     { value: "other", label: "Autre" },
                   ]}
                 />
               </FormField>
-              <FormField label="Précisions">
+              <FormField label={t("admin.crmOpportunityDetailPage.precisions")}>
                 <Textarea
                   value={lossDetail}
                   onChange={(event) => setLossDetail(event.target.value)}

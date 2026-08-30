@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { CAPABILITIES } from "@shongre/contracts/access-control";
+import {
+  CAPABILITIES,
+  CUSTOMER_MARKETPLACE_CAPABILITIES,
+} from "@shongre/contracts/access-control";
 import { DEMO_USERS } from "../../../mocks/initialDemoData";
 import { storageService } from "../../../services/storage.service";
 import { auditService } from "../../../security/audit.service";
@@ -91,5 +94,27 @@ describe("DemoAdminService discovery administration", () => {
         .getLogs({ action: "capability_overrides_updated" })
         .some((event) => event.targetId === target.id),
     ).toBe(true);
+  });
+
+  it("never grants or exposes customer capabilities for a Staff target", async () => {
+    const service = new DemoAdminService();
+    const staffTarget = DEMO_USERS.support_hugo;
+    const projection = await service.getCapabilityOverrides(staffTarget.id);
+
+    expect(
+      projection.capabilities.some((entry) =>
+        CUSTOMER_MARKETPLACE_CAPABILITIES.includes(
+          entry.capability as (typeof CUSTOMER_MARKETPLACE_CAPABILITIES)[number],
+        ),
+      ),
+    ).toBe(false);
+    await expect(
+      service.updateCapabilityOverrides(staffTarget.id, {
+        customPermissions: ["favorite.manage.own"],
+        revokedPermissions: [],
+        reason: "Tentative de pont vers la marketplace client interdite",
+        expectedVersion: staffTarget.capabilityOverrideVersion ?? 1,
+      }),
+    ).rejects.toThrow(/marketplace client/i);
   });
 });

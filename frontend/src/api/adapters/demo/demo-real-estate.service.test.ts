@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { PropertyDraft } from "@shongre/contracts/real-estate";
 import { DemoRealEstateService } from "./demo-real-estate.service";
+import { storageService } from "../../../services/storage.service";
 
 const completeDraft = (id: string): PropertyDraft => ({
   id,
@@ -15,6 +16,9 @@ const completeDraft = (id: string): PropertyDraft => ({
 });
 
 describe("DemoRealEstateService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("buyer_thomas"));
+  afterEach(() => storageService.setCurrentUserKey("guest"));
+
   it("returns deterministic filtered results without exact addresses", async () => {
     const service = new DemoRealEstateService();
     const query = {
@@ -110,12 +114,14 @@ describe("DemoRealEstateService", () => {
     expect(retry.id).toBe(first.id);
     expect(first.status).toBe("paid");
     expect(Number.isInteger(first.total.amountMinor)).toBe(true);
+    storageService.setCurrentUserKey("finance_marc");
     await expect(
       service.refundCheckout(first.id, {
         idempotencyKey: "immo-refund-test-001",
       }),
     ).resolves.toMatchObject({ status: "refunded" });
 
+    storageService.setCurrentUserKey("buyer_thomas");
     const failed = await service.createCheckout({
       ...input,
       idempotencyKey: "immo-checkout-failed-001",

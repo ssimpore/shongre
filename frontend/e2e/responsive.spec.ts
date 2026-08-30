@@ -74,6 +74,24 @@ test.describe("horizontal overflow", () => {
   }
 });
 
+test.describe("text resizing", () => {
+  test("search chrome reflows at 200% on the narrowest viewport", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await usePersona(page, "guest");
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    await waitForStableLayout(page);
+
+    await expectNoHorizontalOverflow(page, "search chrome at 200% text");
+  });
+});
+
 /**
  * Open overlays have to stay inside the viewport too.
  *

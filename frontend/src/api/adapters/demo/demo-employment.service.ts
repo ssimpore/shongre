@@ -46,6 +46,10 @@ import type {
 import { EMPTY_EMPLOYMENT_PUBLICATION_DRAFT } from "../../contracts/employment.contract";
 import { AppError } from "../../errors/app-error";
 import { storageService } from "../../../services/storage.service";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const clone = <T>(value: T): T => structuredClone(value);
 const employmentDraftKey = (draftId: string) =>
@@ -262,6 +266,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getCatalog(marketCode: string) {
+    requireDemoAnyCapability(["employment.read", "employment.admin.manage"]);
     await simulateNetworkDelay();
     const resolved = applyMonetizationToEmploymentCatalog(
       this.catalog,
@@ -281,6 +286,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async searchJobs(input: EmploymentSearchQuery) {
+    requireDemoCapability("employment.read");
     await simulateNetworkDelay();
     const query = employmentSearchQuerySchema.parse(input);
     const locationOrigin = query.location
@@ -442,6 +448,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getJob(idOrSlug: string) {
+    requireDemoCapability("employment.read");
     await simulateNetworkDelay();
     const job =
       this.jobs.get(idOrSlug) ||
@@ -451,6 +458,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getSimilarJobs(idOrSlug: string) {
+    requireDemoCapability("employment.read");
     const job = await this.getJob(idOrSlug);
     return Array.from(this.jobs.values())
       .filter(
@@ -469,6 +477,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     marketCode: string,
     preferredDraftId?: string,
   ) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const draftId =
       preferredDraftId ||
@@ -508,6 +517,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getDraft(draftId: string) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const draft =
       this.drafts.get(draftId) ||
@@ -516,6 +526,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async saveDraft(draft: JobDraft) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const parsed = jobDraftSchema.parse({ ...draft, updatedAt: now() });
     this.drafts.set(parsed.id, clone(parsed));
@@ -525,6 +536,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async savePublicationDraft(input: SaveEmploymentPublicationDraftInput) {
+    requireDemoCapability("employment.job.manage.own");
     const selectedEmployer = this.recruiterEmployersForCurrentUser().find(
       (employer) => employer.id === input.data.employerId,
     );
@@ -671,6 +683,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async checkDuplicateDraft(draftId: string) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
     if (!draft) throw fail("NOT_FOUND", "Brouillon Emploi introuvable.");
@@ -694,6 +707,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async submitDraft(draftId: string) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const draft = this.drafts.get(draftId);
     if (!draft) throw fail("NOT_FOUND", "Brouillon Emploi introuvable.");
@@ -714,6 +728,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   async flagProhibitedLanguage(
     content: string,
   ): Promise<ProhibitedLanguageFlag[]> {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     const normalized = content.toLocaleLowerCase("fr");
     return this.catalog.config.prohibitedLanguageRules.flatMap((rule) =>
@@ -737,6 +752,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getCandidateWorkspace() {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     return clone({
@@ -757,6 +773,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async saveCandidateProfile(profile: CandidateProfile) {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     if (
@@ -799,6 +816,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async apply(jobId: string, input: EmploymentApplicationDraft) {
+    requireDemoCapability("employment.application.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const job = await this.getJob(jobId);
@@ -874,6 +892,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async withdrawApplication(applicationId: string) {
+    requireDemoCapability("employment.application.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const application = this.applications.get(applicationId);
@@ -891,6 +910,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async toggleSavedJob(jobId: string) {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const index = workspace.savedJobs.findIndex((job) => job.id === jobId);
@@ -903,6 +923,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     jobId: string,
     input: Pick<EmploymentJobReport, "reason" | "details">,
   ) {
+    requireDemoCapability("report.create");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     await this.getJob(jobId);
@@ -928,6 +949,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     query: EmploymentSearchQuery;
     frequency: JobAlert["frequency"];
   }) {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const alert: JobAlert = {
@@ -946,6 +968,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async deleteJobAlert(alertId: string) {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const index = workspace.alerts.findIndex((alert) => alert.id === alertId);
@@ -954,6 +977,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async exportCandidateData(): Promise<CandidateDataExport> {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     return {
@@ -981,6 +1005,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async requestCandidateDeletion(): Promise<EmploymentDataSubjectRequest> {
+    requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const existing = Array.from(this.privacyRequests.values()).find(
@@ -1005,6 +1030,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     interviewId: string,
     status: "confirmed" | "cancelled",
   ) {
+    requireDemoCapability("employment.application.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
     const interview = this.interviews.get(interviewId);
@@ -1025,11 +1051,16 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async listRecruiterEmployers() {
+    requireDemoAnyCapability([
+      "employment.job.manage.own",
+      "employment.recruiter.manage.own",
+    ]);
     await simulateNetworkDelay();
     return clone(this.recruiterEmployersForCurrentUser());
   }
 
   async getRecruiterWorkspace(employerId: string): Promise<RecruiterWorkspace> {
+    requireDemoCapability("employment.recruiter.manage.own");
     await simulateNetworkDelay();
     this.assertRecruiterEmployer(employerId);
     if (employerId === "employer-private-martin") {
@@ -1091,6 +1122,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async duplicateJob(employerId: string, jobId: string) {
+    requireDemoCapability("employment.job.manage.own");
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const job = await this.getJob(jobId);
@@ -1139,6 +1171,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     applicationId: string,
     input: { stageId: string; reason?: string; notifyCandidate?: boolean },
   ) {
+    requireDemoCapability("employment.application.manage.own");
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const application = this.applications.get(applicationId);
@@ -1165,6 +1198,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     applicationId: string,
     body: string,
   ) {
+    requireDemoCapability("employment.recruiter.manage.own");
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const note: RecruiterNote = {
@@ -1187,6 +1221,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       "id" | "applicationId" | "createdAt" | "updatedAt"
     >,
   ) {
+    requireDemoCapability("employment.recruiter.manage.own");
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     if (Date.parse(input.endsAt) <= Date.parse(input.startsAt))
@@ -1230,6 +1265,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       idempotencyKey: string;
     },
   ) {
+    requireDemoCapability("employment.import.own");
     await simulateNetworkDelay();
     await this.getRecruiterWorkspace(employerId);
     const employer = this.recruiterEmployersForCurrentUser().find(
@@ -1271,6 +1307,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
       idempotencyKey: string;
     },
   ) {
+    requireDemoCapability("employment.import.own");
     await simulateNetworkDelay();
     const workspace = await this.getRecruiterWorkspace(employerId);
     if (
@@ -1303,6 +1340,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     idempotencyKey: string;
     scenario?: "success" | "pending" | "failed" | "requires_action";
   }) {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const existing = this.checkouts.get(input.idempotencyKey);
     if (existing) return clone(existing);
@@ -1353,6 +1391,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   }
 
   async getAdminOverview(marketCode: string) {
+    requireDemoCapability("employment.admin.manage");
     await simulateNetworkDelay();
     return {
       catalog: await this.getCatalog(marketCode),
@@ -1379,6 +1418,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     marketCode: string,
     patch: Partial<(typeof this.catalog)["config"]>,
   ) {
+    requireDemoCapability("employment.admin.manage");
     await simulateNetworkDelay();
     if (marketCode.toUpperCase() !== this.catalog.config.marketCode)
       throw fail("NOT_FOUND", "Marché Emploi introuvable.");
@@ -1391,6 +1431,7 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     offerId: string,
     patch: Partial<(typeof this.catalog)["offers"][number]>,
   ) {
+    requireDemoCapability("employment.admin.manage");
     await simulateNetworkDelay();
     const index = this.catalog.offers.findIndex(
       (offer) => offer.id === offerId,

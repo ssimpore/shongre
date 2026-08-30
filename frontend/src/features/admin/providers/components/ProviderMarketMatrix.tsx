@@ -36,16 +36,14 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
   return (
     <div className="space-y-4">
       {/* Header card with explicit-assignment explanation */}
-      <div className="bg-white p-4 rounded-xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-text-main flex items-center gap-2">
             <Globe className="w-icon-md h-icon-md text-info" />
             {t("admin.providerMarketMatrix.matriceDeCouvertureMultiMarches")}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            Chaque cellule résulte d'une affectation propre au marché. Une
-            cellule non configurée reste indisponible et ne reprend jamais le
-            fournisseur d'un autre pays.
+            {t("admin.providerMarketMatrix.chaqueCelluleResulteDUneAffectationPropreAuMarcheUne")}
           </p>
         </div>
 
@@ -53,11 +51,11 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
         <div className="flex items-center gap-2 shrink-0">
           <Select
             className="w-auto"
-            aria-label="Filtrer par catégorie"
+            aria-label={t("ui.globalSearchBar.filtrerParCategorie")}
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <option value="ALL">Tous les domaines ({matrixRows.length})</option>
+            <option value="ALL">{t("admin.providerMarketMatrix.tousLesDomaines")}{matrixRows.length})</option>
             {Object.values(PROVIDER_CATEGORIES).map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.shortLabel}
@@ -68,33 +66,33 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs text-stone-600 bg-stone-50/80 p-3 rounded-lg border border-stone-200">
+      <div className="flex flex-wrap items-center gap-4 text-xs text-text-secondary bg-stone-50/80 p-3 rounded-lg border border-stone-200">
         <span className="font-semibold text-stone-700">
           {t("admin.providerMarketMatrix.legende")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-success" />
-          <span>Preuve live vérifiée</span>
+          <span className="w-2.5 h-2.5 rounded-pill bg-success" />
+          <span>{t("admin.providerMarketMatrix.preuveLiveVerifiee")}</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-stone-400" />
-          <span>Affectation non vérifiée</span>
+          <span className="w-2.5 h-2.5 rounded-pill bg-stone-400" />
+          <span>{t("admin.providerMarketMatrix.affectationNonVerifiee")}</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-info" />
-          <span>Simulation démo</span>
+          <span className="w-2.5 h-2.5 rounded-pill bg-info" />
+          <span>{t("admin.providerMarketMatrix.simulationDemo")}</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-danger" />
+          <span className="w-2.5 h-2.5 rounded-pill bg-danger" />
           <span>{t("admin.providerMarketMatrix.desactiveIndisponible")}</span>
         </span>
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-white rounded-xl border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-stone-700 border-collapse">
-            <thead className="bg-stone-50 text-stone-600 font-bold uppercase tracking-wider border-b border-stone-200">
+            <thead className="bg-stone-50 text-text-secondary font-bold uppercase tracking-wider border-b border-stone-200">
               <tr>
                 <th scope="col" className="py-3 px-4 min-w-55">
                   {t("admin.providerMarketMatrix.fonctionnaliteCapacite")}
@@ -115,7 +113,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                         <span className="text-base">{m.flag}</span>
                         <span>{m.name}</span>
                         {m.isDefault && (
-                          <span className="text-micro bg-primary text-white px-1.5 py-0.5 rounded-sm font-bold">
+                          <span className="text-micro bg-primary text-text-inverse px-1.5 py-0.5 rounded-sm font-bold">
                             {t("admin.providerMarketMatrix.ref")}
                           </span>
                         )}
@@ -137,7 +135,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                       <ProviderCapabilityLabel
                         capability={row.capability}
                         showCategory
-                        className="text-stone-900"
+                        className="text-text-main"
                       />
                     </td>
 
@@ -156,7 +154,7 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
                         >
                           {cell.mode === "missing" ? (
                             <span className="inline-block text-micro font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-0.5 rounded">
-                              Aucun adaptateur
+                              {t("admin.providerMarketMatrix.aucunAdaptateur")}
                             </span>
                           ) : (
                             <Link

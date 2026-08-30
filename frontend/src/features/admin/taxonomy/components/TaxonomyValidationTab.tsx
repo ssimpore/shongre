@@ -45,9 +45,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Header & Quality Gate Summary */}
-      <div className="bg-white p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-stone-900 flex items-center gap-2">
+          <h3 className="text-base font-black text-text-main flex items-center gap-2">
             <ShieldCheck className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyValidationTab.moteurDAuditValidationD")}
@@ -66,13 +66,13 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={handleRefresh}
           leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
         >
-          Réanalyser ({lastCheckTime})
+          {t("admin.taxonomyValidationTab.reanalyser")}{lastCheckTime})
         </Button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
+        <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>{t("admin.taxonomyValidationTab.etatGlobal")}</span>
             {errors.length === 0 ? (
@@ -88,7 +88,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           </p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
+        <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Erreurs bloquantes</span>
             <AlertOctagon className="w-icon-md h-icon-md text-danger" />
@@ -96,7 +96,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           <p className="text-xl font-black text-danger">{errors.length}</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
+        <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Avertissements</span>
             <AlertTriangle className="w-icon-md h-icon-md text-warning" />
@@ -104,7 +104,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           <p className="text-xl font-black text-warning">{warnings.length}</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
+        <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span>Recommandations</span>
             <Info className="w-icon-md h-icon-md text-info" />
@@ -118,20 +118,20 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <button
           type="button"
           onClick={() => setSeverityFilter("all")}
-          className={`px-3 py-1.5 rounded-xl transition-all ${
+          className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "all"
-              ? "bg-stone-900 text-white"
-              : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
+              ? "bg-stone-900 text-text-inverse"
+              : "bg-bg-base text-text-secondary hover:bg-bg-subtle border border-border-base"
           }`}
         >
-          Tous ({issues.length})
+          {t("admin.taxonomyValidationTab.tous")}{issues.length})
         </button>
         <button
           type="button"
           onClick={() => setSeverityFilter("error")}
-          className={`px-3 py-1.5 rounded-xl transition-all ${
+          className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "error"
-              ? "bg-danger text-white"
+              ? "bg-danger text-text-inverse"
               : "bg-danger-surface text-danger hover:bg-danger-surface border border-danger-border"
           }`}
         >
@@ -140,9 +140,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <button
           type="button"
           onClick={() => setSeverityFilter("warning")}
-          className={`px-3 py-1.5 rounded-xl transition-all ${
+          className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "warning"
-              ? "bg-amber-500 text-white"
+              ? "bg-amber-500 text-text-inverse"
               : "bg-warning-surface text-warning hover:bg-warning-surface border border-warning-border"
           }`}
         >
@@ -151,9 +151,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         <button
           type="button"
           onClick={() => setSeverityFilter("info")}
-          className={`px-3 py-1.5 rounded-xl transition-all ${
+          className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "info"
-              ? "bg-info text-white"
+              ? "bg-info text-text-inverse"
               : "bg-info-surface text-info hover:bg-info-surface border border-info-border"
           }`}
         >
@@ -164,9 +164,9 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       {/* Issues List */}
       <div className="space-y-3">
         {filteredIssues.length === 0 ? (
-          <div className="p-8 text-center bg-white rounded-2xl border border-border-base text-xs text-stone-500 space-y-2">
+          <div className="p-8 text-center bg-bg-surface rounded-2xl border border-border-base text-xs text-stone-500 space-y-2">
             <CheckCircle2 className="w-8 h-8 text-success mx-auto" />
-            <p className="font-bold text-stone-900 text-sm">
+            <p className="font-bold text-text-main text-sm">
               {t("admin.taxonomyValidationTab.aucuneAnomalieDetecteeDansCe")}
             </p>
             <p className="text-stone-500">
@@ -182,7 +182,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             return (
               <div
                 key={issue.id}
-                className={`p-4 rounded-2xl border bg-white shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                className={`p-4 rounded-2xl border bg-bg-surface shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                   issue.severity === "error"
                     ? "border-danger-border hover:border-danger"
                     : issue.severity === "warning"
@@ -204,7 +204,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className={`text-micro px-2 py-0.5 rounded-full font-mono font-bold uppercase ${
+                        className={`text-micro px-2 py-0.5 rounded-pill font-mono font-bold uppercase ${
                           issue.severity === "error"
                             ? "bg-danger-surface text-danger"
                             : issue.severity === "warning"
@@ -215,7 +215,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                         {issue.code}
                       </span>
                       {issue.nodeLabel && (
-                        <span className="font-bold text-xs text-stone-900">
+                        <span className="font-bold text-xs text-text-main">
                           {issue.nodeLabel}
                         </span>
                       )}
@@ -227,7 +227,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
 
                     {issue.remediation && (
                       <p className="text-micro text-stone-500 italic">
-                        Action suggérée : {issue.remediation}
+                        {t("admin.taxonomyValidationTab.actionSuggeree")} {issue.remediation}
                       </p>
                     )}
                   </div>

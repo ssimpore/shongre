@@ -8,6 +8,7 @@ import { transactionRepository } from "../../../repositories/transaction.reposit
 import { messagingRepository } from "../../../repositories/messaging.repository";
 import { storageService } from "../../../services/storage.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
+import { requireDemoCapability } from "./demo-authorization";
 
 const DEMO_WEEKLY_ANALYTICS = [
   { date: "2026-08-17", views: 240, leads: 12 },
@@ -21,6 +22,7 @@ const DEMO_WEEKLY_ANALYTICS = [
 
 export class DemoWorkspaceService implements WorkspaceServiceContract {
   async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
+    requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const listings = await listingRepository.getListingsBySeller(userId);
     const purchases = await transactionRepository.getPurchases(userId);
@@ -55,6 +57,7 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
   }
 
   async getProAnalytics(sellerId: string): Promise<ProAnalyticsSnapshot> {
+    requireDemoCapability("store.analytics.read.own");
     await simulateNetworkDelay();
     const listings = await listingRepository.getListingsBySeller(sellerId);
     const hasCatalogue = listings.length > 0;

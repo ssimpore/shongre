@@ -289,7 +289,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:529",
         "requestBody": {
           "required": true,
@@ -5014,6 +5015,7 @@
     },
     "/analytics/events": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAnalyticsEvents",
         "tags": ["analytics"],
         "summary": "Ingest a consented, provider-neutral analytics batch",
@@ -5512,6 +5514,7 @@
     },
     "/auth/domain-handoff/exchange": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthDomainHandoffExchange",
         "tags": ["auth"],
         "summary": "Exchange a one-use cross-domain authorization code",
@@ -5575,7 +5578,8 @@
           "500": { "$ref": "#/components/responses/InternalError" }
         },
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts",
         "requestBody": {
           "required": true,
@@ -5662,6 +5666,7 @@
     },
     "/auth/login": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthLogin",
         "tags": ["auth"],
         "summary": "POST /auth/login",
@@ -5731,6 +5736,7 @@
     },
     "/auth/logout": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthLogout",
         "tags": ["auth"],
         "summary": "POST /auth/logout",
@@ -5868,6 +5874,7 @@
     },
     "/auth/me": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getAuthMe",
         "tags": ["auth"],
         "summary": "GET /auth/me",
@@ -6025,6 +6032,7 @@
     },
     "/auth/mfa/challenge": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthMfaChallenge",
         "tags": ["auth"],
         "summary": "Complete a short-lived MFA login challenge",
@@ -6235,6 +6243,7 @@
     },
     "/auth/oauth/{provider}/callback": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getAuthOauthByProviderCallback",
         "tags": ["auth"],
         "summary": "GET /auth/oauth/:provider/callback",
@@ -6296,6 +6305,7 @@
         "x-shongre-source": "backend/src/api/v1/router.ts:366"
       },
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthOauthByProviderCallback",
         "tags": ["auth"],
         "summary": "POST /auth/oauth/:provider/callback",
@@ -6359,6 +6369,7 @@
     },
     "/auth/oauth/{provider}/start": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthOauthByProviderStart",
         "tags": ["auth"],
         "summary": "POST /auth/oauth/:provider/start",
@@ -6444,6 +6455,7 @@
     },
     "/auth/oauth/complete-profile": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthOauthCompleteProfile",
         "tags": ["auth"],
         "summary": "POST /auth/oauth/complete-profile",
@@ -6540,6 +6552,7 @@
     },
     "/auth/oauth/facebook/data-deletion": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthOauthFacebookDataDeletion",
         "tags": ["auth"],
         "summary": "POST /auth/oauth/facebook/data-deletion",
@@ -6624,6 +6637,7 @@
     },
     "/auth/oauth/facebook/data-deletion/status": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getAuthOauthFacebookDataDeletionStatus",
         "tags": ["auth"],
         "summary": "GET /auth/oauth/facebook/data-deletion/status",
@@ -6689,6 +6703,7 @@
     },
     "/auth/oauth/native-exchange": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthOauthNativeExchange",
         "tags": ["auth"],
         "summary": "POST /auth/oauth/native-exchange",
@@ -6773,6 +6788,7 @@
     },
     "/auth/oauth/providers": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getAuthOauthProviders",
         "tags": ["auth"],
         "summary": "GET /auth/oauth/providers",
@@ -6993,6 +7009,7 @@
     },
     "/auth/password/forgot": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthPasswordForgot",
         "tags": ["auth"],
         "summary": "POST /auth/password/forgot",
@@ -7066,6 +7083,7 @@
     },
     "/auth/password/reset": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthPasswordReset",
         "tags": ["auth"],
         "summary": "POST /auth/password/reset",
@@ -7222,6 +7240,7 @@
     },
     "/auth/refresh": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthRefresh",
         "tags": ["auth"],
         "summary": "POST /auth/refresh",
@@ -7295,6 +7314,7 @@
     },
     "/auth/register": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthRegister",
         "tags": ["auth"],
         "summary": "POST /auth/register",
@@ -7623,7 +7643,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:443",
         "requestBody": {
           "required": true,
@@ -7645,6 +7666,7 @@
     },
     "/auth/verify-email": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthVerifyEmail",
         "tags": ["auth"],
         "summary": "POST /auth/verify-email",
@@ -7718,6 +7740,7 @@
     },
     "/auth/verify-email/resend": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postAuthVerifyEmailResend",
         "tags": ["auth"],
         "summary": "POST /auth/verify-email/resend",
@@ -7849,7 +7872,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:450",
         "requestBody": {
           "required": true,
@@ -8378,6 +8402,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:886"
       }
     },
@@ -9112,7 +9137,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -9170,6 +9196,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:935",
         "requestBody": {
           "required": true,
@@ -9239,6 +9266,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:889",
         "requestBody": {
           "required": true,
@@ -9394,6 +9422,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:892"
       }
     },
@@ -9466,7 +9495,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts",
         "requestBody": {
           "required": true,
@@ -9544,6 +9574,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1655"
       }
     },
@@ -9607,7 +9638,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1667",
         "requestBody": {
           "required": true,
@@ -9683,7 +9715,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2103",
         "requestBody": {
           "required": true,
@@ -9769,7 +9802,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2127",
         "requestBody": {
           "required": true,
@@ -9849,7 +9883,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2115",
         "requestBody": {
           "required": true,
@@ -9935,7 +9970,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2068",
         "requestBody": {
           "required": true,
@@ -10011,7 +10047,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2075"
       }
     },
@@ -11269,6 +11306,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11304,6 +11342,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11338,6 +11377,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "put": {
@@ -11372,6 +11412,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11406,6 +11447,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11447,7 +11489,8 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         },
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "post": {
@@ -11481,7 +11524,8 @@
           "409": { "$ref": "#/components/responses/Conflict" }
         },
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11517,7 +11561,8 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         },
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -11561,7 +11606,8 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         },
         "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -12481,6 +12527,7 @@
     },
     "/marketing/track/open": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "recordMarketingOpen",
         "tags": ["marketing"],
         "summary": "Record an opaque first-party open token",
@@ -12513,6 +12560,7 @@
     },
     "/marketing/track/click": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "recordMarketingClick",
         "tags": ["marketing"],
         "summary": "Record an opaque first-party click token and redirect to its stored HTTPS target",
@@ -12543,6 +12591,7 @@
     },
     "/marketing/provider-webhooks/{connectionId}": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "receiveMarketingProviderWebhook",
         "tags": ["marketing"],
         "summary": "Verify and normalize a provider delivery webhook",
@@ -15167,6 +15216,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:733"
       }
     },
@@ -15230,7 +15280,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -15861,6 +15912,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:736",
         "requestBody": {
           "required": true,
@@ -15939,6 +15991,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:739"
       },
       "put": {
@@ -16095,7 +16148,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts",
         "requestBody": {
           "required": true,
@@ -17481,6 +17535,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1207"
       }
     },
@@ -18807,6 +18862,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1213"
       }
     },
@@ -19119,6 +19175,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1216"
       }
     },
@@ -19241,6 +19298,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1210",
         "requestBody": {
           "required": true,
@@ -19323,6 +19381,7 @@
     },
     "/feature-flags/{key}": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getFeatureFlagEvaluation",
         "tags": ["feature-flags"],
         "summary": "Evaluate a public feature flag using server-owned rules",
@@ -19987,6 +20046,7 @@
     },
     "/api/health": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getApiHealth",
         "tags": ["operations"],
         "summary": "Compatibility process-health endpoint",
@@ -20012,6 +20072,7 @@
     },
     "/health": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getHealth",
         "tags": ["operations"],
         "summary": "Process health and liveness",
@@ -20103,6 +20164,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -20204,6 +20266,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:554"
       }
     },
@@ -20475,6 +20538,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:544"
       }
     },
@@ -20616,6 +20680,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:548"
       },
       "put": {
@@ -21134,6 +21199,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:551",
         "requestBody": {
           "required": true,
@@ -21153,6 +21219,7 @@
     },
     "/livez": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getLiveness",
         "tags": ["operations"],
         "summary": "Orchestrator liveness probe",
@@ -21197,6 +21264,7 @@
     },
     "/markets": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getMarkets",
         "tags": ["markets"],
         "summary": "GET /markets",
@@ -21255,6 +21323,7 @@
     },
     "/markets/{code}": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getMarketsByCode",
         "tags": ["markets"],
         "summary": "GET /markets/:code",
@@ -21319,6 +21388,7 @@
     },
     "/markets/active": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getMarketsActive",
         "tags": ["markets"],
         "summary": "GET /markets/active",
@@ -21455,6 +21525,7 @@
     },
     "/markets/effective/{code}": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getMarketsEffectiveByCode",
         "tags": ["markets"],
         "summary": "GET /markets/effective/:code",
@@ -21728,7 +21799,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:599",
         "requestBody": {
           "required": true,
@@ -21813,7 +21885,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:609"
       }
     },
@@ -21877,7 +21950,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "message.block",
         "x-shongre-source": "backend/src/api/v1/router.ts:2282",
         "requestBody": {
           "required": true,
@@ -21957,7 +22031,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "message.block",
         "x-shongre-source": "backend/src/api/v1/router.ts:2274"
       }
     },
@@ -22949,7 +23024,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "message.block",
         "x-shongre-source": "backend/src/api/v1/router.ts:2291",
         "requestBody": {
           "required": true,
@@ -23023,7 +23099,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "report.create",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -23100,7 +23177,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "report.create",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -23158,7 +23236,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "report.create",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -23222,7 +23301,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1720"
       }
     },
@@ -23289,7 +23369,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1688",
         "requestBody": {
           "required": true,
@@ -23373,7 +23454,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1706"
       }
     },
@@ -23446,7 +23528,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1801"
       }
     },
@@ -23512,6 +23595,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1658"
       }
     },
@@ -23575,7 +23659,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1699",
         "requestBody": {
           "required": true,
@@ -23651,7 +23736,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1674",
         "requestBody": {
           "required": true,
@@ -23727,7 +23813,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1713"
       }
     },
@@ -24130,7 +24217,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2307"
       }
     },
@@ -24203,7 +24291,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2342"
       }
     },
@@ -24276,7 +24365,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2323"
       }
     },
@@ -24340,7 +24430,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2352",
         "requestBody": {
           "required": true,
@@ -24426,7 +24517,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2366",
         "requestBody": {
           "required": true,
@@ -24505,7 +24597,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       },
       "put": {
@@ -24576,7 +24669,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -24640,7 +24734,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2333"
       }
     },
@@ -24704,7 +24799,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2314"
       }
     },
@@ -24851,7 +24947,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1573"
       }
     },
@@ -24924,7 +25021,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1559"
       }
     },
@@ -24997,7 +25095,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1548",
         "requestBody": {
           "required": true,
@@ -25086,7 +25185,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1580",
         "requestBody": {
           "required": true,
@@ -25178,7 +25278,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1541"
       }
     },
@@ -25341,7 +25442,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1566",
         "requestBody": {
           "required": true,
@@ -26298,6 +26400,7 @@
     },
     "/api/ready": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getApiReadiness",
         "tags": ["operations"],
         "summary": "Compatibility dependency-aware readiness endpoint",
@@ -26331,6 +26434,7 @@
     },
     "/readyz": {
       "get": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "getReadiness",
         "tags": ["operations"],
         "summary": "Dependency-aware readiness probe",
@@ -27413,6 +27517,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1015"
       }
     },
@@ -27950,6 +28055,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1083",
         "requestBody": {
           "required": true,
@@ -28034,7 +28140,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1093",
         "requestBody": {
           "required": true,
@@ -28117,6 +28224,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1021"
       }
     },
@@ -28183,6 +28291,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1027"
       }
     },
@@ -28329,7 +28438,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1034"
       },
       "post": {
@@ -28391,7 +28501,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:1041",
         "requestBody": {
           "required": true,
@@ -28465,6 +28576,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:1018",
         "requestBody": {
           "required": true,
@@ -28697,6 +28809,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:2383"
       }
     },
@@ -28857,7 +28970,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2468"
       }
     },
@@ -29159,7 +29273,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2474"
       }
     },
@@ -29260,6 +29375,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29307,6 +29423,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29392,6 +29509,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29474,6 +29592,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -29543,6 +29662,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:704"
       }
     },
@@ -29612,6 +29732,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:716"
       }
     },
@@ -29679,6 +29800,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:710"
       }
     },
@@ -29739,6 +29861,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:701"
       }
     },
@@ -29807,6 +29930,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:722"
       }
     },
@@ -29876,6 +30000,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:707"
       }
     },
@@ -29942,6 +30067,7 @@
         },
         "security": [],
         "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts:514"
       },
       "put": {
@@ -30089,7 +30215,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2153",
         "requestBody": {
           "required": true,
@@ -30178,7 +30305,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2146"
       }
     },
@@ -30251,12 +30379,14 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2137"
       }
     },
     "/webhooks/compliance/{provider}": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postWebhooksComplianceByProvider",
         "tags": ["webhooks"],
         "summary": "POST /webhooks/compliance/:provider",
@@ -30339,6 +30469,7 @@
     },
     "/webhooks/stripe": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postWebhooksStripe",
         "tags": ["webhooks"],
         "summary": "POST /webhooks/stripe",
@@ -30416,6 +30547,7 @@
     },
     "/webhooks/stripe-connect-v2": {
       "post": {
+        "x-shongre-deny-staff-marketplace": false,
         "operationId": "postWebhooksStripeConnectV2",
         "tags": ["webhooks"],
         "summary": "POST /webhooks/stripe-connect-v2",
@@ -31204,7 +31336,8 @@
             "BearerAuth": []
           }
         ],
-        "x-shongre-access": "authenticated",
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
         "x-shongre-source": "backend/src/api/v1/router.ts:2404"
       }
     }
@@ -31279,6 +31412,7 @@
         "type": "string",
         "description": "Canonical Shongre capability identifier from packages/contracts/src/access-control.ts.",
         "enum": [
+          "marketplace.customer.access",
           "profile.read",
           "profile.update.own",
           "seller.profile.read",
@@ -31529,6 +31663,7 @@
         "enum": [
           "directly_revoked",
           "inactive_staff",
+          "staff_separation",
           "account_status",
           "not_granted"
         ]

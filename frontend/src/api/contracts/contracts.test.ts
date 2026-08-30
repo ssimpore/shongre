@@ -1,6 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import { services } from "../client/service-registry";
 import { AppError, getFriendlyErrorMessage } from "../errors/app-error";
+import { storageService } from "../../services/storage.service";
+
+afterEach(() => storageService.setCurrentUserKey("guest"));
 
 describe("Shongre API Service Contracts & Demo Adapters", () => {
   it("resolves listings asynchronously with total count", async () => {
@@ -23,6 +26,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("handles authentication and role switching deterministically", async () => {
+    storageService.setCurrentUserKey("buyer_thomas");
     const user = await services.auth.switchRole("pro_seller");
     expect(user).toBeDefined();
     expect(user?.role).toBe("pro_seller");
@@ -33,6 +37,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("treats the guest persona as a signed-out session and restores exact accounts", async () => {
+    storageService.setCurrentUserKey("buyer_thomas");
     await expect(services.auth.switchRole("guest")).resolves.toBeNull();
     await expect(services.auth.getCurrentUser()).resolves.toBeNull();
 
@@ -59,6 +64,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("delivers locale-aware composer options through messaging", async () => {
+    storageService.setCurrentUserKey("buyer_thomas");
     const individual = await services.messaging.getComposerOptions({
       conversationId: "conv-01",
       userId: "user-thomas",
@@ -68,6 +74,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
     expect(individual.attachmentOptions[0]?.label).toBe("Condition photo");
     expect(individual.quickReplies).toEqual([]);
 
+    storageService.setCurrentUserKey("pro_atelier");
     const professional = await services.messaging.getComposerOptions({
       conversationId: "conv-01",
       userId: "seller-pro-1",
@@ -79,6 +86,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("parses bulk-import money and validation deterministically", async () => {
+    storageService.setCurrentUserKey("pro_atelier");
     const template = await services.listings.getBulkImportTemplate("fr-FR");
     const rows = await services.listings.parseBulkImportCsv({
       content: `${template.content}\nabc;home_garden;furniture;0;good;1;Lyon;69002;Invalide`,
@@ -108,6 +116,7 @@ describe("Shongre API Service Contracts & Demo Adapters", () => {
   });
 
   it("looks up companies by SIRET deterministically", async () => {
+    storageService.setCurrentUserKey("pro_atelier");
     const company =
       await services.verification.lookupCompanyBySiret("98765432100012");
     expect(company).toBeDefined();

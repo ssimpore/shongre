@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
   DEMO_INVOICING_CUSTOMER_ID,
   DEMO_INVOICING_ENTITY_ID,
@@ -33,6 +33,8 @@ const input = {
 };
 
 describe("DemoInvoicingService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("pro_atelier"));
+
   it("isolates organization identity and records between demo accounts", async () => {
     const previousUserKey = storageService.getCurrentUserKey();
     const service = new DemoInvoicingService();
@@ -44,9 +46,7 @@ describe("DemoInvoicingService", () => {
 
       expect(standalone.tenants[0].legalName).toBe("Studio Rivage");
       expect(standalone.tenants[0].productAccess.accessMode).toBe("STANDALONE");
-      expect(multiProduct.tenants[0].legalName).toBe(
-        "Atelier Nordique SAS",
-      );
+      expect(multiProduct.tenants[0].legalName).toBe("Atelier Nordique SAS");
       expect(multiProduct.tenants[0].productAccess.accessMode).toBe("ADD_ON");
       expect(multiProduct.tenants[0].id).not.toBe(standalone.tenants[0].id);
       expect(multiProduct.legalEntities[0].tenantId).not.toBe(
@@ -109,13 +109,16 @@ describe("DemoInvoicingService", () => {
 
   it("reuses the shared organization legal entity during onboarding", async () => {
     const service = new DemoInvoicingService();
+    const workspace = await service.getWorkspace("FR");
+    const tenant = workspace.tenants[0];
+    const existingEntity = workspace.legalEntities[0];
     const entity = await service.bootstrapLegalEntityFromOrganization({
-      tenantId: DEMO_INVOICING_TENANT_ID,
+      tenantId: tenant.id,
       marketCode: "FR",
     });
 
-    expect(entity.id).toBe(DEMO_INVOICING_ENTITY_ID);
-    expect(entity.tenantId).toBe(DEMO_INVOICING_TENANT_ID);
+    expect(entity.id).toBe(existingEntity.id);
+    expect(entity.tenantId).toBe(tenant.id);
   });
 
   it("edits a draft with optimistic versioning and blocks finalized edits", async () => {

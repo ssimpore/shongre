@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { DemoCoursesService } from "./demo-courses.service";
+import { storageService } from "../../../services/storage.service";
 
 describe("DemoCoursesService", () => {
+  beforeEach(() => storageService.setCurrentUserKey("buyer_thomas"));
+
   it("returns deterministic relevance-first results and minor-unit prices", async () => {
     const service = new DemoCoursesService();
     const first = await service.searchTutors({
@@ -72,6 +75,7 @@ describe("DemoCoursesService", () => {
     const service = new DemoCoursesService();
     const catalog = await service.getCatalog("FR");
     expect(catalog.config.featureFlags.bookingEnabled).toBe(false);
+    storageService.setCurrentUserKey("market_mgr_fr");
     await expect(
       service.updateMarketConfig("FR", {
         ...catalog.config,
@@ -94,6 +98,7 @@ describe("DemoCoursesService", () => {
   });
 
   it("preserves organization data while suspended mutations fail closed", async () => {
+    storageService.setCurrentUserKey("pro_courses_sophie");
     const service = new DemoCoursesService();
     const initial = await service.getOrganizationWorkspace(
       "org_college_lumiere",
@@ -117,6 +122,7 @@ describe("DemoCoursesService", () => {
   });
 
   it("does not let the demo quota bypass commercial readiness", async () => {
+    storageService.setCurrentUserKey("pro_courses_sophie");
     const service = new DemoCoursesService();
     const initial = await service.getOrganizationWorkspace(
       "org_college_lumiere",

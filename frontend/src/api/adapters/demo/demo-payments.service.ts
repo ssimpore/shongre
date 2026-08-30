@@ -5,6 +5,7 @@ import {
 } from "../../contracts/payments.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { deterministicDemoId } from "./demo-identifiers";
+import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoPaymentsService implements PaymentsServiceContract {
   async createCheckout(
@@ -12,6 +13,7 @@ export class DemoPaymentsService implements PaymentsServiceContract {
     idempotencyKey: string,
   ): Promise<MonetizationOrder> {
     await simulateNetworkDelay();
+    requireDemoCapability("payment.initiate");
     const now = new Date().toISOString();
     return {
       id: deterministicDemoId("order_demo", [quoteId, idempotencyKey]),
@@ -35,6 +37,7 @@ export class DemoPaymentsService implements PaymentsServiceContract {
     idempotencyKey: string;
   }) {
     await simulateNetworkDelay();
+    requireDemoCapability("order.manage.seller");
     if (input.amountMinor < PAYOUT_REQUEST_CONSTRAINTS.minimumAmountMinor)
       throw new Error("Le montant du virement est inférieur au minimum.");
     return {
@@ -45,6 +48,7 @@ export class DemoPaymentsService implements PaymentsServiceContract {
 
   async getSellerBalance() {
     await simulateNetworkDelay();
+    requireDemoCapability("order.manage.seller");
     return {
       availableMinor: 48_550,
       pendingMinor: 12_000,

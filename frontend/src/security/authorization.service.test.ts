@@ -116,6 +116,12 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     expect(
       authorizationService.can(moderator as UserProfile, "listing.moderate"),
     ).toBe(true);
+    expect(
+      authorizationService.can(moderator as UserProfile, "listing.read"),
+    ).toBe(false);
+    expect(
+      authorizationService.can(moderator as UserProfile, "message.send"),
+    ).toBe(false);
     expect(authorizationService.can(admin as UserProfile, "audit.read")).toBe(
       true,
     );
@@ -212,6 +218,6 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     ).toBe(false);
     expect(
       authorizationService.can(revokedStaff as UserProfile, "listing.read"),
-    ).toBe(true);
+    ).toBe(false);
   });
 });

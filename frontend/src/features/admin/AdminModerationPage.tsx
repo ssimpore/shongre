@@ -248,7 +248,7 @@ export const AdminModerationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-bold uppercase tracking-wider text-primary">
             {t("admin.adminModerationPage.moderationSecurite")}
@@ -258,10 +258,10 @@ export const AdminModerationPage: React.FC = () => {
             {t("admin.adminModerationPage.controleDesContenusEtProfils")}
           </span>
         </div>
-        <h1 className="text-2xl font-black text-stone-900 tracking-tight">
+        <h1 className="text-2xl font-black text-text-main tracking-tight">
           {t("admin.adminModerationPage.fileDeModerationSignalements")}
         </h1>
-        <p className="text-xs text-stone-600 mt-1">
+        <p className="text-xs text-text-secondary mt-1">
           {t("admin.adminModerationPage.surveillanceEnTempsReelDes")}
         </p>
       </div>
@@ -280,7 +280,7 @@ export const AdminModerationPage: React.FC = () => {
           >
             <ShieldAlert className="w-icon-md h-icon-md" />
             <span>
-              Signalements Reçus (
+              {t("admin.adminModerationPage.signalementsRecus")}
               {reports.filter((r) => r.status !== "resolved").length})
             </span>
           </button>
@@ -297,7 +297,7 @@ export const AdminModerationPage: React.FC = () => {
             }`}
           >
             <Eye className="w-icon-md h-icon-md" />
-            <span>Contrôle & Audit IA Annonces ({listings.length})</span>
+            <span>{t("admin.adminModerationPage.controleAuditIaAnnonces")}{listings.length})</span>
           </button>
         )}
 
@@ -344,12 +344,12 @@ export const AdminModerationPage: React.FC = () => {
 
       {/* Tab: Reports */}
       {activeTab === "reports" && canReviewReports && (
-        <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+        <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
           {reports.filter((r) => r.status !== "resolved").length === 0 ? (
             <div className="p-12 text-center text-stone-500">
               <CheckCircle className="w-10 h-10 text-success mx-auto mb-2" />
               <div className="text-sm font-bold text-stone-800">
-                Aucun signalement en attente
+                {t("admin.adminModerationPage.aucunSignalementEnAttente")}
               </div>
               <div className="text-xs text-stone-500 mt-1">
                 {t(
@@ -371,7 +371,7 @@ export const AdminModerationPage: React.FC = () => {
                         <Badge variant="urgent">
                           {rep.reason || "Signalement"}
                         </Badge>
-                        <span className="text-xs font-semibold text-stone-900">
+                        <span className="text-xs font-semibold text-text-main">
                           Cible : {rep.targetUserName || rep.targetUserId}
                         </span>
                         <span className="text-micro text-stone-500">
@@ -379,7 +379,7 @@ export const AdminModerationPage: React.FC = () => {
                         </span>
                       </div>
                       {rep.comment && (
-                        <p className="text-xs text-stone-600 bg-bg-base p-2.5 rounded-xl border border-border-base">
+                        <p className="text-xs text-text-secondary bg-bg-base p-2.5 rounded-control border border-border-base">
                           "{rep.comment}"
                         </p>
                       )}
@@ -398,7 +398,7 @@ export const AdminModerationPage: React.FC = () => {
                         <Button
                           size="sm"
                           onClick={() => setSuspendUserId(rep.targetUserId)}
-                          className="text-xs bg-danger hover:bg-danger text-white"
+                          className="text-xs bg-danger hover:bg-danger text-text-inverse"
                         >
                           {t("admin.adminModerationPage.suspendreLeProfil")}
                         </Button>
@@ -415,41 +415,41 @@ export const AdminModerationPage: React.FC = () => {
         <div className="grid gap-4 xl:grid-cols-trending-columns">
           <section
             aria-labelledby="moderation-cases-title"
-            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+            className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
           >
             <div className="border-b border-border-subtle p-4">
               <h2
                 id="moderation-cases-title"
-                className="text-sm font-black text-stone-900"
+                className="text-sm font-black text-text-main"
               >
-                Dossiers de modération
+                {t("admin.adminModerationPage.dossiersDeModeration")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                Historique canonique des signalements et décisions appliquées.
+                {t("admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees")}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
               {moderationCases.length === 0 ? (
                 <p className="p-5 text-xs text-stone-500">
-                  Aucun dossier enregistré.
+                  {t("admin.adminModerationPage.aucunDossierEnregistre")}
                 </p>
               ) : (
                 moderationCases.map((moderationCase) => (
                   <article key={moderationCase.id} className="space-y-2 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-mono text-xs font-bold text-stone-900">
+                      <span className="font-mono text-xs font-bold text-text-main">
                         {moderationCase.id}
                       </span>
                       <Badge variant="neutral" size="sm">
                         {labelIdentifier(moderationCase.status)}
                       </Badge>
                     </div>
-                    <p className="text-xs text-stone-600">
+                    <p className="text-xs text-text-secondary">
                       {labelIdentifier(moderationCase.targetType)} ·{" "}
                       {labelIdentifier(moderationCase.category)}
                     </p>
                     {moderationCase.resolutionReason && (
-                      <p className="rounded-xl bg-bg-base p-3 text-xs text-stone-700">
+                      <p className="rounded-control bg-bg-base p-3 text-xs text-stone-700">
                         {moderationCase.resolutionReason}
                       </p>
                     )}
@@ -461,23 +461,23 @@ export const AdminModerationPage: React.FC = () => {
 
           <section
             aria-labelledby="moderation-appeals-title"
-            className="overflow-hidden rounded-2xl border border-border-base bg-white shadow-xs"
+            className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
           >
             <div className="border-b border-border-subtle p-4">
               <h2
                 id="moderation-appeals-title"
-                className="text-sm font-black text-stone-900"
+                className="text-sm font-black text-text-main"
               >
-                Recours à examiner
+                {t("admin.adminModerationPage.recoursAExaminer")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                Le backend interdit qu’un modérateur révise sa propre décision.
+                {t("admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision")}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
               {appeals.length === 0 ? (
                 <p className="p-5 text-xs text-stone-500">
-                  Aucun recours enregistré.
+                  {t("admin.adminModerationPage.aucunRecoursEnregistre")}
                 </p>
               ) : (
                 appeals.map((appeal) => {
@@ -487,7 +487,7 @@ export const AdminModerationPage: React.FC = () => {
                   return (
                     <article key={appeal.id} className="space-y-3 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-stone-900">
+                        <span className="font-mono text-xs font-bold text-text-main">
                           {appeal.id}
                         </span>
                         <Badge
@@ -497,10 +497,10 @@ export const AdminModerationPage: React.FC = () => {
                           {labelIdentifier(appeal.status)}
                         </Badge>
                       </div>
-                      <p className="text-xs text-stone-600">{appeal.reason}</p>
+                      <p className="text-xs text-text-secondary">{appeal.reason}</p>
                       {appeal.decisionReason && (
-                        <p className="rounded-xl bg-bg-base p-3 text-xs text-stone-700">
-                          Décision : {appeal.decisionReason}
+                        <p className="rounded-control bg-bg-base p-3 text-xs text-stone-700">
+                          {t("admin.adminModerationPage.decision")} {appeal.decisionReason}
                         </p>
                       )}
                       {pending && (
@@ -527,7 +527,7 @@ export const AdminModerationPage: React.FC = () => {
                               })
                             }
                           >
-                            Annuler la décision
+                            {t("admin.adminModerationPage.annulerLaDecision")}
                           </Button>
                           <Button
                             size="sm"
@@ -554,10 +554,10 @@ export const AdminModerationPage: React.FC = () => {
 
       {/* Tab: Listings with AI Audit */}
       {activeTab === "listings" && canModerateListings && (
-        <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
-          <div className="p-3.5 border-b border-border-subtle bg-bg-base text-xs font-semibold text-stone-600 flex justify-between items-center">
+        <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
+          <div className="p-3.5 border-b border-border-subtle bg-bg-base text-xs font-semibold text-text-secondary flex justify-between items-center">
             <span>
-              Catalogue d'annonces Shongre ({listings.length} au total)
+              {t("admin.adminModerationPage.catalogueDAnnoncesShongre")}{listings.length} {t("admin.adminModerationPage.auTotal")}
             </span>
             <span className="text-micro text-stone-500">
               {t("admin.adminModerationPage.cliquezSurAuditIaPour")}
@@ -597,10 +597,10 @@ export const AdminModerationPage: React.FC = () => {
                           src={list.coverImageUrl || list.photos?.[0]?.url}
                           alt={list.title}
                           sizes="40px"
-                          className="w-10 h-10 rounded-xl object-cover border border-border-base shrink-0"
+                          className="w-10 h-10 rounded-control object-cover border border-border-base shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-stone-900 line-clamp-1">
+                          <div className="font-bold text-text-main line-clamp-1">
                             {list.title}
                           </div>
                           <div className="text-xs text-stone-500">
@@ -612,7 +612,7 @@ export const AdminModerationPage: React.FC = () => {
                     <td className="p-3.5 font-medium text-stone-800">
                       {list.sellerName}
                     </td>
-                    <td className="p-3.5 font-bold text-stone-900">
+                    <td className="p-3.5 font-bold text-text-main">
                       {formatPrice(list.price, {
                         isFreeDonation: list.isFreeDonation,
                       })}
@@ -670,7 +670,7 @@ export const AdminModerationPage: React.FC = () => {
 
       {/* Tab: Suspended Users */}
       {activeTab === "users" && (canSuspendUsers || canReactivateUsers) && (
-        <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+        <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <div className="divide-y divide-border-subtle">
             {users
               .filter((u) => u.isSuspended)
@@ -687,15 +687,15 @@ export const AdminModerationPage: React.FC = () => {
                       }
                       alt={u.name}
                       sizes="40px"
-                      className="w-10 h-10 rounded-full object-cover border border-danger-border"
+                      className="w-10 h-10 rounded-pill object-cover border border-danger-border"
                     />
                     <div>
-                      <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
+                      <div className="text-xs font-bold text-text-main flex items-center gap-2">
                         <span>{u.name}</span>
                         <Badge variant="urgent">SUSPENDU</Badge>
                       </div>
                       <div className="text-xs text-stone-500 mt-0.5">
-                        Motif légal :{" "}
+                        {t("admin.adminModerationPage.motifLegal")}{" "}
                         {u.suspendedReason ||
                           "Mesure conservatoire de sécurité"}
                       </div>
@@ -728,22 +728,22 @@ export const AdminModerationPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4">
-            <div className="p-3 bg-bg-base rounded-xl border border-border-base">
-              <div className="font-bold text-xs text-stone-900">
+            <div className="p-3 bg-bg-base rounded-control border border-border-base">
+              <div className="font-bold text-xs text-text-main">
                 {selectedListingForAI.title}
               </div>
               <div className="text-xs text-stone-500 mt-0.5">
                 {formatPrice(selectedListingForAI.price, {
                   isFreeDonation: selectedListingForAI.isFreeDonation,
                 })}{" "}
-                • Vendeur : {selectedListingForAI.sellerName}
+                {t("admin.adminModerationPage.vendeur2")} {selectedListingForAI.sellerName}
               </div>
             </div>
 
             {isAiLoading ? (
               <div className="py-8 text-center space-y-3">
-                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" />
-                <p className="text-xs font-medium text-stone-600">
+                <div className="w-8 h-8 rounded-pill border-2 border-primary border-t-transparent animate-spin mx-auto" />
+                <p className="text-xs font-medium text-text-secondary">
                   {t(
                     "admin.adminModerationPage.analyseDeConformiteEtDetection",
                   )}
@@ -752,7 +752,7 @@ export const AdminModerationPage: React.FC = () => {
             ) : aiAnalysis ? (
               <div className="space-y-4">
                 <div
-                  className={`p-4 rounded-xl border flex items-center justify-between ${
+                  className={`p-4 rounded-control border flex items-center justify-between ${
                     aiAnalysis.riskScore > 50
                       ? "bg-danger-surface border-danger-border text-danger"
                       : aiAnalysis.riskScore > 20
@@ -782,10 +782,10 @@ export const AdminModerationPage: React.FC = () => {
                 </div>
 
                 <div className="text-xs text-stone-700 space-y-1">
-                  <span className="font-bold block text-stone-900">
+                  <span className="font-bold block text-text-main">
                     {t("admin.adminModerationPage.syntheseDeLAgentIa")}
                   </span>
-                  <p className="leading-relaxed bg-stone-50 p-3 rounded-xl border border-border-subtle">
+                  <p className="leading-relaxed bg-stone-50 p-3 rounded-control border border-border-subtle">
                     {aiAnalysis.summary}
                   </p>
                 </div>
@@ -793,7 +793,7 @@ export const AdminModerationPage: React.FC = () => {
                 {aiAnalysis.flaggedKeywords &&
                   aiAnalysis.flaggedKeywords.length > 0 && (
                     <div>
-                      <span className="text-xs font-bold text-stone-900 block mb-1.5">
+                      <span className="text-xs font-bold text-text-main block mb-1.5">
                         {t("admin.adminModerationPage.elementsSignales")}
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -821,7 +821,7 @@ export const AdminModerationPage: React.FC = () => {
                     <Button
                       variant="primary"
                       size="sm"
-                      className="bg-danger hover:bg-danger text-white"
+                      className="bg-danger hover:bg-danger text-text-inverse"
                       onClick={() => {
                         handleToggleListingStatus(
                           selectedListingForAI.id,
@@ -868,9 +868,9 @@ export const AdminModerationPage: React.FC = () => {
         isOpen={Boolean(appealDecision)}
         onClose={() => setAppealDecision(null)}
         onSubmit={(reason) => void handleAppealDecision(reason)}
-        title="Décider le recours"
-        label="Motif indépendant et vérifiable"
-        placeholder="Expliquez les éléments examinés et la justification de la décision."
+        title={t("admin.adminModerationPage.deciderLeRecours")}
+        label={t("admin.adminModerationPage.motifIndependantEtVerifiable")}
+        placeholder={t("admin.adminModerationPage.expliquezLesElementsExaminesEtLaJustificationDeLaDecision")}
         confirmText="Enregistrer la décision"
         multiline
         minLength={MODERATION_CONSTRAINTS.appealReviewReasonMinLength}

@@ -5,6 +5,10 @@ import type {
   AnalyticsTimeSeriesPoint,
 } from "@shongre/contracts/analytics";
 import { getCountryConfig } from "@shongre/contracts";
+import {
+  requireDemoAnyCapability,
+  requireDemoCapability,
+} from "./demo-authorization";
 
 const GENERATED_AT = "2026-08-27T12:00:00.000Z";
 const market = (query: AnalyticsDashboardQuery) =>
@@ -25,6 +29,12 @@ const metric = (
 
 export class DemoAnalyticsService implements AnalyticsServiceContract {
   async getOverview(scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "analytics.platform.read",
+      "analytics.marketing.read",
+      "analytics.finance.read",
+      "analytics.technical.read",
+    ]);
     return {
       generatedAt: GENERATED_AT,
       scope,
@@ -69,6 +79,10 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     };
   }
   async getAcquisition(scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "analytics.platform.read",
+      "analytics.marketing.read",
+    ]);
     return {
       generatedAt: GENERATED_AT,
       scope,
@@ -109,6 +123,10 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     };
   }
   async getSearch(scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "analytics.platform.read",
+      "analytics.marketing.read",
+    ]);
     const marketCode = market(scope);
     return {
       generatedAt: GENERATED_AT,
@@ -147,6 +165,10 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     };
   }
   async getMonetization(scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "analytics.platform.read",
+      "analytics.finance.read",
+    ]);
     const currency = getCountryConfig(market(scope))?.currency ?? "EUR";
     return {
       generatedAt: GENERATED_AT,
@@ -171,6 +193,10 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     };
   }
   async getSeo(scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "analytics.marketing.read",
+      "analytics.technical.read",
+    ]);
     return {
       generatedAt: GENERATED_AT,
       scope,
@@ -206,6 +232,7 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     };
   }
   async getProviderHealth() {
+    requireDemoCapability("analytics.technical.read");
     return [
       {
         provider: "internal" as const,
@@ -266,6 +293,10 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
     ];
   }
   async getSeller(sellerId: string, scope: AnalyticsDashboardQuery) {
+    requireDemoAnyCapability([
+      "store.analytics.read.own",
+      "analytics.platform.read",
+    ]);
     return {
       generatedAt: GENERATED_AT,
       sellerId,
