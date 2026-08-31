@@ -451,7 +451,7 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.ceMarcheVientDOuvrir":
     "This market has just opened. Post the first listing, or switch market from the header to explore other countries.",
   "home.homePage.explorerLeCatalogue": "Browse the catalogue",
-  "home.homePage.toutesLesNouveautes": "All new listings",
+  "home.homePage.toutesLesNouveautes": "View all new listings",
   "home.homePage.voirTout": "See all",
   "home.homePage.toutesLesOffres": "All deals",
   "home.homePage.tousLesProfessionnels": "All professionals",
@@ -475,7 +475,7 @@ export const messagesEn: MessageCatalogue = {
   "home.homeCollectionsSection.unPetitPlongeon": "A quick dip?",
   "home.homeCollectionsSection.deLAir": "Fresh air!",
   "home.homeCollectionsSection.thematiquesCollections": "themed collections",
-  "home.homeCollectionsSection.toutesLesCollections": "All collections",
+  "home.homeCollectionsSection.toutesLesCollections": "View all collections",
   "home.homeCollectionsSection.voirTout": "See all",
   "home.homeCollectionsSection.explorerLaCollection":
     "Explore the {name} collection",
@@ -2261,7 +2261,7 @@ export const messagesEn: MessageCatalogue = {
     "Open your official storefront in a few clicks, get the certified Pro badge and profitability analytics, and import your catalogues in bulk.",
   "home.homePage.decouvrirLesForfaitsPro": "Explore the Pro plans",
   "home.homePage.creerMonComptePro": "Create my Pro account",
-  "home.homepageTrending.seeMoreListings": "See more listings",
+  "home.homepageTrending.viewAllListings": "View all listings",
   "home.homepageTrending.emptyTitle": "No trends available",
   "home.homepageTrending.emptyDescription":
     "This market does not yet have enough active listings to provide useful trends.",

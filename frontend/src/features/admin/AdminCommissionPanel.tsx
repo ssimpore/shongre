@@ -113,7 +113,11 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       value: catalog.commissionPolicies.length,
       Icon: CircleDollarSign,
     },
-    { label: t("admin.adminCommissionPanel.reglesVersionnees"), value: ruleCount, Icon: ShieldCheck },
+    {
+      label: t("admin.adminCommissionPanel.reglesVersionnees"),
+      value: ruleCount,
+      Icon: ShieldCheck,
+    },
     {
       label: "Actives",
       value: catalog.commissionPolicies.filter(
@@ -226,7 +230,10 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
       </div>
 
       <div className="rounded-lg border border-success-border bg-success-surface p-3 text-xs text-stone-700">
-        <strong>{t("admin.adminCommissionPanel.defautSur")}</strong> {t("admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible")}
+        <strong>{t("admin.adminCommissionPanel.defautSur")}</strong>{" "}
+        {t(
+          "admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible",
+        )}
       </div>
 
       {draftVersion && (
@@ -258,7 +265,9 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               {t("admin.adminCommissionPanel.simulateurDeCommission")}
             </h2>
             <p className="mt-1 text-micro text-stone-500">
-              {t("admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa")}
+              {t(
+                "admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa",
+              )}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -371,10 +380,14 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
           className="rounded-lg border border-border-base p-4"
           aria-live="polite"
         >
-          <h2 className="text-sm font-black text-stone-950">{t("admin.adminCommissionPanel.resultat")}</h2>
+          <h2 className="text-sm font-black text-stone-950">
+            {t("admin.adminCommissionPanel.resultat")}
+          </h2>
           {!result ? (
             <p className="mt-3 text-xs text-stone-500">
-              {t("admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt")}
+              {t(
+                "admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt",
+              )}
             </p>
           ) : (
             <div className="mt-3 space-y-3">
@@ -409,13 +422,16 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 <div className="font-bold text-text-main">
                   {result.appliedPolicyId || "Défaut sûr"}
                 </div>
-                <div className="mt-1 text-text-secondary">{result.reasonCode}</div>
+                <div className="mt-1 text-text-secondary">
+                  {result.reasonCode}
+                </div>
                 <ul className="mt-2 space-y-1 text-micro text-stone-500">
                   {result.explanation
                     .filter((entry) => entry.matched)
                     .map((entry) => (
                       <li key={`${entry.policyId}:${entry.ruleId}`}>
-                        {entry.policyName} · {entry.ruleName} {t("admin.adminCommissionPanel.precedence")}{" "}
+                        {entry.policyName} · {entry.ruleName}{" "}
+                        {t("admin.adminCommissionPanel.precedence")}{" "}
                         {entry.precedence}
                       </li>
                     ))}
@@ -474,7 +490,9 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-stone-500">{t("admin.adminCommissionPanel.porteeHeritage")}</dt>
+                  <dt className="text-stone-500">
+                    {t("admin.adminCommissionPanel.porteeHeritage")}
+                  </dt>
                   <dd className="font-bold text-stone-800">
                     {scopeLabel(policy)}
                   </dd>

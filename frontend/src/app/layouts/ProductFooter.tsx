@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { useConsent } from "../providers/ConsentProvider";
@@ -7,6 +6,7 @@ import type { ProductNavigationItem } from "./ProductHeader";
 import { isProductOnlyAccount } from "../../domains/user/user.domain";
 import { useAuth } from "../providers/AuthProvider";
 import type { ShongreProductId } from "../../types";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 interface ProductFooterProps {
   productId: ShongreProductId;
@@ -35,15 +35,15 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
       <Container>
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <Link
-              to={productPath}
+            <a
+              href={applicationHref(productId, productPath)}
               className="inline-flex items-center gap-2 text-base font-black tracking-tight text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
             >
               SHONGRE<span className="text-primary-on-dark">.</span>
               <span className="font-semibold text-stone-400">
                 {productName}
               </span>
-            </Link>
+            </a>
             <p className="mt-2 max-w-sm text-xs leading-relaxed text-stone-400">
               {description}
             </p>
@@ -55,7 +55,11 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
               aria-label={`Produit ${productName}`}
             >
               {navigation.map((item) => (
-                <a key={item.to} href={item.to} className={footerLinkClass}>
+                <a
+                  key={item.to}
+                  href={applicationHref(productId, item.to)}
+                  className={footerLinkClass}
+                >
                   {item.label}
                 </a>
               ))}
@@ -63,25 +67,40 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
             <nav className="flex flex-col" aria-label="Assistance Shongre">
               {showEcosystem ? (
                 <>
-                  <Link to={routes.home()} className={footerLinkClass}>
+                  <a
+                    href={applicationHref("marketplace", routes.home())}
+                    className={footerLinkClass}
+                  >
                     Marketplace
-                  </Link>
-                  <Link to={routes.proPlans()} className={footerLinkClass}>
+                  </a>
+                  <a
+                    href={applicationHref("marketplace", routes.proPlans())}
+                    className={footerLinkClass}
+                  >
                     Shongre Pro
-                  </Link>
+                  </a>
                 </>
               ) : null}
-              <Link to={routes.help()} className={footerLinkClass}>
+              <a
+                href={applicationHref("marketplace", routes.help())}
+                className={footerLinkClass}
+              >
                 Aide
-              </Link>
+              </a>
             </nav>
             <nav className="flex flex-col" aria-label="Informations légales">
-              <Link to={routes.legal.privacy()} className={footerLinkClass}>
+              <a
+                href={applicationHref("marketplace", routes.legal.privacy())}
+                className={footerLinkClass}
+              >
                 Confidentialité
-              </Link>
-              <Link to={routes.legal.notices()} className={footerLinkClass}>
+              </a>
+              <a
+                href={applicationHref("marketplace", routes.legal.notices())}
+                className={footerLinkClass}
+              >
                 Mentions légales
-              </Link>
+              </a>
               <button
                 type="button"
                 onClick={openPreferences}

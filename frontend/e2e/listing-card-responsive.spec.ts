@@ -121,7 +121,7 @@ test.describe("canonical listing cards", () => {
       .first();
     await expect(firstRail).toBeVisible();
     const geometry = await firstRail.evaluate((rail) => {
-      const viewport = rail.closest(".scrollable-region");
+      const viewport = rail.parentElement;
       const viewportRect = viewport?.getBoundingClientRect();
       const cards = Array.from(
         rail.querySelectorAll<HTMLElement>(":scope > .listing-rail-cell"),
@@ -151,7 +151,10 @@ test.describe("canonical listing cards", () => {
       };
     });
 
-    expect(geometry.completeCards).toBeGreaterThanOrEqual(5);
+    expect(
+      geometry.completeCards,
+      `homepage rail geometry: ${JSON.stringify(geometry)}`,
+    ).toBeGreaterThanOrEqual(5);
     expect(geometry.cards[0]?.width).toBeLessThanOrEqual(209);
     expect(geometry.cards[0]?.radius).toBeLessThanOrEqual(14);
   });

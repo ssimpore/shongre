@@ -25,11 +25,15 @@ import {
   Drawer,
   DropdownMenu,
   FilterPanel,
+  LocationSelector,
   Skeleton,
   StatePanel,
   Image,
 } from "../../design-system";
-import type { FilterPanelPresentation } from "../../design-system";
+import type {
+  FilterPanelPresentation,
+  LocationSelectorValue,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
@@ -44,6 +48,8 @@ interface FiltersProps {
   catalog: AutoCatalog;
   params: URLSearchParams;
   update: (key: string, value?: string) => void;
+  updateLocation: (value: LocationSelectorValue) => void;
+  locationSelectorId: string;
   onReset: () => void;
   onApply?: () => void;
   presentation?: FilterPanelPresentation;
@@ -76,6 +82,8 @@ const AutoFilters: React.FC<FiltersProps> = ({
   catalog,
   params,
   update,
+  updateLocation,
+  locationSelectorId,
   onReset,
   onApply,
   presentation = "surface",
@@ -199,31 +207,14 @@ const AutoFilters: React.FC<FiltersProps> = ({
         <legend className="mb-2 text-xs font-bold text-text-main">
           Localisation
         </legend>
-        <div className="grid grid-cols-filter-action gap-2">
-          <input
-            aria-label="Ville"
-            value={params.get("city") || ""}
-            onChange={(event) =>
-              update("city", event.target.value || undefined)
-            }
-            placeholder="Ville"
-            className="h-control-touch min-w-0 rounded-control border border-border-base px-3 text-xs"
-          />
-          <DropdownMenu
-            ariaLabel="Rayon"
-            headerTitle="Rayon"
-            placement="bottom-right"
-            value={
-              params.get("radius") ||
-              String(catalog.config.defaultSearchRadiusKm)
-            }
-            onChange={(value) => update("radius", value)}
-            options={[10, 25, 50, 100, 200].map((radius) => ({
-              value: String(radius),
-              label: `${radius} km`,
-            }))}
-          />
-        </div>
+        <LocationSelector
+          id={locationSelectorId}
+          city={params.get("city") || ""}
+          radiusKm={
+            params.get("radius") ? Number(params.get("radius")) : undefined
+          }
+          onChange={updateLocation}
+        />
       </fieldset>
       <div className="text-xs font-bold text-text-main">
         <span className="block">Marque</span>
@@ -448,6 +439,20 @@ export const AutoSearchPage: React.FC = () => {
     );
   };
 
+  const updateLocation = (value: LocationSelectorValue) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value.city) next.set("city", value.city);
+        else next.delete("city");
+        if (value.radiusKm) next.set("radius", String(value.radiusKm));
+        else next.delete("radius");
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
   const resetFilters = () => {
     setParams(
       (current) => {
@@ -505,15 +510,15 @@ export const AutoSearchPage: React.FC = () => {
         : undefined,
       city: params.get("city") || undefined,
       radiusKm:
-        params.get("city") && catalog
-          ? Number(params.get("radius") || catalog.config.defaultSearchRadiusKm)
+        params.get("city") && params.get("radius")
+          ? Number(params.get("radius"))
           : undefined,
       warrantyOnly: params.get("warranty") === "true" || undefined,
       financingAvailable: params.get("financing") === "true" || undefined,
       sort: (params.get("sort") || "relevance") as VehicleSearchQuery["sort"],
       limit: PAGE_SIZES.verticalSearch,
     }),
-    [activeMarket.code, catalog, params],
+    [activeMarket.code, params],
   );
 
   usePageMeta({
@@ -679,6 +684,8 @@ export const AutoSearchPage: React.FC = () => {
               catalog={catalog}
               params={params}
               update={update}
+              updateLocation={updateLocation}
+              locationSelectorId="auto-location-selector-desktop"
               onReset={resetFilters}
             />
           </aside>
@@ -821,6 +828,8 @@ export const AutoSearchPage: React.FC = () => {
             catalog={catalog}
             params={params}
             update={update}
+            updateLocation={updateLocation}
+            locationSelectorId="auto-location-selector-mobile"
             onReset={resetFilters}
             onApply={() => setFilterOpen(false)}
             presentation="drawer"

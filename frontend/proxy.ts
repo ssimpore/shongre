@@ -11,11 +11,16 @@ import {
   webEnvironmentFromEnvironment,
 } from "./src/platform/market/market-infrastructure";
 import {
+  applicationFallbackForPath,
   applicationIdForHostname,
   createApplicationRegistry,
 } from "./src/platform/applications/application-registry";
 import { resolveServerPublicRouteData } from "./src/platform/seo/server-public-route-data";
 import { resolveSeoPolicy } from "./src/platform/seo/seo-policy";
+import {
+  renderNotFoundDocument,
+  resolveNotFoundPresentation,
+} from "./src/platform/seo/not-found-presentation";
 
 function requestHostname(request: NextRequest): string {
   const trustProxy = process.env.SHONGRE_TRUST_PROXY_HOST === "true";
@@ -143,22 +148,22 @@ function needsResourceExistenceResolution(pathname: string): boolean {
   );
 }
 
-function notFoundResponse(environment: EnvironmentConfig): NextResponse {
-  const body =
-    '<!doctype html><html lang="fr"><head><meta charset="utf-8">' +
-    '<meta name="robots" content="noindex, nofollow">' +
-    "<title>Page introuvable | Shongre</title></head><body>" +
-    "<main><h1>Page introuvable</h1>" +
-    "<p>Cette adresse ne correspond à aucune page publique Shongre.</p>" +
-    '<a href="/">Retour à l’accueil</a></main></body></html>';
-  const response = new NextResponse(body, {
-    status: 404,
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Type": "text/html; charset=utf-8",
-      "X-Robots-Tag": "noindex, nofollow, noarchive",
+function notFoundResponse(
+  environment: EnvironmentConfig,
+  resourceType?: string,
+  pathname = "/",
+): NextResponse {
+  const response = new NextResponse(
+    renderNotFoundDocument(resolveNotFoundPresentation(resourceType, pathname)),
+    {
+      status: 404,
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Type": "text/html; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+      },
     },
-  });
+  );
   return applyRuntimeHeaders(response, environment);
 }
 
@@ -176,10 +181,22 @@ export async function proxy(request: NextRequest) {
       facturation: process.env.SHONGRE_FACTURATION_ORIGIN,
     },
   });
-  const applicationId = applicationIdForHostname(hostname, applications);
-  if (applicationId && applicationId !== "marketplace") {
+  const hostnameApplicationId = applicationIdForHostname(
+    hostname,
+    applications,
+  );
+  const fallbackApplication = applicationFallbackForPath(
+    applications,
+    request.nextUrl.pathname,
+  );
+  const applicationId =
+    hostnameApplicationId && hostnameApplicationId !== "marketplace"
+      ? hostnameApplicationId
+      : fallbackApplication?.applicationId;
+  if (applicationId) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-shongre-resolved-host", hostname);
+    requestHeaders.set("x-shongre-request-pathname", request.nextUrl.pathname);
     requestHeaders.set("x-shongre-application-id", applicationId);
     requestHeaders.set("x-shongre-market-code", "FR");
     requestHeaders.set("x-shongre-market-locale", "fr-FR");
@@ -300,7 +317,7 @@ export async function proxy(request: NextRequest) {
         reason: context.reason,
       }),
     );
-    return notFoundResponse(environment);
+    return notFoundResponse(environment, undefined, request.nextUrl.pathname);
   }
 
   if (
@@ -323,7 +340,11 @@ export async function proxy(request: NextRequest) {
       routeData,
     });
     if (routeData.status === "not_found" || !policy.knownRoute) {
-      return notFoundResponse(environment);
+      return notFoundResponse(
+        environment,
+        routeData.status === "not_found" ? routeData.resourceType : undefined,
+        request.nextUrl.pathname,
+      );
     }
     if (policy.redirectPath) {
       const destination = new URL(
@@ -343,6 +364,7 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-shongre-resolved-host", hostname);
+  requestHeaders.set("x-shongre-request-pathname", request.nextUrl.pathname);
   requestHeaders.set("x-shongre-market-kind", context.kind);
   if (context.countryCode) {
     requestHeaders.set("x-shongre-market-code", context.countryCode);

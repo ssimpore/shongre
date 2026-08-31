@@ -50,7 +50,9 @@ export function TaxonomyV4GovernanceTab() {
           {t("admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere")}
         </h2>
         <p className="mt-1 text-xs text-text-muted">
-          {t("admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt")}
+          {t(
+            "admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt",
+          )}
         </p>
         <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
           {[
@@ -114,10 +116,14 @@ export function TaxonomyV4GovernanceTab() {
                 <thead>
                   <tr className="border-b border-border-base text-text-muted">
                     <th className="p-2">Identifiant</th>
-                    <th className="p-2">{t("publishing.publishWizard.categorie")}</th>
+                    <th className="p-2">
+                      {t("publishing.publishWizard.categorie")}
+                    </th>
                     <th className="p-2">Intention</th>
                     <th className="p-2">Vendeurs</th>
-                    <th className="p-2">{t("admin.taxonomyV4GovernanceTab.marchesActifs")}</th>
+                    <th className="p-2">
+                      {t("admin.taxonomyV4GovernanceTab.marchesActifs")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,8 +156,8 @@ export function TaxonomyV4GovernanceTab() {
             </div>
             {listingTypes.length > 100 ? (
               <p className="text-xs text-text-muted">
-                {t("admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur")} {listingTypes.length}. Affinez la
-                recherche.
+                {t("admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur")}{" "}
+                {listingTypes.length}. Affinez la recherche.
               </p>
             ) : null}
           </div>
@@ -174,17 +180,24 @@ export function TaxonomyV4GovernanceTab() {
               }))}
             />
             <p className="text-xs text-text-muted lg:col-span-2">
-              {snapshot.optionParentLinks.length} {t("admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans")}
+              {snapshot.optionParentLinks.length}{" "}
+              {t(
+                "admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans",
+              )}
             </p>
           </div>
         ) : null}
 
         {section === "bindings" ? (
           <div className="space-y-3">
-            <h3 className="font-black text-text-main">{t("admin.taxonomyV4GovernanceTab.matriceResolue")}</h3>
+            <h3 className="font-black text-text-main">
+              {t("admin.taxonomyV4GovernanceTab.matriceResolue")}
+            </h3>
             <p className="text-xs text-text-muted">
               {snapshot.metadata.sourceCounts.bindings.toLocaleString("fr-FR")}{" "}
-              {t("admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps")}
+              {t(
+                "admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps",
+              )}
             </p>
             <ResourceList
               title="Extrait public"
@@ -218,10 +231,14 @@ export function TaxonomyV4GovernanceTab() {
         {section === "markets_sellers" ? (
           <div className="space-y-4 text-xs text-text-main">
             <p>
-              {t("admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn")}
+              {t(
+                "admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn",
+              )}
             </p>
             <p>
-              {t("admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes")}
+              {t(
+                "admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes",
+              )}
             </p>
           </div>
         ) : null}
@@ -229,16 +246,23 @@ export function TaxonomyV4GovernanceTab() {
         {section === "migration" ? (
           <div className="space-y-5">
             <p className="text-xs text-text-muted">
-              Classeur {snapshot.metadata.workbookSha256.slice(0, 12)}{t("admin.taxonomyV4GovernanceTab.sourceNormalisee")} {snapshot.metadata.normalizedSha256.slice(0, 12)}… ·
-              compilateur {snapshot.metadata.compilerVersion}
+              Classeur {snapshot.metadata.workbookSha256.slice(0, 12)}
+              {t("admin.taxonomyV4GovernanceTab.sourceNormalisee")}{" "}
+              {snapshot.metadata.normalizedSha256.slice(0, 12)}… · compilateur{" "}
+              {snapshot.metadata.compilerVersion}
             </p>
             <p className="text-xs text-text-main">
-              {snapshot.crosswalk.length} {t("admin.taxonomyV4GovernanceTab.identitesV3Revues")}{" "}
+              {snapshot.crosswalk.length}{" "}
+              {t("admin.taxonomyV4GovernanceTab.identitesV3Revues")}{" "}
               {mappedDemoListings}
-              {t("admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu")}
+              {t(
+                "admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu",
+              )}
             </p>
             <ResourceList
-              title={t("admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration")}
+              title={t(
+                "admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration",
+              )}
               rows={snapshot.demoMigration.map((entry) => ({
                 id: entry.source,
                 label: `${entry.status} → ${entry.canonicalNodeId ?? "à revoir"} (${entry.affectedListingIds.length})`,

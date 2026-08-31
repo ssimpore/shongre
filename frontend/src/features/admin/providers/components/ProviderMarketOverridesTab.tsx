@@ -137,7 +137,8 @@ export const ProviderMarketOverridesTab: React.FC<
         <div className="bg-stone-50/80 p-5 rounded-control border border-stone-200 space-y-3">
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
             <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
-              <span>{defaultMarket.flag}</span> {defaultMarket.name} {t("admin.providerMarketOverridesTab.marcheParDefaut")}
+              <span>{defaultMarket.flag}</span> {defaultMarket.name}{" "}
+              {t("admin.providerMarketOverridesTab.marcheParDefaut")}
             </span>
             <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
               {t("admin.providerMarketOverridesTab.baseDHeritage")}
@@ -167,7 +168,9 @@ export const ProviderMarketOverridesTab: React.FC<
             </div>
           </div>
           <p className="text-micro text-stone-500 italic pt-2">
-            {t("admin.providerMarketOverridesTab.valeursAfficheesUniquementATitreDeComparaisonEllesNeSe")}
+            {t(
+              "admin.providerMarketOverridesTab.valeursAfficheesUniquementATitreDeComparaisonEllesNeSe",
+            )}
           </p>
         </div>
 
@@ -203,7 +206,12 @@ export const ProviderMarketOverridesTab: React.FC<
 
           {!isMarketSupported && (
             <div className="p-3 bg-warning-surface border border-warning-border rounded-lg text-xs text-warning">
-              {t("admin.providerMarketOverridesTab.attentionLePrestataire")} {provider.name} {t("admin.providerMarketOverridesTab.neSupportePasOfficiellementLePays")} {selectedMarket}.
+              {t("admin.providerMarketOverridesTab.attentionLePrestataire")}{" "}
+              {provider.name}{" "}
+              {t(
+                "admin.providerMarketOverridesTab.neSupportePasOfficiellementLePays",
+              )}{" "}
+              {selectedMarket}.
             </div>
           )}
 

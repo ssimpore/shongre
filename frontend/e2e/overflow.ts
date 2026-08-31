@@ -1,4 +1,4 @@
-import { Page, expect } from '@playwright/test';
+import { Page, expect } from "@playwright/test";
 
 export interface OverflowOffender {
   selector: string;
@@ -36,35 +36,40 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
           parts.unshift(`${part}#${node.id}`);
           break;
         }
-        const classes = (node.getAttribute('class') || '')
+        const classes = (node.getAttribute("class") || "")
           .split(/\s+/)
           .filter(Boolean)
           .slice(0, 3)
-          .join('.');
+          .join(".");
         if (classes) part += `.${classes}`;
         parts.unshift(part);
         node = node.parentElement;
         depth += 1;
       }
-      return parts.join(' > ');
+      return parts.join(" > ");
     };
 
     const docEl = document.documentElement;
     const viewportWidth = docEl.clientWidth;
-    const documentWidth = Math.max(docEl.scrollWidth, document.body.scrollWidth);
+    const documentWidth = Math.max(
+      docEl.scrollWidth,
+      document.body.scrollWidth,
+    );
 
     const offenders: { selector: string; left: number; right: number }[] = [];
-    for (const el of Array.from(document.querySelectorAll('body *'))) {
+    for (const el of Array.from(document.querySelectorAll("body *"))) {
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) continue;
       const style = getComputedStyle(el);
-      if (style.visibility === 'hidden' || style.display === 'none') continue;
+      if (style.visibility === "hidden" || style.display === "none") continue;
       if (rect.right <= viewportWidth + 1 && rect.left >= -1) continue;
 
       let parent = el.parentElement;
       let clippedByScroller = false;
       while (parent && parent !== document.body) {
-        if (/(auto|scroll|hidden|clip)/.test(getComputedStyle(parent).overflowX)) {
+        if (
+          /(auto|scroll|hidden|clip)/.test(getComputedStyle(parent).overflowX)
+        ) {
           clippedByScroller = true;
           break;
         }
@@ -79,10 +84,14 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
       }
     }
 
-    const widest = new Map<string, { selector: string; left: number; right: number }>();
+    const widest = new Map<
+      string,
+      { selector: string; left: number; right: number }
+    >();
     for (const offender of offenders) {
       const existing = widest.get(offender.selector);
-      if (!existing || existing.right < offender.right) widest.set(offender.selector, offender);
+      if (!existing || existing.right < offender.right)
+        widest.set(offender.selector, offender);
     }
 
     return {
@@ -104,27 +113,32 @@ export async function measureOverflow(page: Page): Promise<OverflowReport> {
  * under parallel workers) or wasted seconds on every route. Polling for a width
  * that has held steady across consecutive frames is both faster and stable.
  */
-export async function waitForStableLayout(page: Page, timeoutMs = 10_000): Promise<void> {
+export async function waitForStableLayout(
+  page: Page,
+  timeoutMs = 15_000,
+): Promise<void> {
   // Lazy route chunks can arrive after DOMContentLoaded, while remote demo
   // media can keep the page from ever becoming fully network-idle. Give route
   // code a short, bounded quiet window, then rely on application and layout
   // signals below instead of allowing `networkidle` to consume the test budget.
   await page
-    .waitForLoadState('networkidle', { timeout: Math.min(timeoutMs, 3_000) })
+    .waitForLoadState("networkidle", { timeout: Math.min(timeoutMs, 3_000) })
     .catch(() => undefined);
 
   // Waiting only for the loading status to be detached has a cold-start race:
   // immediately after DOMContentLoaded the status may not have mounted yet, so
   // "detached" succeeds before the lazy client application renders. Require
-  // the application shell's main content or banner as a positive ready signal,
-  // then make sure both framework and route-level suspense states have gone.
+  // the application shell's main content or banner as a positive ready signal.
+  // A server-rendered 404 deliberately has neither shell marker, but its main
+  // landmark is still the complete document that accessibility and overflow
+  // checks must inspect.
   await page
-    .locator('#main-content, [role="banner"]')
+    .locator('#main-content, [role="banner"], main')
     .first()
-    .waitFor({ state: 'attached', timeout: timeoutMs });
+    .waitFor({ state: "attached", timeout: timeoutMs });
   await page
-    .getByRole('status', { name: /Chargement (?:de Shongre|de la page)/i })
-    .waitFor({ state: 'detached', timeout: timeoutMs });
+    .getByRole("status", { name: /Chargement (?:de Shongre|de la page)/i })
+    .waitFor({ state: "detached", timeout: timeoutMs });
 
   await page.evaluate(async (budget) => {
     const readWidth = () =>
@@ -133,24 +147,60 @@ export async function waitForStableLayout(page: Page, timeoutMs = 10_000): Promi
     let previous = -1;
     let steadyFrames = 0;
     while (Date.now() - started < budget) {
-      await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+      // WebKit and Chromium may throttle a background worker page while the
+      // exhaustive route matrix runs in parallel. A bare animation-frame wait
+      // can then consume the test's entire timeout even though the document is
+      // already stable. Keep frames as the preferred signal, but guarantee
+      // forward progress when the browser suspends them.
+      await new Promise<void>((resolve) => {
+        const fallback = window.setTimeout(resolve, 100);
+        requestAnimationFrame(() => {
+          window.clearTimeout(fallback);
+          resolve();
+        });
+      });
       const current = readWidth();
       steadyFrames = current === previous ? steadyFrames + 1 : 0;
       previous = current;
       if (steadyFrames >= 6) return;
     }
   }, timeoutMs);
+
+  // Geometry may already be stable while an asynchronously enabled control is
+  // still crossing its token-backed opacity transition. Axe would then measure
+  // a blended, non-interactive frame rather than either the disabled or ready
+  // state. Wait only for transitions that are already active on shared
+  // interactive controls, and keep the wait bounded in case a control is
+  // replaced while its transition is running.
+  await page.evaluate(async () => {
+    const transitions = document.getAnimations().filter((animation) => {
+      const target = (animation.effect as KeyframeEffect | null)?.target;
+      return target instanceof Element && target.matches(".motion-interactive");
+    });
+    if (transitions.length === 0) return;
+    await Promise.race([
+      Promise.all(
+        transitions.map((transition) =>
+          transition.finished.catch(() => undefined),
+        ),
+      ),
+      new Promise<void>((resolve) => window.setTimeout(resolve, 500)),
+    ]);
+  });
 }
 
-export async function expectNoHorizontalOverflow(page: Page, context: string): Promise<void> {
+export async function expectNoHorizontalOverflow(
+  page: Page,
+  context: string,
+): Promise<void> {
   const report = await measureOverflow(page);
   const detail = report.offenders
     .map((o) => `    ${o.selector}  [${o.left} → ${o.right}]`)
-    .join('\n');
+    .join("\n");
   expect(
     report.overflow,
     `${context} overflows by ${report.overflow}px ` +
       `(document ${report.documentWidth}px vs viewport ${report.viewportWidth}px)` +
-      (detail ? `\n  caused by:\n${detail}` : ''),
+      (detail ? `\n  caused by:\n${detail}` : ""),
   ).toBeLessThanOrEqual(1);
 }

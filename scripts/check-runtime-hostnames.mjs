@@ -19,13 +19,19 @@ const allowedLocalHostFiles = new Set([
   "packages/contracts/src/market-country.ts",
 ]);
 
-const files = execFileSync("git", ["ls-files"], {
-  cwd: root,
-  encoding: "utf8",
-})
-  .trim()
-  .split("\n")
+const files = execFileSync(
+  "git",
+  ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+  {
+    cwd: root,
+    encoding: "utf8",
+  },
+)
+  .split("\0")
   .filter(Boolean)
+  // Git's index still contains tracked files removed in an unstaged cleanup.
+  // Scan the actual working tree and include new, non-ignored runtime files.
+  .filter((file) => fs.existsSync(path.join(root, file)))
   .filter(
     (file) =>
       individualRuntimeFiles.has(file) ||

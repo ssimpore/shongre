@@ -7,6 +7,7 @@ import {
   type MarketContext,
 } from "@shongre/contracts";
 import {
+  applicationFallbackForPath,
   applicationIdForHostname,
   createApplicationRegistry,
   type ShongreApplicationId,
@@ -18,6 +19,8 @@ import {
 
 export interface ServerApplicationContext {
   applicationId: Exclude<ShongreApplicationId, "marketplace">;
+  applicationPath: string;
+  routingBasePath: string;
   marketContext: MarketContext;
   canonicalOrigin: string;
 }
@@ -37,17 +40,22 @@ export function applicationRegistryFromEnvironment() {
   });
 }
 
-export async function resolveServerApplicationContext(): Promise<
-  ServerApplicationContext | null
-> {
+export async function resolveServerApplicationContext(
+  pathname = "/",
+): Promise<ServerApplicationContext | null> {
   const requestHeaders = await headers();
   const hostname =
     requestHeaders.get("x-shongre-resolved-host") ||
     requestHeaders.get("host") ||
     "";
   const registry = applicationRegistryFromEnvironment();
-  const applicationId = applicationIdForHostname(hostname, registry);
-  if (!applicationId || applicationId === "marketplace") return null;
+  const hostnameApplicationId = applicationIdForHostname(hostname, registry);
+  const fallback = applicationFallbackForPath(registry, pathname);
+  const applicationId =
+    hostnameApplicationId && hostnameApplicationId !== "marketplace"
+      ? hostnameApplicationId
+      : fallback?.applicationId;
+  if (!applicationId) return null;
 
   const environment = webEnvironmentFromEnvironment();
   const infrastructure = marketInfrastructureFromEnvironment();
@@ -65,8 +73,9 @@ export async function resolveServerApplicationContext(): Promise<
   }
   return {
     applicationId,
+    applicationPath: fallback?.applicationPath || pathname,
+    routingBasePath: fallback?.routingBasePath || "/",
     marketContext,
     canonicalOrigin: registry[applicationId].origin,
   };
 }
-

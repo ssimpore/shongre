@@ -43,7 +43,9 @@ export const ProviderRoutingManager: React.FC = () => {
             )}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            {t("admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire")}
+            {t(
+              "admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire",
+            )}
           </p>
         </div>
 
@@ -124,7 +126,9 @@ export const ProviderRoutingManager: React.FC = () => {
                       </div>
                     ) : (
                       <span className="text-xs font-medium text-stone-500 italic">
-                        {t("admin.providerRoutingManager.aucunFournisseurVerifie")}
+                        {t(
+                          "admin.providerRoutingManager.aucunFournisseurVerifie",
+                        )}
                       </span>
                     )}
                   </div>

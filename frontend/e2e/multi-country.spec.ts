@@ -16,32 +16,40 @@ test.describe("multi-country public routing", () => {
     await usePersona(page, "guest");
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("link", { name: /Shongre\. France/ })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Shongre\. France/ }),
+    ).toBeVisible();
 
     await page.goto("/be", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("link", { name: /Shongre\. Belgique/ })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Shongre\. Belgique/ }),
+    ).toBeVisible();
     await expect(
       page.locator('button[aria-label="Localisation : Toute la Belgique"]'),
     ).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      localCanonical("/be/"),
+      localCanonical("/be"),
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "fr-BE");
 
     await page.goto("/ch", { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("link", { name: /Shongre\. Suisse/ })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Shongre\. Suisse/ }),
+    ).toBeVisible();
     await expect(
       page.locator('button[aria-label="Localisation : Toute la Suisse"]'),
     ).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      localCanonical("/ch/"),
+      localCanonical("/ch"),
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "fr-CH");
   });
 
-  test("renders the global gateway without marketplace chrome", async ({ page }) => {
+  test("renders the global gateway without marketplace chrome", async ({
+    page,
+  }) => {
     await page.goto(globalGatewayUrl, { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
@@ -52,7 +60,7 @@ test.describe("multi-country public routing", () => {
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Belgique" })).toHaveAttribute(
       "href",
-      localCanonical("/be/"),
+      localCanonical("/be"),
     );
     await expect(page.getByText("Burkina Faso", { exact: true })).toBeVisible();
     await expect(page.getByRole("search")).toHaveCount(0);
@@ -67,7 +75,9 @@ test.describe("multi-country public routing", () => {
     ).toEqual([]);
   });
 
-  test("keeps unlaunched markets fail closed and responsive", async ({ page }) => {
+  test("keeps unlaunched markets fail closed and responsive", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 320, height: 812 });
     for (const [path, heading] of [
       ["/sn", "Shongre arrive bientôt au Sénégal"],
@@ -78,7 +88,9 @@ test.describe("multi-country public routing", () => {
       await expect(
         page.getByRole("heading", { name: "Être informé du lancement" }),
       ).toBeVisible();
-      await expect(page.getByRole("button", { name: "Me prévenir" })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Me prévenir" }),
+      ).toBeVisible();
       const dimensions = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
         content: document.documentElement.scrollWidth,

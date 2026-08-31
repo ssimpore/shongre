@@ -24,7 +24,6 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   transpilePackages: [
-    "@shongre/brand",
     "@shongre/contracts",
     "@shongre/design-tokens",
     "@shongre/features",

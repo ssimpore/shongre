@@ -45,7 +45,9 @@ export const CrmCustomFieldsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: t("admin.crmCustomFieldsPage.champsPersonnalisesCrmShongre"),
-    description: t("admin.crmCustomFieldsPage.configurationDuModeleDeDonneesCrm"),
+    description: t(
+      "admin.crmCustomFieldsPage.configurationDuModeleDeDonneesCrm",
+    ),
     canonicalPath: "/admin/crm/configuration/champs",
     noIndex: true,
   });
@@ -138,7 +140,9 @@ export const CrmCustomFieldsPage: React.FC = () => {
               {t("admin.crmCustomFieldsPage.champsPersonnalises")}
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
-              {t("admin.crmCustomFieldsPage.etendezLeModeleSansModifierLesTablesOuLesComposants")}
+              {t(
+                "admin.crmCustomFieldsPage.etendezLeModeleSansModifierLesTablesOuLesComposants",
+              )}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -149,7 +153,8 @@ export const CrmCustomFieldsPage: React.FC = () => {
       <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-3">
           <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
-            <SlidersHorizontal className="h-icon-sm w-icon-sm" /> {t("admin.crmCustomFieldsPage.entite")}
+            <SlidersHorizontal className="h-icon-sm w-icon-sm" />{" "}
+            {t("admin.crmCustomFieldsPage.entite")}
           </div>
           <div
             className="flex flex-wrap rounded-lg bg-stone-100 p-1"
@@ -228,7 +233,9 @@ export const CrmCustomFieldsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={`Nouveau champ · ${entityLabels[entityType]}`}
-        description={t("admin.crmCustomFieldsPage.laCleDevientStableApresCreationEtSertAuxImports")}
+        description={t(
+          "admin.crmCustomFieldsPage.laCleDevientStableApresCreationEtSertAuxImports",
+        )}
       >
         <form onSubmit={createField} className="space-y-3.5 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -268,7 +275,10 @@ export const CrmCustomFieldsPage: React.FC = () => {
             />
           </FormField>
           {["single_select", "multi_select"].includes(fieldType) && (
-            <FormField label={t("admin.crmCustomFieldsPage.optionsUneParLigne")} required>
+            <FormField
+              label={t("admin.crmCustomFieldsPage.optionsUneParLigne")}
+              required
+            >
               <Textarea
                 rows={4}
                 value={options}

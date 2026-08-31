@@ -91,7 +91,10 @@ export const TaxonomyDraftPublishTab: React.FC<
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-pill bg-amber-400 animate-pulse" />
               <h3 className="text-base font-black text-text-main">
-                {t("admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication")}{draftChanges.length})
+                {t(
+                  "admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication",
+                )}
+                {draftChanges.length})
               </h3>
             </div>
             <p className="text-xs text-stone-500 mt-1">
@@ -194,7 +197,8 @@ export const TaxonomyDraftPublishTab: React.FC<
             </span>
           </h3>
           <span className="text-xs text-stone-500 font-mono">
-            {versions.length} version{versions.length > 1 ? "s" : ""} {t("admin.taxonomyDraftPublishTab.archivee")}
+            {versions.length} version{versions.length > 1 ? "s" : ""}{" "}
+            {t("admin.taxonomyDraftPublishTab.archivee")}
             {versions.length > 1 ? "s" : ""}
           </span>
         </div>

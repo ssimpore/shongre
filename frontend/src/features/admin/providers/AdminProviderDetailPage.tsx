@@ -162,7 +162,10 @@ export const AdminProviderDetailPage: React.FC = () => {
                   Version config : <strong>v{configuration.version}</strong>
                 </span>
                 <span>•</span>
-                <span>{t("admin.adminProviderDetailPage.modifieLe")} {formatDate(configuration.updatedAt)}</span>
+                <span>
+                  {t("admin.adminProviderDetailPage.modifieLe")}{" "}
+                  {formatDate(configuration.updatedAt)}
+                </span>
               </div>
             </div>
           </div>
@@ -172,7 +175,8 @@ export const AdminProviderDetailPage: React.FC = () => {
             {isActive ? (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-pill">
                 <CheckCircle2 className="w-icon-sm h-icon-sm" />
-                {t("admin.adminProviderDetailPage.actifPriorite")} {configuration.priority})
+                {t("admin.adminProviderDetailPage.actifPriorite")}{" "}
+                {configuration.priority})
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-warning bg-warning-surface border border-warning-border px-2.5 py-1 rounded-pill">

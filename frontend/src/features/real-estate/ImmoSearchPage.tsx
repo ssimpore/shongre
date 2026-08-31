@@ -19,11 +19,15 @@ import {
   Drawer,
   FilterPanel,
   Input,
+  LocationSelector,
   Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
-import type { FilterPanelPresentation } from "../../design-system";
+import type {
+  FilterPanelPresentation,
+  LocationSelectorValue,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { storageService } from "../../services/storage.service";
 // Leaflet reads `window` when its module body runs, so a static import puts the
@@ -384,7 +388,7 @@ export const ImmoSearchPage: React.FC = () => {
         !city && latitude !== undefined && longitude !== undefined
           ? { latitude, longitude }
           : undefined,
-      radiusKm: city ? undefined : number(params.get("radius") || "25"),
+      radiusKm: number(params.get("radius")),
       boundingBox:
         !city &&
         north !== undefined &&
@@ -473,6 +477,23 @@ export const ImmoSearchPage: React.FC = () => {
         const next = new URLSearchParams(current);
         if (value) next.set(key, value);
         else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const updateLocation = (value: LocationSelectorValue) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value.city) next.set("city", value.city);
+        else next.delete("city");
+        if (value.radiusKm) next.set("radius", String(value.radiusKm));
+        else next.delete("radius");
+        ["lat", "lng", "north", "east", "south", "west"].forEach((key) =>
+          next.delete(key),
+        );
         return next;
       },
       { replace: true },
@@ -571,7 +592,7 @@ export const ImmoSearchPage: React.FC = () => {
                 qualifiées
               </p>
             </div>
-            <div className="grid w-full gap-2 sm:grid-cols-filter-row lg:max-w-2xl">
+            <div className="grid w-full gap-2 sm:grid-cols-2 lg:max-w-2xl">
               <label className="relative block">
                 <span className="sr-only">Rechercher un bien</span>
                 <Input
@@ -588,27 +609,16 @@ export const ImmoSearchPage: React.FC = () => {
                   }
                 />
               </label>
-              <Input
-                aria-label="Ville"
-                className="w-full"
-                placeholder="Lyon"
-                value={params.get("city") || ""}
-                onChange={(event) =>
-                  setParam("city", event.target.value || undefined)
+              <LocationSelector
+                id="immo-location-selector"
+                city={params.get("city") || ""}
+                radiusKm={
+                  params.get("radius")
+                    ? Number(params.get("radius"))
+                    : undefined
                 }
+                onChange={updateLocation}
               />
-              <Select
-                className="w-full"
-                aria-label="Rayon"
-                value={params.get("radius") || "25"}
-                onChange={(event) => setParam("radius", event.target.value)}
-              >
-                {[5, 10, 25, 50, 100].map((radius) => (
-                  <option key={radius} value={radius}>
-                    {radius} km
-                  </option>
-                ))}
-              </Select>
             </div>
           </div>
         </Container>

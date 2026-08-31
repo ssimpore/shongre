@@ -102,26 +102,34 @@ export const ProviderHealthSimulator: React.FC<
 
         <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">{t("admin.providerHealthSimulator.implementation")}</dt>
+            <dt className="text-stone-500">
+              {t("admin.providerHealthSimulator.implementation")}
+            </dt>
             <dd className="font-bold text-text-main mt-1">
               {implementationLabel}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</dt>
+            <dt className="text-stone-500">
+              {t("admin.adminFeatureFlagsPage.cycleDeVie")}
+            </dt>
             <dd className="font-bold text-text-main mt-1">
               {operational.lifecycle}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">{t("admin.providerHealthSimulator.capacitesImplementees")}</dt>
+            <dt className="text-stone-500">
+              {t("admin.providerHealthSimulator.capacitesImplementees")}
+            </dt>
             <dd className="font-bold text-text-main mt-1">
               {operational.implementedCapabilities.length} /{" "}
               {operational.capabilities.length}
             </dd>
           </div>
           <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">{t("admin.providerHealthSimulator.dernierePreuve")}</dt>
+            <dt className="text-stone-500">
+              {t("admin.providerHealthSimulator.dernierePreuve")}
+            </dt>
             <dd className="font-bold text-text-main mt-1">
               {configuration.healthLastCheckedAt || "Aucune"}
             </dd>
@@ -148,7 +156,9 @@ export const ProviderHealthSimulator: React.FC<
               {t("admin.providerHealthSimulator.testDIntegrationSur")}
             </h4>
             <p className="text-xs text-stone-500 mt-1">
-              {t("admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun")}
+              {t(
+                "admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun",
+              )}
             </p>
           </div>
           <Button

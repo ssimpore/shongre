@@ -27,8 +27,7 @@ export const HOMEPAGE_SELECTION_MODES = [
   "hybrid",
 ] as const;
 
-export type HomepageSelectionMode =
-  (typeof HOMEPAGE_SELECTION_MODES)[number];
+export type HomepageSelectionMode = (typeof HOMEPAGE_SELECTION_MODES)[number];
 
 export const HOMEPAGE_ADMIN_CONSTRAINTS = {
   sectionCount: HOMEPAGE_SECTION_TYPES.length,
@@ -56,9 +55,7 @@ export const homepageOfferOverrideSchema = z
   })
   .strict();
 
-export type HomepageOfferOverride = z.infer<
-  typeof homepageOfferOverrideSchema
->;
+export type HomepageOfferOverride = z.infer<typeof homepageOfferOverrideSchema>;
 
 export const homepageSectionSettingsSchema = z
   .object({
@@ -161,15 +158,12 @@ export const homepageConfigurationSchema = z
     }
   });
 
-export type HomepageConfiguration = z.infer<
-  typeof homepageConfigurationSchema
->;
+export type HomepageConfiguration = z.infer<typeof homepageConfigurationSchema>;
 
-export interface ResolvedHomepageSection
-  extends Omit<
-    HomepageSectionConfiguration,
-    "titleByLocale" | "subtitleByLocale"
-  > {
+export interface ResolvedHomepageSection extends Omit<
+  HomepageSectionConfiguration,
+  "titleByLocale" | "subtitleByLocale"
+> {
   title: string;
   subtitle?: string;
 }
@@ -194,8 +188,7 @@ const DEFAULT_TITLES: Record<HomepageSectionType, string> = {
 };
 
 const DEFAULT_SUBTITLES: Partial<Record<HomepageSectionType, string>> = {
-  hero:
-    "Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.",
+  hero: "Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.",
   trending: "Découvrez ce qui attire le plus les acheteurs en ce moment.",
   deals: "Des réductions et offres actives sélectionnées pour votre marché.",
   recent_listings: "Les dernières offres publiées près de chez vous.",

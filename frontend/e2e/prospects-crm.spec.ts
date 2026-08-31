@@ -214,7 +214,9 @@ test.describe("Shongre Prospects CRM", () => {
   });
 
   for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440]) {
-    test(`has no horizontal overflow at ${width}px`, async ({ page }) => {
+    test(`has no horizontal overflow at ${width}px @serial`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width, height: 900 });
       for (const route of PROSPECTS_ROUTES) {
         await test.step(route, async () => {
@@ -232,7 +234,7 @@ test.describe("Shongre Prospects CRM", () => {
   }
 
   for (const width of [390, 1280]) {
-    test(`has no serious accessibility violation at ${width}px`, async ({
+    test(`has no serious accessibility violation at ${width}px @serial`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: 900 });

@@ -27,7 +27,11 @@ export function resolveSolutionLaunch(input: {
   const internal = isInternalAccount(user);
 
   if (solution.lifecycle === "RETIRED") {
-    return { allowed: false, reason: "RETIRED", actionLabel: "Solution retirée" };
+    return {
+      allowed: false,
+      reason: "RETIRED",
+      actionLabel: "Solution retirée",
+    };
   }
   if (
     (solution.lifecycle === "DRAFT" || solution.lifecycle === "INTERNAL") &&

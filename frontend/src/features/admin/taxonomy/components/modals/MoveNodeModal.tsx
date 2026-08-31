@@ -102,10 +102,16 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           </div>
           <ul className="list-disc list-inside space-y-0.5 pl-1 text-warning/90">
             <li>
-              <strong>{impact.descendantsCount}</strong> {t("admin.moveNodeModal.sousCategoriesTypesEnfantsSerontDeplaces")}
+              <strong>{impact.descendantsCount}</strong>{" "}
+              {t(
+                "admin.moveNodeModal.sousCategoriesTypesEnfantsSerontDeplaces",
+              )}
             </li>
             <li>
-              <strong>~{impact.activeListingsCount}</strong> {t("admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture")}
+              <strong>~{impact.activeListingsCount}</strong>{" "}
+              {t(
+                "admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture",
+              )}
             </li>
             <li>{t("admin.moveNodeModal.lesCapacitesEtAttributsHerites")}</li>
           </ul>

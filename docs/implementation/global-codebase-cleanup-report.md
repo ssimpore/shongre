@@ -1,6 +1,229 @@
 # Global codebase cleanup and production-readiness report
 
-Date: 2026-08-23
+Date: 2026-08-31 (follow-up; the 2026-08-23 baseline is retained below)
+
+## 2026-08-31 follow-up audit and implementation
+
+This follow-up re-audited the current monorepo rather than assuming the earlier
+cleanup still described it. The review covered tracked source, manifests and
+lockfiles, framework entry points, dynamic imports, generated contracts,
+OpenAPI routing, all 84 ordered migrations, Make targets, Docker/runtime
+references, environment profiles, tests, ignored build output, documentation,
+and the current Git history used to distinguish disconnected code from
+intentional compatibility code.
+
+### Priority audit
+
+#### Critical
+
+No unresolved critical defect was found in the audited repository. The secret,
+authorization, RLS, migration-order, OpenAPI, market-isolation, and production
+build gates are green. This is not a claim that the demo-first product is ready
+for live traffic; the release blockers under **High** still fail closed.
+
+#### High
+
+| Finding                                                                                                                     | Evidence and impact                                                                                                                                                                                                                      | Status                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production split-application origins were hardcoded in Web source and could silently diverge from deployment configuration. | `frontend/src/platform/applications/application-registry.ts` contained live defaults; local runtime configuration also embedded fixed fallback ports. A deployment could appear valid while routing users to the wrong application host. | Resolved in source. Production now requires four explicit, distinct HTTPS origins. Deployment must still inject `SHONGRE_MARKETPLACE_ORIGIN`, `SHONGRE_SOLUTIONS_ORIGIN`, `SHONGRE_PROSPECTS_ORIGIN`, and `SHONGRE_FACTURATION_ORIGIN`; no production values were invented locally. |
+| Same-origin split-application fallbacks were understood by client links but rejected by server route policy.                | `/solutions/facturation`, `/solutions/prospects`, and `/solutions/marketplace` returned server 404s in the isolated production browser build. A first routing fix also exposed an SSR/client basename mismatch in the browser console.   | Resolved through one typed fallback resolver in `application-registry.ts`, used by the proxy and server application context. Server memory routing and browser routing now receive the same full path and basename.                                                                 |
+| Canonical category pages copied their route slug into a redundant query parameter after hydration.                          | `SearchPage.tsx` changed `/categorie/:categorySlug` into `/categorie/:categorySlug?category=…` from an effect. Besides producing two sources of truth, the replacement could race a listing click and was reproduced under WebKit.       | Resolved. The route parameter remains the canonical category input; clearing or changing category leaves the pretty route explicitly, and resumable recent-search URLs add the category only when needed.                                                                           |
+| Employment result wrappers overlaid the global footer and intercepted links.                                                | Live geometry showed each `.h-full` `JobCard` wrapper becoming 1,684px tall inside a vertical results section; subsequent 200px cards overflowed into the footer. Axe reported serious WCAG 2.2 target-size/obscuration failures.        | Resolved by removing the redundant wrapper height. The canonical listing card retains ownership of list/grid sizing. Targeted and exhaustive isolated Chromium/WebKit checks pass.                                                                                                  |
+| Live marketplace integrations remain intentionally incomplete.                                                              | Client policy still defaults to deterministic demo adapters; KYC, registry, selected AI/payment operations, delivery infrastructure, and deployed recovery evidence are not production-certified.                                        | Release-blocking by design. Keep fail-closed behavior and complete vendor/staging certification before launch.                                                                                                                                                                      |
+
+#### Medium
+
+| Finding                                                                          | Evidence and impact                                                                                                                                                                                                                                                        | Recommendation                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Critical production boundaries have uneven coverage.                             | Measured coverage is 52.51% statements / 47.75% branches for Web, 46.20% / 65.47% for backend, and 54.97% / 40.62% for mobile. Frontend HTTP/auth paths and backend durable workers, storage, provider delivery, and some repositories are materially below the aggregate. | Add failure-path, retry, idempotency, and authorization tests at those boundaries before setting ratcheting thresholds.                                                                          |
+| Localization migration remains incomplete.                                       | The checker reports 2,593 user-visible literals across 179 files. French has 3,265 catalog entries; English has 2,534, leaving 731 tracked missing keys (77.61% coverage). Only French is shipped.                                                                         | Continue a declining literal/debt budget; do not add English to `SHIPPED_LOCALES` until UI and domain-data coverage gates pass.                                                                  |
+| A few modules concentrate too much responsibility.                               | `backend/src/api/v1/router.ts` is about 5,480 lines; several repositories exceed 3,000 lines; `AdminMonetizationPage` and `PublishWizard` are about 2,700 lines each.                                                                                                      | Extract cohesive route families/controllers and page sections behind existing domain/service contracts, one consumer set at a time. Do not introduce a second router or state system.            |
+| Browser output is sizeable and needs route-level evidence before optimization.   | The production build emitted 233 JavaScript chunks, about 9.4MB raw in aggregate, with seven chunks over 250KB and one about 877KB. Aggregate output is not the same as per-route transfer.                                                                                | Capture route-level loaded bytes, LCP/INP/CLS, and chunk attribution before changing code splitting or memoization. Prioritize taxonomy/admin surfaces only if measurements confirm impact.      |
+| Coverage execution was not environment-isolated.                                 | The root `test-coverage` recipe skipped `scripts/env.sh`, causing otherwise healthy tests to fail under ambient configuration.                                                                                                                                             | Resolved; all three workspaces now run coverage with `SHONGRE_ENV=test`.                                                                                                                         |
+| A 320px account overview could overflow horizontally.                            | The two forced hero-action columns were each about 123px while the longer CTA needed about 164px, producing a measured 328px document.                                                                                                                                     | Resolved in `AccountOverviewPage.tsx` by stacking the actions at the narrow breakpoint and retaining the horizontal layout from `sm` upward.                                                     |
+| Real 404 responses used one generic recovery message for every public resource.  | The proxy returned the correct 404/noindex status but an absent listing, vehicle, property, job, teacher, seller, or collection all appeared as “Page introuvable”.                                                                                                        | Resolved with resource-specific, static presentations and recovery links while preserving the response status, robots header, and route-policy boundary.                                         |
+| A long-lived WebKit process stopped creating contexts after roughly 32 contexts. | The failure was cumulative and disappeared for the same routes when run in a fresh process; individual route, persona, and design-token checks were deterministic. This could make an exhaustive run hang despite healthy application behavior.                            | Resolved in the canonical E2E launcher by recycling non-Blink engines through bounded shards while preserving the full selected test set. Serial multi-route audits use separate bounded shards. |
+
+#### Low
+
+| Finding                                                       | Evidence and impact                                                                                                                                                                                                                                                                                                                                                                                     | Recommendation                                                                                                                                                                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Residual textual duplication is low but not zero.             | The source-focused `jscpd` pass found 25 clone pairs / 931 duplicate lines across 284,516 lines (0.33%). The final whole-repository pass, which also includes immutable migrations, contracts, tests, and documentation, found 71 / 2,327 across 419,490 lines (0.55%). Candidates cluster in demo/production projections, employment/CRM mapping, marketing workers, migrations, and a few page pairs. | Consolidate only where semantics and change cadence are truly shared. Never rewrite applied migrations to remove textual duplication; contract-compatible demo/HTTP projections may intentionally repeat mapping shape. |
+| The frontend type graph had one barrel cycle.                 | `types/index.ts` and `types/auth.types.ts` formed the sole frontend cycle; backend and mobile had none.                                                                                                                                                                                                                                                                                                 | Resolved by keeping `AuthResult` beside the public `UserProfile` projection in the barrel without a reverse import.                                                                                                     |
+| Full native iOS build validation is unavailable on this host. | Expo Doctor passes 21/21, but `xcode-select` points at Command Line Tools and the `iphoneos` SDK is absent.                                                                                                                                                                                                                                                                                             | Run the existing iOS preflight/build on a host with full Xcode. This is an external validation gap, not a code workaround target.                                                                                       |
+
+### Target architecture and consolidation plan
+
+The recommended target remains the architecture already established by the
+repository, strengthened rather than replaced:
+
+```text
+Web / Expo component
+        ↓
+controller or hook
+        ↓
+Promise-based service contract
+        ↓
+deterministic demo adapter | generated-contract HTTP adapter
+        ↓
+backend domain service
+        ↓
+typed repository / durable worker / provider gateway
+```
+
+- Keep `backend/openapi/openapi.json` as the only wire-contract source and the
+  modular monolith as the only authoritative business-logic runtime.
+- Keep market, environment, origin, URL, account/capability, taxonomy,
+  entitlement, and provider decisions behind their existing typed registries.
+- Keep `packages/design-tokens`, `packages/ui`, and `packages/features` as the
+  visual and listing-card sources of truth; page code should compose them.
+- Route all split applications through `application-registry.ts`; proxy,
+  server rendering, metadata, and client navigation must consume the same
+  resolution result.
+- Split oversized modules only along existing domain/application seams.
+  Repository queries should remain close to the owning domain, and route
+  extraction must not create a second endpoint registry.
+- Add measurement before performance abstraction: route transfer, Web Vitals,
+  query plans, and queue timings determine whether code splitting, caching,
+  memoization, or indexes are justified.
+
+### Dependency- and risk-ordered implementation plan
+
+1. **Repository invariants and safety gates — complete.** Re-ran environment,
+   boundary, OpenAPI, migration, secret, hostname, token, navigation, taxonomy,
+   format, lint, type, test, and build checks before deleting code.
+2. **Proven dead code and manifest cleanup — complete.** Removed only files
+   with no static, dynamic, convention, build, deployment, or historical
+   consumer; synchronized `package-lock.json` with `npm install`.
+3. **Typed runtime configuration and routing — complete.** Removed production
+   origin defaults, added fail-closed validation and tests, derived local
+   origins from configured host/port, and unified same-origin fallback routing.
+4. **UI/accessibility regression repair — complete.** Corrected employment
+   list-card geometry, the narrow account CTA layout, resource-specific 404
+   recovery, canonical category navigation, and browser readiness around SSR
+   hydration and intentional server 404 documents.
+5. **Critical-boundary coverage — next.** Prioritize auth transport, HTTP
+   adapters, payment/provider failure modes, durable jobs, storage quarantine,
+   and repository concurrency; introduce ratchets only after the first focused
+   tranche.
+6. **Measured modularization and performance — next.** Extract the largest
+   router/repository/page responsibilities incrementally and optimize only
+   where route/query measurements show a user or operating-cost benefit.
+7. **Staging integration and release evidence — required before production.**
+   Inject real split origins, certify providers/webhooks/queues, validate
+   backups/restores and observability, and run native store builds on capable
+   hosts.
+
+### Implemented follow-up improvements
+
+Confirmed dead files removed:
+
+- `frontend/scripts/fix-i18n-hooks.mjs`;
+- `frontend/scripts/prune-unused-imports.mjs`;
+- `frontend/scripts/prune-unused-locals.mjs`;
+- `frontend/src/domains/crm/crm.capabilities.ts`;
+- `frontend/src/features/transactions/components/LeaveReviewModal.tsx`;
+- `frontend/src/features/transactions/components/SellerPayoutModal.tsx`;
+- `frontend/src/security/components/RequireRole.tsx`.
+
+Manifest cleanup and corrections:
+
+- removed root direct `uuid` while preserving the transitive Xcode override;
+- removed frontend direct `@shongre/brand`, `canvas-confetti`, and
+  `@types/canvas-confetti`;
+- removed backend `tsc-alias`;
+- added the root's real direct `tsx` dependency and frontend's real direct
+  `server-only` and `zod` dependencies;
+- removed 30 packages from the synchronized lockfile; `npm audit` reports zero
+  vulnerabilities.
+
+Retained after convention/runtime verification:
+
+- the Supabase `stripe-webhook` edge-function entry point;
+- Docker runtime validation and release/mobile/Make-invoked scripts;
+- Sentry CLI, backend `esbuild`, Expo Doctor, and the Inter font file-path
+  dependency;
+- all 84 applied migrations, generated OpenAPI/database artifacts, deterministic
+  demo adapters, and compatibility paths with active consumers.
+
+Other completed changes:
+
+- fixed the only type-cycle and parallelized lazy service-registry test loading;
+- corrected i18n tests so 100% coverage applies only to shipped locales while a
+  non-growing 731-key English debt budget remains explicit;
+- hardened the hostname scanner to include untracked runtime source and ignore
+  deleted tracked paths, with a temporary-Git-repository regression test;
+- removed hardcoded live origins, fixed localhost fallback literals, and made
+  production split origins fail closed;
+- corrected the root coverage environment;
+- fixed same-origin split-application SSR, metadata, proxy, basename, and
+  client routing through one registry resolver;
+- kept category landing URLs canonical and made category clear/change behavior
+  explicit instead of synchronizing route state through a post-hydration
+  effect;
+- added contextual 404 headings and recovery actions for each public resource
+  family while retaining genuine HTTP 404 and noindex behavior. The proxy's
+  direct-navigation guard and Next's not-found UI consume one shared,
+  token-backed presentation source so the first response is correct before
+  React streaming begins;
+- changed demo persona application switches to full application-aware
+  navigation so switching among Marketplace, Prospects, and Facturation
+  remounts the correct split application locally and crosses origins in
+  production;
+- removed the 320px account overview overflow by stacking long hero actions at
+  the narrow breakpoint;
+- fixed the employment result/footer overlap without duplicating card layout;
+- kept listing-card location metadata readable instead of truncating it by a
+  few pixels at the canonical compact width, synchronized stale browser
+  assertions with the current card/grid/list tokens, and removed the confirmed
+  unused base `listing-card-list-image` token while retaining its used
+  breakpoint variants;
+- introduced no parallel visual-token family: the direct 404 response and all
+  changed controls consume the existing semantic color, type, spacing, size,
+  radius, border, elevation, focus, and motion sources;
+- hardened browser checks against smooth-scroll timing, unavailable animation
+  frames, active transitions, delayed media layout, and pre-hydration
+  interaction; serialized stateful Prospects/admin sweeps; split the exhaustive
+  typography audit into seven bounded route groups; and recycled WebKit through
+  bounded regular and serial shards;
+- normalized 104 previously unformatted tracked files through the canonical
+  formatter. These are mechanical changes and are kept distinct from the
+  functional edits above.
+
+### Follow-up validation snapshot
+
+- `make check`: passed, including all package/application unit suites (850
+  frontend tests), 451 OpenAPI operations (446 business routes and five
+  operational routes), 84 ordered migrations, 208/208 publishable taxonomy
+  leaves, route/destination coverage, 1,673-file secret scanning, the 917-file
+  runtime-hostname policy, and frontend/backend production builds.
+- `make test-coverage`: passed after repairing environment isolation.
+- `make test-critical`: passed (316 backend, 95 frontend, 25 shared tests).
+- `npm audit --audit-level=high`: zero vulnerabilities.
+- Knip was rerun under the canonical test profile. Its remaining file findings
+  are Make/Expo/Supabase/framework entry points, and its dependency findings are
+  exercised by asset paths or build/release commands; retained exports include
+  generated contracts, package public APIs, fixtures, and dynamic registries.
+  No item was removed from this convention-heavy output without an independent
+  consumer and runtime check.
+- `jscpd` completed with 0.33% source-focused duplication and 0.55% when
+  immutable migrations, tests, and documentation are included. No applied
+  migration or intentionally separate demo/HTTP boundary was rewritten merely
+  to reduce the metric.
+- `make cross-platform-check`: all repository code/token/package/Expo checks
+  passed; only the external full-Xcode/iphoneos preflight is unavailable.
+- `make test-e2e`: passed against a fresh isolated production build. Chromium
+  regular tests passed 1,063 with 90 intentional route-matrix skips; Chromium
+  serial audits passed 52/52. Forty recycled WebKit regular shards passed 532
+  with the same 90 intentional skips, and three WebKit serial shards passed
+  41/41. In total, 1,688 browser assertions passed with zero failure. Firefox
+  remains skipped on this macOS 27 host because of its upstream sandbox
+  incompatibility; hosted Cloudflare smoke cases remain skipped because no
+  deployed validation URL was supplied.
+
+The sections below retain the 2026-08-23 implementation history. Counts and
+risks in this follow-up section supersede older point-in-time counts where they
+differ.
 
 ## 1. Initial baseline
 

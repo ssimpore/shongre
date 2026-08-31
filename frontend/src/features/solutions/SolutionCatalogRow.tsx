@@ -43,7 +43,9 @@ export function SolutionCatalogRow({
                 {solution.name}
               </a>
             </h2>
-            <span className={`inline-flex items-center gap-1.5 text-xs font-bold ${solution.lifecycle === "AVAILABLE" ? "text-success" : solution.lifecycle === "BETA" ? "text-primary" : "text-text-muted"}`}>
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-bold ${solution.lifecycle === "AVAILABLE" ? "text-success" : solution.lifecycle === "BETA" ? "text-primary" : "text-text-muted"}`}
+            >
               {solution.lifecycle === "AVAILABLE" ? (
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               ) : null}
@@ -57,7 +59,8 @@ export function SolutionCatalogRow({
             href={detailHref}
             className="mt-3 inline-flex min-h-8 items-center gap-2 rounded-control text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            En savoir plus <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
+            En savoir plus{" "}
+            <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
           </a>
         </div>
       </div>
@@ -80,7 +83,9 @@ export function SolutionCatalogRow({
             aria-disabled="true"
             className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control border border-border-base bg-bg-subtle px-4 text-xs font-bold text-text-muted"
           >
-            {comingSoon ? <Bell className="h-icon-sm w-icon-sm" aria-hidden="true" /> : null}
+            {comingSoon ? (
+              <Bell className="h-icon-sm w-icon-sm" aria-hidden="true" />
+            ) : null}
             {launch.actionLabel}
           </span>
         )}

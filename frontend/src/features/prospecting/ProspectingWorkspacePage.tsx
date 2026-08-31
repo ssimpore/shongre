@@ -862,7 +862,7 @@ export const ProspectingWorkspacePage: React.FC<
                       />
                       Critères appliqués
                     </span>
-                    <span className="shrink-0 font-semibold text-primary group-open:hidden">
+                    <span className="shrink-0 font-semibold text-primary-hover group-open:hidden">
                       Modifier les critères
                     </span>
                     <span className="hidden shrink-0 font-semibold text-primary group-open:inline">

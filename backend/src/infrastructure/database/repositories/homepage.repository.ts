@@ -225,8 +225,7 @@ async function hydrateConfiguration(
                 allowedMarkets: rule.allowed_markets || [],
                 taxonomyBranches: rule.taxonomy_branches || [],
                 minimumDiscountBps: Number(rule.minimum_discount_bps),
-                includeProfessionalSellers:
-                  rule.include_professional_sellers,
+                includeProfessionalSellers: rule.include_professional_sellers,
                 previewEmptyState: rule.preview_empty_state,
                 offerOverrides: offersBySection.get(row.id) || [],
               }
@@ -290,7 +289,9 @@ export class PostgresHomepageRepository implements IHomepageRepository {
     );
   }
 
-  async saveDraft(input: SaveHomepageRevisionInput): Promise<HomepageConfiguration> {
+  async saveDraft(
+    input: SaveHomepageRevisionInput,
+  ): Promise<HomepageConfiguration> {
     try {
       const supabase = getSupabaseAdminClient() as any;
       const { error } = await supabase.rpc(

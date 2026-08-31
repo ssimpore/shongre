@@ -31,39 +31,60 @@ export const LocationPickerModal: React.FC = () => {
     activeMarket,
     location,
     setLocation,
-    resetLocation,
     popularCities,
     isLocationModalOpen,
+    locationModalOptions,
     closeLocationModal,
   } = useMarketLocation();
 
-  const isWholeCountry =
-    location.city.startsWith("Tout") || location.city.startsWith("Toute");
+  const initialLocation = locationModalOptions?.initialLocation ?? location;
+  const initialLocationIsWholeCountry =
+    initialLocation.city.startsWith("Tout") ||
+    initialLocation.city.startsWith("Toute");
   const [cityInput, setCityInput] = useState(
-    isWholeCountry ? "" : location.city,
+    initialLocationIsWholeCountry ? "" : initialLocation.city,
   );
-  const [radius, setRadius] = useState<number>(location.radiusKm || 0);
+  const [radius, setRadius] = useState<number>(initialLocation.radiusKm || 0);
   const [geolocationState, setGeolocationState] = useState<GeolocationState>({
     status: "idle",
   });
 
   useEffect(() => {
     if (!isLocationModalOpen) return;
-    if (isWholeCountry) {
+    if (initialLocationIsWholeCountry) {
       setCityInput("");
     } else {
-      setCityInput(location.city);
+      setCityInput(initialLocation.city);
     }
-    setRadius(location.radiusKm || 0);
+    setRadius(initialLocation.radiusKm || 0);
     setGeolocationState({ status: "idle" });
-  }, [isLocationModalOpen, location, isWholeCountry]);
+  }, [
+    initialLocation.city,
+    initialLocation.radiusKm,
+    initialLocationIsWholeCountry,
+    isLocationModalOpen,
+  ]);
 
   const radiusOptions = [0, 10, 20, 30, 50, 100];
   const wholeCountryLabel = `Toute la ${activeMarket.name}`;
+  const isWholeCountry = !cityInput.trim();
+
+  const applyLocation = (nextLocation: LocationSelection) => {
+    setLocation(nextLocation);
+    locationModalOptions?.onApply?.(nextLocation);
+    closeLocationModal();
+  };
+
+  const wholeCountryLocation: LocationSelection = {
+    city: wholeCountryLabel,
+    postalCode: "",
+    radiusKm: 0,
+    label: wholeCountryLabel,
+  };
 
   const handleApply = () => {
     if (!cityInput.trim()) {
-      resetLocation();
+      applyLocation(wholeCountryLocation);
     } else {
       const match = popularCities.find(
         (c) => c.name.toLowerCase() === cityInput.trim().toLowerCase(),
@@ -77,9 +98,8 @@ export const LocationPickerModal: React.FC = () => {
         label:
           radius > 0 ? `${cityInput.trim()} (+${radius} km)` : cityInput.trim(),
       };
-      setLocation(newLoc);
+      applyLocation(newLoc);
     }
-    closeLocationModal();
   };
 
   const handleSelectCity = (c: (typeof popularCities)[0]) => {
@@ -147,10 +167,7 @@ export const LocationPickerModal: React.FC = () => {
         {/* Whole country option */}
         <button
           type="button"
-          onClick={() => {
-            resetLocation();
-            closeLocationModal();
-          }}
+          onClick={() => applyLocation(wholeCountryLocation)}
           className={`w-full min-h-control-touch px-3 rounded-control border flex items-center justify-between motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isWholeCountry
               ? "border-primary bg-primary-light text-primary font-bold"

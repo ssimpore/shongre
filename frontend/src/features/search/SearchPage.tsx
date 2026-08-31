@@ -1,6 +1,6 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import {
   SlidersHorizontal,
   Bookmark,
@@ -95,6 +95,7 @@ function humanizeFacetValue(value: string): string {
 
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
     location: userLocation,
@@ -130,43 +131,18 @@ export const SearchPage: React.FC = () => {
   const [searchAttempt, setSearchAttempt] = useState(0);
   const lastStartedSearchKey = useRef<string | null>(null);
 
-  /* `/categorie/:categorySlug` is the pretty, linkable form of a category
-     search. The route was registered but nothing ever read its parameter, so
-     every category landing page rendered the entire unfiltered catalogue under
-     the heading "Toutes les annonces" — the primary organic entry point for a
-     classifieds site, showing the wrong results. It went unnoticed because the
-     in-app category navigation all links to `/recherche?category=`, so nothing
-     in the UI reached the broken route.
-
-     The slug is seeded into the query string once per category rather than read
-     as a second source of truth: every filter control already reads and writes
-     `?category=`, and clearing the category deletes the key. A route parameter
-     consulted as a fallback would silently reinstate the category the user just
-     cleared. Seeding once means the existing filter logic keeps working
-     untouched, and the pretty URL still selects the right category on arrival. */
+  /* `/categorie/:categorySlug` is the canonical, linkable category search.
+     Keep that route parameter implicit instead of copying it into `?category=`:
+     the duplicate query made a canonical landing look like an interacted facet
+     and could race a listing click with a replace-navigation in WebKit. Category
+     changes and clears leave the pretty route explicitly below. */
   const { categorySlug: categoryRouteSlug } = useParams<{
     categorySlug?: string;
   }>();
-  const seededCategoryFor = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!categoryRouteSlug) return;
-    if (seededCategoryFor.current === categoryRouteSlug) return;
-    seededCategoryFor.current = categoryRouteSlug;
-    if (searchParams.get("category") === categoryRouteSlug) return;
-
-    const next = new URLSearchParams(searchParams);
-    next.set("category", categoryRouteSlug);
-    setSearchParams(next, { replace: true });
-  }, [categoryRouteSlug, searchParams, setSearchParams]);
 
   // Extract filter params from URL
   const query = searchParams.get("query") || "";
-  const categorySlug =
-    searchParams.get("category") ||
-    (seededCategoryFor.current !== categoryRouteSlug
-      ? categoryRouteSlug || ""
-      : "");
+  const categorySlug = searchParams.get("category") || categoryRouteSlug || "";
   const subCategorySlug = searchParams.get("subCategory") || "";
   const cityParam = searchParams.get("city");
   // Only filter by city if the URL specifically specifies an active, non-countrywide city query parameter
@@ -361,26 +337,40 @@ export const SearchPage: React.FC = () => {
     updateFilter("condition", next.length > 0 ? next.join(",") : undefined);
   };
 
-  const updateFilter = (key: string, value: string | undefined) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      if (value === undefined || value === "" || value === "all") {
-        next.delete(key);
-        if (key === "category") {
-          next.delete("subCategory");
-        }
-      } else {
-        next.set(key, value);
-        if (key === "category") {
-          next.delete("subCategory");
-        }
-      }
-      if (key === "category" || key === "subCategory") {
-        deleteAttributeFilters(next);
-      }
-      next.delete("page");
-      return next;
+  const leaveCategoryRoute = (next: URLSearchParams) => {
+    const queryString = next.toString();
+    navigate({
+      pathname: "/recherche",
+      search: queryString ? `?${queryString}` : "",
     });
+  };
+
+  const updateFilter = (key: string, value: string | undefined) => {
+    const next = new URLSearchParams(searchParams);
+    if (value === undefined || value === "" || value === "all") {
+      next.delete(key);
+      if (key === "category") {
+        next.delete("subCategory");
+      }
+    } else {
+      next.set(key, value);
+      if (key === "category") {
+        next.delete("subCategory");
+      }
+    }
+    if (key === "category" || key === "subCategory") {
+      deleteAttributeFilters(next);
+    }
+    next.delete("page");
+
+    if (key === "category" && categoryRouteSlug) {
+      if (!value || value === "all" || value !== categoryRouteSlug) {
+        leaveCategoryRoute(next);
+        return;
+      }
+      next.delete("category");
+    }
+    setSearchParams(next);
   };
 
   const updatePage = (nextPage: number) => {
@@ -411,7 +401,8 @@ export const SearchPage: React.FC = () => {
   };
 
   const clearAllFilters = () => {
-    setSearchParams(new URLSearchParams());
+    if (categoryRouteSlug) navigate("/recherche");
+    else setSearchParams(new URLSearchParams());
     setTempQuery("");
     resetLocation();
   };
@@ -473,6 +464,9 @@ export const SearchPage: React.FC = () => {
     if (!hasCriteria) return;
 
     const recentUrlParams = new URLSearchParams(searchParams.toString());
+    if (categoryRouteSlug && !recentUrlParams.has("category")) {
+      recentUrlParams.set("category", categoryRouteSlug);
+    }
     recentUrlParams.delete("page");
     recentUrlParams.delete("view");
 
@@ -498,6 +492,7 @@ export const SearchPage: React.FC = () => {
     activeMarket.name,
     activeSubCat?.name,
     activeSubCat?.slug,
+    categoryRouteSlug,
     categorySlug,
     city,
     conditions.length,
@@ -768,7 +763,6 @@ export const SearchPage: React.FC = () => {
           initialRadiusKm={radiusKm}
           showCategory={true}
           showLocation={true}
-          showRadius={true}
           navigateOnSubmit={false}
           onSearch={({
             query: newQ,
@@ -777,24 +771,30 @@ export const SearchPage: React.FC = () => {
             city: newCity,
             radiusKm: newRad,
           }) => {
-            setSearchParams((prev) => {
-              const next = new URLSearchParams(prev);
-              if (newCat !== categorySlug || newSub !== subCategorySlug) {
-                deleteAttributeFilters(next);
-              }
-              if (newQ) next.set("query", newQ);
-              else next.delete("query");
-              if (newCat) next.set("category", newCat);
-              else next.delete("category");
-              if (newSub) next.set("subCategory", newSub);
-              else next.delete("subCategory");
-              if (newCity) next.set("city", newCity);
-              else next.delete("city");
-              if (newRad && newRad > 0) next.set("radius", String(newRad));
-              else next.delete("radius");
-              next.delete("page");
-              return next;
-            });
+            const next = new URLSearchParams(searchParams);
+            if (newCat !== categorySlug || newSub !== subCategorySlug) {
+              deleteAttributeFilters(next);
+            }
+            if (newQ) next.set("query", newQ);
+            else next.delete("query");
+            if (newCat && newCat !== categoryRouteSlug) {
+              next.set("category", newCat);
+            } else {
+              next.delete("category");
+            }
+            if (newSub) next.set("subCategory", newSub);
+            else next.delete("subCategory");
+            if (newCity) next.set("city", newCity);
+            else next.delete("city");
+            if (newRad && newRad > 0) next.set("radius", String(newRad));
+            else next.delete("radius");
+            next.delete("page");
+
+            if (categoryRouteSlug && newCat !== categoryRouteSlug) {
+              leaveCategoryRoute(next);
+            } else {
+              setSearchParams(next);
+            }
           }}
         />
 

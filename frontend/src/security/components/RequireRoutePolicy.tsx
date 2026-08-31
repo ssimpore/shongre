@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import {
   canonicalAccessContext,
@@ -17,6 +17,18 @@ import { hasProductAccess } from "../../domains/user/user.domain";
 import type { RoutePolicy } from "../access-policy.registry";
 import { useDataMode } from "../../app/providers/DataModeProvider";
 import { resolveStaffMarketplaceMode } from "../useStaffMarketplaceAccess";
+import { applicationHref } from "../../platform/applications/use-application-href";
+
+const ApplicationRedirect: React.FC<{
+  applicationId: "facturation";
+  pathname: string;
+}> = ({ applicationId, pathname }) => {
+  const destination = applicationHref(applicationId, pathname);
+  useEffect(() => {
+    window.location.replace(destination);
+  }, [destination]);
+  return null;
+};
 
 /**
  * Enforces the same named route policy used to build workspace navigation.
@@ -91,16 +103,15 @@ export const RequireRoutePolicy: React.FC<{
     return <>{children}</>;
   }
   if (policy.productId && !hasProductAccess(currentUser, policy.productId)) {
-    return (
-      <Navigate
-        to={
-          policy.productId === "facturation"
-            ? routes.facturation.activation()
-            : routes.proPlans()
-        }
-        replace
-      />
-    );
+    if (policy.productId === "facturation") {
+      return (
+        <ApplicationRedirect
+          applicationId="facturation"
+          pathname="/activation"
+        />
+      );
+    }
+    return <Navigate to={routes.proPlans()} replace />;
   }
   if (!policy.capability) return <>{children}</>;
 

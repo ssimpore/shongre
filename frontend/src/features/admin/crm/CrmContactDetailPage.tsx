@@ -318,7 +318,8 @@ export const CrmContactDetailPage: React.FC = () => {
               className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
               onClick={() => setTaskOpen(true)}
             >
-              <CalendarClock className="h-icon-md w-icon-md" /> {t("admin.crmContactDetailPage.tache2")}
+              <CalendarClock className="h-icon-md w-icon-md" />{" "}
+              {t("admin.crmContactDetailPage.tache2")}
             </Button>
             <Button size="sm" onClick={() => setNoteOpen(true)}>
               <MessageSquareText className="h-icon-md w-icon-md" /> Note
@@ -373,7 +374,9 @@ export const CrmContactDetailPage: React.FC = () => {
               <div>
                 <h2 className="text-sm font-black">Historique</h2>
                 <p className="text-micro text-stone-500">
-                  {t("admin.crmContactDetailPage.interactionsImmuablesDuContact")}
+                  {t(
+                    "admin.crmContactDetailPage.interactionsImmuablesDuContact",
+                  )}
                 </p>
               </div>
               <Button
@@ -423,9 +426,13 @@ export const CrmContactDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.opportunitesLiees")}</h2>
+                <h2 className="text-sm font-black">
+                  {t("admin.crmContactDetailPage.opportunitesLiees")}
+                </h2>
                 <p className="text-micro text-stone-500">
-                  {t("admin.crmContactDetailPage.influenceEtEngagementsEnCours")}
+                  {t(
+                    "admin.crmContactDetailPage.influenceEtEngagementsEnCours",
+                  )}
                 </p>
               </div>
               <Target className="h-icon-md w-icon-md text-primary" />
@@ -467,7 +474,9 @@ export const CrmContactDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
-                <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.tachesAssociees")}</h2>
+                <h2 className="text-sm font-black">
+                  {t("admin.crmContactDetailPage.tachesAssociees")}
+                </h2>
                 <p className="text-micro text-stone-500">Prochaines actions</p>
               </div>
               <Button
@@ -518,7 +527,9 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
           </section>
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="text-sm font-black">{t("admin.crmContactDetailPage.donneesDuContact")}</h2>
+            <h2 className="text-sm font-black">
+              {t("admin.crmContactDetailPage.donneesDuContact")}
+            </h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Département", contact.department ?? "Non renseigné"],
@@ -593,7 +604,9 @@ export const CrmContactDetailPage: React.FC = () => {
             <Input
               value={taskTitle}
               onChange={(event) => setTaskTitle(event.target.value)}
-              placeholder={t("admin.crmContactDetailPage.relancerPourConfirmerLeRendezVous")}
+              placeholder={t(
+                "admin.crmContactDetailPage.relancerPourConfirmerLeRendezVous",
+              )}
               required
             />
           </FormField>

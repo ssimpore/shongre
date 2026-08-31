@@ -178,8 +178,9 @@ export const AdminAnalyticsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: "Analytics & Intelligence — Administration Shongre",
-    description:
-      t("admin.adminAnalyticsPage.pilotageProduitAcquisitionSeoRechercheEtMonetisation"),
+    description: t(
+      "admin.adminAnalyticsPage.pilotageProduitAcquisitionSeoRechercheEtMonetisation",
+    ),
     canonicalPath: "/admin/analytics",
     noIndex: true,
   });
@@ -278,7 +279,9 @@ export const AdminAnalyticsPage: React.FC = () => {
     return (
       <StatePanel
         title={t("admin.adminAnalyticsPage.accesLimite")}
-        description={t("admin.adminAnalyticsPage.aucunPerimetreAnalyticsNEstAttribueAVotreRole")}
+        description={t(
+          "admin.adminAnalyticsPage.aucunPerimetreAnalyticsNEstAttribueAVotreRole",
+        )}
         variant="restricted"
       />
     );
@@ -295,7 +298,9 @@ export const AdminAnalyticsPage: React.FC = () => {
             {t("admin.adminAnalyticsPage.analyticsSeoObservabilite")}
           </h1>
           <p className="mt-1 max-w-3xl text-xs text-text-secondary">
-            {t("admin.adminAnalyticsPage.indicateursInternesFiablesSegmentesParMarcheLesRevenusSontRapproches")}
+            {t(
+              "admin.adminAnalyticsPage.indicateursInternesFiablesSegmentesParMarcheLesRevenusSontRapproches",
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -314,7 +319,9 @@ export const AdminAnalyticsPage: React.FC = () => {
               <option value="month">Mois glissant</option>
               <option value="quarter">Trimestre</option>
               <option value="year">1 an</option>
-              <option value="custom">{t("admin.adminAnalyticsPage.personnalisee")}</option>
+              <option value="custom">
+                {t("admin.adminAnalyticsPage.personnalisee")}
+              </option>
             </select>
           </label>
           <label className="text-xs font-semibold text-text-secondary">
@@ -324,7 +331,9 @@ export const AdminAnalyticsPage: React.FC = () => {
               value={marketCode}
               onChange={(event) => updateFilter("market", event.target.value)}
             >
-              <option value="ALL">{t("publishing.publishWizard.tousLesMarches")}</option>
+              <option value="ALL">
+                {t("publishing.publishWizard.tousLesMarches")}
+              </option>
               {availableMarkets.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name} ({item.code})
@@ -372,7 +381,9 @@ export const AdminAnalyticsPage: React.FC = () => {
                   onChange={(event) =>
                     updateFilter("category", event.target.value)
                   }
-                  placeholder={t("admin.adminAnalyticsPage.identifiantCategorie")}
+                  placeholder={t(
+                    "admin.adminAnalyticsPage.identifiantCategorie",
+                  )}
                 />
               </label>
             )}
@@ -460,12 +471,17 @@ export const AdminAnalyticsPage: React.FC = () => {
             "reconciliationStatus" in data &&
             data.reconciliationStatus === "partial" && (
               <p className="rounded-control border border-warning/30 bg-warning/10 p-3 text-xs text-stone-700">
-                {t("admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise")}
+                {t(
+                  "admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise",
+                )}
               </p>
             )}
           {activeTab === "overview" && "activity" in data && (
             <>
-              <TrendChart title={t("admin.adminAnalyticsPage.activiteProduit")} data={data.activity} />
+              <TrendChart
+                title={t("admin.adminAnalyticsPage.activiteProduit")}
+                data={data.activity}
+              />
               <section className="rounded-control border border-stone-200 bg-bg-surface p-4">
                 <h2 className="mb-3 text-sm font-bold">Entonnoir principal</h2>
                 <div className="grid gap-2 sm:grid-cols-4">
@@ -522,7 +538,9 @@ export const AdminAnalyticsPage: React.FC = () => {
           )}
           {activeTab === "search" && "opportunities" in data && (
             <ScrollableRegion
-              aria-label={t("admin.adminAnalyticsPage.demandesDeRechercheSousServies")}
+              aria-label={t(
+                "admin.adminAnalyticsPage.demandesDeRechercheSousServies",
+              )}
               className="rounded-control border border-stone-200 bg-bg-surface"
             >
               <div className="flex items-center gap-2 border-b border-stone-100 p-4">
@@ -532,7 +550,9 @@ export const AdminAnalyticsPage: React.FC = () => {
               <table className="w-full whitespace-nowrap text-left text-xs">
                 <thead className="bg-stone-50 text-text-secondary">
                   <tr>
-                    <th className="p-3">{t("admin.adminAnalyticsPage.requete")}</th>
+                    <th className="p-3">
+                      {t("admin.adminAnalyticsPage.requete")}
+                    </th>
                     <th>{t("invoicing.product.previewMarket")}</th>
                     <th>Recherches</th>
                     <th>Offre</th>
@@ -566,15 +586,22 @@ export const AdminAnalyticsPage: React.FC = () => {
           )}
           {activeTab === "seo" && "queries" in data && (
             <>
-              <TrendChart title={t("admin.adminAnalyticsPage.visibiliteOrganique")} data={data.trend} />
+              <TrendChart
+                title={t("admin.adminAnalyticsPage.visibiliteOrganique")}
+                data={data.trend}
+              />
               <ScrollableRegion
-                aria-label={t("admin.adminAnalyticsPage.requetesOrganiquesSearchConsole")}
+                aria-label={t(
+                  "admin.adminAnalyticsPage.requetesOrganiquesSearchConsole",
+                )}
                 className="rounded-control border border-stone-200 bg-bg-surface"
               >
                 <table className="w-full whitespace-nowrap text-left text-xs">
                   <thead className="bg-stone-50">
                     <tr>
-                      <th className="p-3">{t("admin.adminAnalyticsPage.requete")}</th>
+                      <th className="p-3">
+                        {t("admin.adminAnalyticsPage.requete")}
+                      </th>
                       <th>Clics</th>
                       <th>Impressions</th>
                       <th>CTR</th>
@@ -628,7 +655,9 @@ export const AdminAnalyticsPage: React.FC = () => {
                 )}
               </div>
               <div className="mt-3 flex gap-4 text-micro text-stone-500">
-                <span>{t("admin.adminAnalyticsPage.echecs")} {provider.failedEvents}</span>
+                <span>
+                  {t("admin.adminAnalyticsPage.echecs")} {provider.failedEvents}
+                </span>
                 <span>File : {provider.queueBacklog}</span>
               </div>
             </article>

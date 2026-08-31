@@ -1,14 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  MapPin,
-  Layers,
-  ChevronDown,
-  X,
-  Check,
-  Compass,
-} from "lucide-react";
+import { Search, Layers, ChevronDown, X, Check } from "lucide-react";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { CategoryIcon } from "./CategoryIcon";
@@ -27,7 +19,6 @@ import { storageService } from "../../services/storage.service";
 import { telemetryService } from "../../services/telemetry.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
-  DropdownMenu,
   DROPDOWN_PANEL_CLASSES,
   DROPDOWN_HEADER_CLASSES,
   DROPDOWN_HEADER_TITLE_CLASSES,
@@ -38,6 +29,7 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../utils/controlMetrics";
+import { LocationSelector } from "../components/LocationSelector";
 
 export interface GlobalSearchCriteria {
   query: string;
@@ -63,7 +55,6 @@ export interface GlobalSearchBarProps {
   initialRadiusKm?: number;
   showCategory?: boolean;
   showLocation?: boolean;
-  showRadius?: boolean;
   placeholder?: string;
   className?: string;
   idPrefix?: string;
@@ -90,7 +81,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   initialRadiusKm,
   showCategory = true,
   showLocation = true,
-  showRadius = false,
   placeholder,
   className = "",
   idPrefix = "global-search",
@@ -104,11 +94,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const {
-    location: userLocation,
-    openLocationModal,
-    activeMarket,
-  } = useMarketLocation();
+  const { location: userLocation } = useMarketLocation();
 
   const [query, setQuery] = useState(initialQuery);
   const [selectedCategorySlug, setSelectedCategorySlug] =
@@ -133,9 +119,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       : !isCountryWide
         ? userLocation.city
         : "";
+  const effectiveRadiusKm =
+    initialRadiusKm ??
+    (initialCity === undefined ? userLocation.radiusKm || 0 : 0);
   const [city, setCity] = useState(effectiveCity);
   const [radiusKm, setRadiusKm] = useState<number | undefined>(
-    initialRadiusKm ?? userLocation.radiusKm ?? 0,
+    effectiveRadiusKm,
   );
 
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -164,21 +153,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     setSelectedSubCategorySlug(initialSubCategorySlug);
   }, [initialSubCategorySlug]);
 
-  useEffect(() => {
-    if (initialCity !== undefined) {
-      setCity(initialCity);
-    } else if (!isCountryWide) {
-      setCity(userLocation.city);
-    } else {
-      setCity("");
-    }
-  }, [initialCity, userLocation.city, isCountryWide]);
+  useEffect(() => setCity(effectiveCity), [effectiveCity]);
 
-  useEffect(() => {
-    if (initialRadiusKm !== undefined) {
-      setRadiusKm(initialRadiusKm);
-    }
-  }, [initialRadiusKm]);
+  useEffect(() => setRadiusKm(effectiveRadiusKm), [effectiveRadiusKm]);
 
   // Derive autocomplete suggestions
   const suggestions: AutocompleteResults = useMemo(() => {
@@ -653,18 +630,16 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
           {/* Location Trigger Button (desktop only — see the category note above) */}
           {showLocation && (
-            <button
+            <LocationSelector
               id={`${idPrefix}-header-location-button`}
-              type="button"
-              onClick={openLocationModal}
-              aria-label={`Localisation : ${city || userLocation.label}`}
-              className={`hidden xl:flex items-center gap-1.5 px-3.5 h-full border-l border-border-base text-xs font-medium text-stone-700 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink min-w-0 max-w-27.5 2xl:max-w-45 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
-            >
-              <MapPin className="w-icon-sm h-icon-sm text-primary shrink-0" />
-              <span className="truncate whitespace-nowrap">
-                {city || userLocation.label}
-              </span>
-            </button>
+              variant="header"
+              city={city}
+              radiusKm={radiusKm}
+              onChange={(value) => {
+                setCity(value.city || "");
+                setRadiusKm(value.radiusKm);
+              }}
+            />
           )}
 
           {/* Submit Button */}
@@ -808,22 +783,16 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               )}
 
               {showLocation && (
-                <button
+                <LocationSelector
                   id={`${idPrefix}-minimal-location-button`}
-                  type="button"
-                  onClick={openLocationModal}
-                  className={`w-full h-control-md flex items-center justify-between px-2.5 rounded-control border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer truncate`}
-                >
-                  <div className="flex items-center gap-1 truncate">
-                    <MapPin className="w-icon-sm h-icon-sm text-primary shrink-0" />
-                    <span className="truncate">
-                      {city || userLocation.label}
-                    </span>
-                  </div>
-                  <span className="text-micro text-primary font-bold shrink-0 ml-1">
-                    Changer
-                  </span>
-                </button>
+                  variant="minimal"
+                  city={city}
+                  radiusKm={radiusKm}
+                  onChange={(value) => {
+                    setCity(value.city || "");
+                    setRadiusKm(value.radiusKm);
+                  }}
+                />
               )}
             </div>
           )}
@@ -1028,42 +997,16 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           {/* Location & Radius */}
           <div className="flex items-center gap-2 flex-nowrap shrink-0">
             {showLocation && (
-              <button
+              <LocationSelector
                 id={`${idPrefix}-page-location-button`}
-                type="button"
-                onClick={openLocationModal}
-                aria-label={`Localisation : ${city || userLocation.label}`}
-                className="hidden sm:flex h-control-touch px-3.5 rounded-control border border-border-base bg-bg-base hover:bg-bg-subtle text-xs font-semibold text-stone-700 items-center gap-1.5 cursor-pointer max-w-full sm:max-w-40 truncate"
-              >
-                <MapPin className="w-icon-md h-icon-md text-primary shrink-0" />
-                <span className="truncate">{city || userLocation.label}</span>
-              </button>
-            )}
-
-            {showRadius && city && !isCountryWide && (
-              <div className="hidden sm:block">
-                <DropdownMenu
-                  id={`${idPrefix}-page-radius-select`}
-                  ariaLabel="Rayon de recherche autour de la ville"
-                  size="touch"
-                  panelWidth="w-40"
-                  headerTitle={
-                    <div className="flex items-center gap-1.5 text-text-secondary normal-case font-semibold">
-                      <Compass className="w-icon-sm h-icon-sm text-primary shrink-0" />
-                      <span>Rayon</span>
-                    </div>
-                  }
-                  options={[
-                    { value: "0", label: "Ville exacte" },
-                    { value: "10", label: "+10 km" },
-                    { value: "30", label: "+30 km" },
-                    { value: "50", label: "+50 km" },
-                    { value: "100", label: "+100 km" },
-                  ]}
-                  value={String(radiusKm || 0)}
-                  onChange={(val) => setRadiusKm(Number(val))}
-                />
-              </div>
+                variant="search-page"
+                city={city}
+                radiusKm={radiusKm}
+                onChange={(value) => {
+                  setCity(value.city || "");
+                  setRadiusKm(value.radiusKm);
+                }}
+              />
             )}
 
             <button
@@ -1270,21 +1213,16 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
         {/* 3. Location & Preferences Selector Trigger */}
         {showLocation && (
-          <button
+          <LocationSelector
             id={`${idPrefix}-hero-location-button`}
-            type="button"
-            onClick={openLocationModal}
-            aria-label={`Changer de localisation et préférences, actuellement : ${city || userLocation.label} (${activeMarket.name})`}
-            className={`flex items-center justify-between md:justify-start gap-2 px-3.5 h-control-touch bg-bg-base hover:bg-bg-subtle active:bg-bg-muted rounded-control text-xs font-semibold text-stone-700 border border-border-base hover:border-border-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 max-w-full md:max-w-50`}
-          >
-            <div className="flex items-center gap-1.5 truncate">
-              <MapPin className="w-icon-sm h-icon-sm text-primary shrink-0" />
-              <span className="truncate">
-                {city || userLocation.city || `Toute la ${activeMarket.name}`}
-              </span>
-            </div>
-            <ChevronDown className="w-icon-xs h-icon-xs text-text-disabled shrink-0 ml-auto" />
-          </button>
+            variant="hero"
+            city={city}
+            radiusKm={radiusKm}
+            onChange={(value) => {
+              setCity(value.city || "");
+              setRadiusKm(value.radiusKm);
+            }}
+          />
         )}
 
         {/* 4. Search Submit Button */}

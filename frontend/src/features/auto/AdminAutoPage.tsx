@@ -21,7 +21,13 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { ScrollableRegion, Badge, Button, Skeleton, StatePanel } from "../../design-system";
+import {
+  ScrollableRegion,
+  Badge,
+  Button,
+  Skeleton,
+  StatePanel,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { routes } from "../../configuration/routes";
 import { formatAutoMoney } from "./auto-format";

@@ -238,7 +238,10 @@ export const AdminImmoPage: React.FC = () => {
             </div>
             <CircleDollarSign className="h-icon-lg w-icon-lg text-primary" />
           </div>
-          <ScrollableRegion aria-label={t("admin.immo.marketsTableLabel")} className="mt-4">
+          <ScrollableRegion
+            aria-label={t("admin.immo.marketsTableLabel")}
+            className="mt-4"
+          >
             <table className="w-full min-w-216 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>
@@ -506,7 +509,9 @@ export const AdminImmoPage: React.FC = () => {
               Prix, durée et activation par marché.
             </p>
           </div>
-          <ScrollableRegion aria-label={t("admin.immo.visibilityOptionsTableLabel")}>
+          <ScrollableRegion
+            aria-label={t("admin.immo.visibilityOptionsTableLabel")}
+          >
             <table className="w-full min-w-140 text-left text-xs">
               <thead className="bg-bg-subtle text-text-muted">
                 <tr>

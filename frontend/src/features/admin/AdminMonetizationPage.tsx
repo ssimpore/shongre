@@ -184,7 +184,9 @@ export const AdminMonetizationPage: React.FC = () => {
   const { can } = useAuthorization();
   usePageMeta({
     title: t("admin.adminMonetizationPage.reglesBusinessEtMonetisation"),
-    description: t("admin.adminMonetizationPage.administrationVersionneeDuCatalogueCommercialShongre"),
+    description: t(
+      "admin.adminMonetizationPage.administrationVersionneeDuCatalogueCommercialShongre",
+    ),
     canonicalPath: "/admin/monetisation",
     noIndex: true,
   });
@@ -718,7 +720,9 @@ export const AdminMonetizationPage: React.FC = () => {
               {t("admin.adminMonetizationPage.businessMonetisation")}
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-text-secondary max-w-3xl">
-              {t("admin.adminMonetizationPage.uneSourceVersionneePourLesOffresPrixQuotasReglesTaxes")}
+              {t(
+                "admin.adminMonetizationPage.uneSourceVersionneePourLesOffresPrixQuotasReglesTaxes",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -732,7 +736,8 @@ export const AdminMonetizationPage: React.FC = () => {
               </div>
             </div>
             <Button size="sm" onClick={openEditor} disabled={!selectedProduct}>
-              <Plus className="w-icon-md h-icon-md" /> {t("admin.adminMonetizationPage.creerUnBrouillon")}
+              <Plus className="w-icon-md h-icon-md" />{" "}
+              {t("admin.adminMonetizationPage.creerUnBrouillon")}
             </Button>
             <Button size="sm" variant="outline" onClick={exportCatalog}>
               <Download className="w-icon-md h-icon-md" /> Exporter JSON
@@ -832,12 +837,16 @@ export const AdminMonetizationPage: React.FC = () => {
         ].includes(tab) && (
           <div className="p-3 border-b border-border-subtle flex flex-col sm:flex-row gap-2">
             <label className="relative flex-1 min-w-0">
-              <span className="sr-only">{t("admin.adminMonetizationPage.rechercherUneOffre")}</span>
+              <span className="sr-only">
+                {t("admin.adminMonetizationPage.rechercherUneOffre")}
+              </span>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-icon-md h-icon-md text-text-disabled" />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={t("admin.adminMonetizationPage.rechercherUnProduitUnCode")}
+                placeholder={t(
+                  "admin.adminMonetizationPage.rechercherUnProduitUnCode",
+                )}
                 className="w-full h-control-touch rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus-visible:outline-2 focus-visible:outline-primary"
               />
             </label>
@@ -850,7 +859,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 value={audience}
                 onChange={(event) => setAudience(event.target.value)}
               >
-                <option value="all">{t("admin.adminMonetizationPage.toutesLesAudiences")}</option>
+                <option value="all">
+                  {t("admin.adminMonetizationPage.toutesLesAudiences")}
+                </option>
                 <option value="individual">Particuliers</option>
                 <option value="professional">Professionnels</option>
                 <option value="organization">Organisations</option>
@@ -866,7 +877,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   value={verticalFilter}
                   onChange={(event) => setVerticalFilter(event.target.value)}
                 >
-                  <option value="all">{t("admin.adminMonetizationPage.toutesLesVerticales")}</option>
+                  <option value="all">
+                    {t("admin.adminMonetizationPage.toutesLesVerticales")}
+                  </option>
                   {overview.catalog.verticals
                     .filter((vertical) => vertical.status !== "archived")
                     .map((vertical) => (
@@ -960,7 +973,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 })}
                 {products.length === 0 && (
                   <div className="p-8 text-center text-sm text-stone-500">
-                    {t("admin.adminMonetizationPage.aucuneOffreNeCorrespondAuxFiltres")}
+                    {t(
+                      "admin.adminMonetizationPage.aucuneOffreNeCorrespondAuxFiltres",
+                    )}
                   </div>
                 )}
               </div>
@@ -974,7 +989,9 @@ export const AdminMonetizationPage: React.FC = () => {
                       Verticales commerciales
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
-                      {t("admin.adminMonetizationPage.identifiantsStablesCategoriesEtCapacitesPubliesViaLeWorkflowVersionne")}
+                      {t(
+                        "admin.adminMonetizationPage.identifiantsStablesCategoriesEtCapacitesPubliesViaLeWorkflowVersionne",
+                      )}
                     </p>
                   </div>
                   <Button size="sm" onClick={() => openVerticalEditor()}>
@@ -1040,7 +1057,9 @@ export const AdminMonetizationPage: React.FC = () => {
                             ))}
                             {vertical.categoryIds.length === 0 && (
                               <span className="text-micro text-text-disabled">
-                                {t("admin.adminMonetizationPage.aucuneCategorieSpecialisee")}
+                                {t(
+                                  "admin.adminMonetizationPage.aucuneCategorieSpecialisee",
+                                )}
                               </span>
                             )}
                           </div>
@@ -1072,8 +1091,8 @@ export const AdminMonetizationPage: React.FC = () => {
                         </Badge>
                       </div>
                       <p className="mt-1 text-micro text-stone-500">
-                        {rule.key} {t("admin.adminMonetizationPage.priorite")} {rule.priority} ·{" "}
-                        {rule.conditions.length} condition(s)
+                        {rule.key} {t("admin.adminMonetizationPage.priorite")}{" "}
+                        {rule.priority} · {rule.conditions.length} condition(s)
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {Object.entries(rule.outcome).map(([key, value]) => (
@@ -1105,7 +1124,9 @@ export const AdminMonetizationPage: React.FC = () => {
                       {t("admin.adminMonetizationPage.campagnesEtCoupons")}
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
-                      {t("admin.adminMonetizationPage.lesChangementsSontAjoutesAUnBrouillonSoumisAuWorkflow")}
+                      {t(
+                        "admin.adminMonetizationPage.lesChangementsSontAjoutesAUnBrouillonSoumisAuWorkflow",
+                      )}
                     </p>
                   </div>
                   <Button size="sm" onClick={() => setCampaignOpen(true)}>
@@ -1144,7 +1165,9 @@ export const AdminMonetizationPage: React.FC = () => {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-stone-500">{t("admin.adminMonetizationPage.duree")}</dt>
+                          <dt className="text-stone-500">
+                            {t("admin.adminMonetizationPage.duree")}
+                          </dt>
                           <dd className="font-bold text-stone-800">
                             {promotion.durationBillingPeriods
                               ? `${promotion.durationBillingPeriods} période(s)`
@@ -1198,7 +1221,8 @@ export const AdminMonetizationPage: React.FC = () => {
                         </h2>
                         <p className="mt-1 text-micro text-stone-500">
                           {rule.scope.marketCodes.join(", ") || "Tous marchés"}{" "}
-                          {t("admin.adminMonetizationPage.priorite")} {rule.priority}
+                          {t("admin.adminMonetizationPage.priorite")}{" "}
+                          {rule.priority}
                         </p>
                       </div>
                       <div className="text-right">
@@ -1239,7 +1263,9 @@ export const AdminMonetizationPage: React.FC = () => {
                         {t("admin.adminMonetizationPage.demanderUnAccesOffert")}
                       </h2>
                       <p className="mt-1 text-micro text-stone-500">
-                        {t("admin.adminMonetizationPage.laDemandeNeCreeAucunFauxPaiementEtAttendUne")}
+                        {t(
+                          "admin.adminMonetizationPage.laDemandeNeCreeAucunFauxPaiementEtAttendUne",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -1254,7 +1280,9 @@ export const AdminMonetizationPage: React.FC = () => {
                           accountId: event.target.value,
                         }))
                       }
-                      placeholder={t("admin.adminMonetizationPage.identifiantUtilisateurOuOrganisation")}
+                      placeholder={t(
+                        "admin.adminMonetizationPage.identifiantUtilisateurOuOrganisation",
+                      )}
                     />
                   </label>
                   <label className="block text-micro font-bold text-text-secondary">
@@ -1271,7 +1299,9 @@ export const AdminMonetizationPage: React.FC = () => {
                         }))
                       }
                     >
-                      <option value="">{t("admin.adminMonetizationPage.selectionnerUnForfait")}</option>
+                      <option value="">
+                        {t("admin.adminMonetizationPage.selectionnerUnForfait")}
+                      </option>
                       {overview.catalog.products
                         .filter(
                           (product) =>
@@ -1369,7 +1399,9 @@ export const AdminMonetizationPage: React.FC = () => {
                       {t("admin.adminMonetizationPage.decisionFinale")}
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
-                      {t("admin.adminMonetizationPage.reserveeAuRoleProprietaireLeDemandeurNePeutPasApprouver")}
+                      {t(
+                        "admin.adminMonetizationPage.reserveeAuRoleProprietaireLeDemandeurNePeutPasApprouver",
+                      )}
                     </p>
                   </div>
                   <label className="block text-micro font-bold text-text-secondary">
@@ -1573,7 +1605,9 @@ export const AdminMonetizationPage: React.FC = () => {
                               colSpan={5}
                               className="px-3 py-5 text-center text-stone-500"
                             >
-                              {t("admin.adminMonetizationPage.aucunAbonnementAAfficher")}
+                              {t(
+                                "admin.adminMonetizationPage.aucunAbonnementAAfficher",
+                              )}
                             </td>
                           </tr>
                         )}
@@ -1656,7 +1690,9 @@ export const AdminMonetizationPage: React.FC = () => {
                                 colSpan={4}
                                 className="px-3 py-5 text-center text-stone-500"
                               >
-                                {t("admin.adminMonetizationPage.aucunMouvementFinancierAAfficher")}
+                                {t(
+                                  "admin.adminMonetizationPage.aucunMouvementFinancierAAfficher",
+                                )}
                               </td>
                             </tr>
                           )}
@@ -1693,7 +1729,9 @@ export const AdminMonetizationPage: React.FC = () => {
                     ))}
                     {overview.orders.length === 0 && (
                       <div className="p-4 text-xs text-stone-500">
-                        {t("admin.adminMonetizationPage.aucuneCommandeCentralisee")}
+                        {t(
+                          "admin.adminMonetizationPage.aucuneCommandeCentralisee",
+                        )}
                       </div>
                     )}
                   </div>
@@ -1753,7 +1791,8 @@ export const AdminMonetizationPage: React.FC = () => {
                       </div>
                       <p className="mt-1 text-micro text-stone-500 truncate">
                         {version.reason} · {version.productCount} produits ·{" "}
-                        {version.ruleCount} {t("admin.adminMonetizationPage.regles")}
+                        {version.ruleCount}{" "}
+                        {t("admin.adminMonetizationPage.regles")}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
@@ -1802,7 +1841,9 @@ export const AdminMonetizationPage: React.FC = () => {
           {tab !== "discovery" && (
             <aside
               className="bg-bg-subtle p-4 space-y-4"
-              aria-label={t("admin.adminMonetizationPage.simulationEtExplication")}
+              aria-label={t(
+                "admin.adminMonetizationPage.simulationEtExplication",
+              )}
             >
               <div>
                 <div className="flex items-center gap-2">
@@ -1812,7 +1853,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   </h2>
                 </div>
                 <p className="mt-1 text-micro leading-relaxed text-stone-500">
-                  {t("admin.adminMonetizationPage.simulezUnContexteSansPublierNiModifierLaConfiguration")}
+                  {t(
+                    "admin.adminMonetizationPage.simulezUnContexteSansPublierNiModifierLaConfiguration",
+                  )}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -1930,7 +1973,8 @@ export const AdminMonetizationPage: React.FC = () => {
                             {entry.ruleName}
                           </div>
                           <div className="text-stone-500">
-                            {t("admin.crmTasksPage.priorite")} {entry.priority} {t("admin.adminMonetizationPage.specificite")}{" "}
+                            {t("admin.crmTasksPage.priorite")} {entry.priority}{" "}
+                            {t("admin.adminMonetizationPage.specificite")}{" "}
                             {entry.specificity}
                           </div>
                         </div>
@@ -2003,7 +2047,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   {selectedProduct.kind === "subscription" && (
                     <div className="mt-3 border-t border-border-subtle pt-3 text-micro">
                       <div className="font-black uppercase tracking-wide text-stone-500">
-                        {t("admin.adminMonetizationPage.transitionsConfigurees")}
+                        {t(
+                          "admin.adminMonetizationPage.transitionsConfigurees",
+                        )}
                       </div>
                       <p className="mt-1 text-stone-700">
                         {t("admin.adminMonetizationPage.montee")}{" "}
@@ -2052,7 +2098,9 @@ export const AdminMonetizationPage: React.FC = () => {
                   {t("admin.adminMonetizationPage.tracabilite")}
                 </div>
                 <p className="mt-1 text-micro leading-relaxed text-stone-500">
-                  {t("admin.adminMonetizationPage.chaquePublicationConserveLeMotifLeDiffLAuteurL")}
+                  {t(
+                    "admin.adminMonetizationPage.chaquePublicationConserveLeMotifLeDiffLAuteurL",
+                  )}
                 </p>
               </div>
             </aside>
@@ -2082,7 +2130,9 @@ export const AdminMonetizationPage: React.FC = () => {
             ? "Modifier la verticale"
             : "Créer une verticale"
         }
-        description={t("admin.adminMonetizationPage.leChangementCreeUnBrouillonVersionneEtNeModifieJamais")}
+        description={t(
+          "admin.adminMonetizationPage.leChangementCreeUnBrouillonVersionneEtNeModifieJamais",
+        )}
         maxWidth="lg"
       >
         {verticalEditor && (
@@ -2185,8 +2235,12 @@ export const AdminMonetizationPage: React.FC = () => {
                   }
                 >
                   <option value="active">Active</option>
-                  <option value="disabled">{t("admin.adminMonetizationPage.desactivee")}</option>
-                  <option value="archived">{t("admin.adminFeatureFlagsPage.archivee")}</option>
+                  <option value="disabled">
+                    {t("admin.adminMonetizationPage.desactivee")}
+                  </option>
+                  <option value="archived">
+                    {t("admin.adminFeatureFlagsPage.archivee")}
+                  </option>
                 </Select>
               </FormField>
               <FormField label="Ordre d’affichage" required>
@@ -2211,12 +2265,17 @@ export const AdminMonetizationPage: React.FC = () => {
                 />
               </FormField>
             </div>
-            <FormField label={t("admin.adminMonetizationPage.motifDuChangement")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.motifDuChangement")}
+              required
+            >
               <Textarea
                 rows={3}
                 value={verticalReason}
                 onChange={(event) => setVerticalReason(event.target.value)}
-                placeholder={t("admin.adminMonetizationPage.exOuvertureControleeDeLaVerticaleApresValidationCommerciale")}
+                placeholder={t(
+                  "admin.adminMonetizationPage.exOuvertureControleeDeLaVerticaleApresValidationCommerciale",
+                )}
               />
             </FormField>
             <div className="flex justify-end gap-2">
@@ -2252,12 +2311,17 @@ export const AdminMonetizationPage: React.FC = () => {
         isOpen={campaignOpen}
         onClose={() => setCampaignOpen(false)}
         title={t("admin.adminMonetizationPage.creerUneCampagnePromotionnelle")}
-        description={t("admin.adminMonetizationPage.laCampagneEstEnregistreeDansUnBrouillonVersionneElleN")}
+        description={t(
+          "admin.adminMonetizationPage.laCampagneEstEnregistreeDansUnBrouillonVersionneElleN",
+        )}
         maxWidth="lg"
       >
         <form onSubmit={createCampaignDraft} className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label={t("admin.adminMonetizationPage.nomDeCampagne")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.nomDeCampagne")}
+              required
+            >
               <Input
                 value={campaign.name}
                 onChange={(event) =>
@@ -2302,7 +2366,10 @@ export const AdminMonetizationPage: React.FC = () => {
                   ))}
               </Select>
             </FormField>
-            <FormField label={t("admin.adminMonetizationPage.typeDeRemise")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.typeDeRemise")}
+              required
+            >
               <Select
                 className="w-full"
                 labelledByAncestor
@@ -2318,7 +2385,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 <option value="percentage">Pourcentage</option>
                 <option value="fixed">Montant fixe</option>
                 <option value="introductory_price">Prix d’introduction</option>
-                <option value="free_period">{t("admin.adminMonetizationPage.periodeGratuite")}</option>
+                <option value="free_period">
+                  {t("admin.adminMonetizationPage.periodeGratuite")}
+                </option>
               </Select>
             </FormField>
             {campaign.discountType !== "free_period" ? (
@@ -2401,7 +2470,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 <option value="admin_grant">Attribution Admin</option>
               </Select>
             </FormField>
-            <FormField label={t("admin.adminMonetizationPage.clientsEligibles")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.clientsEligibles")}
+              required
+            >
               <Select
                 className="w-full"
                 labelledByAncestor
@@ -2416,7 +2488,9 @@ export const AdminMonetizationPage: React.FC = () => {
               >
                 <option value="new">Nouveaux clients</option>
                 <option value="existing">Clients existants</option>
-                <option value="all">{t("admin.adminMonetizationPage.tousLesClients")}</option>
+                <option value="all">
+                  {t("admin.adminMonetizationPage.tousLesClients")}
+                </option>
               </Select>
             </FormField>
             <FormField label="Cumul" required>
@@ -2456,7 +2530,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.adminMonetizationPage.utilisationsParCompte")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.utilisationsParCompte")}
+              required
+            >
               <Input
                 type="number"
                 min={MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min}
@@ -2515,7 +2592,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.adminMonetizationPage.periodesRemisees")} required>
+            <FormField
+              label={t("admin.adminMonetizationPage.periodesRemisees")}
+              required
+            >
               <Input
                 type="number"
                 min={MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.min}
@@ -2531,7 +2611,9 @@ export const AdminMonetizationPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.adminMonetizationPage.engagementMinimalPeriodes")}>
+            <FormField
+              label={t("admin.adminMonetizationPage.engagementMinimalPeriodes")}
+            >
               <Input
                 type="number"
                 min={MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger.min}
@@ -2580,7 +2662,9 @@ export const AdminMonetizationPage: React.FC = () => {
             />
           </FormField>
           <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
-            {t("admin.adminMonetizationPage.laCampagneResteInactiveJusquAPublicationDuBrouillonSon")}
+            {t(
+              "admin.adminMonetizationPage.laCampagneResteInactiveJusquAPublicationDuBrouillonSon",
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button

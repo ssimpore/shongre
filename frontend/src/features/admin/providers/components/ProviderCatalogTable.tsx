@@ -220,8 +220,8 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
         <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs text-stone-500">
           <span>
             {t("admin.providerCatalogTable.affichageDe")}
-            <strong>{filteredProviders.length}</strong> {t("admin.providerCatalogTable.integrationSSur")}{" "}
-            {providers.length}
+            <strong>{filteredProviders.length}</strong>{" "}
+            {t("admin.providerCatalogTable.integrationSSur")} {providers.length}
           </span>
           {(searchQuery ||
             selectedCategory !== "ALL" ||
@@ -387,7 +387,9 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           ) : isImplemented ? (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface border border-warning-border px-2 py-0.5 rounded-pill">
                               <AlertTriangle className="w-icon-xs h-icon-xs" />
-                              {t("admin.providerCatalogTable.implementeNonVerifie")}
+                              {t(
+                                "admin.providerCatalogTable.implementeNonVerifie",
+                              )}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 text-micro font-bold text-danger bg-danger-surface border border-danger-border px-2 py-0.5 rounded-pill">

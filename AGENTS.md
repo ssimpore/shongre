@@ -129,6 +129,10 @@ scripts/ + Makefile    repository-level tooling
   Runtime origins come from `PUBLIC_FR_URL`, `PUBLIC_INTL_URL`, and `API_URL`.
   Do not hardcode environment hostnames or fallback ports in application source,
   package scripts, framework configuration, native projects, or Make recipes.
+- Split Web application origins come only from `SHONGRE_MARKETPLACE_ORIGIN`,
+  `SHONGRE_SOLUTIONS_ORIGIN`, `SHONGRE_PROSPECTS_ORIGIN`, and
+  `SHONGRE_FACTURATION_ORIGIN`. Production must provide all four as distinct
+  HTTPS origins; application source must not supply production defaults.
 - Every runtime binding must carry the configured environment fingerprint.
   Hosted Supabase configuration must validate the expected project and
   environment rather than relying on table prefixes or schemas for isolation.
@@ -767,6 +771,10 @@ France-only happy path is insufficient for market-sensitive work.
 - Browser E2E runs against the repository's isolated Webpack production build,
   not the interactive development server. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
+  The root runner may keep Chromium parallel, but Firefox and WebKit must remain
+  single-worker and process-recycled through bounded shards until a full
+  sustained matrix proves their browser contexts no longer deadlock during
+  navigation or teardown.
 - Do not report an unexecuted command as passing. Fix failures introduced by the
   change. If a proven unrelated pre-existing failure blocks a check, report it
   explicitly and run every other applicable check.

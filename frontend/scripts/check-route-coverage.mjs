@@ -96,9 +96,9 @@ function findRouteTable(node) {
 findRouteTable(ast);
 
 const matrixSource = fs.readFileSync(matrixFile, "utf8");
-const tested = [
-  ...matrixSource.matchAll(/path:\s*[`"']([^`"']+)[`"']/g),
-].map((match) => match[1].split("?")[0]);
+const tested = [...matrixSource.matchAll(/path:\s*[`"']([^`"']+)[`"']/g)].map(
+  (match) => match[1].split("?")[0],
+);
 
 const toPattern = (route) =>
   new RegExp(

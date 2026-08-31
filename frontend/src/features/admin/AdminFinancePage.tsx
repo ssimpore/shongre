@@ -917,7 +917,9 @@ export const AdminFinancePage: React.FC = () => {
   const { formatDate } = useRegionalFormatters();
   usePageMeta({
     title: t("admin.adminFinancePage.financeDeLaPlateforme"),
-    description: t("admin.adminFinancePage.revenusTransactionsEtRapprochementFinancierShongre"),
+    description: t(
+      "admin.adminFinancePage.revenusTransactionsEtRapprochementFinancierShongre",
+    ),
     canonicalPath: "/admin/finance",
     noIndex: true,
   });
@@ -1049,9 +1051,13 @@ export const AdminFinancePage: React.FC = () => {
     return (
       <StatePanel
         title="Finance indisponible"
-        description={t("admin.adminFinancePage.lesAgregatsFinanciersNOntPasPuEtreCharges")}
+        description={t(
+          "admin.adminFinancePage.lesAgregatsFinanciersNOntPasPuEtreCharges",
+        )}
         technicalDetail={error ?? undefined}
-        action={<Button onClick={() => void load()}>{t("common.retry")}</Button>}
+        action={
+          <Button onClick={() => void load()}>{t("common.retry")}</Button>
+        }
       />
     );
 
@@ -1066,7 +1072,9 @@ export const AdminFinancePage: React.FC = () => {
             {t("admin.adminFinancePage.financeDeLaPlateforme")}
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
-            {t("admin.adminFinancePage.registreFinancierImmuableRevenusReconnusEtControleDesEcartsFournisseurs")}
+            {t(
+              "admin.adminFinancePage.registreFinancierImmuableRevenusReconnusEtControleDesEcartsFournisseurs",
+            )}
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
             <CheckCircle2 className="h-icon-md w-icon-md" />
@@ -1098,7 +1106,9 @@ export const AdminFinancePage: React.FC = () => {
       </header>
       <div className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-3">
         <label className="text-micro font-bold text-text-muted">
-          <span className="sr-only">{t("admin.adminAnalyticsPage.periode")}</span>
+          <span className="sr-only">
+            {t("admin.adminAnalyticsPage.periode")}
+          </span>
           <Select
             className="w-full"
             labelledByAncestor
@@ -1113,11 +1123,15 @@ export const AdminFinancePage: React.FC = () => {
             <option value="7d">7 jours</option>
             <option value="30d">30 jours</option>
             <option value="quarter">Trimestre</option>
-            <option value="year">{t("admin.adminCommissionPolicyEditor.annee")}</option>
+            <option value="year">
+              {t("admin.adminCommissionPolicyEditor.annee")}
+            </option>
           </Select>
         </label>
         <label>
-          <span className="sr-only">{t("invoicing.product.previewMarket")}</span>
+          <span className="sr-only">
+            {t("invoicing.product.previewMarket")}
+          </span>
           <Select
             className="w-full"
             labelledByAncestor
@@ -1129,7 +1143,9 @@ export const AdminFinancePage: React.FC = () => {
               }))
             }
           >
-            <option value="ALL">{t("publishing.publishWizard.tousLesMarches")}</option>
+            <option value="ALL">
+              {t("publishing.publishWizard.tousLesMarches")}
+            </option>
             {availableMarkets.map((market) => (
               <option key={market.code} value={market.code}>
                 {market.name}
@@ -1177,7 +1193,9 @@ export const AdminFinancePage: React.FC = () => {
         <div className="flex flex-col gap-2 rounded-card border border-border-base bg-bg-surface p-3 sm:flex-row">
           <label className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-muted" />
-            <span className="sr-only">{t("admin.adminFinancePage.rechercherUneTransaction")}</span>
+            <span className="sr-only">
+              {t("admin.adminFinancePage.rechercherUneTransaction")}
+            </span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -1197,7 +1215,9 @@ export const AdminFinancePage: React.FC = () => {
                 )
               }
             >
-              <option value="all">{t("admin.providerCatalogTable.tousLesStatuts")}</option>
+              <option value="all">
+                {t("admin.providerCatalogTable.tousLesStatuts")}
+              </option>
               {Object.entries(STATUS_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}

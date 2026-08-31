@@ -524,7 +524,7 @@ export const messagesFr = {
   "home.homePage.ceMarcheVientDOuvrir":
     "Ce marché vient d'ouvrir. Publiez la première annonce, ou changez de marché depuis l'en-tête pour explorer les autres pays.",
   "home.homePage.explorerLeCatalogue": "Explorer le catalogue",
-  "home.homePage.toutesLesNouveautes": "Toutes les nouveautés",
+  "home.homePage.toutesLesNouveautes": "Voir toutes les nouveautés",
   "home.homePage.voirTout": "Voir tout",
   "home.homePage.toutesLesOffres": "Toutes les offres",
   "home.homePage.tousLesProfessionnels": "Tous les professionnels",
@@ -553,7 +553,8 @@ export const messagesFr = {
   "home.homeCollectionsSection.deLAir": "De l'air !",
   "home.homeCollectionsSection.thematiquesCollections":
     "thématiques collections",
-  "home.homeCollectionsSection.toutesLesCollections": "Toutes les collections",
+  "home.homeCollectionsSection.toutesLesCollections":
+    "Voir toutes les collections",
   "home.homeCollectionsSection.voirTout": "Voir tout",
   "home.homeCollectionsSection.explorerLaCollection":
     "Explorer la collection {name}",
@@ -2775,7 +2776,7 @@ export const messagesFr = {
     "Ouvrez votre vitrine officielle en quelques clics, bénéficiez du badge Pro certifié, de statistiques de rentabilité et importez vos catalogues en masse.",
   "home.homePage.decouvrirLesForfaitsPro": "Découvrir les forfaits Pro",
   "home.homePage.creerMonComptePro": "Créer mon compte Pro",
-  "home.homepageTrending.seeMoreListings": "Voir plus d’annonces",
+  "home.homepageTrending.viewAllListings": "Voir toutes les annonces",
   "home.homepageTrending.emptyTitle": "Aucune tendance disponible",
   "home.homepageTrending.emptyDescription":
     "Ce marché ne dispose pas encore d’assez d’annonces actives pour proposer des tendances utiles.",

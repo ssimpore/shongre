@@ -36,6 +36,7 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 const PANEL = "rounded-card border border-stone-800/80 bg-stone-900/40";
 const EXTERNAL_CONTROL = `inline-flex items-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`;
@@ -64,22 +65,34 @@ const LEGAL_LINKS = [
 const FooterLink: React.FC<{
   to: string;
   title?: string;
+  reloadDocument?: boolean;
   children: React.ReactNode;
-}> = ({ to, title, children }) => (
-  <li>
-    <Link
-      to={to}
-      title={title}
-      className="group touch-row flex items-center justify-between gap-2 py-1.5 font-medium text-stone-400 transition-colors hover:text-white"
-    >
+}> = ({ to, title, reloadDocument = false, children }) => {
+  const content = (
+    <>
       <span>{children}</span>
       <ChevronRight
         className="h-icon-sm w-icon-sm shrink-0 text-stone-600 transition-all duration-fast group-hover:translate-x-0.5 group-hover:text-primary-on-dark"
         aria-hidden="true"
       />
-    </Link>
-  </li>
-);
+    </>
+  );
+  const className =
+    "group touch-row flex items-center justify-between gap-2 py-1.5 font-medium text-stone-400 transition-colors hover:text-white";
+  return (
+    <li>
+      {reloadDocument ? (
+        <a href={to} title={title} className={className}>
+          {content}
+        </a>
+      ) : (
+        <Link to={to} title={title} className={className}>
+          {content}
+        </Link>
+      )}
+    </li>
+  );
+};
 
 const StoreBadge: React.FC<{
   name: string;
@@ -255,16 +268,16 @@ export const Footer: React.FC = () => {
               isOpen={isDesktop || openSections.professionals}
               onToggle={toggleSection}
             >
-              <FooterLink to={routes.solutions.home()}>
+              <FooterLink to={applicationHref("solutions")} reloadDocument>
                 {t("footer.shongreSolutions")}
               </FooterLink>
               <FooterLink to="/solutions-pro">
                 {t("footer.proSolutions")}
               </FooterLink>
-              <FooterLink to={routes.prospects.product()}>
+              <FooterLink to={applicationHref("prospects")} reloadDocument>
                 {t("footer.shongreProspects")}
               </FooterLink>
-              <FooterLink to={routes.facturation.product()}>
+              <FooterLink to={applicationHref("facturation")} reloadDocument>
                 {t("footer.shongreFacturation")}
               </FooterLink>
               <FooterLink to="/professionnels">

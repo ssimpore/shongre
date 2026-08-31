@@ -187,7 +187,9 @@ export const AdminProvidersPage: React.FC = () => {
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
           <p className="text-xs text-text-secondary mt-1 max-w-2xl">
-            {t("admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans")}
+            {t(
+              "admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans",
+            )}
           </p>
         </div>
 
@@ -209,7 +211,8 @@ export const AdminProvidersPage: React.FC = () => {
           role="alert"
           className="rounded-lg border border-danger-border bg-danger-surface px-4 py-3 text-xs text-danger"
         >
-          {t("admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable")} {controlPlaneError}
+          {t("admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable")}{" "}
+          {controlPlaneError}
         </div>
       )}
 
@@ -238,7 +241,10 @@ export const AdminProvidersPage: React.FC = () => {
           }`}
         >
           <Layers className="w-icon-sm h-icon-sm" />
-          <span>{t("admin.adminProvidersPage.catalogueDesIntegrations")}{providers.length})</span>
+          <span>
+            {t("admin.adminProvidersPage.catalogueDesIntegrations")}
+            {providers.length})
+          </span>
         </button>
 
         <button
@@ -317,7 +323,9 @@ export const AdminProvidersPage: React.FC = () => {
         >
           <div className="space-y-4 p-1">
             <p className="text-xs text-text-secondary">
-              {t("admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn")}
+              {t(
+                "admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn",
+              )}
             </p>
 
             <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 text-xs space-y-1">
@@ -328,7 +336,9 @@ export const AdminProvidersPage: React.FC = () => {
                 </strong>
               </div>
               <div>
-                <span className="text-stone-500">{t("admin.adminProvidersPage.capacitesAnnoncees")}</span>
+                <span className="text-stone-500">
+                  {t("admin.adminProvidersPage.capacitesAnnoncees")}
+                </span>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {activeTestProvider.capabilities.map((capability) => (
                     <ProviderCapabilityLabel

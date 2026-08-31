@@ -3,10 +3,7 @@ import type { HomepageSectionSettings } from "@shongre/contracts/homepage";
 import type { Listing } from "../../types";
 import { selectHomepageDeals } from "./homepage.resolver";
 
-function listing(
-  id: string,
-  input: Partial<Listing> = {},
-): Listing {
+function listing(id: string, input: Partial<Listing> = {}): Listing {
   return {
     id,
     title: id,

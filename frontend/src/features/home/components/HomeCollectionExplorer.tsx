@@ -4,13 +4,13 @@ import { ArrowRight, Layers3 } from "lucide-react";
 import { routes } from "../../../configuration/routes";
 import { collectionService } from "../../../domains/collection/collection.service";
 import type { Collection } from "../../../domains/collection/collection.types";
-import { Button } from "../../../design-system/primitives/Button";
 import { Image } from "../../../design-system/primitives/Image";
 import { Container } from "../../../design-system/primitives/Layout";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { HomeSectionAction } from "./HomeSectionAction";
 
 const HOME_COLLECTION_SLUGS = [
   "pepites-semaine",
@@ -42,7 +42,9 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
   const heading =
     title || t("home.homeCollectionsSection.nosCollectionsDuMoment");
   const collections =
-    maxItems === undefined ? HOME_COLLECTIONS : HOME_COLLECTIONS.slice(0, maxItems);
+    maxItems === undefined
+      ? HOME_COLLECTIONS
+      : HOME_COLLECTIONS.slice(0, maxItems);
 
   return (
     <Container
@@ -63,20 +65,9 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
           </p>
         </div>
 
-        <Button
-          to={routes.collections.list()}
-          variant="secondary"
-          size="sm"
-          rightIcon={
-            <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-          }
-          className="shrink-0"
-        >
-          <span className="hidden sm:inline">
-            {t("home.homeCollectionsSection.toutesLesCollections")}
-          </span>
-          <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
-        </Button>
+        <HomeSectionAction to={routes.collections.list()}>
+          {t("home.homeCollectionsSection.toutesLesCollections")}
+        </HomeSectionAction>
       </div>
 
       <ScrollRail
@@ -122,7 +113,9 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
                       className="h-icon-sm w-icon-sm shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="truncate">{collection.itemCountLabel}</span>
+                    <span className="truncate">
+                      {collection.itemCountLabel}
+                    </span>
                   </span>
                 </span>
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 backdrop-blur-xs motion-interactive group-hover:bg-white group-hover:text-primary">

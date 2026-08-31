@@ -245,7 +245,6 @@ export const themeSpacing = {
      available viewport so list mode remains useful on desktop without
      squeezing the copy column on phones. */
   "listing-card-list-height": "12.5rem",
-  "listing-card-list-image": "8rem",
   "listing-card-list-image-md": "10rem",
   "listing-card-list-image-lg": "11rem",
   "collection-card": "9.6875rem",

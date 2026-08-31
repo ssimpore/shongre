@@ -140,7 +140,8 @@ export const AdminOverviewPage: React.FC = () => {
           )}
           {canReviewReports && (
             <Button to="/admin/moderation" size="sm">
-              {t("admin.adminOverviewPage.traiterLesSignalements")}{reportsCount ?? "…"})
+              {t("admin.adminOverviewPage.traiterLesSignalements")}
+              {reportsCount ?? "…"})
             </Button>
           )}
         </div>

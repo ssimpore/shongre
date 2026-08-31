@@ -151,7 +151,8 @@ export const ProviderOverviewDashboard: React.FC<
               {metrics.total}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
-              {metrics.implemented} {t("admin.providerOverviewDashboard.avecAdaptateur")}
+              {metrics.implemented}{" "}
+              {t("admin.providerOverviewDashboard.avecAdaptateur")}
             </span>
           </div>
         </div>
@@ -387,7 +388,8 @@ export const ProviderOverviewDashboard: React.FC<
               )}
             </h2>
             <span className="text-xs text-stone-500 font-mono">
-              {Object.keys(PROVIDER_CATEGORIES).length} {t("admin.providerOverviewDashboard.categories")}
+              {Object.keys(PROVIDER_CATEGORIES).length}{" "}
+              {t("admin.providerOverviewDashboard.categories")}
             </span>
           </div>
 

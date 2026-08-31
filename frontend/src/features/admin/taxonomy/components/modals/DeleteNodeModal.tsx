@@ -83,7 +83,8 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
             </ul>
             <p className="pt-1 text-text-secondary">
               {t("admin.deleteNodeModal.pourEviterDInvaliderDes")}
-              <strong>{t("admin.deleteNodeModal.deprecier")}</strong> {t("admin.deleteNodeModal.cetteCategoriePlutotQueDeLaSupprimer")}
+              <strong>{t("admin.deleteNodeModal.deprecier")}</strong>{" "}
+              {t("admin.deleteNodeModal.cetteCategoriePlutotQueDeLaSupprimer")}
             </p>
           </div>
         ) : (

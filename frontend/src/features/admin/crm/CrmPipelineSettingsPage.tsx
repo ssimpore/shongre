@@ -264,11 +264,14 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             </div>
           </div>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="h-icon-md w-icon-md" /> {t("admin.crmPipelineSettingsPage.nouveauPipeline")}
+            <Plus className="h-icon-md w-icon-md" />{" "}
+            {t("admin.crmPipelineSettingsPage.nouveauPipeline")}
           </Button>
         </div>
         <p className="mt-3 text-xs text-text-disabled">
-          {t("admin.crmPipelineSettingsPage.lesEtapesProbabilitesEtEtatsTerminauxSontConfiguresParTenant")}
+          {t(
+            "admin.crmPipelineSettingsPage.lesEtapesProbabilitesEtEtatsTerminauxSontConfiguresParTenant",
+          )}
         </p>
       </section>
 
@@ -324,7 +327,8 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                       </strong>
                       {stage.isWon && (
                         <span className="inline-flex items-center gap-1 text-micro font-bold text-success">
-                          <CheckCircle2 className="h-icon-xs w-icon-xs" /> {t("admin.crmPipelineSettingsPage.gagne")}
+                          <CheckCircle2 className="h-icon-xs w-icon-xs" />{" "}
+                          {t("admin.crmPipelineSettingsPage.gagne")}
                         </span>
                       )}
                       {stage.isLost && (
@@ -358,7 +362,9 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             </div>
             <div className="flex items-start gap-2 border-t border-border-subtle bg-stone-50 p-4 text-micro text-stone-500">
               <LockKeyhole className="mt-0.5 h-icon-sm w-icon-sm shrink-0" />
-              {t("admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne")}
+              {t(
+                "admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne",
+              )}
             </div>
           </section>
         ))
@@ -368,7 +374,9 @@ export const CrmPipelineSettingsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={editing ? `Modifier ${editing.name}` : "Nouveau pipeline"}
-        description={t("admin.crmPipelineSettingsPage.definissezUnParcoursOrdonneAvecUneIssueGagneeEtUne")}
+        description={t(
+          "admin.crmPipelineSettingsPage.definissezUnParcoursOrdonneAvecUneIssueGagneeEtUne",
+        )}
         maxWidth="2xl"
       >
         <form onSubmit={save} className="space-y-4 text-xs">
@@ -414,14 +422,17 @@ export const CrmPipelineSettingsPage: React.FC = () => {
 
           <fieldset className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <legend className="font-black">{t("admin.crmPipelineSettingsPage.etapesOrdonnees")}</legend>
+              <legend className="font-black">
+                {t("admin.crmPipelineSettingsPage.etapesOrdonnees")}
+              </legend>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={addStage}
               >
-                <Plus className="h-icon-sm w-icon-sm" /> {t("admin.crmPipelineSettingsPage.ajouterUneEtape")}
+                <Plus className="h-icon-sm w-icon-sm" />{" "}
+                {t("admin.crmPipelineSettingsPage.ajouterUneEtape")}
               </Button>
             </div>
             {draft.stages.map((stage, index) => (
@@ -441,7 +452,10 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     required
                   />
                 </FormField>
-                <FormField label={t("admin.crmOverviewPage.probabilite")} required>
+                <FormField
+                  label={t("admin.crmOverviewPage.probabilite")}
+                  required
+                >
                   <Input
                     type="number"
                     min={CRM_FIELD_CONSTRAINTS.stageProbabilityMin}
@@ -465,7 +479,10 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     }
                     options={[
                       { value: "open", label: "Ouverte" },
-                      { value: "won", label: t("admin.crmOpportunityDetailPage.gagnee") },
+                      {
+                        value: "won",
+                        label: t("admin.crmOpportunityDetailPage.gagnee"),
+                      },
                       { value: "lost", label: "Perdue" },
                     ]}
                   />

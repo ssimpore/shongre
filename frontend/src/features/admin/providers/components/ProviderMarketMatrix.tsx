@@ -43,7 +43,9 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
             {t("admin.providerMarketMatrix.matriceDeCouvertureMultiMarches")}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
-            {t("admin.providerMarketMatrix.chaqueCelluleResulteDUneAffectationPropreAuMarcheUne")}
+            {t(
+              "admin.providerMarketMatrix.chaqueCelluleResulteDUneAffectationPropreAuMarcheUne",
+            )}
           </p>
         </div>
 
@@ -55,7 +57,10 @@ export const ProviderMarketMatrix: React.FC<ProviderMarketMatrixProps> = () => {
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <option value="ALL">{t("admin.providerMarketMatrix.tousLesDomaines")}{matrixRows.length})</option>
+            <option value="ALL">
+              {t("admin.providerMarketMatrix.tousLesDomaines")}
+              {matrixRows.length})
+            </option>
             {Object.values(PROVIDER_CATEGORIES).map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.shortLabel}

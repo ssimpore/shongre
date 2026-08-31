@@ -7,7 +7,6 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import type { InvoicingWorkspace } from "@shongre/contracts/invoicing";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -22,6 +21,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { scrollToTop } from "../../utilities/motion";
+import { applicationHref } from "../../platform/applications/use-application-href";
 
 export function InvoicingOnboardingPage() {
   const { t } = useTranslation();
@@ -262,13 +262,13 @@ export function InvoicingOnboardingPage() {
               sont réunis dans votre espace.
             </p>
           </div>
-          <Link
-            to={routes.facturation.workspace()}
+          <a
+            href={applicationHref("facturation", "/app")}
             className="mt-4 inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white sm:mt-0"
           >
             Ouvrir Facturation
             <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-          </Link>
+          </a>
         </div>
       </div>
     </main>

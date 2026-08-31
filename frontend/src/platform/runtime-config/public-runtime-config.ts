@@ -62,6 +62,12 @@ function nodeRate(name: string): number {
   return Number.isFinite(parsed) && parsed >= 0 && parsed <= 1 ? parsed : 0;
 }
 
+function localWebOrigin(): string {
+  const host = nodeEnvironmentValue("FRONTEND_HOST");
+  const port = nodeEnvironmentValue("FRONTEND_PORT");
+  return host && port ? new URL(`http://${host}:${port}`).origin : "";
+}
+
 function nodeFallback(): PublicRuntimeConfig {
   const serverAppEnvironment = nodeEnvironmentValue("APP_ENV");
   const publicAppEnvironment = nodeEnvironmentValue("NEXT_PUBLIC_APP_ENV");
@@ -80,23 +86,25 @@ function nodeFallback(): PublicRuntimeConfig {
 
   const allowsLocalDefaults =
     appEnvironment === "local" || appEnvironment === "test";
+  const configuredLocalOrigin = allowsLocalDefaults ? localWebOrigin() : "";
   const serverFranceUrl = nodeEnvironmentValue("PUBLIC_FR_URL");
   const publicFranceUrl = nodeEnvironmentValue("NEXT_PUBLIC_FR_URL");
   const franceUrl =
     (preferServerRuntime ? serverFranceUrl : publicFranceUrl) ||
     serverFranceUrl ||
-    (allowsLocalDefaults ? "http://localhost:3000" : "");
+    configuredLocalOrigin;
   const serverInternationalUrl = nodeEnvironmentValue("PUBLIC_INTL_URL");
   const publicInternationalUrl = nodeEnvironmentValue("NEXT_PUBLIC_INTL_URL");
   const internationalUrl =
     (preferServerRuntime ? serverInternationalUrl : publicInternationalUrl) ||
     serverInternationalUrl ||
-    (allowsLocalDefaults ? "http://localhost:3001" : "");
+    configuredLocalOrigin;
   const publicApiBaseUrl = nodeEnvironmentValue("NEXT_PUBLIC_API_URL");
   const serverApiOrigin = nodeEnvironmentValue("API_URL");
-  const serverApiBaseUrl = dataMode === "api" && serverApiOrigin
-    ? new URL("/api/v1", serverApiOrigin).toString().replace(/\/$/, "")
-    : "";
+  const serverApiBaseUrl =
+    dataMode === "api" && serverApiOrigin
+      ? new URL("/api/v1", serverApiOrigin).toString().replace(/\/$/, "")
+      : "";
   const apiBaseUrl =
     dataMode === "api"
       ? (preferServerRuntime ? serverApiBaseUrl : publicApiBaseUrl) ||
@@ -105,9 +113,7 @@ function nodeFallback(): PublicRuntimeConfig {
   const applications = createApplicationRegistry({
     environment: appEnvironment as AppEnvironment,
     marketplaceOrigin:
-      nodeEnvironmentValue("SHONGRE_MARKETPLACE_ORIGIN") ||
-      franceUrl ||
-      "http://localhost:3000",
+      nodeEnvironmentValue("SHONGRE_MARKETPLACE_ORIGIN") || franceUrl,
     origins: {
       solutions: nodeEnvironmentValue("SHONGRE_SOLUTIONS_ORIGIN") || undefined,
       prospects: nodeEnvironmentValue("SHONGRE_PROSPECTS_ORIGIN") || undefined,

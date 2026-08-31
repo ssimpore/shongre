@@ -199,7 +199,7 @@ export const AccountOverviewPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto lg:justify-end">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row lg:justify-end">
             <Button
               to={
                 isProSeller(currentUser)

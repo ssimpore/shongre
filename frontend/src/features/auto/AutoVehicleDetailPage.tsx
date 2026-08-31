@@ -33,6 +33,7 @@ import {
   FormField,
   Image,
   Input,
+  ListingRail,
   Modal,
   Select,
   Skeleton,
@@ -470,11 +471,11 @@ export const AutoVehicleDetailPage: React.FC = () => {
                     Voir plus
                   </Link>
                 </div>
-                <div className="space-y-3">
+                <ListingRail label="véhicules similaires">
                   {similar.map((row) => (
                     <AutoVehicleCard key={row.id} vehicle={row} compact />
                   ))}
-                </div>
+                </ListingRail>
               </section>
             )}
           </main>

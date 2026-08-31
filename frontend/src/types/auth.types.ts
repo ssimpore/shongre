@@ -1,4 +1,3 @@
-import { UserProfile } from "./index";
 import type { AccountStatus as SharedAccountStatus } from "@shongre/contracts/access-control";
 
 export type AccountStatus = SharedAccountStatus;
@@ -136,13 +135,3 @@ export type AuthErrorCode =
   | "PRO_VERIFICATION_REQUIRED"
   | "UNRESOLVED_TRANSACTIONS"
   | "GENERIC_ERROR";
-
-export interface AuthResult {
-  success: boolean;
-  user?: UserProfile;
-  session?: UserSession;
-  requiresMfa?: boolean;
-  tempMfaToken?: string;
-  errorCode?: AuthErrorCode;
-  errorMessage?: string;
-}

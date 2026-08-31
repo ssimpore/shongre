@@ -356,9 +356,17 @@ export const AdminMarketsPage: React.FC = () => {
       case "active":
         return <Badge variant="success">Actif</Badge>;
       case "beta":
-        return <Badge variant="success">{t("admin.adminMarketsPage.betaPublique")}</Badge>;
+        return (
+          <Badge variant="success">
+            {t("admin.adminMarketsPage.betaPublique")}
+          </Badge>
+        );
       case "private_beta":
-        return <Badge variant="warning">{t("admin.adminMarketsPage.betaPrivee")}</Badge>;
+        return (
+          <Badge variant="warning">
+            {t("admin.adminMarketsPage.betaPrivee")}
+          </Badge>
+        );
       case "coming_soon":
         return (
           <Badge variant="warning">
@@ -370,7 +378,11 @@ export const AdminMarketsPage: React.FC = () => {
       case "paused":
         return <Badge variant="urgent">En pause</Badge>;
       case "disabled":
-        return <Badge variant="urgent">{t("admin.providerCatalogTable.desactive")}</Badge>;
+        return (
+          <Badge variant="urgent">
+            {t("admin.providerCatalogTable.desactive")}
+          </Badge>
+        );
       case "archived":
         return (
           <Badge variant="neutral">{t("admin.adminMarketsPage.archive")}</Badge>
@@ -412,7 +424,8 @@ export const AdminMarketsPage: React.FC = () => {
 
             {isBaseline ? (
               <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-pill border border-stone-200">
-                {t("admin.adminMarketsPage.marcheParDefaut")} {baselineMarket.name}
+                {t("admin.adminMarketsPage.marcheParDefaut")}{" "}
+                {baselineMarket.name}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-micro bg-warning-surface text-warning font-bold px-2 py-0.5 rounded-pill border border-warning-border">
@@ -490,7 +503,9 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
             {t("admin.adminMarketsPage.gerezLesPaysActivesDevises")}
-            {t("admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance")}
+            {t(
+              "admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance",
+            )}
           </p>
         </div>
 
@@ -618,10 +633,13 @@ export const AdminMarketsPage: React.FC = () => {
                         ) : (
                           <>
                             <span className="text-success">
-                              {metrics.percentOverridden}{t("admin.adminMarketsPage.configureLocalement")}
+                              {metrics.percentOverridden}
+                              {t("admin.adminMarketsPage.configureLocalement")}
                             </span>
                             <span className="text-warning">
-                              {t("admin.adminMarketsPage.aucunHeritageInterMarche")}
+                              {t(
+                                "admin.adminMarketsPage.aucunHeritageInterMarche",
+                              )}
                             </span>
                           </>
                         )}
@@ -671,10 +689,16 @@ export const AdminMarketsPage: React.FC = () => {
                         <option value="coming_soon">
                           {t("admin.adminMarketsPage.bientot")}
                         </option>
-                        <option value="private_beta">{t("admin.adminMarketsPage.betaPrivee")}</option>
-                        <option value="beta">{t("admin.adminMarketsPage.betaPublique")}</option>
+                        <option value="private_beta">
+                          {t("admin.adminMarketsPage.betaPrivee")}
+                        </option>
+                        <option value="beta">
+                          {t("admin.adminMarketsPage.betaPublique")}
+                        </option>
                         <option value="paused">En pause</option>
-                        <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
+                        <option value="disabled">
+                          {t("admin.providerCatalogTable.desactive")}
+                        </option>
                         <option value="draft">Brouillon</option>
                         <option value="archived">
                           {t("admin.adminMarketsPage.archive")}
@@ -699,8 +723,8 @@ export const AdminMarketsPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-bold text-text-main">
-                    {t("admin.adminMarketsPage.configurationDe")} {selectedMarket.name} (
-                    {selectedMarket.code})
+                    {t("admin.adminMarketsPage.configurationDe")}{" "}
+                    {selectedMarket.name} ({selectedMarket.code})
                   </h2>
                   {renderStatusBadge(selectedMarket.status)}
                   {selectedMarket.isDefault && (
@@ -770,7 +794,11 @@ export const AdminMarketsPage: React.FC = () => {
           {/* Domain Subtabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-border-subtle">
             {[
-              { id: "general", label: t("admin.attributeEditModal.general"), Icon: Tag },
+              {
+                id: "general",
+                label: t("admin.attributeEditModal.general"),
+                Icon: Tag,
+              },
               { id: "routing", label: "Domaine & lancement", Icon: Globe },
               { id: "localization", label: "Localisation", Icon: Globe },
               {
@@ -778,18 +806,42 @@ export const AdminMarketsPage: React.FC = () => {
                 label: t("admin.adminMarketsPage.taxonomieCategories"),
                 Icon: FolderTree,
               },
-              { id: "listings", label: t("admin.adminMarketsPage.annonces"), Icon: Package },
+              {
+                id: "listings",
+                label: t("admin.adminMarketsPage.annonces"),
+                Icon: Package,
+              },
               {
                 id: "payments",
                 label: "Paiements & Versements",
                 Icon: CreditCard,
               },
-              { id: "reservation", label: t("admin.adminMarketsPage.reservation"), Icon: Handshake },
-              { id: "delivery", label: t("ui.listingCard.livraisonCourt"), Icon: Truck },
+              {
+                id: "reservation",
+                label: t("admin.adminMarketsPage.reservation"),
+                Icon: Handshake,
+              },
+              {
+                id: "delivery",
+                label: t("ui.listingCard.livraisonCourt"),
+                Icon: Truck,
+              },
               { id: "pro", label: "Professionnels", Icon: Briefcase },
-              { id: "taxes", label: t("admin.adminMarketsPage.fiscaliteTva"), Icon: Landmark },
-              { id: "monetization", label: t("admin.adminMarketsPage.monetisation"), Icon: Rocket },
-              { id: "features", label: t("invoicing.product.nav.features"), Icon: Settings2 },
+              {
+                id: "taxes",
+                label: t("admin.adminMarketsPage.fiscaliteTva"),
+                Icon: Landmark,
+              },
+              {
+                id: "monetization",
+                label: t("admin.adminMarketsPage.monetisation"),
+                Icon: Rocket,
+              },
+              {
+                id: "features",
+                label: t("invoicing.product.nav.features"),
+                Icon: Settings2,
+              },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -846,7 +898,8 @@ export const AdminMarketsPage: React.FC = () => {
                 <div className="flex flex-col gap-3 rounded-2xl border border-info-border bg-info-surface p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1 text-xs text-info">
                     <p className="font-bold">
-                      {t("search.searchPage.etat")} {selectedMarket.status} · SEO{" "}
+                      {t("search.searchPage.etat")} {selectedMarket.status} ·
+                      SEO{" "}
                       {(selectedMarket.routing?.seoIndexable ??
                       selectedCountryConfig.seo.indexable)
                         ? "indexable"
@@ -964,7 +1017,9 @@ export const AdminMarketsPage: React.FC = () => {
                       )}
                     </span>
                     <p>
-                      {t("admin.adminMarketsPage.laTaxonomieEstPartageeMaisSaDisponibiliteEstConfigureeExplicitement")}{" "}
+                      {t(
+                        "admin.adminMarketsPage.laTaxonomieEstPartageeMaisSaDisponibiliteEstConfigureeExplicitement",
+                      )}{" "}
                       {selectedMarket.name} ({selectedMarket.code}).
                     </p>
                   </div>
@@ -1046,7 +1101,8 @@ export const AdminMarketsPage: React.FC = () => {
                         {rootCat.children && rootCat.children.length > 0 && (
                           <div className="pt-3 space-y-1.5">
                             <div className="text-micro font-bold text-stone-500 uppercase tracking-wider">
-                              {t("admin.adminMarketsPage.sousCategories")}{rootCat.children.length})
+                              {t("admin.adminMarketsPage.sousCategories")}
+                              {rootCat.children.length})
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                               {rootCat.children.map((sub) => {
@@ -1630,7 +1686,8 @@ export const AdminMarketsPage: React.FC = () => {
                         </span>
                         {res.overrideDefined && (
                           <span className="block text-micro text-warning font-bold">
-                            {t("admin.adminMarketsPage.surcharge2")}{String(res.value)})
+                            {t("admin.adminMarketsPage.surcharge2")}
+                            {String(res.value)})
                           </span>
                         )}
                       </td>
@@ -1647,7 +1704,9 @@ export const AdminMarketsPage: React.FC = () => {
         isOpen={isRoutingModalOpen}
         onClose={() => setIsRoutingModalOpen(false)}
         title={`Routage public — ${selectedMarket.name}`}
-        description={t("admin.adminMarketsPage.leModeDeDomaineEtLePrefixeSontUniquesLes")}
+        description={t(
+          "admin.adminMarketsPage.leModeDeDomaineEtLePrefixeSontUniquesLes",
+        )}
         maxWidth="md"
       >
         <div className="space-y-4">
@@ -1708,7 +1767,9 @@ export const AdminMarketsPage: React.FC = () => {
               maxLength={MARKET_CONFIGURATION_REASON_MAX_LENGTH}
               required
               rows={3}
-              placeholder={t("admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel")}
+              placeholder={t(
+                "admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel",
+              )}
               className="min-h-control-touch w-full resize-y rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
@@ -1855,13 +1916,19 @@ export const AdminMarketsPage: React.FC = () => {
               <option value="coming_soon">
                 {t("admin.adminMarketsPage.bientotDisponibleVitrine")}
               </option>
-              <option value="private_beta">{t("admin.adminMarketsPage.betaPrivee")}</option>
-              <option value="beta">{t("admin.adminMarketsPage.betaPublique")}</option>
+              <option value="private_beta">
+                {t("admin.adminMarketsPage.betaPrivee")}
+              </option>
+              <option value="beta">
+                {t("admin.adminMarketsPage.betaPublique")}
+              </option>
               <option value="active">
                 {t("admin.adminMarketsPage.actifOperationnel")}
               </option>
               <option value="paused">En pause</option>
-              <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
+              <option value="disabled">
+                {t("admin.providerCatalogTable.desactive")}
+              </option>
             </Select>
           </div>
 
@@ -1895,7 +1962,8 @@ export const AdminMarketsPage: React.FC = () => {
               htmlFor="admin-edit-override-value"
               className="text-xs font-bold text-stone-700 uppercase"
             >
-              {t("admin.adminMarketsPage.nouvelleValeurPour")} {selectedMarket.name}
+              {t("admin.adminMarketsPage.nouvelleValeurPour")}{" "}
+              {selectedMarket.name}
             </label>
 
             {editingValueType === "boolean" ? (

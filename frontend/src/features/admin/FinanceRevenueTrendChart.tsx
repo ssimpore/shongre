@@ -163,7 +163,9 @@ export function FinanceRevenueTrendChart({
             {t("admin.financeRevenueTrendChart.evolutionDesRevenus")}
           </h2>
           <p className="text-micro text-text-muted">
-            {t("admin.financeRevenueTrendChart.revenusReconnusHorsTvaEtFondsVendeurs")}
+            {t(
+              "admin.financeRevenueTrendChart.revenusReconnusHorsTvaEtFondsVendeurs",
+            )}
           </p>
         </div>
         <div
@@ -189,7 +191,9 @@ export function FinanceRevenueTrendChart({
           className="mt-4 flex h-56 items-center justify-center rounded-control bg-bg-subtle px-4 text-center text-xs text-text-muted"
           role="status"
         >
-          {t("admin.financeRevenueTrendChart.aucuneDonneeDeRevenusDisponiblePourCettePeriode")}
+          {t(
+            "admin.financeRevenueTrendChart.aucuneDonneeDeRevenusDisponiblePourCettePeriode",
+          )}
         </div>
       ) : (
         <>
@@ -272,7 +276,11 @@ export function FinanceRevenueTrendChart({
 
           <div className="sr-only">
             <table>
-              <caption>{t("admin.financeRevenueTrendChart.donneesDuGraphiqueDEvolutionDesRevenus")}</caption>
+              <caption>
+                {t(
+                  "admin.financeRevenueTrendChart.donneesDuGraphiqueDEvolutionDesRevenus",
+                )}
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Date</th>

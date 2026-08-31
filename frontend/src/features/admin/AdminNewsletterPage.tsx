@@ -107,8 +107,9 @@ export const AdminNewsletterPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: "Marketing & Newsletter | Administration Shongre",
-    description:
-      t("admin.adminNewsletterPage.audiencesCampagnesModelesConformiteEtDelivrabiliteMarketing"),
+    description: t(
+      "admin.adminNewsletterPage.audiencesCampagnesModelesConformiteEtDelivrabiliteMarketing",
+    ),
     canonicalPath: "/admin/marketing",
     noIndex: true,
   });
@@ -378,13 +379,17 @@ export const AdminNewsletterPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-violet-300">
               <span>CRM · Marketing</span>
               <span aria-hidden>·</span>
-              <span>{t("admin.adminNewsletterPage.providerPlatformPartagee")}</span>
+              <span>
+                {t("admin.adminNewsletterPage.providerPlatformPartagee")}
+              </span>
             </div>
             <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
               Marketing & Newsletter
             </h1>
             <p className="mt-2 text-xs leading-relaxed text-text-disabled sm:text-sm">
-              {t("admin.adminNewsletterPage.audiencesCrmEtMarketingCampagnesVersionneesConsentementDelivrabiliteEtAnalyse")}
+              {t(
+                "admin.adminNewsletterPage.audiencesCrmEtMarketingCampagnesVersionneesConsentementDelivrabiliteEtAnalyse",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -507,7 +512,9 @@ export const AdminNewsletterPage: React.FC = () => {
           setPreflight(null);
         }}
         title={`Pré-vol · ${preflightCampaign?.name ?? ""}`}
-        description={t("admin.adminNewsletterPage.lesExclusionsLegalesEtOperationnellesSontEvalueesCoteService")}
+        description={t(
+          "admin.adminNewsletterPage.lesExclusionsLegalesEtOperationnellesSontEvalueesCoteService",
+        )}
       >
         {checkingPreflight || !preflight ? (
           <div className="space-y-3">
@@ -536,7 +543,9 @@ export const AdminNewsletterPage: React.FC = () => {
                 </strong>
               </div>
               <p className="mt-2 text-stone-700">
-                {preflight.audience.eligible.toLocaleString("fr-FR")} {t("admin.adminNewsletterPage.eligibles")} {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
+                {preflight.audience.eligible.toLocaleString("fr-FR")}{" "}
+                {t("admin.adminNewsletterPage.eligibles")}{" "}
+                {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
                 {preflight.audience.selected.toLocaleString("fr-FR")}{" "}
                 {t("admin.adminNewsletterPage.selectionnes")}
               </p>
@@ -595,7 +604,9 @@ export const AdminNewsletterPage: React.FC = () => {
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t("admin.adminNewsletterPage.creerUneCampagne")}
-        description={t("admin.adminNewsletterPage.leBrouillonResteraModifiableJusquAuSnapshotDEnvoi")}
+        description={t(
+          "admin.adminNewsletterPage.leBrouillonResteraModifiableJusquAuSnapshotDEnvoi",
+        )}
       >
         <form onSubmit={createCampaign} className="space-y-4 text-xs">
           <FormField label="Nom interne" required>
@@ -605,18 +616,25 @@ export const AdminNewsletterPage: React.FC = () => {
               placeholder={t("admin.adminNewsletterPage.selectionProSeptembre")}
             />
           </FormField>
-          <FormField label={t("admin.adminNewsletterPage.objetDeLEmail2")} required>
+          <FormField
+            label={t("admin.adminNewsletterPage.objetDeLEmail2")}
+            required
+          >
             <Input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              placeholder={t("admin.adminNewsletterPage.lesNouveautesChoisiesPourVous")}
+              placeholder={t(
+                "admin.adminNewsletterPage.lesNouveautesChoisiesPourVous",
+              )}
             />
           </FormField>
           <FormField label={t("admin.adminNewsletterPage.texteDApercu")}>
             <Input
               value={previewText}
               onChange={(event) => setPreviewText(event.target.value)}
-              placeholder={t("admin.adminNewsletterPage.laSelectionDeLaSemaineEnUnCoupDOeil")}
+              placeholder={t(
+                "admin.adminNewsletterPage.laSelectionDeLaSemaineEnUnCoupDOeil",
+              )}
             />
           </FormField>
           <FormField label="Audience" required>
@@ -625,7 +643,12 @@ export const AdminNewsletterPage: React.FC = () => {
               value={audienceKey}
               onChange={(event) => setAudienceKey(event.target.value)}
               options={[
-                { value: "", label: t("admin.adminNewsletterPage.choisirUneListeOuUnSegment") },
+                {
+                  value: "",
+                  label: t(
+                    "admin.adminNewsletterPage.choisirUneListeOuUnSegment",
+                  ),
+                },
                 ...audienceOptions,
               ]}
             />
@@ -634,7 +657,9 @@ export const AdminNewsletterPage: React.FC = () => {
             <Input
               value={heading}
               onChange={(event) => setHeading(event.target.value)}
-              placeholder={t("admin.adminNewsletterPage.cetteSemaineSurShongre")}
+              placeholder={t(
+                "admin.adminNewsletterPage.cetteSemaineSurShongre",
+              )}
             />
           </FormField>
           <FormField label="Introduction">
@@ -642,11 +667,15 @@ export const AdminNewsletterPage: React.FC = () => {
               rows={4}
               value={body}
               onChange={(event) => setBody(event.target.value)}
-              placeholder={t("admin.adminNewsletterPage.presentezLInformationEssentielleEnQuelquesPhrases")}
+              placeholder={t(
+                "admin.adminNewsletterPage.presentezLInformationEssentielleEnQuelquesPhrases",
+              )}
             />
           </FormField>
           <div className="rounded-control border border-success-border bg-success-surface p-3 text-success">
-            {t("admin.adminNewsletterPage.leBlocPreferencesEtLeDesabonnementSontAjoutesAutomatiquementLes")}
+            {t(
+              "admin.adminNewsletterPage.leBlocPreferencesEtLeDesabonnementSontAjoutesAutomatiquementLes",
+            )}
           </div>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">
             <Button
@@ -977,7 +1006,9 @@ const Audiences: React.FC<{
                     {profile.status}
                   </Badge>
                 </td>
-                <td className="px-3 py-3 text-text-secondary">{profile.source}</td>
+                <td className="px-3 py-3 text-text-secondary">
+                  {profile.source}
+                </td>
                 <td className="px-3 py-3 text-text-secondary">
                   {profile.topics.join(", ") || "—"}
                 </td>

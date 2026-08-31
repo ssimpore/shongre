@@ -36,7 +36,7 @@ describe("DropdownMenu", () => {
       />,
     );
 
-    expect(markup).toContain("disabled=\"\"");
+    expect(markup).toContain('disabled=""');
     expect(markup).toContain("disabled:cursor-not-allowed");
   });
 });

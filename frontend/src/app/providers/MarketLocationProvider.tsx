@@ -46,6 +46,12 @@ const INITIAL_DEFAULT_MARKET =
   INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
 const RUNTIME_MARKET_INFRASTRUCTURE =
   marketInfrastructureFromPublicEnvironment();
+
+export interface LocationModalOptions {
+  initialLocation?: LocationSelection;
+  onApply?: (location: LocationSelection) => void;
+}
+
 interface MarketContextType {
   marketContext: MarketContext | null;
   activeMarket: Market;
@@ -66,7 +72,8 @@ interface MarketContextType {
     options?: { showCurrency?: boolean; isFreeDonation?: boolean },
   ) => string;
   isLocationModalOpen: boolean;
-  openLocationModal: () => void;
+  locationModalOptions?: LocationModalOptions;
+  openLocationModal: (options?: LocationModalOptions) => void;
   closeLocationModal: () => void;
   isPreferencesModalOpen: boolean;
   openPreferencesModal: () => void;
@@ -198,6 +205,9 @@ export const MarketLocationProvider: React.FC<{
   );
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [locationModalOptions, setLocationModalOptions] = useState<
+    LocationModalOptions | undefined
+  >();
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
 
   useEffect(() => {
@@ -258,9 +268,13 @@ export const MarketLocationProvider: React.FC<{
     setHasRestoredPreferences(true);
   }, [initialMarketContext]);
 
-  const openLocationModal = useCallback(() => {
-    setIsLocationModalOpen(true);
-  }, []);
+  const openLocationModal = useCallback(
+    (options: LocationModalOptions = {}) => {
+      setLocationModalOptions(options);
+      setIsLocationModalOpen(true);
+    },
+    [],
+  );
 
   const closeLocationModal = useCallback(() => {
     setIsLocationModalOpen(false);
@@ -455,6 +469,7 @@ export const MarketLocationProvider: React.FC<{
         currencySymbol,
         formatPrice,
         isLocationModalOpen,
+        locationModalOptions,
         openLocationModal,
         closeLocationModal,
         isPreferencesModalOpen,

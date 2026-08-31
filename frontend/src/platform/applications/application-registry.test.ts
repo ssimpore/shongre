@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applicationFallbackForPath,
   applicationIdForHostname,
   createApplicationRegistry,
   normalizeApplicationHostname,
@@ -7,14 +8,19 @@ import {
 } from "./application-registry";
 
 describe("application registry", () => {
-  it("resolves live application hosts and canonical targets", () => {
+  it("resolves explicitly configured live application hosts", () => {
     const registry = createApplicationRegistry({
       environment: "production",
       marketplaceOrigin: "https://shongre.fr",
+      origins: {
+        solutions: "https://solutions.shongre.fr",
+        prospects: "https://prospects.shongre.fr",
+        facturation: "https://facturation.shongre.fr",
+      },
     });
-    expect(
-      applicationIdForHostname("Solutions.Shongre.Fr:443", registry),
-    ).toBe("solutions");
+    expect(applicationIdForHostname("Solutions.Shongre.Fr:443", registry)).toBe(
+      "solutions",
+    );
     expect(resolveApplicationHref(registry, "facturation", "/")).toBe(
       "https://facturation.shongre.fr/",
     );
@@ -56,13 +62,48 @@ describe("application registry", () => {
     expect(resolveApplicationHref(registry, "solutions", "/facturation")).toBe(
       "/solutions/facturation",
     );
-    expect(resolveApplicationHref(registry, "prospects", "/app")).toBe(
-      "/app",
-    );
+    expect(resolveApplicationHref(registry, "prospects", "/app")).toBe("/app");
     expect(resolveApplicationHref(registry, "facturation", "/app")).toBe(
       "/facturation/app",
     );
+    expect(
+      resolveApplicationHref(registry, "facturation", "/facturation/app"),
+    ).toBe("/facturation/app");
+    expect(resolveApplicationHref(registry, "facturation", "#controls")).toBe(
+      "/facturation#controls",
+    );
     expect(applicationIdForHostname("127.0.0.1:3000", registry)).toBeNull();
+    expect(
+      applicationFallbackForPath(registry, "/solutions/facturation"),
+    ).toEqual({
+      applicationId: "solutions",
+      applicationPath: "/facturation",
+      routingBasePath: "/solutions",
+    });
+    expect(applicationFallbackForPath(registry, "/app/companies")).toEqual({
+      applicationId: "prospects",
+      applicationPath: "/app/companies",
+      routingBasePath: "/",
+    });
+    expect(applicationFallbackForPath(registry, "/prospects")).toBeNull();
+    expect(
+      applicationFallbackForPath(registry, "/solutions-archive"),
+    ).toBeNull();
+  });
+
+  it("does not expose same-origin fallback aliases when applications are split", () => {
+    const registry = createApplicationRegistry({
+      environment: "production",
+      marketplaceOrigin: "https://shongre.fr",
+      origins: {
+        solutions: "https://solutions.shongre.fr",
+        prospects: "https://prospects.shongre.fr",
+        facturation: "https://facturation.shongre.fr",
+      },
+    });
+    expect(
+      applicationFallbackForPath(registry, "/solutions/facturation"),
+    ).toBeNull();
   });
 
   it("normalizes hosts and rejects unsafe destinations", () => {
@@ -90,15 +131,32 @@ describe("application registry", () => {
       createApplicationRegistry({
         environment: "production",
         marketplaceOrigin: "https://shongre.fr",
-        origins: { solutions: "https://shongre.fr" },
+        origins: {
+          solutions: "https://shongre.fr",
+          prospects: "https://prospects.shongre.fr",
+          facturation: "https://facturation.shongre.fr",
+        },
       }),
     ).toThrow(/distinct hosts/);
     expect(() =>
       createApplicationRegistry({
         environment: "production",
         marketplaceOrigin: "https://shongre.fr",
-        origins: { prospects: "http://prospects.shongre.fr" },
+        origins: {
+          solutions: "https://solutions.shongre.fr",
+          prospects: "http://prospects.shongre.fr",
+          facturation: "https://facturation.shongre.fr",
+        },
       }),
     ).toThrow(/HTTPS/);
+  });
+
+  it("requires every split application origin in production", () => {
+    expect(() =>
+      createApplicationRegistry({
+        environment: "production",
+        marketplaceOrigin: "https://shongre.fr",
+      }),
+    ).toThrow(/requires explicit origins.*solutions.*prospects.*facturation/);
   });
 });

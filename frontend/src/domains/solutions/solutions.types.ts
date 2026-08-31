@@ -15,11 +15,7 @@ export const MIN_SOLUTION_SORT_ORDER = 0;
 
 export type SolutionLifecycle = (typeof SOLUTION_LIFECYCLES)[number];
 export type SolutionIconId =
-  | "prospects"
-  | "facturation"
-  | "marketplace"
-  | "pilotage"
-  | "apps";
+  "prospects" | "facturation" | "marketplace" | "pilotage" | "apps";
 
 export interface SolutionReleaseNote {
   id: string;

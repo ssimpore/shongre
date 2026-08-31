@@ -12,15 +12,17 @@ const key = (
   marketCode: string,
   locale: string,
   state: "draft" | "published",
-) =>
-  `${STORAGE_PREFIX}_${marketCode.trim().toUpperCase()}_${locale}_${state}`;
+) => `${STORAGE_PREFIX}_${marketCode.trim().toUpperCase()}_${locale}_${state}`;
 
 function read(
   marketCode: string,
   locale: string,
   state: "draft" | "published",
 ): HomepageConfiguration | null {
-  const stored = storageService.get<unknown>(key(marketCode, locale, state), null);
+  const stored = storageService.get<unknown>(
+    key(marketCode, locale, state),
+    null,
+  );
   if (!stored) return null;
   const parsed = homepageConfigurationSchema.safeParse(stored);
   if (parsed.success) return structuredClone(parsed.data);

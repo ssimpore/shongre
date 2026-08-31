@@ -62,7 +62,11 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             </span>
           </h3>
           <p className="text-xs text-stone-500 mt-1">
-            {t("admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes")} {attributes.length} {t("admin.taxonomyAttributeRegistryTab.attributsNormalisesPartagesEntreLesDifferentesCategories")}
+            {t("admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes")}{" "}
+            {attributes.length}{" "}
+            {t(
+              "admin.taxonomyAttributeRegistryTab.attributsNormalisesPartagesEntreLesDifferentesCategories",
+            )}
           </p>
         </div>
 
@@ -99,7 +103,9 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
           <Select
             className="w-auto"
             size="compact"
-            aria-label={t("admin.taxonomyAttributeRegistryTab.filtrerParTypeDeDonnees")}
+            aria-label={t(
+              "admin.taxonomyAttributeRegistryTab.filtrerParTypeDeDonnees",
+            )}
             value={dataTypeFilter}
             onChange={(e) => setDataTypeFilter(e.target.value)}
           >

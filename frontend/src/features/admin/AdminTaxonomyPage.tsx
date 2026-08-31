@@ -202,7 +202,8 @@ export const AdminTaxonomyPage: React.FC = () => {
               onClick={() => handleSelectTab("drafts")}
               leftIcon={<GitCommit className="w-icon-sm h-icon-sm" />}
             >
-              {draftChanges.length} {t("admin.adminTaxonomyPage.brouillonSAPublier")}
+              {draftChanges.length}{" "}
+              {t("admin.adminTaxonomyPage.brouillonSAPublier")}
             </Button>
           ) : (
             <span className="px-3 py-1.5 rounded-control bg-success-surface text-success border border-success-border text-xs font-bold flex items-center gap-1.5">

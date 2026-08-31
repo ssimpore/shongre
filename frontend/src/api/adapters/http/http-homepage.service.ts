@@ -28,7 +28,10 @@ type BackendTrendingSection = Omit<TrendingSectionResponse, "topics"> & {
 
 type BackendHomepageExperience = Omit<HomepageExperience, "sections"> & {
   sections: Array<
-    Omit<HomepageExperience["sections"][number], "trending" | "deals" | "listings"> & {
+    Omit<
+      HomepageExperience["sections"][number],
+      "trending" | "deals" | "listings"
+    > & {
       trending?: BackendTrendingSection;
       deals?: BackendHomepageDealItem[];
       listings?: BackendListing[];
@@ -44,7 +47,9 @@ const params = (query: HomepageQuery) => ({
   city: query.city,
 });
 
-function mapExperience(response: BackendHomepageExperience): HomepageExperience {
+function mapExperience(
+  response: BackendHomepageExperience,
+): HomepageExperience {
   return {
     ...response,
     sections: response.sections.map((section) => ({

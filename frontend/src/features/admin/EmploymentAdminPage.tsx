@@ -46,8 +46,9 @@ export const EmploymentAdminPage: React.FC = () => {
 
   usePageMeta({
     title: "Administration Emploi",
-    description:
-      t("admin.employmentAdminPage.configurationConformiteCatalogueEtOperationsDuVerticalShongreEmploi"),
+    description: t(
+      "admin.employmentAdminPage.configurationConformiteCatalogueEtOperationsDuVerticalShongreEmploi",
+    ),
     canonicalPath: "/admin/emploi",
     noIndex: true,
   });
@@ -201,7 +202,8 @@ export const EmploymentAdminPage: React.FC = () => {
               {config.isEnabled ? "Actif" : "Désactivé"}
             </Badge>
             <span className="text-xs text-text-muted">
-              {t("admin.employmentAdminPage.schemaV")}{config.schemaVersion} · politique{" "}
+              {t("admin.employmentAdminPage.schemaV")}
+              {config.schemaVersion} · politique{" "}
               {config.regulatoryContentVersion}
             </span>
           </div>
@@ -209,7 +211,11 @@ export const EmploymentAdminPage: React.FC = () => {
             Shongre Emploi
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
-            {t("admin.employmentAdminPage.pilotageDuMarche")} {activeMarket.name}{t("admin.employmentAdminPage.sansDupliquerLaCategorieCanoniqueEmploi")}
+            {t("admin.employmentAdminPage.pilotageDuMarche")}{" "}
+            {activeMarket.name}
+            {t(
+              "admin.employmentAdminPage.sansDupliquerLaCategorieCanoniqueEmploi",
+            )}
           </p>
         </div>
         <Button onClick={save} disabled={saving}>
@@ -241,7 +247,9 @@ export const EmploymentAdminPage: React.FC = () => {
             {t("admin.employmentAdminPage.configurationDuMarche")}
           </h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <FormField label={t("admin.employmentAdminPage.dureeDePublicationJours")}>
+            <FormField
+              label={t("admin.employmentAdminPage.dureeDePublicationJours")}
+            >
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -261,7 +269,9 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.employmentAdminPage.retentionDesBrouillonsJours")}>
+            <FormField
+              label={t("admin.employmentAdminPage.retentionDesBrouillonsJours")}
+            >
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -279,7 +289,11 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.employmentAdminPage.retentionDesCandidaturesJours")}>
+            <FormField
+              label={t(
+                "admin.employmentAdminPage.retentionDesCandidaturesJours",
+              )}
+            >
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.durationDays.min}
@@ -297,7 +311,11 @@ export const EmploymentAdminPage: React.FC = () => {
                 }
               />
             </FormField>
-            <FormField label={t("admin.employmentAdminPage.delaiAvantNouvelleCandidatureJours")}>
+            <FormField
+              label={t(
+                "admin.employmentAdminPage.delaiAvantNouvelleCandidatureJours",
+              )}
+            >
               <Input
                 type="number"
                 min={EMPLOYMENT_ADMIN_CONSTRAINTS.cooldownDays.min}
@@ -319,7 +337,9 @@ export const EmploymentAdminPage: React.FC = () => {
             </FormField>
           </div>
           <div className="mt-6 border-t border-border-subtle pt-5">
-            <h3 className="text-sm font-black">{t("invoicing.product.nav.features")}</h3>
+            <h3 className="text-sm font-black">
+              {t("invoicing.product.nav.features")}
+            </h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {featureFlags.map(([flag, label, description]) => (
                 <div
@@ -383,18 +403,40 @@ export const EmploymentAdminPage: React.FC = () => {
               {t("admin.employmentAdminPage.principesDeConformite")}
             </h2>
             <ul className="mt-3 space-y-2 text-xs leading-relaxed text-text-secondary">
-              <li>{t("admin.employmentAdminPage.donneesCandidatsPriveesEtRlsParDefaut")}</li>
-              <li>{t("admin.employmentAdminPage.aucuneDecisionJuridiqueAutomatique")}</li>
-              <li>{t("admin.employmentAdminPage.aucunAttributSensibleDansLeClassement")}</li>
-              <li>{t("admin.employmentAdminPage.aucunPaiementDemandeAuxCandidats")}</li>
-              <li>{t("admin.employmentAdminPage.retentionEtConsentementsVersionnes")}</li>
+              <li>
+                {t(
+                  "admin.employmentAdminPage.donneesCandidatsPriveesEtRlsParDefaut",
+                )}
+              </li>
+              <li>
+                {t(
+                  "admin.employmentAdminPage.aucuneDecisionJuridiqueAutomatique",
+                )}
+              </li>
+              <li>
+                {t(
+                  "admin.employmentAdminPage.aucunAttributSensibleDansLeClassement",
+                )}
+              </li>
+              <li>
+                {t(
+                  "admin.employmentAdminPage.aucunPaiementDemandeAuxCandidats",
+                )}
+              </li>
+              <li>
+                {t(
+                  "admin.employmentAdminPage.retentionEtConsentementsVersionnes",
+                )}
+              </li>
             </ul>
           </div>
         </aside>
       </div>
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
-        <h2 className="text-lg font-black">{t("admin.employmentAdminPage.catalogueDesOffresEmployeur")}</h2>
+        <h2 className="text-lg font-black">
+          {t("admin.employmentAdminPage.catalogueDesOffresEmployeur")}
+        </h2>
         <ScrollableRegion
           aria-label={t("admin.employment.tableLabel")}
           className="mt-4"
@@ -404,7 +446,9 @@ export const EmploymentAdminPage: React.FC = () => {
               <tr>
                 <th className="p-3">Offre</th>
                 <th className="p-3">Audience</th>
-                <th className="p-3">{t("admin.adminCommissionPolicyEditor.modele")}</th>
+                <th className="p-3">
+                  {t("admin.adminCommissionPolicyEditor.modele")}
+                </th>
                 <th className="p-3">Prix</th>
                 <th className="p-3">{t("search.searchPage.etat")}</th>
                 <th className="p-3 text-right">Action</th>
@@ -461,7 +505,10 @@ export const EmploymentAdminPage: React.FC = () => {
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
         <h2 className="text-lg font-black">Dictionnaires administrables</h2>
         <p className="mt-1 text-sm text-text-secondary">
-          {overview.catalog.dictionaries.length} {t("admin.employmentAdminPage.valeursActivesCouvrantSecteursFamillesMetiersCompetencesContratsRythmesDiplomes")}
+          {overview.catalog.dictionaries.length}{" "}
+          {t(
+            "admin.employmentAdminPage.valeursActivesCouvrantSecteursFamillesMetiersCompetencesContratsRythmesDiplomes",
+          )}
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {Array.from(

@@ -51,7 +51,9 @@ function titleFromCategory(
   const language = locale.split("-")[0];
   const localized =
     labels?.[locale] ||
-    Object.entries(labels || {}).find(([key]) => key.split("-")[0] === language)?.[1] ||
+    Object.entries(labels || {}).find(
+      ([key]) => key.split("-")[0] === language,
+    )?.[1] ||
     labels?.["fr-FR"];
   if (localized) return localized;
   return categoryId
@@ -82,7 +84,10 @@ export class TrendingService {
         topics: [],
       };
 
-    if (!options.bypassCache && (!query.locale || query.locale.startsWith("fr"))) {
+    if (
+      !options.bypassCache &&
+      (!query.locale || query.locale.startsWith("fr"))
+    ) {
       const cached = await this.trendRepo.getCachedSection(query);
       if (cached) return withoutInternalScores(cached);
     }

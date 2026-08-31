@@ -10,7 +10,6 @@ import type {
   MFASettings,
   LegalConsent,
   AuthErrorCode,
-  AuthResult,
 } from "./auth.types";
 import type {
   AccountType as CanonicalAccountType,
@@ -33,7 +32,6 @@ export type {
   MFASettings,
   LegalConsent,
   AuthErrorCode,
-  AuthResult,
 };
 
 export * from "../domains/market/market.types";
@@ -255,6 +253,16 @@ export interface UserProfile {
   returnPolicy?: string;
   featuredListingIds?: string[];
   defaultPublicationMarkets?: string[];
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: UserProfile;
+  session?: UserSession;
+  requiresMfa?: boolean;
+  tempMfaToken?: string;
+  errorCode?: AuthErrorCode;
+  errorMessage?: string;
 }
 
 export type ShongreProductId = "marketplace" | "prospects" | "facturation";

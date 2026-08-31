@@ -223,9 +223,7 @@ export function ListingCard({
                 size="xs"
                 className="shrink-0 text-primary"
               />
-              <span className="min-w-0 truncate" title={listing.city}>
-                {listing.city}
-              </span>
+              <span className="min-w-0 break-words">{listing.city}</span>
             </span>
             {!listing.deliveryAvailable ? (
               <span className="inline-flex shrink-0 items-center gap-1">

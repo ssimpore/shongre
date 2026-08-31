@@ -14,11 +14,7 @@ import type { MessageKey } from "../../i18n/messages.fr";
  * a compile error at this file rather than a raw token on three screens.
  */
 export type CrmForecastCategory =
-  | "pipeline"
-  | "best_case"
-  | "commit"
-  | "closed"
-  | "omitted";
+  "pipeline" | "best_case" | "commit" | "closed" | "omitted";
 
 const FORECAST_CATEGORY_KEYS: Record<CrmForecastCategory, MessageKey> = {
   pipeline: "crm.forecast.pipeline",
@@ -70,12 +66,7 @@ export function sourceMessageKey(
 }
 
 /** Declaration order is the order the priority picker offers them. */
-export const CRM_TASK_PRIORITIES = [
-  "low",
-  "medium",
-  "high",
-  "urgent",
-] as const;
+export const CRM_TASK_PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 
 export type CrmTaskPriority = (typeof CRM_TASK_PRIORITIES)[number];
 

@@ -64,12 +64,9 @@ describe("language availability is measured, not declared", () => {
   });
 
   /**
-   * A complete catalogue is necessary but not sufficient.
-   *
-   * English was briefly selectable on catalogue coverage alone, while every page
-   * body was still hardcoded French. It ships now because both conditions hold:
-   * `npm run check:i18n` reports no hardcoded copy left, and the catalogue is
-   * complete. If either regresses, this pairing is what catches it.
+   * A complete catalogue is necessary but not sufficient. English remains a
+   * known, partially translated locale until both the catalogue and every page
+   * surface meet the shipping gates.
    */
   it("keeps English unavailable until the complete UI is migrated", () => {
     const english = SUPPORTED_LANGUAGES.find((l) => l.code === "en-US");

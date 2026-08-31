@@ -153,7 +153,9 @@ export const CrmProductsPage: React.FC = () => {
               Produits & tarifs
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
-              {t("admin.crmProductsPage.uneSourceCommercialeIndependanteDeLaFacturationShongre")}
+              {t(
+                "admin.crmProductsPage.uneSourceCommercialeIndependanteDeLaFacturationShongre",
+              )}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -174,7 +176,9 @@ export const CrmProductsPage: React.FC = () => {
             </strong>
           </div>
           <div className="rounded-control bg-stone-900 p-3">
-            <span className="text-micro text-text-disabled">{t("invoicing.product.previewMarket")}</span>
+            <span className="text-micro text-text-disabled">
+              {t("invoicing.product.previewMarket")}
+            </span>
             <strong className="block text-xl font-black">
               {activeMarket.code}
             </strong>
@@ -213,7 +217,9 @@ export const CrmProductsPage: React.FC = () => {
           <EmptyState
             icon={<Box className="h-8 w-8" />}
             title={t("admin.crmProductsPage.aucunProduit")}
-            description={t("admin.crmProductsPage.creezLePremierProduitDuCatalogueCommercial")}
+            description={t(
+              "admin.crmProductsPage.creezLePremierProduitDuCatalogueCommercial",
+            )}
             className="border-0 shadow-none"
             action={
               <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -296,7 +302,9 @@ export const CrmProductsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Nouveau produit"
-        description={t("admin.crmProductsPage.lePrixEstStockeEnUniteMonetaireMineureEtAssocie")}
+        description={t(
+          "admin.crmProductsPage.lePrixEstStockeEnUniteMonetaireMineureEtAssocie",
+        )}
       >
         <form onSubmit={createProduct} className="space-y-3.5 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">

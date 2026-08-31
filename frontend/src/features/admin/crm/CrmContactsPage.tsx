@@ -163,7 +163,8 @@ export const CrmContactsPage: React.FC = () => {
               Contacts
             </h1>
             <p className="mt-1 text-sm text-text-disabled">
-              {t("admin.crmContactsPage.personnesRolesEtConsentements")} {contacts.length} fiches
+              {t("admin.crmContactsPage.personnesRolesEtConsentements")}{" "}
+              {contacts.length} fiches
             </p>
           </div>
           <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -175,7 +176,9 @@ export const CrmContactsPage: React.FC = () => {
       <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <label className="relative block min-w-0 flex-1 sm:max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
-          <span className="sr-only">{t("admin.crmContactsPage.rechercherUnContact")}</span>
+          <span className="sr-only">
+            {t("admin.crmContactsPage.rechercherUnContact")}
+          </span>
           <input
             type="search"
             value={search}
@@ -185,7 +188,10 @@ export const CrmContactsPage: React.FC = () => {
           />
         </label>
         <span className="inline-flex items-center gap-1.5 text-micro text-stone-500">
-          <ShieldAlert className="h-icon-sm w-icon-sm text-text-disabled" /> {t("admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi")}
+          <ShieldAlert className="h-icon-sm w-icon-sm text-text-disabled" />{" "}
+          {t(
+            "admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi",
+          )}
         </span>
       </section>
 
@@ -203,7 +209,9 @@ export const CrmContactsPage: React.FC = () => {
               {t("admin.crmContactsPage.aucunContactTrouve")}
             </h2>
             <p className="mt-1 text-xs text-stone-500">
-              {t("admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche")}
+              {t(
+                "admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche",
+              )}
             </p>
           </div>
         ) : (
@@ -213,8 +221,12 @@ export const CrmContactsPage: React.FC = () => {
                 <tr>
                   <th className="px-5 py-3">Contact</th>
                   <th className="px-4 py-3">Entreprise</th>
-                  <th className="px-4 py-3">{t("admin.crmContactsPage.coordonnees")}</th>
-                  <th className="px-4 py-3">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</th>
+                  <th className="px-4 py-3">
+                    {t("admin.crmContactsPage.coordonnees")}
+                  </th>
+                  <th className="px-4 py-3">
+                    {t("admin.adminFeatureFlagsPage.cycleDeVie")}
+                  </th>
                   <th className="px-4 py-3">Prochaine action</th>
                   <th className="px-5 py-3 text-right">Responsable</th>
                 </tr>
@@ -311,7 +323,8 @@ export const CrmContactsPage: React.FC = () => {
         )}
         <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
           <span>
-            {filtered.length} {t("admin.crmCompaniesPage.resultat")}{filtered.length > 1 ? "s" : ""}
+            {filtered.length} {t("admin.crmCompaniesPage.resultat")}
+            {filtered.length > 1 ? "s" : ""}
           </span>
           <span>
             {contacts.filter((contact) => contact.doNotContact).length}{" "}
@@ -328,7 +341,9 @@ export const CrmContactsPage: React.FC = () => {
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t("admin.crmContactsPage.creerUnContact")}
-        description={t("admin.crmContactsPage.laFicheResteDistincteDUnCompteUtilisateurShongre")}
+        description={t(
+          "admin.crmContactsPage.laFicheResteDistincteDUnCompteUtilisateurShongre",
+        )}
       >
         <form onSubmit={createContact} className="space-y-4 text-xs">
           <div className="grid gap-3 sm:grid-cols-2">

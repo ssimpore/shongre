@@ -103,21 +103,28 @@ function SolutionsHeader() {
           className="flex items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label="Accueil Shongre Solutions"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-black text-white">S</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-black text-white">
+            S
+          </span>
           <span className="leading-none">
-            <span className="block text-base font-black tracking-tight text-text-main">shongre</span>
-            <span className="mt-1 block text-micro font-semibold text-text-muted sm:hidden">Solutions</span>
+            <span className="block text-base font-black tracking-tight text-text-main">
+              shongre
+            </span>
+            <span className="mt-1 block text-micro font-semibold text-text-muted sm:hidden">
+              Solutions
+            </span>
           </span>
         </a>
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Navigation Solutions">
+        <nav
+          className="hidden items-center gap-7 md:flex"
+          aria-label="Navigation Solutions"
+        >
           <div
             ref={solutionMenuRef}
             className="relative"
             onMouseEnter={() => setSolutionMenuOpen(true)}
             onMouseLeave={() => {
-              if (
-                !solutionMenuRef.current?.contains(document.activeElement)
-              ) {
+              if (!solutionMenuRef.current?.contains(document.activeElement)) {
                 setSolutionMenuOpen(false);
               }
             }}
@@ -163,7 +170,10 @@ function SolutionsHeader() {
                       return (
                         <a
                           key={solution.id}
-                          href={applicationHref("solutions", `/${solution.slug}`)}
+                          href={applicationHref(
+                            "solutions",
+                            `/${solution.slug}`,
+                          )}
                           className="flex min-h-control-touch items-center gap-3 rounded-control px-3 py-2 text-left hover:bg-bg-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                         >
                           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
@@ -199,7 +209,9 @@ function SolutionsHeader() {
               </div>
             ) : null}
           </div>
-          <a href={`${rootHref}#ecosysteme`} className={navClass}>Écosystème</a>
+          <a href={`${rootHref}#ecosysteme`} className={navClass}>
+            Écosystème
+          </a>
         </nav>
         <div className="hidden items-center gap-5 md:flex">
           <a href={marketplaceHref} className={`${navClass} gap-2`}>
@@ -228,14 +240,26 @@ function SolutionsHeader() {
             aria-controls="solutions-mobile-menu"
             onClick={() => setMobileMenuOpen((value) => !value)}
           >
-            {mobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            {mobileMenuOpen ? (
+              <X aria-hidden="true" />
+            ) : (
+              <Menu aria-hidden="true" />
+            )}
           </button>
         </div>
       </Container>
-      <div id="solutions-mobile-menu" className={`${mobileMenuOpen ? "block" : "hidden"} border-t border-border-base bg-white md:hidden`}>
+      <div
+        id="solutions-mobile-menu"
+        className={`${mobileMenuOpen ? "block" : "hidden"} border-t border-border-base bg-white md:hidden`}
+      >
         <Container className="flex flex-col divide-y divide-border-subtle py-2">
           <div className="py-2">
-            <a href={`${rootHref}#catalogue`} className="touch-row text-sm font-bold">Solutions</a>
+            <a
+              href={`${rootHref}#catalogue`}
+              className="touch-row text-sm font-bold"
+            >
+              Solutions
+            </a>
             <div className="mt-1 grid gap-1 pl-3">
               {solutions.map((solution) => (
                 <a
@@ -252,8 +276,18 @@ function SolutionsHeader() {
               ))}
             </div>
           </div>
-          <a href={`${rootHref}#ecosysteme`} className="touch-row py-2 text-sm font-bold">Écosystème</a>
-          <a href={marketplaceHref} className="touch-row py-2 text-sm font-bold">Plateforme Shongre</a>
+          <a
+            href={`${rootHref}#ecosysteme`}
+            className="touch-row py-2 text-sm font-bold"
+          >
+            Écosystème
+          </a>
+          <a
+            href={marketplaceHref}
+            className="touch-row py-2 text-sm font-bold"
+          >
+            Plateforme Shongre
+          </a>
         </Container>
       </div>
     </header>
@@ -263,16 +297,44 @@ function SolutionsHeader() {
 function SolutionsFooter() {
   const { openPreferences } = useConsent();
   const rootHref = applicationHref("solutions");
-  const footerClass = "inline-flex min-h-8 items-center text-xs font-semibold text-stone-500 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
+  const footerClass =
+    "inline-flex min-h-8 items-center text-xs font-semibold text-stone-500 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
   return (
     <footer className="border-t border-border-base bg-white py-7">
       <Container className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <a href={rootHref} className="text-sm font-black text-text-main">SHONGRE<span className="text-primary">.</span> <span className="font-semibold text-text-muted">Solutions</span></a>
-        <nav className="flex flex-wrap items-center gap-x-6 gap-y-1" aria-label="Informations Solutions">
-          <a href={applicationHref("marketplace", "/aide")} className={footerClass}>À propos</a>
-          <a href={applicationHref("marketplace", "/aide")} className={footerClass}>Documentation</a>
-          <a href={applicationHref("marketplace", "/securite")} className={footerClass}>Sécurité</a>
-          <button type="button" onClick={openPreferences} className={footerClass}>Gestion des cookies</button>
+        <a href={rootHref} className="text-sm font-black text-text-main">
+          SHONGRE<span className="text-primary">.</span>{" "}
+          <span className="font-semibold text-text-muted">Solutions</span>
+        </a>
+        <nav
+          className="flex flex-wrap items-center gap-x-6 gap-y-1"
+          aria-label="Informations Solutions"
+        >
+          <a
+            href={applicationHref("marketplace", "/aide")}
+            className={footerClass}
+          >
+            À propos
+          </a>
+          <a
+            href={applicationHref("marketplace", "/aide")}
+            className={footerClass}
+          >
+            Documentation
+          </a>
+          <a
+            href={applicationHref("marketplace", "/securite")}
+            className={footerClass}
+          >
+            Sécurité
+          </a>
+          <button
+            type="button"
+            onClick={openPreferences}
+            className={footerClass}
+          >
+            Gestion des cookies
+          </button>
         </nav>
       </Container>
     </footer>
@@ -286,7 +348,9 @@ export function SolutionsLayout() {
       <AppScrollRestoration />
       <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
       <SolutionsHeader />
-      <main id="main-content" tabIndex={-1} className="flex-1"><Outlet /></main>
+      <main id="main-content" tabIndex={-1} className="flex-1">
+        <Outlet />
+      </main>
       <SolutionsFooter />
       <PreferencesModal />
       <CookieConsent />

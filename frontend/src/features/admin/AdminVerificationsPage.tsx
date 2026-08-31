@@ -29,8 +29,12 @@ export const AdminVerificationsPage: React.FC = () => {
   const { t } = useTranslation();
   const { formatDateTime } = useRegionalFormatters();
   usePageMeta({
-    title: t("admin.adminVerificationsPage.conformiteProgressiveAdministrationShongre"),
-    description: t("admin.adminVerificationsPage.revueManuellePolitiquesEtAuditDeConformite"),
+    title: t(
+      "admin.adminVerificationsPage.conformiteProgressiveAdministrationShongre",
+    ),
+    description: t(
+      "admin.adminVerificationsPage.revueManuellePolitiquesEtAuditDeConformite",
+    ),
     canonicalPath: "/admin/verifications",
     noIndex: true,
   });
@@ -104,10 +108,14 @@ export const AdminVerificationsPage: React.FC = () => {
               {t("admin.adminVerificationsPage.accesConformiteRestreint")}
             </p>
             <h1 className="mt-1 text-2xl font-black text-stone-950">
-              {t("admin.adminVerificationsPage.verificationsReglesEtRevueHumaine")}
+              {t(
+                "admin.adminVerificationsPage.verificationsReglesEtRevueHumaine",
+              )}
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-text-secondary">
-              {t("admin.adminVerificationsPage.lesAgentsVoientLesStatutsNecessairesALeurMissionLes")}
+              {t(
+                "admin.adminVerificationsPage.lesAgentsVoientLesStatutsNecessairesALeurMissionLes",
+              )}
             </p>
           </div>
         </div>
@@ -148,10 +156,14 @@ export const AdminVerificationsPage: React.FC = () => {
           <section className="overflow-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-xs">
             <div className="border-b border-stone-100 p-4">
               <h2 className="font-bold text-stone-950">
-                {t("admin.adminVerificationsPage.dossiersNecessitantUneDecision")}
+                {t(
+                  "admin.adminVerificationsPage.dossiersNecessitantUneDecision",
+                )}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                {t("admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable")}
+                {t(
+                  "admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable",
+                )}
               </p>
             </div>
             {queue.length === 0 ? (
@@ -235,9 +247,13 @@ export const AdminVerificationsPage: React.FC = () => {
                 aria-hidden="true"
               />
               <div>
-                <h2 className="font-bold text-stone-950">{t("admin.adminVerificationsPage.registreVersionne")}</h2>
+                <h2 className="font-bold text-stone-950">
+                  {t("admin.adminVerificationsPage.registreVersionne")}
+                </h2>
                 <p className="mt-1 text-xs text-stone-500">
-                  {t("admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur")}
+                  {t(
+                    "admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur",
+                  )}
                 </p>
               </div>
             </div>
@@ -293,7 +309,9 @@ export const AdminVerificationsPage: React.FC = () => {
                 {t("admin.adminVerificationsPage.evenementsDeConformite")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                {t("admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues")}
+                {t(
+                  "admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues",
+                )}
               </p>
             </div>
             <div className="divide-y divide-stone-100">
@@ -308,7 +326,9 @@ export const AdminVerificationsPage: React.FC = () => {
                       {labelIdentifier(log.newState || log.eventType)}
                     </p>
                     <p className="mt-1 text-xs text-stone-500">
-                      Acteur : {log.actorId || log.actorType} {t("admin.adminVerificationsPage.referenceUtilisateur")} {log.userId}
+                      Acteur : {log.actorId || log.actorType}{" "}
+                      {t("admin.adminVerificationsPage.referenceUtilisateur")}{" "}
+                      {log.userId}
                     </p>
                   </div>
                   <time
@@ -335,7 +355,9 @@ export const AdminVerificationsPage: React.FC = () => {
         }
         label={t("admin.adminVerificationsPage.decisionMotivee")}
         hint="Minimum 10 caractères. Le motif est conservé dans l’audit et sert au recours utilisateur."
-        placeholder={t("admin.adminVerificationsPage.decrivezLesElementsControlesEtLaJustificationDeLaDecision")}
+        placeholder={t(
+          "admin.adminVerificationsPage.decrivezLesElementsControlesEtLaJustificationDeLaDecision",
+        )}
         confirmText={decision?.outcome === "approve" ? "Approuver" : "Refuser"}
         multiline
       />

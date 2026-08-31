@@ -435,7 +435,9 @@ export function AdminCommissionPolicyEditor({
       isOpen
       onClose={onClose}
       title={template ? "Cloner la politique" : "Créer une politique"}
-      description={t("admin.adminCommissionPolicyEditor.laModificationCreeUneNouvelleVersionSoumiseAuWorkflowMaker")}
+      description={t(
+        "admin.adminCommissionPolicyEditor.laModificationCreeUneNouvelleVersionSoumiseAuWorkflowMaker",
+      )}
       maxWidth="xl"
     >
       <form onSubmit={(event) => void submit(event)} className="space-y-4">
@@ -473,7 +475,10 @@ export function AdminCommissionPolicyEditor({
           />
         </FormField>
         <div className="grid gap-3 sm:grid-cols-3">
-          <FormField label={t("admin.adminCommissionPolicyEditor.typeDePolitique")} required>
+          <FormField
+            label={t("admin.adminCommissionPolicyEditor.typeDePolitique")}
+            required
+          >
             <Select
               className="w-full"
               labelledByAncestor
@@ -485,11 +490,16 @@ export function AdminCommissionPolicyEditor({
                 }))
               }
             >
-              <option value="base">{t("admin.adminCommissionPolicyEditor.commissionDeBase")}</option>
+              <option value="base">
+                {t("admin.adminCommissionPolicyEditor.commissionDeBase")}
+              </option>
               <option value="adjustment">Avantage / promotion</option>
             </Select>
           </FormField>
-          <FormField label={t("admin.crmTasksPage.priorite")} hint="Départage une portée identique.">
+          <FormField
+            label={t("admin.crmTasksPage.priorite")}
+            hint="Départage une portée identique."
+          >
             <Input
               type="number"
               min={MONETIZATION_ADMIN_CONSTRAINTS.priority.min}
@@ -504,7 +514,10 @@ export function AdminCommissionPolicyEditor({
               }
             />
           </FormField>
-          <FormField label={t("admin.adminCommissionPolicyEditor.deploiementBps")} hint="10 000 = 100 %.">
+          <FormField
+            label={t("admin.adminCommissionPolicyEditor.deploiementBps")}
+            hint="10 000 = 100 %."
+          >
             <Input
               type="number"
               min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
@@ -521,7 +534,10 @@ export function AdminCommissionPolicyEditor({
           </FormField>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <FormField label={t("admin.adminCommissionPolicyEditor.niveauDeDerogation")} required>
+          <FormField
+            label={t("admin.adminCommissionPolicyEditor.niveauDeDerogation")}
+            required
+          >
             <Select
               className="w-full"
               labelledByAncestor
@@ -533,13 +549,23 @@ export function AdminCommissionPolicyEditor({
                 }))
               }
             >
-              <option value="global">{t("admin.adminCommissionPolicyEditor.defautDuMarche")}</option>
+              <option value="global">
+                {t("admin.adminCommissionPolicyEditor.defautDuMarche")}
+              </option>
               <option value="countryCodes">Pays</option>
               <option value="verticalIds">Verticale</option>
-              <option value="categoryIds">{t("admin.adminCommissionPolicyEditor.categorieListePossible")}</option>
-              <option value="subcategoryIds">{t("search.searchPage.sousCategorie")}</option>
-              <option value="transactionTypes">{t("admin.adminCommissionPolicyEditor.typeDeTransaction")}</option>
-              <option value="sellerTypes">{t("admin.adminCommissionPanel.typeVendeur")}</option>
+              <option value="categoryIds">
+                {t("admin.adminCommissionPolicyEditor.categorieListePossible")}
+              </option>
+              <option value="subcategoryIds">
+                {t("search.searchPage.sousCategorie")}
+              </option>
+              <option value="transactionTypes">
+                {t("admin.adminCommissionPolicyEditor.typeDeTransaction")}
+              </option>
+              <option value="sellerTypes">
+                {t("admin.adminCommissionPanel.typeVendeur")}
+              </option>
               <option value="planIds">Forfait</option>
               <option value="organizationIds">Organisation</option>
               <option value="accountIds">{t("nav.account")}</option>
@@ -566,7 +592,10 @@ export function AdminCommissionPolicyEditor({
         {form.policyType === "base" ? (
           <>
             <div className="grid gap-3 sm:grid-cols-3">
-              <FormField label={t("admin.adminCommissionPolicyEditor.modele")} required>
+              <FormField
+                label={t("admin.adminCommissionPolicyEditor.modele")}
+                required
+              >
                 <Select
                   className="w-full"
                   labelledByAncestor
@@ -581,7 +610,9 @@ export function AdminCommissionPolicyEditor({
                   <option value="percentage">Pourcentage</option>
                   <option value="fixed">Fixe</option>
                   <option value="combined">Pourcentage + fixe</option>
-                  <option value="flat_category">{t("admin.adminCommissionPolicyEditor.forfaitCategorie")}</option>
+                  <option value="flat_category">
+                    {t("admin.adminCommissionPolicyEditor.forfaitCategorie")}
+                  </option>
                   <option value="threshold">Seuil</option>
                   <option value="tiered">Paliers</option>
                 </Select>
@@ -654,16 +685,27 @@ export function AdminCommissionPolicyEditor({
                       }))
                     }
                   >
-                    <option value="at_or_above">{t("admin.adminCommissionPolicyEditor.auMoinsLeSeuil")}</option>
-                    <option value="above">{t("admin.adminCommissionPolicyEditor.strictementAuDessus")}</option>
-                    <option value="below">{t("admin.adminCommissionPolicyEditor.sousLeSeuil")}</option>
+                    <option value="at_or_above">
+                      {t("admin.adminCommissionPolicyEditor.auMoinsLeSeuil")}
+                    </option>
+                    <option value="above">
+                      {t(
+                        "admin.adminCommissionPolicyEditor.strictementAuDessus",
+                      )}
+                    </option>
+                    <option value="below">
+                      {t("admin.adminCommissionPolicyEditor.sousLeSeuil")}
+                    </option>
                   </Select>
                 </FormField>
               </div>
             )}
             {form.modelType === "tiered" && (
               <div className="grid gap-3 sm:grid-cols-2">
-                <FormField label={t("admin.adminCommissionPolicyEditor.modeDesPaliers")} required>
+                <FormField
+                  label={t("admin.adminCommissionPolicyEditor.modeDesPaliers")}
+                  required
+                >
                   <Select
                     className="w-full"
                     labelledByAncestor
@@ -679,7 +721,10 @@ export function AdminCommissionPolicyEditor({
                     <option value="cliff">Cliff</option>
                   </Select>
                 </FormField>
-                <FormField label={t("admin.adminCommissionPolicyEditor.baseDesPaliers")} required>
+                <FormField
+                  label={t("admin.adminCommissionPolicyEditor.baseDesPaliers")}
+                  required
+                >
                   <Select
                     className="w-full"
                     labelledByAncestor
@@ -693,13 +738,22 @@ export function AdminCommissionPolicyEditor({
                     }
                   >
                     <option value="transaction_amount">
-                      {t("admin.adminCommissionPolicyEditor.montantDeLaTransaction")}
+                      {t(
+                        "admin.adminCommissionPolicyEditor.montantDeLaTransaction",
+                      )}
                     </option>
-                    <option value="historical_volume">{t("admin.adminCommissionPolicyEditor.volumeCumule")}</option>
+                    <option value="historical_volume">
+                      {t("admin.adminCommissionPolicyEditor.volumeCumule")}
+                    </option>
                   </Select>
                 </FormField>
                 {form.tierBasis === "historical_volume" && (
-                  <FormField label={t("admin.adminCommissionPolicyEditor.periodeDeVolume")} required>
+                  <FormField
+                    label={t(
+                      "admin.adminCommissionPolicyEditor.periodeDeVolume",
+                    )}
+                    required
+                  >
                     <Select
                       className="w-full"
                       labelledByAncestor
@@ -714,8 +768,12 @@ export function AdminCommissionPolicyEditor({
                     >
                       <option value="month">Mois</option>
                       <option value="quarter">Trimestre</option>
-                      <option value="year">{t("admin.adminCommissionPolicyEditor.annee")}</option>
-                      <option value="lifetime">{t("admin.adminCommissionPolicyEditor.dureeDeVie")}</option>
+                      <option value="year">
+                        {t("admin.adminCommissionPolicyEditor.annee")}
+                      </option>
+                      <option value="lifetime">
+                        {t("admin.adminCommissionPolicyEditor.dureeDeVie")}
+                      </option>
                     </Select>
                   </FormField>
                 )}
@@ -779,7 +837,9 @@ export function AdminCommissionPolicyEditor({
                   }
                 >
                   <option value="item_subtotal">Sous-total article</option>
-                  <option value="subtotal_after_discount">{t("admin.adminCommissionPolicyEditor.apresRemise")}</option>
+                  <option value="subtotal_after_discount">
+                    {t("admin.adminCommissionPolicyEditor.apresRemise")}
+                  </option>
                   <option value="total_excluding_tax">Total hors taxe</option>
                   <option value="total_including_tax">Total TTC</option>
                   <option value="platform_collected_amount">
@@ -789,7 +849,12 @@ export function AdminCommissionPolicyEditor({
               </FormField>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <FormField label={t("admin.adminCommissionPolicyEditor.evenementDAcquisition")} required>
+              <FormField
+                label={t(
+                  "admin.adminCommissionPolicyEditor.evenementDAcquisition",
+                )}
+                required
+              >
                 <Select
                   className="w-full"
                   labelledByAncestor
@@ -802,17 +867,32 @@ export function AdminCommissionPolicyEditor({
                     }))
                   }
                 >
-                  <option value="payment_succeeded">{t("admin.adminCommissionPolicyEditor.paiementReussi")}</option>
-                  <option value="order_completed">{t("admin.adminCommissionPolicyEditor.commandeTerminee")}</option>
-                  <option value="service_completed">{t("admin.adminCommissionPolicyEditor.serviceTermine")}</option>
-                  <option value="payout_released">{t("admin.adminCommissionPolicyEditor.virementLibere")}</option>
-                  <option value="lead_qualified">{t("admin.adminCommissionPolicyEditor.leadQualifie")}</option>
+                  <option value="payment_succeeded">
+                    {t("admin.adminCommissionPolicyEditor.paiementReussi")}
+                  </option>
+                  <option value="order_completed">
+                    {t("admin.adminCommissionPolicyEditor.commandeTerminee")}
+                  </option>
+                  <option value="service_completed">
+                    {t("admin.adminCommissionPolicyEditor.serviceTermine")}
+                  </option>
+                  <option value="payout_released">
+                    {t("admin.adminCommissionPolicyEditor.virementLibere")}
+                  </option>
+                  <option value="lead_qualified">
+                    {t("admin.adminCommissionPolicyEditor.leadQualifie")}
+                  </option>
                   <option value="booking_completed">
                     {t("admin.adminCommissionPolicyEditor.reservationTerminee")}
                   </option>
                 </Select>
               </FormField>
-              <FormField label={t("admin.adminCommissionPolicyEditor.politiqueDeRemboursement")} required>
+              <FormField
+                label={t(
+                  "admin.adminCommissionPolicyEditor.politiqueDeRemboursement",
+                )}
+                required
+              >
                 <Select
                   className="w-full"
                   labelledByAncestor
@@ -829,7 +909,9 @@ export function AdminCommissionPolicyEditor({
                   <option value="full_only">
                     Remboursement total seulement
                   </option>
-                  <option value="non_refundable">{t("admin.adminCommissionPolicyEditor.commissionConservee")}</option>
+                  <option value="non_refundable">
+                    {t("admin.adminCommissionPolicyEditor.commissionConservee")}
+                  </option>
                   <option value="manual_review">Revue manuelle</option>
                 </Select>
               </FormField>
@@ -846,8 +928,12 @@ export function AdminCommissionPolicyEditor({
                   }
                 >
                   <option value="inclusive">Taxe incluse</option>
-                  <option value="exclusive">{t("admin.adminCommissionPolicyEditor.taxeAjoutee")}</option>
-                  <option value="exempt">{t("admin.adminCommissionPolicyEditor.exoneree")}</option>
+                  <option value="exclusive">
+                    {t("admin.adminCommissionPolicyEditor.taxeAjoutee")}
+                  </option>
+                  <option value="exempt">
+                    {t("admin.adminCommissionPolicyEditor.exoneree")}
+                  </option>
                 </Select>
               </FormField>
               <FormField label="Taux fiscal (bps)">
@@ -911,9 +997,15 @@ export function AdminCommissionPolicyEditor({
                   Remise en pourcentage
                 </option>
                 <option value="fixed_discount">Remise fixe</option>
-                <option value="full_waiver">{t("admin.adminCommissionPolicyEditor.exonerationTotale")}</option>
-                <option value="rate_override">{t("admin.adminCommissionPolicyEditor.tauxNegocie")}</option>
-                <option value="fixed_override">{t("admin.adminCommissionPolicyEditor.montantNegocie")}</option>
+                <option value="full_waiver">
+                  {t("admin.adminCommissionPolicyEditor.exonerationTotale")}
+                </option>
+                <option value="rate_override">
+                  {t("admin.adminCommissionPolicyEditor.tauxNegocie")}
+                </option>
+                <option value="fixed_override">
+                  {t("admin.adminCommissionPolicyEditor.montantNegocie")}
+                </option>
               </Select>
             </FormField>
             <FormField label="Taux (bps)">
@@ -988,7 +1080,9 @@ export function AdminCommissionPolicyEditor({
           </div>
         )}
         <div className="grid gap-3 sm:grid-cols-2">
-          <FormField label={t("admin.adminCommissionPolicyEditor.debutEffectif")}>
+          <FormField
+            label={t("admin.adminCommissionPolicyEditor.debutEffectif")}
+          >
             <Input
               type="datetime-local"
               value={form.effectiveFrom}

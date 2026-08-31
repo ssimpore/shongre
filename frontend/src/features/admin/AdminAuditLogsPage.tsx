@@ -210,7 +210,8 @@ export const AdminAuditLogsPage: React.FC = () => {
           onChange={(e) => setSelectedAction(e.target.value)}
         >
           <option value="all">
-            {t("admin.adminAuditLogsPage.toutesLesActionsDAudit")}{logs.length})
+            {t("admin.adminAuditLogsPage.toutesLesActionsDAudit")}
+            {logs.length})
           </option>
           {uniqueActions.map((act) => (
             <option key={act} value={act}>
@@ -329,7 +330,9 @@ export const AdminAuditLogsPage: React.FC = () => {
         {selectedLog && (
           <div className="space-y-5">
             <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-audit-row">
-              <dt className="font-semibold text-text-secondary">{t("admin.adminAuditLogsPage.dateEtHeure")}</dt>
+              <dt className="font-semibold text-text-secondary">
+                {t("admin.adminAuditLogsPage.dateEtHeure")}
+              </dt>
               <dd className="text-text-main">
                 <time
                   dateTime={selectedLog.timestamp}
@@ -365,7 +368,9 @@ export const AdminAuditLogsPage: React.FC = () => {
 
               {selectedLog.market && (
                 <>
-                  <dt className="font-semibold text-text-secondary">{t("invoicing.product.previewMarket")}</dt>
+                  <dt className="font-semibold text-text-secondary">
+                    {t("invoicing.product.previewMarket")}
+                  </dt>
                   <dd className="text-text-main">
                     {formatAuditValue(selectedLog.market, "marketCode")}
                   </dd>

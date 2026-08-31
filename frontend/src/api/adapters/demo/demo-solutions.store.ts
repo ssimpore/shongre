@@ -20,10 +20,9 @@ const legacyCatalogVisibility = (solution: SolutionDefinition): boolean => {
 
 export class DemoSolutionsStore {
   list(): SolutionDefinition[] {
-    const stored = storageService.get<SolutionDefinition[]>(
-      STORAGE_KEY,
-      [...DEMO_SOLUTIONS],
-    );
+    const stored = storageService.get<SolutionDefinition[]>(STORAGE_KEY, [
+      ...DEMO_SOLUTIONS,
+    ]);
     const storedIds = new Set(stored.map((solution) => solution.id));
     const newlySeeded = DEMO_SOLUTIONS.filter(
       (solution) => !storedIds.has(solution.id),

@@ -48,14 +48,14 @@ test.describe("boosted listings hero rail", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const hero = page.locator("main > div > section").first();
-    const trustLine = hero.getByRole("link", { name: /Paiement suivi/ });
+    const main = page.getByRole("main");
+    const trustLine = main.getByRole("link", { name: /Paiement suivi/ });
     await expect(
       page.getByRole("list", { name: "Garanties Shongre" }),
     ).toHaveCount(0);
     await expect(trustLine).toBeVisible();
     await expect(trustLine).toHaveAttribute("href", "/securite");
-    await expect(hero.locator('a[href="/securite"]')).toHaveCount(1);
+    await expect(main.locator('a[href="/securite"]')).toHaveCount(1);
 
     const trustBox = await trustLine.boundingBox();
     expect(trustBox).not.toBeNull();

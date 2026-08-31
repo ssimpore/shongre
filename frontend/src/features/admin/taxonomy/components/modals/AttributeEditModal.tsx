@@ -333,7 +333,8 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-text-main uppercase tracking-wider">
-                {t("admin.attributeEditModal.valeursPredefinies")}{options.length})
+                {t("admin.attributeEditModal.valeursPredefinies")}
+                {options.length})
               </h4>
               <Button
                 variant="outline"

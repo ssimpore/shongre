@@ -33,7 +33,9 @@ export const AdminTrendingPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: t("admin.adminTrendingPage.tendancesDeLaPageDAccueil"),
-    description: t("admin.adminTrendingPage.piloterLaSectionEnCeMomentSurShongre"),
+    description: t(
+      "admin.adminTrendingPage.piloterLaSectionEnCeMomentSurShongre",
+    ),
     canonicalPath: "/admin/tendances",
     noIndex: true,
   });
@@ -183,13 +185,16 @@ export const AdminTrendingPage: React.FC = () => {
       <div className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <Flame className="h-icon-md w-icon-md" /> {t("admin.adminTrendingPage.decouverteEditoriale")}
+            <Flame className="h-icon-md w-icon-md" />{" "}
+            {t("admin.adminTrendingPage.decouverteEditoriale")}
           </div>
           <h2 className="text-2xl font-black tracking-tight text-text-main">
             {t("admin.adminTrendingPage.enCeMomentSurShongre")}
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
-            {t("admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu")}
+            {t(
+              "admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu",
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -243,7 +248,8 @@ export const AdminTrendingPage: React.FC = () => {
                   onChange={(event) =>
                     update(
                       "selectionMode",
-                      event.target.value as TrendingAdminConfig["selectionMode"],
+                      event.target
+                        .value as TrendingAdminConfig["selectionMode"],
                     )
                   }
                   className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm text-text-main focus-visible:outline-2 focus-visible:outline-primary"
@@ -253,7 +259,9 @@ export const AdminTrendingPage: React.FC = () => {
                   <option value="hybrid">Hybride</option>
                 </select>
               </FormField>
-              <FormField label={t("admin.adminTrendingPage.annoncesParSousSection")}>
+              <FormField
+                label={t("admin.adminTrendingPage.annoncesParSousSection")}
+              >
                 <Input
                   type="number"
                   min={TRENDING_ADMIN_CONSTRAINTS.listingsPerTopic.min}
@@ -265,7 +273,9 @@ export const AdminTrendingPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <FormField label={t("admin.adminTrendingPage.maximumDeSousSections")}>
+              <FormField
+                label={t("admin.adminTrendingPage.maximumDeSousSections")}
+              >
                 <Input
                   type="number"
                   min={Math.max(
@@ -358,7 +368,11 @@ export const AdminTrendingPage: React.FC = () => {
                 Desktop visible
               </label>
             </div>
-            <FormField label={t("admin.adminTrendingPage.categoriesExcluesSlugsSeparesParDesVirgules")}>
+            <FormField
+              label={t(
+                "admin.adminTrendingPage.categoriesExcluesSlugsSeparesParDesVirgules",
+              )}
+            >
               <Input
                 value={config.excludedCategories.join(", ")}
                 onChange={(event) =>
@@ -390,7 +404,8 @@ export const AdminTrendingPage: React.FC = () => {
               </h2>
             </div>
             <span className="text-xs font-medium text-stone-500">
-              {preview?.topics.length || 0} {t("admin.adminTrendingPage.sousSectionsAffichees")}
+              {preview?.topics.length || 0}{" "}
+              {t("admin.adminTrendingPage.sousSectionsAffichees")}
             </span>
           </div>
           <div className="space-y-2">
@@ -413,8 +428,11 @@ export const AdminTrendingPage: React.FC = () => {
                         {topic.title}
                       </div>
                       <div className="text-xs text-stone-500">
-                        {topic.listings.length} {t("admin.adminTrendingPage.annoncesTendance")}{" "}
-                        {topic.trend.direction === "up" ? "en hausse" : "stable"}
+                        {topic.listings.length}{" "}
+                        {t("admin.adminTrendingPage.annoncesTendance")}{" "}
+                        {topic.trend.direction === "up"
+                          ? "en hausse"
+                          : "stable"}
                       </div>
                     </div>
                     {pinned.has(topicKey) ? (
@@ -448,7 +466,9 @@ export const AdminTrendingPage: React.FC = () => {
                       {t("admin.adminTrendingPage.editionEditorialeAvancee")}
                     </summary>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <FormField label={t("admin.adminTrendingPage.titrePersonnalise")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.titrePersonnalise")}
+                      >
                         <Input
                           defaultValue={override?.customTitle || ""}
                           onBlur={(event) =>
@@ -458,7 +478,9 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label={t("admin.adminTrendingPage.scoreDeBoost01")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.scoreDeBoost01")}
+                      >
                         <Input
                           type="number"
                           min={TRENDING_ADMIN_CONSTRAINTS.editorialBoost.min}
@@ -472,7 +494,12 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label={t("admin.adminTrendingPage.sousTitrePersonnalise")} className="sm:col-span-2">
+                      <FormField
+                        label={t(
+                          "admin.adminTrendingPage.sousTitrePersonnalise",
+                        )}
+                        className="sm:col-span-2"
+                      >
                         <Textarea
                           defaultValue={override?.customSubtitle || ""}
                           onBlur={(event) =>
@@ -482,7 +509,9 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label={t("admin.adminTrendingPage.urlDeLImage")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.urlDeLImage")}
+                      >
                         <Input
                           type="url"
                           defaultValue={override?.customImage?.src || ""}
@@ -513,7 +542,9 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label={t("admin.adminTrendingPage.debutProgramme")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.debutProgramme")}
+                      >
                         <Input
                           type="datetime-local"
                           defaultValue={override?.startsAt?.slice(0, 16) || ""}
@@ -526,7 +557,9 @@ export const AdminTrendingPage: React.FC = () => {
                           }
                         />
                       </FormField>
-                      <FormField label={t("admin.adminTrendingPage.finProgrammee")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.finProgrammee")}
+                      >
                         <Input
                           type="datetime-local"
                           defaultValue={override?.endsAt?.slice(0, 16) || ""}
@@ -546,7 +579,9 @@ export const AdminTrendingPage: React.FC = () => {
             })}
             {!preview?.topics.length && (
               <div className="rounded-control border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500">
-                {t("admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels")}
+                {t(
+                  "admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels",
+                )}
               </div>
             )}
           </div>
@@ -556,7 +591,8 @@ export const AdminTrendingPage: React.FC = () => {
               dynamique
             </span>
             <span className="inline-flex items-center gap-1">
-              <Pin className="h-icon-sm w-icon-sm text-primary" /> {t("admin.adminTrendingPage.overridesSansCode")}
+              <Pin className="h-icon-sm w-icon-sm text-primary" />{" "}
+              {t("admin.adminTrendingPage.overridesSansCode")}
             </span>
           </div>
         </section>

@@ -32,7 +32,19 @@ test.describe("Shongre Immo", () => {
       }),
     ).toBeVisible();
     await expect(page.getByRole("article").first()).toBeVisible();
-    await page.getByLabel("Ville").fill("Écully");
+    const locationSelector = page.locator("#immo-location-selector");
+    await expect(locationSelector).toHaveAttribute(
+      "data-location-selector",
+      "true",
+    );
+    await locationSelector.click();
+    const locationDialog = page.getByRole("dialog", {
+      name: "Zone géographique",
+    });
+    await locationDialog.locator("#location-city-input").fill("Écully");
+    await locationDialog
+      .getByRole("button", { name: "Appliquer la zone" })
+      .click();
     await expect(page).toHaveURL(/city=%C3%89cully/);
     await expect(page.getByRole("article")).toHaveCount(1);
     await page.getByRole("button", { name: "Créer une alerte" }).click();
@@ -97,6 +109,13 @@ test.describe("Shongre Immo", () => {
     await usePersona(page, "individual_seller");
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/deposer/immo", { waitUntil: "domcontentloaded" });
+    const preparation = page.getByRole("region", {
+      name: "Avant de publier votre bien",
+    });
+    await expect(preparation).toBeVisible();
+    await preparation
+      .getByRole("button", { name: /l’annonce immobilière$/ })
+      .click();
     await expect(
       page.getByRole("heading", { level: 1, name: "Publier un bien" }),
     ).toBeVisible();

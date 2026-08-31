@@ -56,7 +56,9 @@ export const AdminSupportPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: "Support client — Console Shongre",
-    description: t("admin.adminSupportPage.fileOperationnelleDesDemandesDAssistanceShongre"),
+    description: t(
+      "admin.adminSupportPage.fileOperationnelleDesDemandesDAssistanceShongre",
+    ),
     canonicalPath: "/admin/support",
     noIndex: true,
   });
@@ -182,8 +184,16 @@ export const AdminSupportPage: React.FC = () => {
   const metricCards = [
     { label: "Dossiers ouverts", value: metrics.open, Icon: Headphones },
     { label: "Urgents", value: metrics.urgent, Icon: AlertTriangle },
-    { label: t("admin.adminSupportPage.slaDepasse"), value: metrics.overdue, Icon: Clock3 },
-    { label: t("admin.adminSupportPage.nonAffectes"), value: metrics.unassigned, Icon: UserRoundCheck },
+    {
+      label: t("admin.adminSupportPage.slaDepasse"),
+      value: metrics.overdue,
+      Icon: Clock3,
+    },
+    {
+      label: t("admin.adminSupportPage.nonAffectes"),
+      value: metrics.unassigned,
+      Icon: UserRoundCheck,
+    },
   ];
 
   return (
@@ -196,7 +206,9 @@ export const AdminSupportPage: React.FC = () => {
           File d’assistance client
         </h1>
         <p className="mt-1 text-xs text-text-secondary">
-          {t("admin.adminSupportPage.affectationReponsesClientNotesInternesEtSuiviDesEngagementsDe")}
+          {t(
+            "admin.adminSupportPage.affectationReponsesClientNotesInternesEtSuiviDesEngagementsDe",
+          )}
         </p>
       </header>
 
@@ -235,7 +247,9 @@ export const AdminSupportPage: React.FC = () => {
               Dossiers
             </h2>
             <label className="text-xs font-semibold text-text-secondary">
-              <span className="sr-only">{t("admin.adminSupportPage.filtrerParStatut")}</span>
+              <span className="sr-only">
+                {t("admin.adminSupportPage.filtrerParStatut")}
+              </span>
               <Select
                 className="w-auto"
                 labelledByAncestor
@@ -246,7 +260,9 @@ export const AdminSupportPage: React.FC = () => {
                   )
                 }
               >
-                <option value="all">{t("admin.providerCatalogTable.tousLesStatuts")}</option>
+                <option value="all">
+                  {t("admin.providerCatalogTable.tousLesStatuts")}
+                </option>
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}

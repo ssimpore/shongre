@@ -21,6 +21,7 @@ import type {
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { authorizationService } from "../../security/authorization.service";
 
 export type ProspectingWorkspaceView =
   | "overview"
@@ -146,6 +147,10 @@ export function useProspectingWorkspaceController(
   const [importingId, setImportingId] = useState<string | null>(null);
   const [pendingActionId, setPendingActionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const canReadMarketingCompliance = useMemo(
+    () => authorizationService.can(currentUser, "marketing.compliance.read"),
+    [currentUser],
+  );
 
   const refreshOperations = useCallback(async () => {
     const [
@@ -191,9 +196,12 @@ export function useProspectingWorkspaceController(
         services.crm.listActivities("task", task.id, 20),
       ),
     ];
+    const suppressionsPromise = canReadMarketingCompliance
+      ? services.marketing.listSuppressions()
+      : Promise.resolve<MarketingSuppression[]>([]);
     const [activityGroups, nextSuppressions] = await Promise.all([
       Promise.all(entityQueries),
-      services.marketing.listSuppressions(),
+      suppressionsPromise,
     ]);
     const deduplicatedActivities = new Map<string, CrmActivity>();
     activityGroups.flat().forEach((activity) => {
@@ -215,7 +223,7 @@ export function useProspectingWorkspaceController(
         )
         .slice(0, 20),
     );
-  }, [activeMarket.code, currentLocale, currentUser?.id]);
+  }, [activeMarket.code, canReadMarketingCompliance, currentLocale]);
 
   const reload = useCallback(async () => {
     setLoading(true);

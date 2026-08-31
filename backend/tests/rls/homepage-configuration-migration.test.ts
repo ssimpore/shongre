@@ -21,9 +21,7 @@ describe("homepage configuration migration", () => {
 
   it("is deny-by-default and exposes its atomic write function only to the service role", () => {
     expect(migration).toContain("FORCE ROW LEVEL SECURITY");
-    expect(migration).toContain(
-      "FROM PUBLIC, anon, authenticated",
-    );
+    expect(migration).toContain("FROM PUBLIC, anon, authenticated");
     expect(migration).toContain(
       "save_homepage_configuration_revision(JSONB,UUID,TEXT,BOOLEAN)",
     );

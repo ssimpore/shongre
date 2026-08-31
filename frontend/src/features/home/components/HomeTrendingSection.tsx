@@ -1,6 +1,5 @@
 import React from "react";
-import { ArrowRight, RefreshCw, ScanSearch } from "lucide-react";
-import { Link } from "react-router-dom";
+import { RefreshCw, ScanSearch } from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import type { TrendingTopic } from "../../../domains/trending/trending.types";
 import {
@@ -14,6 +13,7 @@ import { ListingCard } from "../../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../../design-system/primitives/ListingRail";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { HomeSectionAction } from "./HomeSectionAction";
 import {
   trackHomepageEvent,
   useHomepageViewEvent,
@@ -55,7 +55,7 @@ const TrendingTopicRail: React.FC<TrendingTopicRailProps> = ({
             </p>
           ) : null}
         </div>
-        <Link
+        <HomeSectionAction
           to={topic.href}
           onClick={() =>
             trackHomepageEvent("homepage_trending_view_all_click", {
@@ -66,14 +66,9 @@ const TrendingTopicRail: React.FC<TrendingTopicRailProps> = ({
               position,
             })
           }
-          className="inline-flex min-h-control-sm shrink-0 items-center gap-1 rounded-control px-2 text-xs font-bold text-primary motion-interactive hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:text-sm"
         >
-          <span className="hidden sm:inline">
-            {t("home.homepageTrending.seeMoreListings")}
-          </span>
-          <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
-          <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-        </Link>
+          {t("home.homepageTrending.viewAllListings")}
+        </HomeSectionAction>
       </div>
       <div
         onClickCapture={(event) => {

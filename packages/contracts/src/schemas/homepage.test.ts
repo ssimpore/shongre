@@ -22,10 +22,12 @@ describe("homepage configuration contract", () => {
       "collections",
       "pro_cta",
     ]);
-    expect(configuration.sections.find((item) => item.key === "trending"))
-      .toMatchObject({ maxItems: 4 });
-    expect(configuration.sections.find((item) => item.key === "deals"))
-      .toMatchObject({ maxItems: 6 });
+    expect(
+      configuration.sections.find((item) => item.key === "trending"),
+    ).toMatchObject({ maxItems: 4 });
+    expect(
+      configuration.sections.find((item) => item.key === "deals"),
+    ).toMatchObject({ maxItems: 6 });
   });
 
   it("rejects duplicate sections and resolves schedules and localized copy", () => {

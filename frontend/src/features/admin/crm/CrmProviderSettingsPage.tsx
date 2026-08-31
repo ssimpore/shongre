@@ -35,7 +35,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
   const aiOnly = useLocation().pathname.endsWith("/ai");
   usePageMeta({
     title: `${aiOnly ? "IA" : "Fournisseurs"} CRM | Shongre`,
-    description: t("admin.crmProviderSettingsPage.connexionsFournisseursPartageesDuCrm"),
+    description: t(
+      "admin.crmProviderSettingsPage.connexionsFournisseursPartageesDuCrm",
+    ),
     canonicalPath: aiOnly
       ? "/admin/crm/configuration/ai"
       : "/admin/crm/configuration/providers",
@@ -195,7 +197,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
           </div>
         </div>
         <p className="mt-3 max-w-3xl text-xs leading-relaxed text-text-disabled">
-          {t("admin.crmProviderSettingsPage.leCrmReutiliseLaPlateformeFournisseurShongreUneConnexionPersonnelle")}
+          {t(
+            "admin.crmProviderSettingsPage.leCrmReutiliseLaPlateformeFournisseurShongreUneConnexionPersonnelle",
+          )}
         </p>
       </section>
       {!snapshot ? (
@@ -249,7 +253,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
             <div className="border-b border-border-subtle px-5 py-4">
               <h2 className="text-sm font-black">Connexions visibles</h2>
               <p className="text-micro text-stone-500">
-                {t("admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement")}
+                {t(
+                  "admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement",
+                )}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -275,7 +281,10 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       {connection.credentialConfigured && (
                         <p className="mt-1 inline-flex items-center gap-1 text-micro font-bold text-success">
                           <KeyRound className="h-icon-xs w-icon-xs" />{" "}
-                          {t("admin.crmProviderSettingsPage.credentialConfigure")} {connection.credentialHint}
+                          {t(
+                            "admin.crmProviderSettingsPage.credentialConfigure",
+                          )}{" "}
+                          {connection.credentialHint}
                         </p>
                       )}
                     </div>
@@ -304,9 +313,13 @@ export const CrmProviderSettingsPage: React.FC = () => {
           </section>
           <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
-              <h2 className="text-sm font-black">{t("admin.crmProviderSettingsPage.registrePartage")}</h2>
+              <h2 className="text-sm font-black">
+                {t("admin.crmProviderSettingsPage.registrePartage")}
+              </h2>
               <p className="text-micro text-stone-500">
-                {t("admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable")}
+                {t(
+                  "admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable",
+                )}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -376,7 +389,12 @@ export const CrmProviderSettingsPage: React.FC = () => {
           <div className="flex items-start gap-2 rounded-2xl border border-success-border bg-success-surface p-4 text-xs text-success">
             <ShieldCheck className="mt-0.5 h-icon-md w-icon-md shrink-0" />
             <span>
-              <strong>{t("admin.crmProviderSettingsPage.resolutionFailClosed")}</strong> {t("admin.crmProviderSettingsPage.enModeApiUneCapaciteSansConnexionActiveEtAutorisee")}
+              <strong>
+                {t("admin.crmProviderSettingsPage.resolutionFailClosed")}
+              </strong>{" "}
+              {t(
+                "admin.crmProviderSettingsPage.enModeApiUneCapaciteSansConnexionActiveEtAutorisee",
+              )}
             </span>
           </div>
         </>
@@ -388,7 +406,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
           setCredential("");
         }}
         title="Nouvelle connexion fournisseur"
-        description={t("admin.crmProviderSettingsPage.laConnexionResteEnBrouillonTantQuUnAdapterEt")}
+        description={t(
+          "admin.crmProviderSettingsPage.laConnexionResteEnBrouillonTantQuUnAdapterEt",
+        )}
       >
         <form onSubmit={createConnection} className="space-y-3.5 text-xs">
           <FormField label="Fournisseur" required>
@@ -411,7 +431,10 @@ export const CrmProviderSettingsPage: React.FC = () => {
             />
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label={t("admin.crmProviderSettingsPage.nomDeLaConnexion")} required>
+            <FormField
+              label={t("admin.crmProviderSettingsPage.nomDeLaConnexion")}
+              required
+            >
               <Input
                 value={displayName}
                 onChange={(event) => setDisplayName(event.target.value)}
@@ -473,7 +496,9 @@ export const CrmProviderSettingsPage: React.FC = () => {
           setCredential("");
         }}
         title={`Rotation · ${rotating?.displayName ?? "connexion"}`}
-        description={t("admin.crmProviderSettingsPage.lAncienCredentialEstRevoqueAtomiquementLaConnexionRepasseEn")}
+        description={t(
+          "admin.crmProviderSettingsPage.lAncienCredentialEstRevoqueAtomiquementLaConnexionRepasseEn",
+        )}
       >
         <form onSubmit={rotateCredential} className="space-y-3.5 text-xs">
           <FormField label="Nouveau credential" required>

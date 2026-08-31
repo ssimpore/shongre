@@ -111,7 +111,9 @@ export const ProviderConfigurationForm: React.FC<
               {t("admin.providerConfigurationForm.etatDActivation")}
             </span>
             <p className="text-micro text-stone-500 mb-2">
-              {t("admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve")}
+              {t(
+                "admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve",
+              )}
             </p>
             <div className="flex items-center gap-2">
               <Switch
@@ -260,7 +262,9 @@ export const ProviderConfigurationForm: React.FC<
                       </div>
 
                       <p className="text-xs text-stone-700 rounded border border-stone-200 bg-bg-surface px-2.5 py-2">
-                        {t("admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe")}
+                        {t(
+                          "admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe",
+                        )}
                       </p>
                       <p className="text-micro text-stone-500">
                         {t(

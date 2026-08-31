@@ -71,7 +71,9 @@ export function calculateInvoiceLines(
   createId: (position: number) => string,
 ): CalculatedInvoiceLines {
   if (inputs.length === 0) {
-    throw new InvoicingCalculationError("An invoice requires at least one line.");
+    throw new InvoicingCalculationError(
+      "An invoice requires at least one line.",
+    );
   }
 
   const taxGroups = new Map<
@@ -89,13 +91,12 @@ export function calculateInvoiceLines(
   const lines = inputs.map((input, index): InvoicingLine => {
     const quantity = parseScaledDecimal(input.quantity);
     if (quantity <= 0n) {
-      throw new InvoicingCalculationError("Line quantity must be greater than zero.");
+      throw new InvoicingCalculationError(
+        "Line quantity must be greater than zero.",
+      );
     }
     const unitPrice = parseScaledDecimal(input.unitPriceMinorDecimal);
-    const net = divideHalfUp(
-      quantity * unitPrice,
-      PRICE_QUANTITY_DIVISOR,
-    );
+    const net = divideHalfUp(quantity * unitPrice, PRICE_QUANTITY_DIVISOR);
     const tax = divideHalfUp(
       net * BigInt(input.taxRateBps),
       BASIS_POINTS_DIVISOR,
@@ -145,4 +146,3 @@ export function calculateInvoiceLines(
     totalMinor: toSafeMinor(total),
   };
 }
-

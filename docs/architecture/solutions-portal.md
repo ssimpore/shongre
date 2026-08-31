@@ -111,7 +111,9 @@ permission policies.
 
 Origins are injected at runtime through `SHONGRE_MARKETPLACE_ORIGIN`,
 `SHONGRE_SOLUTIONS_ORIGIN`, `SHONGRE_PROSPECTS_ORIGIN`, and
-`SHONGRE_FACTURATION_ORIGIN`. Production requires HTTPS and distinct hosts.
+`SHONGRE_FACTURATION_ORIGIN`. Production requires every origin explicitly;
+there is no source-code hostname fallback, and the configured hosts must use
+HTTPS and remain distinct.
 Local development uses one loopback origin and falls back to `/solutions`,
 `/prospects`, and `/facturation`.
 

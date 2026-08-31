@@ -9,13 +9,19 @@ class HttpSolutionsService implements SolutionsServiceContract {
   private unavailable(): never {
     throw new Error("L’adaptateur HTTP Solutions n’est pas activé.");
   }
-  listPublicSolutions(): ReturnType<SolutionsServiceContract["listPublicSolutions"]> {
+  listPublicSolutions(): ReturnType<
+    SolutionsServiceContract["listPublicSolutions"]
+  > {
     return Promise.reject(this.unavailable());
   }
-  getSolutionBySlug(): ReturnType<SolutionsServiceContract["getSolutionBySlug"]> {
+  getSolutionBySlug(): ReturnType<
+    SolutionsServiceContract["getSolutionBySlug"]
+  > {
     return Promise.reject(this.unavailable());
   }
-  listAdminSolutions(): ReturnType<SolutionsServiceContract["listAdminSolutions"]> {
+  listAdminSolutions(): ReturnType<
+    SolutionsServiceContract["listAdminSolutions"]
+  > {
     return Promise.reject(this.unavailable());
   }
   createSolution(): ReturnType<SolutionsServiceContract["createSolution"]> {
@@ -27,10 +33,14 @@ class HttpSolutionsService implements SolutionsServiceContract {
   reorderSolutions(): ReturnType<SolutionsServiceContract["reorderSolutions"]> {
     return Promise.reject(this.unavailable());
   }
-  transitionLifecycle(): ReturnType<SolutionsServiceContract["transitionLifecycle"]> {
+  transitionLifecycle(): ReturnType<
+    SolutionsServiceContract["transitionLifecycle"]
+  > {
     return Promise.reject(this.unavailable());
   }
-  listLifecycleHistory(): ReturnType<SolutionsServiceContract["listLifecycleHistory"]> {
+  listLifecycleHistory(): ReturnType<
+    SolutionsServiceContract["listLifecycleHistory"]
+  > {
     return Promise.reject(this.unavailable());
   }
 }

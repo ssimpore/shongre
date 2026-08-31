@@ -15,7 +15,9 @@ describe("shared product organization provisioning migration", () => {
     expect(migration).toContain("country_code VARCHAR(2)");
     expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
     expect(migration).toContain("FORCE ROW LEVEL SECURITY");
-    expect(migration).toContain("organization_business_identifiers_member_read");
+    expect(migration).toContain(
+      "organization_business_identifiers_member_read",
+    );
     expect(migration).not.toContain(
       "organization_business_identifiers_owner_manage",
     );
@@ -30,7 +32,9 @@ describe("shared product organization provisioning migration", () => {
   });
 
   it("does not grant Facturation or any other product entitlement", () => {
-    expect(migration).not.toContain("INSERT INTO public.monetization_entitlements");
+    expect(migration).not.toContain(
+      "INSERT INTO public.monetization_entitlements",
+    );
   });
 
   it("bootstraps invoicing identity from shared organization facts behind the entitlement", () => {

@@ -33,22 +33,21 @@ export interface HomepageDealItem {
   offer: HomepageOfferPresentation;
 }
 
-export type HomepageSectionLoadStatus =
-  | "loading"
-  | "ready"
-  | "empty"
-  | "error";
+export type HomepageSectionLoadStatus = "loading" | "ready" | "empty" | "error";
 
 export interface HomepageSectionView extends ResolvedHomepageSection {
   status: HomepageSectionLoadStatus;
-  errorCode?: "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
+  errorCode?:
+    "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
   trending?: TrendingSectionResponse;
   deals?: HomepageDealItem[];
   listings?: Listing[];
 }
 
-export interface HomepageExperience
-  extends Omit<ResolvedHomepageConfiguration, "sections"> {
+export interface HomepageExperience extends Omit<
+  ResolvedHomepageConfiguration,
+  "sections"
+> {
   sections: HomepageSectionView[];
 }
 

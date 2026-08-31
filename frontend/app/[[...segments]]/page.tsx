@@ -48,9 +48,10 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const [{ segments = [] }, query] = await Promise.all([params, searchParams]);
   const pathname = normalizePathname(segments);
-  const applicationContext = await resolveServerApplicationContext();
+  const applicationContext = await resolveServerApplicationContext(pathname);
   if (applicationContext) {
-    const { applicationId, canonicalOrigin } = applicationContext;
+    const { applicationId, applicationPath, canonicalOrigin } =
+      applicationContext;
     const rootCanonical = `${canonicalOrigin}/`;
     let title = "Shongre";
     let description = "Les applications professionnelles Shongre.";
@@ -58,7 +59,7 @@ export async function generateMetadata({
     let noIndex = pathname !== "/";
 
     if (applicationId === "solutions") {
-      const slug = pathname.split("/").filter(Boolean)[0];
+      const slug = applicationPath.split("/").filter(Boolean)[0];
       const candidate = slug
         ? DEMO_SOLUTIONS.find((value) => value.slug === slug)
         : null;
@@ -146,7 +147,7 @@ export async function generateMetadata({
       },
     };
   }
-  if (context.kind !== "market") return {};
+  if (context.kind !== "market") notFound();
   const routeData = await resolveServerPublicRouteData(
     context.internalPath,
     context.countryCode!,
@@ -174,13 +175,14 @@ export default async function Page({ params, searchParams }: PageProps) {
   const [{ segments = [] }, query] = await Promise.all([params, searchParams]);
   const pathname = normalizePathname(segments);
   const queryString = serializeQuery(query);
-  const applicationContext = await resolveServerApplicationContext();
+  const applicationContext = await resolveServerApplicationContext(pathname);
   if (applicationContext) {
     return (
       <WebApplication
         pathname={pathname}
         marketContext={applicationContext.marketContext}
         applicationId={applicationContext.applicationId}
+        routingBasePath={applicationContext.routingBasePath}
       />
     );
   }

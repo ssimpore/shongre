@@ -58,7 +58,9 @@ export const CrmReportsPage: React.FC = () => {
           Rapports commerciaux
         </h1>
         <p className="mt-1 text-xs text-text-disabled">
-          {t("admin.crmReportsPage.indicateursCalculesDepuisLesOpportunitesEtTachesDuTenant")}
+          {t(
+            "admin.crmReportsPage.indicateursCalculesDepuisLesOpportunitesEtTachesDuTenant",
+          )}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
           {[
@@ -99,7 +101,9 @@ export const CrmReportsPage: React.FC = () => {
         <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-icon-md w-icon-md text-primary" />
-            <h2 className="text-sm font-black">{t("admin.crmReportsPage.entonnoirParEtape")}</h2>
+            <h2 className="text-sm font-black">
+              {t("admin.crmReportsPage.entonnoirParEtape")}
+            </h2>
           </div>
           <div className="mt-5 space-y-4">
             {dashboard.stages.map((stage) => (
@@ -122,7 +126,8 @@ export const CrmReportsPage: React.FC = () => {
                   className="mt-1.5"
                 />
                 <p className="mt-1 text-micro text-text-muted">
-                  {t("admin.crmReportsPage.pondere")} {format(stage.weightedAmountMinor)}
+                  {t("admin.crmReportsPage.pondere")}{" "}
+                  {format(stage.weightedAmountMinor)}
                 </p>
               </div>
             ))}
@@ -130,7 +135,9 @@ export const CrmReportsPage: React.FC = () => {
         </section>
         <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black">{t("admin.crmReportsPage.execution")}</h2>
+            <h2 className="text-sm font-black">
+              {t("admin.crmReportsPage.execution")}
+            </h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Tâches aujourd’hui", dashboard.tasksDueToday],
@@ -149,7 +156,9 @@ export const CrmReportsPage: React.FC = () => {
             </dl>
           </section>
           <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black">{t("admin.crmReportsPage.resultats")}</h2>
+            <h2 className="text-sm font-black">
+              {t("admin.crmReportsPage.resultats")}
+            </h2>
             <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-500">
               {t("admin.crmOverviewPage.revenuGagne")}
             </p>

@@ -102,7 +102,13 @@ export const HomePage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [activeMarket.code, currentLocale, location.city, location.region, attempt]);
+  }, [
+    activeMarket.code,
+    currentLocale,
+    location.city,
+    location.region,
+    attempt,
+  ]);
 
   const visibleExperience =
     experience?.marketCode === activeMarket.code &&

@@ -14,7 +14,8 @@ import type { TrendingSectionResponse } from "../trending/trending.types";
 import { majorToMinorAmount } from "@shongre/shared";
 
 const isOverrideActive = (override: HomepageOfferOverride, now: Date) =>
-  (!override.startsAt || new Date(override.startsAt).getTime() <= now.getTime()) &&
+  (!override.startsAt ||
+    new Date(override.startsAt).getTime() <= now.getTime()) &&
   (!override.endsAt || new Date(override.endsAt).getTime() > now.getTime());
 
 export function listingBelongsToMarket(
@@ -28,7 +29,8 @@ export function listingBelongsToMarket(
   if (publication) return publication.status === "active";
   return (
     listing.marketCode?.toUpperCase() === normalized ||
-    listing.marketCodes?.some((code) => code.toUpperCase() === normalized) === true
+    listing.marketCodes?.some((code) => code.toUpperCase() === normalized) ===
+      true
   );
 }
 
@@ -61,7 +63,8 @@ export function selectHomepageDeals(
         (selectionMode !== "automatic" && override?.isHidden) ||
         listing.status !== "active" ||
         !listingBelongsToMarket(listing, normalizedMarket) ||
-        (!settings.includeProfessionalSellers && listing.sellerType === "pro") ||
+        (!settings.includeProfessionalSellers &&
+          listing.sellerType === "pro") ||
         (settings.taxonomyBranches?.length &&
           !settings.taxonomyBranches.some(
             (branch) =>

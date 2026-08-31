@@ -84,7 +84,9 @@ export const CrmConfigurationPage: React.FC = () => {
           </div>
         </div>
         <p className="mt-3 max-w-2xl text-xs leading-relaxed text-text-disabled">
-          {t("admin.crmConfigurationPage.parametresPropresAuTenantLesSecretsFournisseursRestentDansLe")}
+          {t(
+            "admin.crmConfigurationPage.parametresPropresAuTenantLesSecretsFournisseursRestentDansLe",
+          )}
         </p>
       </section>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

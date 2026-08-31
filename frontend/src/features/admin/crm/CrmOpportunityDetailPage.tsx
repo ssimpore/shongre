@@ -140,7 +140,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
     title: opportunity
       ? `${opportunity.name} | CRM Shongre`
       : "Opportunité CRM | Shongre",
-    description: t("admin.crmOpportunityDetailPage.vueCommercialeCompleteDeLOpportunite"),
+    description: t(
+      "admin.crmOpportunityDetailPage.vueCommercialeCompleteDeLOpportunite",
+    ),
     canonicalPath: id ? crmPaths.opportunity(id) : undefined,
     noIndex: true,
   });
@@ -363,7 +365,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             size="sm"
             onClick={() => navigate(crmPaths.pipeline)}
           >
-            <ArrowLeft className="h-icon-md w-icon-md" /> {t("admin.crmCompanyDetailPage.pipeline")}
+            <ArrowLeft className="h-icon-md w-icon-md" />{" "}
+            {t("admin.crmCompanyDetailPage.pipeline")}
           </Button>
           <Button size="sm" onClick={() => void load()}>
             <RefreshCw className="h-icon-md w-icon-md" /> {t("common.retry")}
@@ -424,7 +427,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 </span>
                 {opportunity.expectedCloseDate && (
                   <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-icon-sm w-icon-sm" /> {t("admin.crmOpportunityDetailPage.cloture")}{" "}
+                    <CalendarDays className="h-icon-sm w-icon-sm" />{" "}
+                    {t("admin.crmOpportunityDetailPage.cloture")}{" "}
                     {new Intl.DateTimeFormat(currentLocale, {
                       day: "numeric",
                       month: "long",
@@ -445,7 +449,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 )}
               </strong>
               <span className="text-xs text-text-disabled">
-                {opportunity.probability}{t("admin.crmOpportunityDetailPage.deProbabilite")}
+                {opportunity.probability}
+                {t("admin.crmOpportunityDetailPage.deProbabilite")}
               </span>
               <div className="mt-3 flex flex-wrap gap-2 xl:justify-end">
                 <Button
@@ -454,7 +459,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
                   onClick={() => setNoteOpen(true)}
                 >
-                  <MessageSquareText className="h-icon-md w-icon-md" /> {t("admin.crmContactDetailPage.ajouterUneNote")}
+                  <MessageSquareText className="h-icon-md w-icon-md" />{" "}
+                  {t("admin.crmContactDetailPage.ajouterUneNote")}
                 </Button>
                 <Button
                   variant="outline"
@@ -471,7 +477,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     size="sm"
                     onClick={() => setCloseMode("won")}
                   >
-                    <CheckCircle2 className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.gagnee")}
+                    <CheckCircle2 className="h-icon-md w-icon-md" />{" "}
+                    {t("admin.crmOpportunityDetailPage.gagnee")}
                   </Button>
                 )}
                 {opportunity.status === "open" && (
@@ -549,7 +556,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   Historique commercial
                 </h2>
                 <p className="text-micro text-stone-500">
-                  {t("admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements")}
+                  {t(
+                    "admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements",
+                  )}
                 </p>
               </div>
               <Button
@@ -568,7 +577,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     {t("admin.crmOpportunityDetailPage.aucuneActivite")}
                   </p>
                   <p className="text-micro text-stone-500">
-                    {t("admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci")}
+                    {t(
+                      "admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci",
+                    )}
                   </p>
                 </div>
               ) : (
@@ -625,7 +636,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   {t("admin.crmOpportunityDetailPage.tachesLiees")}
                 </h2>
                 <p className="text-micro text-stone-500">
-                  {t("admin.crmOpportunityDetailPage.relancesEtProchainesEtapes")}
+                  {t(
+                    "admin.crmOpportunityDetailPage.relancesEtProchainesEtapes",
+                  )}
                 </p>
               </div>
               <Link
@@ -682,7 +695,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               <div>
                 <h2 className="text-sm font-black text-stone-950">Devis</h2>
                 <p className="text-micro text-stone-500">
-                  {t("admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite")}
+                  {t(
+                    "admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite",
+                  )}
                 </p>
               </div>
               <Button
@@ -691,7 +706,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 onClick={() => setQuoteOpen(true)}
                 disabled={!opportunity.accountId}
               >
-                <Plus className="h-icon-md w-icon-md" /> {t("invoicing.product.stepCreateTitle")}
+                <Plus className="h-icon-md w-icon-md" />{" "}
+                {t("invoicing.product.stepCreateTitle")}
               </Button>
             </div>
             <div className="divide-y divide-border-subtle px-5">
@@ -775,11 +791,15 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               <h2 className="text-sm font-black">Assistant commercial</h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-text-disabled">
-              {t("admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur")}
+              {t(
+                "admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur",
+              )}
             </p>
             <div className="mt-3 rounded-control border border-stone-800 bg-stone-900 p-3 text-micro text-text-disabled">
               <Bot className="mb-1.5 h-icon-md w-icon-md text-stone-500" />
-              {t("admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel")}
+              {t(
+                "admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel",
+              )}
             </div>
             <Button
               to="/admin/fournisseurs"
@@ -787,7 +807,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               size="sm"
               className="mt-3 w-full border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
             >
-              <Settings2 className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.configurerLesFournisseurs")}
+              <Settings2 className="h-icon-md w-icon-md" />{" "}
+              {t("admin.crmOpportunityDetailPage.configurerLesFournisseurs")}
             </Button>
           </section>
 
@@ -799,7 +820,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               </h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-stone-500">
-              {t("admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite")}
+              {t(
+                "admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite",
+              )}
             </p>
             <Button
               to="/admin/fournisseurs"
@@ -807,7 +830,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               size="sm"
               className="mt-3 w-full"
             >
-              <Mail className="h-icon-md w-icon-md" /> {t("admin.crmOpportunityDetailPage.connecterUneMessagerie")}
+              <Mail className="h-icon-md w-icon-md" />{" "}
+              {t("admin.crmOpportunityDetailPage.connecterUneMessagerie")}
             </Button>
           </section>
         </aside>
@@ -817,7 +841,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
         isOpen={noteOpen}
         onClose={() => setNoteOpen(false)}
         title={t("admin.crmContactDetailPage.ajouterUneNote")}
-        description={t("admin.crmOpportunityDetailPage.laNoteSeraAjouteeALHistoriqueImmuableDeL")}
+        description={t(
+          "admin.crmOpportunityDetailPage.laNoteSeraAjouteeALHistoriqueImmuableDeL",
+        )}
       >
         <form onSubmit={addNote} className="space-y-4 text-xs">
           <FormField label="Note commerciale" required>
@@ -825,7 +851,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={5}
-              placeholder={t("admin.crmOpportunityDetailPage.decisionsObjectionsEngagementsOuProchaineEtape")}
+              placeholder={t(
+                "admin.crmOpportunityDetailPage.decisionsObjectionsEngagementsOuProchaineEtape",
+              )}
               required
             />
           </FormField>
@@ -849,7 +877,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
         isOpen={quoteOpen}
         onClose={() => setQuoteOpen(false)}
         title={t("admin.crmOpportunityDetailPage.creerUnDevis")}
-        description={t("admin.crmOpportunityDetailPage.lesTotauxEtTaxesSontCalculesEnUnitesMonetairesMineures")}
+        description={t(
+          "admin.crmOpportunityDetailPage.lesTotauxEtTaxesSontCalculesEnUnitesMonetairesMineures",
+        )}
       >
         <form onSubmit={createQuote} className="space-y-4 text-xs">
           <FormField label="Produit" required>
@@ -858,7 +888,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               value={quoteProductId}
               onChange={(event) => setQuoteProductId(event.target.value)}
               options={[
-                { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
+                {
+                  value: "",
+                  label: t("admin.crmOpportunityDetailPage.selectionner"),
+                },
                 ...products.map((product) => ({
                   value: product.id,
                   label: product.name,
@@ -878,7 +911,9 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 required
               />
             </FormField>
-            <FormField label={t("admin.crmOpportunityDetailPage.valableJusquAu")}>
+            <FormField
+              label={t("admin.crmOpportunityDetailPage.valableJusquAu")}
+            >
               <Input
                 type="date"
                 value={quoteValidUntil}
@@ -903,12 +938,16 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     )}
                   </strong>
                   <p className="mt-1 text-micro text-stone-500">
-                    {t("admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes")}
+                    {t(
+                      "admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes",
+                    )}
                   </p>
                 </div>
               ) : (
                 <p className="rounded-control bg-warning-surface p-3 text-warning">
-                  {t("admin.crmOpportunityDetailPage.ceProduitNAPasDePrixActif")}
+                  {t(
+                    "admin.crmOpportunityDetailPage.ceProduitNAPasDePrixActif",
+                  )}
                 </p>
               );
             })()}
@@ -946,7 +985,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           {closeMode === "won" ? (
             <div className="rounded-control border border-success-border bg-success-surface p-4">
               <div className="flex items-center gap-2 font-black text-success">
-                <CheckCircle2 className="h-icon-lg w-icon-lg" /> {t("admin.crmOpportunityDetailPage.contratDe")}{" "}
+                <CheckCircle2 className="h-icon-lg w-icon-lg" />{" "}
+                {t("admin.crmOpportunityDetailPage.contratDe")}{" "}
                 {money(
                   opportunity.amount.amountMinor,
                   opportunity.amount.currency,
@@ -954,23 +994,46 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 )}
               </div>
               <p className="mt-1 text-success">
-                {t("admin.crmOpportunityDetailPage.laClotureEstAuditeeEtPrepareLOnboardingSansModifier")}
+                {t(
+                  "admin.crmOpportunityDetailPage.laClotureEstAuditeeEtPrepareLOnboardingSansModifier",
+                )}
               </p>
             </div>
           ) : (
             <>
-              <FormField label={t("admin.crmOpportunityDetailPage.motifDePerte")} required>
+              <FormField
+                label={t("admin.crmOpportunityDetailPage.motifDePerte")}
+                required
+              >
                 <Select
                   aria-label={t("admin.crmOpportunityDetailPage.motifDePerte")}
                   value={lossReason}
                   onChange={(event) => setLossReason(event.target.value)}
                   options={[
-                    { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
+                    {
+                      value: "",
+                      label: t("admin.crmOpportunityDetailPage.selectionner"),
+                    },
                     { value: "budget", label: "Budget insuffisant" },
                     { value: "concurrent", label: "Concurrent retenu" },
-                    { value: "timing", label: t("admin.crmOpportunityDetailPage.calendrierReporte") },
-                    { value: "no_need", label: t("admin.crmOpportunityDetailPage.besoinNonConfirme") },
-                    { value: "no_response", label: t("admin.crmOpportunityDetailPage.absenceDeReponse") },
+                    {
+                      value: "timing",
+                      label: t(
+                        "admin.crmOpportunityDetailPage.calendrierReporte",
+                      ),
+                    },
+                    {
+                      value: "no_need",
+                      label: t(
+                        "admin.crmOpportunityDetailPage.besoinNonConfirme",
+                      ),
+                    },
+                    {
+                      value: "no_response",
+                      label: t(
+                        "admin.crmOpportunityDetailPage.absenceDeReponse",
+                      ),
+                    },
                     { value: "other", label: "Autre" },
                   ]}
                 />

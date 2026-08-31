@@ -24,7 +24,7 @@ export const JobCard: React.FC<{
   );
 
   return (
-    <div className="h-full min-w-0" data-listing-card-consumer="employment">
+    <div className="min-w-0" data-listing-card-consumer="employment">
       <ListingCardViewCard
         listing={listing}
         href={`/emploi/offre/${job.slug}`}

@@ -1,14 +1,21 @@
 import React from "react";
-import { ArrowRight, PlusCircle, RefreshCw, ScanSearch } from "lucide-react";
+import { PlusCircle, RefreshCw, ScanSearch } from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import type { Market } from "../../../domains/market/market.types";
-import { Container, EmptyState, ListingCardSkeleton, ListingGrid, StatePanel } from "../../../design-system";
+import {
+  Container,
+  EmptyState,
+  ListingCardSkeleton,
+  ListingGrid,
+  StatePanel,
+} from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
 import { ListingCard } from "../../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../../design-system/primitives/ListingRail";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import type { PublishCtaKeys } from "../../../security/usePublishCta";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { HomeSectionAction } from "./HomeSectionAction";
 
 interface HomeRecentListingsSectionProps {
   section: HomepageSectionView;
@@ -34,18 +41,9 @@ export const HomeRecentListingsSection: React.FC<
             </p>
           ) : null}
         </div>
-        <Button
-          to="/recherche?sortBy=date_desc"
-          variant="secondary"
-          size="sm"
-          rightIcon={<ArrowRight className="h-icon-sm w-icon-sm" />}
-          className="shrink-0"
-        >
-          <span className="hidden sm:inline">
-            {t("home.homePage.toutesLesNouveautes")}
-          </span>
-          <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
-        </Button>
+        <HomeSectionAction to="/recherche?sortBy=date_desc">
+          {t("home.homePage.toutesLesNouveautes")}
+        </HomeSectionAction>
       </div>
 
       {section.status === "loading" ? (

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForStableLayout } from "./overflow";
 
 const ACTIVE_LISTING = "/annonce/list-102";
 const ACTIVE_JOB =
@@ -79,6 +80,7 @@ test.describe("SEO response and hydration contract", () => {
     page,
   }) => {
     await page.goto("/categorie/vehicules");
+    await waitForStableLayout(page);
     await page
       .getByRole("link", {
         name: /Peugeot 208 II.*15[\s\u00a0]400/,
@@ -186,20 +188,20 @@ test.describe("SEO response and hydration contract", () => {
   test("returns real 404 responses for missing public resources and routes", async ({
     request,
   }) => {
-    for (const path of [
-      "/annonce/does-not-exist",
-      "/emploi/offre/does-not-exist",
-      "/auto/vehicule/does-not-exist",
-      "/immo/bien/does-not-exist",
-      "/education/professeur/does-not-exist",
-      "/boutique/does-not-exist",
-      "/collections/does-not-exist",
-      "/does-not-exist",
-    ]) {
+    for (const [path, heading] of [
+      ["/annonce/does-not-exist", "Annonce introuvable"],
+      ["/emploi/offre/does-not-exist", "Offre introuvable"],
+      ["/auto/vehicule/does-not-exist", "Véhicule introuvable"],
+      ["/immo/bien/does-not-exist", "Bien introuvable"],
+      ["/education/professeur/does-not-exist", "Profil professeur introuvable"],
+      ["/boutique/does-not-exist", "Profil introuvable"],
+      ["/collections/does-not-exist", "Collection introuvable"],
+      ["/does-not-exist", "Page introuvable"],
+    ] as const) {
       const response = await request.get(path);
       expect(response.status(), path).toBe(404);
       expect(response.headers()["x-robots-tag"], path).toContain("noindex");
-      expect(await response.text(), path).toContain("Page introuvable");
+      expect(await response.text(), path).toContain(heading);
     }
   });
 

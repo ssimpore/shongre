@@ -286,7 +286,8 @@ export const AdminUsersPage: React.FC = () => {
             onChange={(e) => setSelectedRole(e.target.value)}
           >
             <option value="all">
-              {t("admin.adminUsersPage.tousLesRoles")}{ALL_PLATFORM_ROLES.length})
+              {t("admin.adminUsersPage.tousLesRoles")}
+              {ALL_PLATFORM_ROLES.length})
             </option>
             {ALL_PLATFORM_ROLES.map((r) => (
               <option key={r} value={r}>
@@ -648,7 +649,9 @@ export const AdminUsersPage: React.FC = () => {
         onSubmit={handleConfirmReactivate}
         title={t("admin.adminUsersPage.reactiverLeCompte")}
         label={`Motif de réactivation pour ${reactivateModalUser?.name || "ce compte"}`}
-        placeholder={t("admin.adminUsersPage.exExamenTermineEtMesuresCorrectivesConfirmees")}
+        placeholder={t(
+          "admin.adminUsersPage.exExamenTermineEtMesuresCorrectivesConfirmees",
+        )}
         confirmText="Réactiver le compte"
         required
       />

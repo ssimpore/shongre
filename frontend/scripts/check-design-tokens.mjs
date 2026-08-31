@@ -247,20 +247,75 @@ const customUtilities = new Set(
 const TAILWIND_PALETTE =
   /^(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d{2,3})?$/;
 const COLOR_KEYWORDS = new Set([
-  "transparent", "current", "inherit", "auto", "white", "black", "initial", "unset", "none",
+  "transparent",
+  "current",
+  "inherit",
+  "auto",
+  "white",
+  "black",
+  "initial",
+  "unset",
+  "none",
 ]);
 /** `max-w-screen-xl` still resolves from the breakpoint scale in Tailwind v4. */
 const BREAKPOINT_WIDTH = /^screen-(?:sm|md|lg|xl|2xl)$/;
 const SIZE_KEYWORDS = new Set([
-  "auto", "full", "screen", "min", "max", "fit", "px", "none", "prose", "reverse",
-  "dvh", "dvw", "svh", "svw", "lvh", "lvw", "vh", "vw",
-  "3xs", "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "6xl", "7xl",
+  "auto",
+  "full",
+  "screen",
+  "min",
+  "max",
+  "fit",
+  "px",
+  "none",
+  "prose",
+  "reverse",
+  "dvh",
+  "dvw",
+  "svh",
+  "svw",
+  "lvh",
+  "lvw",
+  "vh",
+  "vw",
+  "3xs",
+  "2xs",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+  "3xl",
+  "4xl",
+  "5xl",
+  "6xl",
+  "7xl",
 ]);
 const SHADOW_KEYWORDS = new Set([
-  "2xs", "xs", "sm", "md", "lg", "xl", "2xl", "none", "inner", "initial",
+  "2xs",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+  "none",
+  "inner",
+  "initial",
 ]);
 const RADIUS_KEYWORDS = new Set([
-  "none", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "full", "initial",
+  "none",
+  "xs",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+  "3xl",
+  "4xl",
+  "full",
+  "initial",
 ]);
 
 const spacingTokens = declaredIn(bothCss, "spacing");
@@ -286,15 +341,38 @@ const BARE_SIDE = /^(?:t|r|b|l|x|y|s|e|tl|tr|br|bl|ss|se|ee|es|reverse)$/;
  * and `gap-x-` never parses as `gap-`.
  */
 const NAMESPACES = [
-  ["max-w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-* / --container-*"],
-  ["min-w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-* / --container-*"],
+  [
+    "max-w",
+    (v) =>
+      spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v),
+    "--spacing-* / --container-*",
+  ],
+  [
+    "min-w",
+    (v) =>
+      spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v),
+    "--spacing-* / --container-*",
+  ],
   ["max-h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
   ["min-h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
   ["size", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
-  ["shadow", (v) => shadowTokens.has(v) || SHADOW_KEYWORDS.has(v) || isColorValue(v), "--shadow-*"],
-  ["rounded", (v) => radiusTokens.has(v) || RADIUS_KEYWORDS.has(v), "--radius-*"],
+  [
+    "shadow",
+    (v) => shadowTokens.has(v) || SHADOW_KEYWORDS.has(v) || isColorValue(v),
+    "--shadow-*",
+  ],
+  [
+    "rounded",
+    (v) => radiusTokens.has(v) || RADIUS_KEYWORDS.has(v),
+    "--radius-*",
+  ],
   ["h", (v) => spacingTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
-  ["w", (v) => spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v), "--spacing-*"],
+  [
+    "w",
+    (v) =>
+      spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v),
+    "--spacing-*",
+  ],
   ["bg", isColorValue, "--color-*"],
   ["placeholder", isColorValue, "--color-*"],
   ["divide", isColorValue, "--color-*"],
@@ -310,7 +388,8 @@ const SIDE = "(?:-(?:t|r|b|l|x|y|s|e|tl|tr|br|bl|ss|se|ee|es))?";
 const namespaceMisses = [];
 
 /** One whitespace-delimited class token, with any leading variants stripped. */
-const RAW_CLASS = /(?:^|[\s"'`{(])((?:[a-z0-9][a-z0-9.\/-]*:)*)(-?[a-z][a-z0-9./-]*)(?=$|[\s"'`})])/g;
+const RAW_CLASS =
+  /(?:^|[\s"'`{(])((?:[a-z0-9][a-z0-9.\/-]*:)*)(-?[a-z][a-z0-9./-]*)(?=$|[\s"'`})])/g;
 
 function checkNamespaces(line, file, lineNo) {
   for (const m of line.matchAll(RAW_CLASS)) {
@@ -365,7 +444,8 @@ for (const file of ALL_FILES) {
     for (const token of findUndeclaredTokens(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
-    if (!/\.test\.tsx?$/.test(file)) checkNamespaces(line, relative(".", file), i + 1);
+    if (!/\.test\.tsx?$/.test(file))
+      checkNamespaces(line, relative(".", file), i + 1);
   });
 }
 
@@ -428,9 +508,7 @@ function luminance(hex) {
   const r = parseInt(full.slice(1, 3), 16);
   const g = parseInt(full.slice(3, 5), 16);
   const b = parseInt(full.slice(5, 7), 16);
-  return (
-    0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
-  );
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
 function contrast(a, b) {
@@ -461,7 +539,9 @@ if (contrastFailures.length > 0) {
   console.error(
     "  Body copy needs 4.5:1. A token that only passes on white fails the moment",
   );
-  console.error("  it is placed on a tinted panel, which is most of the product.\n");
+  console.error(
+    "  it is placed on a tinted panel, which is most of the product.\n",
+  );
   for (const f of contrastFailures) {
     console.error(
       `  --color-${f.textToken} (${f.fg}) on --color-${f.surfaceToken} (${f.bg})\n      ${f.ratio.toFixed(2)}:1  →  needs ${AA_NORMAL_TEXT}:1`,

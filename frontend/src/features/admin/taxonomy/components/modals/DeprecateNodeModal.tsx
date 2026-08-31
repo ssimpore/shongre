@@ -122,7 +122,9 @@ export const DeprecateNodeModal: React.FC<DeprecateNodeModalProps> = ({
 
         {replacementId && (
           <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center justify-between text-xs">
-            <span className="font-semibold text-text-secondary">{node.name}</span>
+            <span className="font-semibold text-text-secondary">
+              {node.name}
+            </span>
             <ArrowRight className="w-icon-md h-icon-md text-primary" />
             <span className="font-bold text-primary">
               {allNodes.find((n) => n.id === replacementId)?.name}

@@ -28,13 +28,13 @@ this directory are intentionally thin web adapters: they re-export the shared
 implementation or add frontend-only context such as localized copy. Product
 features must never fork their visual implementation.
 
-| Semantic role | Canonical owner | Frontend adapter responsibility |
-| --- | --- | --- |
-| Buttons and icon buttons | `packages/ui/src/primitives` | Re-export only |
-| Inputs, selects, checkboxes, switches | `packages/ui/src/forms` | Re-export only |
-| Modal and bottom/right drawer | `packages/ui/src/feedback/Modal.web.tsx` | Re-export only |
+| Semantic role                                 | Canonical owner                               | Frontend adapter responsibility         |
+| --------------------------------------------- | --------------------------------------------- | --------------------------------------- |
+| Buttons and icon buttons                      | `packages/ui/src/primitives`                  | Re-export only                          |
+| Inputs, selects, checkboxes, switches         | `packages/ui/src/forms`                       | Re-export only                          |
+| Modal and bottom/right drawer                 | `packages/ui/src/feedback/Modal.web.tsx`      | Re-export only                          |
 | Page error/not-found/restricted/offline state | `packages/ui/src/feedback/StatePanel.web.tsx` | Inject localized technical-detail label |
-| Tokens, motion, elevation, breakpoints | `packages/design-tokens/src/theme.ts` | Consume generated CSS |
+| Tokens, motion, elevation, breakpoints        | `packages/design-tokens/src/theme.ts`         | Consume generated CSS                   |
 
 ## Layers
 

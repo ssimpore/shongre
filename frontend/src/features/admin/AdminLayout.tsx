@@ -271,7 +271,9 @@ export const AdminLayout: React.FC = () => {
               </div>
             </Link>
 
-            <span className="hidden md:inline-block text-text-secondary">|</span>
+            <span className="hidden md:inline-block text-text-secondary">
+              |
+            </span>
 
             {/* Scope pill */}
             <div className="hidden md:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700 text-stone-300 text-xs px-2.5 py-1 rounded-pill">

@@ -24,10 +24,14 @@ import {
   DropdownMenu,
   FilterPanel,
   Input,
+  LocationSelector,
   Skeleton,
   StatePanel,
 } from "../../design-system";
-import type { FilterPanelPresentation } from "../../design-system";
+import type {
+  FilterPanelPresentation,
+  LocationSelectorValue,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { storageService } from "../../services/storage.service";
@@ -132,27 +136,6 @@ const EmploymentFilters: React.FC<{
           />
         </div>
       ))}
-      <div>
-        <span className="mb-2 block text-xs font-bold text-text-main">
-          Rayon autour du lieu
-        </span>
-        <DropdownMenu
-          ariaLabel="Rayon autour du lieu"
-          headerTitle="Rayon autour du lieu"
-          fullWidth
-          value={params.get("radius") || ""}
-          disabled={!params.get("location")}
-          onChange={(value) => setParam("radius", value || undefined)}
-          options={[
-            { value: "", label: "Zone exacte" },
-            { value: "5", label: "5 km" },
-            { value: "10", label: "10 km" },
-            { value: "25", label: "25 km" },
-            { value: "50", label: "50 km" },
-            { value: "100", label: "100 km" },
-          ]}
-        />
-      </div>
       <div>
         <span className="mb-2 block text-xs font-bold text-text-main">
           Date de publication
@@ -414,10 +397,29 @@ export const EmploymentSearchPage: React.FC = () => {
   usePageMeta(pageMeta);
 
   const setParam = (key: string, value?: string) => {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    setParams(next, { replace: true });
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const updateLocation = (value: LocationSelectorValue) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (value.city) next.set("location", value.city);
+        else next.delete("location");
+        if (value.radiusKm) next.set("radius", String(value.radiusKm));
+        else next.delete("radius");
+        return next;
+      },
+      { replace: true },
+    );
   };
 
   const resetFilters = () => {
@@ -487,10 +489,6 @@ export const EmploymentSearchPage: React.FC = () => {
                 event.preventDefault();
                 const form = new FormData(event.currentTarget);
                 setParam("q", String(form.get("q") || "") || undefined);
-                setParam(
-                  "location",
-                  String(form.get("location") || "") || undefined,
-                );
               }}
             >
               <label className="sr-only" htmlFor="employment-query">
@@ -509,12 +507,16 @@ export const EmploymentSearchPage: React.FC = () => {
                   placeholder={t("employment.search.queryPlaceholder")}
                 />
               </div>
-              <input
-                aria-label={t("employment.search.locationLabel")}
-                name="location"
-                defaultValue={params.get("location") || ""}
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm text-text-main outline-none focus:border-primary"
-                placeholder={t("employment.search.locationPlaceholder")}
+              <LocationSelector
+                id="employment-location-selector"
+                variant="field"
+                city={params.get("location") || ""}
+                radiusKm={
+                  params.get("radius")
+                    ? Number(params.get("radius"))
+                    : undefined
+                }
+                onChange={updateLocation}
               />
               <Button
                 type="submit"

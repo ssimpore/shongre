@@ -80,4 +80,32 @@ test.describe("current location picker", () => {
     expect(box!.x).toBeGreaterThanOrEqual(0);
     expect(box!.x + box!.width).toBeLessThanOrEqual(390);
   });
+
+  test("keeps a results-page location draft until the search is submitted", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await usePersona(page, "guest");
+    await page.goto("/recherche?city=Paris&radius=30");
+
+    const selector = page.locator("#search-page-page-location-button");
+    await expect(selector).toHaveAttribute(
+      "aria-label",
+      "Localisation : Paris (+30 km)",
+    );
+    await selector.click();
+
+    const dialog = page.getByRole("dialog", { name: "Zone géographique" });
+    await dialog.locator("#location-city-input").fill("Lyon");
+    await dialog.getByRole("button", { name: "20km" }).click();
+    await dialog.getByRole("button", { name: "Appliquer la zone" }).click();
+
+    await expect(selector).toHaveAttribute(
+      "aria-label",
+      "Localisation : Lyon (+20 km)",
+    );
+    await page.locator("#search-page-page-submit-button").click();
+    await expect(page).toHaveURL(/city=Lyon/);
+    await expect(page).toHaveURL(/radius=20/);
+  });
 });

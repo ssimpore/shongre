@@ -1,10 +1,4 @@
-import {
-  BarChart3,
-  FileText,
-  Grid2X2,
-  ScanSearch,
-  Store,
-} from "lucide-react";
+import { BarChart3, FileText, Grid2X2, ScanSearch, Store } from "lucide-react";
 import type { SolutionIconId } from "../../domains/solutions/solutions.types";
 
 const ICONS = {

@@ -103,7 +103,142 @@ if [[ "$server_ready" != "1" ]]; then
 fi
 
 shongre_info "running Playwright against the isolated standalone server at $E2E_BASE_URL"
-shongre_info "phase 1/2: regular browser tests with bounded parallelism"
-npm run test:e2e --workspace=frontend -- --grep-invert '@serial' --pass-with-no-tests "$@"
+shongre_info "phase 1/2: regular browser tests with engine-safe parallelism"
+
+requested_projects=()
+forwarded_args=()
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --project)
+      if [[ "$#" -lt 2 ]]; then
+        shongre_fail "--project requires a Playwright project name"
+        exit 1
+      fi
+      requested_projects+=("$2")
+      shift 2
+      ;;
+    --project=*)
+      requested_projects+=("${1#--project=}")
+      shift
+      ;;
+    *)
+      forwarded_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+project_is_requested() {
+  local project="$1"
+  if [[ "${#requested_projects[@]}" -eq 0 ]]; then
+    return 0
+  fi
+  local requested
+  for requested in "${requested_projects[@]}"; do
+    [[ "$requested" != "$project" ]] || return 0
+  done
+  return 1
+}
+
+if [[ "${#requested_projects[@]}" -gt 0 ]]; then
+  for requested_project in "${requested_projects[@]}"; do
+    case "$requested_project" in
+      chromium | firefox | webkit) ;;
+      *)
+        shongre_fail "unsupported Playwright project '$requested_project'"
+        exit 1
+        ;;
+    esac
+  done
+fi
+
+darwin_major=0
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  darwin_major="$(uname -r | cut -d. -f1)"
+fi
+firefox_can_launch=1
+if [[ "$darwin_major" -ge 27 && "${FORCE_FIREFOX_E2E:-0}" != "1" ]]; then
+  firefox_can_launch=0
+fi
+if [[ "$firefox_can_launch" == "0" ]] && project_is_requested firefox; then
+  if [[ "${#requested_projects[@]}" -gt 0 ]]; then
+    shongre_fail "Firefox cannot launch on this host; set FORCE_FIREFOX_E2E=1 only to retest the upstream fix"
+    exit 1
+  fi
+fi
+
+targeted_run=0
+if [[ "${#forwarded_args[@]}" -gt 0 ]]; then
+  for argument in "${forwarded_args[@]}"; do
+    case "$argument" in
+      --grep | --grep=* | *.spec.ts | */e2e/*) targeted_run=1 ;;
+    esac
+  done
+fi
+
+if [[ "$targeted_run" == "1" ]]; then
+  non_blink_shards="${NON_BLINK_E2E_SHARDS:-1}"
+  non_blink_serial_shards="${NON_BLINK_SERIAL_E2E_SHARDS:-1}"
+else
+  non_blink_shards="${NON_BLINK_E2E_SHARDS:-40}"
+  non_blink_serial_shards="${NON_BLINK_SERIAL_E2E_SHARDS:-3}"
+fi
+for shard_count in "$non_blink_shards" "$non_blink_serial_shards"; do
+  if [[ ! "$shard_count" =~ ^[1-9][0-9]*$ || "$shard_count" -gt 200 ]]; then
+    shongre_fail "non-Blink E2E shard counts must be integers between 1 and 200"
+    exit 1
+  fi
+done
+
+run_playwright_project() {
+  local project="$1"
+  local workers="$2"
+  local grep_mode="$3"
+  shift 3
+  if [[ "${#forwarded_args[@]}" -gt 0 ]]; then
+    npm run test:e2e --workspace=frontend -- \
+      "$grep_mode" '@serial' --project="$project" --workers="$workers" \
+      --pass-with-no-tests "$@" "${forwarded_args[@]}"
+  else
+    npm run test:e2e --workspace=frontend -- \
+      "$grep_mode" '@serial' --project="$project" --workers="$workers" \
+      --pass-with-no-tests "$@"
+  fi
+}
+
+run_sharded_project() {
+  local project="$1"
+  local shard_count="$2"
+  local grep_mode="$3"
+  local label="$4"
+  local shard
+  for ((shard = 1; shard <= shard_count; shard += 1)); do
+    shongre_info "$project $label shard $shard/$shard_count"
+    run_playwright_project \
+      "$project" 1 "$grep_mode" "--shard=$shard/$shard_count"
+  done
+}
+
+if project_is_requested chromium; then
+  run_playwright_project chromium 2 --grep-invert
+fi
+if [[ "$firefox_can_launch" == "1" ]] && project_is_requested firefox; then
+  run_sharded_project firefox "$non_blink_shards" --grep-invert regular
+fi
+if project_is_requested webkit; then
+  # Long non-Blink matrices can deadlock a browser process after sustained
+  # context creation, leaving both page.goto and context teardown stuck. Small
+  # sequential shards recycle the process without dropping coverage.
+  run_sharded_project webkit "$non_blink_shards" --grep-invert regular
+fi
+
 shongre_info "phase 2/2: multi-route and multi-persona audits without compiler contention"
-npm run test:e2e --workspace=frontend -- --grep '@serial' --workers=1 --pass-with-no-tests "$@"
+if project_is_requested chromium; then
+  run_playwright_project chromium 1 --grep
+fi
+if [[ "$firefox_can_launch" == "1" ]] && project_is_requested firefox; then
+  run_sharded_project firefox "$non_blink_serial_shards" --grep serial
+fi
+if project_is_requested webkit; then
+  run_sharded_project webkit "$non_blink_serial_shards" --grep serial
+fi

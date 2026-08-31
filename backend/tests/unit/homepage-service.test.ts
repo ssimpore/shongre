@@ -75,14 +75,16 @@ describe("HomepageService", () => {
       locale: "fr-FR",
       now: new Date("2026-08-29T12:00:00.000Z"),
     });
-    const trends = response.sections.find((section) => section.type === "trending");
+    const trends = response.sections.find(
+      (section) => section.type === "trending",
+    );
     const deals = response.sections.find((section) => section.type === "deals");
 
     expect(trends?.trending?.topics).toHaveLength(4);
     expect(deals?.deals).toHaveLength(6);
-    expect(deals?.deals?.every((item) => item.listing.marketCode === "FR")).toBe(
-      true,
-    );
+    expect(
+      deals?.deals?.every((item) => item.listing.marketCode === "FR"),
+    ).toBe(true);
     expect(deals?.deals?.[0].offer.currentPrice.currency).toBe("EUR");
   });
 

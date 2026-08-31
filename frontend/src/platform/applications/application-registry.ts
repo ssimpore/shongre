@@ -27,12 +27,11 @@ export interface ApplicationOriginInput {
   facturation?: string;
 }
 
-const LIVE_ORIGINS: Record<ShongreApplicationId, string> = {
-  marketplace: "https://shongre.fr",
-  solutions: "https://solutions.shongre.fr",
-  prospects: "https://prospects.shongre.fr",
-  facturation: "https://facturation.shongre.fr",
-};
+export interface ApplicationFallbackRoute {
+  applicationId: Exclude<ShongreApplicationId, "marketplace">;
+  applicationPath: string;
+  routingBasePath: string;
+}
 
 const FALLBACK_PATHS: Record<ShongreApplicationId, string> = {
   marketplace: "/",
@@ -75,19 +74,23 @@ export function createApplicationRegistry(input: {
     input.origins?.marketplace || input.marketplaceOrigin,
     "SHONGRE_MARKETPLACE_ORIGIN",
   );
-  const values: Record<ShongreApplicationId, string> = isLive
-    ? {
-        marketplace: input.origins?.marketplace || marketplaceOrigin,
-        solutions: input.origins?.solutions || LIVE_ORIGINS.solutions,
-        prospects: input.origins?.prospects || LIVE_ORIGINS.prospects,
-        facturation: input.origins?.facturation || LIVE_ORIGINS.facturation,
-      }
-    : {
-        marketplace: marketplaceOrigin,
-        solutions: input.origins?.solutions || marketplaceOrigin,
-        prospects: input.origins?.prospects || marketplaceOrigin,
-        facturation: input.origins?.facturation || marketplaceOrigin,
-      };
+  if (isLive) {
+    const missingOrigins = SHONGRE_APPLICATION_IDS.filter(
+      (applicationId) =>
+        applicationId !== "marketplace" && !input.origins?.[applicationId],
+    );
+    if (missingOrigins.length > 0) {
+      throw new Error(
+        `[Application Config] Production requires explicit origins for: ${missingOrigins.join(", ")}.`,
+      );
+    }
+  }
+  const values: Record<ShongreApplicationId, string> = {
+    marketplace: input.origins?.marketplace || marketplaceOrigin,
+    solutions: input.origins?.solutions || marketplaceOrigin,
+    prospects: input.origins?.prospects || marketplaceOrigin,
+    facturation: input.origins?.facturation || marketplaceOrigin,
+  };
 
   const registry = Object.fromEntries(
     SHONGRE_APPLICATION_IDS.map((applicationId) => {
@@ -145,7 +148,8 @@ export function applicationIdForHostname(
 }
 
 function normalizeTargetPath(pathname: string): string {
-  const clean = pathname.trim() || "/";
+  const raw = pathname.trim() || "/";
+  const clean = raw.startsWith("#") || raw.startsWith("?") ? `/${raw}` : raw;
   if (!clean.startsWith("/") || clean.startsWith("//")) {
     throw new Error("[Application Routing] Destination must be a local path.");
   }
@@ -154,6 +158,58 @@ function normalizeTargetPath(pathname: string): string {
     throw new Error("[Application Routing] Cross-origin paths are forbidden.");
   }
   return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+}
+
+/**
+ * Resolves the path prefixes used when split applications intentionally share
+ * the marketplace origin (local, test, and selected preview environments).
+ * Production's distinct origins therefore never turn marketplace paths into
+ * aliases for a separate application.
+ */
+export function applicationFallbackForPath(
+  registry: ShongreApplicationRegistry,
+  pathname: string,
+): ApplicationFallbackRoute | null {
+  const normalizedPathname =
+    new URL(
+      normalizeTargetPath(pathname),
+      "https://routing.shongre.invalid",
+    ).pathname.replace(/\/+$/, "") || "/";
+  const marketplaceOrigin = registry.marketplace.origin;
+
+  if (
+    registry.prospects.origin === marketplaceOrigin &&
+    (normalizedPathname === "/app" || normalizedPathname.startsWith("/app/"))
+  ) {
+    return {
+      applicationId: "prospects",
+      applicationPath: normalizedPathname,
+      routingBasePath: "/",
+    };
+  }
+
+  for (const applicationId of SHONGRE_APPLICATION_IDS) {
+    // The local Prospects product page remains a marketplace route because its
+    // workspace intentionally lives at the separate top-level `/app` prefix.
+    if (applicationId === "marketplace" || applicationId === "prospects") {
+      continue;
+    }
+    const application = registry[applicationId];
+    if (application.origin !== marketplaceOrigin) continue;
+    const prefix = application.fallbackPath;
+    if (
+      normalizedPathname !== prefix &&
+      !normalizedPathname.startsWith(`${prefix}/`)
+    ) {
+      continue;
+    }
+    return {
+      applicationId,
+      applicationPath: normalizedPathname.slice(prefix.length) || "/",
+      routingBasePath: prefix,
+    };
+  }
+  return null;
 }
 
 /**
@@ -166,7 +222,17 @@ export function resolveApplicationHref(
   pathname = "/",
 ): string {
   const target = registry[applicationId];
-  const path = normalizeTargetPath(pathname);
+  const normalizedPath = normalizeTargetPath(pathname);
+  const parsedPath = new URL(normalizedPath, "https://routing.shongre.invalid");
+  const prefix = target.fallbackPath;
+  if (
+    applicationId !== "marketplace" &&
+    (parsedPath.pathname === prefix ||
+      parsedPath.pathname.startsWith(`${prefix}/`))
+  ) {
+    parsedPath.pathname = parsedPath.pathname.slice(prefix.length) || "/";
+  }
+  const path = `${parsedPath.pathname}${parsedPath.search}${parsedPath.hash}`;
   const marketplaceOrigin = registry.marketplace.origin;
 
   if (target.origin !== marketplaceOrigin) {
@@ -175,7 +241,10 @@ export function resolveApplicationHref(
 
   if (applicationId === "marketplace") return path;
   if (applicationId === "prospects" && path.startsWith("/app")) return path;
-  const suffix = path === "/" ? "" : path;
+  const localTarget = new URL(path, "https://routing.shongre.invalid");
+  const suffix =
+    localTarget.pathname === "/"
+      ? `${localTarget.search}${localTarget.hash}`
+      : path;
   return `${target.fallbackPath}${suffix}`;
 }
-

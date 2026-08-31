@@ -222,6 +222,7 @@ operations-tooling-check: ## Test release evidence, hosted load, storage restore
 	@node scripts/load-smoke.test.mjs
 	@node scripts/verify-storage-restore.test.mjs
 	@node scripts/verify-observability.test.mjs
+	@node scripts/check-runtime-hostnames.test.mjs
 
 ##@ Shared product system
 tokens-build:
@@ -425,9 +426,9 @@ test-critical: ## Run focused marketplace security, auth, listing, money, and co
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=@shongre/shared'
 test-e2e: frontend-test-e2e ## Run all configured Playwright engines
 test-coverage:
-	@npm run test --workspace=frontend -- --coverage
-	@npm run test --workspace=backend -- --coverage
-	@npm run test --workspace=mobile -- --coverage
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend -- --coverage'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=backend -- --coverage'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile -- --coverage'
 i18n-check: ## Validate locale catalogues and untranslated-surface regression budgets
 	@npm run check:i18n --workspace=frontend
 taxonomy-import: ## Import TAXONOMY_WORKBOOK into the reviewed normalized v4 source and generated projections

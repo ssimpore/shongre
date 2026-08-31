@@ -85,7 +85,9 @@ describe("Facturation direct registration", () => {
         productIntent: "facturation",
       }),
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
-    expect(await users.findByEmail("incomplete@facturation-only.example")).toBeNull();
+    expect(
+      await users.findByEmail("incomplete@facturation-only.example"),
+    ).toBeNull();
     expect(provisioner.ensureOwnedOrganization).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,10 @@ import {
 } from "./service-registry";
 import { isDemoMode } from "./data-mode.service";
 
+// Lazy adapters are transformed on demand. Full-suite CPU contention can push
+// this integration-style boundary check beyond Vitest's five-second default.
+const LAZY_DOMAIN_IMPORT_TIMEOUT_MS = 15_000;
+
 const SERVICE_KEYS = [
   "listings",
   "homepage",
@@ -79,24 +83,31 @@ describe("Service Registry & API Adapter Boundary", () => {
     expect(services.notifications.simulateNotification).toBeTypeOf("function");
   });
 
-  it("exposes asynchronous Promise-based APIs on all domain services in demo mode", async () => {
-    const categories = await services.taxonomy.getRootCategories();
-    expect(Array.isArray(categories)).toBe(true);
-    expect(categories.length).toBeGreaterThan(0);
+  it(
+    "preserves Promise-based APIs across representative lazy demo domains",
+    async () => {
+      const [categories, boosts, proPlans, catalog] = await Promise.all([
+        services.taxonomy.getRootCategories(),
+        services.promotions.getAvailableBoosts(),
+        services.promotions.getProSubscriptionPlans(),
+        services.businessRules.getCatalog("FR"),
+      ]);
 
-    const boosts = await services.promotions.getAvailableBoosts();
-    expect(Array.isArray(boosts)).toBe(true);
-    expect(boosts).toHaveLength(0);
+      expect(Array.isArray(categories)).toBe(true);
+      expect(categories.length).toBeGreaterThan(0);
 
-    const proPlans = await services.promotions.getProSubscriptionPlans();
-    expect(Array.isArray(proPlans)).toBe(true);
-    expect(proPlans.length).toBeGreaterThan(0);
+      expect(Array.isArray(boosts)).toBe(true);
+      expect(boosts).toHaveLength(0);
 
-    const catalog = await services.businessRules.getCatalog("FR");
-    expect(catalog.products.length).toBeGreaterThan(0);
-    expect(catalog.rules.length).toBeGreaterThan(0);
-    expect(catalog.commissionPolicies.length).toBeGreaterThan(0);
-  });
+      expect(Array.isArray(proPlans)).toBe(true);
+      expect(proPlans.length).toBeGreaterThan(0);
+
+      expect(catalog.products.length).toBeGreaterThan(0);
+      expect(catalog.rules.length).toBeGreaterThan(0);
+      expect(catalog.commissionPolicies.length).toBeGreaterThan(0);
+    },
+    LAZY_DOMAIN_IMPORT_TIMEOUT_MS,
+  );
 
   it("provides deterministic demo verification status without backend calls", async () => {
     const status =

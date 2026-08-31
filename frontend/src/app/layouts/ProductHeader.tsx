@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Menu, Store, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { isProductOnlyAccount } from "../../domains/user/user.domain";
@@ -55,8 +55,10 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
     showPlatformNavigation ||
     showAccountNavigation ||
     showWorkspaceAction;
+  const productHref = applicationHref(productId, productPath);
+  const workspaceHref = applicationHref(productId, workspacePath);
   const productDestination =
-    isProductOnly && canOpenWorkspace ? workspacePath : productPath;
+    isProductOnly && canOpenWorkspace ? workspaceHref : productHref;
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -74,7 +76,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
   }, [isMenuOpen]);
 
   const workspaceDestination = canOpenWorkspace
-    ? workspacePath
+    ? workspaceHref
     : isAuthenticated
       ? productId === "facturation"
         ? applicationHref("facturation", "/activation")
@@ -95,8 +97,12 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
     <header className="sticky top-0 z-header border-b border-border-base bg-bg-surface">
       <Container className="flex h-16 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Link
-            to={isProductOnly ? productDestination : routes.home()}
+          <a
+            href={
+              isProductOnly
+                ? productDestination
+                : applicationHref("marketplace", routes.home())
+            }
             className="group flex shrink-0 items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label={
               isProductOnly
@@ -115,17 +121,17 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                 FRANCE
               </span>
             </span>
-          </Link>
+          </a>
           <span className="h-8 w-px bg-border-base" aria-hidden="true" />
-          <Link
-            to={productDestination}
+          <a
+            href={productDestination}
             className="truncate rounded-control text-sm font-black text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
             aria-label={`${productName}, ${
               isProductOnly ? "ouvrir l’application" : "accueil du produit"
             }`}
           >
             {productName}
-          </Link>
+          </a>
         </div>
 
         {showProductNavigation ? (
@@ -134,7 +140,11 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             aria-label={`Navigation ${productName}`}
           >
             {navigation.map((item) => (
-              <a key={item.to} href={item.to} className={navigationLinkClass}>
+              <a
+                key={item.to}
+                href={applicationHref(productId, item.to)}
+                className={navigationLinkClass}
+              >
                 {item.label}
               </a>
             ))}
@@ -146,24 +156,24 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
         showWorkspaceAction ? (
           <div className="hidden shrink-0 items-center gap-4 md:flex">
             {showPlatformNavigation ? (
-              <Link
-                to={platformDestination}
+              <a
+                href={platformDestination}
                 className="inline-flex min-h-control-touch items-center gap-2 rounded-control px-2 text-xs font-bold text-text-secondary transition-colors hover:bg-bg-subtle hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
                 Plateforme Shongre
-              </Link>
+              </a>
             ) : null}
             {showAccountNavigation ? (
               <>
-                <Link to={accountDestination} className={navigationLinkClass}>
+                <a href={accountDestination} className={navigationLinkClass}>
                   {accountLabel}
-                </Link>
+                </a>
               </>
             ) : null}
             {showWorkspaceAction ? (
-              <Link
-                to={workspaceDestination}
+              <a
+                href={workspaceDestination}
                 className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {canOpenWorkspace
@@ -175,7 +185,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                   className="h-icon-sm w-icon-sm"
                   aria-hidden="true"
                 />
-              </Link>
+              </a>
             ) : null}
           </div>
         ) : null}
@@ -217,7 +227,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                   ? navigation.map((item) => (
                       <a
                         key={item.to}
-                        href={item.to}
+                        href={applicationHref(productId, item.to)}
                         onClick={() => setIsMenuOpen(false)}
                         className="inline-flex min-h-control-touch items-center py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                       >
@@ -226,29 +236,29 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                     ))
                   : null}
                 {showPlatformNavigation ? (
-                  <Link
-                    to={platformDestination}
+                  <a
+                    href={platformDestination}
                     className="inline-flex min-h-control-touch items-center gap-2 py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                   >
                     <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
                     Plateforme Shongre
-                  </Link>
+                  </a>
                 ) : null}
                 {showAccountNavigation ? (
                   <>
-                    <Link
-                      to={accountDestination}
+                    <a
+                      href={accountDestination}
                       className="inline-flex min-h-control-touch items-center py-2 text-sm font-bold text-text-main hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       {accountLabel}
-                    </Link>
+                    </a>
                   </>
                 ) : null}
               </nav>
             ) : null}
             {showWorkspaceAction ? (
-              <Link
-                to={workspaceDestination}
+              <a
+                href={workspaceDestination}
                 className="mt-3 inline-flex min-h-control-touch w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {isAuthenticated
@@ -258,7 +268,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                   className="h-icon-sm w-icon-sm"
                   aria-hidden="true"
                 />
-              </Link>
+              </a>
             ) : null}
           </Container>
         </div>

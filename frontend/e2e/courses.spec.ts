@@ -30,14 +30,35 @@ test.describe("Shongre Education", () => {
     const cards = page.getByRole("article");
     await expect(cards.first()).toBeVisible();
 
-    await page
-      .getByRole("button", { name: "Matière", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Matière", exact: true }).click();
     await page
       .getByRole("option", { name: "Mathématiques", exact: true })
       .click();
     await expect(page).toHaveURL(/subject=subject_mathematics/);
     await expect(cards.first()).toContainText("Mathématiques");
+
+    const locationSelector = page.locator(
+      "#education-location-selector-desktop",
+    );
+    await expect(locationSelector).toHaveAttribute(
+      "data-location-selector",
+      "true",
+    );
+    await locationSelector.click();
+    const locationDialog = page.getByRole("dialog", {
+      name: "Zone géographique",
+    });
+    await locationDialog.locator("#location-city-input").fill("Lyon");
+    await locationDialog.getByRole("button", { name: "20km" }).click();
+    await locationDialog
+      .getByRole("button", { name: "Appliquer la zone" })
+      .click();
+    await expect(page).toHaveURL(/city=Lyon/);
+    await expect(page).toHaveURL(/radius=20/);
+    await expect(locationSelector).toHaveAttribute(
+      "aria-label",
+      "Localisation : Lyon (+20 km)",
+    );
 
     const compare = cards.first().getByRole("checkbox", { name: "Comparer" });
     await compare.check();
@@ -86,6 +107,9 @@ test.describe("Shongre Education", () => {
     });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText("Matière", { exact: true })).toBeVisible();
+    await expect(
+      dialog.locator("#education-location-selector-mobile"),
+    ).toHaveAttribute("data-location-selector", "true");
   });
 
   test("public tutor profile has one canonical head and no private contact details", async ({

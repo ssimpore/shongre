@@ -24,13 +24,17 @@ export const CrmAutomationsPage: React.FC = () => {
               Automatisations
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
-              {t("admin.crmAutomationsPage.workflowsEvenementielsEtSequencesCommercialesAvecGardeFous")}
+              {t(
+                "admin.crmAutomationsPage.workflowsEvenementielsEtSequencesCommercialesAvecGardeFous",
+              )}
             </p>
           </div>
           <Button
             size="sm"
             disabled
-            title={t("admin.crmAutomationsPage.activezDAbordUnWorkerDAutomatisationBackend")}
+            title={t(
+              "admin.crmAutomationsPage.activezDAbordUnWorkerDAutomatisationBackend",
+            )}
           >
             <Workflow className="h-icon-md w-icon-md" /> Nouveau workflow
           </Button>
@@ -41,10 +45,14 @@ export const CrmAutomationsPage: React.FC = () => {
           <CirclePause className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-warning" />
           <div>
             <h2 className="text-sm font-black text-warning">
-              {t("admin.crmAutomationsPage.moteurNonActiveDansCetEnvironnement")}
+              {t(
+                "admin.crmAutomationsPage.moteurNonActiveDansCetEnvironnement",
+              )}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-warning">
-              {t("admin.crmAutomationsPage.leModelePersistantLIsolationTenantLesExecutionsIdempotentesEt")}
+              {t(
+                "admin.crmAutomationsPage.leModelePersistantLIsolationTenantLesExecutionsIdempotentesEt",
+              )}
             </p>
           </div>
         </div>
@@ -83,29 +91,39 @@ export const CrmAutomationsPage: React.FC = () => {
         })}
       </section>
       <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-sm font-black">{t("admin.crmAutomationsPage.reglesDActivation")}</h2>
+        <h2 className="text-sm font-black">
+          {t("admin.crmAutomationsPage.reglesDActivation")}
+        </h2>
         <ol className="mt-3 grid gap-2 text-xs text-text-secondary sm:grid-cols-2">
           <li className="rounded-control bg-stone-50 p-3">
             <strong className="block text-text-main">
               1. Worker disponible
             </strong>
-            {t("admin.crmAutomationsPage.consommationDeLaQueueAvecRetriesBornesEtDeadLetter")}
+            {t(
+              "admin.crmAutomationsPage.consommationDeLaQueueAvecRetriesBornesEtDeadLetter",
+            )}
           </li>
           <li className="rounded-control bg-stone-50 p-3">
             <strong className="block text-text-main">
               2. Fournisseur explicite
             </strong>
-            {t("admin.crmAutomationsPage.aucunEmailOuAppelSansConnexionAutorisee")}
+            {t(
+              "admin.crmAutomationsPage.aucunEmailOuAppelSansConnexionAutorisee",
+            )}
           </li>
           <li className="rounded-control bg-stone-50 p-3">
             <strong className="block text-text-main">3. Consentement</strong>
-            {t("admin.crmAutomationsPage.arretSurOptOutRefusOuStatutNePasContacter")}
+            {t(
+              "admin.crmAutomationsPage.arretSurOptOutRefusOuStatutNePasContacter",
+            )}
           </li>
           <li className="rounded-control bg-stone-50 p-3">
             <strong className="block text-text-main">
               4. Validation humaine
             </strong>
-            {t("admin.crmAutomationsPage.lesActionsARisqueRestentSoumisesAApprobation")}
+            {t(
+              "admin.crmAutomationsPage.lesActionsARisqueRestentSoumisesAApprobation",
+            )}
           </li>
         </ol>
       </section>

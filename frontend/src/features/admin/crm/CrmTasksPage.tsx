@@ -53,7 +53,9 @@ export const CrmTasksPage: React.FC = () => {
   };
   usePageMeta({
     title: t("admin.crmTasksPage.tachesCrmShongre"),
-    description: t("admin.crmTasksPage.planificationEtSuiviDesRelancesCommerciales"),
+    description: t(
+      "admin.crmTasksPage.planificationEtSuiviDesRelancesCommerciales",
+    ),
     canonicalPath: crmPaths.tasks,
     noIndex: true,
   });
@@ -253,16 +255,21 @@ export const CrmTasksPage: React.FC = () => {
               {t("admin.crmTasksPage.tachesRelances")}
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
-              {t("admin.crmTasksPage.uneFileDActionPartageeRelieeAuxComptesEtOpportunites")}
+              {t(
+                "admin.crmTasksPage.uneFileDActionPartageeRelieeAuxComptesEtOpportunites",
+              )}
             </p>
           </div>
           <Button size="sm" onClick={() => setModalOpen(true)}>
-            <Plus className="h-icon-md w-icon-md" /> {t("admin.crmTasksPage.nouvelleTache")}
+            <Plus className="h-icon-md w-icon-md" />{" "}
+            {t("admin.crmTasksPage.nouvelleTache")}
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
           <div className="rounded-control bg-stone-900 p-3">
-            <span className="text-micro text-text-disabled">{t("admin.crmTasksPage.aFaire")}</span>
+            <span className="text-micro text-text-disabled">
+              {t("admin.crmTasksPage.aFaire")}
+            </span>
             <strong className="block text-xl font-black">
               {counts.pending}
             </strong>
@@ -274,7 +281,9 @@ export const CrmTasksPage: React.FC = () => {
             </strong>
           </div>
           <div className="rounded-control bg-stone-900 p-3">
-            <span className="text-micro text-text-disabled">{t("admin.crmTasksPage.terminees")}</span>
+            <span className="text-micro text-text-disabled">
+              {t("admin.crmTasksPage.terminees")}
+            </span>
             <strong className="block text-xl font-black text-emerald-300">
               {counts.completed}
             </strong>
@@ -319,7 +328,9 @@ export const CrmTasksPage: React.FC = () => {
           <EmptyState
             icon={<CheckSquare className="h-8 w-8" />}
             title={t("admin.crmTasksPage.aucuneTacheDansCetteVue")}
-            description={t("admin.crmTasksPage.lesProchainesActionsCommercialesApparaitrontIci")}
+            description={t(
+              "admin.crmTasksPage.lesProchainesActionsCommercialesApparaitrontIci",
+            )}
             className="border-0 shadow-none"
             action={
               <Button size="sm" onClick={() => setModalOpen(true)}>
@@ -391,7 +402,9 @@ export const CrmTasksPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title={t("admin.crmTasksPage.creerUneTache")}
-        description={t("admin.crmTasksPage.planifiezUneActionEtRattachezLaAuBonContexteCrm")}
+        description={t(
+          "admin.crmTasksPage.planifiezUneActionEtRattachezLaAuBonContexteCrm",
+        )}
       >
         <form onSubmit={createTask} className="space-y-3.5 text-xs">
           <FormField label="Titre" required>
@@ -445,7 +458,10 @@ export const CrmTasksPage: React.FC = () => {
                   { value: "none", label: t("admin.crmTasksPage.aucune") },
                   { value: "account", label: "Entreprise" },
                   { value: "contact", label: "Contact" },
-                  { value: "opportunity", label: t("admin.crmOverviewPage.opportunite") },
+                  {
+                    value: "opportunity",
+                    label: t("admin.crmOverviewPage.opportunite"),
+                  },
                 ]}
               />
             </FormField>
@@ -456,7 +472,10 @@ export const CrmTasksPage: React.FC = () => {
                   value={relatedId}
                   onChange={(event) => setRelatedId(event.target.value)}
                   options={[
-                    { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
+                    {
+                      value: "",
+                      label: t("admin.crmOpportunityDetailPage.selectionner"),
+                    },
                     ...relatedOptions,
                   ]}
                   required

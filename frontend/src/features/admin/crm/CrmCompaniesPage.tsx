@@ -284,7 +284,9 @@ export const CrmCompaniesPage: React.FC = () => {
       <section className="flex flex-col gap-3 rounded-2xl border border-border-base bg-bg-surface p-3 shadow-xs lg:flex-row lg:items-center">
         <label className="relative min-w-0 flex-1 lg:max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
-          <span className="sr-only">{t("admin.crmCompaniesPage.rechercherUneEntreprise")}</span>
+          <span className="sr-only">
+            {t("admin.crmCompaniesPage.rechercherUneEntreprise")}
+          </span>
           <input
             type="search"
             value={search}
@@ -359,7 +361,9 @@ export const CrmCompaniesPage: React.FC = () => {
                   )
                 }
                 className="inline-flex h-control-md w-9 shrink-0 items-center justify-center rounded-control text-text-muted transition hover:bg-danger-surface hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                aria-label={t("admin.crmCompaniesPage.supprimerLaVueSelectionnee")}
+                aria-label={t(
+                  "admin.crmCompaniesPage.supprimerLaVueSelectionnee",
+                )}
               >
                 <Trash2 className="h-icon-md w-icon-md" />
               </button>
@@ -371,7 +375,8 @@ export const CrmCompaniesPage: React.FC = () => {
           size="sm"
           onClick={() => setSaveViewOpen(true)}
         >
-          <BookmarkPlus className="h-icon-md w-icon-md" /> {t("admin.crmCompaniesPage.enregistrerLaVue")}
+          <BookmarkPlus className="h-icon-md w-icon-md" />{" "}
+          {t("admin.crmCompaniesPage.enregistrerLaVue")}
         </Button>
       </section>
 
@@ -389,7 +394,9 @@ export const CrmCompaniesPage: React.FC = () => {
               {t("admin.crmCompaniesPage.aucuneEntrepriseDansCetteVue")}
             </h2>
             <p className="mt-1 text-xs text-stone-500">
-              {t("admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche")}
+              {t(
+                "admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche",
+              )}
             </p>
           </div>
         ) : (
@@ -398,11 +405,17 @@ export const CrmCompaniesPage: React.FC = () => {
               <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
                 <tr>
                   <th className="px-5 py-3">Entreprise</th>
-                  <th className="px-4 py-3">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</th>
+                  <th className="px-4 py-3">
+                    {t("admin.adminFeatureFlagsPage.cycleDeVie")}
+                  </th>
                   <th className="px-4 py-3">Localisation</th>
-                  <th className="px-4 py-3">{t("admin.crmCompaniesPage.proprietaire")}</th>
+                  <th className="px-4 py-3">
+                    {t("admin.crmCompaniesPage.proprietaire")}
+                  </th>
                   <th className="px-4 py-3 text-right">Fit</th>
-                  <th className="px-5 py-3 text-right">{t("admin.adminFeatureFlagsPage.miseAJour")}</th>
+                  <th className="px-5 py-3 text-right">
+                    {t("admin.adminFeatureFlagsPage.miseAJour")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle">
@@ -480,7 +493,8 @@ export const CrmCompaniesPage: React.FC = () => {
         )}
         <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
           <span>
-            {filtered.length} {t("admin.crmCompaniesPage.resultat")}{filtered.length > 1 ? "s" : ""}
+            {filtered.length} {t("admin.crmCompaniesPage.resultat")}
+            {filtered.length > 1 ? "s" : ""}
           </span>
           <span>{t("admin.crmCompaniesPage.isolationParTenantActive")}</span>
         </div>
@@ -490,10 +504,15 @@ export const CrmCompaniesPage: React.FC = () => {
         isOpen={createOpen}
         onClose={() => setCreateOpen(false)}
         title={t("admin.crmCompaniesPage.creerUneEntreprise")}
-        description={t("admin.crmCompaniesPage.ajoutezUnCompteCrmGeneriqueSansCreerDOrganisationShongre")}
+        description={t(
+          "admin.crmCompaniesPage.ajoutezUnCompteCrmGeneriqueSansCreerDOrganisationShongre",
+        )}
       >
         <form onSubmit={createAccount} className="space-y-4 text-xs">
-          <FormField label={t("admin.crmCompaniesPage.nomDeLEntreprise")} required>
+          <FormField
+            label={t("admin.crmCompaniesPage.nomDeLEntreprise")}
+            required
+          >
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -562,7 +581,9 @@ export const CrmCompaniesPage: React.FC = () => {
         isOpen={saveViewOpen}
         onClose={() => setSaveViewOpen(false)}
         title={t("admin.crmCompaniesPage.enregistrerLaVue")}
-        description={t("admin.crmCompaniesPage.conservezLaRechercheEtLeCycleDeVieActuellementAffiches")}
+        description={t(
+          "admin.crmCompaniesPage.conservezLaRechercheEtLeCycleDeVieActuellementAffiches",
+        )}
       >
         <form onSubmit={saveCurrentView} className="space-y-4 text-xs">
           <FormField label={t("admin.crmCompaniesPage.nomDeLaVue")} required>
@@ -586,7 +607,9 @@ export const CrmCompaniesPage: React.FC = () => {
                   ? [
                       {
                         value: "workspace",
-                        label: t("admin.crmCompaniesPage.partageeAvecLeWorkspace"),
+                        label: t(
+                          "admin.crmCompaniesPage.partageeAvecLeWorkspace",
+                        ),
                       },
                     ]
                   : []),

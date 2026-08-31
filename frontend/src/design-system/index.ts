@@ -36,6 +36,7 @@ export * from "./primitives/Typography";
 export * from "./components/Breadcrumbs";
 export * from "./components/Feedback";
 export * from "./components/IdentityBadges";
+export * from "./components/LocationSelector";
 export * from "./components/OnboardingPreparationPage";
 export * from "./components/Price";
 export * from "./components/Skeleton";

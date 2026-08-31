@@ -30,6 +30,20 @@ test.describe("Shongre Emploi journeys", () => {
     await expect(
       page.getByText("Développeur·se front-end React"),
     ).toBeVisible();
+    const locationSelector = page.locator("#employment-location-selector");
+    await expect(locationSelector).toHaveAttribute(
+      "data-location-selector",
+      "true",
+    );
+    await locationSelector.click();
+    const locationDialog = page.getByRole("dialog", {
+      name: "Zone géographique",
+    });
+    await locationDialog.locator("#location-city-input").fill("Lyon");
+    await locationDialog
+      .getByRole("button", { name: "Appliquer la zone" })
+      .click();
+    await expect(page).toHaveURL(/location=Lyon/);
     await expectNoHorizontalOverflow(page, "employment search @ 390px");
 
     await page.getByText("Développeur·se front-end React").click();
@@ -72,7 +86,9 @@ test.describe("Shongre Emploi journeys", () => {
   }) => {
     await usePersona(page, "pro_employment");
     await seedConsent(page);
-    await page.goto("/compte/emploi/recruteur", { waitUntil: "domcontentloaded" });
+    await page.goto("/compte/emploi/recruteur", {
+      waitUntil: "domcontentloaded",
+    });
     await expect(page.getByRole("heading", { name: "TechNova" })).toBeVisible();
 
     const results = await new AxeBuilder({ page })

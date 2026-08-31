@@ -66,7 +66,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={handleRefresh}
           leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
         >
-          {t("admin.taxonomyValidationTab.reanalyser")}{lastCheckTime})
+          {t("admin.taxonomyValidationTab.reanalyser")}
+          {lastCheckTime})
         </Button>
       </div>
 
@@ -124,7 +125,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
               : "bg-bg-base text-text-secondary hover:bg-bg-subtle border border-border-base"
           }`}
         >
-          {t("admin.taxonomyValidationTab.tous")}{issues.length})
+          {t("admin.taxonomyValidationTab.tous")}
+          {issues.length})
         </button>
         <button
           type="button"
@@ -227,7 +229,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
 
                     {issue.remediation && (
                       <p className="text-micro text-stone-500 italic">
-                        {t("admin.taxonomyValidationTab.actionSuggeree")} {issue.remediation}
+                        {t("admin.taxonomyValidationTab.actionSuggeree")}{" "}
+                        {issue.remediation}
                       </p>
                     )}
                   </div>

@@ -9,7 +9,9 @@ import type {
 } from "../../domains/solutions/solutions.types";
 
 export interface SolutionsServiceContract {
-  listPublicSolutions(options?: SolutionListOptions): Promise<SolutionDefinition[]>;
+  listPublicSolutions(
+    options?: SolutionListOptions,
+  ): Promise<SolutionDefinition[]>;
   getSolutionBySlug(
     slug: string,
     options?: SolutionListOptions & { includeAdminOnly?: boolean },

@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CalendarDays, CheckCircle2, ExternalLink, Info } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  ExternalLink,
+  Info,
+} from "lucide-react";
 import { useParams } from "react-router-dom";
 import { Button, Container, Skeleton, StatePanel } from "../../design-system";
 import { services } from "../../api/client/service-registry";
@@ -24,11 +31,16 @@ export function SolutionDetailPage() {
 
   const canonicalUrl = applicationHref("solutions", `/${solutionSlug}`);
   usePageMeta({
-    title: solution ? `${solution.name} — Shongre Solutions` : "Solution introuvable — Shongre",
-    description: solution?.description || "Cette solution Shongre n’est pas disponible.",
+    title: solution
+      ? `${solution.name} — Shongre Solutions`
+      : "Solution introuvable — Shongre",
+    description:
+      solution?.description || "Cette solution Shongre n’est pas disponible.",
     canonicalUrl,
     alternateCountries: [],
-    noIndex: solution?.lifecycle === "MAINTENANCE" || solution?.lifecycle === "DEPRECATED",
+    noIndex:
+      solution?.lifecycle === "MAINTENANCE" ||
+      solution?.lifecycle === "DEPRECATED",
   });
 
   const load = useCallback(async () => {
@@ -42,7 +54,9 @@ export function SolutionDetailPage() {
         }),
       );
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Chargement impossible.");
+      setError(
+        reason instanceof Error ? reason.message : "Chargement impossible.",
+      );
     } finally {
       setLoading(false);
     }
@@ -53,10 +67,24 @@ export function SolutionDetailPage() {
   }, [load]);
 
   if (loading) {
-    return <Container className="space-y-6 py-10"><Skeleton className="h-8 w-40 rounded" /><Skeleton className="h-96 rounded-xl" /></Container>;
+    return (
+      <Container className="space-y-6 py-10">
+        <Skeleton className="h-8 w-40 rounded" />
+        <Skeleton className="h-96 rounded-xl" />
+      </Container>
+    );
   }
   if (error) {
-    return <Container className="py-12"><StatePanel variant="error" title="Solution indisponible" description={error} action={<Button onClick={() => void load()}>Réessayer</Button>} /></Container>;
+    return (
+      <Container className="py-12">
+        <StatePanel
+          variant="error"
+          title="Solution indisponible"
+          description={error}
+          action={<Button onClick={() => void load()}>Réessayer</Button>}
+        />
+      </Container>
+    );
   }
   if (!solution) {
     return (
@@ -65,7 +93,14 @@ export function SolutionDetailPage() {
           variant="notFound"
           title="Solution introuvable"
           description="Cette adresse ne correspond à aucune solution publique du catalogue."
-          action={<a href={applicationHref("solutions")} className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-sm font-bold text-white">Voir toutes les solutions</a>}
+          action={
+            <a
+              href={applicationHref("solutions")}
+              className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-sm font-bold text-white"
+            >
+              Voir toutes les solutions
+            </a>
+          }
         />
       </Container>
     );
@@ -83,29 +118,66 @@ export function SolutionDetailPage() {
   return (
     <div className="bg-white">
       <Container className="py-8 sm:py-10">
-        <a href={applicationHref("solutions")} className="inline-flex min-h-8 items-center gap-2 rounded-control text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-          <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" /> Toutes les solutions
+        <a
+          href={applicationHref("solutions")}
+          className="inline-flex min-h-8 items-center gap-2 rounded-control text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
+          Toutes les solutions
         </a>
 
         <section className="mt-7 grid items-center gap-9 border-b border-border-base pb-10 lg:grid-cols-2">
           <div className="flex items-start gap-5 sm:gap-8">
             <span className="flex h-20 w-20 shrink-0 items-center justify-center text-text-main sm:h-28 sm:w-28">
-              <SolutionIcon icon={solution.icon} className="h-16 w-16 sm:h-20 sm:w-20" />
+              <SolutionIcon
+                icon={solution.icon}
+                className="h-16 w-16 sm:h-20 sm:w-20"
+              />
             </span>
             <div className="min-w-0 pt-2">
-              <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">{solution.name}</h1>
-              <p className={`mt-3 text-sm font-bold ${solution.lifecycle === "AVAILABLE" ? "text-success" : "text-primary"}`}>{lifecycle.label}</p>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-text-secondary">{solution.description}</p>
+              <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">
+                {solution.name}
+              </h1>
+              <p
+                className={`mt-3 text-sm font-bold ${solution.lifecycle === "AVAILABLE" ? "text-success" : "text-primary"}`}
+              >
+                {lifecycle.label}
+              </p>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-text-secondary">
+                {solution.description}
+              </p>
               <div className="mt-7">
                 {launch.allowed && launch.href ? (
-                  <a href={launch.href} className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                    {launch.actionLabel} <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                  <a
+                    href={launch.href}
+                    className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  >
+                    {launch.actionLabel}{" "}
+                    <ArrowRight
+                      className="h-icon-sm w-icon-sm"
+                      aria-hidden="true"
+                    />
                   </a>
                 ) : (
-                  <span aria-disabled="true" className="inline-flex min-h-control-touch items-center rounded-control border border-border-base bg-bg-subtle px-5 text-sm font-bold text-text-muted">{launch.actionLabel}</span>
+                  <span
+                    aria-disabled="true"
+                    className="inline-flex min-h-control-touch items-center rounded-control border border-border-base bg-bg-subtle px-5 text-sm font-bold text-text-muted"
+                  >
+                    {launch.actionLabel}
+                  </span>
                 )}
               </div>
-              <p className="mt-4 text-xs text-text-secondary">Disponible en {solution.markets.map((code) => ({ FR: "France", BE: "Belgique", LU: "Luxembourg" }[code] || code)).join(", ")}</p>
+              <p className="mt-4 text-xs text-text-secondary">
+                Disponible en{" "}
+                {solution.markets
+                  .map(
+                    (code) =>
+                      ({ FR: "France", BE: "Belgique", LU: "Luxembourg" })[
+                        code
+                      ] || code,
+                  )
+                  .join(", ")}
+              </p>
             </div>
           </div>
           <SolutionPreview icon={solution.icon} variant="detail" />
@@ -113,17 +185,28 @@ export function SolutionDetailPage() {
 
         <section className="grid gap-8 border-b border-border-base py-8 lg:grid-cols-2 lg:divide-x lg:divide-border-base">
           <div>
-            <h2 className="text-lg font-black text-text-main">Ce que vous pouvez faire</h2>
+            <h2 className="text-lg font-black text-text-main">
+              Ce que vous pouvez faire
+            </h2>
             <ul className="mt-4 divide-y divide-border-base">
               {solution.capabilities.map((capability) => (
-                <li key={capability} className="flex min-h-11 items-center gap-3 py-2 text-sm text-text-secondary">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" /> {capability}
+                <li
+                  key={capability}
+                  className="flex min-h-11 items-center gap-3 py-2 text-sm text-text-secondary"
+                >
+                  <CheckCircle2
+                    className="h-4 w-4 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />{" "}
+                  {capability}
                 </li>
               ))}
             </ul>
           </div>
           <div className="lg:pl-8">
-            <h2 className="text-lg font-black text-text-main">Accès et disponibilité</h2>
+            <h2 className="text-lg font-black text-text-main">
+              Accès et disponibilité
+            </h2>
             <dl className="mt-4 divide-y divide-border-base text-sm">
               {[
                 ["Audience", solution.audiences.join(", ")],
@@ -133,7 +216,9 @@ export function SolutionDetailPage() {
               ].map(([term, value]) => (
                 <div key={term} className="grid min-w-0 grid-cols-2 gap-4 py-3">
                   <dt className="font-medium text-text-secondary">{term}</dt>
-                  <dd className="min-w-0 break-words text-text-main">{value}</dd>
+                  <dd className="min-w-0 break-words text-text-main">
+                    {value}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -141,22 +226,56 @@ export function SolutionDetailPage() {
         </section>
 
         {solution.notice || launch.message ? (
-          <aside className="mt-6 flex gap-4 rounded-xl border border-primary-border bg-primary-light p-5" aria-label={`Information ${lifecycle.label}`}>
-            <Info className="h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+          <aside
+            className="mt-6 flex gap-4 rounded-xl border border-primary-border bg-primary-light p-5"
+            aria-label={`Information ${lifecycle.label}`}
+          >
+            <Info
+              className="h-6 w-6 shrink-0 text-primary"
+              aria-hidden="true"
+            />
             <div>
-              <h2 className="text-sm font-black text-primary">{solution.lifecycle === "BETA" ? "Version bêta" : lifecycle.label}</h2>
-              <p className="mt-1 text-sm leading-relaxed text-text-secondary">{launch.message || solution.notice}</p>
+              <h2 className="text-sm font-black text-primary">
+                {solution.lifecycle === "BETA"
+                  ? "Version bêta"
+                  : lifecycle.label}
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-text-secondary">
+                {launch.message || solution.notice}
+              </p>
             </div>
           </aside>
         ) : null}
 
         {latestNote ? (
           <div className="flex flex-col gap-3 py-6 text-xs text-text-secondary sm:flex-row sm:items-center sm:justify-between">
-            <span className="inline-flex items-center gap-2"><CalendarDays className="h-icon-sm w-icon-sm" aria-hidden="true" /> Dernière mise à jour — {new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(new Date(latestNote.publishedAt))}</span>
+            <span className="inline-flex items-center gap-2">
+              <CalendarDays
+                className="h-icon-sm w-icon-sm"
+                aria-hidden="true"
+              />{" "}
+              Dernière mise à jour —{" "}
+              {new Intl.DateTimeFormat("fr-FR", { dateStyle: "long" }).format(
+                new Date(latestNote.publishedAt),
+              )}
+            </span>
             {solution.documentationUrl ? (
-              <a href={solution.documentationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-bold text-primary">Consulter les notes de version <ExternalLink className="h-icon-sm w-icon-sm" aria-hidden="true" /></a>
+              <a
+                href={solution.documentationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 font-bold text-primary"
+              >
+                Consulter les notes de version{" "}
+                <ExternalLink
+                  className="h-icon-sm w-icon-sm"
+                  aria-hidden="true"
+                />
+              </a>
             ) : (
-              <span className="inline-flex items-center gap-2 font-bold text-primary">{latestNote.title}</span>
+              <span className="inline-flex items-center gap-2 font-bold text-primary">
+                {latestNote.title}
+              </span>
             )}
           </div>
         ) : null}

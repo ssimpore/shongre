@@ -140,7 +140,8 @@ export const AdminRolesMatrixPage: React.FC = () => {
       <div className="bg-bg-surface rounded-control border border-stone-200 p-5 shadow-xs">
         <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-2">
           <ShieldCheck className="w-icon-md h-icon-md text-stone-700" />
-          {t("admin.adminRolesMatrixPage.spectreDElevationDesPrivileges")}{roleStats.length} {t("admin.adminRolesMatrixPage.rolesDefinis")}
+          {t("admin.adminRolesMatrixPage.spectreDElevationDesPrivileges")}
+          {roleStats.length} {t("admin.adminRolesMatrixPage.rolesDefinis")}
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
@@ -329,7 +330,8 @@ export const AdminRolesMatrixPage: React.FC = () => {
                               <ChevronRight className="w-icon-md h-icon-md text-stone-500" />
                             )}
                             <span className="uppercase text-xs tracking-wider text-stone-700">
-                              {t("admin.adminRolesMatrixPage.categorie")} {group.category} (
+                              {t("admin.adminRolesMatrixPage.categorie")}{" "}
+                              {group.category} (
                               {plural(group.rows.length, "permission")})
                             </span>
                           </div>

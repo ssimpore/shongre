@@ -313,9 +313,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             <label>
-              <span className="sr-only">{t("admin.adminFeatureFlagsPage.cycleDeVie")}</span>
+              <span className="sr-only">
+                {t("admin.adminFeatureFlagsPage.cycleDeVie")}
+              </span>
               <Select
-                aria-label={t("admin.crmCompanyDetailPage.cycleDeVieDeLEntreprise")}
+                aria-label={t(
+                  "admin.crmCompanyDetailPage.cycleDeVieDeLEntreprise",
+                )}
                 value={account.lifecycle}
                 onChange={(event) =>
                   void updateLifecycle(
@@ -393,12 +397,15 @@ export const CrmCompanyDetailPage: React.FC = () => {
               <h2 className="text-sm font-black">Intelligence Shongre</h2>
               {shongre?.organization?.verified && (
                 <span className="inline-flex items-center gap-1 rounded-pill bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                  <BadgeCheck className="h-icon-xs w-icon-xs" /> {t("identityBadge.verification.professional")}
+                  <BadgeCheck className="h-icon-xs w-icon-xs" />{" "}
+                  {t("identityBadge.verification.professional")}
                 </span>
               )}
             </div>
             <p className="mt-1 text-micro text-stone-500">
-              {t("admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces")}
+              {t(
+                "admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces",
+              )}
             </p>
           </div>
           {shongre?.lastSynchronizedAt && (
@@ -418,7 +425,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
               <strong className="block text-text-main">
                 {t("admin.crmCompanyDetailPage.aucuneOrganisationShongreLiee")}
               </strong>
-              {t("admin.crmCompanyDetailPage.cetteFicheResteUnCompteCrmAutonomeUneReferenceExterne")}
+              {t(
+                "admin.crmCompanyDetailPage.cetteFicheResteUnCompteCrmAutonomeUneReferenceExterne",
+              )}
             </div>
           </div>
         ) : (
@@ -455,7 +464,8 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 {shongre.listings.published}
                 <span className="text-xs font-bold text-text-muted">
                   {" "}
-                  / {shongre.listings.total} {t("admin.crmCompanyDetailPage.publiees")}
+                  / {shongre.listings.total}{" "}
+                  {t("admin.crmCompanyDetailPage.publiees")}
                 </span>
               </strong>
               <ul className="mt-2 space-y-1.5">
@@ -530,7 +540,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">{t("admin.crmOverviewPage.opportunites")}</h2>
+                <h2 className="text-sm font-black">
+                  {t("admin.crmOverviewPage.opportunites")}
+                </h2>
                 <p className="text-micro text-stone-500">
                   {t("admin.crmCompanyDetailPage.pipelineAssocieACeCompte")}
                 </p>
@@ -585,7 +597,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">{t("admin.crmCompanyDetailPage.activiteRecente")}</h2>
+                <h2 className="text-sm font-black">
+                  {t("admin.crmCompanyDetailPage.activiteRecente")}
+                </h2>
                 <p className="text-micro text-stone-500">
                   {t("admin.crmCompanyDetailPage.notesEtInteractionsDuCompte")}
                 </p>
@@ -637,7 +651,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
                 <h2 className="text-sm font-black">Contacts</h2>
-                <p className="text-micro text-stone-500">{t("admin.crmCompanyDetailPage.personnesLiees")}</p>
+                <p className="text-micro text-stone-500">
+                  {t("admin.crmCompanyDetailPage.personnesLiees")}
+                </p>
               </div>
               <UsersRound className="h-icon-md w-icon-md text-primary" />
             </div>
@@ -695,7 +711,10 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </dl>
             {account.city && (
               <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-stone-500">
-                <MapPin className="h-icon-sm w-icon-sm" /> {t("admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite")}
+                <MapPin className="h-icon-sm w-icon-sm" />{" "}
+                {t(
+                  "admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite",
+                )}
               </div>
             )}
           </section>
@@ -706,7 +725,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
         isOpen={noteOpen}
         onClose={() => setNoteOpen(false)}
         title={t("admin.crmCompanyDetailPage.ajouterUneNoteEntreprise")}
-        description={t("admin.crmCompanyDetailPage.laNoteEstAjouteeALHistoriqueCrmDuCompte")}
+        description={t(
+          "admin.crmCompanyDetailPage.laNoteEstAjouteeALHistoriqueCrmDuCompte",
+        )}
       >
         <form onSubmit={addNote} className="space-y-4 text-xs">
           <FormField label="Note" required>
@@ -736,7 +757,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
         isOpen={tagsOpen}
         onClose={() => setTagsOpen(false)}
         title={t("admin.crmCompanyDetailPage.gererLesTags")}
-        description={t("admin.crmCompanyDetailPage.lesTagsSontNormalisesDansLeCatalogueDuTenantEt")}
+        description={t(
+          "admin.crmCompanyDetailPage.lesTagsSontNormalisesDansLeCatalogueDuTenantEt",
+        )}
       >
         <form onSubmit={updateTags} className="space-y-4 text-xs">
           <FormField
@@ -746,7 +769,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <Input
               value={tagDraft}
               onChange={(event) => setTagDraft(event.target.value)}
-              placeholder={t("admin.crmCompanyDetailPage.compteCleMobilierRelanceQ4")}
+              placeholder={t(
+                "admin.crmCompanyDetailPage.compteCleMobilierRelanceQ4",
+              )}
             />
           </FormField>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-4">

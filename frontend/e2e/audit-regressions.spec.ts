@@ -144,6 +144,12 @@ test.describe("publish wizard", () => {
     await page.goto("/deposer", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
+    // The wizard now has an intentional preparation screen. Enter the form
+    // before asserting its progress contract; the introduction has no steps to
+    // expose or skip.
+    await page.getByRole("button", { name: "Commencer mon annonce" }).click();
+    await expect(page.getByRole("progressbar")).toBeVisible();
+
     const phase = () =>
       page.evaluate(() => ({
         step: document
@@ -459,5 +465,23 @@ test.describe("declared-token classes", () => {
     });
 
     expect(dead, `classes with no CSS rule: ${dead.join(", ")}`).toEqual([]);
+  });
+});
+
+test.describe("layout readiness", () => {
+  test("remains bounded when a background page receives no animation frames", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "guest");
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.evaluate(() => {
+      window.requestAnimationFrame = () => 0;
+    });
+
+    const startedAt = Date.now();
+    await waitForStableLayout(page, 1_200);
+
+    expect(Date.now() - startedAt).toBeLessThan(3_000);
   });
 });

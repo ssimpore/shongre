@@ -38,6 +38,25 @@ test.describe("Admin-managed homepage discovery", () => {
     await expect(
       collections.getByRole("link", { name: /^Explorer la collection / }),
     ).toHaveCount(5);
+    await expect(
+      trending.getByRole("link", { name: "Voir toutes les annonces" }),
+    ).toHaveCount(4);
+    await expect(
+      deals.getByRole("link", { name: "Voir toutes les offres" }),
+    ).toBeVisible();
+    await expect(
+      recentListings.getByRole("link", {
+        name: "Voir toutes les nouveautés",
+      }),
+    ).toBeVisible();
+    await expect(
+      collections.getByRole("link", {
+        name: "Voir toutes les collections",
+      }),
+    ).toBeVisible();
+    await expect(page.locator('[data-home-section-action="true"]')).toHaveCount(
+      7,
+    );
 
     await expect(
       page.getByRole("heading", {
@@ -79,7 +98,9 @@ test.describe("Admin-managed homepage discovery", () => {
     expect(collectionsFollowRecent).toBe(true);
   });
 
-  test("opens a collection from the homepage discovery rail", async ({ page }) => {
+  test("opens a collection from the homepage discovery rail", async ({
+    page,
+  }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);

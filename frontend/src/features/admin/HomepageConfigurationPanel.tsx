@@ -47,8 +47,7 @@ const OFFER_LABELS = {
   professional_discount: "Remise professionnelle",
 } as const;
 
-const toLocalDateTime = (value?: string) =>
-  value ? value.slice(0, 16) : "";
+const toLocalDateTime = (value?: string) => (value ? value.slice(0, 16) : "");
 const toIsoDateTime = (value: string) =>
   value ? new Date(value).toISOString() : undefined;
 
@@ -83,7 +82,9 @@ export const HomepageConfigurationPanel: React.FC<
       setConfiguration(draft);
       setPreview(await services.homepage.previewHomepage(draft, query));
     } catch {
-      toast.error("Impossible de charger la configuration de la page d’accueil.");
+      toast.error(
+        "Impossible de charger la configuration de la page d’accueil.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +96,9 @@ export const HomepageConfigurationPanel: React.FC<
 
   const replaceSection = (
     key: HomepageSectionType,
-    update: (section: HomepageSectionConfiguration) => HomepageSectionConfiguration,
+    update: (
+      section: HomepageSectionConfiguration,
+    ) => HomepageSectionConfiguration,
   ) => {
     setConfiguration((current) =>
       current
@@ -210,7 +213,9 @@ export const HomepageConfigurationPanel: React.FC<
     );
   }
 
-  const sections = [...configuration.sections].sort((a, b) => a.order - b.order);
+  const sections = [...configuration.sections].sort(
+    (a, b) => a.order - b.order,
+  );
 
   return (
     <section className="space-y-6" aria-labelledby="homepage-config-title">
@@ -226,8 +231,11 @@ export const HomepageConfigurationPanel: React.FC<
             {t("admin.homepageConfigurationPanel.configurationCentralisee")}
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
-            {t("invoicing.product.previewMarket")} <strong>{marketCode}</strong> · langue <strong>{locale}</strong> {t("admin.homepageConfigurationPanel.revision")} {configuration.revision}. Les modifications restent en
-            brouillon jusqu’à publication.
+            {t("invoicing.product.previewMarket")} <strong>{marketCode}</strong>{" "}
+            · langue <strong>{locale}</strong>{" "}
+            {t("admin.homepageConfigurationPanel.revision")}{" "}
+            {configuration.revision}. Les modifications restent en brouillon
+            jusqu’à publication.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -329,7 +337,11 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
-                <FormField label={t("admin.homepageConfigurationPanel.nombreMaximalDElements")}>
+                <FormField
+                  label={t(
+                    "admin.homepageConfigurationPanel.nombreMaximalDElements",
+                  )}
+                >
                   <Input
                     type="number"
                     min={HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.min}
@@ -343,7 +355,10 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
-                <FormField label={`Sous-titre (${locale})`} className="sm:col-span-2">
+                <FormField
+                  label={`Sous-titre (${locale})`}
+                  className="sm:col-span-2"
+                >
                   <Textarea
                     maxLength={HOMEPAGE_ADMIN_CONSTRAINTS.subtitle.maxLength}
                     value={section.subtitleByLocale[locale] || ""}
@@ -384,7 +399,9 @@ export const HomepageConfigurationPanel: React.FC<
                 </FormField>
                 <div className="flex flex-wrap gap-5 sm:col-span-2">
                   <Checkbox
-                    label={t("admin.homepageConfigurationPanel.visibleSurMobile")}
+                    label={t(
+                      "admin.homepageConfigurationPanel.visibleSurMobile",
+                    )}
                     checked={section.mobileVisible}
                     onChange={(event) =>
                       replaceSection(section.key, (current) => ({
@@ -394,7 +411,9 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                   <Checkbox
-                    label={t("admin.homepageConfigurationPanel.visibleSurDesktop")}
+                    label={t(
+                      "admin.homepageConfigurationPanel.visibleSurDesktop",
+                    )}
                     checked={section.desktopVisible}
                     onChange={(event) =>
                       replaceSection(section.key, (current) => ({
@@ -407,10 +426,14 @@ export const HomepageConfigurationPanel: React.FC<
                 {section.type === "deals" ? (
                   <div className="space-y-3 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
                     <h3 className="text-xs font-black uppercase tracking-wide text-primary">
-                      {t("admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres")}
+                      {t(
+                        "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres",
+                      )}
                     </h3>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <FormField label={t("admin.adminTrendingPage.modeDeSelection")}>
+                      <FormField
+                        label={t("admin.adminTrendingPage.modeDeSelection")}
+                      >
                         <Select
                           labelledByAncestor
                           value={section.settings.selectionMode || "hybrid"}
@@ -419,7 +442,8 @@ export const HomepageConfigurationPanel: React.FC<
                               ...current,
                               settings: {
                                 ...current.settings,
-                                selectionMode: event.target.value as (typeof HOMEPAGE_SELECTION_MODES)[number],
+                                selectionMode: event.target
+                                  .value as (typeof HOMEPAGE_SELECTION_MODES)[number],
                               },
                             }))
                           }
@@ -434,7 +458,9 @@ export const HomepageConfigurationPanel: React.FC<
                           type="number"
                           min={HOMEPAGE_ADMIN_CONSTRAINTS.discountBps.min / 100}
                           max={HOMEPAGE_ADMIN_CONSTRAINTS.discountBps.max / 100}
-                          value={(section.settings.minimumDiscountBps || 0) / 100}
+                          value={
+                            (section.settings.minimumDiscountBps || 0) / 100
+                          }
                           onChange={(event) =>
                             replaceSection(section.key, (current) => ({
                               ...current,
@@ -477,7 +503,9 @@ export const HomepageConfigurationPanel: React.FC<
                       ))}
                     </div>
                     <Checkbox
-                      label={t("admin.homepageConfigurationPanel.inclureLesVendeursProfessionnels")}
+                      label={t(
+                        "admin.homepageConfigurationPanel.inclureLesVendeursProfessionnels",
+                      )}
                       checked={
                         section.settings.includeProfessionalSellers !== false
                       }
@@ -491,9 +519,15 @@ export const HomepageConfigurationPanel: React.FC<
                         }))
                       }
                     />
-                    <FormField label={t("admin.homepageConfigurationPanel.marchesAutorisesCodesSeparesParDesVirgules")}>
+                    <FormField
+                      label={t(
+                        "admin.homepageConfigurationPanel.marchesAutorisesCodesSeparesParDesVirgules",
+                      )}
+                    >
                       <Input
-                        value={(section.settings.allowedMarkets || []).join(", ")}
+                        value={(section.settings.allowedMarkets || []).join(
+                          ", ",
+                        )}
                         onChange={(event) =>
                           replaceSection(section.key, (current) => ({
                             ...current,
@@ -508,9 +542,15 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label={t("admin.homepageConfigurationPanel.branchesTaxonomiquesAutoriseesSlugsSeparesParDesVirgules")}>
+                    <FormField
+                      label={t(
+                        "admin.homepageConfigurationPanel.branchesTaxonomiquesAutoriseesSlugsSeparesParDesVirgules",
+                      )}
+                    >
                       <Input
-                        value={(section.settings.taxonomyBranches || []).join(", ")}
+                        value={(section.settings.taxonomyBranches || []).join(
+                          ", ",
+                        )}
                         onChange={(event) =>
                           replaceSection(section.key, (current) => ({
                             ...current,
@@ -525,7 +565,11 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label={t("admin.homepageConfigurationPanel.annoncesManuellesEpingleesIdentifiantsSeparesParDesVirgules")}>
+                    <FormField
+                      label={t(
+                        "admin.homepageConfigurationPanel.annoncesManuellesEpingleesIdentifiantsSeparesParDesVirgules",
+                      )}
+                    >
                       <Input
                         value={(section.settings.offerOverrides || [])
                           .filter((item) => item.isPinned)
@@ -542,8 +586,12 @@ export const HomepageConfigurationPanel: React.FC<
                               .split(",")
                               .map((value) => value.trim())
                               .filter(Boolean);
-                            const retainedHidden = [...existing.values()].filter(
-                              (item) => item.isHidden && !pinnedIds.includes(item.listingId),
+                            const retainedHidden = [
+                              ...existing.values(),
+                            ].filter(
+                              (item) =>
+                                item.isHidden &&
+                                !pinnedIds.includes(item.listingId),
                             );
                             return {
                               ...current,
@@ -565,7 +613,11 @@ export const HomepageConfigurationPanel: React.FC<
                         }
                       />
                     </FormField>
-                    <FormField label={t("admin.homepageConfigurationPanel.annoncesAMasquerIdentifiantsSeparesParDesVirgules")}>
+                    <FormField
+                      label={t(
+                        "admin.homepageConfigurationPanel.annoncesAMasquerIdentifiantsSeparesParDesVirgules",
+                      )}
+                    >
                       <Input
                         value={(section.settings.offerOverrides || [])
                           .filter((item) => item.isHidden)
@@ -582,8 +634,12 @@ export const HomepageConfigurationPanel: React.FC<
                               .split(",")
                               .map((value) => value.trim())
                               .filter(Boolean);
-                            const retainedPinned = [...existing.values()].filter(
-                              (item) => item.isPinned && !hiddenIds.includes(item.listingId),
+                            const retainedPinned = [
+                              ...existing.values(),
+                            ].filter(
+                              (item) =>
+                                item.isPinned &&
+                                !hiddenIds.includes(item.listingId),
                             );
                             return {
                               ...current,
@@ -607,7 +663,9 @@ export const HomepageConfigurationPanel: React.FC<
                     {(section.settings.offerOverrides || []).length ? (
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-stone-700">
-                          {t("admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces")}
+                          {t(
+                            "admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces",
+                          )}
                         </h4>
                         {section.settings.offerOverrides?.map((override) => (
                           <div
@@ -684,10 +742,17 @@ export const HomepageConfigurationPanel: React.FC<
               {t("admin.homepageConfigurationPanel.apercuDeLaPageComplete")}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-stone-500">
-              {t("admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour")} {marketCode}. Les sections en
-              erreur restent isolées des autres.
+              {t(
+                "admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour",
+              )}{" "}
+              {marketCode}. Les sections en erreur restent isolées des autres.
             </p>
-            <FormField label={t("admin.homepageConfigurationPanel.viewportDePrevisualisation")} className="mt-4">
+            <FormField
+              label={t(
+                "admin.homepageConfigurationPanel.viewportDePrevisualisation",
+              )}
+              className="mt-4"
+            >
               <Select
                 labelledByAncestor
                 value={previewViewport}
@@ -707,52 +772,62 @@ export const HomepageConfigurationPanel: React.FC<
                     : section.desktopVisible,
                 )
                 .map((section, position) => {
-                const itemCount =
-                  section.deals?.length ||
-                  section.listings?.length ||
-                  section.trending?.topics.length ||
-                  0;
-                return (
-                  <li
-                    key={section.key}
-                    className="rounded-control border border-stone-200 bg-stone-50 p-3"
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className="text-xs font-black text-text-disabled">
-                        {position + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-bold text-text-main">
-                          {section.title}
-                        </div>
-                        <div className="mt-0.5 text-xs text-stone-500">
-                          {section.status}
-                          {itemCount ? ` · ${itemCount} élément(s)` : ""}
+                  const itemCount =
+                    section.deals?.length ||
+                    section.listings?.length ||
+                    section.trending?.topics.length ||
+                    0;
+                  return (
+                    <li
+                      key={section.key}
+                      className="rounded-control border border-stone-200 bg-stone-50 p-3"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-black text-text-disabled">
+                          {position + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-bold text-text-main">
+                            {section.title}
+                          </div>
+                          <div className="mt-0.5 text-xs text-stone-500">
+                            {section.status}
+                            {itemCount ? ` · ${itemCount} élément(s)` : ""}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </li>
-                );
+                    </li>
+                  );
                 })}
               {!preview ? (
                 <li className="rounded-control border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">
-                  {t("admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu")}
+                  {t(
+                    "admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu",
+                  )}
                 </li>
               ) : null}
             </ol>
           </div>
           <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
-            <FormField label={t("admin.homepageConfigurationPanel.motifDeModificationPublication")}>
+            <FormField
+              label={t(
+                "admin.homepageConfigurationPanel.motifDeModificationPublication",
+              )}
+            >
               <Textarea
                 value={changeReason}
                 minLength={HOMEPAGE_ADMIN_CONSTRAINTS.changeReason.minLength}
                 maxLength={HOMEPAGE_ADMIN_CONSTRAINTS.changeReason.maxLength}
                 onChange={(event) => setChangeReason(event.target.value)}
-                placeholder={t("admin.homepageConfigurationPanel.expliquezLeChangementPourLHistoriqueDAudit")}
+                placeholder={t(
+                  "admin.homepageConfigurationPanel.expliquezLeChangementPourLHistoriqueDAudit",
+                )}
               />
             </FormField>
             <p className="mt-3 text-xs leading-relaxed text-stone-500">
-              {t("admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche")}
+              {t(
+                "admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche",
+              )}
             </p>
           </div>
         </aside>

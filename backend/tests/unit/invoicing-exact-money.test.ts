@@ -95,4 +95,3 @@ describe("invoicing exact money", () => {
     ]);
   });
 });
-

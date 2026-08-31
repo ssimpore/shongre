@@ -32,14 +32,18 @@ test.describe("Shongre Auto", () => {
     const cards = page.getByRole("article");
     await expect(cards).toHaveCount(4);
     await page.getByRole("button", { name: "Marque", exact: true }).click();
-    await page
-      .getByRole("option", { name: "Peugeot", exact: true })
-      .click();
+    await page.getByRole("option", { name: "Peugeot", exact: true }).click();
     await expect(page).toHaveURL(/make=peugeot/);
     await expect(cards).toHaveCount(3);
 
-    await cards.nth(0).getByRole("button", { name: "Comparer" }).click();
-    await cards.nth(1).getByRole("button", { name: "Comparer" }).click();
+    await cards
+      .nth(0)
+      .getByRole("button", { name: /ajouter .+ à la comparaison/i })
+      .click();
+    await cards
+      .nth(1)
+      .getByRole("button", { name: /ajouter .+ à la comparaison/i })
+      .click();
     const compareLink = page.getByRole("link", {
       name: /Voir la comparaison|Comparer/,
     });
@@ -74,7 +78,9 @@ test.describe("Shongre Auto", () => {
     await expect(
       dialog.getByLabel("Autonomie électrique minimum"),
     ).toBeVisible();
-    await expect(dialog.getByLabel("Rayon")).toBeVisible();
+    await expect(
+      dialog.locator("#auto-location-selector-mobile"),
+    ).toHaveAttribute("data-location-selector", "true");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
@@ -109,6 +115,74 @@ test.describe("Shongre Auto", () => {
     ).toHaveCount(1);
   });
 
+  test("similar vehicles use one horizontal responsive listing rail", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await page.goto("/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const heading = page.getByRole("heading", {
+      level: 2,
+      name: "Véhicules similaires",
+    });
+    const section = page.locator("section", { has: heading });
+    const cards = section.locator('[data-listing-card="true"]');
+    await expect(cards).toHaveCount(2);
+
+    const desktopRects = await cards.evaluateAll((items) =>
+      items.map((item) => {
+        const rect = item.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, top: rect.top };
+      }),
+    );
+    expect(new Set(desktopRects.map(({ top }) => Math.round(top))).size).toBe(
+      1,
+    );
+    expect(desktopRects[1]?.left).toBeGreaterThan(desktopRects[0]?.right ?? 0);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(1408);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await waitForStableLayout(page);
+
+    const track = section.locator(".scroll-rail-shell > div").first();
+    const mobileOverflow = await track.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollLeft: element.scrollLeft,
+      scrollWidth: element.scrollWidth,
+    }));
+    expect(mobileOverflow.scrollWidth).toBeGreaterThan(
+      mobileOverflow.clientWidth,
+    );
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(390);
+
+    const maxScrollLeft =
+      mobileOverflow.scrollWidth - mobileOverflow.clientWidth;
+    const scrollTowardsStart = mobileOverflow.scrollLeft > maxScrollLeft / 2;
+    await page
+      .getByRole("button", {
+        name: scrollTowardsStart
+          ? /faire défiler les véhicules similaires vers la gauche/i
+          : /faire défiler les véhicules similaires vers la droite/i,
+      })
+      .click();
+    const observedScrollLeft = expect.poll(() =>
+      track.evaluate((element) => element.scrollLeft),
+    );
+    if (scrollTowardsStart) {
+      await observedScrollLeft.toBeLessThan(mobileOverflow.scrollLeft);
+    } else {
+      await observedScrollLeft.toBeGreaterThan(mobileOverflow.scrollLeft);
+    }
+  });
+
   test("mobile publication never writes VIN or registration into local storage", async ({
     page,
   }) => {
@@ -117,6 +191,11 @@ test.describe("Shongre Auto", () => {
     await page.goto("/deposer/auto", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
+    await page
+      .getByRole("button", {
+        name: /^(?:Commencer|Reprendre) l’annonce véhicule$/,
+      })
+      .click();
     await expect(
       page.getByRole("heading", { level: 1, name: "Publier un véhicule" }),
     ).toBeVisible();

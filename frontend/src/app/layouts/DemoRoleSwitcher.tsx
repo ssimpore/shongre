@@ -23,11 +23,13 @@ import {
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { useToast } from "../providers/ToastProvider";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { routes } from "../../configuration/routes";
 import { DataModeSettingsControl } from "./DataModeSettingsControl";
 import { useDataMode } from "../providers/DataModeProvider";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { applicationHref } from "../../platform/applications/use-application-href";
+import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
 interface DemoPersona {
   userKey: string;
@@ -38,6 +40,7 @@ interface DemoPersona {
   descKey?: MessageKey;
   group: "marketplace" | "verticals" | "staff";
   destination?: string;
+  applicationId?: ShongreApplicationId;
   Icon: LucideIcon;
   iconClassName: string;
 }
@@ -91,6 +94,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     desc: "Essai SaaS indépendant · ICP, découverte, listes et pipeline",
     group: "marketplace",
     destination: routes.prospects.workspace(),
+    applicationId: "prospects",
     Icon: Target,
     iconClassName: "text-primary",
   },
@@ -101,6 +105,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     desc: "Compte et organisation dédiés uniquement à la facturation",
     group: "marketplace",
     destination: routes.facturation.workspace(),
+    applicationId: "facturation",
     Icon: ReceiptText,
     iconClassName: "text-primary",
   },
@@ -280,7 +285,6 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
   const { t } = useTranslation();
   const { platformRole, currentUser, switchDemoUser } = useAuth();
   const toast = useToast();
-  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [switchingUserKey, setSwitchingUserKey] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -341,12 +345,21 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
       };
 
   const handlePersonaSwitch = async (persona: DemoPersona) => {
+    const openDestination = () => {
+      if (!persona.destination) return;
+      window.location.assign(
+        applicationHref(
+          persona.applicationId ?? "marketplace",
+          persona.destination,
+        ),
+      );
+    };
     const isActive = persona.userId
       ? persona.userId === currentUser?.id
       : !currentUser;
     if (isActive) {
       setIsOpen(false);
-      if (persona.destination) navigate(persona.destination);
+      openDestination();
       return;
     }
 
@@ -354,7 +367,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
     try {
       await switchDemoUser(persona.userKey);
       setIsOpen(false);
-      if (persona.destination) navigate(persona.destination);
+      openDestination();
       toast.success(
         persona.userKey === "guest"
           ? t("shell.demoRoleSwitcher.guestActivated")

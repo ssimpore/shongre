@@ -127,8 +127,7 @@ export class PostgresTrendingRepository implements ITrendingRepository {
       return {
         ...defaults,
         ...data,
-        selectionMode:
-          data.selection_mode || defaults.selectionMode,
+        selectionMode: data.selection_mode || defaults.selectionMode,
         maxTopics: Number(data.max_topics ?? defaults.maxTopics),
         listingsPerTopic: Number(
           data.listings_per_topic ?? defaults.listingsPerTopic,

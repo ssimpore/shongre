@@ -112,7 +112,10 @@ export const CrmOverviewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="space-y-4" aria-label={t("admin.crmOverviewPage.chargementDuTableauDeBordCrm")}>
+      <div
+        className="space-y-4"
+        aria-label={t("admin.crmOverviewPage.chargementDuTableauDeBordCrm")}
+      >
         <Skeleton className="h-28 rounded-2xl" />
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
           {[0, 1, 2, 3, 4].map((item) => (
@@ -134,7 +137,9 @@ export const CrmOverviewPage: React.FC = () => {
         <h1 className="mt-3 text-lg font-black text-text-main">
           {t("admin.crmOverviewPage.tableauDeBordIndisponible")}
         </h1>
-        <p className="mx-auto mt-1 max-w-lg text-sm text-text-secondary">{error}</p>
+        <p className="mx-auto mt-1 max-w-lg text-sm text-text-secondary">
+          {error}
+        </p>
         <Button className="mt-5" size="sm" onClick={() => void loadDashboard()}>
           <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
           {t("common.retry")}
@@ -213,7 +218,9 @@ export const CrmOverviewPage: React.FC = () => {
               Pilotez chaque relation commerciale
             </h1>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-disabled">
-              {t("admin.crmOverviewPage.pipelinePrevisionsTachesEtComptesClesReunisDansUnEspace")}
+              {t(
+                "admin.crmOverviewPage.pipelinePrevisionsTachesEtComptesClesReunisDansUnEspace",
+              )}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -378,7 +385,9 @@ export const CrmOverviewPage: React.FC = () => {
         <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-stone-950">{t("admin.crmOverviewPage.priorites")}</h2>
+              <h2 className="text-sm font-black text-stone-950">
+                {t("admin.crmOverviewPage.priorites")}
+              </h2>
               <p className="text-micro text-stone-500">
                 Prochaines actions commerciales
               </p>
@@ -431,7 +440,9 @@ export const CrmOverviewPage: React.FC = () => {
               {t("admin.crmOverviewPage.opportunitesASuivre")}
             </h2>
             <p className="text-micro text-stone-500">
-              {t("admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite")}
+              {t(
+                "admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite",
+              )}
             </p>
           </div>
           <label className="relative block sm:w-64">
@@ -439,7 +450,9 @@ export const CrmOverviewPage: React.FC = () => {
               className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-disabled"
               aria-hidden="true"
             />
-            <span className="sr-only">{t("admin.crmOverviewPage.rechercherDansLesOpportunites")}</span>
+            <span className="sr-only">
+              {t("admin.crmOverviewPage.rechercherDansLesOpportunites")}
+            </span>
             <input
               type="search"
               placeholder="Rechercher…"
@@ -453,11 +466,19 @@ export const CrmOverviewPage: React.FC = () => {
           <table className="w-full min-w-3xl text-left text-xs">
             <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
               <tr>
-                <th className="px-5 py-2.5">{t("admin.crmOverviewPage.opportunite")}</th>
-                <th className="px-4 py-2.5">{t("admin.crmOverviewPage.etape")}</th>
-                <th className="px-4 py-2.5">{t("admin.crmOpportunityDetailPage.cloture")}</th>
+                <th className="px-5 py-2.5">
+                  {t("admin.crmOverviewPage.opportunite")}
+                </th>
+                <th className="px-4 py-2.5">
+                  {t("admin.crmOverviewPage.etape")}
+                </th>
+                <th className="px-4 py-2.5">
+                  {t("admin.crmOpportunityDetailPage.cloture")}
+                </th>
                 <th className="px-4 py-2.5 text-right">Montant</th>
-                <th className="px-5 py-2.5 text-right">{t("admin.crmOverviewPage.probabilite")}</th>
+                <th className="px-5 py-2.5 text-right">
+                  {t("admin.crmOverviewPage.probabilite")}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle">
@@ -506,7 +527,9 @@ export const CrmOverviewPage: React.FC = () => {
                     colSpan={5}
                     className="px-5 py-10 text-center text-sm text-stone-500"
                   >
-                    {t("admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche")}
+                    {t(
+                      "admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche",
+                    )}
                   </td>
                 </tr>
               ) : null}
@@ -519,7 +542,9 @@ export const CrmOverviewPage: React.FC = () => {
               className="h-icon-sm w-icon-sm text-success"
               aria-hidden="true"
             />
-            {t("admin.crmOverviewPage.previsionDeterministeAucuneDonneeEnvoyeeAUnFournisseurIa")}
+            {t(
+              "admin.crmOverviewPage.previsionDeterministeAucuneDonneeEnvoyeeAUnFournisseurIa",
+            )}
           </span>
           <Link
             to={crmPaths.pipeline}

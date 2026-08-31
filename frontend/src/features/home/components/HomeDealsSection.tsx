@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import {
   Container,
@@ -13,6 +13,7 @@ import { ListingRail } from "../../../design-system/primitives/ListingRail";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { HomeSectionAction } from "./HomeSectionAction";
 import {
   trackHomepageEvent,
   useHomepageViewEvent,
@@ -62,24 +63,17 @@ export const HomeDealsSection: React.FC<HomeDealsSectionProps> = ({
               </p>
             ) : null}
           </div>
-          <Button
+          <HomeSectionAction
             to={routes.deals()}
-            variant="secondary"
-            size="sm"
             onClick={() =>
               trackHomepageEvent("homepage_deals_view_all_click", {
                 market: marketCode,
                 sectionKey: section.key,
               })
             }
-            rightIcon={<ArrowRight className="h-icon-sm w-icon-sm" />}
-            className="shrink-0"
           >
-            <span className="hidden sm:inline">
-              {t("home.homepageDeals.viewAll")}
-            </span>
-            <span className="sm:hidden">{t("home.homePage.voirTout")}</span>
-          </Button>
+            {t("home.homepageDeals.viewAll")}
+          </HomeSectionAction>
         </div>
 
         {section.status === "loading" ? (

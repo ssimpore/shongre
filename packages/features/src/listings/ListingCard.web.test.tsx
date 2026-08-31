@@ -55,6 +55,7 @@ describe("canonical web listing card", () => {
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("focus-visible:outline-2");
     expect(html).toContain("Agence Canopée avec un nom très long");
+    expect(html).toContain("min-w-0 break-words");
   });
 
   it("uses category price labels and collapses absent optional rows", () => {

@@ -35,9 +35,7 @@ export interface OrganizationProvisioningRepository {
   ): Promise<ProvisionedOrganization>;
 }
 
-export class DemoOrganizationProvisioningRepository
-  implements OrganizationProvisioningRepository
-{
+export class DemoOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
   private readonly organizations = new Map<string, ProvisionedOrganization>();
 
   async ensureOwnedOrganization(
@@ -56,9 +54,7 @@ export class DemoOrganizationProvisioningRepository
   }
 }
 
-export class PostgresOrganizationProvisioningRepository
-  implements OrganizationProvisioningRepository
-{
+export class PostgresOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
   async ensureOwnedOrganization(
     input: InitialOrganizationInput,
   ): Promise<ProvisionedOrganization> {

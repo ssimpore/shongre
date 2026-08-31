@@ -39,9 +39,9 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["list"]] : [["list"]],
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  // Two browser workers keep the matrix bounded on developer laptops and CI.
-  // The root runner builds first, so route compilation never happens inside a
-  // test timeout.
+  // Direct Playwright runs stay bounded. The root runner builds first and
+  // overrides this per engine: Chromium keeps two workers while non-Blink
+  // engines use one to avoid long-run browser-context deadlocks.
   workers: 2,
 
   use: {

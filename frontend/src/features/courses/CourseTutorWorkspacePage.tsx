@@ -407,9 +407,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               </Button>
             </div>
             <ScrollableRegion
-              aria-label={t(
-                "courses.tutorWorkspace.availabilityTableLabel",
-              )}
+              aria-label={t("courses.tutorWorkspace.availabilityTableLabel")}
             >
               <table className="w-full min-w-176 text-center text-xs">
                 <thead className="bg-bg-subtle text-micro font-bold text-text-muted">

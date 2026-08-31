@@ -40,14 +40,12 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@sentry/browser": "^10.71.0",
-    "@shongre/brand": "1.0.0",
     "@shongre/contracts": "1.0.0",
     "@shongre/design-tokens": "1.0.0",
     "@shongre/features": "1.0.0",
     "@shongre/shared": "1.0.0",
     "@shongre/ui": "1.0.0",
     "@tanstack/react-query": "^5.101.4",
-    "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
     "next": "16.3.1",
@@ -56,7 +54,9 @@
     "react-dom": "19.2.3",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
-    "web-vitals": "^5.3.0"
+    "server-only": "^0.0.1",
+    "web-vitals": "^5.3.0",
+    "zod": "^3.25.76"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-arm64-musl": "4.3.3",
@@ -69,7 +69,6 @@
     "@playwright/test": "^1.62.1",
     "@sentry/cli": "^3.6.2",
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/canvas-confetti": "^1.9.0",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.18",

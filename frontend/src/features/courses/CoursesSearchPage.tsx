@@ -8,7 +8,6 @@ import {
   Filter,
   GitCompareArrows,
   GraduationCap,
-  MapPin,
   Search,
   X,
 } from "lucide-react";
@@ -28,10 +27,14 @@ import {
   Drawer,
   DropdownMenu,
   FilterPanel,
+  LocationSelector,
   Skeleton,
   StatePanel,
 } from "../../design-system";
-import type { FilterPanelPresentation } from "../../design-system";
+import type {
+  FilterPanelPresentation,
+  LocationSelectorValue,
+} from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { CourseTutorCard } from "./components/CourseTutorCard";
@@ -41,6 +44,8 @@ interface CourseFiltersProps {
   catalog: CourseCatalog;
   params: URLSearchParams;
   updateParam: (key: string, value?: string) => void;
+  updateLocation: (value: LocationSelectorValue) => void;
+  locationSelectorId: string;
   onReset: () => void;
   onApplyMobile?: () => void;
   presentation?: FilterPanelPresentation;
@@ -50,6 +55,7 @@ const COURSE_FILTER_KEYS = [
   "subject",
   "levels",
   "city",
+  "radius",
   "delivery",
   "availability",
   "maxPrice",
@@ -66,6 +72,8 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
   catalog,
   params,
   updateParam,
+  updateLocation,
+  locationSelectorId,
   onReset,
   onApplyMobile,
   presentation = "surface",
@@ -137,21 +145,14 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
 
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">Lieu</legend>
-        <label className="relative block">
-          <span className="sr-only">Ville</span>
-          <MapPin
-            className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
-            aria-hidden="true"
-          />
-          <input
-            value={params.get("city") || ""}
-            onChange={(event) =>
-              updateParam("city", event.target.value || undefined)
-            }
-            placeholder="Ville ou code postal"
-            className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs text-text-main"
-          />
-        </label>
+        <LocationSelector
+          id={locationSelectorId}
+          city={params.get("city") || ""}
+          radiusKm={
+            params.get("radius") ? Number(params.get("radius")) : undefined
+          }
+          onChange={updateLocation}
+        />
       </fieldset>
 
       <fieldset>
@@ -255,10 +256,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
           fullWidth
           value={params.get("tutorType") || "all"}
           onChange={(value) =>
-            updateParam(
-              "tutorType",
-              value === "all" ? undefined : value,
-            )
+            updateParam("tutorType", value === "all" ? undefined : value)
           }
           options={[
             { value: "all", label: "Tous les profils" },
@@ -348,6 +346,7 @@ export const CoursesSearchPage: React.FC = () => {
       subjectId: params.get("subject") || undefined,
       levelIds: splitParam(params.get("levels")),
       city: params.get("city") || undefined,
+      radiusKm: params.get("radius") ? Number(params.get("radius")) : undefined,
       deliveryModes: splitParam(params.get("delivery")) as DeliveryMode[],
       maxPriceMinor: params.get("maxPrice")
         ? Number(params.get("maxPrice"))
@@ -386,6 +385,18 @@ export const CoursesSearchPage: React.FC = () => {
       const next = new URLSearchParams(current);
       if (!value) next.delete(key);
       else next.set(key, value);
+      next.delete("cursor");
+      return next;
+    });
+  };
+
+  const updateLocation = (value: LocationSelectorValue) => {
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      if (value.city) next.set("city", value.city);
+      else next.delete("city");
+      if (value.radiusKm) next.set("radius", String(value.radiusKm));
+      else next.delete("radius");
       next.delete("cursor");
       return next;
     });
@@ -522,6 +533,8 @@ export const CoursesSearchPage: React.FC = () => {
               catalog={catalog}
               params={params}
               updateParam={updateParam}
+              updateLocation={updateLocation}
+              locationSelectorId="education-location-selector-desktop"
               onReset={resetFilters}
             />
           )}
@@ -721,6 +734,8 @@ export const CoursesSearchPage: React.FC = () => {
             catalog={catalog}
             params={params}
             updateParam={updateParam}
+            updateLocation={updateLocation}
+            locationSelectorId="education-location-selector-mobile"
             onReset={resetFilters}
             onApplyMobile={() => setIsFilterOpen(false)}
             presentation="drawer"

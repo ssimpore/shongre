@@ -176,17 +176,15 @@ test.describe("public browsing", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto("/boutique/atelier-nordique");
+    await waitForStableLayout(page);
 
     const tabs = page.getByRole("tab");
     await expect(tabs.first()).toBeVisible();
 
     // Arrow keys move selection, per the APG tabs pattern.
-    await tabs.first().focus();
-    await page.keyboard.press("ArrowRight");
-    await expect(page.getByRole("tab", { selected: true })).not.toHaveAttribute(
-      "id",
-      (await tabs.first().getAttribute("id")) ?? "",
-    );
+    await tabs.first().press("ArrowRight");
+    await expect(tabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await expect(tabs.nth(1)).toBeFocused();
   });
 });
 
@@ -375,7 +373,7 @@ test.describe("admin console", () => {
     await expect(page.locator("#admin-section-menu")).toBeHidden();
   });
 
-  test("moderation, markets and monetisation are reachable", async ({
+  test("moderation, markets and monetisation are reachable @serial", async ({
     page,
   }) => {
     await usePersona(page, "admin");
@@ -390,7 +388,7 @@ test.describe("admin console", () => {
     }
   });
 
-  test("CRM universal search exposes keyboard-operable results and an empty state", async ({
+  test("CRM universal search exposes keyboard-operable results and an empty state @serial", async ({
     page,
   }) => {
     // CRM access is intentionally separated from platform administration.

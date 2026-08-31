@@ -41,7 +41,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
   const { t } = useTranslation();
   usePageMeta({
     title: t("admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre"),
-    description: t("admin.adminFeatureFlagsPage.pilotageAuditeDesActivationsProgressivesShongre"),
+    description: t(
+      "admin.adminFeatureFlagsPage.pilotageAuditeDesActivationsProgressivesShongre",
+    ),
     canonicalPath: "/admin/fonctionnalites",
     noIndex: true,
   });
@@ -162,10 +164,14 @@ export const AdminFeatureFlagsPage: React.FC = () => {
           </span>
         </div>
         <h1 className="mt-1 text-2xl font-black text-text-main">
-          {t("admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs")}
+          {t(
+            "admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs",
+          )}
         </h1>
         <p className="mt-1 max-w-3xl text-xs leading-relaxed text-text-secondary">
-          {t("admin.adminFeatureFlagsPage.lesValeursAbsentesExpireesOuIndisponiblesRestentDesactiveesChaqueModification")}
+          {t(
+            "admin.adminFeatureFlagsPage.lesValeursAbsentesExpireesOuIndisponiblesRestentDesactiveesChaqueModification",
+          )}
         </p>
       </header>
 
@@ -208,7 +214,8 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                           : "Désactivée"}
                       </Badge>
                       <span className="text-micro text-stone-500">
-                        {entry.rules.length} {t("admin.adminFeatureFlagsPage.regleS")}
+                        {entry.rules.length}{" "}
+                        {t("admin.adminFeatureFlagsPage.regleS")}
                       </span>
                     </span>
                   </button>
@@ -237,12 +244,17 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   </div>
                   <ShieldCheck
                     className="h-icon-lg w-icon-lg text-success"
-                    aria-label={t("admin.adminFeatureFlagsPage.modificationsAuditees")}
+                    aria-label={t(
+                      "admin.adminFeatureFlagsPage.modificationsAuditees",
+                    )}
                   />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField label={t("admin.adminFeatureFlagsPage.equipeProprietaire")} required>
+                  <FormField
+                    label={t("admin.adminFeatureFlagsPage.equipeProprietaire")}
+                    required
+                  >
                     <Input
                       value={draft.owner}
                       onChange={(event) =>
@@ -305,7 +317,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       }
                     >
                       <option value="active">Active</option>
-                      <option value="archived">{t("admin.adminFeatureFlagsPage.archivee")}</option>
+                      <option value="archived">
+                        {t("admin.adminFeatureFlagsPage.archivee")}
+                      </option>
                     </Select>
                   </label>
                   <label className="flex items-center gap-2 self-end rounded-lg border border-border-base px-3 py-2.5 text-xs font-semibold text-stone-700">
@@ -323,13 +337,18 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   </label>
                 </div>
 
-                <FormField label={t("admin.taxonomyHeader.reasonLabel")} required>
+                <FormField
+                  label={t("admin.taxonomyHeader.reasonLabel")}
+                  required
+                >
                   <Input
                     value={draft.reason}
                     onChange={(event) =>
                       setDraft({ ...draft, reason: event.target.value })
                     }
-                    placeholder={t("admin.adminFeatureFlagsPage.pourquoiCeChangementEstIlNecessaire")}
+                    placeholder={t(
+                      "admin.adminFeatureFlagsPage.pourquoiCeChangementEstIlNecessaire",
+                    )}
                   />
                 </FormField>
                 <div className="flex justify-end">
@@ -356,7 +375,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                 <div className="mt-3 space-y-2">
                   {selected.rules.length === 0 ? (
                     <p className="rounded-control bg-stone-50 p-4 text-xs text-text-secondary">
-                      {t("admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique")}
+                      {t(
+                        "admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique",
+                      )}
                     </p>
                   ) : (
                     selected.rules.map((rule: FeatureFlagRule) => (
@@ -367,7 +388,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         <div>
                           <p className="text-xs font-bold text-text-main">
                             {rule.marketCode || "Tous les marchés"} ·{" "}
-                            {rule.rolloutPercentage}{t("admin.adminFeatureFlagsPage.priorite")} {rule.priority}
+                            {rule.rolloutPercentage}
+                            {t("admin.adminFeatureFlagsPage.priorite")}{" "}
+                            {rule.priority}
                           </p>
                           <p className="mt-1 text-micro text-stone-500">
                             {rule.reason}
@@ -389,7 +412,8 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   className="mt-5 space-y-3 border-t border-border-subtle pt-4"
                 >
                   <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
-                    <Plus className="h-icon-md w-icon-md" /> {t("admin.adminFeatureFlagsPage.nouvelleRegle")}
+                    <Plus className="h-icon-md w-icon-md" />{" "}
+                    {t("admin.adminFeatureFlagsPage.nouvelleRegle")}
                   </h3>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <FormField label={t("invoicing.product.previewMarket")}>
@@ -404,7 +428,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         }
                       />
                     </FormField>
-                    <FormField label={t("admin.adminFeatureFlagsPage.deploiement")}>
+                    <FormField
+                      label={t("admin.adminFeatureFlagsPage.deploiement")}
+                    >
                       <Input
                         type="number"
                         min={FEATURE_FLAG_CONSTRAINTS.rolloutPercentageMin}
@@ -444,15 +470,22 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                         })
                       }
                     />{" "}
-                    {t("admin.adminFeatureFlagsPage.valeurActiveePourLaCohorte")}
+                    {t(
+                      "admin.adminFeatureFlagsPage.valeurActiveePourLaCohorte",
+                    )}
                   </label>
-                  <FormField label={t("admin.adminFeatureFlagsPage.motifDeLaRegle")} required>
+                  <FormField
+                    label={t("admin.adminFeatureFlagsPage.motifDeLaRegle")}
+                    required
+                  >
                     <Input
                       value={newRule.reason}
                       onChange={(event) =>
                         setNewRule({ ...newRule, reason: event.target.value })
                       }
-                      placeholder={t("admin.adminFeatureFlagsPage.objectifEtValidationAttendueDuDeploiement")}
+                      placeholder={t(
+                        "admin.adminFeatureFlagsPage.objectifEtValidationAttendueDuDeploiement",
+                      )}
                     />
                   </FormField>
                   <div className="flex justify-end">
@@ -470,7 +503,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
             </div>
           ) : (
             <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center text-sm text-stone-500">
-              {t("admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee")}
+              {t(
+                "admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee",
+              )}
             </div>
           )}
         </div>

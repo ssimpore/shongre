@@ -108,12 +108,23 @@ export function SolutionsPage() {
         </Container>
       </section>
 
-      <section id="catalogue" aria-labelledby="catalogue-title" className="scroll-mt-20 bg-white">
+      <section
+        id="catalogue"
+        aria-labelledby="catalogue-title"
+        className="scroll-mt-20 bg-white"
+      >
         <Container className="py-2 sm:py-4">
-          <h2 id="catalogue-title" className="sr-only">Catalogue des solutions Shongre</h2>
+          <h2 id="catalogue-title" className="sr-only">
+            Catalogue des solutions Shongre
+          </h2>
           {loading ? (
-            <div className="space-y-4 py-6" aria-label="Chargement du catalogue">
-              {[0, 1, 2].map((item) => <Skeleton key={item} className="h-36 rounded-xl" />)}
+            <div
+              className="space-y-4 py-6"
+              aria-label="Chargement du catalogue"
+            >
+              {[0, 1, 2].map((item) => (
+                <Skeleton key={item} className="h-36 rounded-xl" />
+              ))}
             </div>
           ) : error ? (
             <StatePanel
@@ -141,18 +152,34 @@ export function SolutionsPage() {
         </Container>
       </section>
 
-      <section id="ecosysteme" aria-labelledby="ecosystem-title" className="scroll-mt-20 border-t border-border-base bg-bg-subtle py-10 sm:py-12">
+      <section
+        id="ecosysteme"
+        aria-labelledby="ecosystem-title"
+        className="scroll-mt-20 border-t border-border-base bg-bg-subtle py-10 sm:py-12"
+      >
         <Container className="grid gap-8 lg:grid-cols-3 lg:items-start">
-          <h2 id="ecosystem-title" className="text-3xl font-black leading-tight tracking-tight text-text-main">
+          <h2
+            id="ecosystem-title"
+            className="text-3xl font-black leading-tight tracking-tight text-text-main"
+          >
             Un compte. Une organisation. Plusieurs solutions.
           </h2>
           <div className="grid gap-0 sm:grid-cols-3 sm:divide-x sm:divide-border-base lg:col-span-2">
             {ecosystem.map(({ icon: Icon, title, body }) => (
-              <article key={title} className="flex gap-4 border-t border-border-base py-5 first:border-t-0 sm:border-t-0 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0">
-                <Icon className="h-7 w-7 shrink-0 text-text-main" strokeWidth={1.75} aria-hidden="true" />
+              <article
+                key={title}
+                className="flex gap-4 border-t border-border-base py-5 first:border-t-0 sm:border-t-0 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0"
+              >
+                <Icon
+                  className="h-7 w-7 shrink-0 text-text-main"
+                  strokeWidth={1.75}
+                  aria-hidden="true"
+                />
                 <div>
                   <h3 className="text-sm font-black text-text-main">{title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">{body}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-text-secondary">
+                    {body}
+                  </p>
                 </div>
               </article>
             ))}

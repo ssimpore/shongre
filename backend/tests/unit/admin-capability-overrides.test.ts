@@ -217,7 +217,8 @@ describe("AdminService capability overrides", () => {
       actor: principal(),
       customPermissions: ["staff.marketplace.demo"],
       revokedPermissions: [],
-      reason: "Accès temporaire au bac à sable pour une démonstration contrôlée",
+      reason:
+        "Accès temporaire au bac à sable pour une démonstration contrôlée",
       expectedVersion: 1,
       requestId: "req-staff-demo-grant",
     });

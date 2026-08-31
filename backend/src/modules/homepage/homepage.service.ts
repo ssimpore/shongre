@@ -15,7 +15,10 @@ import { repositories } from "../../infrastructure/database/repositories/reposit
 import type { Listing, PublicListing } from "../../shared/types/index.js";
 import { toPublicListing } from "../../shared/public-projections.js";
 import { AppError } from "../../shared/errors/app-error.js";
-import { trendingService, type TrendingService } from "../trending/trending.service.js";
+import {
+  trendingService,
+  type TrendingService,
+} from "../trending/trending.service.js";
 import type { TrendingSectionResponse } from "../trending/trending.types.js";
 
 export interface HomepageQuery {
@@ -48,9 +51,7 @@ export interface HomepageDealItem {
 export interface HomepageSectionView extends ResolvedHomepageSection {
   status: "ready" | "empty" | "error";
   errorCode?:
-    | "TRENDING_UNAVAILABLE"
-    | "DEALS_UNAVAILABLE"
-    | "LISTINGS_UNAVAILABLE";
+    "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
   trending?: TrendingSectionResponse;
   deals?: HomepageDealItem[];
   listings?: PublicListing[];
@@ -134,10 +135,7 @@ export function selectHomepageDeals(
       ) {
         return [];
       }
-      if (
-        listing.promotionEndAt &&
-        new Date(listing.promotionEndAt) <= now
-      ) {
+      if (listing.promotionEndAt && new Date(listing.promotionEndAt) <= now) {
         return [];
       }
       const publication = listing.marketPublications?.find(
@@ -149,9 +147,7 @@ export function selectHomepageDeals(
       const originalPrice = majorToMinorAmount(listing.originalPrice, currency);
       if (originalPrice <= currentPrice || currentPrice < 0) return [];
       const discountAmount = originalPrice - currentPrice;
-      const discountBps = Math.floor(
-        (discountAmount * 10_000) / originalPrice,
-      );
+      const discountBps = Math.floor((discountAmount * 10_000) / originalPrice);
       if (discountBps < (settings.minimumDiscountBps ?? 0)) return [];
       const type =
         listing.publisherType === "professional"
@@ -250,11 +246,11 @@ export class HomepageService {
     });
   }
 
-  async preview(
-    configuration: HomepageConfiguration,
-    query: HomepageQuery,
-  ) {
-    return this.resolve(homepageConfigurationSchema.parse(configuration), query);
+  async preview(configuration: HomepageConfiguration, query: HomepageQuery) {
+    return this.resolve(
+      homepageConfigurationSchema.parse(configuration),
+      query,
+    );
   }
 
   async getPublished(query: HomepageQuery) {

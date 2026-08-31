@@ -142,11 +142,7 @@ export interface Database {
         verification_date: string | null;
         status: "active" | "suspended" | "deleted";
         professional_vertical:
-          | "generic"
-          | "real_estate"
-          | "automotive"
-          | "education"
-          | "employment";
+          "generic" | "real_estate" | "automotive" | "education" | "employment";
         created_at: string;
         updated_at: string;
       }>;
@@ -179,11 +175,7 @@ export interface Database {
         identifier_type: string;
         identifier_value: string;
         verification_status:
-          | "unverified"
-          | "pending"
-          | "verified"
-          | "rejected"
-          | "expired";
+          "unverified" | "pending" | "verified" | "rejected" | "expired";
         verified_at: string | null;
         created_at: string;
         updated_at: string;
@@ -216,11 +208,7 @@ export interface Database {
         identifier_value: string;
         issuing_authority: string | null;
         verification_status:
-          | "unverified"
-          | "pending"
-          | "verified"
-          | "rejected"
-          | "expired";
+          "unverified" | "pending" | "verified" | "rejected" | "expired";
         verified_at: string | null;
         verification_source: string | null;
         created_at: string;
@@ -259,11 +247,7 @@ export interface Database {
         identifier_value: string;
         issuing_authority: string | null;
         verification_status:
-          | "unverified"
-          | "pending"
-          | "verified"
-          | "rejected"
-          | "expired";
+          "unverified" | "pending" | "verified" | "rejected" | "expired";
         verified_at: string | null;
         verification_source: string | null;
         created_at: string;
@@ -353,7 +337,8 @@ export interface Database {
           | "PARTIALLY_REFUNDED"
           | "REFUNDED";
         accounting_export_state: "NOT_EXPORTED" | "EXPORT_PENDING" | "EXPORTED";
-        customer_review_state: "NOT_REQUESTED" | "PENDING" | "ACCEPTED" | "DISPUTED";
+        customer_review_state:
+          "NOT_REQUESTED" | "PENDING" | "ACCEPTED" | "DISPUTED";
         subtotal_minor: number;
         tax_total_minor: number;
         total_minor: number;
@@ -380,7 +365,13 @@ export interface Database {
         unit: string;
         unit_price_minor_decimal: string;
         tax_rate_bps: number;
-        tax_category: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+        tax_category:
+          | "STANDARD"
+          | "REDUCED"
+          | "ZERO"
+          | "EXEMPT"
+          | "REVERSE_CHARGE"
+          | "OUT_OF_SCOPE";
         exemption_reason_code: string | null;
         exemption_reason: string | null;
         net_amount_minor: number;
@@ -391,7 +382,13 @@ export interface Database {
       invoicing_tax_breakdowns: GeneratedTable<{
         invoice_id: string;
         tax_rate_bps: number;
-        tax_category: "STANDARD" | "REDUCED" | "ZERO" | "EXEMPT" | "REVERSE_CHARGE" | "OUT_OF_SCOPE";
+        tax_category:
+          | "STANDARD"
+          | "REDUCED"
+          | "ZERO"
+          | "EXEMPT"
+          | "REVERSE_CHARGE"
+          | "OUT_OF_SCOPE";
         taxable_amount_minor: number;
         tax_amount_minor: number;
         created_at: string;
@@ -431,7 +428,8 @@ export interface Database {
         idempotency_key: string;
         correlation_id: string;
         payload: Json;
-        status: "pending" | "processing" | "completed" | "failed" | "dead_letter";
+        status:
+          "pending" | "processing" | "completed" | "failed" | "dead_letter";
         attempt_count: number;
         available_at: string;
         claimed_at: string | null;

@@ -288,7 +288,10 @@ export const CrmPipelinePage: React.FC = () => {
 
   if (loading || !pipeline) {
     return (
-      <div className="space-y-4" aria-label={t("admin.crmPipelinePage.chargementDuPipelineCrm")}>
+      <div
+        className="space-y-4"
+        aria-label={t("admin.crmPipelinePage.chargementDuPipelineCrm")}
+      >
         <Skeleton className="h-32 rounded-2xl" />
         <div className="flex gap-3 overflow-hidden">
           {[0, 1, 2].map((item) => (
@@ -315,14 +318,17 @@ export const CrmPipelinePage: React.FC = () => {
               {t("admin.crmOverviewPage.pipelineCommercial")}
             </h1>
             <p className="mt-1 text-sm text-text-disabled">
-              {visibleOpportunities.length} {t("admin.crmPipelinePage.opportunites")}{" "}
+              {visibleOpportunities.length}{" "}
+              {t("admin.crmPipelinePage.opportunites")}{" "}
               {money(pipelineValue, activeMarket.currency, currentLocale)}{" "}
               ouverts
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <label className="relative min-w-52 flex-1 xl:flex-none">
-              <span className="sr-only">{t("admin.crmPipelinePage.pipelineActif")}</span>
+              <span className="sr-only">
+                {t("admin.crmPipelinePage.pipelineActif")}
+              </span>
               <Select
                 size="compact"
                 className="w-full pl-3 pr-9 text-text-inverse"
@@ -359,12 +365,16 @@ export const CrmPipelinePage: React.FC = () => {
             className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled"
             aria-hidden="true"
           />
-          <span className="sr-only">{t("admin.crmPipelinePage.rechercherUneOpportunite")}</span>
+          <span className="sr-only">
+            {t("admin.crmPipelinePage.rechercherUneOpportunite")}
+          </span>
           <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder={t("admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise")}
+            placeholder={t(
+              "admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise",
+            )}
             className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
           />
         </label>
@@ -377,7 +387,9 @@ export const CrmPipelinePage: React.FC = () => {
             Filtres
           </Button>
           <span className="hidden text-micro text-stone-500 sm:inline">
-            {t("admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser")}
+            {t(
+              "admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser",
+            )}
           </span>
         </div>
       </section>
@@ -548,7 +560,10 @@ export const CrmPipelinePage: React.FC = () => {
         description={`Ajout dans ${pipeline.name}`}
       >
         <form onSubmit={createOpportunity} className="space-y-4 text-xs">
-          <FormField label={t("admin.crmPipelinePage.nomDeLOpportunite")} required>
+          <FormField
+            label={t("admin.crmPipelinePage.nomDeLOpportunite")}
+            required
+          >
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -644,7 +659,9 @@ export const CrmPipelinePage: React.FC = () => {
                     : "Capitaliser sur la perte"}
                 </strong>
                 <p className="mt-0.5 text-text-secondary">
-                  {t("admin.crmPipelinePage.cetteTransitionEstAuditeeEtMetAJourLesPrevisions")}
+                  {t(
+                    "admin.crmPipelinePage.cetteTransitionEstAuditeeEtMetAJourLesPrevisions",
+                  )}
                 </p>
               </div>
             </div>
@@ -671,8 +688,14 @@ export const CrmPipelinePage: React.FC = () => {
                       setOnboardingStatus(event.target.value)
                     }
                     options={[
-                      { value: "à_planifier", label: t("admin.crmPipelinePage.aPlanifier") },
-                      { value: "prêt", label: t("admin.crmPipelinePage.pretADemarrer") },
+                      {
+                        value: "à_planifier",
+                        label: t("admin.crmPipelinePage.aPlanifier"),
+                      },
+                      {
+                        value: "prêt",
+                        label: t("admin.crmPipelinePage.pretADemarrer"),
+                      },
                       { value: "en_cours", label: "En cours" },
                     ]}
                   />
@@ -680,27 +703,54 @@ export const CrmPipelinePage: React.FC = () => {
               </>
             ) : (
               <>
-                <FormField label={t("admin.crmOpportunityDetailPage.motifDePerte")} required>
+                <FormField
+                  label={t("admin.crmOpportunityDetailPage.motifDePerte")}
+                  required
+                >
                   <Select
-                    aria-label={t("admin.crmOpportunityDetailPage.motifDePerte")}
+                    aria-label={t(
+                      "admin.crmOpportunityDetailPage.motifDePerte",
+                    )}
                     value={lossReason}
                     onChange={(event) => setLossReason(event.target.value)}
                     options={[
-                      { value: "", label: t("admin.crmOpportunityDetailPage.selectionner") },
+                      {
+                        value: "",
+                        label: t("admin.crmOpportunityDetailPage.selectionner"),
+                      },
                       { value: "budget", label: "Budget insuffisant" },
                       { value: "concurrent", label: "Concurrent retenu" },
-                      { value: "timing", label: t("admin.crmOpportunityDetailPage.calendrierReporte") },
-                      { value: "no_need", label: t("admin.crmOpportunityDetailPage.besoinNonConfirme") },
-                      { value: "no_response", label: t("admin.crmOpportunityDetailPage.absenceDeReponse") },
+                      {
+                        value: "timing",
+                        label: t(
+                          "admin.crmOpportunityDetailPage.calendrierReporte",
+                        ),
+                      },
+                      {
+                        value: "no_need",
+                        label: t(
+                          "admin.crmOpportunityDetailPage.besoinNonConfirme",
+                        ),
+                      },
+                      {
+                        value: "no_response",
+                        label: t(
+                          "admin.crmOpportunityDetailPage.absenceDeReponse",
+                        ),
+                      },
                       { value: "other", label: "Autre" },
                     ]}
                   />
                 </FormField>
-                <FormField label={t("admin.crmOpportunityDetailPage.precisions")}>
+                <FormField
+                  label={t("admin.crmOpportunityDetailPage.precisions")}
+                >
                   <Textarea
                     value={lossDetail}
                     onChange={(event) => setLossDetail(event.target.value)}
-                    placeholder={t("admin.crmPipelinePage.contexteConcurrentOuProchaineFenetreDeContact")}
+                    placeholder={t(
+                      "admin.crmPipelinePage.contexteConcurrentOuProchaineFenetreDeContact",
+                    )}
                     rows={3}
                   />
                 </FormField>

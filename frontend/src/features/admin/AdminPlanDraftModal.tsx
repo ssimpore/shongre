@@ -99,7 +99,9 @@ export function AdminPlanDraftModal({
       isOpen
       onClose={onClose}
       title={t("admin.adminPlanDraftModal.configurerLOffreDansUnBrouillon")}
-      description={t("admin.adminPlanDraftModal.prixQuotasFonctionnalitesEtEssaiSontVersionnesEnsembleLaVersion")}
+      description={t(
+        "admin.adminPlanDraftModal.prixQuotasFonctionnalitesEtEssaiSontVersionnesEnsembleLaVersion",
+      )}
       maxWidth="xl"
     >
       <form onSubmit={submit} className="space-y-5">
@@ -169,7 +171,9 @@ export function AdminPlanDraftModal({
               hasCommercialEntitlementValue(entitlement.value),
           ) ? (
             <p className="mt-3 text-xs font-bold text-warning">
-              {t("admin.adminPlanDraftModal.lesFonctionnalitesIncompletesOuEnMaintenanceSontExcluesDeCet")}
+              {t(
+                "admin.adminPlanDraftModal.lesFonctionnalitesIncompletesOuEnMaintenanceSontExcluesDeCet",
+              )}
             </p>
           ) : null}
         </section>
@@ -202,9 +206,15 @@ export function AdminPlanDraftModal({
                   }))
                 }
               >
-                <option value="active">{t("admin.adminPlanDraftModal.actifApresPublication")}</option>
-                <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
-                <option value="archived">{t("admin.adminMarketsPage.archive")}</option>
+                <option value="active">
+                  {t("admin.adminPlanDraftModal.actifApresPublication")}
+                </option>
+                <option value="disabled">
+                  {t("admin.providerCatalogTable.desactive")}
+                </option>
+                <option value="archived">
+                  {t("admin.adminMarketsPage.archive")}
+                </option>
               </Select>
             </FormField>
           </div>
@@ -323,7 +333,9 @@ export function AdminPlanDraftModal({
                     }
                   />
                 </FormField>
-                <FormField label={t("admin.adminPlanDraftModal.tvaPointsDeBase")}>
+                <FormField
+                  label={t("admin.adminPlanDraftModal.tvaPointsDeBase")}
+                >
                   <Input
                     type="number"
                     min={MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.min}
@@ -395,7 +407,9 @@ export function AdminPlanDraftModal({
               {t("admin.adminPlanDraftModal.quotasEtFonctionnalites")}
             </h3>
             <p className="mt-1 text-micro text-text-muted">
-              {t("admin.adminPlanDraftModal.cesValeursAlimententLaComparaisonLUsageEtLesControles")}
+              {t(
+                "admin.adminPlanDraftModal.cesValeursAlimententLaComparaisonLUsageEtLesControles",
+              )}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -424,7 +438,9 @@ export function AdminPlanDraftModal({
                   </span>
                 </div>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                  <FormField label={t("admin.adminPlanDraftModal.disponibilite")}>
+                  <FormField
+                    label={t("admin.adminPlanDraftModal.disponibilite")}
+                  >
                     <Select
                       className="w-full"
                       labelledByAncestor
@@ -438,10 +454,16 @@ export function AdminPlanDraftModal({
                         }))
                       }
                     >
-                      <option value="enabled">{t("admin.adminPlanDraftModal.active")}</option>
-                      <option value="beta">{t("admin.adminPlanDraftModal.beta")}</option>
+                      <option value="enabled">
+                        {t("admin.adminPlanDraftModal.active")}
+                      </option>
+                      <option value="beta">
+                        {t("admin.adminPlanDraftModal.beta")}
+                      </option>
                       <option value="maintenance">Maintenance</option>
-                      <option value="disabled">{t("admin.providerCatalogTable.desactive")}</option>
+                      <option value="disabled">
+                        {t("admin.providerCatalogTable.desactive")}
+                      </option>
                     </Select>
                   </FormField>
                   <FormField label="Type">
@@ -457,11 +479,15 @@ export function AdminPlanDraftModal({
                         }))
                       }
                     >
-                      <option value="boolean">{t("admin.adminPlanDraftModal.booleen")}</option>
+                      <option value="boolean">
+                        {t("admin.adminPlanDraftModal.booleen")}
+                      </option>
                       <option value="integer_quota">Quota entier</option>
                       <option value="additive_quota">Quota additionnel</option>
                       <option value="level">Niveau</option>
-                      <option value="monetary_credit">{t("admin.adminPlanDraftModal.credit")}</option>
+                      <option value="monetary_credit">
+                        {t("admin.adminPlanDraftModal.credit")}
+                      </option>
                       <option value="scoped_permission">
                         {t("admin.adminPlanDraftModal.permissionCiblee")}
                       </option>
@@ -668,7 +694,9 @@ export function AdminPlanDraftModal({
                 />
                 Nouveaux clients uniquement
               </label>
-              <FormField label={t("admin.adminPlanDraftModal.marchesEligibles")}>
+              <FormField
+                label={t("admin.adminPlanDraftModal.marchesEligibles")}
+              >
                 <Input
                   value={csv(
                     draft.commercialProfile.trialPolicy.eligibleMarketCodes,
@@ -689,7 +717,9 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label={t("admin.adminPlanDraftModal.audiencesEligibles")}>
+              <FormField
+                label={t("admin.adminPlanDraftModal.audiencesEligibles")}
+              >
                 <Input
                   value={csv(
                     draft.commercialProfile.trialPolicy.eligibleAudiences,
@@ -710,7 +740,9 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label={t("admin.adminPlanDraftModal.debutDeCampagneDEssai")}>
+              <FormField
+                label={t("admin.adminPlanDraftModal.debutDeCampagneDEssai")}
+              >
                 <Input
                   type="datetime-local"
                   value={localDateTime(
@@ -730,7 +762,9 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <FormField label={t("admin.adminPlanDraftModal.finDeCampagneDEssai")}>
+              <FormField
+                label={t("admin.adminPlanDraftModal.finDeCampagneDEssai")}
+              >
                 <Input
                   type="datetime-local"
                   value={localDateTime(

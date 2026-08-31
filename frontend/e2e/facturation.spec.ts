@@ -37,6 +37,10 @@ test.describe("Shongre Facturation product boundary", () => {
     });
     await waitForStableLayout(page);
 
+    await page
+      .getByRole("button", { name: "Continuer la configuration" })
+      .click();
+
     await expect(
       page.getByRole("heading", {
         level: 1,
@@ -57,6 +61,9 @@ test.describe("Shongre Facturation product boundary", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Facturation" }),
     ).toBeVisible();
+    await expect(
+      page.locator('a[href*="/facturation/facturation/"]'),
+    ).toHaveCount(0);
 
     await page.getByLabel("Raison sociale").fill("Atelier Test Facturation");
     await page
@@ -112,6 +119,9 @@ test.describe("Shongre Facturation product boundary", () => {
     ).toBeVisible();
     await page.getByRole("button", { name: "Activer Facturation" }).click();
     await expect(page).toHaveURL(/\/facturation\/onboarding$/);
+    await page
+      .getByRole("button", { name: "Continuer la configuration" })
+      .click();
     await expect(page.getByText("Agence Canopée").first()).toBeVisible();
   });
 

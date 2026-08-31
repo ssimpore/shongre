@@ -297,7 +297,10 @@ export const AdminModerationPage: React.FC = () => {
             }`}
           >
             <Eye className="w-icon-md h-icon-md" />
-            <span>{t("admin.adminModerationPage.controleAuditIaAnnonces")}{listings.length})</span>
+            <span>
+              {t("admin.adminModerationPage.controleAuditIaAnnonces")}
+              {listings.length})
+            </span>
           </button>
         )}
 
@@ -425,7 +428,9 @@ export const AdminModerationPage: React.FC = () => {
                 {t("admin.adminModerationPage.dossiersDeModeration")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                {t("admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees")}
+                {t(
+                  "admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees",
+                )}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -471,7 +476,9 @@ export const AdminModerationPage: React.FC = () => {
                 {t("admin.adminModerationPage.recoursAExaminer")}
               </h2>
               <p className="mt-1 text-xs text-stone-500">
-                {t("admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision")}
+                {t(
+                  "admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision",
+                )}
               </p>
             </div>
             <div className="divide-y divide-border-subtle">
@@ -497,10 +504,13 @@ export const AdminModerationPage: React.FC = () => {
                           {labelIdentifier(appeal.status)}
                         </Badge>
                       </div>
-                      <p className="text-xs text-text-secondary">{appeal.reason}</p>
+                      <p className="text-xs text-text-secondary">
+                        {appeal.reason}
+                      </p>
                       {appeal.decisionReason && (
                         <p className="rounded-control bg-bg-base p-3 text-xs text-stone-700">
-                          {t("admin.adminModerationPage.decision")} {appeal.decisionReason}
+                          {t("admin.adminModerationPage.decision")}{" "}
+                          {appeal.decisionReason}
                         </p>
                       )}
                       {pending && (
@@ -557,7 +567,8 @@ export const AdminModerationPage: React.FC = () => {
         <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <div className="p-3.5 border-b border-border-subtle bg-bg-base text-xs font-semibold text-text-secondary flex justify-between items-center">
             <span>
-              {t("admin.adminModerationPage.catalogueDAnnoncesShongre")}{listings.length} {t("admin.adminModerationPage.auTotal")}
+              {t("admin.adminModerationPage.catalogueDAnnoncesShongre")}
+              {listings.length} {t("admin.adminModerationPage.auTotal")}
             </span>
             <span className="text-micro text-stone-500">
               {t("admin.adminModerationPage.cliquezSurAuditIaPour")}
@@ -736,7 +747,8 @@ export const AdminModerationPage: React.FC = () => {
                 {formatPrice(selectedListingForAI.price, {
                   isFreeDonation: selectedListingForAI.isFreeDonation,
                 })}{" "}
-                {t("admin.adminModerationPage.vendeur2")} {selectedListingForAI.sellerName}
+                {t("admin.adminModerationPage.vendeur2")}{" "}
+                {selectedListingForAI.sellerName}
               </div>
             </div>
 
@@ -870,7 +882,9 @@ export const AdminModerationPage: React.FC = () => {
         onSubmit={(reason) => void handleAppealDecision(reason)}
         title={t("admin.adminModerationPage.deciderLeRecours")}
         label={t("admin.adminModerationPage.motifIndependantEtVerifiable")}
-        placeholder={t("admin.adminModerationPage.expliquezLesElementsExaminesEtLaJustificationDeLaDecision")}
+        placeholder={t(
+          "admin.adminModerationPage.expliquezLesElementsExaminesEtLaJustificationDeLaDecision",
+        )}
         confirmText="Enregistrer la décision"
         multiline
         minLength={MODERATION_CONSTRAINTS.appealReviewReasonMinLength}
