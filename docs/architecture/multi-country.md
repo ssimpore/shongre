@@ -48,6 +48,45 @@ Commercial prices, credentials, legal text and provider secrets are not stored
 in the bootstrap registry. Tax rates for markets pending legal review remain
 `null`; no interface invents a rate.
 
+The browser receives only `PublicCountryConfig`. Detection responses omit
+readiness evidence, legal policy, provider identifiers, country geometry and
+all request metadata. `CountryConfig.detection` and `CountryConfig.readiness`
+remain canonical server/build-time configuration.
+
+## Privacy-conscious country recommendation
+
+Detection recommends a country; it never authorizes a market operation or
+changes the market by itself:
+
+```text
+component -> MarketLocationProvider controller -> MarketsService contract
+                                              -> demo or HTTP adapter
+HTTP adapter -> trusted edge country header -> registry resolution
+explicit click -> browser coordinates -> ephemeral registry resolution
+```
+
+The ingress may inject one configured ISO country header only when
+`SHONGRE_TRUST_IP_COUNTRY_HEADER=true`. It must first remove any
+client-supplied header with that name. The backend does not inspect an IP for
+this flow and the response contains only the resolved public country,
+confidence, signal kind and market experience. VPN/proxy or malformed signals
+are low confidence. An unknown country resolves to the global gateway; it never
+falls back to the default market.
+
+Precise browser location is requested only by the labelled control in the
+location picker, after copy explains its one-time purpose and non-retention.
+Coordinates are resolved in memory and are absent from responses, analytics,
+logs and local storage. Denied permission leaves manual city and country choice
+available.
+
+A manual country choice is versioned browser preference and wins until reset.
+Cross-domain changes require an explicit confirmation. A non-sensitive
+`marketPreference` handoff marker transfers that confirmed choice to the target
+origin and is removed from the address bar after consumption. Access and
+refresh tokens are never used for this preference transfer. Market switch URLs
+preserve bounded public search parameters and remove credentials, OAuth state
+and tracking parameters.
+
 ## Market context and data isolation
 
 The resolved context contains `country`, `market`, `locale`, `currency`,
@@ -100,16 +139,17 @@ actions use the same canonical builder.
 
 ## Public URL migration map
 
-| Legacy or ambiguous source                      | Canonical target                                       |
-| ----------------------------------------------- | ------------------------------------------------------ |
-| `https://shongre.com/fr/<route>`                | `https://shongre.fr/<route>`                           |
-| `https://www.shongre.fr/<route>`                | `https://shongre.fr/<route>`                           |
-| `https://www.shongre.com/<route>`               | `https://shongre.com/<route>`                          |
-| hardcoded `shongre.com/annonce/<id>` for France | `buildPublicUrl({ country: "FR", route })`             |
-| relative link in an email/notification          | store `{ marketCode, linkRoute }`, resolve at delivery |
+| Legacy or ambiguous source             | Canonical target                                                     |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| `https://shongre.com/fr/<route>`       | `https://shongre.fr/<route>`                                         |
+| `https://www.shongre.fr/<route>`       | `https://shongre.fr/<route>`                                         |
+| `https://www.shongre.com/<route>`      | `https://shongre.com/<route>`                                        |
+| hardcoded default-market listing URL   | `buildPublicUrl({ country: getDefaultCountryConfig().code, route })` |
+| relative link in an email/notification | store `{ marketCode, linkRoute }`, resolve at delivery               |
 
-Redirects are permanent only when the mapping is unambiguous. No country is
-guessed from language, IP or currency.
+Redirects are permanent only when the mapping is unambiguous. Country
+recommendation never derives from language, locale, currency or timezone and
+never replaces host/path validation.
 
 ## Deployment and local development
 
@@ -123,6 +163,8 @@ PUBLIC_FR_URL=https://shongre.fr
 PUBLIC_INTL_URL=https://shongre.com
 API_URL=https://api.shongre.fr
 SHONGRE_TRUST_PROXY_HOST=false
+SHONGRE_TRUST_IP_COUNTRY_HEADER=true
+SHONGRE_IP_COUNTRY_HEADER=cf-ipcountry
 OAUTH_ALLOWED_RETURN_ORIGINS=https://shongre.fr,https://shongre.com
 ```
 
@@ -140,8 +182,10 @@ The Markets administration surface exposes canonical domain mode, base path, def
 supported locales, currency, timezone, launch status, marketplace/payment
 availability, SEO visibility, compliance review and launch copy. Backend
 validation prevents duplicate mode/path pairs, a non-root France route, a
-root international market, payment without a provider, or activation before a
-required legal review. Every change records actor, fields and versions.
+root international market, payment without a provider, or activation before
+routing, localization, legal, compliance, provider, payment, explicit indexing,
+detection and operational readiness configuration are complete. Every change records actor,
+fields and versions.
 
 Roll out through `coming_soon -> private_beta -> beta -> active`. A rollback
 sets the market to `paused` or `disabled`; the resolver then serves the safe
@@ -216,7 +260,8 @@ required gate is complete.
 
 1. Add a reviewed `CountryConfig` entry with ISO country/market codes, canonical domain mode,
    base path, locales, currency list, timezone, measurement system, phone prefix,
-   address format and location hierarchy. Do not copy France's commercial policy.
+   address format, location hierarchy, detection bounds and every readiness
+   dimension. Do not copy the default market's commercial policy.
 2. Add the matching `markets` migration/config row. Leave marketplace, payments,
    monetization, SEO indexing and regulated capabilities disabled by default.
 3. Classify each affected entity as `PLATFORM_GLOBAL`, `MARKET_SCOPED` or
@@ -243,6 +288,12 @@ required gate is complete.
     rollback and one-use auth handoff.
 11. Promote deliberately through `coming_soon -> private_beta -> beta -> active`.
     Activation is a reviewed admin action, never a side effect of adding a row.
+
+Detection, selection, routing and launch rendering tests iterate the registry.
+Do not append a country-specific branch or test table. A synthetic future-market
+test proves that a complete registry entry appears in the selector and resolves
+through IP signal, coordinates, canonical URL construction and status rendering
+without application-logic changes.
 
 ## Human decisions still required
 

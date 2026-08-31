@@ -14,6 +14,7 @@ import type {
 } from "@shongre/contracts/monetization";
 import { isCommercialEntitlementOperational } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { PROPOSED_MONETIZATION_DRAFT_CATALOG } from "@shongre/contracts/monetization-proposed-catalog";
 import {
   normalizeBusinessVerticalCode,
   normalizeBusinessVerticalFamilyId,
@@ -70,6 +71,13 @@ export interface BusinessRulesRepository {
     accountId?: string,
     limit?: number,
   ): Promise<MonetizationSubscription[]>;
+  getSubscription(
+    subscriptionId: string,
+  ): Promise<MonetizationSubscription | null>;
+  getSubscriptionChangeResult(
+    subscriptionId: string,
+    idempotencyKey: string,
+  ): Promise<MonetizationSubscription | null>;
   getBillingOverview(accountId: string): Promise<BillingOverview>;
   applySubscriptionChange(
     accountId: string,
@@ -81,7 +89,7 @@ export interface BusinessRulesRepository {
     accountId: string,
     cancelAtPeriodEnd: boolean,
   ): Promise<MonetizationSubscription>;
-  countQuotesSince(since: string): Promise<number>;
+  countQuotesSince(since: string, marketCode: string): Promise<number>;
   countPromotionRedemptions(
     promotionId: string,
     accountId?: string,
@@ -128,52 +136,6 @@ const snapshotHash = (value: unknown) =>
 const deterministicMemoryId = (value: string) =>
   createHash("sha256").update(value).digest("hex").slice(0, 32);
 
-const createExplicitDemoCatalog = (
-  source: MonetizationCatalog,
-  marketCode: string,
-  versionId: string,
-): MonetizationCatalog => {
-  const localize = (value: unknown, key?: string): unknown => {
-    if (Array.isArray(value)) {
-      if (
-        ["marketCodes", "countryAvailability", "eligibleMarketCodes"].includes(
-          key || "",
-        )
-      )
-        return value.map((entry) =>
-          entry === source.marketCode ? marketCode : entry,
-        );
-      return value.map((entry) => localize(entry));
-    }
-    if (value && typeof value === "object")
-      return Object.fromEntries(
-        Object.entries(value as Record<string, unknown>).map(
-          ([childKey, child]) => [childKey, localize(child, childKey)],
-        ),
-      );
-    if (typeof value === "string") {
-      if (key === "marketCode" && value === source.marketCode)
-        return marketCode;
-      return value.replaceAll(source.configurationVersionId, versionId);
-    }
-    return value;
-  };
-  const catalog = localize(source) as MonetizationCatalog;
-  return {
-    ...catalog,
-    configurationVersionId: versionId,
-    marketCode,
-    generatedAt: "2026-08-25T00:00:00.000Z",
-    stale: false,
-  };
-};
-
-const BELGIUM_DEMO_MONETIZATION_CATALOG = createExplicitDemoCatalog(
-  BASELINE_MONETIZATION_CATALOG,
-  "BE",
-  "commercial-be-demo-v1",
-);
-
 const initialVersion = (
   catalog: MonetizationCatalog,
 ): CommercialConfigurationVersion => ({
@@ -198,6 +160,34 @@ const initialVersion = (
   conflicts: [],
 });
 
+const proposedDraftVersion: CommercialConfigurationVersion = {
+  id: PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId,
+  setId: "commercial-core",
+  versionNumber: PROPOSED_MONETIZATION_DRAFT_CATALOG.versionNumber,
+  marketCode: "FR",
+  status: "draft",
+  reason:
+    "Brouillon cible Starter, Growth et Performance avec migration et garde-fous",
+  createdBy: "system:reviewed-seed",
+  createdAt: PROPOSED_MONETIZATION_DRAFT_CATALOG.generatedAt,
+  productCount: PROPOSED_MONETIZATION_DRAFT_CATALOG.products.length,
+  ruleCount:
+    PROPOSED_MONETIZATION_DRAFT_CATALOG.rules.length +
+    PROPOSED_MONETIZATION_DRAFT_CATALOG.commissionPolicies.reduce(
+      (count, policy) => count + policy.rules.length,
+      0,
+    ),
+  conflicts: [
+    {
+      code: "TARGET_DRAFT_GATES_PENDING",
+      severity: "blocking",
+      entityIds: [PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId],
+      message:
+        "Shadow quotes, campaign dates, economics and provider mappings remain pending.",
+    },
+  ],
+};
+
 type MemoryState = {
   catalogs: Map<string, MonetizationCatalog>;
   versions: Map<string, CommercialConfigurationVersion>;
@@ -209,6 +199,7 @@ type MemoryState = {
   usage: Map<string, number>;
   entitlements: Map<string, ActiveEntitlement>;
   subscriptions: Map<string, MonetizationSubscription>;
+  subscriptionChangeResults: Map<string, MonetizationSubscription>;
   promotionRedemptions: Array<{
     promotionId: string;
     accountId: string;
@@ -219,22 +210,19 @@ type MemoryState = {
 const memory: MemoryState = {
   catalogs: new Map([
     [
+      PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId,
+      PROPOSED_MONETIZATION_DRAFT_CATALOG,
+    ],
+    [
       BASELINE_MONETIZATION_CATALOG.configurationVersionId,
       BASELINE_MONETIZATION_CATALOG,
     ],
-    [
-      BELGIUM_DEMO_MONETIZATION_CATALOG.configurationVersionId,
-      BELGIUM_DEMO_MONETIZATION_CATALOG,
-    ],
   ]),
   versions: new Map([
+    [proposedDraftVersion.id, proposedDraftVersion],
     [
       BASELINE_MONETIZATION_CATALOG.configurationVersionId,
       initialVersion(BASELINE_MONETIZATION_CATALOG),
-    ],
-    [
-      BELGIUM_DEMO_MONETIZATION_CATALOG.configurationVersionId,
-      initialVersion(BELGIUM_DEMO_MONETIZATION_CATALOG),
     ],
   ]),
   quotes: new Map(),
@@ -245,12 +233,16 @@ const memory: MemoryState = {
   usage: new Map(),
   entitlements: new Map(),
   subscriptions: new Map(),
+  subscriptionChangeResults: new Map(),
   promotionRedemptions: [],
 };
 
 export class DemoBusinessRulesRepository implements BusinessRulesRepository {
-  async canManageOrganization(_accountId: string, organizationId: string) {
-    return Boolean(organizationId);
+  async canManageOrganization(accountId: string, organizationId: string) {
+    return (
+      Boolean(organizationId) &&
+      !/viewer|unauthorized|suspended/i.test(accountId)
+    );
   }
   async getAccountAudience(accountId: string) {
     if (/org|organization|dealer|agency|school/i.test(accountId))
@@ -402,6 +394,8 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               accountId: order.accountId,
               organizationId: order.organizationId,
               productId: line.productId,
+              productVersionId: line.productVersionId,
+              configurationVersionId: quote.configurationVersionId,
               key: entitlement.key,
               value: entitlement.value,
               sourceOrderId: order.id,
@@ -422,6 +416,9 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
               organizationId: order.organizationId,
               productId: line.productId,
               productVersionId: line.productVersionId,
+              configurationVersionId: quote.configurationVersionId,
+              marketCode: quote.marketCode,
+              currency: quote.currency,
               priceId: line.priceId,
               sourceOrderId: order.id,
               status:
@@ -502,6 +499,21 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       .map((entry) => structuredClone(entry));
   }
 
+  async getSubscription(subscriptionId: string) {
+    const subscription = memory.subscriptions.get(subscriptionId);
+    return subscription ? structuredClone(subscription) : null;
+  }
+
+  async getSubscriptionChangeResult(
+    subscriptionId: string,
+    idempotencyKey: string,
+  ) {
+    const result = memory.subscriptionChangeResults.get(
+      `${subscriptionId}:${idempotencyKey}`,
+    );
+    return result ? structuredClone(result) : null;
+  }
+
   async getBillingOverview(accountId: string): Promise<BillingOverview> {
     const subscriptions = await this.listSubscriptions(accountId, 100);
     const entitlements = await this.listEntitlements(accountId, 200);
@@ -553,16 +565,36 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     preview: SubscriptionChangePreview,
   ) {
     const subscription = memory.subscriptions.get(request.subscriptionId);
-    if (!subscription || subscription.accountId !== accountId)
+    if (
+      !subscription ||
+      (subscription.accountId !== accountId &&
+        (!subscription.organizationId ||
+          !(await this.canManageOrganization(
+            accountId,
+            subscription.organizationId,
+          ))))
+    )
       throw new Error("subscription not found");
+    if (
+      request.expectedSubscriptionUpdatedAt &&
+      request.expectedSubscriptionUpdatedAt !== subscription.updatedAt
+    ) {
+      throw new Error("stale subscription state");
+    }
+    const previousUpdatedAt = subscription.updatedAt;
     if (preview.effectiveAt === "period_end") {
       subscription.scheduledProductId = request.targetProductId;
+      subscription.scheduledProductVersionId = preview.targetProductVersionId;
+      subscription.scheduledConfigurationVersionId =
+        preview.targetConfigurationVersionId;
       subscription.scheduledPriceId = request.targetPriceId;
       subscription.scheduledChangeAt = subscription.currentPeriodEnd;
     } else {
       const catalog = [...memory.catalogs.values()].find((candidate) =>
         candidate.products.some(
-          (product) => product.id === request.targetProductId,
+          (product) =>
+            product.id === request.targetProductId &&
+            product.prices.some((price) => price.id === request.targetPriceId),
         ),
       );
       const targetProduct = catalog?.products.find(
@@ -571,7 +603,7 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       const targetPrice = targetProduct?.prices.find(
         (price) => price.id === request.targetPriceId,
       );
-      if (!targetProduct || !targetPrice)
+      if (!catalog || !targetProduct || !targetPrice)
         throw new Error("target subscription offer not found");
       const previousProductId = subscription.productId;
       const changedAt = now();
@@ -600,6 +632,8 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
           id: entitlementId,
           accountId: subscription.accountId,
           productId: targetProduct.id,
+          productVersionId: targetProduct.versionId,
+          configurationVersionId: catalog.configurationVersionId,
           key: definition.key,
           value: definition.value,
           sourceOrderId: subscription.sourceOrderId,
@@ -613,16 +647,28 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
       }
       subscription.productId = request.targetProductId;
       subscription.productVersionId = targetProduct.versionId;
+      subscription.configurationVersionId = catalog.configurationVersionId;
+      subscription.marketCode = catalog.marketCode;
+      subscription.currency = catalog.currency;
       subscription.priceId = request.targetPriceId;
       subscription.billingPeriod = targetPrice.billingPeriod;
       subscription.familyId = targetProduct.commercialProfile.familyId;
       subscription.verticalId = targetProduct.commercialProfile.verticalId;
       subscription.scheduledProductId = undefined;
+      subscription.scheduledProductVersionId = undefined;
+      subscription.scheduledConfigurationVersionId = undefined;
       subscription.scheduledPriceId = undefined;
       subscription.scheduledChangeAt = undefined;
     }
-    subscription.updatedAt = now();
-    return structuredClone(subscription);
+    subscription.updatedAt = new Date(
+      Math.max(Date.now(), new Date(previousUpdatedAt).getTime() + 1),
+    ).toISOString();
+    const result = structuredClone(subscription);
+    memory.subscriptionChangeResults.set(
+      `${subscription.id}:${request.idempotencyKey}`,
+      result,
+    );
+    return result;
   }
 
   async updateSubscriptionCancellation(
@@ -631,7 +677,15 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     cancelAtPeriodEnd: boolean,
   ) {
     const subscription = memory.subscriptions.get(subscriptionId);
-    if (!subscription || subscription.accountId !== accountId)
+    if (
+      !subscription ||
+      (subscription.accountId !== accountId &&
+        (!subscription.organizationId ||
+          !(await this.canManageOrganization(
+            accountId,
+            subscription.organizationId,
+          ))))
+    )
       throw new Error("subscription not found");
     subscription.cancelAtPeriodEnd = cancelAtPeriodEnd;
     subscription.status = cancelAtPeriodEnd ? "cancellation_pending" : "active";
@@ -639,10 +693,11 @@ export class DemoBusinessRulesRepository implements BusinessRulesRepository {
     return structuredClone(subscription);
   }
 
-  async countQuotesSince(since: string) {
+  async countQuotesSince(since: string, marketCode: string) {
     return [...memory.quotes.values()].filter(
       (entry, index, all) =>
         entry.createdAt >= since &&
+        entry.marketCode === marketCode &&
         all.findIndex((candidate) => candidate.id === entry.id) === index,
     ).length;
   }
@@ -730,6 +785,9 @@ function subscriptionFromRow(row: any): MonetizationSubscription {
     organizationId: row.organization_id || undefined,
     productId: String(row.product_id),
     productVersionId: row.product_version_id || undefined,
+    configurationVersionId: row.configuration_version_id || undefined,
+    marketCode: row.market_code || undefined,
+    currency: row.currency || undefined,
     priceId: row.price_id || undefined,
     sourceOrderId: String(row.source_order_id),
     status: row.status,
@@ -739,6 +797,9 @@ function subscriptionFromRow(row: any): MonetizationSubscription {
     currentPeriodEnd: String(row.current_period_end),
     cancelAtPeriodEnd: Boolean(row.cancel_at_period_end),
     scheduledProductId: row.scheduled_product_id || undefined,
+    scheduledProductVersionId: row.scheduled_product_version_id || undefined,
+    scheduledConfigurationVersionId:
+      row.scheduled_configuration_version_id || undefined,
     scheduledPriceId: row.scheduled_price_id || undefined,
     scheduledChangeAt: row.scheduled_change_at || undefined,
     gracePeriodEndsAt: row.grace_period_ends_at || undefined,
@@ -908,6 +969,8 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         quote_id: order.quoteId,
         account_id: order.accountId,
         organization_id: order.organizationId,
+        configuration_version_id: order.configurationVersionId,
+        market_code: order.marketCode,
         snapshot_hash: order.snapshotHash,
         currency: order.total.currency,
         total_minor: order.total.amountMinor,
@@ -967,6 +1030,8 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       accountId: String(row.account_id),
       organizationId: row.organization_id || undefined,
       productId: String(row.product_id),
+      productVersionId: row.product_version_id || undefined,
+      configurationVersionId: row.configuration_version_id || undefined,
       key: normalizeEducationEntitlementKey(String(row.entitlement_key)),
       value: row.entitlement_value,
       sourceOrderId: row.source_order_id || undefined,
@@ -991,6 +1056,8 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
       accountId: String(row.account_id),
       organizationId,
       productId: String(row.product_id),
+      productVersionId: row.product_version_id || undefined,
+      configurationVersionId: row.configuration_version_id || undefined,
       key: normalizeEducationEntitlementKey(String(row.entitlement_key)),
       value: row.entitlement_value,
       sourceOrderId: row.source_order_id || undefined,
@@ -1012,6 +1079,30 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     const { data, error } = await query;
     if (error) throw error;
     return (data || []).map(subscriptionFromRow);
+  }
+
+  async getSubscription(subscriptionId: string) {
+    const { data, error } = await this.client
+      .from("monetization_subscriptions")
+      .select("*")
+      .eq("id", subscriptionId)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? subscriptionFromRow(data) : null;
+  }
+
+  async getSubscriptionChangeResult(
+    subscriptionId: string,
+    idempotencyKey: string,
+  ) {
+    const { data, error } = await this.client
+      .from("monetization_subscription_events")
+      .select("subscription_id")
+      .eq("subscription_id", subscriptionId)
+      .eq("idempotency_key", idempotencyKey)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getSubscription(subscriptionId) : null;
   }
 
   async getBillingOverview(accountId: string): Promise<BillingOverview> {
@@ -1183,6 +1274,8 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         accountId: String(row.account_id),
         orderId: row.order_id || undefined,
         subscriptionId: row.subscription_id || undefined,
+        configurationVersionId: row.configuration_version_id || undefined,
+        marketCode: row.market_code || undefined,
         number: String(row.invoice_number),
         status: row.status,
         subtotal: {
@@ -1265,47 +1358,22 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     request: SubscriptionChangeRequest,
     preview: SubscriptionChangePreview,
   ) {
-    const update =
-      preview.effectiveAt === "period_end"
-        ? {
-            scheduled_product_id: request.targetProductId,
-            scheduled_price_id: request.targetPriceId,
-            scheduled_change_at: preview.nextBillingAt,
-            updated_at: now(),
-          }
-        : {
-            product_id: request.targetProductId,
-            price_id: request.targetPriceId,
-            scheduled_product_id: null,
-            scheduled_price_id: null,
-            scheduled_change_at: null,
-            updated_at: now(),
-          };
-    const { data, error } = await this.client
-      .from("monetization_subscriptions")
-      .update(update)
-      .eq("id", request.subscriptionId)
-      .eq("account_id", accountId)
-      .select("*")
-      .single();
+    const { data, error } = await this.client.rpc(
+      "apply_monetization_subscription_change",
+      {
+        p_subscription_id: request.subscriptionId,
+        p_actor_id: accountId,
+        p_target_product_id: request.targetProductId,
+        p_target_product_version_id: preview.targetProductVersionId,
+        p_target_configuration_version_id: preview.targetConfigurationVersionId,
+        p_target_price_id: request.targetPriceId,
+        p_effective_at: preview.effectiveAt,
+        p_change_at: preview.nextBillingAt,
+        p_expected_updated_at: request.expectedSubscriptionUpdatedAt || null,
+        p_idempotency_key: request.idempotencyKey,
+      },
+    );
     if (error) throw error;
-    const { error: eventError } = await this.client
-      .from("monetization_subscription_events")
-      .insert({
-        subscription_id: data.id,
-        account_id: data.account_id,
-        event_type:
-          preview.effectiveAt === "period_end" ? "change_scheduled" : "changed",
-        from_status: data.status,
-        to_status: data.status,
-        metadata: {
-          productId: request.targetProductId,
-          priceId: request.targetPriceId,
-          effectiveAt: preview.effectiveAt,
-        },
-        idempotency_key: request.idempotencyKey,
-      });
-    if (eventError && eventError.code !== "23505") throw eventError;
     return subscriptionFromRow(data);
   }
 
@@ -1314,14 +1382,15 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     accountId: string,
     cancelAtPeriodEnd: boolean,
   ) {
-    const { data: owned, error: ownershipError } = await this.client
-      .from("monetization_subscriptions")
-      .select("id,updated_at")
-      .eq("id", subscriptionId)
-      .eq("account_id", accountId)
-      .maybeSingle();
-    if (ownershipError) throw ownershipError;
-    if (!owned) throw new Error("subscription not found");
+    const owned = await this.getSubscription(subscriptionId);
+    if (
+      !owned ||
+      (owned.accountId !== accountId &&
+        (!owned.organizationId ||
+          !(await this.canManageOrganization(accountId, owned.organizationId))))
+    ) {
+      throw new Error("subscription not found");
+    }
     const { data, error } = await this.client.rpc(
       "transition_monetization_subscription",
       {
@@ -1330,7 +1399,7 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
         p_event_type: cancelAtPeriodEnd
           ? "cancellation_scheduled"
           : "reactivated",
-        p_idempotency_key: `cancellation:${cancelAtPeriodEnd}:${owned.updated_at}`,
+        p_idempotency_key: `cancellation:${cancelAtPeriodEnd}:${owned.updatedAt}`,
         p_metadata: { cancelAtPeriodEnd },
         p_actor_id: accountId,
       },
@@ -1339,11 +1408,12 @@ export class PostgresBusinessRulesRepository implements BusinessRulesRepository 
     return subscriptionFromRow(data);
   }
 
-  async countQuotesSince(since: string) {
+  async countQuotesSince(since: string, marketCode: string) {
     const { count, error } = await this.client
       .from("monetization_quotes")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", since);
+      .gte("created_at", since)
+      .eq("market_code", marketCode);
     if (error) throw error;
     return Number(count || 0);
   }

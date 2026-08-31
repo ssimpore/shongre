@@ -46,6 +46,7 @@ export class HttpCommissionService implements CommissionServiceContract {
   }
 
   createDraft(input: {
+    marketCode: string;
     policies: CommissionPolicy[];
     reason: string;
     effectiveFrom?: string;
@@ -53,6 +54,7 @@ export class HttpCommissionService implements CommissionServiceContract {
     return httpClient.post<CommercialConfigurationVersion>(
       "/admin/commissions/drafts",
       {
+        marketCode: input.marketCode,
         reason: input.reason,
         effectiveFrom: input.effectiveFrom,
         commissionPolicies: input.policies,

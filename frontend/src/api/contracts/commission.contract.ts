@@ -23,6 +23,7 @@ export interface CommissionServiceContract {
     query: CommissionAnalyticsQuery,
   ): Promise<CommissionAnalyticsRow[]>;
   createDraft(input: {
+    marketCode: string;
     policies: CommissionPolicy[];
     reason: string;
     effectiveFrom?: string;

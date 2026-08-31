@@ -2271,6 +2271,21 @@ export const BASELINE_MONETIZATION_CATALOG: MonetizationCatalog =
     marketCode: "FR",
     currency: "EUR",
     generatedAt: PUBLISHED_AT,
+    subscriptionPolicy: {
+      id: "subscription-policy-fr-v3",
+      immediateUpgrade: "allowed",
+      upgradeProration: "linear_remaining_time",
+      downgradeTiming: "period_end",
+      samePlanRenewalTiming: "period_end",
+      billingIntervalChangeTiming: "period_end",
+      cancellationTiming: "period_end",
+      // The commercial grace duration has not been approved. The published
+      // catalog therefore keeps paid access fail-closed after payment failure.
+      paymentFailureAccess: "suspend_immediately",
+      // Live provider plan mutation is release-gated until synchronized price
+      // mappings and sandbox evidence exist. Demo transitions remain local.
+      providerPlanChange: "not_configured",
+    },
     verticals: BASELINE_BUSINESS_VERTICALS,
     products: BASELINE_MONETIZATION_PRODUCTS,
     promotions: [

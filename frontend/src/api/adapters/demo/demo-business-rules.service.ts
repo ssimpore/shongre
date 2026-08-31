@@ -30,6 +30,7 @@ import {
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { PROPOSED_MONETIZATION_DRAFT_CATALOG } from "@shongre/contracts/monetization-proposed-catalog";
 import { isSameBusinessVertical } from "@shongre/contracts/business-verticals";
 import { colors, palette } from "@shongre/design-tokens";
 import {
@@ -45,7 +46,6 @@ import type {
 } from "../../contracts/business-rules.contract";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { storageService } from "../../../services/storage.service";
-import { DEFAULT_MARKET_CODE } from "../../../configuration/market-baseline";
 import {
   requireDemoAnyCapability,
   requireDemoCapability,
@@ -53,6 +53,57 @@ import {
 
 const createdAt = BASELINE_MONETIZATION_CATALOG.generatedAt;
 const versions: CommercialConfigurationVersion[] = [
+  {
+    id: PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId,
+    setId: "commercial-core",
+    versionNumber: PROPOSED_MONETIZATION_DRAFT_CATALOG.versionNumber,
+    marketCode: "FR",
+    status: "draft",
+    reason:
+      "Brouillon cible Starter, Growth et Performance avec migration et garde-fous",
+    createdBy: "Système — configuration revue",
+    createdAt: PROPOSED_MONETIZATION_DRAFT_CATALOG.generatedAt,
+    productCount: PROPOSED_MONETIZATION_DRAFT_CATALOG.products.length,
+    ruleCount:
+      PROPOSED_MONETIZATION_DRAFT_CATALOG.rules.length +
+      PROPOSED_MONETIZATION_DRAFT_CATALOG.commissionPolicies.reduce(
+        (count, policy) => count + policy.rules.length,
+        0,
+      ),
+    conflicts: [
+      {
+        code: "MIGRATION_SHADOW_QUOTE_INCOMPLETE",
+        severity: "blocking",
+        entityIds: PROPOSED_MONETIZATION_DRAFT_CATALOG.migrationMappings.map(
+          (mapping) => mapping.id,
+        ),
+        message: "Les devis fantômes de migration restent à comparer.",
+      },
+      {
+        code: "CAMPAIGN_ENROLLMENT_WINDOW_MISSING",
+        severity: "blocking",
+        entityIds: ["campaign-founding-professional"],
+        message:
+          "La fenêtre d’inscription Founding Professional reste à valider.",
+      },
+      {
+        code: "ECONOMICS_APPROVAL_REQUIRED",
+        severity: "blocking",
+        entityIds: PROPOSED_MONETIZATION_DRAFT_CATALOG.commercialEconomics.map(
+          (entry) => entry.id,
+        ),
+        message: "Les coûts directs et seuils de marge restent à approuver.",
+      },
+      {
+        code: "PROVIDER_MAPPING_NOT_SYNCHRONIZED",
+        severity: "blocking",
+        entityIds: PROPOSED_MONETIZATION_DRAFT_CATALOG.providerMappings.map(
+          (entry) => entry.id,
+        ),
+        message: "Les prix cibles ne sont pas synchronisés avec Stripe.",
+      },
+    ],
+  },
   {
     id: BASELINE_MONETIZATION_CATALOG.configurationVersionId,
     setId: "commercial-core",
@@ -77,6 +128,10 @@ const versions: CommercialConfigurationVersion[] = [
 ];
 const catalogs = new Map<string, MonetizationCatalog>([
   [
+    PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId,
+    structuredClone(PROPOSED_MONETIZATION_DRAFT_CATALOG),
+  ],
+  [
     BASELINE_MONETIZATION_CATALOG.configurationVersionId,
     structuredClone(BASELINE_MONETIZATION_CATALOG),
   ],
@@ -91,6 +146,7 @@ const invoices: MonetizationInvoice[] = [];
 const refunds: MonetizationRefund[] = [];
 const creditBalances: CreditBalance[] = [];
 const subscriptionEvents: SubscriptionEvent[] = [];
+const subscriptionChangeResults = new Map<string, MonetizationSubscription>();
 const complimentaryRequests = new Map<
   string,
   ComplimentaryGrantRequestResult
@@ -113,7 +169,7 @@ function currentAccountAudience():
   return user?.accountType === "professional" ? "professional" : "individual";
 }
 
-function money(amountMinor: number, currency = "EUR") {
+function money(amountMinor: number, currency: string) {
   return { amountMinor, currency };
 }
 
@@ -176,7 +232,10 @@ function replaceSubscriptionEntitlements(
           existing?.id ||
           `ent_${digest(`${subscription.sourceOrderId}:${targetProduct.id}:${definition.key}`).slice(0, 24)}`,
         accountId: subscription.accountId,
+        organizationId: subscription.organizationId,
         productId: targetProduct.id,
+        productVersionId: targetProduct.versionId,
+        configurationVersionId: subscription.configurationVersionId,
         key: definition.key,
         value: definition.value,
         sourceOrderId: subscription.sourceOrderId,
@@ -269,6 +328,10 @@ function ensureSeededBilling(accountId: string) {
     accountId,
     productId,
     productVersionId: product.versionId,
+    configurationVersionId:
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
+    currency: BASELINE_MONETIZATION_CATALOG.currency,
     priceId: price.id,
     sourceOrderId: orderId,
     status: "active",
@@ -291,8 +354,11 @@ function ensureSeededBilling(accountId: string) {
     id: orderId,
     quoteId: `seed_quote_${digest(accountId).slice(0, 16)}`,
     accountId,
+    configurationVersionId:
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
     snapshotHash: digest(`${accountId}:${productId}:${periodStart}`),
-    total: money(totalMinor),
+    total: money(totalMinor, BASELINE_MONETIZATION_CATALOG.currency),
     status: "paid",
     provider: "demo",
     providerCheckoutId: `seed_checkout_${digest(accountId).slice(0, 12)}`,
@@ -306,6 +372,9 @@ function ensureSeededBilling(accountId: string) {
         id: `seed_ent_${digest(`${accountId}:${entitlement.key}`).slice(0, 20)}`,
         accountId,
         productId,
+        productVersionId: product.versionId,
+        configurationVersionId:
+          BASELINE_MONETIZATION_CATALOG.configurationVersionId,
         key: entitlement.key,
         value: entitlement.value,
         sourceOrderId: orderId,
@@ -323,14 +392,20 @@ function ensureSeededBilling(accountId: string) {
     accountId,
     orderId,
     subscriptionId: subscription.id,
+    configurationVersionId:
+      BASELINE_MONETIZATION_CATALOG.configurationVersionId,
+    marketCode: BASELINE_MONETIZATION_CATALOG.marketCode,
     number: `FAC-2026-${digest(accountId).slice(0, 5).toUpperCase()}`,
     status: "paid",
-    subtotal: money(price.amount.amountMinor),
-    discount: money(0),
-    tax: money(taxMinor),
-    total: money(totalMinor),
-    amountPaid: money(totalMinor),
-    amountDue: money(0),
+    subtotal: money(
+      price.amount.amountMinor,
+      BASELINE_MONETIZATION_CATALOG.currency,
+    ),
+    discount: money(0, BASELINE_MONETIZATION_CATALOG.currency),
+    tax: money(taxMinor, BASELINE_MONETIZATION_CATALOG.currency),
+    total: money(totalMinor, BASELINE_MONETIZATION_CATALOG.currency),
+    amountPaid: money(totalMinor, BASELINE_MONETIZATION_CATALOG.currency),
+    amountDue: money(0, BASELINE_MONETIZATION_CATALOG.currency),
     issuedAt: periodStart,
     paidAt: periodStart,
   });
@@ -340,7 +415,7 @@ function ensureSeededBilling(accountId: string) {
     orderId,
     invoiceId,
     status: "succeeded",
-    amount: money(totalMinor),
+    amount: money(totalMinor, BASELINE_MONETIZATION_CATALOG.currency),
     provider: "demo",
     providerPaymentId: `demo_pay_${digest(accountId).slice(0, 12)}`,
     paidAt: periodStart,
@@ -355,6 +430,60 @@ function ensureSeededBilling(accountId: string) {
     undefined,
     "active",
   );
+}
+
+function applyDueScheduledChanges(accountId: string) {
+  const changedAt = new Date().toISOString();
+  subscriptions
+    .filter(
+      (subscription) =>
+        subscription.accountId === accountId &&
+        subscription.scheduledChangeAt &&
+        subscription.scheduledChangeAt <= changedAt,
+    )
+    .forEach((subscription) => {
+      const catalog = subscription.scheduledConfigurationVersionId
+        ? catalogs.get(subscription.scheduledConfigurationVersionId)
+        : undefined;
+      const target = catalog?.products.find(
+        (product) => product.id === subscription.scheduledProductId,
+      );
+      const targetPrice = target?.prices.find(
+        (price) => price.id === subscription.scheduledPriceId,
+      );
+      if (!catalog || !target || !targetPrice) return;
+      const previousProductId = subscription.productId;
+      const effectiveAt = subscription.scheduledChangeAt!;
+      subscription.productId = target.id;
+      subscription.productVersionId = target.versionId;
+      subscription.configurationVersionId = catalog.configurationVersionId;
+      subscription.marketCode = catalog.marketCode;
+      subscription.currency = catalog.currency;
+      subscription.priceId = targetPrice.id;
+      subscription.billingPeriod = targetPrice.billingPeriod;
+      subscription.verticalId = target.commercialProfile.verticalId;
+      subscription.familyId = target.commercialProfile.familyId;
+      subscription.scheduledProductId = undefined;
+      subscription.scheduledProductVersionId = undefined;
+      subscription.scheduledConfigurationVersionId = undefined;
+      subscription.scheduledPriceId = undefined;
+      subscription.scheduledChangeAt = undefined;
+      subscription.updatedAt = changedAt;
+      replaceSubscriptionEntitlements(
+        subscription,
+        previousProductId,
+        target,
+        effectiveAt,
+      );
+      grantDemoRecurringCredits(subscription, target.entitlements);
+      pushSubscriptionEvent(
+        subscription,
+        "changed",
+        `maintenance:change:${effectiveAt}`,
+        subscription.status,
+        subscription.status,
+      );
+    });
 }
 
 function dimension(values: string[], actual?: string) {
@@ -375,14 +504,14 @@ function digest(value: string) {
 }
 
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
-  async getCatalog(marketCode = DEFAULT_MARKET_CODE) {
+  async getCatalog(marketCode: string) {
     await simulateNetworkDelay();
     const version = versions.find(
       (entry) => entry.marketCode === marketCode && entry.status === "active",
     );
-    return structuredClone(
-      catalogs.get(version?.id || "") || BASELINE_MONETIZATION_CATALOG,
-    );
+    const catalog = catalogs.get(version?.id || "");
+    if (!catalog) throw new Error("Configuration commerciale indisponible.");
+    return structuredClone(catalog);
   }
 
   async evaluate(
@@ -663,17 +792,33 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     if (!quote) throw new Error("Devis introuvable");
     if (quote.accountId !== accountId)
       throw new Error("Ce devis appartient à un autre compte");
+    if (/provider[-_:]?outage/i.test(idempotencyKey)) {
+      throw new Error("Le service de paiement simulé est indisponible.");
+    }
     const now = new Date().toISOString();
+    const scenarioStatus: MonetizationOrder["status"] =
+      /requires[-_:]?action/i.test(idempotencyKey)
+        ? "requires_action"
+        : /fail(?:ed|ure)?/i.test(idempotencyKey)
+          ? "failed"
+          : /abandon(?:ed)?|cancel(?:led)?/i.test(idempotencyKey)
+            ? "cancelled"
+            : /pending/i.test(idempotencyKey)
+              ? "pending"
+              : "paid";
     const order: MonetizationOrder = {
       id: `order_${digest(orderKey).slice(0, 24)}`,
       quoteId,
       accountId: quote.accountId,
+      organizationId: quote.organizationId,
+      configurationVersionId: quote.configurationVersionId,
+      marketCode: quote.marketCode,
       snapshotHash: quote.snapshotHash,
       total: {
         amountMinor: quote.amountDueTodayMinor,
         currency: quote.currency,
       },
-      status: "paid",
+      status: scenarioStatus,
       provider: "demo",
       providerCheckoutId: `demo_${digest(orderKey).slice(0, 16)}`,
       createdAt: now,
@@ -682,6 +827,34 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     orders.set(orderKey, order);
     orders.set(order.id, order);
     const catalog = catalogs.get(quote.configurationVersionId);
+    if (!catalog) throw new Error("Version tarifaire indisponible");
+    if (scenarioStatus !== "paid") {
+      payments.push({
+        id: `pay_${digest(order.id).slice(0, 24)}`,
+        accountId: quote.accountId,
+        orderId: order.id,
+        status:
+          scenarioStatus === "requires_action"
+            ? "requires_action"
+            : scenarioStatus === "failed"
+              ? "failed"
+              : scenarioStatus === "cancelled"
+                ? "cancelled"
+                : "pending",
+        amount: money(quote.amountDueTodayMinor, quote.currency),
+        provider: "demo",
+        providerPaymentId: order.providerCheckoutId,
+        failureCode:
+          scenarioStatus === "failed" ? "DEMO_PAYMENT_FAILED" : undefined,
+        failureMessage:
+          scenarioStatus === "failed"
+            ? "Le paiement simulé a échoué."
+            : undefined,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return structuredClone(order);
+    }
     quote.lines.forEach((line) => {
       const product = catalog?.products.find(
         (entry) => entry.id === line.productId,
@@ -705,7 +878,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           activeEntitlements.push({
             id,
             accountId: quote.accountId,
+            organizationId: quote.organizationId,
             productId: line.productId,
+            productVersionId: line.productVersionId,
+            configurationVersionId: quote.configurationVersionId,
             key: entitlement.key,
             value: entitlement.value,
             sourceOrderId: order.id,
@@ -722,8 +898,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           const subscription: MonetizationSubscription = {
             id,
             accountId: quote.accountId,
+            organizationId: quote.organizationId,
             productId: line.productId,
             productVersionId: line.productVersionId,
+            configurationVersionId: quote.configurationVersionId,
+            marketCode: quote.marketCode,
+            currency: quote.currency,
             priceId: line.priceId,
             sourceOrderId: order.id,
             status:
@@ -763,6 +943,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       subscriptionId: subscriptions.find(
         (entry) => entry.sourceOrderId === order.id,
       )?.id,
+      configurationVersionId: quote.configurationVersionId,
+      marketCode: quote.marketCode,
       number: `FAC-${new Date(now).getUTCFullYear()}-${digest(order.id).slice(0, 6).toUpperCase()}`,
       status: quote.amountDueTodayMinor === 0 ? "open" : "paid",
       subtotal: money(quote.subtotalMinor, quote.currency),
@@ -903,6 +1085,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     const accountId = currentAccountId();
     const user = storageService.getCurrentUser();
     ensureSeededBilling(accountId);
+    applyDueScheduledChanges(accountId);
     const accountSubscriptions = subscriptions.filter(
       (entry) => entry.accountId === accountId,
     );
@@ -918,9 +1101,22 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         "cancellation_pending",
       ].includes(entry.status),
     );
-    const effectiveEntitlements = resolveAllEffectiveEntitlements({
-      catalog: BASELINE_MONETIZATION_CATALOG,
-      entitlements: accountEntitlements,
+    const effectiveEntitlements = [
+      ...new Set(
+        accountEntitlements
+          .map((entry) => entry.configurationVersionId)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ].flatMap((versionId) => {
+      const catalog = catalogs.get(versionId);
+      return catalog
+        ? resolveAllEffectiveEntitlements({
+            catalog,
+            entitlements: accountEntitlements.filter(
+              (entry) => entry.configurationVersionId === versionId,
+            ),
+          })
+        : [];
     });
     const usage = effectiveEntitlements.flatMap((entry) => {
       const presentation = getBillingUsagePresentation(entry.key);
@@ -956,12 +1152,16 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             taxId: user.vatNumber,
             taxExempt: false,
             address:
-              user.businessAddress && user.postalCode && user.city
+              user.businessAddress &&
+              user.postalCode &&
+              user.city &&
+              (user.country || currentSubscription?.marketCode)
                 ? {
                     line1: user.businessAddress,
                     postalCode: user.postalCode,
                     city: user.city,
-                    countryCode: user.country || DEFAULT_MARKET_CODE,
+                    countryCode:
+                      user.country || currentSubscription!.marketCode!,
                   }
                 : undefined,
             providerCustomerId: `demo_customer_${digest(accountId).slice(0, 12)}`,
@@ -1040,8 +1240,30 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         entry.id === request.subscriptionId && entry.accountId === accountId,
     );
     if (!subscription) throw new Error("Abonnement introuvable");
-    const catalog = await this.getCatalog("FR");
-    const currentProduct = catalog.products.find(
+    if (
+      request.expectedSubscriptionUpdatedAt &&
+      request.expectedSubscriptionUpdatedAt !== subscription.updatedAt
+    ) {
+      throw new Error("STALE_SUBSCRIPTION_STATE");
+    }
+    if (
+      !subscription.configurationVersionId ||
+      !subscription.marketCode ||
+      !subscription.currency
+    ) {
+      throw new Error("SUBSCRIPTION_CATALOG_EVIDENCE_MISSING");
+    }
+    const currentCatalog = catalogs.get(subscription.configurationVersionId);
+    const catalog = await this.getCatalog(subscription.marketCode);
+    if (
+      !currentCatalog ||
+      currentCatalog.marketCode !== catalog.marketCode ||
+      currentCatalog.currency !== catalog.currency ||
+      catalog.currency !== subscription.currency
+    ) {
+      throw new Error("SUBSCRIPTION_MARKET_CONTEXT_MISMATCH");
+    }
+    const currentProduct = currentCatalog.products.find(
       (entry) => entry.id === subscription.productId,
     );
     const targetProduct = catalog.products.find(
@@ -1051,12 +1273,21 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       (entry) => entry.id === subscription.priceId,
     );
     const targetPrice = targetProduct?.prices.find(
-      (entry) => entry.id === request.targetPriceId,
+      (entry) =>
+        entry.id === request.targetPriceId &&
+        (!entry.effectiveFrom || new Date(entry.effectiveFrom) <= new Date()) &&
+        (!entry.effectiveUntil || new Date(entry.effectiveUntil) > new Date()),
     );
-    if (!currentProduct || !targetProduct || !targetPrice)
+    if (
+      !currentProduct ||
+      !targetProduct ||
+      !isCommercialProductPurchasable(targetProduct) ||
+      !targetPrice
+    )
       throw new Error("Offre indisponible");
+    const policy = catalog.subscriptionPolicy;
     const sameProduct = currentProduct.id === targetProduct.id;
-    const isUpgrade =
+    const configuredUpgrade =
       currentProduct.commercialProfile.upgradeProductIds.includes(
         targetProduct.id,
       );
@@ -1064,12 +1295,41 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       currentProduct.commercialProfile.downgradeProductIds.includes(
         targetProduct.id,
       );
-    if (!sameProduct && !isUpgrade && !isDowngrade)
+    if (!sameProduct && !configuredUpgrade && !isDowngrade)
       throw new Error("PLAN_TRANSITION_NOT_ALLOWED");
     const currentAmount = currentPrice?.amount.amountMinor || 0;
-    const prorationMinor = isUpgrade
-      ? Math.round((targetPrice.amount.amountMinor - currentAmount) / 2)
-      : 0;
+    const intervalChanged =
+      currentPrice?.billingPeriod !== targetPrice.billingPeriod;
+    const isUpgrade = configuredUpgrade && !intervalChanged;
+    if (
+      (isUpgrade && policy.immediateUpgrade !== "allowed") ||
+      (isDowngrade && policy.downgradeTiming !== "period_end") ||
+      (sameProduct && policy.samePlanRenewalTiming !== "period_end") ||
+      (intervalChanged &&
+        policy.billingIntervalChangeTiming !== "period_end") ||
+      (isUpgrade &&
+        !["linear_remaining_time", "none"].includes(policy.upgradeProration))
+    ) {
+      throw new Error("SUBSCRIPTION_TRANSITION_POLICY_MISSING");
+    }
+    const periodStart = new Date(subscription.currentPeriodStart).getTime();
+    const periodEnd = new Date(subscription.currentPeriodEnd).getTime();
+    const remainingRatio = Math.max(
+      0,
+      Math.min(
+        1,
+        (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart),
+      ),
+    );
+    const prorationMinor =
+      isUpgrade && policy.upgradeProration === "linear_remaining_time"
+        ? Math.max(
+            0,
+            Math.round(
+              (targetPrice.amount.amountMinor - currentAmount) * remainingRatio,
+            ),
+          )
+        : 0;
     const taxMinor = Math.round(
       (prorationMinor * targetPrice.taxRateBps) / 10_000,
     );
@@ -1080,6 +1340,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       subscriptionId: subscription.id,
       targetProductId: targetProduct.id,
       targetPriceId: targetPrice.id,
+      targetProductVersionId: targetProduct.versionId,
+      targetConfigurationVersionId: catalog.configurationVersionId,
+      policyId: policy.id,
+      requiresProviderConfirmation: false,
       effectiveAt: isUpgrade ? "immediately" : "period_end",
       proration: money(prorationMinor, targetPrice.amount.currency),
       tax: money(taxMinor, targetPrice.amount.currency),
@@ -1097,17 +1361,30 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
 
   async applySubscriptionChange(request: SubscriptionChangeRequest) {
     requireDemoCapability("subscription.manage.own");
+    const accountId = currentAccountId();
+    const resultKey = `${accountId}:${request.idempotencyKey}`;
+    const existingResult = subscriptionChangeResults.get(resultKey);
+    if (existingResult) return structuredClone(existingResult);
     const preview = await this.previewSubscriptionChange(request);
     await simulateNetworkDelay();
     const subscription = subscriptions.find(
       (entry) => entry.id === request.subscriptionId,
     )!;
+    if (
+      request.expectedSubscriptionUpdatedAt &&
+      request.expectedSubscriptionUpdatedAt !== subscription.updatedAt
+    ) {
+      throw new Error("STALE_SUBSCRIPTION_STATE");
+    }
+    const previousUpdatedAt = subscription.updatedAt;
     const before = subscription.status;
     if (preview.effectiveAt === "period_end") {
       subscription.scheduledProductId = request.targetProductId;
+      subscription.scheduledProductVersionId = preview.targetProductVersionId;
+      subscription.scheduledConfigurationVersionId =
+        preview.targetConfigurationVersionId;
       subscription.scheduledPriceId = request.targetPriceId;
       subscription.scheduledChangeAt = subscription.currentPeriodEnd;
-      subscription.updatedAt = new Date().toISOString();
       pushSubscriptionEvent(
         subscription,
         "change_scheduled",
@@ -1118,23 +1395,29 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     } else {
       const previousProductId = subscription.productId;
       const changedAt = new Date().toISOString();
-      const target = BASELINE_MONETIZATION_CATALOG.products.find(
+      const catalog = catalogs.get(preview.targetConfigurationVersionId);
+      const target = catalog?.products.find(
         (entry) => entry.id === request.targetProductId,
       );
       const targetPrice = target?.prices.find(
         (entry) => entry.id === request.targetPriceId,
       );
-      if (!target || !targetPrice) throw new Error("Offre indisponible");
+      if (!catalog || !target || !targetPrice)
+        throw new Error("Offre indisponible");
       subscription.productId = request.targetProductId;
       subscription.productVersionId = target.versionId;
+      subscription.configurationVersionId = catalog.configurationVersionId;
+      subscription.marketCode = catalog.marketCode;
+      subscription.currency = catalog.currency;
       subscription.priceId = request.targetPriceId;
       subscription.billingPeriod = targetPrice.billingPeriod;
       subscription.verticalId = target.commercialProfile.verticalId;
       subscription.familyId = target.commercialProfile.familyId;
       subscription.scheduledProductId = undefined;
+      subscription.scheduledProductVersionId = undefined;
+      subscription.scheduledConfigurationVersionId = undefined;
       subscription.scheduledPriceId = undefined;
       subscription.scheduledChangeAt = undefined;
-      subscription.updatedAt = changedAt;
       replaceSubscriptionEntitlements(
         subscription,
         previousProductId,
@@ -1150,7 +1433,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         subscription.status,
       );
     }
-    return structuredClone(subscription);
+    subscription.updatedAt = new Date(
+      Math.max(Date.now(), new Date(previousUpdatedAt).getTime() + 1),
+    ).toISOString();
+    const result = structuredClone(subscription);
+    subscriptionChangeResults.set(resultKey, result);
+    return result;
   }
 
   async updateSubscriptionCancellation(
@@ -1165,6 +1453,15 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         entry.id === request.subscriptionId && entry.accountId === accountId,
     );
     if (!subscription) throw new Error("Abonnement introuvable");
+    const catalog = subscription.configurationVersionId
+      ? catalogs.get(subscription.configurationVersionId)
+      : undefined;
+    if (
+      !catalog ||
+      catalog.subscriptionPolicy.cancellationTiming !== "period_end"
+    ) {
+      throw new Error("SUBSCRIPTION_CANCELLATION_POLICY_MISSING");
+    }
     const previousStatus = subscription.status;
     subscription.cancelAtPeriodEnd = request.cancelAtPeriodEnd;
     subscription.status = request.cancelAtPeriodEnd
@@ -1181,7 +1478,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(subscription);
   }
 
-  async getAdminOverview(marketCode = DEFAULT_MARKET_CODE) {
+  async getAdminOverview(marketCode: string) {
     requireDemoCapability("monetization.manage");
     await simulateNetworkDelay();
     const catalog = await this.getCatalog(marketCode);
@@ -1278,10 +1575,16 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     complimentaryDecisions.set(decisionKey, result);
     complimentaryDecisions.set(requestId, result);
     if (grantId) {
-      const product = BASELINE_MONETIZATION_CATALOG.products.find(
+      const catalog = [...catalogs.values()].find((candidate) =>
+        candidate.products.some(
+          (product) => product.versionId === request.productVersionId,
+        ),
+      );
+      const product = catalog?.products.find(
         (candidate) => candidate.versionId === request.productVersionId,
       );
-      if (!product) throw new Error("Version de forfait introuvable");
+      if (!catalog || !product)
+        throw new Error("Version de forfait introuvable");
       product.entitlements
         .filter(isCommercialEntitlementOperational)
         .forEach((definition) => {
@@ -1290,6 +1593,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             id,
             accountId: request.accountId,
             productId: product.id,
+            productVersionId: product.versionId,
+            configurationVersionId: catalog.configurationVersionId,
             key: definition.key,
             value: definition.value,
             startsAt: request.startsAt,
@@ -1309,28 +1614,44 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     requireDemoAnyCapability(["commercial_rules.edit", "commissions.manage"]);
     await simulateNetworkDelay();
     patch = commercialDraftPatchSchema.parse(patch);
-    const current = await this.getCatalog("FR");
+    const marketCode = patch.marketCode;
+    const current = await this.getCatalog(marketCode);
     const number =
-      Math.max(...versions.map((version) => version.versionNumber)) + 1;
-    const id = `commercial-fr-v${number}`;
+      Math.max(
+        ...versions
+          .filter((version) => version.marketCode === marketCode)
+          .map((version) => version.versionNumber),
+        0,
+      ) + 1;
+    const id = `commercial-${marketCode.toLowerCase()}-v${number}`;
     const now = new Date().toISOString();
+    const sourceProducts = structuredClone(patch.products || current.products);
+    const priceIdMap = new Map<string, string>();
+    const products = sourceProducts.map((product) => ({
+      ...product,
+      versionId: `${id}:${product.id}`,
+      prices: product.prices.map((price, index) => {
+        const nextId = `${id}:${product.id}:${price.billingPeriod}:${index + 1}`;
+        priceIdMap.set(price.id, nextId);
+        return {
+          ...price,
+          providerPriceId: undefined,
+          id: nextId,
+        };
+      }),
+      status:
+        product.status === "disabled"
+          ? ("disabled" as const)
+          : ("draft" as const),
+    }));
     const catalog: MonetizationCatalog = {
       ...structuredClone(current),
       configurationVersionId: id,
       versionNumber: number,
       generatedAt: now,
+      marketCode,
       verticals: structuredClone(patch.verticals || current.verticals),
-      products: structuredClone(patch.products || current.products).map(
-        (product) => ({
-          ...product,
-          versionId: `${id}:${product.id}`,
-          prices: product.prices.map((price) => ({
-            ...price,
-            id: `${id}:${product.id}:${price.billingPeriod}`,
-          })),
-          status: product.status === "disabled" ? "disabled" : "draft",
-        }),
-      ),
+      products,
       rules: structuredClone(patch.rules || current.rules).map((rule) => ({
         ...rule,
         versionId: id,
@@ -1356,12 +1677,80 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           status: promotion.status === "disabled" ? "disabled" : "draft",
         }),
       ),
+      migrationMappings: structuredClone(
+        patch.migrationMappings || current.migrationMappings,
+      ),
+      priceProtectionPolicies: structuredClone(
+        patch.priceProtectionPolicies || current.priceProtectionPolicies,
+      ).map((policy) => ({
+        ...policy,
+        status: policy.status === "disabled" ? "disabled" : "draft",
+      })),
+      campaigns: structuredClone(patch.campaigns || current.campaigns).map(
+        (campaign) => ({
+          ...campaign,
+          status: campaign.status === "disabled" ? "disabled" : "draft",
+        }),
+      ),
+      commercialEconomics: structuredClone(
+        patch.commercialEconomics || current.commercialEconomics,
+      ).map((economics) => ({
+        ...economics,
+        priceId: economics.priceId
+          ? priceIdMap.get(economics.priceId) || economics.priceId
+          : undefined,
+        status: economics.status === "disabled" ? "disabled" : "draft",
+      })),
+      providerMappings: structuredClone(
+        patch.providerMappings || current.providerMappings,
+      ).map((mapping) => ({
+        ...mapping,
+        internalReferenceId:
+          mapping.internalReferenceType === "price"
+            ? priceIdMap.get(mapping.internalReferenceId) ||
+              mapping.internalReferenceId
+            : mapping.internalReferenceId,
+        externalReferenceId: patch.providerMappings
+          ? mapping.externalReferenceId
+          : undefined,
+        synchronizationStatus: patch.providerMappings
+          ? mapping.synchronizationStatus
+          : mapping.status === "disabled"
+            ? "disabled"
+            : "missing",
+        lastVerifiedAt: patch.providerMappings
+          ? mapping.lastVerifiedAt
+          : undefined,
+        evidenceReference: patch.providerMappings
+          ? mapping.evidenceReference
+          : undefined,
+        status: patch.providerMappings
+          ? mapping.status
+          : mapping.status === "disabled"
+            ? "disabled"
+            : "draft",
+      })),
+      subscriptionPolicy: structuredClone(
+        patch.subscriptionPolicy || current.subscriptionPolicy,
+      ),
+      paidPlacementPolicies: structuredClone(
+        patch.paidPlacementPolicies || current.paidPlacementPolicies,
+      ).map((policy) => ({
+        ...policy,
+        status: policy.status === "disabled" ? "disabled" : "draft",
+      })),
+      offerDefinitions: structuredClone(
+        patch.offerDefinitions || current.offerDefinitions,
+      ).map((offer) => ({
+        ...offer,
+        status: offer.status === "disabled" ? "disabled" : "draft",
+      })),
     };
     const version: CommercialConfigurationVersion = {
       id,
       setId: "commercial-core",
       versionNumber: number,
-      marketCode: "FR",
+      marketCode,
       status: "draft",
       reason: patch.reason,
       effectiveFrom: patch.effectiveFrom,
@@ -1443,14 +1832,53 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         ...promotion,
         status: promotion.status === "draft" ? "active" : promotion.status,
       }));
+      catalog.priceProtectionPolicies = catalog.priceProtectionPolicies.map(
+        (policy) => ({
+          ...policy,
+          status: policy.status === "draft" ? "active" : policy.status,
+        }),
+      );
+      catalog.campaigns = catalog.campaigns.map((campaign) => ({
+        ...campaign,
+        status: campaign.status === "draft" ? "active" : campaign.status,
+      }));
+      catalog.commercialEconomics = catalog.commercialEconomics.map(
+        (economics) => ({
+          ...economics,
+          status: economics.status === "draft" ? "active" : economics.status,
+        }),
+      );
+      catalog.providerMappings = catalog.providerMappings.map((mapping) => ({
+        ...mapping,
+        status: mapping.status === "draft" ? "active" : mapping.status,
+      }));
+      catalog.paidPlacementPolicies = catalog.paidPlacementPolicies.map(
+        (policy) => ({
+          ...policy,
+          status: policy.status === "draft" ? "active" : policy.status,
+        }),
+      );
+      catalog.offerDefinitions = catalog.offerDefinitions.map((offer) => ({
+        ...offer,
+        status: offer.status === "draft" ? "active" : offer.status,
+      }));
     } else if (action === "rollback" && version.status === "archived") {
       const source = catalogs.get(version.id)!;
       return this.createDraft({
+        marketCode: source.marketCode,
         reason,
         products: source.products,
         rules: source.rules,
         commissionPolicies: source.commissionPolicies,
         promotions: source.promotions,
+        migrationMappings: source.migrationMappings,
+        priceProtectionPolicies: source.priceProtectionPolicies,
+        campaigns: source.campaigns,
+        commercialEconomics: source.commercialEconomics,
+        providerMappings: source.providerMappings,
+        subscriptionPolicy: source.subscriptionPolicy,
+        paidPlacementPolicies: source.paidPlacementPolicies,
+        offerDefinitions: source.offerDefinitions,
       });
     } else throw new Error("Transition invalide");
     version.reason = reason;

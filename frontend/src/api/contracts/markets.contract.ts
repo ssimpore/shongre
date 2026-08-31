@@ -1,5 +1,14 @@
 import { CountryMarketDefinition } from "../../configuration/market.config";
-import type { CountryConfig } from "@shongre/contracts";
+import type {
+  CountryConfig,
+  MarketDetectionRecommendation,
+} from "@shongre/contracts";
+
+export interface MarketCoordinateDetectionInput {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+}
 
 export interface CountryConfigChangeInput {
   expectedVersion: number;
@@ -22,6 +31,10 @@ export interface MarketConfigurationChangeRequest {
 }
 
 export interface MarketsServiceContract {
+  detectProbableCountry(): Promise<MarketDetectionRecommendation>;
+  detectCountryFromCoordinates(
+    input: MarketCoordinateDetectionInput,
+  ): Promise<MarketDetectionRecommendation>;
   getAllMarkets(): Promise<CountryMarketDefinition[]>;
   getMarketByCode(code: string): Promise<CountryMarketDefinition | null>;
   getActiveMarket(): Promise<CountryMarketDefinition>;

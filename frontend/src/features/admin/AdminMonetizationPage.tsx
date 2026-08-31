@@ -68,6 +68,7 @@ type TabId =
   | "discovery"
   | "fees"
   | "commissions"
+  | "governance"
   | "operations"
   | "complimentary"
   | "history";
@@ -101,6 +102,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
   { id: "discovery", label: "" },
   { id: "fees", label: "Taxes & frais" },
   { id: "commissions", label: "Commissions" },
+  { id: "governance", label: "" },
   { id: "operations", label: "Opérations" },
   { id: "complimentary", label: "Accès offert" },
   { id: "history", label: "Historique" },
@@ -324,6 +326,32 @@ export const AdminMonetizationPage: React.FC = () => {
       (product) => product.id === selectedProductId,
     ) || null;
 
+  const handleTabListKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+      return;
+    }
+
+    const tabs = Array.from(
+      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    const currentIndex = tabs.indexOf(event.target as HTMLButtonElement);
+    if (currentIndex < 0) return;
+
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? tabs.length - 1
+          : (currentIndex +
+              (event.key === "ArrowRight" ? 1 : -1) +
+              tabs.length) %
+            tabs.length;
+
+    event.preventDefault();
+    setTab(TABS[nextIndex].id);
+    tabs[nextIndex].focus();
+  };
+
   const runSimulation = async () => {
     setSimulating(true);
     setError(null);
@@ -366,6 +394,7 @@ export const AdminMonetizationPage: React.FC = () => {
         product.id === input.product.id ? input.product : product,
       );
       const version = await services.businessRules.createDraft({
+        marketCode: activeMarket.code,
         reason: input.reason,
         effectiveFrom: input.effectiveFrom,
         products: updatedProducts,
@@ -429,6 +458,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
               );
       const version = await services.businessRules.createDraft({
+        marketCode: activeMarket.code,
         reason: campaign.reason.trim(),
         promotions: [
           ...currentOverview.catalog.promotions,
@@ -555,6 +585,7 @@ export const AdminMonetizationPage: React.FC = () => {
           )
         : [...overview.catalog.verticals, updated];
       const version = await services.businessRules.createDraft({
+        marketCode: activeMarket.code,
         reason: verticalReason.trim(),
         verticals,
       });
@@ -806,6 +837,8 @@ export const AdminMonetizationPage: React.FC = () => {
         <div
           className="overflow-x-auto border-b border-border-subtle"
           aria-label={t("admin.adminMonetizationPage.sectionsDeMonetisation")}
+          role="tablist"
+          onKeyDown={handleTabListKeyDown}
         >
           <div className="flex min-w-max px-2">
             {TABS.map((item) => (
@@ -814,11 +847,17 @@ export const AdminMonetizationPage: React.FC = () => {
                 type="button"
                 onClick={() => setTab(item.id)}
                 className={`h-control-touch px-3 text-xs font-bold border-b-2 focus-visible:outline-2 focus-visible:outline-primary ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-stone-950"}`}
-                aria-current={tab === item.id ? "page" : undefined}
+                id={`monetization-tab-${item.id}`}
+                role="tab"
+                aria-selected={tab === item.id}
+                aria-controls="monetization-tab-panel"
+                tabIndex={tab === item.id ? 0 : -1}
               >
                 {item.id === "discovery"
                   ? t("admin.discovery.tab")
-                  : item.label}
+                  : item.id === "governance"
+                    ? t("admin.monetization.governanceTab")
+                    : item.label}
               </button>
             ))}
           </div>
@@ -832,6 +871,7 @@ export const AdminMonetizationPage: React.FC = () => {
           "discovery",
           "fees",
           "commissions",
+          "governance",
           "operations",
           "complimentary",
         ].includes(tab) && (
@@ -895,6 +935,9 @@ export const AdminMonetizationPage: React.FC = () => {
 
         <div
           className={`grid min-h-96 ${tab === "discovery" ? "grid-cols-1" : "xl:grid-cols-admin-content-aside"}`}
+          id="monetization-tab-panel"
+          role="tabpanel"
+          aria-labelledby={`monetization-tab-${tab}`}
         >
           <div
             className={`min-w-0 ${tab === "discovery" ? "" : "xl:border-r border-border-subtle"}`}
@@ -1204,6 +1247,186 @@ export const AdminMonetizationPage: React.FC = () => {
 
             {tab === "commissions" && (
               <AdminCommissionPanel catalog={overview.catalog} />
+            )}
+
+            {tab === "governance" && (
+              <div className="space-y-5 p-4">
+                <div>
+                  <h2 className="text-sm font-black text-stone-950">
+                    {t("admin.monetization.governanceTitle")}
+                  </h2>
+                  <p className="mt-1 max-w-3xl text-xs text-text-secondary">
+                    {t("admin.monetization.governanceDescription")}
+                  </p>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    {
+                      label: t("admin.monetization.migrationMappings"),
+                      value: overview.catalog.migrationMappings.length,
+                      blocked: overview.catalog.migrationMappings.filter(
+                        (mapping) =>
+                          !["matched", "intentional_difference"].includes(
+                            mapping.shadowQuoteStatus,
+                          ),
+                      ).length,
+                    },
+                    {
+                      label: t("admin.monetization.priceProtections"),
+                      value: overview.catalog.priceProtectionPolicies.length,
+                      blocked: 0,
+                    },
+                    {
+                      label: t("admin.monetization.economics"),
+                      value: overview.catalog.commercialEconomics.length,
+                      blocked: overview.catalog.commercialEconomics.filter(
+                        (entry) => entry.approvalStatus !== "approved",
+                      ).length,
+                    },
+                    {
+                      label: t("admin.monetization.providerMappings"),
+                      value: overview.catalog.providerMappings.length,
+                      blocked: overview.catalog.providerMappings.filter(
+                        (entry) =>
+                          entry.synchronizationStatus !== "synchronized",
+                      ).length,
+                    },
+                  ].map((metric) => (
+                    <article
+                      key={metric.label}
+                      className="rounded-lg border border-border-base p-4"
+                    >
+                      <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                        {metric.label}
+                      </div>
+                      <div className="mt-1 text-xl font-black text-stone-950">
+                        {metric.value}
+                      </div>
+                      <div
+                        className={`mt-1 text-micro font-semibold ${metric.blocked ? "text-warning" : "text-success"}`}
+                      >
+                        {metric.blocked
+                          ? t("admin.monetization.publicationBlockers", {
+                              count: metric.blocked,
+                            })
+                          : t("admin.monetization.noPublicationBlocker")}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <section aria-labelledby="migration-governance-title">
+                  <h3
+                    id="migration-governance-title"
+                    className="text-xs font-black text-stone-950"
+                  >
+                    {t("admin.monetization.migrationMappings")}
+                  </h3>
+                  <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
+                    <table className="w-full min-w-160 text-left text-xs">
+                      <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-stone-500">
+                        <tr>
+                          <th className="p-3">
+                            {t("admin.monetization.sourcePlan")}
+                          </th>
+                          <th className="p-3">
+                            {t("admin.monetization.targetPlan")}
+                          </th>
+                          <th className="p-3">
+                            {t("admin.monetization.customerTreatment")}
+                          </th>
+                          <th className="p-3">
+                            {t("admin.monetization.shadowQuote")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border-subtle">
+                        {overview.catalog.migrationMappings.map((mapping) => (
+                          <tr key={mapping.id}>
+                            <td className="p-3 font-mono text-micro">
+                              {mapping.fromProductId}
+                            </td>
+                            <td className="p-3 font-mono text-micro">
+                              {mapping.toProductId}
+                            </td>
+                            <td className="p-3">
+                              {labelIdentifier(mapping.treatment)}
+                            </td>
+                            <td className="p-3">
+                              <Badge
+                                variant={
+                                  [
+                                    "matched",
+                                    "intentional_difference",
+                                  ].includes(mapping.shadowQuoteStatus)
+                                    ? "success"
+                                    : "warning"
+                                }
+                              >
+                                {labelIdentifier(mapping.shadowQuoteStatus)}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <section className="rounded-lg border border-border-base p-4">
+                    <h3 className="text-xs font-black text-stone-950">
+                      {t("admin.monetization.campaignsAndPriceLocks")}
+                    </h3>
+                    <div className="mt-3 space-y-3">
+                      {overview.catalog.campaigns.map((campaign) => (
+                        <article key={campaign.id}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-stone-900">
+                              {campaign.name}
+                            </span>
+                            <Badge>{statusLabel(campaign.status)}</Badge>
+                          </div>
+                          <p className="mt-1 text-micro text-stone-500">
+                            {campaign.trialDays || 0} jours ·{" "}
+                            {campaign.maximumVerticals || "—"} verticale(s) ·{" "}
+                            {labelIdentifier(campaign.conversionBehavior)}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="rounded-lg border border-border-base p-4">
+                    <h3 className="text-xs font-black text-stone-950">
+                      {t("admin.monetization.providerReadiness")}
+                    </h3>
+                    <div className="mt-3 space-y-2">
+                      {overview.catalog.providerMappings.map((mapping) => (
+                        <div
+                          key={mapping.id}
+                          className="flex items-center justify-between gap-3 text-xs"
+                        >
+                          <span className="min-w-0 truncate font-mono text-micro">
+                            {mapping.environment} ·{" "}
+                            {mapping.internalReferenceId}
+                          </span>
+                          <Badge
+                            variant={
+                              mapping.synchronizationStatus === "synchronized"
+                                ? "success"
+                                : "warning"
+                            }
+                          >
+                            {labelIdentifier(mapping.synchronizationStatus)}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              </div>
             )}
 
             {tab === "fees" && (

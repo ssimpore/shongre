@@ -388,6 +388,27 @@ test.describe("admin console", () => {
     }
   });
 
+  test("monetisation governance exposes publication controls", async ({
+    page,
+  }) => {
+    await usePersona(page, "admin");
+    await page.goto("/admin/monetisation");
+    await waitForStableLayout(page);
+
+    await page.getByRole("tab", { name: "Gouvernance" }).click();
+    await expect(
+      page.getByRole("heading", {
+        name: "Migration, coûts et synchronisation",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Migrations de forfaits" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Readiness prestataire" }),
+    ).toBeVisible();
+  });
+
   test("CRM universal search exposes keyboard-operable results and an empty state @serial", async ({
     page,
   }) => {

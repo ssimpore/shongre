@@ -5,6 +5,7 @@ import { SiretBusinessRegistryProvider } from "../../src/integrations/providers/
 import { LiveKYCProvider } from "../../src/integrations/providers/kyc.provider.js";
 import { LivePaymentComplianceProvider } from "../../src/integrations/providers/payment-compliance.provider.js";
 import { StripeOrderPaymentGateway } from "../../src/infrastructure/payments/order-payment-gateway.js";
+import { StripeCheckoutAdapter } from "../../src/infrastructure/payments/stripe-checkout-adapter.js";
 
 const original = {
   geminiApiKey: config.geminiApiKey,
@@ -253,6 +254,91 @@ describe("live provider adapters", () => {
     expect(body.has("payment_intent_data[transfer_data][destination]")).toBe(
       false,
     );
+  });
+
+  it("uses the verified external Stripe price instead of recreating catalog pricing", async () => {
+    Object.assign(config, { stripeSecretKey: "sk_test_catalog_price" });
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          id: "cs_test_catalog_price",
+          url: "https://checkout.stripe.test/c/pay/cs_test_catalog_price",
+          status: "open",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await new StripeCheckoutAdapter().createSession({
+      idempotencyKey: "checkout-catalog-price-01",
+      accountId: "professional-123",
+      verticalType: "marketplace",
+      marketCode: "FR",
+      returnRoute: "/solutions-pro",
+      mode: "subscription",
+      lines: [
+        {
+          name: "Forfait professionnel",
+          description: "Catalogue commercial immuable",
+          amountMinor: 5_990,
+          currency: "EUR",
+          quantity: 1,
+          providerPriceId: "price_verified_123",
+          recurring: "month",
+        },
+      ],
+    });
+
+    const body = new URLSearchParams(String(fetchMock.mock.calls[0][1].body));
+    expect(body.get("line_items[0][price]")).toBe("price_verified_123");
+    expect(body.has("line_items[0][price_data][unit_amount]")).toBe(false);
+    expect(body.get("success_url")).toContain(
+      "/solutions-pro?checkout=success&session_id={CHECKOUT_SESSION_ID}",
+    );
+    expect(body.get("cancel_url")).toContain(
+      "/solutions-pro?checkout=cancelled",
+    );
+  });
+
+  it("does not expose raw Stripe failure details to the client", async () => {
+    Object.assign(config, { stripeSecretKey: "sk_test_failure" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              message: "internal account acct_secret and card fingerprint",
+            },
+          }),
+          { status: 402, headers: { "Content-Type": "application/json" } },
+        ),
+      ),
+    );
+
+    await expect(
+      new StripeCheckoutAdapter().createSession({
+        idempotencyKey: "checkout-provider-failure-01",
+        accountId: "professional-123",
+        verticalType: "marketplace",
+        marketCode: "FR",
+        returnRoute: "/solutions-pro",
+        mode: "payment",
+        lines: [
+          {
+            name: "Option",
+            description: "Option de visibilité",
+            amountMinor: 990,
+            currency: "EUR",
+            quantity: 1,
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({
+      code: "PAYMENT_FAILED",
+      message: "Le prestataire de paiement a refusé la création du paiement.",
+    });
   });
 
   it("retrieves and normalizes a Stripe Checkout session for reconciliation", async () => {

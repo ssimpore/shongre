@@ -371,7 +371,7 @@ export class ListingsService {
         message: "L’import doit contenir entre 1 et 500 lignes valides.",
       });
     const inventoryDecision =
-      await this.publisherEntitlements.canImportInventory(userId);
+      await this.publisherEntitlements.canImportInventory(userId, marketCode);
     if (!inventoryDecision.allowed)
       throw new AppError({
         code: "FORBIDDEN",

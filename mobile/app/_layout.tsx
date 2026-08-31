@@ -61,6 +61,10 @@ export default function RootLayout() {
                 name="settings/delete-account"
                 options={{ title: "Supprimer mon compte" }}
               />
+              <Stack.Screen
+                name="account/billing"
+                options={{ title: "Facturation" }}
+              />
             </Stack>
           </AuthProvider>
         </MarketProvider>

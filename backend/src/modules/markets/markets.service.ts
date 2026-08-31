@@ -2,8 +2,10 @@ import { CountryMarketDefinition } from "../../shared/types/index.js";
 import { z } from "zod";
 import {
   countryCodeSchema,
+  getDefaultCountryConfig,
   MARKET_CONFIGURATION_REASON_MAX_LENGTH,
   MARKET_CONFIGURATION_REASON_MIN_LENGTH,
+  marketActivationIssues,
   marketLaunchStatusSchema,
 } from "@shongre/contracts";
 import {
@@ -208,36 +210,35 @@ export class MarketsService {
         message: "La langue par défaut doit faire partie des langues activées.",
       });
     }
-    if (candidate.code === "FR" && candidate.basePath !== "/") {
+    if (candidate.isDefault && candidate.basePath !== "/") {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "La France doit conserver la racine de son domaine canonique.",
+        message: "Le marché par défaut doit conserver la racine canonique.",
       });
     }
+    const defaultCountry = getDefaultCountryConfig();
     if (
-      (candidate.code === "FR" && candidate.canonicalDomainMode !== "france") ||
-      (candidate.code !== "FR" &&
-        candidate.canonicalDomainMode !== "international")
+      (candidate.isDefault &&
+        candidate.canonicalDomainMode !== defaultCountry.canonicalDomainMode) ||
+      (!candidate.isDefault &&
+        candidate.canonicalDomainMode === defaultCountry.canonicalDomainMode)
     ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le mode de domaine canonique ne correspond pas au marché.",
       });
     }
-    if (candidate.code !== "FR" && candidate.basePath === "/") {
+    if (!candidate.isDefault && candidate.basePath === "/") {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "La racine internationale est réservée au portail global.",
       });
     }
-    if (
-      candidate.launchStatus === "active" &&
-      candidate.compliance.legalReviewRequired &&
-      candidate.compliance.legalReviewStatus !== "approved"
-    ) {
+    const activationIssues = marketActivationIssues(candidate);
+    if (activationIssues.length > 0) {
       throw new AppError({
         code: "CONFLICT",
-        message: "La revue juridique doit être approuvée avant l’activation.",
+        message: `Le marché ne peut pas être activé. La revue juridique et les autres contrôles de préparation doivent être approuvés. Configuration incomplète : ${activationIssues.join(", ")}.`,
       });
     }
     if (

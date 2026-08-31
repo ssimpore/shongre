@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **451**
-- Specification SHA-256: `d43742cbe552fb47`
+- Operations: **453**
+- Specification SHA-256: `f43acde0128c5bec`
 
 ## account
 
@@ -500,6 +500,8 @@
 | `GET` | `/markets/{code}` | `getMarketsByCode` | `public` | — | `200` |
 | `GET` | `/markets/active` | `getMarketsActive` | `public` | — | `200` |
 | `POST` | `/markets/active` | `postMarketsActive` | `permission` | `market.manage` | `200` |
+| `POST` | `/markets/detection/coordinates` | `detectMarketFromCoordinates` | `public` | — | `200` |
+| `GET` | `/markets/detection` | `detectProbableMarket` | `public` | — | `200` |
 | `GET` | `/markets/effective/{code}` | `getMarketsEffectiveByCode` | `public` | — | `200` |
 | `GET` | `/markets` | `getMarkets` | `public` | — | `200` |
 

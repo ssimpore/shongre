@@ -177,6 +177,7 @@ describe("EmploymentService", () => {
     const recruiter = await service.getOwnRecruiterWorkspace(
       "user_pro_atelier",
       "employer-technova",
+      "FR",
     );
 
     expect(recruiter.recruiterNotes.length).toBeGreaterThan(0);
@@ -234,11 +235,13 @@ describe("EmploymentService", () => {
       "user_pro_atelier",
       "employer-technova",
       input,
+      "FR",
     );
     const second = await service.requestImport(
       "user_pro_atelier",
       "employer-technova",
       input,
+      "FR",
     );
     expect(second.id).toBe(first.id);
   });

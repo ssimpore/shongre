@@ -683,7 +683,7 @@ export const AUTO_DEMO_PRIVATE_VEHICLES: VehiclePrivate[] = [
     makeLabel: "Peugeot",
     modelLabel: "3008",
     price: { amountMinor: 1699000, currency: "EUR" },
-    mediaUrls: [AUTO_DEMO_MEDIA_URLS[0]],
+    mediaUrls: AUTO_DEMO_MEDIA_URLS.slice(0, 3),
     technical: {
       bodyType: "SUV",
       modelYear: 2019,

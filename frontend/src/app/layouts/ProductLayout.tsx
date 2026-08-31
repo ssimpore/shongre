@@ -10,6 +10,8 @@ import { ProductFooter } from "./ProductFooter";
 import { ProductHeader, type ProductNavigationItem } from "./ProductHeader";
 import type { RoutePolicyId } from "../../security/access-policy.registry";
 import type { ShongreProductId } from "../../types";
+import { MarketRecommendationBanner } from "./MarketRecommendationBanner";
+import { MarketChangeConfirmationModal } from "./MarketChangeConfirmationModal";
 
 interface ProductLayoutProps {
   productId: ShongreProductId;
@@ -43,6 +45,7 @@ export const ProductLayout: React.FC<ProductLayoutProps> = ({
         navigation={navigation}
         workspacePolicyId={workspacePolicyId}
       />
+      <MarketRecommendationBanner />
       <main id="main-content" tabIndex={-1} className="flex-1">
         <Outlet />
       </main>
@@ -54,6 +57,7 @@ export const ProductLayout: React.FC<ProductLayoutProps> = ({
         description={footerDescription}
       />
       <PreferencesModal />
+      <MarketChangeConfirmationModal />
       <CookieConsent />
     </div>
   );

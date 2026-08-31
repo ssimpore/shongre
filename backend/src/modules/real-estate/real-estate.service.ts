@@ -894,6 +894,7 @@ export class RealEstateService {
         userId,
         quote.id,
         `immo-checkout:${body.idempotencyKey}`,
+        catalog.config.marketCode,
       );
       checkoutId = order.id;
       taxMinor = quote.taxMinor;

@@ -120,12 +120,14 @@ export class DemoCommissionService implements CommissionServiceContract {
   }
 
   createDraft(input: {
+    marketCode: string;
     policies: typeof BASELINE_MONETIZATION_CATALOG.commissionPolicies;
     reason: string;
     effectiveFrom?: string;
   }) {
     requireDemoCapability("commissions.manage");
     return demoBusinessRulesService.createDraft({
+      marketCode: input.marketCode,
       reason: input.reason,
       effectiveFrom: input.effectiveFrom,
       commissionPolicies: input.policies,

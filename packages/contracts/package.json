@@ -39,6 +39,7 @@
     "./discovery": "./src/schemas/discovery.ts",
     "./access-control": "./src/access-control.ts",
     "./monetization-catalog": "./src/fixtures/monetization-catalog.ts",
+    "./monetization-proposed-catalog": "./src/fixtures/monetization-proposed-catalog.ts",
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts",
     "./provider-platform": "./src/provider-platform.ts",
     "./environment": "./src/app-environment.ts",

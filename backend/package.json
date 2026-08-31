@@ -27,6 +27,7 @@
     "db:migrate": "tsx scripts/database/migrate.ts",
     "db:seed": "tsx scripts/seed/seed.ts",
     "db:backfill:monetization": "tsx scripts/monetization/import-baseline.ts",
+    "db:seed:monetization-target": "tsx scripts/monetization/import-proposed-draft.ts",
     "db:dry-run:unified-discovery": "tsx scripts/maintenance/unified-discovery-dry-run.ts",
     "db:types": "tsx scripts/generate-types/generate-types.ts",
     "db:types:check": "tsx scripts/generate-types/generate-types.ts --check",

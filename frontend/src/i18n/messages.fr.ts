@@ -245,6 +245,8 @@ export const messagesFr = {
   "shell.locationPickerModal.rayonDeRecherche": "Rayon de recherche",
   "shell.locationPickerModal.useCurrentLocation":
     "Utiliser ma position actuelle",
+  "shell.locationPickerModal.preciseLocationPurpose":
+    "Avec votre accord, Shongre utilisera votre position une seule fois pour proposer le pays et la ville les plus proches. Vos coordonnées précises ne sont pas enregistrées.",
   "shell.locationPickerModal.locationInProgress": "Localisation en cours…",
   "shell.locationPickerModal.locationDetected":
     "Position détectée près de {city}.",
@@ -266,9 +268,34 @@ export const messagesFr = {
   "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
     "Personnalisez votre pays de navigation, votre devise d'affichage et votre langue",
   "shell.preferencesModal.marchePays": "Marché / Pays",
+  "shell.preferencesModal.manualSelectionActive":
+    "Votre choix manuel reste prioritaire sur la détection automatique.",
+  "shell.preferencesModal.resetManualSelection":
+    "Réactiver la suggestion automatique",
   "shell.preferencesModal.deviseAffichage": "Devise d'affichage",
   "shell.preferencesModal.bientot": "Bientôt",
   "shell.preferencesModal.langueDeLInterface": "Langue de l'interface",
+
+  // --- shell.marketDetection ---
+  "shell.marketDetection.recommendationTitle": "Pays suggéré : {country}",
+  "shell.marketDetection.recommendationBody":
+    "Cette suggestion est une estimation et ne change rien sans votre confirmation.",
+  "shell.marketDetection.lowConfidence":
+    "Le signal peut être imprécis, notamment avec un VPN ou un proxy.",
+  "shell.marketDetection.viewCountry": "Continuer vers {country}",
+  "shell.marketDetection.ignore": "Ignorer",
+  "shell.marketDetection.confirmTitle": "Changer de pays ?",
+  "shell.marketDetection.confirmCrossDomain":
+    "Vous allez quitter ce domaine pour ouvrir le marché {country}. Le chemin courant et les paramètres de recherche sûrs seront conservés lorsque cette page existe dans ce marché.",
+  "shell.marketDetection.confirmAction": "Ouvrir {country}",
+  "shell.marketDetection.gatewayChooseCountry": "Choisissez votre pays",
+  "shell.marketDetection.gatewaySuggestedCountry": "Pays suggéré : {country}",
+  "shell.marketDetection.gatewayEstimate":
+    "Cette estimation ne change rien sans votre confirmation.",
+  "shell.marketDetection.gatewayContinue": "Continuer vers {country}",
+  "shell.marketDetection.openingSoon": "À venir",
+  "shell.marketDetection.unavailable": "Indisponible",
+  "shell.marketDetection.countryOpeningSoon": "{country} — ouverture prochaine",
 
   // --- shell.errorBoundary ---
   "shell.errorBoundary.uneErreurInattendueEstSurvenue":
@@ -639,6 +666,9 @@ export const messagesFr = {
 
   // --- listings.listingMediaGallery ---
   "listings.listingMediaGallery.photoPrecedente": "Photo précédente",
+  "listings.listingMediaGallery.photoSuivante": "Photo suivante",
+  "listings.listingMediaGallery.photoPosition": "Photo {current} sur {total}",
+  "listings.listingMediaGallery.galleryLabel": "Galerie de photos ({total})",
   "listings.listingMediaGallery.agrandirEnPleinEcran":
     "Agrandir en plein écran",
   "listings.listingMediaGallery.fermerLePleinEcran": "Fermer le plein écran",
@@ -4062,6 +4092,22 @@ export const messagesFr = {
   "admin.monetization.transitionReason": "Motif de la transition",
   "admin.monetization.transitionReasonDefault":
     "Validation du catalogue commercial",
+  "admin.monetization.governanceTab": "Gouvernance",
+  "admin.monetization.governanceTitle": "Migration, coûts et synchronisation",
+  "admin.monetization.governanceDescription":
+    "Contrôles de publication pour les migrations de forfaits, protections de prix, coûts directs et références prestataires. Un statut incomplet bloque la mise en production.",
+  "admin.monetization.migrationMappings": "Migrations de forfaits",
+  "admin.monetization.priceProtections": "Protections de prix",
+  "admin.monetization.economics": "Coûts et marges",
+  "admin.monetization.providerMappings": "Références prestataires",
+  "admin.monetization.publicationBlockers": "{count} blocage(s) de publication",
+  "admin.monetization.noPublicationBlocker": "Aucun blocage détecté",
+  "admin.monetization.sourcePlan": "Offre source",
+  "admin.monetization.targetPlan": "Offre cible",
+  "admin.monetization.customerTreatment": "Traitement client",
+  "admin.monetization.shadowQuote": "Devis fantôme",
+  "admin.monetization.campaignsAndPriceLocks": "Campagnes et blocages de prix",
+  "admin.monetization.providerReadiness": "Readiness prestataire",
   "invoicing.product.nav.features": "Fonctionnalités",
   "invoicing.product.nav.safety": "Contrôles",
   "invoicing.product.nav.markets": "Multi-marché",

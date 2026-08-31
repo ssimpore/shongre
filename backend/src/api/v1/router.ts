@@ -9,6 +9,7 @@ import {
   authService,
   usersService,
   marketsService,
+  marketDetectionService,
   taxonomyService,
   taxonomyV4Service,
   TaxonomyV4Error,
@@ -2124,10 +2125,11 @@ export class ApiV1Router {
       "GET",
       "/employment/employers/:employerId/workspace",
       permission("employment.recruiter.manage.own"),
-      async ({ principal, params }) =>
+      async ({ principal, params, marketCode }) =>
         employmentService.getOwnRecruiterWorkspace(
           principal.userId,
           params.employerId,
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
@@ -2181,22 +2183,24 @@ export class ApiV1Router {
       "POST",
       "/employment/employers/:employerId/imports/preview",
       permission("employment.import.own"),
-      async ({ principal, params, body }) =>
+      async ({ principal, params, body, marketCode }) =>
         employmentService.previewImport(
           principal.userId,
           params.employerId,
           body,
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
       "POST",
       "/employment/employers/:employerId/imports",
       permission("employment.import.own"),
-      async ({ principal, params, body }) =>
+      async ({ principal, params, body, marketCode }) =>
         employmentService.requestImport(
           principal.userId,
           params.employerId,
           body,
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
@@ -2237,6 +2241,15 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     this.addRoute("GET", "/markets", PUBLIC, async () =>
       marketsService.getAllMarkets(),
+    );
+    this.addRoute("GET", "/markets/detection", PUBLIC, async ({ req }) =>
+      marketDetectionService.detectFromHeaders(req.headers),
+    );
+    this.addRoute(
+      "POST",
+      "/markets/detection/coordinates",
+      PUBLIC,
+      async ({ body }) => marketDetectionService.detectFromCoordinates(body),
     );
     this.addRoute("GET", "/markets/active", PUBLIC, async () =>
       marketsService.getActiveMarket(),
@@ -2417,11 +2430,12 @@ export class ApiV1Router {
       "POST",
       "/payments/intent",
       permission("payment.initiate"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         businessRulesService.createCheckout(
           principal.userId,
           body?.quoteId,
           body?.idempotencyKey,
+          requireApiRequestMarket(marketCode),
         ),
     );
     // Payouts move money to a bank account. The destination is the caller's own
@@ -2495,61 +2509,105 @@ export class ApiV1Router {
       "POST",
       "/business-rules/eligibility",
       permission("marketplace.customer.access"),
-      async ({ principal, body }) =>
-        businessRulesService.getAccountEligibility(principal.userId, body),
+      async ({ principal, body, marketCode }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message:
+              "Le marché de la requête ne correspond pas au contexte actif.",
+          });
+        return businessRulesService.getAccountEligibility(
+          principal.userId,
+          body,
+        );
+      },
     );
     this.addRoute(
       "POST",
       "/monetization/quotes",
       permission("marketplace.customer.access"),
-      async ({ principal, body }) =>
-        businessRulesService.createQuote(principal.userId, body),
+      async ({ principal, body, marketCode }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Le marché du devis ne correspond pas au contexte actif.",
+          });
+        return businessRulesService.createQuote(principal.userId, body);
+      },
     );
     this.addRoute(
       "POST",
       "/monetization/trials",
       permission("subscription.manage.own"),
-      async ({ principal, body }) =>
-        businessRulesService.createTrialQuote(principal.userId, body),
+      async ({ principal, body, marketCode }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message:
+              "Le marché de l’essai ne correspond pas au contexte actif.",
+          });
+        return businessRulesService.createTrialQuote(principal.userId, body);
+      },
     );
     this.addRoute(
       "POST",
       "/monetization/checkouts",
       permission("marketplace.customer.access"),
-      async ({ principal, body }) =>
+      async ({ principal, body, marketCode }) =>
         businessRulesService.createCheckout(
           principal.userId,
           body?.quoteId,
           body?.idempotencyKey,
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(
       "POST",
       "/monetization/promotions/validate",
       permission("marketplace.customer.access"),
-      async ({ principal, body }) =>
-        businessRulesService.validatePromotion(principal.userId, body),
+      async ({ principal, body, marketCode }) => {
+        const activeMarket = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== activeMarket)
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message:
+              "Le marché de la promotion ne correspond pas au contexte actif.",
+          });
+        return businessRulesService.validatePromotion(principal.userId, body);
+      },
     );
     this.addRoute(
       "GET",
       "/monetization/entitlements",
       permission("marketplace.customer.access"),
-      async ({ principal }) =>
-        businessRulesService.getActiveEntitlements(principal.userId),
+      async ({ principal, marketCode }) =>
+        businessRulesService.getActiveEntitlements(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",
       "/monetization/subscriptions",
       permission("marketplace.customer.access"),
-      async ({ principal }) =>
-        businessRulesService.getSubscriptions(principal.userId),
+      async ({ principal, marketCode }) =>
+        businessRulesService.getSubscriptions(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",
       "/monetization/billing",
       permission("marketplace.customer.access"),
-      async ({ principal }) =>
-        businessRulesService.getBillingOverview(principal.userId),
+      async ({ principal, marketCode }) =>
+        businessRulesService.getBillingOverview(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
 
     // ------------------------------------------------------------------------
@@ -2635,38 +2693,54 @@ export class ApiV1Router {
       "GET",
       "/monetization/invoices/:id/document",
       permission("marketplace.customer.access"),
-      async ({ principal, params }) =>
-        businessRulesService.getInvoiceDocument(principal.userId, params.id),
+      async ({ principal, params, marketCode }) =>
+        businessRulesService.getInvoiceDocument(
+          principal.userId,
+          params.id,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "POST",
       "/monetization/subscriptions/:id/change-preview",
       permission("subscription.manage.own"),
-      async ({ principal, params, body }) =>
-        businessRulesService.previewSubscriptionChange(principal.userId, {
-          ...body,
-          subscriptionId: params.id,
-        }),
+      async ({ principal, params, body, marketCode }) =>
+        businessRulesService.previewSubscriptionChange(
+          principal.userId,
+          {
+            ...body,
+            subscriptionId: params.id,
+          },
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "POST",
       "/monetization/subscriptions/:id/change",
       permission("subscription.manage.own"),
-      async ({ principal, params, body }) =>
-        businessRulesService.applySubscriptionChange(principal.userId, {
-          ...body,
-          subscriptionId: params.id,
-        }),
+      async ({ principal, params, body, marketCode }) =>
+        businessRulesService.applySubscriptionChange(
+          principal.userId,
+          {
+            ...body,
+            subscriptionId: params.id,
+          },
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "PATCH",
       "/monetization/subscriptions/:id",
       permission("subscription.manage.own"),
-      async ({ principal, params, body }) =>
-        businessRulesService.updateSubscriptionCancellation(principal.userId, {
-          subscriptionId: params.id,
-          cancelAtPeriodEnd: body?.cancelAtPeriodEnd,
-        }),
+      async ({ principal, params, body, marketCode }) =>
+        businessRulesService.updateSubscriptionCancellation(
+          principal.userId,
+          {
+            subscriptionId: params.id,
+            cancelAtPeriodEnd: body?.cancelAtPeriodEnd,
+          },
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "GET",

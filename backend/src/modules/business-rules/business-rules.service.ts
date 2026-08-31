@@ -9,6 +9,7 @@ import type {
   MonetizationOrder,
   MonetizationProduct,
   MonetizationQuote,
+  MonetizationSubscription,
   PromotionValidationRequest,
   PromotionValidationResult,
   QuoteLine,
@@ -39,7 +40,6 @@ import {
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
-import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import {
   isSameBusinessVertical,
   normalizeBusinessVerticalCode,
@@ -218,15 +218,9 @@ export class BusinessRulesService {
       logger.error("commercial_catalog_load_failed", {
         marketCode,
         error: error instanceof Error ? error.message : "unknown",
-        fallback: lastValid
-          ? "last_known_valid"
-          : marketCode === "FR"
-            ? "signed_baseline"
-            : "none",
+        fallback: lastValid ? "last_known_valid" : "none",
       });
       if (lastValid) return { ...lastValid, stale: true };
-      if (marketCode === "FR")
-        return { ...BASELINE_MONETIZATION_CATALOG, stale: true };
       throw new AppError({
         code: "NOT_FOUND",
         message: "Configuration commerciale indisponible.",
@@ -785,6 +779,49 @@ export class BusinessRulesService {
           code: "VALIDATION_ERROR",
           message: `${product.name} n’a pas de prix actif.`,
         });
+      const economics = catalog.commercialEconomics.find(
+        (entry) =>
+          entry.productId === product.id &&
+          (!entry.priceId || entry.priceId === price.id),
+      );
+      if (economics && economics.status !== "disabled") {
+        if (
+          economics.approvalStatus !== "approved" ||
+          economics.directCostAmountMinor === undefined ||
+          economics.marginFloorBps === undefined
+        ) {
+          throw new AppError({
+            code: "CONFLICT",
+            message:
+              "La validation des coûts et de la marge de cette offre est incomplète.",
+            details: { reasonCode: "COMMERCIAL_ECONOMICS_NOT_APPROVED" },
+          });
+        }
+        const marginBps =
+          price.amount.amountMinor === 0
+            ? economics.directCostAmountMinor === 0
+              ? 10_000
+              : -10_000
+            : Math.trunc(
+                ((price.amount.amountMinor - economics.directCostAmountMinor) *
+                  10_000) /
+                  price.amount.amountMinor,
+              );
+        if (marginBps < economics.marginFloorBps) {
+          logger.error("monetization_negative_margin_blocked", {
+            configurationVersionId: catalog.configurationVersionId,
+            productId: product.id,
+            priceId: price.id,
+            marginBps,
+            marginFloorBps: economics.marginFloorBps,
+          });
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Cette offre ne respecte pas son seuil de marge approuvé.",
+            details: { reasonCode: "COMMERCIAL_MARGIN_FLOOR_NOT_MET" },
+          });
+        }
+      }
       const subtotalMinor = price.amount.amountMinor;
       const eligibleForPromotion =
         promotion?.productIds.includes(product.id) || false;
@@ -910,7 +947,9 @@ export class BusinessRulesService {
     accountId: string,
     quoteId: string,
     idempotencyKey: string,
+    marketCode: string,
   ): Promise<MonetizationOrder> {
+    marketCode = requireMarketCode(marketCode);
     if (!idempotencyKey || idempotencyKey.length < 8) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -920,6 +959,13 @@ export class BusinessRulesService {
     const quote = await this.repository.getQuote(quoteId);
     if (!quote || quote.accountId !== accountId)
       throw new AppError({ code: "NOT_FOUND", message: "Devis introuvable." });
+    if (quote.marketCode !== marketCode) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Devis introuvable.",
+        details: { reasonCode: "QUOTE_MARKET_CONTEXT_MISMATCH" },
+      });
+    }
     if (hashSnapshot(quoteHashPayload(quote)) !== quote.snapshotHash) {
       logger.error("monetization_quote_snapshot_mismatch", {
         userId: accountId,
@@ -972,6 +1018,37 @@ export class BusinessRulesService {
         details: { reasonCode: "PROVIDER_CAMPAIGN_NOT_CONFIGURED" },
       });
     }
+    if (provider === "stripe") {
+      const environment = config.environment.environment;
+      const missingMapping = quote.lines.find(
+        (line) =>
+          !quoteCatalog.providerMappings.some(
+            (mapping) =>
+              mapping.provider === "stripe" &&
+              mapping.environment === environment &&
+              mapping.marketCode === quote.marketCode &&
+              mapping.internalReferenceType === "price" &&
+              mapping.internalReferenceId === line.priceId &&
+              mapping.status === "active" &&
+              mapping.synchronizationStatus === "synchronized" &&
+              Boolean(mapping.externalReferenceId),
+          ),
+      );
+      if (missingMapping) {
+        logger.error("monetization_provider_mapping_mismatch", {
+          configurationVersionId: quote.configurationVersionId,
+          priceId: missingMapping.priceId,
+          marketCode: quote.marketCode,
+          environment,
+        });
+        throw new AppError({
+          code: "CONFLICT",
+          message:
+            "Cette tarification n’est pas synchronisée avec le prestataire de paiement.",
+          details: { reasonCode: "PROVIDER_PRICE_MAPPING_NOT_SYNCHRONIZED" },
+        });
+      }
+    }
     let checkout: { id: string; url?: string } = {
       id: deterministicId("checkout", idempotencyKey),
     };
@@ -981,6 +1058,7 @@ export class BusinessRulesService {
         accountId,
         verticalType: "marketplace",
         marketCode: quote.marketCode,
+        returnRoute: "/solutions-pro",
         quoteId: quote.id,
         snapshotHash: quote.snapshotHash,
         lines: quote.lines.map((line) => {
@@ -1000,6 +1078,16 @@ export class BusinessRulesService {
             amountMinor: line.unitAmountMinor + undiscountedTaxMinor,
             currency: quote.currency,
             quantity: line.quantity,
+            providerPriceId: quoteCatalog.providerMappings.find(
+              (mapping) =>
+                mapping.provider === "stripe" &&
+                mapping.environment === config.environment.environment &&
+                mapping.marketCode === quote.marketCode &&
+                mapping.internalReferenceType === "price" &&
+                mapping.internalReferenceId === line.priceId &&
+                mapping.status === "active" &&
+                mapping.synchronizationStatus === "synchronized",
+            )?.externalReferenceId,
             recurring:
               product?.kind === "subscription" &&
               (period === "month" || period === "year")
@@ -1024,6 +1112,8 @@ export class BusinessRulesService {
         quoteId: quote.id,
         accountId,
         organizationId: quote.organizationId,
+        configurationVersionId: quote.configurationVersionId,
+        marketCode: quote.marketCode,
         snapshotHash: quote.snapshotHash,
         total: {
           amountMinor: quote.amountDueTodayMinor,
@@ -1061,7 +1151,7 @@ export class BusinessRulesService {
       this.repository.listAuditEvents(),
       this.repository.listEntitlements(undefined, 100),
       this.repository.listSubscriptions(undefined, 100),
-      this.repository.countQuotesSince(today.toISOString()),
+      this.repository.countQuotesSince(today.toISOString(), marketCode),
     ]);
     const publishedVersion = versions.find(
       (version) => version.status === "active",
@@ -1071,6 +1161,30 @@ export class BusinessRulesService {
         code: "NOT_FOUND",
         message: "Aucune version publiée.",
       });
+    const marketSubscriptions = subscriptions.filter(
+      (subscription) => subscription.marketCode === marketCode,
+    );
+    const marketEntitlements = await this.filterEntitlementsForMarket(
+      entitlements,
+      marketCode,
+    );
+    const marketOrders = orders.filter(
+      (order) => order.marketCode === marketCode,
+    );
+    const marketVersionIds = new Set(versions.map((version) => version.id));
+    const snapshotHasMarket = (snapshot: unknown) =>
+      Boolean(
+        snapshot &&
+        typeof snapshot === "object" &&
+        "marketCode" in snapshot &&
+        (snapshot as { marketCode?: unknown }).marketCode === marketCode,
+      );
+    const marketAuditEvents = auditEvents.filter(
+      (event) =>
+        marketVersionIds.has(event.entityId) ||
+        snapshotHasMarket(event.before) ||
+        snapshotHasMarket(event.after),
+    );
     return monetizationAdminOverviewSchema.parse({
       publishedVersion,
       versions,
@@ -1087,66 +1201,258 @@ export class BusinessRulesService {
         0,
       ),
       quoteCountToday,
-      activeSubscriptionCount: subscriptions.filter((entry) =>
+      activeSubscriptionCount: marketSubscriptions.filter((entry) =>
         ["trialing", "active", "past_due", "cancellation_pending"].includes(
           entry.status,
         ),
       ).length,
-      orders,
-      entitlements,
+      orders: marketOrders,
+      entitlements: marketEntitlements,
       payments: [],
       invoices: [],
       refunds: [],
-      subscriptions,
+      subscriptions: marketSubscriptions,
       creditBalances: [],
       subscriptionEvents: [],
-      auditEvents,
+      auditEvents: marketAuditEvents,
     });
   }
 
-  async getActiveEntitlements(accountId: string) {
+  private async filterEntitlementsForMarket<
+    T extends { configurationVersionId?: string },
+  >(entitlements: T[], marketCode: string): Promise<T[]> {
+    const normalizedMarketCode = requireMarketCode(marketCode);
+    const configurationVersionIds = [
+      ...new Set(
+        entitlements
+          .map((entry) => entry.configurationVersionId)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    const catalogs = await Promise.all(
+      configurationVersionIds.map((versionId) =>
+        this.repository.getCatalogVersion(versionId),
+      ),
+    );
+    const allowedConfigurationVersionIds = new Set(
+      catalogs
+        .filter(
+          (catalog): catalog is MonetizationCatalog =>
+            Boolean(catalog) && catalog?.marketCode === normalizedMarketCode,
+        )
+        .map((catalog) => catalog.configurationVersionId),
+    );
+    return entitlements.filter(
+      (entry) =>
+        Boolean(entry.configurationVersionId) &&
+        allowedConfigurationVersionIds.has(entry.configurationVersionId!),
+    );
+  }
+
+  async getActiveEntitlements(accountId: string, marketCode: string) {
     const entitlements = await this.repository.listEntitlements(accountId, 200);
     const at = Date.now();
-    return entitlements.filter(
+    const active = entitlements.filter(
       (entry) =>
         entry.status === "active" &&
         (!entry.endsAt || new Date(entry.endsAt).getTime() > at),
     );
+    return this.filterEntitlementsForMarket(active, marketCode);
   }
 
-  async getActiveEntitlementsForOrganization(organizationId: string) {
+  async getActiveEntitlementsForOrganization(
+    organizationId: string,
+    marketCode: string,
+  ) {
     const entitlements = await this.repository.listOrganizationEntitlements(
       organizationId,
       200,
     );
     const at = Date.now();
-    return entitlements.filter(
+    const active = entitlements.filter(
       (entry) =>
         entry.status === "active" &&
         (!entry.endsAt || new Date(entry.endsAt).getTime() > at),
     );
+    return this.filterEntitlementsForMarket(active, marketCode);
   }
 
-  async getSubscriptions(accountId: string) {
-    return this.repository.listSubscriptions(accountId, 100);
+  async getSubscriptions(accountId: string, marketCode: string) {
+    const normalizedMarketCode = requireMarketCode(marketCode);
+    return (await this.repository.listSubscriptions(accountId, 100)).filter(
+      (subscription) => subscription.marketCode === normalizedMarketCode,
+    );
   }
 
-  async getBillingOverview(accountId: string): Promise<BillingOverview> {
-    const [overview, catalog] = await Promise.all([
-      this.repository.getBillingOverview(accountId),
-      this.getCatalog("FR"),
-    ]);
-    return billingOverviewSchema.parse({
-      ...overview,
-      effectiveEntitlements: resolveAllEffectiveEntitlements({
-        catalog,
-        entitlements: overview.entitlements,
-      }),
+  private async requireManageableSubscription(
+    actorId: string,
+    subscriptionId: string,
+  ): Promise<MonetizationSubscription> {
+    const subscription = await this.repository.getSubscription(subscriptionId);
+    if (!subscription) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Abonnement introuvable.",
+      });
+    }
+    if (subscription.accountId === actorId) return subscription;
+    if (
+      subscription.organizationId &&
+      (await this.repository.canManageOrganization(
+        actorId,
+        subscription.organizationId,
+      ))
+    ) {
+      return subscription;
+    }
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: "Abonnement introuvable.",
     });
   }
 
-  async getInvoiceDocument(accountId: string, invoiceId: string) {
-    const billing = await this.getBillingOverview(accountId);
+  async getBillingOverview(
+    accountId: string,
+    marketCode: string,
+  ): Promise<BillingOverview> {
+    marketCode = requireMarketCode(marketCode);
+    const overview = await this.repository.getBillingOverview(accountId);
+    const configurationVersionIds = [
+      ...new Set(
+        [...overview.entitlements, ...overview.subscriptions]
+          .map((entry) => entry.configurationVersionId)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    const catalogs = (
+      await Promise.all(
+        configurationVersionIds.map((versionId) =>
+          this.repository.getCatalogVersion(versionId),
+        ),
+      )
+    ).filter(
+      (catalog): catalog is MonetizationCatalog =>
+        Boolean(catalog) && catalog?.marketCode === marketCode,
+    );
+    const allowedConfigurationVersionIds = new Set(
+      catalogs.map((catalog) => catalog.configurationVersionId),
+    );
+    const subscriptions = overview.subscriptions.filter(
+      (subscription) => subscription.marketCode === marketCode,
+    );
+    const hasAmbiguousUsage = overview.subscriptions.some(
+      (subscription) => subscription.marketCode !== marketCode,
+    );
+    const subscriptionIds = new Set(
+      subscriptions.map((subscription) => subscription.id),
+    );
+    const entitlements = overview.entitlements.filter(
+      (entitlement) =>
+        Boolean(entitlement.configurationVersionId) &&
+        allowedConfigurationVersionIds.has(entitlement.configurationVersionId!),
+    );
+    const orderIds = new Set([
+      ...subscriptions.map((subscription) => subscription.sourceOrderId),
+      ...entitlements
+        .map((entitlement) => entitlement.sourceOrderId)
+        .filter((value): value is string => Boolean(value)),
+      ...overview.orders
+        .filter((order) => order.marketCode === marketCode)
+        .map((order) => order.id),
+    ]);
+    const orders = overview.orders.filter((order) => orderIds.has(order.id));
+    const invoices = overview.invoices.filter(
+      (invoice) =>
+        invoice.marketCode === marketCode ||
+        (invoice.orderId ? orderIds.has(invoice.orderId) : false) ||
+        (invoice.subscriptionId
+          ? subscriptionIds.has(invoice.subscriptionId)
+          : false),
+    );
+    const payments = overview.payments.filter((payment) =>
+      orderIds.has(payment.orderId),
+    );
+    const paymentIds = new Set(payments.map((payment) => payment.id));
+    const entitlementUsageKeys = new Set(
+      entitlements.map(
+        (entitlement) =>
+          `${entitlement.verticalId || "general"}:${entitlement.key}`,
+      ),
+    );
+    const creditBalances = overview.creditBalances
+      .map((balance) => {
+        const transactions = balance.transactions.filter(
+          (transaction) =>
+            (transaction.sourceType === "subscription" &&
+              Boolean(transaction.sourceId) &&
+              subscriptionIds.has(transaction.sourceId!)) ||
+            (transaction.sourceType === "purchase" &&
+              Boolean(transaction.sourceId) &&
+              orderIds.has(transaction.sourceId!)),
+        );
+        const hasUnscopedTransactions = balance.transactions.some(
+          (transaction) => !transactions.includes(transaction),
+        );
+        if (hasUnscopedTransactions) return undefined;
+        return {
+          ...balance,
+          available: transactions.reduce(
+            (total, transaction) => total + transaction.quantity,
+            0,
+          ),
+          transactions,
+        };
+      })
+      .filter((balance): balance is NonNullable<typeof balance> =>
+        Boolean(balance),
+      )
+      .filter((balance) => balance.transactions.length > 0);
+    const effectiveEntitlements = catalogs.flatMap((catalog) =>
+      resolveAllEffectiveEntitlements({
+        catalog,
+        entitlements: entitlements.filter(
+          (entry) =>
+            entry.configurationVersionId === catalog.configurationVersionId,
+        ),
+      }),
+    );
+    return billingOverviewSchema.parse({
+      ...overview,
+      currentSubscription: subscriptions.find((subscription) =>
+        ["trialing", "active", "past_due", "cancellation_pending"].includes(
+          subscription.status,
+        ),
+      ),
+      subscriptions,
+      entitlements,
+      usage: hasAmbiguousUsage
+        ? []
+        : overview.usage.filter((usage) =>
+            entitlementUsageKeys.has(
+              `${usage.verticalId || "general"}:${usage.key}`,
+            ),
+          ),
+      orders,
+      payments,
+      invoices,
+      refunds: overview.refunds.filter(
+        (refund) =>
+          orderIds.has(refund.orderId) && paymentIds.has(refund.paymentId),
+      ),
+      creditBalances,
+      subscriptionEvents: overview.subscriptionEvents.filter((event) =>
+        subscriptionIds.has(event.subscriptionId),
+      ),
+      effectiveEntitlements,
+    });
+  }
+
+  async getInvoiceDocument(
+    accountId: string,
+    invoiceId: string,
+    marketCode: string,
+  ) {
+    const billing = await this.getBillingOverview(accountId, marketCode);
     const invoice = billing.invoices.find((entry) => entry.id === invoiceId);
     if (!invoice) {
       throw new AppError({
@@ -1178,22 +1484,63 @@ export class BusinessRulesService {
   async previewSubscriptionChange(
     accountId: string,
     rawRequest: SubscriptionChangeRequest,
+    marketCode: string,
   ): Promise<SubscriptionChangePreview> {
+    marketCode = requireMarketCode(marketCode);
     const request = subscriptionChangeRequestSchema.parse(rawRequest);
-    const subscription = (
-      await this.repository.listSubscriptions(accountId, 100)
-    ).find((entry) => entry.id === request.subscriptionId);
-    if (!subscription) {
+    const subscription = await this.requireManageableSubscription(
+      accountId,
+      request.subscriptionId,
+    );
+    if (subscription.marketCode !== marketCode) {
       throw new AppError({
         code: "NOT_FOUND",
         message: "Abonnement introuvable.",
       });
     }
-    const catalog = await this.getCatalog("FR");
-    const currentProduct = catalog.products.find(
+    if (
+      request.expectedSubscriptionUpdatedAt &&
+      request.expectedSubscriptionUpdatedAt !== subscription.updatedAt
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cet abonnement a été modifié. Actualisez avant de réessayer.",
+        details: { reasonCode: "STALE_SUBSCRIPTION_STATE" },
+      });
+    }
+    if (
+      !subscription.configurationVersionId ||
+      !subscription.marketCode ||
+      !subscription.currency
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La preuve tarifaire de cet abonnement est incomplète.",
+        details: { reasonCode: "SUBSCRIPTION_CATALOG_EVIDENCE_MISSING" },
+      });
+    }
+    const [currentCatalog, targetCatalog] = await Promise.all([
+      this.repository.getCatalogVersion(subscription.configurationVersionId),
+      this.getCatalog(subscription.marketCode),
+    ]);
+    if (
+      !currentCatalog ||
+      currentCatalog.marketCode !== subscription.marketCode ||
+      currentCatalog.currency !== subscription.currency ||
+      targetCatalog.marketCode !== subscription.marketCode ||
+      targetCatalog.currency !== subscription.currency ||
+      targetCatalog.stale
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La configuration commerciale du marché est indisponible.",
+        details: { reasonCode: "SUBSCRIPTION_MARKET_CONTEXT_MISMATCH" },
+      });
+    }
+    const currentProduct = currentCatalog.products.find(
       (entry) => entry.id === subscription.productId,
     );
-    const targetProduct = catalog.products.find(
+    const targetProduct = targetCatalog.products.find(
       (entry) => entry.id === request.targetProductId,
     );
     const currentPrice =
@@ -1204,13 +1551,16 @@ export class BusinessRulesService {
         (entry) => entry.billingPeriod === subscription.billingPeriod,
       );
     const targetPrice = targetProduct?.prices.find(
-      (entry) => entry.id === request.targetPriceId,
+      (entry) =>
+        entry.id === request.targetPriceId &&
+        (!entry.effectiveFrom || new Date(entry.effectiveFrom) <= new Date()) &&
+        (!entry.effectiveUntil || new Date(entry.effectiveUntil) > new Date()),
     );
     if (
       !currentProduct ||
       !targetProduct ||
       targetProduct.kind !== "subscription" ||
-      targetProduct.status !== "active" ||
+      !isCommercialProductPurchasable(targetProduct) ||
       !targetPrice ||
       targetPrice.amount.currency !== currentPrice?.amount.currency
     ) {
@@ -1219,6 +1569,7 @@ export class BusinessRulesService {
         message: "Le forfait cible n’est pas disponible.",
       });
     }
+    const policy = targetCatalog.subscriptionPolicy;
     const sameProduct = targetProduct.id === currentProduct.id;
     const isConfiguredUpgrade =
       currentProduct.commercialProfile.upgradeProductIds.includes(
@@ -1236,7 +1587,23 @@ export class BusinessRulesService {
       });
     }
     const currentMinor = currentPrice?.amount.amountMinor || 0;
-    const isUpgrade = isConfiguredUpgrade;
+    const intervalChanged =
+      currentPrice?.billingPeriod !== targetPrice.billingPeriod;
+    const isUpgrade = isConfiguredUpgrade && !intervalChanged;
+    if (
+      (isConfiguredUpgrade &&
+        !intervalChanged &&
+        policy.immediateUpgrade !== "allowed") ||
+      (isConfiguredDowngrade && policy.downgradeTiming !== "period_end") ||
+      (sameProduct && policy.samePlanRenewalTiming !== "period_end") ||
+      (intervalChanged && policy.billingIntervalChangeTiming !== "period_end")
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La politique de changement de forfait n’est pas configurée.",
+        details: { reasonCode: "SUBSCRIPTION_TRANSITION_POLICY_MISSING" },
+      });
+    }
     const periodStart = new Date(subscription.currentPeriodStart).getTime();
     const periodEnd = new Date(subscription.currentPeriodEnd).getTime();
     const remainingRatio = Math.max(
@@ -1246,14 +1613,25 @@ export class BusinessRulesService {
         (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart),
       ),
     );
-    const prorationMinor = isUpgrade
-      ? Math.max(
-          0,
-          Math.round(
-            (targetPrice.amount.amountMinor - currentMinor) * remainingRatio,
-          ),
-        )
-      : 0;
+    if (
+      isUpgrade &&
+      !["linear_remaining_time", "none"].includes(policy.upgradeProration)
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La règle de prorata de ce changement n’est pas disponible.",
+        details: { reasonCode: "SUBSCRIPTION_PRORATION_POLICY_MISSING" },
+      });
+    }
+    const prorationMinor =
+      isUpgrade && policy.upgradeProration === "linear_remaining_time"
+        ? Math.max(
+            0,
+            Math.round(
+              (targetPrice.amount.amountMinor - currentMinor) * remainingRatio,
+            ),
+          )
+        : 0;
     const taxMinor = Math.round(
       (prorationMinor * targetPrice.taxRateBps) / 10_000,
     );
@@ -1264,6 +1642,12 @@ export class BusinessRulesService {
       subscriptionId: subscription.id,
       targetProductId: targetProduct.id,
       targetPriceId: targetPrice.id,
+      targetProductVersionId: targetProduct.versionId,
+      targetConfigurationVersionId: targetCatalog.configurationVersionId,
+      policyId: policy.id,
+      requiresProviderConfirmation: Boolean(
+        subscription.providerSubscriptionId,
+      ),
       effectiveAt: isUpgrade ? "immediately" : "period_end",
       proration: {
         amountMinor: prorationMinor,
@@ -1288,14 +1672,45 @@ export class BusinessRulesService {
   async applySubscriptionChange(
     accountId: string,
     rawRequest: SubscriptionChangeRequest,
+    marketCode: string,
   ) {
+    marketCode = requireMarketCode(marketCode);
     const request = subscriptionChangeRequestSchema.parse(rawRequest);
-    const preview = await this.previewSubscriptionChange(accountId, request);
+    const subscription = await this.requireManageableSubscription(
+      accountId,
+      request.subscriptionId,
+    );
+    if (subscription.marketCode !== marketCode) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Abonnement introuvable.",
+      });
+    }
+    const existing = await this.repository.getSubscriptionChangeResult(
+      subscription.id,
+      request.idempotencyKey,
+    );
+    if (existing) return existing;
+    const preview = await this.previewSubscriptionChange(
+      accountId,
+      request,
+      marketCode,
+    );
     if (config.dataMode === "database") {
-      const subscription = (
-        await this.repository.listSubscriptions(accountId, 100)
-      ).find((entry) => entry.id === request.subscriptionId);
       if (subscription?.providerSubscriptionId) {
+        const catalog = await this.repository.getCatalogVersion(
+          preview.targetConfigurationVersionId,
+        );
+        if (
+          catalog?.subscriptionPolicy.providerPlanChange === "not_configured"
+        ) {
+          throw new AppError({
+            code: "CONFLICT",
+            message:
+              "Le changement de forfait est indisponible tant que le prix prestataire n’est pas synchronisé.",
+            details: { reasonCode: "PROVIDER_PLAN_CHANGE_NOT_CONFIGURED" },
+          });
+        }
         throw new AppError({
           code: "CONFLICT",
           message:
@@ -1320,15 +1735,34 @@ export class BusinessRulesService {
   async updateSubscriptionCancellation(
     accountId: string,
     rawRequest: SubscriptionCancellationRequest,
+    marketCode: string,
   ) {
+    marketCode = requireMarketCode(marketCode);
     const request = subscriptionCancellationRequestSchema.parse(rawRequest);
-    const subscription = (
-      await this.repository.listSubscriptions(accountId, 100)
-    ).find((entry) => entry.id === request.subscriptionId);
-    if (!subscription) {
+    const subscription = await this.requireManageableSubscription(
+      accountId,
+      request.subscriptionId,
+    );
+    if (subscription.marketCode !== marketCode) {
       throw new AppError({
         code: "NOT_FOUND",
         message: "Abonnement introuvable.",
+      });
+    }
+    const catalog = subscription.configurationVersionId
+      ? await this.repository.getCatalogVersion(
+          subscription.configurationVersionId,
+        )
+      : null;
+    if (
+      !catalog ||
+      catalog.subscriptionPolicy.cancellationTiming !== "period_end"
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "La politique d’annulation de cet abonnement est indisponible.",
+        details: { reasonCode: "SUBSCRIPTION_CANCELLATION_POLICY_MISSING" },
       });
     }
     if (config.dataMode === "database") {
@@ -1569,27 +2003,37 @@ export class BusinessRulesService {
     rawPatch: CommercialDraftPatch,
   ): Promise<CommercialConfigurationVersion> {
     const patch = commercialDraftPatchSchema.parse(rawPatch);
-    const current = await this.getCatalog("FR");
-    const versions = await this.repository.listVersions("FR");
+    const marketCode = requireMarketCode(patch.marketCode);
+    const current = await this.getCatalog(marketCode);
+    const versions = await this.repository.listVersions(marketCode);
     const versionNumber =
       Math.max(...versions.map((version) => version.versionNumber), 0) + 1;
-    const id = `commercial-fr-v${versionNumber}`;
+    const id = `commercial-${marketCode.toLowerCase()}-v${versionNumber}`;
     const createdAt = new Date().toISOString();
+    const sourceProducts = structuredClone(patch.products || current.products);
+    const priceIdMap = new Map<string, string>();
+    const products = sourceProducts.map((product) => ({
+      ...product,
+      versionId: `${id}:${product.id}`,
+      prices: product.prices.map((price, index) => {
+        const nextId = `${id}:${product.id}:${price.billingPeriod}:${index + 1}`;
+        priceIdMap.set(price.id, nextId);
+        return {
+          ...price,
+          providerPriceId: undefined,
+          id: nextId,
+        };
+      }),
+      status: product.status === "active" ? ("draft" as const) : product.status,
+    }));
     const catalog = monetizationCatalogSchema.parse({
       ...current,
       configurationVersionId: id,
       versionNumber,
       generatedAt: createdAt,
+      marketCode,
       verticals: structuredClone(patch.verticals || current.verticals),
-      products: (patch.products || current.products).map((product) => ({
-        ...product,
-        versionId: `${id}:${product.id}`,
-        prices: product.prices.map((price) => ({
-          ...price,
-          id: `${id}:${product.id}:${price.billingPeriod}`,
-        })),
-        status: product.status === "active" ? "draft" : product.status,
-      })),
+      products,
       rules: (patch.rules || current.rules).map((rule) => ({
         ...rule,
         versionId: id,
@@ -1612,6 +2056,72 @@ export class BusinessRulesService {
         ...promotion,
         id: `${id}:${promotion.code.toLowerCase()}`,
         status: promotion.status === "active" ? "draft" : promotion.status,
+      })),
+      migrationMappings: structuredClone(
+        patch.migrationMappings || current.migrationMappings,
+      ),
+      priceProtectionPolicies: (
+        patch.priceProtectionPolicies || current.priceProtectionPolicies
+      ).map((policy) => ({
+        ...structuredClone(policy),
+        status: policy.status === "active" ? "draft" : policy.status,
+      })),
+      campaigns: (patch.campaigns || current.campaigns).map((campaign) => ({
+        ...structuredClone(campaign),
+        status: campaign.status === "active" ? "draft" : campaign.status,
+      })),
+      commercialEconomics: (
+        patch.commercialEconomics || current.commercialEconomics
+      ).map((economics) => ({
+        ...structuredClone(economics),
+        priceId: economics.priceId
+          ? priceIdMap.get(economics.priceId) || economics.priceId
+          : undefined,
+        status: economics.status === "active" ? "draft" : economics.status,
+      })),
+      providerMappings: (
+        patch.providerMappings || current.providerMappings
+      ).map((mapping) => ({
+        ...structuredClone(mapping),
+        internalReferenceId:
+          mapping.internalReferenceType === "price"
+            ? priceIdMap.get(mapping.internalReferenceId) ||
+              mapping.internalReferenceId
+            : mapping.internalReferenceId,
+        externalReferenceId: patch.providerMappings
+          ? mapping.externalReferenceId
+          : undefined,
+        synchronizationStatus: patch.providerMappings
+          ? mapping.synchronizationStatus
+          : mapping.status === "disabled"
+            ? "disabled"
+            : "missing",
+        lastVerifiedAt: patch.providerMappings
+          ? mapping.lastVerifiedAt
+          : undefined,
+        evidenceReference: patch.providerMappings
+          ? mapping.evidenceReference
+          : undefined,
+        status: patch.providerMappings
+          ? mapping.status
+          : mapping.status === "active"
+            ? "draft"
+            : mapping.status,
+      })),
+      subscriptionPolicy: structuredClone(
+        patch.subscriptionPolicy || current.subscriptionPolicy,
+      ),
+      paidPlacementPolicies: (
+        patch.paidPlacementPolicies || current.paidPlacementPolicies
+      ).map((policy) => ({
+        ...structuredClone(policy),
+        status: policy.status === "active" ? "draft" : policy.status,
+      })),
+      offerDefinitions: (
+        patch.offerDefinitions || current.offerDefinitions
+      ).map((offer) => ({
+        ...structuredClone(offer),
+        status: offer.status === "active" ? "draft" : offer.status,
       })),
       stale: false,
     });
@@ -1644,7 +2154,7 @@ export class BusinessRulesService {
       id,
       setId: "commercial-core",
       versionNumber,
-      marketCode: "FR",
+      marketCode,
       status: "draft",
       reason: patch.reason,
       effectiveFrom: patch.effectiveFrom,
@@ -1743,6 +2253,36 @@ export class BusinessRulesService {
         ...promotion,
         status: promotion.status === "draft" ? "active" : promotion.status,
       }));
+      catalog.priceProtectionPolicies = catalog.priceProtectionPolicies.map(
+        (policy) => ({
+          ...policy,
+          status: policy.status === "draft" ? "active" : policy.status,
+        }),
+      );
+      catalog.campaigns = catalog.campaigns.map((campaign) => ({
+        ...campaign,
+        status: campaign.status === "draft" ? "active" : campaign.status,
+      }));
+      catalog.commercialEconomics = catalog.commercialEconomics.map(
+        (economics) => ({
+          ...economics,
+          status: economics.status === "draft" ? "active" : economics.status,
+        }),
+      );
+      catalog.providerMappings = catalog.providerMappings.map((mapping) => ({
+        ...mapping,
+        status: mapping.status === "draft" ? "active" : mapping.status,
+      }));
+      catalog.paidPlacementPolicies = catalog.paidPlacementPolicies.map(
+        (policy) => ({
+          ...policy,
+          status: policy.status === "draft" ? "active" : policy.status,
+        }),
+      );
+      catalog.offerDefinitions = catalog.offerDefinitions.map((offer) => ({
+        ...offer,
+        status: offer.status === "draft" ? "active" : offer.status,
+      }));
     } else if (
       input.action === "rollback" &&
       ["archived", "disabled"].includes(version.status)
@@ -1753,20 +2293,26 @@ export class BusinessRulesService {
       const rollbackSource = normalizeEducationMonetizationCatalog(catalog);
       const rollbackId = `commercial-${catalog.marketCode.toLowerCase()}-v${versionNumber}`;
       const createdAt = new Date().toISOString();
+      const rollbackPriceIdMap = new Map<string, string>();
+      const rollbackProducts = rollbackSource.products.map((product) => ({
+        ...product,
+        versionId: `${rollbackId}:${product.id}`,
+        prices: product.prices.map((price, index) => {
+          const nextId = `${rollbackId}:${product.id}:${price.billingPeriod}:${index + 1}`;
+          rollbackPriceIdMap.set(price.id, nextId);
+          return { ...price, providerPriceId: undefined, id: nextId };
+        }),
+        status:
+          product.status === "disabled"
+            ? ("disabled" as const)
+            : ("draft" as const),
+      }));
       const rollbackCatalog = monetizationCatalogSchema.parse({
         ...rollbackSource,
         configurationVersionId: rollbackId,
         versionNumber,
         generatedAt: createdAt,
-        products: rollbackSource.products.map((product) => ({
-          ...product,
-          versionId: `${rollbackId}:${product.id}`,
-          prices: product.prices.map((price) => ({
-            ...price,
-            id: `${rollbackId}:${product.id}:${price.billingPeriod}`,
-          })),
-          status: product.status === "disabled" ? "disabled" : "draft",
-        })),
+        products: rollbackProducts,
         rules: rollbackSource.rules.map((rule) => ({
           ...rule,
           versionId: rollbackId,
@@ -1787,6 +2333,49 @@ export class BusinessRulesService {
           ...promotion,
           id: `${rollbackId}:${promotion.code.toLowerCase()}`,
           status: promotion.status === "disabled" ? "disabled" : "draft",
+        })),
+        priceProtectionPolicies: rollbackSource.priceProtectionPolicies.map(
+          (policy) => ({
+            ...policy,
+            status: policy.status === "disabled" ? "disabled" : "draft",
+          }),
+        ),
+        campaigns: rollbackSource.campaigns.map((campaign) => ({
+          ...campaign,
+          status: campaign.status === "disabled" ? "disabled" : "draft",
+        })),
+        commercialEconomics: rollbackSource.commercialEconomics.map(
+          (economics) => ({
+            ...economics,
+            priceId: economics.priceId
+              ? rollbackPriceIdMap.get(economics.priceId) || economics.priceId
+              : undefined,
+            status: economics.status === "disabled" ? "disabled" : "draft",
+          }),
+        ),
+        providerMappings: rollbackSource.providerMappings.map((mapping) => ({
+          ...mapping,
+          internalReferenceId:
+            mapping.internalReferenceType === "price"
+              ? rollbackPriceIdMap.get(mapping.internalReferenceId) ||
+                mapping.internalReferenceId
+              : mapping.internalReferenceId,
+          externalReferenceId: undefined,
+          synchronizationStatus:
+            mapping.status === "disabled" ? "disabled" : "missing",
+          lastVerifiedAt: undefined,
+          evidenceReference: undefined,
+          status: mapping.status === "disabled" ? "disabled" : "draft",
+        })),
+        paidPlacementPolicies: rollbackSource.paidPlacementPolicies.map(
+          (policy) => ({
+            ...policy,
+            status: policy.status === "disabled" ? "disabled" : "draft",
+          }),
+        ),
+        offerDefinitions: rollbackSource.offerDefinitions.map((offer) => ({
+          ...offer,
+          status: offer.status === "disabled" ? "disabled" : "draft",
         })),
         stale: false,
       });

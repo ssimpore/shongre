@@ -581,8 +581,9 @@
 
 /* Horizontal results use a fixed shared footprint so cards stay aligned when
    titles, badges or metadata differ. The image is deliberately a semantic
-   token-backed slot rather than an ad-hoc width utility: it grows on larger
-   screens while preserving enough copy width on phones. */
+   token-backed slot rather than an ad-hoc width utility: it grows enough on
+   larger screens to retain more of landscape listing media while preserving
+   enough copy width on narrower layouts. */
 .listing-card-list {
   min-height: var(--spacing-listing-card-list-height);
 }

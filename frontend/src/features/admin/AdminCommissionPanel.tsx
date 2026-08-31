@@ -193,6 +193,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
     setError(null);
     try {
       const version = await services.commissions.createDraft({
+        marketCode: catalog.marketCode,
         policies: catalog.commissionPolicies.map((policy) =>
           policy.id === policyId ? { ...policy, status: "disabled" } : policy,
         ),

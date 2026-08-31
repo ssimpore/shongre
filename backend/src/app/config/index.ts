@@ -48,6 +48,7 @@ export interface AppConfig {
   authenticatedApiRateLimit: number;
   apiRateLimitWindowSeconds: number;
   apiRateLimitLockSeconds: number;
+  trustedIpCountryHeader: string | null;
   corsOrigin: string;
   supabaseUrl: string;
   supabaseAnonKey: string;
@@ -226,6 +227,17 @@ function positiveInteger(name: string, fallback: number): number {
   const value = Number(raw);
   if (!Number.isSafeInteger(value) || value <= 0) {
     throw new Error(`[Config Error] ${name} must be a positive integer.`);
+  }
+  return value;
+}
+
+function optionalHeaderName(name: string): string | null {
+  const value = String(process.env[name] || "")
+    .trim()
+    .toLowerCase();
+  if (!value) return null;
+  if (!/^[a-z0-9-]+$/.test(value)) {
+    throw new Error(`[Config Error] ${name} must be a valid HTTP header name.`);
   }
   return value;
 }
@@ -536,6 +548,9 @@ const candidateConfig: AppConfig = {
     60,
   ),
   apiRateLimitLockSeconds: positiveInteger("API_RATE_LIMIT_LOCK_SECONDS", 60),
+  trustedIpCountryHeader: envFlag("SHONGRE_TRUST_IP_COUNTRY_HEADER")
+    ? optionalHeaderName("SHONGRE_IP_COUNTRY_HEADER")
+    : null,
   corsOrigin:
     process.env.CORS_ORIGIN ||
     [
@@ -729,6 +744,15 @@ const candidateConfig: AppConfig = {
   malwareScannerToken: process.env.MALWARE_SCAN_TOKEN || "",
   malwareScannerTimeoutMs: positiveInteger("MALWARE_SCAN_TIMEOUT_MS", 15_000),
 };
+
+if (
+  process.env.SHONGRE_TRUST_IP_COUNTRY_HEADER === "true" &&
+  !candidateConfig.trustedIpCountryHeader
+) {
+  throw new Error(
+    "[Config Error] SHONGRE_IP_COUNTRY_HEADER is required when trusted IP-country detection is enabled.",
+  );
+}
 
 validateSocialProviderConfiguration(candidateConfig);
 validateProductionAuthConfiguration(candidateConfig);

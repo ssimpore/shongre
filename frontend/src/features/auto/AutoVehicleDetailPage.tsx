@@ -12,7 +12,6 @@ import {
   Fuel,
   Gauge,
   GitCompareArrows,
-  Heart,
   MapPin,
   MessageSquare,
   ShieldCheck,
@@ -30,8 +29,8 @@ import {
   Button,
   Checkbox,
   Container,
+  FavoriteButton,
   FormField,
-  Image,
   Input,
   ListingRail,
   Modal,
@@ -40,6 +39,7 @@ import {
   StatePanel,
   Textarea,
 } from "../../design-system";
+import { ListingMediaGallery } from "../listings/components/ListingMediaGallery";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import {
@@ -247,43 +247,32 @@ export const AutoVehicleDetailPage: React.FC = () => {
         <div className="grid min-w-0 gap-5 lg:grid-cols-content-aside-md">
           <main className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
-              <div className="relative aspect-video bg-bg-subtle">
-                <Image
-                  src={vehicle.mediaUrls[0]}
-                  alt={vehicle.title}
-                  className="h-full w-full object-cover"
-                  sizes="(min-width: 1024px) 760px, 100vw"
-                  priority
-                />
-                <div className="absolute right-3 top-3 flex gap-2">
-                  <button
-                    type="button"
-                    data-marketplace-action="favorite.manage"
-                    onClick={toggleFavorite}
-                    aria-pressed={vehicle.isFavorite}
-                    className="rounded-control bg-bg-surface p-2 shadow-xs"
-                    aria-label={
-                      vehicle.isFavorite
-                        ? "Retirer des favoris"
-                        : "Ajouter aux favoris"
-                    }
-                  >
-                    <Heart
-                      className={`h-icon-md w-icon-md ${vehicle.isFavorite ? "fill-primary text-primary" : ""}`}
+              <ListingMediaGallery
+                photos={vehicle.mediaUrls}
+                title={vehicle.title}
+                viewportAspectClassName="aspect-video"
+                className="rounded-none border-0 shadow-none"
+                overlayActions={
+                  <>
+                    <FavoriteButton
+                      isFavorite={vehicle.isFavorite}
+                      onToggle={toggleFavorite}
+                      size="md"
+                      variant="floating"
                     />
-                  </button>
-                  <Link
-                    to={routes.auto.compare([
-                      vehicle.id,
-                      "vehicle_3008_petrol",
-                    ])}
-                    className="rounded-control bg-bg-surface p-2 shadow-xs"
-                    aria-label="Comparer ce véhicule"
-                  >
-                    <GitCompareArrows className="h-icon-md w-icon-md" />
-                  </Link>
-                </div>
-              </div>
+                    <Link
+                      to={routes.auto.compare([
+                        vehicle.id,
+                        "vehicle_3008_petrol",
+                      ])}
+                      className="flex h-8 w-8 items-center justify-center rounded-control bg-bg-surface/90 text-text-secondary shadow-xs backdrop-blur-xs transition-colors hover:bg-bg-surface hover:text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+                      aria-label="Comparer ce véhicule"
+                    >
+                      <GitCompareArrows className="h-icon-md w-icon-md" />
+                    </Link>
+                  </>
+                }
+              />
               <div className="p-5 sm:p-6">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>

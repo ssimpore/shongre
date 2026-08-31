@@ -3,6 +3,7 @@ import {
   buildPublicUrl,
   getCountryConfig,
   resolveMarketContext,
+  sanitizeMarketSwitchQuery,
   type MarketContext,
   type MarketInfrastructureConfig,
 } from "@shongre/contracts";
@@ -16,10 +17,12 @@ export function currentBrowserMarketCode(): string | null {
     infrastructure: marketInfrastructureFromPublicEnvironment(),
     allowDevelopmentHosts: true,
   });
-  return context.kind === "market" || context.kind === "coming_soon"
+  return ["market", "coming_soon", "unavailable"].includes(context.kind)
     ? context.countryCode
     : null;
 }
+
+export { sanitizeMarketSwitchQuery } from "@shongre/contracts";
 
 export function isDevelopmentMarketHost(hostname: string): boolean {
   const normalized = hostname.toLowerCase();
@@ -60,18 +63,20 @@ export function buildRuntimeMarketUrl(input: {
   ) {
     const country = getCountryConfig(input.targetCountry);
     if (!country) return "/";
-    const query = window.location.search;
-    const hash = window.location.hash;
+    const query = sanitizeMarketSwitchQuery(
+      new URLSearchParams(window.location.search),
+    ).toString();
     const route = internalPath === "/" ? "" : internalPath;
-    if (country.code === "FR")
-      return `${window.location.origin}${route || "/"}${query}${hash}`;
-    return `${window.location.origin}${country.basePath}${route || "/"}${query}${hash}`;
+    const suffix = query ? `?${query}` : "";
+    if (country.isDefault)
+      return `${window.location.origin}${route || "/"}${suffix}`;
+    return `${window.location.origin}${country.basePath}${route || "/"}${suffix}`;
   }
 
   const query =
     typeof window === "undefined"
       ? undefined
-      : new URLSearchParams(window.location.search);
+      : sanitizeMarketSwitchQuery(new URLSearchParams(window.location.search));
   return buildMarketSwitchUrl({
     targetCountry: input.targetCountry,
     internalPath,

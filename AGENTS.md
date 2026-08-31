@@ -420,6 +420,14 @@ MULTI_MARKET_SHARED
   infer authority from UI text, browser language, currency, local storage, a
   caller-controlled header, or a France fallback. API market hints must be
   cross-validated with canonical host/referrer and explicit fields.
+- Probable-country detection is a non-authoritative recommendation through the
+  market-location service boundary. Coarse detection reads only a trusted
+  edge-injected ISO country header; precise browser coordinates require an
+  explained user action and remain ephemeral. Never store or log the raw IP or
+  coordinates. A confirmed manual country choice wins until reset, and
+  cross-domain changes require confirmation. Selector, detection and status
+  behavior consume the public-safe registry projection so a valid new registry
+  entry needs no country-specific application branch.
 - Async events, queues, outbox records, workers, jobs, notifications, provider
   callbacks, idempotency keys, caches, search indexes, rate limits, analytics,
   and audit events must retain market identity when behavior or isolation varies
@@ -510,7 +518,20 @@ France-only happy path is insufficient for market-sensitive work.
   organizations support explicit membership and roles.
 - Subscription behavior uses centralized entitlements, not scattered plan-name
   checks. Pricing, limits, commissions, eligibility, and paid-placement
-  availability come from backend/admin policy and market context.
+  availability come from backend/admin policy and market context. Effective
+  subscriptions, entitlements, orders, and invoices retain their exact market
+  and immutable catalog evidence. Plan changes use typed transition policy and
+  must update subscription, attached items, entitlements, and event evidence in
+  one serialized, idempotent transaction; unresolvable evidence fails closed.
+- Plan migrations, campaigns, price protection, commercial economics, provider
+  mappings, paid-placement policy, and unpriced offer definitions remain fields
+  of the same immutable commercial catalog snapshot and are projected into
+  queryable governance tables. A target catalog must preserve historical price
+  and entitlement versions, require customer acceptance where configured, and
+  stay blocked until shadow quotes, cost/margin evidence, and exact
+  environment-plus-market provider mappings are approved. Customer price locks
+  and accepted Enterprise terms use append-only evidence; Enterprise pricing
+  uses customer-specific price books rather than a fake public price.
 - Use consistent public terms: **Urgent**, **Remonter l’annonce**, and **À la
   une**. Promotion state must account for scheduling and expiry rather than a
   stale boolean.

@@ -43,6 +43,20 @@ function expectOneTimePrice(id: string, amountMinor: number) {
 }
 
 describe("commercial-fr-v3 default catalog", () => {
+  it("versions transition, cancellation and payment-failure behavior with prices", () => {
+    expect(catalog.subscriptionPolicy).toEqual({
+      id: "subscription-policy-fr-v3",
+      immediateUpgrade: "allowed",
+      upgradeProration: "linear_remaining_time",
+      downgradeTiming: "period_end",
+      samePlanRenewalTiming: "period_end",
+      billingIntervalChangeTiming: "period_end",
+      cancellationTiming: "period_end",
+      paymentFailureAccess: "suspend_immediately",
+      providerPlanChange: "not_configured",
+    });
+  });
+
   it("treats organizations as professional accounts without opening org-only plans", () => {
     expect(isCommercialAudienceCompatible("professional", "organization")).toBe(
       true,

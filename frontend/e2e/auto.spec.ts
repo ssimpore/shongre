@@ -115,6 +115,46 @@ test.describe("Shongre Auto", () => {
     ).toHaveCount(1);
   });
 
+  test("vehicle detail supports multiple publication photos without breaking single-photo listings", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const gallery = page.getByRole("group", {
+      name: "Galerie de photos (3)",
+    });
+    await expect(gallery).toBeVisible();
+    await expect(page.getByRole("status")).toContainText("Photo 1 sur 3");
+    await expect(
+      gallery.getByRole("img", {
+        name: /Peugeot 3008 BlueHDi 130 S&S BVM6 Allure - Photo 1/,
+      }),
+    ).toBeVisible();
+
+    await gallery.getByRole("button", { name: "Photo suivante" }).click();
+    await expect(page.getByRole("status")).toContainText("Photo 2 sur 3");
+    await expect(
+      gallery.getByRole("img", {
+        name: /Peugeot 3008 BlueHDi 130 S&S BVM6 Allure - Photo 2/,
+      }),
+    ).toBeVisible();
+
+    await page.goto("/auto/vehicule/peugeot-3008-puretech-130-gt-line-2020", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+    await expect(
+      page.getByRole("group", { name: "Galerie de photos (1)" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Photo suivante" }),
+    ).toHaveCount(0);
+  });
+
   test("similar vehicles use one horizontal responsive listing rail", async ({
     page,
   }) => {

@@ -5,9 +5,26 @@ import {
 } from "../../contracts/markets.contract";
 import { httpClient } from "./http-client";
 import { CountryMarketDefinition } from "../../../configuration/market.config";
-import type { CountryConfig } from "@shongre/contracts";
+import type {
+  CountryConfig,
+  MarketDetectionRecommendation,
+} from "@shongre/contracts";
+import type { MarketCoordinateDetectionInput } from "../../contracts/markets.contract";
 
 export class HttpMarketsService implements MarketsServiceContract {
+  detectProbableCountry(): Promise<MarketDetectionRecommendation> {
+    return httpClient.get<MarketDetectionRecommendation>("/markets/detection");
+  }
+
+  detectCountryFromCoordinates(
+    input: MarketCoordinateDetectionInput,
+  ): Promise<MarketDetectionRecommendation> {
+    return httpClient.post<MarketDetectionRecommendation>(
+      "/markets/detection/coordinates",
+      input,
+    );
+  }
+
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
     return httpClient.get<CountryMarketDefinition[]>("/markets");
   }

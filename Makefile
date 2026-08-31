@@ -9,7 +9,7 @@ SHELL := /bin/bash
 	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
-	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
+	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
 	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
@@ -378,6 +378,8 @@ migrations-check: ## Validate migration ordering and contents without connecting
 	@scripts/database.sh check
 db-seed: ## Load deterministic seed data into a proven local development database
 	@scripts/database.sh seed
+monetization-draft-import: ## Idempotently install the reviewed target commercial draft outside production
+	@source scripts/env.sh && npm run db:seed:monetization-target --workspace=backend
 taxonomy-db-dry-run: taxonomy-compile ## Diff the v4 import against a proven local database, then roll back
 	@scripts/database.sh taxonomy-dry-run
 taxonomy-db-import: taxonomy-compile ## Idempotently import v4 into a proven local database

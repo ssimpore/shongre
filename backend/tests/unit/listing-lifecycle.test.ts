@@ -67,35 +67,26 @@ describe("Listing & Order Lifecycle", () => {
     expect(published.price).toBe(1850);
   });
 
-  it("persists one listing with explicit France and Belgium publications", async () => {
-    const published = await listingsService.publishListing(
-      {
-        title: "Smartphone Sony multi-marché",
-        description:
-          "Excellent état, vendu avec sa boîte et une coque supplémentaire.",
-        price: 920,
-        categoryId: "electronics.smartphones.phones",
-        marketCode: "FR",
-        selectedMarkets: ["FR", "BE"],
-        condition: "tres-bon-etat",
-        city: "Lille",
-        postalCode: "59000",
-        images: ["https://images.example.test/xperia-multi-market.jpg"],
-        attributes: { listing_intent: "sell", price_type: "fixed" },
-      },
-      "user_camille",
-    );
-
-    expect(published.marketCodes).toEqual(["FR", "BE"]);
-    expect(published.marketPublications).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ marketCode: "FR", isPrimary: true }),
-        expect.objectContaining({ marketCode: "BE", isPrimary: false }),
-      ]),
-    );
+  it("fails closed when one selected market has no commercial publication policy", async () => {
     await expect(
-      repositories.listings.findPublicById(published.id, "BE"),
-    ).resolves.toMatchObject({ marketCode: "BE", currency: "EUR" });
+      listingsService.publishListing(
+        {
+          title: "Smartphone Sony multi-marché",
+          description:
+            "Excellent état, vendu avec sa boîte et une coque supplémentaire.",
+          price: 920,
+          categoryId: "electronics.smartphones.phones",
+          marketCode: "FR",
+          selectedMarkets: ["FR", "BE"],
+          condition: "tres-bon-etat",
+          city: "Lille",
+          postalCode: "59000",
+          images: ["https://images.example.test/xperia-multi-market.jpg"],
+          attributes: { listing_intent: "sell", price_type: "fixed" },
+        },
+        "user_camille",
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("starts provider checkout without exposing a handover secret", async () => {

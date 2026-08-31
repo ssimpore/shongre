@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { COUNTRY_REGISTRY } from "@shongre/contracts";
+import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { DemoBusinessRulesRepository } from "../../../src/infrastructure/database/repositories/business-rules.repository.js";
 import { BusinessRulesService } from "../../../src/modules/business-rules/business-rules.service.js";
 
@@ -23,11 +25,38 @@ describe("BusinessRulesService quotes", () => {
     ).toBe(true);
   });
 
+  it.each(
+    COUNTRY_REGISTRY.filter(
+      (country) =>
+        country.marketCode !== BASELINE_MONETIZATION_CATALOG.marketCode,
+    ).map((country) => country.marketCode),
+  )(
+    "fails closed when %s has no active commercial catalog",
+    async (marketCode) => {
+      const service = new BusinessRulesService(
+        new DemoBusinessRulesRepository(),
+      );
+
+      await expect(service.getCatalog(marketCode)).rejects.toMatchObject({
+        code: "NOT_FOUND",
+      });
+    },
+  );
+
+  it("rejects an unknown market before reading commercial configuration", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+
+    await expect(service.getCatalog("ZZ")).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+    });
+  });
+
   it("versions vertical configuration without duplicating the product catalog", async () => {
     const repository = new DemoBusinessRulesRepository();
     const service = new BusinessRulesService(repository);
     const current = await service.getCatalog("FR");
     const draft = await service.createDraft("vertical-admin", {
+      marketCode: "FR",
       reason: "Mise à jour contrôlée de la verticale automobile",
       verticals: current.verticals.map((vertical) =>
         vertical.id === "auto"
@@ -84,6 +113,7 @@ describe("BusinessRulesService quotes", () => {
     );
 
     const version = await service.createDraft("plan-admin", {
+      marketCode: "FR",
       reason: "Validation coordonnée du prix, quota et essai Auto",
       products,
     });
@@ -131,6 +161,85 @@ describe("BusinessRulesService quotes", () => {
     expect(quote.snapshotHash).toMatch(/^[a-f0-9]{64}$/);
   });
 
+  it("fails closed when declared product economics are not approved", async () => {
+    class UnapprovedEconomicsRepository extends DemoBusinessRulesRepository {
+      override async getActiveCatalog(marketCode: string) {
+        const catalog = structuredClone(
+          await super.getActiveCatalog(marketCode),
+        )!;
+        const product = catalog.products.find(
+          (entry) => entry.id === "premium.urgent",
+        )!;
+        catalog.commercialEconomics = [
+          {
+            id: "economics:test:urgent",
+            productId: product.id,
+            priceId: product.prices[0].id,
+            marketCode: "FR",
+            currency: "EUR",
+            approvalStatus: "missing_inputs",
+            status: "active",
+          },
+        ];
+        return catalog;
+      }
+    }
+
+    const service = new BusinessRulesService(
+      new UnapprovedEconomicsRepository(),
+    );
+    await expect(
+      service.createQuote("individual_economics_test", {
+        productIds: ["premium.urgent"],
+        marketCode: "FR",
+        idempotencyKey: "quote-unapproved-economics-0001",
+      }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      details: { reasonCode: "COMMERCIAL_ECONOMICS_NOT_APPROVED" },
+    });
+  });
+
+  it("blocks an approved price that falls below its margin floor", async () => {
+    class NegativeMarginRepository extends DemoBusinessRulesRepository {
+      override async getActiveCatalog(marketCode: string) {
+        const catalog = structuredClone(
+          await super.getActiveCatalog(marketCode),
+        )!;
+        const product = catalog.products.find(
+          (entry) => entry.id === "premium.urgent",
+        )!;
+        catalog.commercialEconomics = [
+          {
+            id: "economics:test:urgent-margin",
+            productId: product.id,
+            priceId: product.prices[0].id,
+            marketCode: "FR",
+            currency: "EUR",
+            directCostAmountMinor: product.prices[0].amount.amountMinor,
+            marginFloorBps: 1_000,
+            approvalStatus: "approved",
+            evidenceReference: "finance-review-test",
+            status: "active",
+          },
+        ];
+        return catalog;
+      }
+    }
+
+    const service = new BusinessRulesService(new NegativeMarginRepository());
+    await expect(
+      service.createQuote("individual_margin_test", {
+        productIds: ["premium.urgent"],
+        marketCode: "FR",
+        idempotencyKey: "quote-negative-margin-0001",
+      }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      details: { reasonCode: "COMMERCIAL_MARGIN_FLOOR_NOT_MET" },
+    });
+  });
+
   it("returns the same immutable quote for the same account idempotency key", async () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     const request = {
@@ -154,6 +263,30 @@ describe("BusinessRulesService quotes", () => {
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
 
+  it("rejects an offer whose product validity window has expired", async () => {
+    class ExpiredOfferRepository extends DemoBusinessRulesRepository {
+      override async getActiveCatalog(marketCode: string) {
+        const catalog = structuredClone(
+          await super.getActiveCatalog(marketCode),
+        )!;
+        const product = catalog.products.find(
+          (entry) => entry.id === "premium.urgent",
+        )!;
+        product.effectiveUntil = "2020-01-01T00:00:00.000Z";
+        return catalog;
+      }
+    }
+    const service = new BusinessRulesService(new ExpiredOfferRepository());
+
+    await expect(
+      service.createQuote("individual_expired_offer", {
+        productIds: ["premium.urgent"],
+        marketCode: "FR",
+        idempotencyKey: "quote-expired-offer-0001",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+  });
+
   it("rejects a quote whose persisted pricing snapshot was tampered with", async () => {
     class TamperingRepository extends DemoBusinessRulesRepository {
       override async getQuote(quoteId: string) {
@@ -173,8 +306,31 @@ describe("BusinessRulesService quotes", () => {
         "individual_tamper_test",
         quote.id,
         "checkout-test-tamper-0006",
+        "FR",
       ),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("rejects checkout when the request market differs from the quote", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "individual_quote_market_mismatch";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["premium.urgent"],
+      marketCode: "FR",
+      idempotencyKey: "quote-market-mismatch-0001",
+    });
+
+    await expect(
+      service.createCheckout(
+        accountId,
+        quote.id,
+        "checkout-market-mismatch-0001",
+        "BE",
+      ),
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      details: { reasonCode: "QUOTE_MARKET_CONTEXT_MISMATCH" },
+    });
   });
 
   it("rejects a professional-only product for an individual account", async () => {
@@ -233,12 +389,15 @@ describe("BusinessRulesService quotes", () => {
       "professional_subscription_test",
       quote.id,
       "checkout-test-annual-plan-0004",
+      "FR",
     );
     const subscriptions = await service.getSubscriptions(
       "professional_subscription_test",
+      "FR",
     );
     const entitlements = await service.getActiveEntitlements(
       "professional_subscription_test",
+      "FR",
     );
     expect(quote).toMatchObject({
       amountDueTodayMinor: 0,
@@ -252,12 +411,19 @@ describe("BusinessRulesService quotes", () => {
     expect(entitlements.some((entry) => entry.productId === plan.id)).toBe(
       true,
     );
+    await expect(
+      service.getSubscriptions("professional_subscription_test", "BE"),
+    ).resolves.toEqual([]);
+    await expect(
+      service.getActiveEntitlements("professional_subscription_test", "BE"),
+    ).resolves.toEqual([]);
     const cancellation = await service.updateSubscriptionCancellation(
       "professional_subscription_test",
       {
         subscriptionId: subscriptions[0].id,
         cancelAtPeriodEnd: true,
       },
+      "FR",
     );
     expect(cancellation.cancelAtPeriodEnd).toBe(true);
   });
@@ -277,6 +443,7 @@ describe("BusinessRulesService quotes", () => {
       accountId,
       first.id,
       "checkout-auto-trial-first-0001",
+      "FR",
     );
 
     const second = await service.createQuote(accountId, {
@@ -311,6 +478,7 @@ describe("BusinessRulesService quotes", () => {
       accountId,
       quote.id,
       "checkout-auto-campaign-0001",
+      "FR",
     );
     await expect(
       service.createQuote(accountId, {
@@ -339,20 +507,25 @@ describe("BusinessRulesService quotes", () => {
       accountId,
       quote.id,
       "checkout-transition-matrix-0001",
+      "FR",
     );
-    const subscription = (await service.getSubscriptions(accountId))[0];
+    const subscription = (await service.getSubscriptions(accountId, "FR"))[0];
     const catalog = await service.getCatalog("FR");
     const immoPrice = catalog.products
       .find((product) => product.id === "immo.agency.growth")!
       .prices.find((price) => price.billingPeriod === "month")!;
 
     await expect(
-      service.previewSubscriptionChange(accountId, {
-        subscriptionId: subscription.id,
-        targetProductId: "immo.agency.growth",
-        targetPriceId: immoPrice.id,
-        idempotencyKey: "transition-auto-to-immo-0001",
-      }),
+      service.previewSubscriptionChange(
+        accountId,
+        {
+          subscriptionId: subscription.id,
+          targetProductId: "immo.agency.growth",
+          targetPriceId: immoPrice.id,
+          idempotencyKey: "transition-auto-to-immo-0001",
+        },
+        "FR",
+      ),
     ).rejects.toMatchObject({
       code: "VALIDATION_ERROR",
       details: { reasonCode: "PLAN_TRANSITION_NOT_ALLOWED" },
@@ -371,8 +544,9 @@ describe("BusinessRulesService quotes", () => {
       accountId,
       quote.id,
       "checkout-generic-to-auto-0001",
+      "FR",
     );
-    const subscription = (await service.getSubscriptions(accountId))[0];
+    const subscription = (await service.getSubscriptions(accountId, "FR"))[0];
     const catalog = await service.getCatalog("FR");
     const target = catalog.products.find(
       (product) => product.id === "auto.dealer.growth",
@@ -381,19 +555,57 @@ describe("BusinessRulesService quotes", () => {
       (price) => price.billingPeriod === "month",
     )!;
 
-    const changed = await service.applySubscriptionChange(accountId, {
-      subscriptionId: subscription.id,
-      targetProductId: target.id,
-      targetPriceId: targetPrice.id,
-      idempotencyKey: "change-generic-to-auto-0001",
-    });
+    await expect(
+      service.previewSubscriptionChange(
+        accountId,
+        {
+          subscriptionId: subscription.id,
+          targetProductId: target.id,
+          targetPriceId: targetPrice.id,
+          expectedSubscriptionUpdatedAt: subscription.updatedAt,
+          idempotencyKey: "change-generic-to-auto-wrong-market-0001",
+        },
+        "BE",
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    const changed = await service.applySubscriptionChange(
+      accountId,
+      {
+        subscriptionId: subscription.id,
+        targetProductId: target.id,
+        targetPriceId: targetPrice.id,
+        expectedSubscriptionUpdatedAt: subscription.updatedAt,
+        idempotencyKey: "change-generic-to-auto-0001",
+      },
+      "FR",
+    );
     expect(changed).toMatchObject({
       productId: target.id,
       productVersionId: target.versionId,
+      configurationVersionId: catalog.configurationVersionId,
+      marketCode: catalog.marketCode,
+      currency: catalog.currency,
       verticalId: "auto",
       familyId: "vertical.auto",
     });
-    const activeEntitlements = await service.getActiveEntitlements(accountId);
+    await expect(
+      service.applySubscriptionChange(
+        accountId,
+        {
+          subscriptionId: subscription.id,
+          targetProductId: target.id,
+          targetPriceId: targetPrice.id,
+          expectedSubscriptionUpdatedAt: subscription.updatedAt,
+          idempotencyKey: "change-generic-to-auto-0001",
+        },
+        "FR",
+      ),
+    ).resolves.toEqual(changed);
+    const activeEntitlements = await service.getActiveEntitlements(
+      accountId,
+      "FR",
+    );
     expect(
       activeEntitlements.some(
         (entitlement) =>
@@ -404,11 +616,223 @@ describe("BusinessRulesService quotes", () => {
     expect(activeEntitlements).toContainEqual(
       expect.objectContaining({
         productId: target.id,
+        productVersionId: target.versionId,
+        configurationVersionId: catalog.configurationVersionId,
         key: "maxActiveVehicles",
         status: "active",
         verticalId: "auto",
       }),
     );
+  });
+
+  it("rejects a stale plan-change preview before mutation", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_stale_transition";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["plan.pro.business"],
+      marketCode: "FR",
+      idempotencyKey: "quote-stale-transition-0001",
+    });
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-stale-transition-0001",
+      "FR",
+    );
+    const subscription = (await service.getSubscriptions(accountId, "FR"))[0];
+    const catalog = await service.getCatalog("FR");
+    const target = catalog.products.find(
+      (product) => product.id === "auto.dealer.growth",
+    )!;
+    const targetPrice = target.prices.find(
+      (price) => price.billingPeriod === "month",
+    )!;
+
+    await expect(
+      service.previewSubscriptionChange(
+        accountId,
+        {
+          subscriptionId: subscription.id,
+          targetProductId: target.id,
+          targetPriceId: targetPrice.id,
+          expectedSubscriptionUpdatedAt: "2020-01-01T00:00:00.000Z",
+          idempotencyKey: "change-stale-transition-0001",
+        },
+        "FR",
+      ),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      details: { reasonCode: "STALE_SUBSCRIPTION_STATE" },
+    });
+  });
+
+  it("schedules a same-plan billing renewal without replacing current rights", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_same_plan_renewal";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["plan.pro.business"],
+      marketCode: "FR",
+      idempotencyKey: "quote-same-plan-renewal-0001",
+    });
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-same-plan-renewal-0001",
+      "FR",
+    );
+    const subscription = (await service.getSubscriptions(accountId, "FR"))[0];
+    const catalog = await service.getCatalog("FR");
+    const product = catalog.products.find(
+      (candidate) => candidate.id === subscription.productId,
+    )!;
+    const annualPrice = product.prices.find(
+      (price) => price.billingPeriod === "year",
+    )!;
+    const beforeEntitlements = await service.getActiveEntitlements(
+      accountId,
+      "FR",
+    );
+    const request = {
+      subscriptionId: subscription.id,
+      targetProductId: product.id,
+      targetPriceId: annualPrice.id,
+      expectedSubscriptionUpdatedAt: subscription.updatedAt,
+      idempotencyKey: "change-same-plan-renewal-0001",
+    };
+
+    await expect(
+      service.previewSubscriptionChange(accountId, request, "FR"),
+    ).resolves.toMatchObject({
+      effectiveAt: "period_end",
+      proration: { amountMinor: 0, currency: "EUR" },
+      targetProductVersionId: product.versionId,
+    });
+    await expect(
+      service.applySubscriptionChange(accountId, request, "FR"),
+    ).resolves.toMatchObject({
+      productId: product.id,
+      priceId: subscription.priceId,
+      scheduledProductId: product.id,
+      scheduledProductVersionId: product.versionId,
+      scheduledPriceId: annualPrice.id,
+      scheduledChangeAt: subscription.currentPeriodEnd,
+    });
+    expect(await service.getActiveEntitlements(accountId, "FR")).toEqual(
+      beforeEntitlements,
+    );
+  });
+
+  it("serializes concurrent plan changes from the same client snapshot", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const accountId = "professional_concurrent_transition";
+    const quote = await service.createQuote(accountId, {
+      productIds: ["plan.pro.business"],
+      marketCode: "FR",
+      idempotencyKey: "quote-concurrent-transition-0001",
+    });
+    await service.createCheckout(
+      accountId,
+      quote.id,
+      "checkout-concurrent-transition-0001",
+      "FR",
+    );
+    const subscription = (await service.getSubscriptions(accountId, "FR"))[0];
+    const catalog = await service.getCatalog("FR");
+    const target = catalog.products.find(
+      (product) => product.id === "auto.dealer.growth",
+    )!;
+    const targetPrice = target.prices.find(
+      (price) => price.billingPeriod === "month",
+    )!;
+    const baseRequest = {
+      subscriptionId: subscription.id,
+      targetProductId: target.id,
+      targetPriceId: targetPrice.id,
+      expectedSubscriptionUpdatedAt: subscription.updatedAt,
+    };
+
+    const attempts = await Promise.allSettled([
+      service.applySubscriptionChange(
+        accountId,
+        {
+          ...baseRequest,
+          idempotencyKey: "change-concurrent-transition-a",
+        },
+        "FR",
+      ),
+      service.applySubscriptionChange(
+        accountId,
+        {
+          ...baseRequest,
+          idempotencyKey: "change-concurrent-transition-b",
+        },
+        "FR",
+      ),
+    ]);
+
+    expect(
+      attempts.filter((attempt) => attempt.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      attempts.filter((attempt) => attempt.status === "rejected"),
+    ).toHaveLength(1);
+  });
+
+  it("allows an authorized organization manager and hides the subscription from a viewer", async () => {
+    const service = new BusinessRulesService(new DemoBusinessRulesRepository());
+    const ownerId = "organization_owner_transition";
+    const organizationId = "11111111-1111-4111-8111-111111111111";
+    const quote = await service.createQuote(ownerId, {
+      productIds: ["plan.pro.business"],
+      marketCode: "FR",
+      organizationId,
+      idempotencyKey: "quote-organization-transition-0001",
+    });
+    await service.createCheckout(
+      ownerId,
+      quote.id,
+      "checkout-organization-transition-0001",
+      "FR",
+    );
+    const subscription = (await service.getSubscriptions(ownerId, "FR"))[0];
+    const catalog = await service.getCatalog("FR");
+    const target = catalog.products.find(
+      (product) => product.id === "auto.dealer.growth",
+    )!;
+    const targetPrice = target.prices.find(
+      (price) => price.billingPeriod === "month",
+    )!;
+
+    await expect(
+      service.previewSubscriptionChange(
+        "organization_viewer",
+        {
+          subscriptionId: subscription.id,
+          targetProductId: target.id,
+          targetPriceId: targetPrice.id,
+          idempotencyKey: "change-organization-viewer-0001",
+        },
+        "FR",
+      ),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    await expect(
+      service.applySubscriptionChange(
+        "organization_manager",
+        {
+          subscriptionId: subscription.id,
+          targetProductId: target.id,
+          targetPriceId: targetPrice.id,
+          expectedSubscriptionUpdatedAt: subscription.updatedAt,
+          idempotencyKey: "change-organization-manager-0001",
+        },
+        "FR",
+      ),
+    ).resolves.toMatchObject({
+      organizationId,
+      productId: target.id,
+      configurationVersionId: catalog.configurationVersionId,
+    });
   });
 
   it("returns a stable reason when a promotion is unpublished", async () => {
@@ -460,95 +884,79 @@ describe("BusinessRulesService quotes", () => {
     ).toHaveLength(1);
   });
 
-  it("publishes atomically only after a distinct approval", async () => {
+  it("keeps publication blocked when registry readiness evidence is incomplete", async () => {
     const repository = new DemoBusinessRulesRepository();
     const service = new BusinessRulesService(repository);
+    const current = await service.getCatalog("FR");
     const draft = await service.createDraft("maker-admin", {
+      marketCode: "FR",
       reason: "Validation du workflow de publication atomique",
+      products: current.products.map((product) =>
+        product.kind === "subscription" &&
+        product.prices.some((price) => price.amount.amountMinor > 0)
+          ? { ...product, status: "disabled" }
+          : product,
+      ),
+      subscriptionPolicy: {
+        ...current.subscriptionPolicy,
+        providerPlanChange: "checkout_confirmation",
+      },
     });
-    await service.transitionVersion({
-      versionId: draft.id,
-      action: "submit",
-      actorId: "maker-admin",
-      reason: "Soumission pour contrôle indépendant",
-    });
-    await service.transitionVersion({
-      versionId: draft.id,
-      action: "approve",
-      actorId: "checker-admin",
-      reason: "Contrôle indépendant terminé sans conflit",
-    });
+    expect(
+      draft.conflicts.filter((conflict) => conflict.severity === "blocking"),
+    ).toEqual([
+      expect.objectContaining({
+        code: "COMMERCIAL_MARKET_NOT_READY",
+        entityIds: ["FR", "taxes.mode"],
+      }),
+    ]);
     await expect(
       service.transitionVersion({
         versionId: draft.id,
-        action: "publish",
+        action: "submit",
         actorId: "maker-admin",
-        reason: "Tentative invalide du créateur initial",
+        reason: "Soumission pour contrôle indépendant",
       }),
-    ).rejects.toThrow("four-eyes approval required");
-    const published = await service.transitionVersion({
-      versionId: draft.id,
-      action: "publish",
-      actorId: "publisher-admin",
-      reason: "Publication validée après approbation indépendante",
-    });
-    expect(published.status).toBe("active");
+    ).rejects.toMatchObject({ code: "CONFLICT" });
     const overview = await service.getAdminOverview("FR");
-    expect(overview.publishedVersion.id).toBe(draft.id);
-    expect(
-      overview.versions.find((version) => version.id === "commercial-fr-v3")
-        ?.status,
-    ).toBe("archived");
-
-    const rollback = await service.transitionVersion({
-      versionId: "commercial-fr-v3",
-      action: "rollback",
-      actorId: "rollback-admin",
-      reason: "Préparation contrôlée du retour à la version initiale",
-    });
-    expect(rollback.status).toBe("draft");
-    expect(rollback.id).not.toBe("commercial-fr-v3");
-    const rollbackCatalog = await repository.getCatalogVersion(rollback.id);
-    expect(
-      rollbackCatalog?.products.every((product) =>
-        product.prices.every((price) => price.id.startsWith(`${rollback.id}:`)),
-      ),
-    ).toBe(true);
-    expect(
-      (await service.getAdminOverview("FR")).versions.find(
-        (entry) => entry.id === "commercial-fr-v3",
-      )?.status,
-    ).toBe("archived");
+    expect(overview.publishedVersion.id).toBe("commercial-fr-v3");
   });
 
-  it("keeps future-approved configuration scheduled without replacing the active version", async () => {
+  it("does not schedule a future configuration before registry readiness is complete", async () => {
     const repository = new DemoBusinessRulesRepository();
     const service = new BusinessRulesService(repository);
+    const current = await service.getCatalog("FR");
     const draft = await service.createDraft("schedule-maker", {
+      marketCode: "FR",
       reason: "Planification contrôlée d’une future activation",
       effectiveFrom: "2099-01-01T00:00:00.000Z",
+      products: current.products.map((product) =>
+        product.kind === "subscription" &&
+        product.prices.some((price) => price.amount.amountMinor > 0)
+          ? { ...product, status: "disabled" }
+          : product,
+      ),
+      subscriptionPolicy: {
+        ...current.subscriptionPolicy,
+        providerPlanChange: "checkout_confirmation",
+      },
     });
-    await service.transitionVersion({
-      versionId: draft.id,
-      action: "submit",
-      actorId: "schedule-maker",
-      reason: "Soumission de la future grille planifiée",
-    });
-    await service.transitionVersion({
-      versionId: draft.id,
-      action: "approve",
-      actorId: "schedule-checker",
-      reason: "Approbation indépendante de la grille planifiée",
-    });
-    const scheduled = await service.transitionVersion({
-      versionId: draft.id,
-      action: "publish",
-      actorId: "schedule-publisher",
-      reason: "Programmation après validation des contrôles",
-    });
-    expect(scheduled.status).toBe("scheduled");
+    expect(draft.conflicts).toContainEqual(
+      expect.objectContaining({
+        code: "COMMERCIAL_MARKET_NOT_READY",
+        severity: "blocking",
+      }),
+    );
+    await expect(
+      service.transitionVersion({
+        versionId: draft.id,
+        action: "submit",
+        actorId: "schedule-maker",
+        reason: "Soumission de la future grille planifiée",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
     const overview = await service.getAdminOverview("FR");
-    expect(overview.publishedVersion.id).not.toBe(scheduled.id);
-    expect(overview.scheduledChanges).toBeGreaterThan(0);
+    expect(overview.publishedVersion.id).not.toBe(draft.id);
+    expect(overview.scheduledChanges).toBe(0);
   });
 });

@@ -1,18 +1,16 @@
-import { ArrowRight, Search, ShieldCheck, Users } from "lucide-react";
-import type { CountryConfig } from "@shongre/contracts";
+import { Search, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
-
-export interface GatewayCountryLink {
-  country: CountryConfig;
-  href: string;
-}
+import {
+  GatewayCountrySelector,
+  type GatewayCountryLink,
+} from "./GatewayCountrySelector";
 
 export function GlobalGatewayPage({
   countries,
-  franceOrigin,
+  defaultMarketOrigin,
 }: {
   countries: GatewayCountryLink[];
-  franceOrigin: string;
+  defaultMarketOrigin: string;
 }) {
   return (
     <div className="min-h-screen bg-white font-sans text-stone-950">
@@ -26,7 +24,7 @@ export function GlobalGatewayPage({
             Shongre<span className="text-primary">.</span>
           </Link>
           <a
-            href={`${franceOrigin}/connexion`}
+            href={`${defaultMarketOrigin}/connexion`}
             className="inline-flex min-h-control-touch items-center rounded-control border border-primary px-4 text-sm font-bold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             Se connecter
@@ -46,49 +44,7 @@ export function GlobalGatewayPage({
             </p>
           </div>
 
-          <div aria-labelledby="country-list-title">
-            <h2 id="country-list-title" className="mb-4 text-lg font-black">
-              Choisissez votre pays
-            </h2>
-            <ul className="divide-y divide-border-subtle border-y border-border-base">
-              {countries.map(({ country, href }) => {
-                const available =
-                  country.marketplace.enabled &&
-                  ["active", "beta"].includes(country.launchStatus);
-                return (
-                  <li key={country.code}>
-                    <a
-                      href={href}
-                      className="group flex min-h-16 items-center gap-4 px-1 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                      aria-label={`${country.name}${available ? "" : " — ouverture prochaine"}`}
-                    >
-                      <span className="text-2xl" aria-hidden="true">
-                        {country.flag}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-base font-black text-stone-950">
-                          {country.name}
-                        </span>
-                        <span className="block truncate text-xs text-stone-600">
-                          {country.nativeName} · {country.currency}
-                        </span>
-                      </span>
-                      {available ? (
-                        <ArrowRight
-                          className="h-icon-lg w-icon-lg text-primary transition-transform group-hover:translate-x-1"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <span className="rounded-control border border-border-base bg-bg-subtle px-2.5 py-1 text-xs font-bold text-stone-700">
-                          À venir
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          <GatewayCountrySelector countries={countries} />
         </section>
 
         <section className="border-y border-border-base bg-bg-subtle">
@@ -142,19 +98,19 @@ export function GlobalGatewayPage({
             className="flex flex-wrap gap-x-5 gap-y-2"
           >
             <a
-              href={`${franceOrigin}/securite`}
+              href={`${defaultMarketOrigin}/securite`}
               className="hover:text-stone-950"
             >
               Sécurité
             </a>
             <a
-              href={`${franceOrigin}/confidentialite`}
+              href={`${defaultMarketOrigin}/confidentialite`}
               className="hover:text-stone-950"
             >
               Confidentialité
             </a>
             <a
-              href={`${franceOrigin}/conditions-utilisation`}
+              href={`${defaultMarketOrigin}/conditions-utilisation`}
               className="hover:text-stone-950"
             >
               Conditions d’utilisation

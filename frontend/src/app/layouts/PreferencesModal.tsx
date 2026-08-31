@@ -16,6 +16,9 @@ export const PreferencesModal: React.FC = () => {
     activeMarket,
     availableMarkets,
     setMarket,
+    manualMarketSelection,
+    resetManualMarketSelection,
+    isDetectingMarket,
     currentCurrency,
     setCurrency,
     currentLocale,
@@ -26,6 +29,7 @@ export const PreferencesModal: React.FC = () => {
 
   const handleMarketChange = (marketCode: string) => {
     setMarket(marketCode);
+    closePreferencesModal();
   };
 
   const currencies = useMemo(() => {
@@ -96,6 +100,24 @@ export const PreferencesModal: React.FC = () => {
               );
             })}
           </div>
+          {manualMarketSelection ? (
+            <div className="flex flex-col gap-2 rounded-control bg-bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs leading-relaxed text-text-secondary">
+                {t("shell.preferencesModal.manualSelectionActive")}
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={resetManualMarketSelection}
+                disabled={isDetectingMarket}
+                className="shrink-0"
+              >
+                {isDetectingMarket
+                  ? t("common.loading")
+                  : t("shell.preferencesModal.resetManualSelection")}
+              </Button>
+            </div>
+          ) : null}
         </div>
 
         {/* Currency Selection */}

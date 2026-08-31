@@ -196,6 +196,7 @@ export class ProspectingService {
     }
     const active = await this.rules.getActiveEntitlementsForOrganization(
       context.tenantId,
+      context.marketCode,
     );
     const values = new Map(active.map((entry) => [entry.key, entry.value]));
     const accessMode =

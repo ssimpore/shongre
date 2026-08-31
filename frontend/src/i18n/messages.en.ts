@@ -227,6 +227,8 @@ export const messagesEn: MessageCatalogue = {
   "shell.locationPickerModal.zoneGeographique": "Area",
   "shell.locationPickerModal.rayonDeRecherche": "Search radius",
   "shell.locationPickerModal.useCurrentLocation": "Use my current location",
+  "shell.locationPickerModal.preciseLocationPurpose":
+    "With your permission, Shongre will use your location once to suggest the nearest country and city. Your precise coordinates are not stored.",
   "shell.locationPickerModal.locationInProgress": "Locating…",
   "shell.locationPickerModal.locationDetected":
     "Location detected near {city}.",
@@ -246,9 +248,32 @@ export const messagesEn: MessageCatalogue = {
   "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
     "Set your browsing country, display currency and language",
   "shell.preferencesModal.marchePays": "Market / Country",
+  "shell.preferencesModal.manualSelectionActive":
+    "Your manual choice takes priority over automatic detection.",
+  "shell.preferencesModal.resetManualSelection": "Reset my country choice",
   "shell.preferencesModal.deviseAffichage": "Display currency",
   "shell.preferencesModal.bientot": "Coming soon",
   "shell.preferencesModal.langueDeLInterface": "Interface language",
+  "shell.marketDetection.recommendationTitle": "Suggested country: {country}",
+  "shell.marketDetection.recommendationBody":
+    "This suggestion is an estimate and changes nothing without your confirmation.",
+  "shell.marketDetection.lowConfidence":
+    "The signal may be imprecise, especially when using a VPN or proxy.",
+  "shell.marketDetection.viewCountry": "Continue to {country}",
+  "shell.marketDetection.ignore": "Ignore",
+  "shell.marketDetection.confirmTitle": "Change country?",
+  "shell.marketDetection.confirmCrossDomain":
+    "You are about to leave this domain to open the {country} market. The current path and safe search parameters will be preserved when this page exists in that market.",
+  "shell.marketDetection.confirmAction": "Open {country}",
+  "shell.marketDetection.gatewayChooseCountry": "Choose your country",
+  "shell.marketDetection.gatewaySuggestedCountry":
+    "Suggested country: {country}",
+  "shell.marketDetection.gatewayEstimate":
+    "This estimate changes nothing without your confirmation.",
+  "shell.marketDetection.gatewayContinue": "Continue to {country}",
+  "shell.marketDetection.openingSoon": "Coming soon",
+  "shell.marketDetection.unavailable": "Unavailable",
+  "shell.marketDetection.countryOpeningSoon": "{country} — coming soon",
   "shell.errorBoundary.uneErreurInattendueEstSurvenue":
     "Something unexpected went wrong",
   "shell.errorBoundary.applicationARencontreUnProbleme":
@@ -547,6 +572,9 @@ export const messagesEn: MessageCatalogue = {
   "listings.listingDetailPage.voirTout": "See all",
   "listings.listingDetailPage.annoncesSimilaires": "Similar listings",
   "listings.listingMediaGallery.photoPrecedente": "Previous photo",
+  "listings.listingMediaGallery.photoSuivante": "Next photo",
+  "listings.listingMediaGallery.photoPosition": "Photo {current} of {total}",
+  "listings.listingMediaGallery.galleryLabel": "Photo gallery ({total})",
   "listings.listingMediaGallery.agrandirEnPleinEcran": "View full screen",
   "listings.listingMediaGallery.fermerLePleinEcran": "Exit full screen",
   "listings.listingSafetyNotice.garantieSecuriteShongre":
@@ -3565,6 +3593,22 @@ export const messagesEn: MessageCatalogue = {
   "admin.solutions.catalogTableLabel": "Solutions catalogue table",
   "admin.monetization.firstTableLabel": "Commission grid table",
   "admin.monetization.secondTableLabel": "Commission tiers table",
+  "admin.monetization.governanceTab": "Governance",
+  "admin.monetization.governanceTitle": "Migration, costs, and synchronization",
+  "admin.monetization.governanceDescription":
+    "Publication controls for plan migrations, price protection, direct costs, and provider references. An incomplete status blocks production release.",
+  "admin.monetization.migrationMappings": "Plan migrations",
+  "admin.monetization.priceProtections": "Price protection",
+  "admin.monetization.economics": "Costs and margins",
+  "admin.monetization.providerMappings": "Provider references",
+  "admin.monetization.publicationBlockers": "{count} publication blocker(s)",
+  "admin.monetization.noPublicationBlocker": "No blocker detected",
+  "admin.monetization.sourcePlan": "Source offer",
+  "admin.monetization.targetPlan": "Target offer",
+  "admin.monetization.customerTreatment": "Customer treatment",
+  "admin.monetization.shadowQuote": "Shadow quote",
+  "admin.monetization.campaignsAndPriceLocks": "Campaigns and price locks",
+  "admin.monetization.providerReadiness": "Provider readiness",
   "admin.employment.tableLabel": "Job offers table",
   "employment.recruiter.tableLabel": "Applications table",
   "pro.plans.comparisonTableLabel": "Pro plan comparison table",

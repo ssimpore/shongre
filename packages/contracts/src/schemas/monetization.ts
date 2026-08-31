@@ -411,10 +411,18 @@ export type MonetizationProduct = z.infer<typeof monetizationProductSchema>;
  * fee, remain purchasable because the service itself is the priced outcome.
  */
 export function isCommercialProductPurchasable(
-  product: Pick<MonetizationProduct, "status" | "entitlements">,
+  product: Pick<
+    MonetizationProduct,
+    "status" | "entitlements" | "effectiveFrom" | "effectiveUntil"
+  >,
+  effectiveAt: Date = new Date(),
 ) {
   return (
     product.status === "active" &&
+    (!product.effectiveFrom ||
+      new Date(product.effectiveFrom) <= effectiveAt) &&
+    (!product.effectiveUntil ||
+      new Date(product.effectiveUntil) > effectiveAt) &&
     (product.entitlements.length === 0 ||
       product.entitlements.some(
         (entitlement) =>
@@ -463,6 +471,352 @@ export const promotionSchema = z.object({
   endsAt: z.string().datetime(),
 });
 export type Promotion = z.infer<typeof promotionSchema>;
+
+export const planMigrationMappingSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    fromProductId: z.string().min(1),
+    fromProductVersionId: z.string().min(1),
+    toProductId: z.string().min(1),
+    treatment: z.enum([
+      "customer_choice_required",
+      "grandfather_existing",
+      "contract_migration",
+      "no_replacement",
+    ]),
+    requiresCustomerAcceptance: z.boolean(),
+    preserveHistoricalPrice: z.boolean(),
+    preserveHistoricalEntitlements: z.boolean(),
+    shadowQuoteStatus: z.enum([
+      "not_run",
+      "matched",
+      "intentional_difference",
+      "blocked",
+    ]),
+    intentionalDifferences: z.array(z.string().min(1)).default([]),
+    rolloutStatus: z.enum([
+      "draft",
+      "shadow",
+      "approved",
+      "rolling_out",
+      "complete",
+      "blocked",
+    ]),
+  })
+  .strict()
+  .superRefine((mapping, context) => {
+    if (
+      mapping.shadowQuoteStatus === "intentional_difference" &&
+      mapping.intentionalDifferences.length === 0
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["intentionalDifferences"],
+        message: "An intentional shadow-quote difference must be documented.",
+      });
+    }
+    if (
+      mapping.treatment === "customer_choice_required" &&
+      !mapping.requiresCustomerAcceptance
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiresCustomerAcceptance"],
+        message: "Customer-choice migrations require recorded acceptance.",
+      });
+    }
+  });
+export type PlanMigrationMapping = z.infer<typeof planMigrationMappingSchema>;
+
+export const priceProtectionPolicySchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    name: z.string().min(1),
+    protectionType: z.enum(["price_lock", "grandfathering", "contract"]),
+    productIds: z.array(z.string().min(1)).min(1),
+    startsWhen: z.enum([
+      "paid_subscription_starts",
+      "customer_accepts_contract",
+      "migration_is_accepted",
+    ]),
+    durationMonths: z.number().int().positive().optional(),
+    fixedEndsAt: z.string().datetime().optional(),
+    preservePriceId: z.boolean(),
+    requiresCustomerAcceptance: z.boolean(),
+    campaignId: z.string().min(1).optional(),
+    status: commercialConfigurationStatusSchema,
+  })
+  .strict()
+  .refine(
+    (policy) =>
+      policy.protectionType === "grandfathering" ||
+      policy.durationMonths !== undefined ||
+      policy.fixedEndsAt !== undefined,
+    {
+      path: ["durationMonths"],
+      message:
+        "A finite price protection must define a duration or a fixed end date.",
+    },
+  );
+export type PriceProtectionPolicy = z.infer<typeof priceProtectionPolicySchema>;
+
+export const commercialCampaignSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    code: z.string().regex(/^[A-Z0-9_-]+$/),
+    name: z.string().min(1),
+    status: commercialConfigurationStatusSchema,
+    productIds: z.array(z.string().min(1)).min(1),
+    eligibleMarketCodes: z.array(marketCodeSchema).min(1),
+    eligibleRegionCodes: z.array(z.string().min(1)).default([]),
+    eligibleVerticalIds: z.array(businessVerticalCodeSchema).default([]),
+    maximumVerticals: z.number().int().positive().optional(),
+    participantCap: z.number().int().positive().optional(),
+    enrollmentStartsAt: z.string().datetime().optional(),
+    enrollmentEndsAt: z.string().datetime().optional(),
+    enrollmentMethods: z
+      .array(
+        z.enum([
+          "individual_enrollment",
+          "organization_import",
+          "campaign_eligibility",
+        ]),
+      )
+      .min(1),
+    trialDays: z.number().int().positive().optional(),
+    paymentMethodRequirement: z.enum(["required", "optional", "not_collected"]),
+    reminderDaysBeforeEnd: z.array(z.number().int().nonnegative()).default([]),
+    gracePeriodDays: z.number().int().nonnegative().default(0),
+    conversionBehavior: z.enum([
+      "customer_selected_plan",
+      "recorded_customer_agreement",
+      "no_automatic_conversion",
+    ]),
+    priceProtectionPolicyId: z.string().min(1).optional(),
+    benefits: z.array(z.string().min(1)).default([]),
+  })
+  .strict()
+  .superRefine((campaign, context) => {
+    if (
+      Boolean(campaign.enrollmentStartsAt) !==
+      Boolean(campaign.enrollmentEndsAt)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["enrollmentEndsAt"],
+        message: "Campaign enrollment dates must be configured together.",
+      });
+    } else if (
+      campaign.enrollmentStartsAt &&
+      campaign.enrollmentEndsAt &&
+      campaign.enrollmentEndsAt <= campaign.enrollmentStartsAt
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["enrollmentEndsAt"],
+        message: "Campaign enrollment must end after it starts.",
+      });
+    }
+  });
+export type CommercialCampaign = z.infer<typeof commercialCampaignSchema>;
+
+export const commercialEconomicsSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    productId: z.string().min(1),
+    priceId: z.string().min(1).optional(),
+    marketCode: marketCodeSchema,
+    currency: z.string().length(3),
+    directCostAmountMinor: z.number().int().nonnegative().optional(),
+    referenceAmountMinor: z.number().int().nonnegative().optional(),
+    marginFloorBps: z.number().int().min(-10_000).max(10_000).optional(),
+    subsidyBudgetMinor: z.number().int().nonnegative().optional(),
+    approvalStatus: z.enum([
+      "missing_inputs",
+      "pending_approval",
+      "approved",
+      "rejected",
+    ]),
+    evidenceReference: z.string().min(1).optional(),
+    status: commercialConfigurationStatusSchema,
+  })
+  .strict()
+  .superRefine((economics, context) => {
+    if (
+      economics.approvalStatus === "approved" &&
+      (economics.directCostAmountMinor === undefined ||
+        economics.marginFloorBps === undefined ||
+        !economics.evidenceReference)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["approvalStatus"],
+        message:
+          "Approved economics require direct cost, margin floor and evidence.",
+      });
+    }
+  });
+export type CommercialEconomics = z.infer<typeof commercialEconomicsSchema>;
+
+export const commercialProviderMappingSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    provider: z.string().regex(/^[a-z0-9_.-]+$/),
+    environment: z.enum([
+      "local",
+      "test",
+      "preview",
+      "development",
+      "staging",
+      "production",
+    ]),
+    marketCode: marketCodeSchema,
+    internalReferenceType: z.enum([
+      "product",
+      "price",
+      "campaign",
+      "enterprise_contract",
+    ]),
+    internalReferenceId: z.string().min(1),
+    externalReferenceId: z.string().min(1).optional(),
+    synchronizationStatus: z.enum([
+      "missing",
+      "pending",
+      "synchronized",
+      "mismatch",
+      "disabled",
+    ]),
+    lastVerifiedAt: z.string().datetime().optional(),
+    evidenceReference: z.string().min(1).optional(),
+    status: commercialConfigurationStatusSchema,
+  })
+  .strict()
+  .superRefine((mapping, context) => {
+    if (
+      mapping.synchronizationStatus === "synchronized" &&
+      (!mapping.externalReferenceId ||
+        !mapping.lastVerifiedAt ||
+        !mapping.evidenceReference)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["synchronizationStatus"],
+        message:
+          "A synchronized provider mapping requires its external reference and verification evidence.",
+      });
+    }
+  });
+export type CommercialProviderMapping = z.infer<
+  typeof commercialProviderMappingSchema
+>;
+
+/**
+ * Versioned subscription behavior. Commercial arithmetic and access behavior
+ * must be resolved from the same immutable catalog snapshot as the price.
+ * `not_configured` values are intentional fail-closed release gates.
+ */
+export const subscriptionTransitionPolicySchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    immediateUpgrade: z.enum(["allowed", "not_configured"]),
+    upgradeProration: z.enum([
+      "linear_remaining_time",
+      "provider_calculated",
+      "none",
+      "not_configured",
+    ]),
+    downgradeTiming: z.enum(["period_end", "not_configured"]),
+    samePlanRenewalTiming: z.enum(["period_end", "not_configured"]),
+    billingIntervalChangeTiming: z.enum(["period_end", "not_configured"]),
+    cancellationTiming: z.enum(["period_end", "not_configured"]),
+    paymentFailureAccess: z.enum([
+      "suspend_immediately",
+      "grace_period",
+      "not_configured",
+    ]),
+    gracePeriodDays: z.number().int().nonnegative().optional(),
+    providerPlanChange: z.enum([
+      "subscription_update",
+      "checkout_confirmation",
+      "not_configured",
+    ]),
+  })
+  .strict()
+  .superRefine((policy, context) => {
+    if (
+      policy.paymentFailureAccess === "grace_period" &&
+      policy.gracePeriodDays === undefined
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["gracePeriodDays"],
+        message: "Grace-period access requires an explicit duration.",
+      });
+    }
+    if (
+      policy.paymentFailureAccess !== "grace_period" &&
+      policy.gracePeriodDays !== undefined
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["gracePeriodDays"],
+        message: "A grace duration is valid only for grace-period access.",
+      });
+    }
+  });
+export type SubscriptionTransitionPolicy = z.infer<
+  typeof subscriptionTransitionPolicySchema
+>;
+
+export const paidPlacementPolicySchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    productId: z.string().min(1),
+    inventoryScope: z.enum(["search", "category", "home", "local"]),
+    visibleLabelMessageKey: z.string().min(1),
+    maximumConcurrentPlacements: z.number().int().positive().optional(),
+    rotationStrategy: z.enum(["round_robin", "paced_rotation", "scheduled"]),
+    underDeliveryHandling: z.enum(["credit", "refund", "manual_review"]),
+    organicRankingIsolation: z.literal(true),
+    status: commercialConfigurationStatusSchema,
+  })
+  .strict();
+export type PaidPlacementPolicy = z.infer<typeof paidPlacementPolicySchema>;
+
+export const commercialOfferDefinitionSchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9_.:-]+$/),
+    name: z.string().min(1),
+    offerType: z.enum([
+      "enterprise_network",
+      "qualified_lead",
+      "advertising",
+      "insurance",
+      "warranty",
+      "data_report",
+      "partner_service",
+      "undefined_visibility_variant",
+    ]),
+    pricingModel: z.enum([
+      "customer_specific_price_book",
+      "unpriced_draft",
+      "catalog_price_required",
+    ]),
+    marketCodes: z.array(marketCodeSchema).min(1),
+    currency: z.string().length(3),
+    referenceAmountMinor: z.number().int().nonnegative().optional(),
+    readiness: commercialFeatureImplementationStatusSchema,
+    dependencies: z.array(z.string().min(1)).default([]),
+    requiresCostValidation: z.boolean(),
+    requiresInternalApproval: z.boolean(),
+    requiresCustomerAcceptance: z.boolean(),
+    signedAgreementRequired: z.boolean(),
+    status: commercialConfigurationStatusSchema,
+  })
+  .strict();
+export type CommercialOfferDefinition = z.infer<
+  typeof commercialOfferDefinitionSchema
+>;
 
 export const complimentaryGrantRequestInputSchema = z
   .object({
@@ -1046,6 +1400,14 @@ export const monetizationCatalogSchema = z.object({
   promotions: z.array(promotionSchema),
   rules: z.array(commercialRuleSchema),
   commissionPolicies: z.array(commissionPolicySchema).default([]),
+  migrationMappings: z.array(planMigrationMappingSchema).default([]),
+  priceProtectionPolicies: z.array(priceProtectionPolicySchema).default([]),
+  campaigns: z.array(commercialCampaignSchema).default([]),
+  commercialEconomics: z.array(commercialEconomicsSchema).default([]),
+  providerMappings: z.array(commercialProviderMappingSchema).default([]),
+  subscriptionPolicy: subscriptionTransitionPolicySchema,
+  paidPlacementPolicies: z.array(paidPlacementPolicySchema).default([]),
+  offerDefinitions: z.array(commercialOfferDefinitionSchema).default([]),
   stale: z.boolean().default(false),
 });
 export type MonetizationCatalog = z.infer<typeof monetizationCatalogSchema>;
@@ -1131,6 +1493,8 @@ export const monetizationOrderSchema = z.object({
   quoteId: z.string(),
   accountId: z.string(),
   organizationId: z.string().uuid().optional(),
+  configurationVersionId: z.string().optional(),
+  marketCode: marketCodeSchema.optional(),
   snapshotHash: z.string().length(64),
   total: moneySchema,
   status: z.enum([
@@ -1158,6 +1522,8 @@ export const activeEntitlementSchema = z.object({
   accountId: z.string(),
   organizationId: z.string().uuid().optional(),
   productId: z.string(),
+  productVersionId: z.string().optional(),
+  configurationVersionId: z.string().optional(),
   key: z.string(),
   value: z.union([commercialScalarSchema, z.array(z.string())]),
   sourceOrderId: z.string().optional(),
@@ -1176,6 +1542,9 @@ export const monetizationSubscriptionSchema = z
     organizationId: z.string().uuid().optional(),
     productId: z.string(),
     productVersionId: z.string().optional(),
+    configurationVersionId: z.string().optional(),
+    marketCode: marketCodeSchema.optional(),
+    currency: z.string().length(3).optional(),
     priceId: z.string().optional(),
     sourceOrderId: z.string(),
     status: z.enum([
@@ -1195,6 +1564,8 @@ export const monetizationSubscriptionSchema = z
     currentPeriodEnd: z.string().datetime(),
     cancelAtPeriodEnd: z.boolean(),
     scheduledProductId: z.string().optional(),
+    scheduledProductVersionId: z.string().optional(),
+    scheduledConfigurationVersionId: z.string().optional(),
     scheduledPriceId: z.string().optional(),
     scheduledChangeAt: z.string().datetime().optional(),
     gracePeriodEndsAt: z.string().datetime().optional(),
@@ -1227,6 +1598,22 @@ export const monetizationSubscriptionSchema = z
         message: "scheduled subscription changes must be complete",
       });
     }
+    const scheduledEvidence = [
+      subscription.scheduledProductVersionId,
+      subscription.scheduledConfigurationVersionId,
+    ];
+    const scheduledEvidenceCount = scheduledEvidence.filter(Boolean).length;
+    if (
+      scheduledEvidenceCount !== 0 &&
+      (scheduledEvidenceCount !== scheduledEvidence.length ||
+        scheduledCount !== scheduledFields.length)
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["scheduledConfigurationVersionId"],
+        message: "scheduled catalog evidence must be complete",
+      });
+    }
     if (
       subscription.status === "cancellation_pending" &&
       !subscription.cancelAtPeriodEnd
@@ -1255,6 +1642,7 @@ export const subscriptionChangeRequestSchema = z.object({
   targetProductId: z.string().min(1),
   targetPriceId: z.string().min(1),
   idempotencyKey: z.string().min(8).max(200),
+  expectedSubscriptionUpdatedAt: z.string().datetime().optional(),
 });
 export type SubscriptionChangeRequest = z.infer<
   typeof subscriptionChangeRequestSchema
@@ -1264,6 +1652,10 @@ export const subscriptionChangePreviewSchema = z.object({
   subscriptionId: z.string(),
   targetProductId: z.string(),
   targetPriceId: z.string(),
+  targetProductVersionId: z.string(),
+  targetConfigurationVersionId: z.string(),
+  policyId: z.string(),
+  requiresProviderConfirmation: z.boolean(),
   effectiveAt: z.enum(["immediately", "period_end"]),
   proration: moneySchema,
   tax: moneySchema,
@@ -1329,6 +1721,8 @@ export const monetizationInvoiceSchema = z
     accountId: z.string(),
     orderId: z.string().optional(),
     subscriptionId: z.string().optional(),
+    configurationVersionId: z.string().optional(),
+    marketCode: marketCodeSchema.optional(),
     number: z.string(),
     status: z.enum(["draft", "open", "paid", "void", "uncollectible"]),
     subtotal: moneySchema,
@@ -1616,6 +2010,7 @@ export type MonetizationAdminOverview = z.infer<
 >;
 
 export const commercialDraftPatchSchema = z.object({
+  marketCode: marketCodeSchema,
   reason: commercialChangeReasonSchema,
   effectiveFrom: z.string().datetime().optional(),
   verticals: z.array(businessVerticalSchema).optional(),
@@ -1623,5 +2018,13 @@ export const commercialDraftPatchSchema = z.object({
   rules: z.array(commercialRuleSchema).optional(),
   commissionPolicies: z.array(commissionPolicySchema).optional(),
   promotions: z.array(promotionSchema).optional(),
+  migrationMappings: z.array(planMigrationMappingSchema).optional(),
+  priceProtectionPolicies: z.array(priceProtectionPolicySchema).optional(),
+  campaigns: z.array(commercialCampaignSchema).optional(),
+  commercialEconomics: z.array(commercialEconomicsSchema).optional(),
+  providerMappings: z.array(commercialProviderMappingSchema).optional(),
+  subscriptionPolicy: subscriptionTransitionPolicySchema.optional(),
+  paidPlacementPolicies: z.array(paidPlacementPolicySchema).optional(),
+  offerDefinitions: z.array(commercialOfferDefinitionSchema).optional(),
 });
 export type CommercialDraftPatch = z.infer<typeof commercialDraftPatchSchema>;

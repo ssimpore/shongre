@@ -22,6 +22,9 @@ test.describe("current location picker", () => {
     await page.locator("#header-desktop-header-location-button").click();
     const dialog = page.getByRole("dialog", { name: "Zone géographique" });
     await expect(dialog).toBeVisible();
+    await expect(dialog.locator("#precise-location-purpose")).toContainText(
+      "Vos coordonnées précises ne sont pas enregistrées",
+    );
 
     const accessibility = await new AxeBuilder({ page })
       .include('[role="dialog"]')
@@ -55,6 +58,29 @@ test.describe("current location picker", () => {
     expect(storedLocation).toContain('"city":"Paris"');
     expect(storedLocation).not.toContain("latitude");
     expect(storedLocation).not.toContain("longitude");
+  });
+
+  test("explains precise location before a denied permission and keeps manual entry usable", async ({
+    context,
+    page,
+  }) => {
+    await context.clearPermissions();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await usePersona(page, "guest");
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+    await page.locator("#header-mobile-minimal-location-button").click();
+    const dialog = page.getByRole("dialog", { name: "Zone géographique" });
+    await expect(dialog.locator("#precise-location-purpose")).toBeVisible();
+    await dialog
+      .getByRole("button", { name: "Utiliser ma position actuelle" })
+      .click();
+    await expect(dialog.getByRole("alert")).toContainText(
+      "Autorisez l’accès à votre position",
+    );
+    await dialog.locator("#location-city-input").fill("Lyon");
+    await expect(dialog.locator("#location-city-input")).toHaveValue("Lyon");
   });
 
   test("remains usable in the mobile location flow", async ({

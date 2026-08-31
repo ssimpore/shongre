@@ -247,7 +247,7 @@ export class PublisherEntitlementsService {
     const [all, category, activeEntitlements, catalog] = await Promise.all([
       this.listings.search(ownerFilter),
       this.listings.search({ ...ownerFilter, categoryId: input.categoryId }),
-      this.rules.getActiveEntitlements(accountId),
+      this.rules.getActiveEntitlements(accountId, input.marketCode),
       this.rules.getCatalog(input.marketCode.toUpperCase()),
     ]);
     const preview = await this.rules.getAccountEligibility(
@@ -551,10 +551,15 @@ export class PublisherEntitlementsService {
     };
   }
 
-  async canImportInventory(actorUserId: string, organizationId?: string) {
+  async canImportInventory(
+    actorUserId: string,
+    marketCode: string,
+    organizationId?: string,
+  ) {
     return this.canUseProfessionalFeature(
       actorUserId,
       "bulkImportExport",
+      marketCode,
       organizationId,
     );
   }
@@ -584,6 +589,7 @@ export class PublisherEntitlementsService {
   async canUseProfessionalFeature(
     actorUserId: string,
     featureKey: string,
+    marketCode: string,
     organizationId?: string,
   ): Promise<{ allowed: boolean; reasonCode: EntitlementReasonCode }> {
     const publisher = await this.getEffectivePublisher({
@@ -594,7 +600,10 @@ export class PublisherEntitlementsService {
       return { allowed: false, reasonCode: "ORGANIZATION_PERMISSION_REQUIRED" };
     }
     const accountId = await this.policyAccountId(publisher);
-    const active = await this.rules.getActiveEntitlements(accountId);
+    const active = await this.rules.getActiveEntitlements(
+      accountId,
+      marketCode,
+    );
     const entitlement = active.find((entry) => entry.key === featureKey);
     return entitlement && entitlement.value !== false && entitlement.value !== 0
       ? { allowed: true, reasonCode: "ELIGIBLE" }

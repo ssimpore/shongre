@@ -1,6 +1,7 @@
 import { config } from "../../app/config/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { providerExecutionGuard } from "../../integrations/providers/provider-execution.js";
+import { buildPublicUrl } from "@shongre/contracts";
 
 const STRIPE_API_VERSION = "2026-02-25.clover";
 
@@ -10,6 +11,8 @@ export interface StripeCheckoutLine {
   amountMinor: number;
   currency: string;
   quantity: number;
+  /** Verified external price reference from the immutable catalog mapping. */
+  providerPriceId?: string;
   recurring?: "month" | "year";
 }
 
@@ -18,6 +21,7 @@ export interface StripeCheckoutSessionInput {
   accountId: string;
   verticalType: string;
   marketCode: string;
+  returnRoute: string;
   quoteId?: string;
   snapshotHash?: string;
   lines: StripeCheckoutLine[];
@@ -34,18 +38,12 @@ export interface StripeCheckoutSessionInput {
   transferGroup?: string;
 }
 
-const stripeError = (status: number, payload: unknown) =>
+const stripeError = (status: number, _payload: unknown) =>
   new AppError({
     code: status === 429 ? "RATE_LIMITED" : "PAYMENT_FAILED",
     message:
-      typeof payload === "object" &&
-      payload !== null &&
-      "error" in payload &&
-      typeof payload.error === "object" &&
-      payload.error !== null &&
-      "message" in payload.error &&
-      typeof payload.error.message === "string"
-        ? payload.error.message
+      status === 429
+        ? "Le prestataire de paiement est temporairement indisponible. Réessayez plus tard."
         : "Le prestataire de paiement a refusé la création du paiement.",
   });
 
@@ -92,16 +90,22 @@ export class StripeCheckoutAdapter {
   }
 
   async createSession(input: StripeCheckoutSessionInput) {
-    if (!config.frontendUrl) {
-      throw new AppError({
-        code: "PAYMENT_FAILED",
-        message: "L’URL de retour du paiement n’est pas configurée.",
-      });
-    }
+    const successUrl = buildPublicUrl({
+      country: input.marketCode,
+      route: input.returnRoute,
+      query: { checkout: "success" },
+      infrastructure: config.marketInfrastructure,
+    });
+    const cancelUrl = buildPublicUrl({
+      country: input.marketCode,
+      route: input.returnRoute,
+      query: { checkout: "cancelled" },
+      infrastructure: config.marketInfrastructure,
+    });
     const body = new URLSearchParams({
       mode: input.mode,
-      success_url: `${config.frontendUrl}/paiement/retour?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${config.frontendUrl}/paiement/retour?checkout=cancelled`,
+      success_url: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
       client_reference_id: input.accountId,
       "metadata[account_id]": input.accountId,
       "metadata[vertical_type]": input.verticalType,
@@ -152,6 +156,10 @@ export class StripeCheckoutAdapter {
     }
     input.lines.forEach((line, index) => {
       body.set(`line_items[${index}][quantity]`, String(line.quantity));
+      if (line.providerPriceId) {
+        body.set(`line_items[${index}][price]`, line.providerPriceId);
+        return;
+      }
       body.set(
         `line_items[${index}][price_data][currency]`,
         line.currency.toLowerCase(),

@@ -578,8 +578,10 @@ export class EmploymentService {
       offer.kind !== "free" &&
       offer.prices.some((price) => price.amount.amountMinor > 0)
     ) {
-      const entitlements =
-        await this.commercialRules.getActiveEntitlements(userId);
+      const entitlements = await this.commercialRules.getActiveEntitlements(
+        userId,
+        draft.marketCode,
+      );
       if (!entitlements.some((entry) => entry.productId === offer.id)) {
         throw new AppError({
           code: "PAYMENT_FAILED",
@@ -1220,7 +1222,11 @@ export class EmploymentService {
     return saved;
   }
 
-  async getOwnRecruiterWorkspace(userId: string, employerId: string) {
+  async getOwnRecruiterWorkspace(
+    userId: string,
+    employerId: string,
+    marketCode: string,
+  ) {
     if (!(await this.repo.isRecruiterMember(userId, employerId)))
       throw new AppError({
         code: "NOT_FOUND",
@@ -1232,8 +1238,10 @@ export class EmploymentService {
         code: "NOT_FOUND",
         message: "Espace recruteur introuvable.",
       });
-    const activeEntitlements =
-      await this.commercialRules.getActiveEntitlements(userId);
+    const activeEntitlements = await this.commercialRules.getActiveEntitlements(
+      userId,
+      requireMarketCode(marketCode),
+    );
     const employmentEntitlements = activeEntitlements.filter((entry) =>
       entry.productId.startsWith("employment."),
     );
@@ -1331,7 +1339,11 @@ export class EmploymentService {
       reason?: string;
       notifyCandidate?: boolean;
     };
-    const workspace = await this.getOwnRecruiterWorkspace(userId, employerId);
+    const workspace = await this.getOwnRecruiterWorkspace(
+      userId,
+      employerId,
+      job.marketCode,
+    );
     const stage = workspace.stages.find(
       (candidate) => candidate.id === body.stageId,
     );
@@ -1537,13 +1549,22 @@ export class EmploymentService {
     return saved;
   }
 
-  async requestImport(userId: string, employerId: string, input: unknown) {
+  async requestImport(
+    userId: string,
+    employerId: string,
+    input: unknown,
+    marketCode: string,
+  ) {
     if (!(await this.repo.isRecruiterMember(userId, employerId)))
       throw new AppError({
         code: "NOT_FOUND",
         message: "Espace recruteur introuvable.",
       });
-    const workspace = await this.getOwnRecruiterWorkspace(userId, employerId);
+    const workspace = await this.getOwnRecruiterWorkspace(
+      userId,
+      employerId,
+      marketCode,
+    );
     const body = (input || {}) as {
       sourceType?: EmploymentImport["sourceType"];
       sourceIdentifier?: string;
@@ -1595,13 +1616,22 @@ export class EmploymentService {
     return imported;
   }
 
-  async previewImport(userId: string, employerId: string, input: unknown) {
+  async previewImport(
+    userId: string,
+    employerId: string,
+    input: unknown,
+    marketCode: string,
+  ) {
     if (!(await this.repo.isRecruiterMember(userId, employerId)))
       throw new AppError({
         code: "NOT_FOUND",
         message: "Espace recruteur introuvable.",
       });
-    const workspace = await this.getOwnRecruiterWorkspace(userId, employerId);
+    const workspace = await this.getOwnRecruiterWorkspace(
+      userId,
+      employerId,
+      marketCode,
+    );
     const body = (input || {}) as {
       sourceType?: EmploymentImport["sourceType"];
       sourceIdentifier?: string;
@@ -1717,6 +1747,7 @@ export class EmploymentService {
       userId,
       quote.id,
       `employment-checkout:${body.idempotencyKey}`,
+      catalog.config.marketCode,
     );
     const status =
       order.status === "partially_refunded" ? "refunded" : order.status;

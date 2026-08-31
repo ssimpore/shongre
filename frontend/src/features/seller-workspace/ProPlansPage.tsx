@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useSearchParams } from "react-router-dom";
 import type {
   BillingOverview,
   BusinessVerticalCode,
@@ -99,22 +100,24 @@ function PriceDisplay({
   const { formatMoneyMinor } = useRegionalFormatters();
   const isAnnual =
     product.kind === "subscription" && price.billingPeriod === "year";
-  const displayAmount = isAnnual
-    ? Math.round(price.amount.amountMinor / 12)
-    : price.amount.amountMinor;
   return (
     <div className="min-h-20">
       <div className="flex items-end gap-1.5">
         <span className="text-3xl sm:text-4xl font-black tracking-tight text-text-main">
-          {formatMoneyMinor(displayAmount, price.amount.currency)}
+          {formatMoneyMinor(price.amount.amountMinor, price.amount.currency)}
         </span>
         <span className="pb-1 text-xs font-semibold text-text-muted">
-          HT / {product.kind === "subscription" ? "mois" : "option"}
+          HT /{" "}
+          {isAnnual
+            ? "an"
+            : product.kind === "subscription"
+              ? "mois"
+              : "option"}
         </span>
       </div>
       <p className="mt-1 text-xs text-text-muted">
         {isAnnual
-          ? `Facturé ${formatMoneyMinor(price.amount.amountMinor, price.amount.currency)} HT par an`
+          ? "Facturation annuelle, sans mensualité calculée côté client"
           : product.kind === "subscription" && interval === "month"
             ? "Facturation mensuelle, sans engagement annuel"
             : product.audience === "individual"
@@ -133,7 +136,9 @@ export const ProPlansPage: React.FC = () => {
   const { activeMarket } = useMarketLocation();
   const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const operationSequence = useRef(0);
+  const handledCheckoutReturn = useRef<string | null>(null);
   const [catalog, setCatalog] = useState<MonetizationCatalog | null>(null);
   const [billing, setBilling] = useState<BillingOverview | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -153,6 +158,7 @@ export const ProPlansPage: React.FC = () => {
   const [isPreparing, setIsPreparing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [completedMessage, setCompletedMessage] = useState<string | null>(null);
+  const [checkoutCanRetry, setCheckoutCanRetry] = useState(false);
   const [billingHistoryOpen, setBillingHistoryOpen] = useState(false);
   const [promotionCode, setPromotionCode] = useState("");
   const canManageSubscriptions =
@@ -166,10 +172,7 @@ export const ProPlansPage: React.FC = () => {
   });
 
   const loadCatalog = useCallback(async () => {
-    const nextCatalog = await services.businessRules.getCatalog(
-      activeMarket.code,
-    );
-    setCatalog(nextCatalog);
+    setCatalog(await services.businessRules.getCatalog(activeMarket.code));
   }, [activeMarket.code]);
 
   const loadBilling = useCallback(async () => {
@@ -207,6 +210,25 @@ export const ProPlansPage: React.FC = () => {
   }, [loadBilling]);
 
   useEffect(() => {
+    const checkoutReturn = searchParams.get("checkout");
+    if (!checkoutReturn) return;
+    const checkoutReturnKey = `${checkoutReturn}:${searchParams.get("session_id") || "none"}`;
+    if (handledCheckoutReturn.current === checkoutReturnKey) return;
+    handledCheckoutReturn.current = checkoutReturnKey;
+    void refreshCommercialState().finally(() => {
+      toast[checkoutReturn === "cancelled" ? "warning" : "success"](
+        checkoutReturn === "cancelled"
+          ? "Le paiement a été abandonné. Aucun droit payant n’a été activé."
+          : "Le prestataire a reçu le paiement. Les droits apparaîtront après confirmation sécurisée.",
+      );
+      const next = new URLSearchParams(searchParams);
+      next.delete("checkout");
+      next.delete("session_id");
+      setSearchParams(next, { replace: true });
+    });
+  }, [refreshCommercialState, searchParams, setSearchParams, toast]);
+
+  useEffect(() => {
     const verticalByProfile = {
       generic: "general",
       automotive: "auto",
@@ -229,28 +251,40 @@ export const ProPlansPage: React.FC = () => {
 
   const plans = useMemo(
     () =>
-      catalog?.products.filter(
-        (product) =>
-          isCommercialProductPurchasable(product) &&
-          product.kind === "subscription" &&
-          product.commercialProfile.professionalOnly &&
-          Boolean(product.commercialProfile.tier) &&
-          (selectedVertical === "general"
-            ? ["free", "generic"].includes(product.commercialProfile.planType)
-            : product.commercialProfile.verticalId === selectedVertical),
-      ) || [],
+      catalog?.products
+        .filter(
+          (product) =>
+            isCommercialProductPurchasable(product) &&
+            product.kind === "subscription" &&
+            product.commercialProfile.professionalOnly &&
+            Boolean(product.commercialProfile.tier) &&
+            (selectedVertical === "general"
+              ? ["free", "generic"].includes(product.commercialProfile.planType)
+              : product.commercialProfile.verticalId === selectedVertical),
+        )
+        .sort(
+          (left, right) =>
+            left.commercialProfile.displayOrder -
+            right.commercialProfile.displayOrder,
+        ) || [],
     [catalog, selectedVertical],
   );
   const boosts = useMemo(
     () =>
-      catalog?.products.filter(
-        (product) =>
-          isCommercialProductPurchasable(product) &&
-          ["pack", "credit_pack"].includes(product.kind) &&
-          (product.commercialProfile.verticalId === selectedVertical ||
-            (!product.commercialProfile.verticalId &&
-              product.sourceConsumers.includes("solutions-pro"))),
-      ) || [],
+      catalog?.products
+        .filter(
+          (product) =>
+            isCommercialProductPurchasable(product) &&
+            ["pack", "credit_pack"].includes(product.kind) &&
+            (product.commercialProfile.verticalId === selectedVertical ||
+              (!product.commercialProfile.verticalId &&
+                product.sourceConsumers.includes("solutions-pro"))),
+        )
+        .sort(
+          (left, right) =>
+            left.commercialProfile.displayOrder -
+            right.commercialProfile.displayOrder,
+        ) || [],
     [catalog, selectedVertical],
   );
   const comparisonRows = useMemo(() => {
@@ -289,8 +323,8 @@ export const ProPlansPage: React.FC = () => {
       ].includes(subscription.status)
     );
   });
-  const currentProduct = plans.find(
-    (plan) => plan.id === currentSubscription?.productId,
+  const currentProduct = catalog?.products.find(
+    (product) => product.id === currentSubscription?.productId,
   );
   const activeSubscriptions =
     billing?.subscriptions.filter((subscription) =>
@@ -302,7 +336,6 @@ export const ProPlansPage: React.FC = () => {
         "cancellation_pending",
       ].includes(subscription.status),
     ) || [];
-
   const closeCheckout = () => {
     if (isConfirming) return;
     setSelectedProduct(null);
@@ -311,6 +344,7 @@ export const ProPlansPage: React.FC = () => {
     setChangePreview(null);
     setChangeSourceSubscription(null);
     setCompletedMessage(null);
+    setCheckoutCanRetry(false);
     setPromotionCode("");
   };
 
@@ -319,7 +353,11 @@ export const ProPlansPage: React.FC = () => {
     price: MonetizationPrice,
     replacementSource?: MonetizationSubscription,
   ) => {
-    if (product.id === currentSubscription?.productId) return;
+    if (
+      product.id === currentSubscription?.productId &&
+      price.id === currentSubscription.priceId
+    )
+      return;
     if (!canManageSubscriptions) {
       toast.warning(
         t("pro.plans.subscriptionUnavailable.description"),
@@ -345,6 +383,7 @@ export const ProPlansPage: React.FC = () => {
             targetProductId: product.id,
             targetPriceId: price.id,
             idempotencyKey: operationKey,
+            expectedSubscriptionUpdatedAt: sourceSubscription.updatedAt,
           }),
         );
       } else {
@@ -411,6 +450,7 @@ export const ProPlansPage: React.FC = () => {
           targetProductId: selectedProduct.id,
           targetPriceId: selectedPrice.id,
           idempotencyKey: operationKey,
+          expectedSubscriptionUpdatedAt: changeSourceSubscription.updatedAt,
         });
         setCompletedMessage(
           changePreview.effectiveAt === "immediately"
@@ -422,12 +462,23 @@ export const ProPlansPage: React.FC = () => {
           quote.id,
           operationKey,
         );
+        if (order.providerCheckoutUrl) {
+          window.location.assign(order.providerCheckoutUrl);
+          return;
+        }
+        setCheckoutCanRetry(order.status !== "paid");
         setCompletedMessage(
-          quote.trial
-            ? `Votre essai de ${quote.trial.durationDays} jours est actif. Prochain débit le ${formatDate(quote.trial.endsAt)}.`
-            : order.status === "paid"
-              ? "Paiement confirmé : votre forfait et vos droits sont actifs."
-              : "Votre paiement est en cours de traitement.",
+          order.status === "paid"
+            ? quote.trial
+              ? `Votre essai de ${quote.trial.durationDays} jours est actif. Prochain débit le ${formatDate(quote.trial.endsAt)}.`
+              : "Paiement confirmé : votre forfait et vos droits sont actifs."
+            : order.status === "requires_action"
+              ? "Une action supplémentaire est requise pour confirmer le paiement. Aucun droit payant n’a été activé."
+              : order.status === "failed"
+                ? "Le paiement a échoué. Aucun droit payant n’a été activé."
+                : order.status === "cancelled"
+                  ? "Le paiement a été abandonné. Aucun droit payant n’a été activé."
+                  : "Votre paiement est en attente de confirmation. Aucun droit payant n’a encore été activé.",
         );
       }
       await refreshCommercialState();
@@ -624,17 +675,6 @@ export const ProPlansPage: React.FC = () => {
                     (candidate) =>
                       candidate.id === replacementSource?.productId,
                   );
-                  const monthly = plan.prices.find(
-                    (entry) => entry.billingPeriod === "month",
-                  );
-                  const annual = plan.prices.find(
-                    (entry) => entry.billingPeriod === "year",
-                  );
-                  const annualSaving =
-                    monthly && annual
-                      ? monthly.amount.amountMinor * 12 -
-                        annual.amount.amountMinor
-                      : 0;
                   return (
                     <article
                       key={plan.id}
@@ -675,11 +715,6 @@ export const ProPlansPage: React.FC = () => {
                           price={price}
                           interval={interval}
                         />
-                        {interval === "year" && annualSaving > 0 && (
-                          <p className="mt-1 text-xs font-bold text-success">
-                            Économie annuelle : {formatMoney(annualSaving)}
-                          </p>
-                        )}
                       </div>
                       <div className="my-5 border-t border-border-subtle" />
                       <ul className="flex-1 space-y-2.5 text-xs text-text-secondary">
@@ -882,7 +917,7 @@ export const ProPlansPage: React.FC = () => {
                             </h3>
                             <p className="mt-0.5 text-xs text-text-muted">
                               {price.durationDays
-                                ? `${price.durationDays} jours`
+                                ? `${price.durationDays} ${price.durationDays === 1 ? "jour" : "jours"}`
                                 : "Activation unique"}
                             </p>
                           </div>
@@ -1225,6 +1260,17 @@ export const ProPlansPage: React.FC = () => {
               <Check className="h-icon-xl w-icon-xl" aria-hidden="true" />
             </span>
             <p className="font-bold text-text-main">{completedMessage}</p>
+            {checkoutCanRetry ? (
+              <Button
+                onClick={() => {
+                  setCompletedMessage(null);
+                  setCheckoutCanRetry(false);
+                }}
+                fullWidth
+              >
+                Réessayer
+              </Button>
+            ) : null}
             <Button onClick={closeCheckout} fullWidth>
               Fermer
             </Button>

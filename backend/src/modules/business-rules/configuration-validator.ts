@@ -8,6 +8,7 @@ import {
   hasCommercialEntitlementValue,
   isCommercialEntitlementOperational,
 } from "@shongre/contracts/monetization";
+import { getCountryConfig } from "@shongre/contracts";
 
 const canonical = (value: unknown) =>
   JSON.stringify(value, (_key, child) => {
@@ -55,6 +56,58 @@ export function validateCommercialConfiguration(
 ): ConfigurationConflict[] {
   const conflicts: ConfigurationConflict[] = [];
   const productIds = new Set(catalog.products.map((product) => product.id));
+  const country = getCountryConfig(catalog.marketCode);
+  if (!country) {
+    conflicts.push({
+      code: "COMMERCIAL_MARKET_UNKNOWN",
+      severity: "blocking",
+      entityIds: [catalog.marketCode],
+      message: `Le marché ${catalog.marketCode} est absent du registre canonique.`,
+    });
+  } else {
+    const readinessIssues = [
+      ...Object.entries(country.readiness)
+        .filter(([, ready]) => !ready)
+        .map(([key]) => `readiness.${key}`),
+      ...(!country.monetization.enabled ? ["monetization.enabled"] : []),
+      ...(!country.capabilities.subscriptions
+        ? ["capabilities.subscriptions"]
+        : []),
+      ...(!country.capabilities.payments ? ["capabilities.payments"] : []),
+      ...(country.taxes.mode !== "configured" ? ["taxes.mode"] : []),
+    ];
+    if (country.currency !== catalog.currency) {
+      readinessIssues.push("currency");
+    }
+    if (readinessIssues.length > 0) {
+      conflicts.push({
+        code: "COMMERCIAL_MARKET_NOT_READY",
+        severity: "blocking",
+        entityIds: [catalog.marketCode, ...readinessIssues],
+        message: `Le marché ${catalog.marketCode} ne satisfait pas la readiness commerciale : ${readinessIssues.join(", ")}.`,
+      });
+    }
+  }
+
+  if (
+    catalog.subscriptionPolicy.immediateUpgrade === "not_configured" ||
+    catalog.subscriptionPolicy.upgradeProration === "not_configured" ||
+    catalog.subscriptionPolicy.downgradeTiming === "not_configured" ||
+    catalog.subscriptionPolicy.samePlanRenewalTiming === "not_configured" ||
+    catalog.subscriptionPolicy.billingIntervalChangeTiming ===
+      "not_configured" ||
+    catalog.subscriptionPolicy.cancellationTiming === "not_configured" ||
+    catalog.subscriptionPolicy.paymentFailureAccess === "not_configured" ||
+    catalog.subscriptionPolicy.providerPlanChange === "not_configured"
+  ) {
+    conflicts.push({
+      code: "SUBSCRIPTION_TRANSITION_POLICY_INCOMPLETE",
+      severity: "blocking",
+      entityIds: [catalog.subscriptionPolicy.id],
+      message:
+        "La politique de transition d’abonnement doit être complète avant une nouvelle publication.",
+    });
+  }
 
   for (const [field, values] of [
     ["product id", catalog.products.map((product) => product.id)],
@@ -75,6 +128,31 @@ export function validateCommercialConfiguration(
       ),
     ],
     ["promotion code", catalog.promotions.map((promotion) => promotion.code)],
+    [
+      "plan migration mapping id",
+      catalog.migrationMappings.map((mapping) => mapping.id),
+    ],
+    [
+      "price protection policy id",
+      catalog.priceProtectionPolicies.map((policy) => policy.id),
+    ],
+    ["campaign id", catalog.campaigns.map((campaign) => campaign.id)],
+    [
+      "commercial economics id",
+      catalog.commercialEconomics.map((economics) => economics.id),
+    ],
+    [
+      "provider mapping id",
+      catalog.providerMappings.map((mapping) => mapping.id),
+    ],
+    [
+      "paid placement policy id",
+      catalog.paidPlacementPolicies.map((policy) => policy.id),
+    ],
+    [
+      "unpriced offer definition id",
+      catalog.offerDefinitions.map((offer) => offer.id),
+    ],
   ] as const) {
     const duplicates = [
       ...new Set(
@@ -87,6 +165,237 @@ export function validateCommercialConfiguration(
         severity: "blocking",
         entityIds: duplicates,
         message: `${field} dupliqué : ${duplicates.join(", ")}.`,
+      });
+    }
+  }
+
+  for (const mapping of catalog.migrationMappings) {
+    if (!productIds.has(mapping.fromProductId)) {
+      conflicts.push({
+        code: "MIGRATION_SOURCE_PRODUCT_UNKNOWN",
+        severity: "blocking",
+        entityIds: [mapping.id, mapping.fromProductId],
+        message: `${mapping.id} référence une offre source absente du catalogue.`,
+      });
+    }
+    if (!productIds.has(mapping.toProductId)) {
+      conflicts.push({
+        code: "MIGRATION_TARGET_PRODUCT_UNKNOWN",
+        severity: "blocking",
+        entityIds: [mapping.id, mapping.toProductId],
+        message: `${mapping.id} référence une offre cible absente du catalogue.`,
+      });
+    }
+    if (
+      !mapping.preserveHistoricalPrice ||
+      !mapping.preserveHistoricalEntitlements
+    ) {
+      conflicts.push({
+        code: "MIGRATION_HISTORY_NOT_PRESERVED",
+        severity: "blocking",
+        entityIds: [mapping.id],
+        message: `${mapping.id} doit préserver le prix et les droits historiques.`,
+      });
+    }
+    if (
+      !["matched", "intentional_difference"].includes(mapping.shadowQuoteStatus)
+    ) {
+      conflicts.push({
+        code: "MIGRATION_SHADOW_QUOTE_INCOMPLETE",
+        severity: "blocking",
+        entityIds: [mapping.id],
+        message: `${mapping.id} ne peut pas être publié avant comparaison des devis fantômes.`,
+      });
+    }
+  }
+
+  const campaignIds = new Set(catalog.campaigns.map((campaign) => campaign.id));
+  const protectionPolicyIds = new Set(
+    catalog.priceProtectionPolicies.map((policy) => policy.id),
+  );
+  for (const policy of catalog.priceProtectionPolicies) {
+    const unknownProducts = policy.productIds.filter(
+      (productId) => !productIds.has(productId),
+    );
+    if (unknownProducts.length) {
+      conflicts.push({
+        code: "PRICE_PROTECTION_PRODUCT_UNKNOWN",
+        severity: "blocking",
+        entityIds: [policy.id, ...unknownProducts],
+        message: `${policy.name} référence des offres absentes du catalogue.`,
+      });
+    }
+    if (policy.campaignId && !campaignIds.has(policy.campaignId)) {
+      conflicts.push({
+        code: "PRICE_PROTECTION_CAMPAIGN_UNKNOWN",
+        severity: "blocking",
+        entityIds: [policy.id, policy.campaignId],
+        message: `${policy.name} référence une campagne absente.`,
+      });
+    }
+  }
+
+  for (const campaign of catalog.campaigns) {
+    const unknownProducts = campaign.productIds.filter(
+      (productId) => !productIds.has(productId),
+    );
+    if (unknownProducts.length) {
+      conflicts.push({
+        code: "CAMPAIGN_PRODUCT_UNKNOWN",
+        severity: "blocking",
+        entityIds: [campaign.id, ...unknownProducts],
+        message: `${campaign.name} référence des offres absentes du catalogue.`,
+      });
+    }
+    if (
+      campaign.priceProtectionPolicyId &&
+      !protectionPolicyIds.has(campaign.priceProtectionPolicyId)
+    ) {
+      conflicts.push({
+        code: "CAMPAIGN_PRICE_PROTECTION_UNKNOWN",
+        severity: "blocking",
+        entityIds: [campaign.id, campaign.priceProtectionPolicyId],
+        message: `${campaign.name} référence une politique de protection de prix absente.`,
+      });
+    }
+    if (
+      campaign.status !== "disabled" &&
+      (!campaign.enrollmentStartsAt || !campaign.enrollmentEndsAt)
+    ) {
+      conflicts.push({
+        code: "CAMPAIGN_ENROLLMENT_WINDOW_MISSING",
+        severity: "blocking",
+        entityIds: [campaign.id],
+        message: `${campaign.name} doit définir sa fenêtre d’inscription avant approbation.`,
+      });
+    }
+  }
+
+  const priceIds = new Set(
+    catalog.products.flatMap((product) =>
+      product.prices.map((price) => price.id),
+    ),
+  );
+  const paidRecurringPriceIds = catalog.products
+    .filter(
+      (product) =>
+        !["disabled", "archived"].includes(product.status) &&
+        product.kind === "subscription",
+    )
+    .flatMap((product) =>
+      product.prices
+        .filter(
+          (price) =>
+            ["month", "year"].includes(price.billingPeriod) &&
+            price.amount.amountMinor > 0,
+        )
+        .map((price) => price.id),
+    );
+  const unmappedRecurringPrices = paidRecurringPriceIds.filter(
+    (priceId) =>
+      !catalog.providerMappings.some(
+        (mapping) =>
+          mapping.internalReferenceType === "price" &&
+          mapping.internalReferenceId === priceId &&
+          mapping.marketCode === catalog.marketCode &&
+          mapping.status === "active" &&
+          mapping.synchronizationStatus === "synchronized" &&
+          Boolean(mapping.externalReferenceId),
+      ),
+  );
+  if (unmappedRecurringPrices.length > 0) {
+    conflicts.push({
+      code: "SUBSCRIPTION_PROVIDER_PRICE_MAPPING_MISSING",
+      severity: "blocking",
+      entityIds: unmappedRecurringPrices,
+      message:
+        "Chaque prix récurrent actif doit avoir un mapping prestataire synchronisé.",
+    });
+  }
+  for (const economics of catalog.commercialEconomics) {
+    if (!productIds.has(economics.productId)) {
+      conflicts.push({
+        code: "ECONOMICS_PRODUCT_UNKNOWN",
+        severity: "blocking",
+        entityIds: [economics.id, economics.productId],
+        message: `${economics.id} référence une offre absente.`,
+      });
+    }
+    if (economics.priceId && !priceIds.has(economics.priceId)) {
+      conflicts.push({
+        code: "ECONOMICS_PRICE_UNKNOWN",
+        severity: "blocking",
+        entityIds: [economics.id, economics.priceId],
+        message: `${economics.id} référence un prix absent.`,
+      });
+    }
+    if (
+      economics.status !== "disabled" &&
+      economics.approvalStatus !== "approved"
+    ) {
+      conflicts.push({
+        code: "ECONOMICS_APPROVAL_REQUIRED",
+        severity: "blocking",
+        entityIds: [economics.id],
+        message: `${economics.id} doit être complété et approuvé avant publication.`,
+      });
+    }
+  }
+
+  for (const mapping of catalog.providerMappings) {
+    const referenceExists =
+      mapping.internalReferenceType === "price"
+        ? priceIds.has(mapping.internalReferenceId)
+        : mapping.internalReferenceType === "product"
+          ? productIds.has(mapping.internalReferenceId)
+          : mapping.internalReferenceType === "campaign"
+            ? campaignIds.has(mapping.internalReferenceId)
+            : true;
+    if (!referenceExists) {
+      conflicts.push({
+        code: "PROVIDER_MAPPING_REFERENCE_UNKNOWN",
+        severity: "blocking",
+        entityIds: [mapping.id, mapping.internalReferenceId],
+        message: `${mapping.id} référence un objet commercial absent.`,
+      });
+    }
+    if (
+      mapping.status !== "disabled" &&
+      mapping.synchronizationStatus !== "synchronized"
+    ) {
+      conflicts.push({
+        code: "PROVIDER_MAPPING_NOT_SYNCHRONIZED",
+        severity: "blocking",
+        entityIds: [mapping.id],
+        message: `${mapping.id} n’est pas synchronisé et bloque la publication.`,
+      });
+    }
+  }
+
+  for (const policy of catalog.paidPlacementPolicies) {
+    const product = catalog.products.find(
+      (candidate) => candidate.id === policy.productId,
+    );
+    if (!product || product.kind !== "sponsored_placement") {
+      conflicts.push({
+        code: "PAID_PLACEMENT_PRODUCT_INVALID",
+        severity: "blocking",
+        entityIds: [policy.id, policy.productId],
+        message: `${policy.id} doit référencer un produit de placement sponsorisé.`,
+      });
+    }
+  }
+
+  for (const offer of catalog.offerDefinitions) {
+    if (
+      ["active", "approved", "scheduled"].includes(offer.status) &&
+      offer.readiness !== "ready"
+    ) {
+      conflicts.push({
+        code: "UNPRICED_OFFER_NOT_READY",
+        severity: "blocking",
+        entityIds: [offer.id],
+        message: `${offer.name} ne peut pas être activé sans readiness complète.`,
       });
     }
   }

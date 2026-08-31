@@ -9,6 +9,14 @@ const migration = readFileSync(
   "utf8",
 );
 
+const atomicTransitionMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/00087_atomic_subscription_catalog_transitions.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
+
 describe("monetization lifecycle migration safeguards", () => {
   it("creates the operational billing and lifecycle entities", () => {
     for (const table of [
@@ -64,5 +72,41 @@ describe("monetization lifecycle migration safeguards", () => {
     expect(migration).toContain("notifications_subscription_event_once_idx");
     expect(migration).toContain("subscription.cancellation_scheduled");
     expect(migration).toContain("subscription.trial_ending");
+  });
+
+  it("serializes catalog-backed plan changes in one authorized transaction", () => {
+    expect(atomicTransitionMigration).toContain(
+      "CREATE OR REPLACE FUNCTION public.apply_monetization_subscription_change",
+    );
+    expect(atomicTransitionMigration).toContain("FOR UPDATE");
+    expect(atomicTransitionMigration).toContain("stale subscription state");
+    expect(atomicTransitionMigration).toContain("organization_members");
+    expect(atomicTransitionMigration).toContain(
+      "AND idempotency_key = p_idempotency_key",
+    );
+    expect(atomicTransitionMigration).toContain(
+      "CREATE TRIGGER sync_monetization_subscription_plan_change",
+    );
+  });
+
+  it("retains exact catalog evidence and fails closed on payment failure", () => {
+    for (const field of [
+      "configuration_version_id",
+      "product_version_id",
+      "market_code",
+      "currency",
+      "scheduled_configuration_version_id",
+    ]) {
+      expect(atomicTransitionMigration).toContain(field);
+    }
+    expect(atomicTransitionMigration).toContain(
+      "hydrate_monetization_subscription_catalog_evidence",
+    );
+    expect(atomicTransitionMigration).toContain(
+      "apply_monetization_payment_failure_policy",
+    );
+    expect(atomicTransitionMigration).toContain(
+      "enforce_monetization_payment_failure_access",
+    );
   });
 });

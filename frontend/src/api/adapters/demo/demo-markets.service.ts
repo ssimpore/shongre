@@ -10,7 +10,15 @@ import {
 import { marketService } from "../../../domains/market/market.service";
 import { storageService } from "../../../services/storage.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
-import { getCountryConfig, type CountryConfig } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  getDefaultCountryConfig,
+  resolveCountryFromCoordinates,
+  resolveCountryRecommendation,
+  type CountryConfig,
+  type MarketDetectionRecommendation,
+} from "@shongre/contracts";
+import type { MarketCoordinateDetectionInput } from "../../contracts/markets.contract";
 import { requireDemoCapability } from "./demo-authorization";
 
 export class DemoMarketsService implements MarketsServiceContract {
@@ -19,6 +27,22 @@ export class DemoMarketsService implements MarketsServiceContract {
     MarketConfigurationChangeRequest
   >();
   private changeSequence = 0;
+
+  async detectProbableCountry(): Promise<MarketDetectionRecommendation> {
+    await simulateNetworkDelay();
+    return resolveCountryRecommendation({
+      countryCode: getDefaultCountryConfig().code,
+      source: "demo",
+      confidence: "high",
+    });
+  }
+
+  async detectCountryFromCoordinates(
+    input: MarketCoordinateDetectionInput,
+  ): Promise<MarketDetectionRecommendation> {
+    await simulateNetworkDelay();
+    return resolveCountryFromCoordinates(input);
+  }
 
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
     await simulateNetworkDelay();
@@ -33,7 +57,10 @@ export class DemoMarketsService implements MarketsServiceContract {
 
   async getActiveMarket(): Promise<CountryMarketDefinition> {
     await simulateNetworkDelay();
-    const stored = storageService.get<string>("shongre_active_market_v1", "FR");
+    const stored = storageService.get<string>(
+      "shongre_active_market_v1",
+      getDefaultCountryConfig().code,
+    );
     return getMarketDefinition(stored);
   }
 

@@ -4,6 +4,7 @@ import {
   isTest,
   buildPublicUrl,
   resolveMarketContext,
+  sanitizeMarketSwitchQuery,
   type EnvironmentConfig,
 } from "@shongre/contracts";
 import {
@@ -297,7 +298,8 @@ export async function proxy(request: NextRequest) {
         reason: context.reason,
       }),
     );
-    destination.search = request.nextUrl.search;
+    const safeQuery = sanitizeMarketSwitchQuery(request.nextUrl.searchParams);
+    destination.search = safeQuery.toString();
     return applyRuntimeHeaders(
       NextResponse.redirect(destination, 308),
       environment,

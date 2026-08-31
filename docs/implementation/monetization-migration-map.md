@@ -16,11 +16,11 @@
 | Auto tables/adapters                               | Separate plan/add-on catalog and paid flags                                    | Existing Auto response shape is projected from the published catalog by `applyMonetizationToAutoCatalog`; publication/workspace reads use that projection |
 | Education tables/adapters                          | Separate plans/add-ons and commission                                          | Existing Education response shape is projected from the published catalog; tutor quotas and add-ons consume it                                            |
 | Immo vertical offers/checkouts                     | Reusable model but no full immutable line/entitlement snapshot                 | Immo catalog projection plus central quote/checkout/order for paid offers and add-ons                                                                     |
-| Mobile billing                                     | Classification only                                                            | Shared catalog, quote, checkout contracts with deterministic demo adapter                                                                                 |
+| Mobile billing                                     | Classification only                                                            | Shared read-only billing projection for plan, rights, usage and invoices; no digital checkout or external steering before an approved store policy        |
 
 ## Current audited baseline
 
-The active France baseline is machine-readable in `packages/contracts/src/fixtures/monetization-catalog.ts`. Version 1 contains 55 uniquely identified products (49 active and 6 disabled partner-referral placeholders), 23 rules, and one isolated draft promotion:
+The active France baseline is machine-readable in `packages/contracts/src/fixtures/monetization-catalog.ts`. `commercial-fr-v3` contains 77 products across General, Auto, Immo, Emploi and Education. It remains the only active version. Historical product, price, quote, order, invoice, commission, ledger and provider references are not rewritten by the target work.
 
 - generic individual publication and three generic Pro subscriptions;
 - Urgent, Remonter l’annonce, highlight, visibility bundle, and À la une;
@@ -36,17 +36,54 @@ The active France baseline is machine-readable in `packages/contracts/src/fixtur
 - transaction min/max and instant-payout fees;
 - a non-active example promotion proving draft isolation.
 
-Amounts intentionally preserve the currently visible Shongre frontend/vertical values during migration. The purpose of the first version is consolidation without an accidental commercial change. Later price changes must be new approved versions.
+Amounts intentionally preserve the currently visible Shongre frontend/vertical values. Later price changes must be new approved versions.
+
+## Reviewed target draft
+
+`packages/contracts/src/fixtures/monetization-proposed-catalog.ts` defines the validated `commercial-fr-v4-draft` snapshot and nothing reads it as the active catalog. The idempotent `make monetization-draft-import` path stores it through the existing `save_commercial_configuration_version` transaction and refuses direct production seeding.
+
+The draft contains 98 products: all 77 v3 identities re-versioned for historical continuity plus 21 target products. It adds:
+
+- Pro Starter at EUR 19.90 monthly / EUR 199 annually;
+- Pro Growth at EUR 49.90 monthly / EUR 499 annually;
+- Pro Performance at EUR 116.90 monthly / EUR 1,169 annually;
+- four attachable vertical-module definitions, with incomplete/provider-dependent capabilities suspended;
+- the requested individual vehicle slot and visibility price records;
+- disabled vehicle payment/protection, tenant pass and valuation products;
+- the Founding Professional campaign, 90-day trial configuration and a finite twelve-month price-lock policy;
+- 26 price-level cost/margin records in `missing_inputs` state;
+- six production Stripe price mappings in `missing` state;
+- paid-placement policies that require a visible localized label and set `organicRankingIsolation` to true;
+- unpriced Enterprise, qualified-lead, advertising, insurance, warranty, partner-service and undefined-variant definitions that cannot enter checkout.
+
+The target draft deliberately contains publication blockers. It cannot be submitted or published until shadow quote comparisons, campaign enrollment dates, cost/margin approvals, and environment-specific provider mappings are complete.
+
+## Existing-plan mapping and customer treatment
+
+Every one of the 16 active professional subscriptions in v3 has an explicit mapping record. All mappings currently use `customer_choice_required`, preserve historical price and entitlement versions, require recorded acceptance, and remain at `shadowQuoteStatus=not_run`.
+
+| Current family | Current tier(s)                | Target                                   | Treatment before rollout                                             |
+| -------------- | ------------------------------ | ---------------------------------------- | -------------------------------------------------------------------- |
+| General        | Free, Pro                      | Starter or customer-selected higher tier | Retain current subscription; no automatic change                     |
+| Auto           | Essential, Business, Scale     | Starter, Growth, Performance             | Retain v3 price/rights; compare quotes; record customer choice       |
+| Immo           | Essential, Business, Agency+   | Starter, Growth, Performance             | Retain v3 price/rights; compare quotes; record customer choice       |
+| Emploi         | Free, Recruit, Business, Scale | Starter, Starter, Growth, Performance    | Retain v3 price/rights; document intentional quota differences       |
+| Education      | Free, Pro, Studio, Organisme   | Starter, Starter, Growth, Performance    | Retain v3 price/rights; document intentional price/quota differences |
+
+The current products stay selectable until parity, independent approval and rollout gates pass. Archiving them is a later contract phase, never part of draft import. Customer-specific protection is recorded in append-only `monetization_price_protection_records`; accepted Enterprise terms are frozen in `enterprise_commercial_contracts` with append-only events.
 
 ## Rollout phases
 
-1. **Expand:** apply migration 00015 and import the validated baseline.
-2. **Dual-read verification:** compare old endpoints and screens with catalog-derived compatibility adapters; inspect version and quote hashes.
-3. **Switch consumers:** admin, Pro page, promotions, transaction pricing, fulfillment, mobile, generic backend orders.
-4. **Observe:** monitor stale-catalog health, quote creation failures, webhook duplicate rate, snapshot mismatches, and quota conflicts.
-5. **Contract legacy:** after production evidence shows no legacy readers, migrate remaining history and remove legacy price columns/tables in a later migration. Generated types already include the expand-phase schema.
+1. **Expand:** apply migrations through `00087`; v3 stays active. Migration `00087` adds exact market/catalog evidence and the atomic, idempotent subscription-transition RPC without rewriting historical price identities.
+2. **Install draft outside production:** run `make monetization-draft-import` against the intended migrated environment.
+3. **Complete gates:** bind remaining canonical commission taxonomy groups, enter reviewed costs/margin floors, configure campaign dates/caps, create environment/market provider mappings, and run shadow quotes for all 16 mappings.
+4. **Independent approval:** submit only when the validator reports no blocking conflict; use the existing maker/checker and recent-authentication controls.
+5. **Shadow rollout:** compare monthly/annual, promotion, tax and entitlement snapshots without changing customer subscriptions.
+6. **Customer migration:** present a choice or record a signed Enterprise agreement. Grant price protection atomically where the approved policy applies.
+7. **Observe:** monitor provider mismatch, quote/checkout failure, negative margin, subsidy exhaustion, locked populations, webhook duplication, ledger imbalance and historical snapshot integrity.
+8. **Contract legacy:** archive old selectable versions only after all consumers and customers have migrated; never delete referenced history.
 
-Legacy tables are not dropped by migration 00015. This preserves rollback and historical auditability.
+No legacy table or product identity is dropped by migration `00085`. Rollback means keeping v3 active or preparing a new draft from an archived immutable snapshot; it never rewrites financial history.
 
 ## Consumer evidence
 
@@ -59,6 +96,6 @@ Legacy tables are not dropped by migration 00015. This preserves rollback and hi
 | Generic promotions and Pro plans       | Compatibility service reads active central products                                                              |
 | Transactions, escrow, delivery, payout | Shared rule/product lookup in compatibility resolvers                                                            |
 | Admin                                  | `BusinessRulesServiceContract` demo/HTTP adapters; no local commercial state                                     |
-| Mobile billing                         | Shared catalog/quote/checkout contracts; active entitlements restored from the backend endpoint                  |
+| Mobile billing                         | Shared read-only billing contracts; active plan, entitlements, usage and invoices from the active-market service |
 
 The old vertical seed values remain only as expand-phase rollback and non-commercial shape fixtures. Runtime projections replace their price, duration, status, recommendation, label, and monetized entitlement fields before a consumer receives them.

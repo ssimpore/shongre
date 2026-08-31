@@ -11,6 +11,7 @@ export type MarketStatus =
   | "active"
   | "paused"
   | "disabled"
+  | "unsupported"
   | "archived";
 
 export type SettingSource = "LOCAL" | "PLATFORM_DEFAULT";

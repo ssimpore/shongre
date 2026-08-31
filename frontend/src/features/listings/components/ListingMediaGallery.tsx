@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Image } from "../../../design-system/primitives/Image";
 import {
   IMAGE_SIZES,
@@ -17,15 +17,19 @@ import { ListingPhoto } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface ListingMediaGalleryProps {
-  photos: ListingPhoto[];
+  photos: Array<ListingPhoto | string>;
   title: string;
+  overlayActions?: React.ReactNode;
   className?: string;
+  viewportAspectClassName?: string;
 }
 
 export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
   photos = [],
   title,
+  overlayActions,
   className = "",
+  viewportAspectClassName = "aspect-4/3 sm:aspect-16/10",
 }) => {
   const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -38,16 +42,26 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
       : [];
 
   const hasPhotos = photoList.length > 0;
-  const currentUrl = hasPhotos ? photoList[activeIndex] : null;
+  const safeActiveIndex = Math.min(
+    activeIndex,
+    Math.max(photoList.length - 1, 0),
+  );
+  const currentUrl = hasPhotos ? photoList[safeActiveIndex] : null;
 
   const handlePrev = useCallback(() => {
     if (!hasPhotos) return;
-    setActiveIndex((prev) => (prev > 0 ? prev - 1 : photoList.length - 1));
+    setActiveIndex((previous) => {
+      const current = Math.min(previous, photoList.length - 1);
+      return current > 0 ? current - 1 : photoList.length - 1;
+    });
   }, [hasPhotos, photoList.length]);
 
   const handleNext = useCallback(() => {
     if (!hasPhotos) return;
-    setActiveIndex((prev) => (prev < photoList.length - 1 ? prev + 1 : 0));
+    setActiveIndex((previous) => {
+      const current = Math.min(previous, photoList.length - 1);
+      return current < photoList.length - 1 ? current + 1 : 0;
+    });
   }, [hasPhotos, photoList.length]);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -65,7 +79,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (touchStart === null || touchEnd === null) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -76,44 +90,59 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
     }
   };
 
-  // Keyboard navigation for gallery & lightbox
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") {
-        handlePrev();
-      } else if (e.key === "ArrowRight") {
-        handleNext();
-      } else if (e.key === "Escape" && isLightboxOpen) {
-        setIsLightboxOpen(false);
-      }
-    };
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      handlePrev();
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      handleNext();
+    }
+  };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handlePrev, handleNext, isLightboxOpen]);
+  // The lightbox handled Escape but nothing else: focus stayed on the page
+  // behind it and was never restored on close.
+  const { containerRef: lightboxRef, titleId: lightboxTitleId } =
+    useDialogBehavior(isLightboxOpen, () => setIsLightboxOpen(false));
 
   if (!hasPhotos) {
     return (
       <div
-        className={`bg-stone-100 rounded-2xl border border-border-base aspect-16/10 flex flex-col items-center justify-center text-stone-500 gap-2 ${className}`}
+        className={`relative bg-stone-100 rounded-2xl border border-border-base aspect-16/10 flex flex-col items-center justify-center text-stone-500 gap-2 ${className}`}
       >
+        {overlayActions ? (
+          <div
+            data-listing-gallery-actions="true"
+            className="absolute right-3 top-3 z-raised flex items-center gap-2"
+          >
+            {overlayActions}
+          </div>
+        ) : null}
         <ImageIcon className="w-12 h-12" />
         <span className="text-xs font-semibold">Aucune photo fournie</span>
       </div>
     );
   }
 
-  // The lightbox handled Escape but nothing else: focus stayed on the page
-  // behind it and was never restored on close.
-  const { containerRef: lightboxRef, titleId: lightboxTitleId } =
-    useDialogBehavior(isLightboxOpen, () => setIsLightboxOpen(false));
   return (
     <div
       className={`bg-white rounded-2xl border border-border-base overflow-hidden shadow-xs space-y-0 ${className}`}
+      onKeyDown={handleKeyDown}
     >
+      <span className="sr-only" role="status" aria-live="polite">
+        {t("listings.listingMediaGallery.photoPosition", {
+          current: safeActiveIndex + 1,
+          total: photoList.length,
+        })}
+      </span>
       {/* Main Large Viewport with Touch Gestures */}
       <div
-        className="relative aspect-4/3 sm:aspect-16/10 bg-stone-100 flex items-center justify-center overflow-hidden group select-none touch-pan-y"
+        className={`relative ${viewportAspectClassName} bg-stone-100 flex items-center justify-center overflow-hidden group select-none touch-pan-y`}
+        role="group"
+        aria-label={t("listings.listingMediaGallery.galleryLabel", {
+          total: photoList.length,
+        })}
+        tabIndex={0}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -138,13 +167,22 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
         />
         <Image
           src={currentUrl!}
-          alt={`${title} - Photo ${activeIndex + 1}`}
+          alt={`${title} - Photo ${safeActiveIndex + 1}`}
           sizes={IMAGE_SIZES.gallery}
           priority
           onClick={() => setIsLightboxOpen(true)}
           className="relative w-full h-full object-contain cursor-zoom-in transition-transform duration-normal hover:scale-105"
           referrerPolicy="no-referrer"
         />
+
+        {overlayActions ? (
+          <div
+            data-listing-gallery-actions="true"
+            className="absolute right-3 top-3 z-raised flex items-center gap-2"
+          >
+            {overlayActions}
+          </div>
+        ) : null}
 
         {/* Prev / Next buttons if multiple photos */}
         {photoList.length > 1 && (
@@ -166,7 +204,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 e.stopPropagation();
                 handleNext();
               }}
-              aria-label="Photo suivante"
+              aria-label={t("listings.listingMediaGallery.photoSuivante")}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
               <ChevronRight className="w-icon-lg h-icon-lg" />
@@ -181,7 +219,9 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               <span
                 key={idx}
                 className={`h-1.5 rounded-full transition-all ${
-                  activeIndex === idx ? "w-4 bg-primary" : "w-1.5 bg-white/60"
+                  safeActiveIndex === idx
+                    ? "w-4 bg-primary"
+                    : "w-1.5 bg-white/60"
                 }`}
               />
             ))}
@@ -193,7 +233,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           <span className="hidden sm:inline-flex bg-stone-900/80 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full items-center gap-1.5 font-bold shadow-xs">
             <Camera className="w-icon-sm h-icon-sm" />
             <span>
-              {activeIndex + 1} / {photoList.length}
+              {safeActiveIndex + 1} / {photoList.length}
             </span>
           </span>
 
@@ -217,9 +257,9 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               type="button"
               onClick={() => setActiveIndex(idx)}
               aria-label={`Afficher la photo ${idx + 1} sur ${photoList.length}`}
-              aria-current={activeIndex === idx ? "true" : undefined}
+              aria-current={safeActiveIndex === idx ? "true" : undefined}
               className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-stone-100 ${
-                activeIndex === idx
+                safeActiveIndex === idx
                   ? "border-primary ring-2 ring-primary/20 scale-95 opacity-100"
                   : "border-transparent opacity-60 hover:opacity-100"
               }`}
@@ -252,7 +292,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               id={lightboxTitleId}
               className="text-xs sm:text-sm font-bold text-stone-300"
             >
-              {title} ({activeIndex + 1} / {photoList.length})
+              {title} ({safeActiveIndex + 1} / {photoList.length})
             </span>
             <button
               type="button"
@@ -287,7 +327,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 <button
                   type="button"
                   onClick={handleNext}
-                  aria-label="Photo suivante"
+                  aria-label={t("listings.listingMediaGallery.photoSuivante")}
                   className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronRight className="w-icon-xl h-icon-xl" />
@@ -305,7 +345,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={() => setActiveIndex(idx)}
                   className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
-                    activeIndex === idx
+                    safeActiveIndex === idx
                       ? "border-primary ring-2 ring-primary/40"
                       : "border-transparent opacity-50 hover:opacity-90"
                   }`}

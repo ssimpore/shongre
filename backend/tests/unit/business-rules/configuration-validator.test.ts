@@ -1,20 +1,47 @@
 import { describe, expect, it } from "vitest";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import { PROPOSED_MONETIZATION_DRAFT_CATALOG } from "@shongre/contracts/monetization-proposed-catalog";
 import { validateCommercialConfiguration } from "../../../src/modules/business-rules/configuration-validator.js";
 
 describe("commercial configuration validation", () => {
-  it("accepts the audited baseline without blocking conflicts", () => {
+  it("keeps the historical baseline readable while blocking a new publication without live provider mappings", () => {
     const conflicts = validateCommercialConfiguration(
       BASELINE_MONETIZATION_CATALOG,
     );
-    expect(
-      conflicts.filter((conflict) => conflict.severity === "blocking"),
-    ).toEqual([]);
+    expect(conflicts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "SUBSCRIPTION_TRANSITION_POLICY_INCOMPLETE",
+          severity: "blocking",
+        }),
+        expect.objectContaining({
+          code: "SUBSCRIPTION_PROVIDER_PRICE_MAPPING_MISSING",
+          severity: "blocking",
+        }),
+      ]),
+    );
     expect(
       conflicts.some(
         (conflict) => conflict.code === "FEATURE_COMMERCIAL_PROMISE_SUSPENDED",
       ),
     ).toBe(true);
+  });
+
+  it("keeps the proposed target blocked until shadow quotes, economics, campaign dates and provider mappings are approved", () => {
+    const codes = validateCommercialConfiguration(
+      PROPOSED_MONETIZATION_DRAFT_CATALOG,
+    ).map((conflict) => conflict.code);
+
+    expect(codes).toEqual(
+      expect.arrayContaining([
+        "MIGRATION_SHADOW_QUOTE_INCOMPLETE",
+        "CAMPAIGN_ENROLLMENT_WINDOW_MISSING",
+        "ECONOMICS_APPROVAL_REQUIRED",
+        "PROVIDER_MAPPING_NOT_SYNCHRONIZED",
+        "SUBSCRIPTION_TRANSITION_POLICY_INCOMPLETE",
+        "SUBSCRIPTION_PROVIDER_PRICE_MAPPING_MISSING",
+      ]),
+    );
   });
 
   it("blocks ambiguous rules with identical precedence and divergent outcomes", () => {

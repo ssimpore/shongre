@@ -418,6 +418,7 @@ export function AdminCommissionPolicyEditor({
         ],
       };
       const version = await services.commissions.createDraft({
+        marketCode: catalog.marketCode,
         policies: [...catalog.commissionPolicies, policy],
         reason: form.reason,
         effectiveFrom,

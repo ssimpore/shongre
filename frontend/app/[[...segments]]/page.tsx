@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { buildPublicUrl, listGatewayCountries } from "@shongre/contracts";
+import {
+  buildPublicUrl,
+  getDefaultCountryConfig,
+  listGatewayCountries,
+  publicMarketExperience,
+  sanitizeMarketSwitchQuery,
+} from "@shongre/contracts";
 import {
   metadataForRoute,
   structuredDataForRoute,
@@ -190,7 +196,11 @@ export default async function Page({ params, searchParams }: PageProps) {
   const infrastructure = marketInfrastructureFromEnvironment();
 
   if (context.kind === "redirect" && context.redirectUrl) {
-    permanentRedirect(context.redirectUrl);
+    const destination = new URL(context.redirectUrl);
+    destination.search = sanitizeMarketSwitchQuery(
+      new URLSearchParams(queryString),
+    ).toString();
+    permanentRedirect(destination.toString());
   }
   if (context.kind === "invalid_host" || context.kind === "not_found") {
     notFound();
@@ -202,14 +212,11 @@ export default async function Page({ params, searchParams }: PageProps) {
     }));
     const indexableCountries = countries.filter(
       ({ country }) =>
-        country.enabled &&
-        country.marketplace.enabled &&
-        country.seo.indexable &&
-        country.compliance.legalReviewStatus === "approved" &&
-        ["active", "beta"].includes(country.launchStatus),
+        publicMarketExperience(country) === "active" && country.seo.indexable,
     );
-    const franceOrigin = buildPublicUrl({
-      country: "FR",
+    const defaultCountry = getDefaultCountryConfig();
+    const defaultMarketOrigin = buildPublicUrl({
+      country: defaultCountry.code,
       infrastructure,
     }).replace(/\/$/, "");
     const structuredData = JSON.stringify({
@@ -229,11 +236,17 @@ export default async function Page({ params, searchParams }: PageProps) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: structuredData }}
         />
-        <GlobalGatewayPage countries={countries} franceOrigin={franceOrigin} />
+        <GlobalGatewayPage
+          countries={countries}
+          defaultMarketOrigin={defaultMarketOrigin}
+        />
       </>
     );
   }
-  if (context.kind === "coming_soon" && context.country) {
+  if (
+    (context.kind === "coming_soon" || context.kind === "unavailable") &&
+    context.country
+  ) {
     return (
       <MarketLaunchPage
         country={context.country}
@@ -261,7 +274,11 @@ export default async function Page({ params, searchParams }: PageProps) {
       route: policy.redirectPath,
       infrastructure: context.infrastructure,
     });
-    permanentRedirect(queryString ? `${target}?${queryString}` : target);
+    const destination = new URL(target);
+    destination.search = sanitizeMarketSwitchQuery(
+      new URLSearchParams(queryString),
+    ).toString();
+    permanentRedirect(destination.toString());
   }
 
   const structuredData = structuredDataForRoute(policy, context, routeData);

@@ -38,6 +38,11 @@ export default function AccountScreen() {
             </Text>
           </View>
           <Button
+            label="Abonnement et facturation"
+            onPress={() => router.push("/account/billing" as never)}
+            variant="secondary"
+          />
+          <Button
             label="Se déconnecter"
             onPress={() => void logout()}
             variant="ghost"

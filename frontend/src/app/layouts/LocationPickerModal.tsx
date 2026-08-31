@@ -9,14 +9,12 @@ import {
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { Input } from "../../design-system/primitives/FormField";
-import { IconButton } from "../../design-system/primitives/IconButton";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { LocationSelection } from "../../types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   CurrentLocationError,
   GeolocationFailureCode,
-  locateCurrentCity,
 } from "../../domains/market/geolocation.service";
 
 type GeolocationState =
@@ -35,6 +33,7 @@ export const LocationPickerModal: React.FC = () => {
     isLocationModalOpen,
     locationModalOptions,
     closeLocationModal,
+    requestPreciseLocation,
   } = useMarketLocation();
 
   const initialLocation = locationModalOptions?.initialLocation ?? location;
@@ -112,7 +111,7 @@ export const LocationPickerModal: React.FC = () => {
     setGeolocationState({ status: "locating" });
 
     try {
-      const result = await locateCurrentCity(activeMarket.code, popularCities);
+      const result = await requestPreciseLocation();
       setCityInput(result.city.name);
       setGeolocationState({ status: "success", city: result.city.name });
     } catch (error) {
@@ -203,34 +202,39 @@ export const LocationPickerModal: React.FC = () => {
             aria-describedby={
               geolocationMessage ? "location-geolocation-status" : undefined
             }
-            rightIcon={
-              <IconButton
-                size="sm"
-                variant="ghost"
-                ariaLabel={
-                  geolocationState.status === "locating"
-                    ? t("shell.locationPickerModal.locationInProgress")
-                    : t("shell.locationPickerModal.useCurrentLocation")
-                }
-                onClick={handleUseCurrentLocation}
-                disabled={geolocationState.status === "locating"}
-                aria-busy={geolocationState.status === "locating"}
-                className="text-primary hover:text-primary-hover"
-              >
-                {geolocationState.status === "locating" ? (
-                  <LoaderCircle
-                    className="h-icon-sm w-icon-sm motion-safe:animate-spin"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <LocateFixed
-                    className="h-icon-sm w-icon-sm"
-                    aria-hidden="true"
-                  />
-                )}
-              </IconButton>
-            }
           />
+          <div className="flex flex-col gap-2 rounded-control border border-border-subtle bg-bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between">
+            <p
+              id="precise-location-purpose"
+              className="text-xs leading-relaxed text-text-secondary"
+            >
+              {t("shell.locationPickerModal.preciseLocationPurpose")}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleUseCurrentLocation}
+              disabled={geolocationState.status === "locating"}
+              aria-describedby="precise-location-purpose"
+              aria-busy={geolocationState.status === "locating"}
+              className="shrink-0"
+            >
+              {geolocationState.status === "locating" ? (
+                <LoaderCircle
+                  className="mr-1.5 h-icon-sm w-icon-sm motion-safe:animate-spin"
+                  aria-hidden="true"
+                />
+              ) : (
+                <LocateFixed
+                  className="mr-1.5 h-icon-sm w-icon-sm"
+                  aria-hidden="true"
+                />
+              )}
+              {geolocationState.status === "locating"
+                ? t("shell.locationPickerModal.locationInProgress")
+                : t("shell.locationPickerModal.useCurrentLocation")}
+            </Button>
+          </div>
           {geolocationMessage ? (
             <p
               id="location-geolocation-status"

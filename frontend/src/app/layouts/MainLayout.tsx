@@ -10,6 +10,8 @@ import { CookieConsent } from "./CookieConsent";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { SkipLink } from "../../design-system";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
+import { MarketRecommendationBanner } from "./MarketRecommendationBanner";
+import { MarketChangeConfirmationModal } from "./MarketChangeConfirmationModal";
 
 export const MainLayout: React.FC = () => {
   return (
@@ -23,6 +25,7 @@ export const MainLayout: React.FC = () => {
       <AppScrollRestoration />
       <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
       <Header />
+      <MarketRecommendationBanner />
       {/* Clearance for the fixed tab bar comes from the same token the bar
           is built from, so it tracks the bar (and the iOS home indicator,
           which the old flat 80px ignored) instead of guessing at it. */}
@@ -37,6 +40,7 @@ export const MainLayout: React.FC = () => {
       <MobileBottomNav />
       <LocationPickerModal />
       <PreferencesModal />
+      <MarketChangeConfirmationModal />
       <CookieConsent />
     </div>
   );

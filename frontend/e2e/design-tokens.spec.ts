@@ -416,11 +416,11 @@ test.describe("design-token runtime contracts @serial", () => {
       "no list cards rendered",
     ).toBeGreaterThanOrEqual(3);
     expect(desktop.tokenHeight).toBe("12.5rem");
-    expect(desktop.tokenImage).toBe("11rem");
+    expect(desktop.tokenImage).toBe("13rem");
     expect(new Set(desktop.cards.map((card) => card.height)).size).toBe(1);
     expect(new Set(desktop.cards.map((card) => card.imageWidth)).size).toBe(1);
     expect(desktop.cards[0]?.height).toBeCloseTo(200, 0);
-    expect(desktop.cards[0]?.imageWidth).toBeCloseTo(176, 0);
+    expect(desktop.cards[0]?.imageWidth).toBeCloseTo(208, 0);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route, { waitUntil: "domcontentloaded" });

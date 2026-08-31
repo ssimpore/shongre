@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { publicListingUrl, publicRouteUrl } from "./market-routing";
+import {
+  publicListingUrl,
+  publicRouteUrl,
+  sanitizeMarketSwitchQuery,
+} from "./market-routing";
 
 const infrastructure = {
   globalDomain: "shongre.com",
@@ -33,5 +37,14 @@ describe("public country URL builders", () => {
         infrastructure,
       }),
     ).toBe("https://shongre.com/ch/messages");
+  });
+
+  it("preserves public route filters while dropping credentials and tracking data", () => {
+    const safe = sanitizeMarketSwitchQuery(
+      new URLSearchParams(
+        "q=velo&sort=recent&attr.color=blue&token=secret&state=oauth&utm_source=test&gclid=tracking",
+      ),
+    );
+    expect(safe.toString()).toBe("q=velo&sort=recent&attr.color=blue");
   });
 });

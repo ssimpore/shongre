@@ -45,7 +45,7 @@ export interface ComplimentaryGrantDecisionResult {
 }
 
 export interface BusinessRulesServiceContract {
-  getCatalog(marketCode?: string): Promise<MonetizationCatalog>;
+  getCatalog(marketCode: string): Promise<MonetizationCatalog>;
   evaluate(context: RuleEvaluationContext): Promise<RuleEvaluationResult>;
   createQuote(request: QuoteRequest): Promise<MonetizationQuote>;
   createCheckout(
@@ -68,7 +68,7 @@ export interface BusinessRulesServiceContract {
   updateSubscriptionCancellation(
     request: SubscriptionCancellationRequest,
   ): Promise<MonetizationSubscription>;
-  getAdminOverview(marketCode?: string): Promise<MonetizationAdminOverview>;
+  getAdminOverview(marketCode: string): Promise<MonetizationAdminOverview>;
   createDraft(
     patch: CommercialDraftPatch,
   ): Promise<CommercialConfigurationVersion>;

@@ -60,9 +60,16 @@ export class DemoAuthService implements AuthService {
     const credentials = loginRequestSchema.parse(input);
     if (credentials.password.length < 6)
       throw new Error("Le mot de passe doit contenir au moins 6 caractères.");
-    const session = {
+    const professional = /^pro(?:[+._-]|@)/i.test(credentials.email);
+    const session: AuthSession = {
       ...demoSession,
-      user: { ...demoSession.user, email: credentials.email.toLowerCase() },
+      user: {
+        ...demoSession.user,
+        id: professional ? "mobile_pro_demo" : demoSession.user.id,
+        email: credentials.email.toLowerCase(),
+        role: professional ? "professional_seller" : demoSession.user.role,
+        accountType: professional ? "professional" : "individual",
+      },
     };
     await sessionStorage.write(session);
     return session.user;

@@ -22,6 +22,16 @@ test.describe("public professional pricing", () => {
       page.getByRole("heading", { name: "Un forfait pour chaque étape" }),
     ).toBeVisible();
     await expect(
+      page.getByRole("heading", { name: "Shongre Pro", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Aperçu du catalogue cible" }),
+    ).toHaveCount(0);
+    await expect(page.getByText("Aperçu v4 · marché FR")).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "Pro Starter", exact: true }),
+    ).toHaveCount(0);
+    await expect(
       page.locator("article").filter({ hasText: "HT / mois" }).first(),
     ).toBeVisible();
     await expect(
