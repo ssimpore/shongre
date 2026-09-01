@@ -348,7 +348,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
           </ol>
         </aside>
 
-        <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
+        <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
           {step === ONBOARDING_STEP.profile && (
             <section>
               <h2 className="text-lg font-black text-text-main">
@@ -806,7 +806,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
               </Button>
             )}
           </footer>
-        </main>
+        </section>
       </div>
     </div>
   );

@@ -142,7 +142,7 @@ export const EmploymentApplyPage: React.FC = () => {
 
   if (submitted) {
     return (
-      <main>
+      <div>
         <Container width="content" className="py-10 sm:py-16">
           <div className="rounded-card border border-success-border bg-success-surface p-6 text-center shadow-sm sm:p-10">
             <CheckCircle2
@@ -166,12 +166,12 @@ export const EmploymentApplyPage: React.FC = () => {
             </div>
           </div>
         </Container>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main>
+    <div>
       <Container width="content" className="py-6 sm:py-10">
         <Link
           to={`/emploi/offre/${job.slug}`}
@@ -396,6 +396,6 @@ export const EmploymentApplyPage: React.FC = () => {
           </aside>
         </div>
       </Container>
-    </main>
+    </div>
   );
 };

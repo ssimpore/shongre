@@ -27,6 +27,9 @@ import type {
 } from "../../api/contracts/admin.contract";
 import { auditActionLabel, type UserProfile } from "../../types";
 import { useAuthorization } from "../../security/useAuthorization";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
+
+type DashboardLoadState = "loading" | "success" | "error";
 
 export const AdminOverviewPage: React.FC = () => {
   const { activeMarket } = useMarketLocation();
@@ -46,6 +49,9 @@ export const AdminOverviewPage: React.FC = () => {
   >([]);
   const [reportsCount, setReportsCount] = useState<number | null>(null);
   const [recentAudits, setRecentAudits] = useState<AdminAuditLogEntry[]>([]);
+  const [loadState, setLoadState] =
+    useState<DashboardLoadState>("loading");
+  const [reloadToken, setReloadToken] = useState(0);
 
   const canReadPlatformStats = can("admin.configuration.manage");
   const canReviewVerification = can("user.verify") || can("compliance.review");
@@ -67,23 +73,29 @@ export const AdminOverviewPage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     const loadAuthorizedData = async () => {
-      const [platformStats, users, reports, logs] = await Promise.all([
-        canReadPlatformStats ? services.admin.getPlatformStats() : null,
-        canReviewVerification ? services.admin.getAllUsers() : [],
-        canReviewReports ? services.admin.getPendingReports() : [],
-        canReadAudit ? services.admin.getAuditLogs() : [],
-      ]);
-      if (cancelled) return;
-      setStats(platformStats);
-      setPendingVerifications(
-        users.filter(
-          (user) =>
-            user.accountType === "professional" &&
-            user.professionalVerification?.status === "pending",
-        ),
-      );
-      setReportsCount(canReviewReports ? reports.length : null);
-      setRecentAudits(logs.slice(0, 6));
+      setLoadState("loading");
+      try {
+        const [platformStats, users, reports, logs] = await Promise.all([
+          canReadPlatformStats ? services.admin.getPlatformStats() : null,
+          canReviewVerification ? services.admin.getAllUsers() : [],
+          canReviewReports ? services.admin.getPendingReports() : [],
+          canReadAudit ? services.admin.getAuditLogs() : [],
+        ]);
+        if (cancelled) return;
+        setStats(platformStats);
+        setPendingVerifications(
+          users.filter(
+            (user) =>
+              user.accountType === "professional" &&
+              user.professionalVerification?.status === "pending",
+          ),
+        );
+        setReportsCount(canReviewReports ? reports.length : null);
+        setRecentAudits(logs.slice(0, 6));
+        setLoadState("success");
+      } catch {
+        if (!cancelled) setLoadState("error");
+      }
     };
     void loadAuthorizedData();
     return () => {
@@ -94,6 +106,7 @@ export const AdminOverviewPage: React.FC = () => {
     canReadPlatformStats,
     canReviewReports,
     canReviewVerification,
+    reloadToken,
   ]);
 
   const roleMeta = ROLE_DEFINITIONS[platformRole] || ROLE_DEFINITIONS.guest;
@@ -141,14 +154,28 @@ export const AdminOverviewPage: React.FC = () => {
           {canReviewReports && (
             <Button to="/admin/moderation" size="sm">
               {t("admin.adminOverviewPage.traiterLesSignalements")}
-              {reportsCount ?? "…"})
+              {loadState === "success" ? (reportsCount ?? 0) : "…"})
             </Button>
           )}
         </div>
       </div>
 
+      {loadState === "error" && (
+        <StatePanel
+          variant="error"
+          title="Impossible de charger la console"
+          description="Les données opérationnelles ne sont pas disponibles pour le moment. Vos autorisations et aucune donnée n’ont été modifiées."
+          action={
+            <Button onClick={() => setReloadToken((value) => value + 1)}>
+              Réessayer
+            </Button>
+          }
+        />
+      )}
+
       {/* KPI Stats Cards */}
-      {(canReadPlatformStats || canReviewVerification || canReviewReports) && (
+      {loadState !== "error" &&
+        (canReadPlatformStats || canReviewVerification || canReviewReports) && (
         <section
           aria-label={t("admin.adminOverviewPage.indicateursDeLaConsole")}
           className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
@@ -180,10 +207,12 @@ export const AdminOverviewPage: React.FC = () => {
                 <Clock className="w-icon-md h-icon-md text-amber-500" />
               </div>
               <div className="text-2xl font-black text-warning">
-                {pendingVerifications.length}
+                {loadState === "success" ? pendingVerifications.length : "…"}
               </div>
               <div className="text-xs text-stone-500 mt-1">
-                {pendingVerifications.length > 0
+                {loadState !== "success"
+                  ? "Chargement des dossiers…"
+                  : pendingVerifications.length > 0
                   ? "Dossiers KBIS à valider"
                   : "Tous les dossiers sont traités"}
               </div>
@@ -199,7 +228,7 @@ export const AdminOverviewPage: React.FC = () => {
                 <ShieldAlert className="w-icon-md h-icon-md text-primary" />
               </div>
               <div className="text-2xl font-black text-primary">
-                {reportsCount ?? "…"}
+                {loadState === "success" ? (reportsCount ?? 0) : "…"}
               </div>
               <div className="text-xs text-stone-500 mt-1">
                 {t("admin.adminOverviewPage.conformiteEtSecurite")}
@@ -227,7 +256,7 @@ export const AdminOverviewPage: React.FC = () => {
       )}
 
       {/* Grid: Pending Pro Dossiers & Recent Audit Log */}
-      {(canReviewVerification || canReadAudit) && (
+      {loadState !== "error" && (canReviewVerification || canReadAudit) && (
         <section
           aria-label={t("admin.adminOverviewPage.filesOperationnelles")}
           className={`grid grid-cols-1 gap-6 ${
@@ -255,7 +284,20 @@ export const AdminOverviewPage: React.FC = () => {
                 </Link>
               </div>
 
-              {pendingVerifications.length === 0 ? (
+              {loadState === "loading" ? (
+                <div
+                  role="status"
+                  aria-label="Chargement des dossiers professionnels"
+                  className="flex-1 space-y-3"
+                >
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="h-16 animate-pulse rounded-lg bg-bg-muted motion-reduce:animate-none"
+                    />
+                  ))}
+                </div>
+              ) : pendingVerifications.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-stone-50 rounded-lg border border-dashed border-stone-200">
                   <CheckCircle2 className="w-8 h-8 text-success mb-2" />
                   <div className="text-xs font-bold text-stone-700">
@@ -333,7 +375,26 @@ export const AdminOverviewPage: React.FC = () => {
               </div>
 
               <div className="space-y-2.5">
-                {recentAudits.map((log) => (
+                {loadState === "loading" && (
+                  <div
+                    role="status"
+                    aria-label="Chargement du journal d’audit"
+                    className="space-y-2.5"
+                  >
+                    {[1, 2, 3, 4].map((item) => (
+                      <div
+                        key={item}
+                        className="h-16 animate-pulse rounded-lg bg-bg-muted motion-reduce:animate-none"
+                      />
+                    ))}
+                  </div>
+                )}
+                {loadState === "success" && recentAudits.length === 0 && (
+                  <p className="rounded-lg border border-dashed border-border-base bg-bg-subtle p-6 text-center text-xs text-text-secondary">
+                    Aucune action d’audit récente.
+                  </p>
+                )}
+                {loadState === "success" && recentAudits.map((log) => (
                   <div
                     key={log.id}
                     className="p-2.5 bg-stone-50 rounded-lg border border-stone-200 text-xs flex flex-col gap-1"

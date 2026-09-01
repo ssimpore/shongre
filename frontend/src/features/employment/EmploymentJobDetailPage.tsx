@@ -146,17 +146,17 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <main className="bg-bg-base py-8">
+      <div className="bg-bg-base py-8">
         <Container className="grid gap-5 lg:grid-cols-content-aside">
           <Skeleton className="h-152 rounded-card" />
           <Skeleton className="h-80 rounded-card" />
         </Container>
-      </main>
+      </div>
     );
   }
   if (error || !job) {
     return (
-      <main className="bg-bg-base py-12">
+      <div className="bg-bg-base py-12">
         <Container>
           <StatePanel
             variant="notFound"
@@ -169,7 +169,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
             }
           />
         </Container>
-      </main>
+      </div>
     );
   }
 
@@ -223,7 +223,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-bg-base">
+    <div className="min-h-screen bg-bg-base">
       <Container className="py-5 sm:py-8">
         <nav
           aria-label="Fil d’Ariane"
@@ -549,6 +549,6 @@ export const EmploymentJobDetailPage: React.FC = () => {
           </div>
         </Modal>
       </Container>
-    </main>
+    </div>
   );
 };

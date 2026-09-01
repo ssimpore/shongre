@@ -574,7 +574,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   );
 
   return (
-    <main className="min-h-screen bg-bg-base pb-6">
+    <div className="min-h-screen bg-bg-base pb-6">
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -1188,6 +1188,6 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
         </footer>
       </div>
-    </main>
+    </div>
   );
 };

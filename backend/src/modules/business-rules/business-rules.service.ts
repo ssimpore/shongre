@@ -45,7 +45,10 @@ import {
   normalizeBusinessVerticalCode,
   normalizeEducationMonetizationCatalog,
 } from "@shongre/contracts/business-verticals";
-import { resolveAllEffectiveEntitlements } from "@shongre/shared";
+import {
+  resolveAllEffectiveEntitlements,
+  selectProfessionalCatalogPresentation,
+} from "@shongre/shared";
 import { config } from "../../app/config/index.js";
 import {
   BusinessRulesRepository,
@@ -229,31 +232,27 @@ export class BusinessRulesService {
   }
 
   async getProfessionalPlanCatalog(marketCode: string) {
-    const catalog = await this.getCatalog(marketCode);
-    return {
-      configurationVersionId: catalog.configurationVersionId,
-      versionNumber: catalog.versionNumber,
-      marketCode: catalog.marketCode,
-      currency: catalog.currency,
-      generatedAt: catalog.generatedAt,
-      stale: catalog.stale,
-      verticals: catalog.verticals
-        .filter((vertical) => vertical.status === "active")
-        .sort((left, right) => left.sortOrder - right.sortOrder),
-      plans: catalog.products
-        .filter(
-          (product) =>
-            product.status === "active" &&
-            product.kind === "subscription" &&
-            product.commercialProfile.professionalOnly &&
-            Boolean(product.commercialProfile.tier),
-        )
-        .sort(
-          (left, right) =>
-            left.commercialProfile.displayOrder -
-            right.commercialProfile.displayOrder,
-        ),
-    };
+    marketCode = requireMarketCode(marketCode);
+    const [activeCatalog, versions] = await Promise.all([
+      this.getCatalog(marketCode),
+      this.repository.listVersions(marketCode),
+    ]);
+    const candidates = (
+      await Promise.all(
+        versions
+          .filter(
+            (version) => version.id !== activeCatalog.configurationVersionId,
+          )
+          .map(async (version) => ({
+            version,
+            catalog: await this.repository.getCatalogVersion(version.id),
+          })),
+      )
+    ).flatMap(({ version, catalog }) =>
+      catalog ? [{ version, catalog }] : [],
+    );
+
+    return selectProfessionalCatalogPresentation(activeCatalog, candidates);
   }
 
   async createTrialQuote(accountId: string, rawRequest: QuoteRequest) {

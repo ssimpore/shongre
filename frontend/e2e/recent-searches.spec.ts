@@ -51,12 +51,12 @@ test("records, resumes and removes a recent search on the homepage", async ({
   ).toHaveCount(0);
 });
 
-test("shows at most three compact recent-search chips by default", async ({
+test("shows up to six compact recent-search chips by default", async ({
   page,
 }) => {
   await usePersona(page, "guest");
 
-  for (let index = 0; index < 5; index += 1) {
+  for (let index = 0; index < 7; index += 1) {
     await recordRecentSearch(page, `Recherche limite ${index}`);
   }
 
@@ -66,8 +66,8 @@ test("shows at most three compact recent-search chips by default", async ({
     'section[aria-labelledby="home-recent-searches-title"]',
   );
   const chips = recentSection.getByTestId("home-recent-search-chip");
-  await expect(chips).toHaveCount(3);
-  await expect(recentSection.getByRole("link")).toHaveCount(3);
+  await expect(chips).toHaveCount(6);
+  await expect(recentSection.getByRole("link")).toHaveCount(6);
 
   const chipHeights = await chips.evaluateAll((elements) =>
     elements.map((element) =>

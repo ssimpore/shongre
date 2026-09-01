@@ -87,7 +87,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
     );
 
   return (
-    <main className="mx-auto max-w-2xl space-y-6 px-4 py-12">
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-12">
       <header>
         <p className="text-xs font-bold uppercase tracking-wide text-primary">
           Newsletter Shongre
@@ -126,6 +126,6 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
         <Save className="mr-2 h-icon-md w-icon-md" aria-hidden="true" />
         {state === "saving" ? "Enregistrement…" : "Enregistrer mes préférences"}
       </Button>
-    </main>
+    </div>
   );
 };

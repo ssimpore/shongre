@@ -36,10 +36,13 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
   if (!listingContext && !transactionContext) return null;
 
   return (
-    <div className="bg-stone-50 border-b border-border-base px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+    <div
+      data-conversation-context
+      className="flex min-w-0 shrink-0 flex-col items-stretch gap-3 border-b border-border-base bg-stone-50 px-3 py-2.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4"
+    >
       {/* Listing Preview */}
       {listingContext && (
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
           {listingContext.listingPhotoUrl ? (
             <Image
               src={listingContext.listingPhotoUrl}
@@ -54,13 +57,13 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
           )}
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Link
                 to={`/annonce/${listingContext.listingId}`}
-                className="font-bold text-stone-900 hover:text-primary transition-colors truncate flex items-center gap-1 group"
+                className="group flex min-w-0 items-center gap-1 truncate font-bold text-stone-900 transition-colors hover:text-primary"
               >
-                <span>{listingContext.listingTitle}</span>
-                <ExternalLink className="w-icon-xs h-icon-xs opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="truncate">{listingContext.listingTitle}</span>
+                <ExternalLink className="h-icon-xs w-icon-xs shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
               </Link>
               {listingContext.listingStatus === "reserved" && (
                 <Badge variant="warning" size="sm">
@@ -81,7 +84,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
       )}
 
       {/* Transaction & Action Shortcuts */}
-      <div className="flex items-center gap-2 ml-auto shrink-0">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:ml-auto sm:flex sm:w-auto sm:shrink-0 sm:items-center">
         {transactionContext ? (
           <Button
             variant="outline"
@@ -90,7 +93,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             leftIcon={
               <ShieldCheck className="w-icon-sm h-icon-sm text-success" />
             }
-            className="text-xs"
+            className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
           >
             {t("messaging.conversationContextBar.suiviDeCommande")}
           </Button>
@@ -104,7 +107,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 leftIcon={
                   <DollarSign className="w-icon-sm h-icon-sm text-warning" />
                 }
-                className="text-xs"
+                className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
               >
                 {t("messaging.conversationContextBar.faireUneOffre")}
               </Button>
@@ -117,7 +120,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 leftIcon={
                   <Calendar className="w-icon-sm h-icon-sm text-primary" />
                 }
-                className="text-xs"
+                className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
               >
                 {t("messaging.conversationContextBar.fixerRendezVous")}
               </Button>

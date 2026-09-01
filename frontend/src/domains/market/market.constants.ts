@@ -3,9 +3,9 @@
  * constant. Keeping the safe range here lets the admin editor and consuming
  * components apply the same rules when a persisted demo override is stale.
  */
-export const RECENT_SEARCHES_LIMIT_DEFAULT = 3;
+export const RECENT_SEARCHES_LIMIT_DEFAULT = 6;
 export const RECENT_SEARCHES_LIMIT_MIN = 1;
-export const RECENT_SEARCHES_LIMIT_MAX = 3;
+export const RECENT_SEARCHES_LIMIT_MAX = 8;
 
 /**
  * Initial search-price scale for the configured default market. Other markets

@@ -290,6 +290,8 @@ export const CrmPipelinePage: React.FC = () => {
     return (
       <div
         className="space-y-4"
+        role="status"
+        aria-busy="true"
         aria-label={t("admin.crmPipelinePage.chargementDuPipelineCrm")}
       >
         <Skeleton className="h-32 rounded-2xl" />

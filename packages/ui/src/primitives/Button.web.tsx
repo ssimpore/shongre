@@ -69,7 +69,7 @@ export type ButtonProps = (
 // `whitespace-nowrap` is load-bearing: the size variants below pin an exact
 // height, so a label allowed to wrap spills out through the bottom edge.
 /** Everything except the display utility, which is applied conditionally below. */
-const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed active:scale-95 ${CONTROL_FOCUS_CLASS}`;
+const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:shadow-none disabled:hover:bg-bg-muted disabled:hover:shadow-none aria-disabled:cursor-not-allowed aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:shadow-none aria-disabled:hover:bg-bg-muted aria-disabled:hover:shadow-none active:scale-95 ${CONTROL_FOCUS_CLASS}`;
 
 /**
  * A display utility supplied by the caller, which must win over the default.

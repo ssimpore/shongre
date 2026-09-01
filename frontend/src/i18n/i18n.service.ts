@@ -4,7 +4,6 @@ import {
   MessageKey,
   messagesFr,
 } from "./messages.fr";
-import { messagesEn } from "./messages.en";
 import { DEFAULT_LOCALE } from "./locale";
 
 export { DEFAULT_LOCALE } from "./locale";
@@ -13,12 +12,12 @@ export { DEFAULT_LOCALE } from "./locale";
 export type TranslationValues = Record<string, string | number | undefined>;
 
 /**
- * Catalogues by locale. French is the source and is always complete; the others
- * are partial and fall back to it key by key.
+ * Runtime catalogues. Only locales that are actually shipped belong here;
+ * draft catalogues are validated by tooling and tests without entering the
+ * initial client bundle.
  */
 export const CATALOGUES: Record<string, MessageCatalogue> = {
   "fr-FR": messagesFr,
-  "en-US": messagesEn,
 };
 
 /**
@@ -122,6 +121,16 @@ export function translate(
   const resolved = resolveLocale(locale);
   const active = CATALOGUES[resolved] ?? {};
 
+  return translateWithCatalogue(active, key, resolved, options);
+}
+
+/** Validates and previews an unshipped catalogue without registering it. */
+export function translateWithCatalogue(
+  active: MessageCatalogue,
+  key: MessageKey,
+  locale: string,
+  options?: TranslateOptions,
+): string {
   const lookup = (candidate: string): string | undefined =>
     (active as Record<string, string | undefined>)[candidate] ??
     (messagesFr as Record<string, string | undefined>)[candidate];
@@ -131,7 +140,7 @@ export function translate(
       ? selectPluralKey(
           key,
           options.count,
-          resolved,
+          locale,
           (candidate) => lookup(candidate) !== undefined,
         )
       : key;
@@ -153,6 +162,10 @@ export function catalogueCoverage(locale: string): number {
   const catalogue = findCatalogue(locale);
   if (!catalogue) return 0;
 
+  return catalogueCoverageFor(catalogue);
+}
+
+export function catalogueCoverageFor(catalogue: MessageCatalogue): number {
   const keys = Object.keys(messagesFr) as CatalogueKey[];
   if (keys.length === 0) return 1;
 

@@ -439,6 +439,33 @@ describe("API v1 Endpoints Integration", () => {
     expect(Array.isArray(catalog.promotions)).toBe(true);
   });
 
+  it("GET /api/v1/monetization/professional-plans exposes only the target preview", async () => {
+    const res = await fetch(
+      `${baseUrl}/api/v1/monetization/professional-plans?marketCode=FR`,
+    );
+    expect(res.status).toBe(200);
+    const presentation = await res.json();
+
+    expect(presentation).toMatchObject({
+      mode: "draft_preview",
+      checkoutEnabled: false,
+      planProductIds: [
+        "pro.target.starter",
+        "pro.target.growth",
+        "pro.target.performance",
+      ],
+    });
+    expect(new Set(presentation.planProductIds).size).toBe(3);
+    expect(
+      presentation.planProductIds.some((productId: string) =>
+        productId.startsWith("plan.pro."),
+      ),
+    ).toBe(false);
+    expect(presentation.catalog).not.toHaveProperty("commercialEconomics");
+    expect(presentation.catalog).not.toHaveProperty("providerMappings");
+    expect(presentation.catalog).not.toHaveProperty("migrationMappings");
+  });
+
   it("serves the public Immo catalog, spatial-shaped search, and privacy-safe property projection", async () => {
     const catalogResponse = await fetch(
       `${baseUrl}/api/v1/real-estate/catalog?market=FR`,

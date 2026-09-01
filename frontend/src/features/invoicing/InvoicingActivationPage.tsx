@@ -45,7 +45,7 @@ export function InvoicingActivationPage() {
   };
 
   return (
-    <main className="bg-bg-base px-4 py-12 sm:px-6 sm:py-16">
+    <div className="bg-bg-base px-4 py-12 sm:px-6 sm:py-16">
       <div className="mx-auto max-w-3xl">
         <div className="rounded-card border border-border-base bg-bg-surface p-6 shadow-sm sm:p-9">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary-light text-primary">
@@ -119,6 +119,6 @@ export function InvoicingActivationPage() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

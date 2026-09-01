@@ -184,6 +184,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     setIsOpen(false);
     openPreferencesModal();
   };
+  const hasLanguageChoice = AVAILABLE_LANGUAGES.length > 1;
 
   const buttonClasses =
     variant === "footer"
@@ -207,10 +208,18 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       <button
         id={`${idPrefix}-button`}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        aria-label={t("language.current", { language: activeLanguage.name })}
+        onClick={() =>
+          hasLanguageChoice ? setIsOpen(!isOpen) : handleOpenPreferences()
+        }
+        aria-expanded={hasLanguageChoice ? isOpen : undefined}
+        aria-haspopup={hasLanguageChoice ? "menu" : "dialog"}
+        aria-label={
+          hasLanguageChoice
+            ? t("language.current", { language: activeLanguage.name })
+            : t("language.regionalPreferencesCurrent", {
+                language: activeLanguage.name,
+              })
+        }
         className={buttonClasses}
       >
         <span className="text-base shrink-0 leading-none">
@@ -221,22 +230,31 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         >
           {activeLanguage.code.slice(0, 2)}
         </span>
-        <ChevronDown
-          className={`w-icon-sm h-icon-sm transition-transform ${
-            variant === "footer"
-              ? isOpen
-                ? "rotate-180 text-primary-light"
-                : // Deliberately a light neutral on the footer's dark panel, not
-                  // the theme-following "disabled" role — it must not invert.
-                  "text-stone-400"
-              : isOpen
-                ? "rotate-180 text-primary"
-                : "text-text-muted"
-          }`}
-        />
+        {hasLanguageChoice ? (
+          <ChevronDown
+            className={`w-icon-sm h-icon-sm transition-transform ${
+              variant === "footer"
+                ? isOpen
+                  ? "rotate-180 text-primary-light"
+                  : // Deliberately a light neutral on the footer's dark panel, not
+                    // the theme-following "disabled" role — it must not invert.
+                    "text-stone-400"
+                : isOpen
+                  ? "rotate-180 text-primary"
+                  : "text-text-muted"
+            }`}
+          />
+        ) : (
+          <Settings2
+            className={`h-icon-sm w-icon-sm ${
+              variant === "footer" ? "text-stone-400" : "text-text-muted"
+            }`}
+            aria-hidden="true"
+          />
+        )}
       </button>
 
-      {isOpen && (
+      {hasLanguageChoice && isOpen && (
         <div
           role="menu"
           aria-orientation="vertical"

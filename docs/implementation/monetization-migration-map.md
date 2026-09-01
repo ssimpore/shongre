@@ -40,7 +40,7 @@ Amounts intentionally preserve the currently visible Shongre frontend/vertical v
 
 ## Reviewed target draft
 
-`packages/contracts/src/fixtures/monetization-proposed-catalog.ts` defines the validated `commercial-fr-v4-draft` snapshot and nothing reads it as the active catalog. The idempotent `make monetization-draft-import` path stores it through the existing `save_commercial_configuration_version` transaction and refuses direct production seeding.
+`packages/contracts/src/fixtures/monetization-proposed-catalog.ts` defines the validated `commercial-fr-v4-draft` snapshot and nothing reads it as the active catalog. The idempotent `make monetization-draft-import` path stores it through the existing `save_commercial_configuration_version` transaction and refuses direct production seeding. The public Pro page can read it only through the shared professional-catalog presentation selector. That public-safe projection contains the migration targets once, never the v3 and v4 cards together, carries `checkoutEnabled=false` until normal publication makes the target catalog active, and strips internal economics, provider, rule, commission and migration-governance evidence.
 
 The draft contains 98 products: all 77 v3 identities re-versioned for historical continuity plus 21 target products. It adds:
 
@@ -70,7 +70,7 @@ Every one of the 16 active professional subscriptions in v3 has an explicit mapp
 | Emploi         | Free, Recruit, Business, Scale | Starter, Starter, Growth, Performance    | Retain v3 price/rights; document intentional quota differences       |
 | Education      | Free, Pro, Studio, Organisme   | Starter, Starter, Growth, Performance    | Retain v3 price/rights; document intentional price/quota differences |
 
-The current products stay selectable until parity, independent approval and rollout gates pass. Archiving them is a later contract phase, never part of draft import. Customer-specific protection is recorded in append-only `monetization_price_protection_records`; accepted Enterprise terms are frozen in `enterprise_commercial_contracts` with append-only events.
+The current products stay selectable for existing quotes and customer treatment until parity, independent approval and rollout gates pass, but they are not rendered beside a target public preview. Archiving them is a later contract phase, never part of draft import. The publication validator requires each configured replacement to be active and refuses the snapshot while its migration source remains selectable, preventing an old tariff from overriding or duplicating its replacement after activation. Customer-specific protection is recorded in append-only `monetization_price_protection_records`; accepted Enterprise terms are frozen in `enterprise_commercial_contracts` with append-only events.
 
 ## Rollout phases
 
@@ -93,7 +93,7 @@ No legacy table or product identity is dropped by migration `00085`. Rollback me
 | Auto backend and web demo              | Shared `applyMonetizationToAutoCatalog` projection                                                               |
 | Education backend and web demo         | Shared `applyMonetizationToCourseCatalog` projection                                                             |
 | Immo backend and web demo              | Shared projection; paid backend checkout delegates to central quote/order                                        |
-| Generic promotions and Pro plans       | Compatibility service reads active central products                                                              |
+| Generic promotions and Pro plans       | Typed active-or-preview projection from the shared selector; one product-id set and an explicit checkout gate    |
 | Transactions, escrow, delivery, payout | Shared rule/product lookup in compatibility resolvers                                                            |
 | Admin                                  | `BusinessRulesServiceContract` demo/HTTP adapters; no local commercial state                                     |
 | Mobile billing                         | Shared read-only billing contracts; active plan, entitlements, usage and invoices from the active-market service |

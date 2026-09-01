@@ -11,8 +11,12 @@ import { Image } from "./Image";
 import { IMAGE_SIZES } from "./responsiveImage";
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
-import { MARKET_CONFIG } from "../../configuration/market.config";
+import {
+  DEFAULT_MARKET_CODE,
+  DEFAULT_MARKET_CURRENCY,
+} from "../../configuration/market-baseline";
 import { CategoryIcon } from "./CategoryIcon";
+import { formatListingPricePresentation } from "../../domains/listing/listing-price.presentation";
 
 export interface ListingCardProps {
   listing: Listing;
@@ -47,9 +51,10 @@ export interface ListingCardViewCardProps {
 
 function toListingCardView(
   listing: Listing,
+  locale: string,
   pricing?: ListingCardProps["pricing"],
 ): ListingCardView {
-  const currency = listing.currency ?? MARKET_CONFIG.defaultCurrency;
+  const currency = listing.currency ?? DEFAULT_MARKET_CURRENCY;
   return {
     id: listing.id,
     title: listing.title,
@@ -57,6 +62,9 @@ function toListingCardView(
       amountMinor: majorToMinorAmount(listing.price, currency),
       currency,
     },
+    priceLabel: pricing
+      ? undefined
+      : formatListingPricePresentation(listing.pricePresentation, locale),
     originalPrice:
       pricing?.originalPrice ??
       (listing.originalPrice
@@ -67,7 +75,7 @@ function toListingCardView(
         : undefined),
     imageUrl: listing.coverImageUrl || undefined,
     city: listing.city,
-    marketCode: listing.marketCode ?? MARKET_CONFIG.defaultMarket,
+    marketCode: listing.marketCode ?? DEFAULT_MARKET_CODE,
     categoryLabel: getListingCategoryLabel(listing),
     conditionLabel: listingDisplayResolver.resolveConditionLabel(
       listing.condition,
@@ -187,6 +195,7 @@ export function ListingCard({
   pricing,
 }: ListingCardProps) {
   const { t } = useTranslation();
+  const { currentLocale } = useMarketLocation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const configuredPath = listing.attributes?.canonicalPath;
   const href =
@@ -196,7 +205,7 @@ export function ListingCard({
 
   return (
     <ListingCardViewCard
-      listing={toListingCardView(listing, pricing)}
+      listing={toListingCardView(listing, currentLocale, pricing)}
       href={href}
       variant={variant}
       className={className}

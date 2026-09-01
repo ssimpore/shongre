@@ -497,10 +497,9 @@ export const MessagingPage: React.FC = () => {
     );
   return (
     // `dvh`, not `vh`: the dynamic viewport shrinks when the mobile keyboard
-    // opens, which keeps the composer on screen. With `100vh` plus a 600px floor
-    // the thread stayed full height and pushed the input behind the keyboard, so
-    // the user could not see what they were typing. The minimum height only
-    // applies from `md` up, where there is no virtual keyboard.
+    // opens, which keeps the composer on screen. The mobile route deliberately
+    // owns the remaining viewport after the global header; account navigation,
+    // footer and the global bottom bar are removed by their owning layouts.
     <div
       data-messaging-shell
       className="relative flex h-messaging-shell-height-mobile max-h-messaging-shell-max min-h-0 flex-col overflow-hidden rounded-overlay border border-border-base bg-bg-surface shadow-xs md:h-messaging-shell-height-desktop md:min-h-messaging-shell-min md:flex-row"

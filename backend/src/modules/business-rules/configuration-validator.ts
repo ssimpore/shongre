@@ -207,6 +207,35 @@ export function validateCommercialConfiguration(
         message: `${mapping.id} ne peut pas être publié avant comparaison des devis fantômes.`,
       });
     }
+    const sourceProduct = catalog.products.find(
+      (product) => product.id === mapping.fromProductId,
+    );
+    const targetProduct = catalog.products.find(
+      (product) => product.id === mapping.toProductId,
+    );
+    if (
+      mapping.treatment !== "no_replacement" &&
+      targetProduct?.status !== "active"
+    ) {
+      conflicts.push({
+        code: "MIGRATION_TARGET_NOT_SELECTABLE",
+        severity: "blocking",
+        entityIds: [mapping.id, mapping.toProductId],
+        message: `${mapping.id} ne peut pas être publié tant que l’offre de remplacement n’est pas active.`,
+      });
+    }
+    if (
+      mapping.treatment !== "no_replacement" &&
+      sourceProduct?.status === "active" &&
+      targetProduct?.status === "active"
+    ) {
+      conflicts.push({
+        code: "MIGRATION_SOURCE_STILL_SELECTABLE",
+        severity: "blocking",
+        entityIds: [mapping.id, mapping.fromProductId, mapping.toProductId],
+        message: `${mapping.id} ne peut pas publier simultanément l’ancien tarif et son offre de remplacement.`,
+      });
+    }
   }
 
   const campaignIds = new Set(catalog.campaigns.map((campaign) => campaign.id));

@@ -462,7 +462,7 @@ test.describe("honest product surfaces", () => {
    * menu that is mostly not choices. Absence is the stronger version of the same
    * promise: nothing in the control claims to do something it cannot.
    */
-  test("only languages the interface actually ships are offered", async ({
+  test("the single shipped language opens regional preferences honestly", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -470,24 +470,10 @@ test.describe("honest product surfaces", () => {
     await page.goto("/");
 
     await page.locator("#header-desktop-lang-button").click();
-    const menu = page.getByRole("menu").first();
-    await expect(menu).toBeVisible();
-
     await expect(
-      menu.getByRole("menuitem", { name: /français/i }),
-    ).toBeEnabled();
-
-    // Locales with no catalogue are absent, not present-and-disabled.
-    for (const absent of [
-      /english/i,
-      /deutsch/i,
-      /español/i,
-      /nederlands/i,
-      /italiano/i,
-    ]) {
-      await expect(menu.getByRole("menuitem", { name: absent })).toHaveCount(0);
-    }
-    await expect(menu).not.toContainText(/bientôt/i);
+      page.getByRole("dialog", { name: "Préférences régionales" }),
+    ).toBeVisible();
+    await expect(page.getByRole("menu")).toHaveCount(0);
   });
 
   test("the document language reflects the active locale", async ({ page }) => {

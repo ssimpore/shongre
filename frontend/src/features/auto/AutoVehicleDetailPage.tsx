@@ -245,7 +245,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
           {vehicle.modelLabel}
         </nav>
         <div className="grid min-w-0 gap-5 lg:grid-cols-content-aside-md">
-          <main className="min-w-0 space-y-5">
+          <div className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
               <ListingMediaGallery
                 photos={vehicle.mediaUrls}
@@ -467,7 +467,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 </ListingRail>
               </section>
             )}
-          </main>
+          </div>
 
           <aside className="self-start space-y-4 lg:sticky lg:top-24">
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">

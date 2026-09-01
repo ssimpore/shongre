@@ -61,3 +61,29 @@ test("keeps every listing-detail commerce action full-width and readable", async
     page.getByRole("dialog", { name: "Faire une offre de prix" }),
   ).toBeVisible();
 });
+
+test("keeps the listing owner workspace action contained at the narrow desktop breakpoint", async ({
+  page,
+}) => {
+  await usePersona(page, "individual_seller");
+  await seedConsentDecision(page);
+  await page.setViewportSize({ width: 1055, height: 701 });
+  await page.goto("/annonce/list-109", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
+
+  const manageListings = page.getByRole("link", {
+    name: "Gérer mes annonces",
+    exact: true,
+  });
+  await expect(manageListings).toBeVisible();
+  expect(
+    await manageListings.evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    ),
+    "owner workspace label must remain inside its action",
+  ).toBe(true);
+  await expectNoHorizontalOverflow(page, "owner listing action at 1055px");
+
+  await manageListings.click();
+  await expect(page).toHaveURL(/\/compte\/annonces$/);
+});

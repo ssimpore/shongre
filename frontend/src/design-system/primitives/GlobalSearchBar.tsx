@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Layers, ChevronDown, X, Check } from "lucide-react";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { services } from "../../api/client/service-registry";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
+import type { Category } from "../../types";
 import { CategoryIcon } from "./CategoryIcon";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { routes } from "../../configuration/routes";
@@ -104,6 +105,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   );
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [categoryFilterText, setCategoryFilterText] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Autocomplete state
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
@@ -157,10 +159,33 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
   useEffect(() => setRadiusKm(effectiveRadiusKm), [effectiveRadiusKm]);
 
+  // The generated publication taxonomy is intentionally absent from the shell
+  // bundle. Fetch its public projection only when a category is already
+  // selected or the user opens this picker.
+  useEffect(() => {
+    if (
+      (!isCategoryMenuOpen && !selectedCategorySlug && !query.trim()) ||
+      categories.length
+    )
+      return;
+    let cancelled = false;
+    void services.taxonomy
+      .getRootCategories()
+      .then((items) => {
+        if (!cancelled) setCategories(items);
+      })
+      .catch(() => {
+        if (!cancelled) setCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [categories.length, isCategoryMenuOpen, query, selectedCategorySlug]);
+
   // Derive autocomplete suggestions
   const suggestions: AutocompleteResults = useMemo(() => {
-    return getSearchSuggestions(query, selectedCategorySlug, 5);
-  }, [query, selectedCategorySlug]);
+    return getSearchSuggestions(query, selectedCategorySlug, categories, 5);
+  }, [categories, query, selectedCategorySlug]);
 
   // Total selectable items in autocomplete dropdown
   const totalSelectableCount = useMemo(() => {
@@ -219,7 +244,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   }, [isCategoryMenuOpen, isAutocompleteOpen, idPrefix]);
 
   // Find active category
-  const activeCategory = TAXONOMY.find(
+  const activeCategory = categories.find(
     (cat) => cat.slug === selectedCategorySlug,
   );
   const activeCategoryLabel = activeCategory
@@ -227,7 +252,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     : "Catégories";
 
   // Filtered categories for dropdown search
-  const filteredCategories = TAXONOMY.filter((cat) => {
+  const filteredCategories = categories.filter((cat) => {
     if (!categoryFilterText.trim()) return true;
     const search = categoryFilterText.toLowerCase();
     return (
@@ -760,7 +785,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                       >
                         {t("ui.globalSearchBar.toutesLesCategories2")}
                       </button>
-                      {TAXONOMY.map((cat) => (
+                      {categories.map((cat) => (
                         <button
                           key={cat.id}
                           type="button"

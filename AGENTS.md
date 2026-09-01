@@ -532,6 +532,12 @@ France-only happy path is insufficient for market-sensitive work.
   environment-plus-market provider mappings are approved. Customer price locks
   and accepted Enterprise terms use append-only evidence; Enterprise pricing
   uses customer-specific price books rather than a fake public price.
+- A public replacement-plan preview must be a typed projection of one newer
+  migration-linked catalog. It must list only the target product identities,
+  must not merge active legacy cards with target cards, and must disable paid
+  actions until publication. Publication must require every configured
+  replacement to be selectable and must reject a snapshot where its migration
+  source remains selectable.
 - Use consistent public terms: **Urgent**, **Remonter l’annonce**, and **À la
   une**. Promotion state must account for scheduling and expiry rather than a
   stale boolean.
@@ -578,6 +584,10 @@ France-only happy path is insufficient for market-sensitive work.
   decorative animation that interferes with interaction or performance.
 - Measure before optimizing. Prioritize LCP, INP, CLS, and TTFB on homepage,
   search, listing detail, publication, and workspace surfaces.
+- Every production Web build runs `frontend/scripts/check-client-bundle-budget.mjs`.
+  Keep ordinary executable chunks and generated taxonomy data measured
+  separately; do not raise either hydration budget without recorded artifact
+  evidence and an approved migration plan.
 - Avoid data/render waterfalls and repeated per-card calls. Parallelize
   independent work, batch related data, virtualize/bound large lists, and
   lazy-load genuinely heavy maps, charts, editors, provider UI, and analytics.

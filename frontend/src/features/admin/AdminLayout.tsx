@@ -26,6 +26,7 @@ import {
   Flag,
   BarChart3,
   Grid2X2,
+  Search,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -49,6 +50,8 @@ export const AdminLayout: React.FC = () => {
   const { canAccessRoute } = useAuthorization();
   const location = useLocation();
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
+  const [navQuery, setNavQuery] = useState("");
+  const [recentPaths, setRecentPaths] = useState<string[]>([]);
   const sectionMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -98,144 +101,181 @@ export const AdminLayout: React.FC = () => {
       to: "/admin",
       end: true,
       label: "Vue d'ensemble",
+      group: "overview",
       icon: LayoutDashboard,
       show: canAccessRoute("adminOverview"),
     },
     {
       to: "/admin/analytics",
       label: "Analytics & Intelligence",
+      group: "overview",
       icon: BarChart3,
       show: canAccessRoute("adminAnalytics"),
     },
     {
       to: "/admin/support",
       label: "Support client",
+      group: "operations",
       icon: Headphones,
       show: canAccessRoute("adminSupport"),
     },
     {
       to: "/admin/crm",
       label: t("admin.adminLayout.crmPipelineVentes"),
+      group: "operations",
       icon: Briefcase,
       show: canAccessRoute("adminCrm"),
     },
     {
       to: "/admin/education",
       label: t("verticals.education.brand"),
+      group: "verticals",
       icon: GraduationCap,
       show: canAccessRoute("adminCourse"),
     },
     {
       to: "/admin/auto",
       label: "Shongre Auto",
+      group: "verticals",
       icon: CarFront,
       show: canAccessRoute("adminAuto"),
     },
     {
       to: "/admin/immo",
       label: "Shongre Immo",
+      group: "verticals",
       icon: Building2,
       show: canAccessRoute("adminRealEstate"),
     },
     {
       to: "/admin/emploi",
       label: "Shongre Emploi",
+      group: "verticals",
       icon: Briefcase,
       show: canAccessRoute("adminEmployment"),
     },
     {
       to: "/admin/crm/prospection",
       label: "Prospection IA",
+      group: "operations",
       icon: Sparkles,
       show: canAccessRoute("adminCrmProspecting"),
     },
     {
       to: "/admin/moderation",
       label: t("admin.adminRolesMatrixPage.moderationSignalements"),
+      group: "trust",
       icon: ShieldAlert,
       show: canAccessRoute("adminModeration"),
     },
     {
       to: "/admin/utilisateurs",
       label: "Utilisateurs & Profils",
+      group: "trust",
       icon: Users,
       show: canAccessRoute("adminUsers"),
     },
     {
       to: "/admin/verifications",
       label: t("admin.adminLayout.conformiteKycKyb"),
+      group: "trust",
       icon: Shield,
       show: canAccessRoute("adminVerifications"),
     },
     {
       to: "/admin/marches",
       label: t("admin.adminRolesMatrixPage.marchesTerritoires"),
+      group: "commerce",
       icon: Globe,
       show: canAccessRoute("adminMarkets"),
     },
     {
       to: "/admin/fournisseurs",
       label: t("admin.adminLayout.fournisseursIntegrations"),
+      group: "commerce",
       icon: Cpu,
       show: canAccessRoute("adminProviders"),
     },
     {
       to: "/admin/marketing",
       label: "Marketing & Newsletter",
+      group: "commerce",
       icon: Mail,
       show: canAccessRoute("adminMarketing"),
     },
     {
       to: "/admin/taxonomie",
       label: "Taxonomie & Attributs",
+      group: "commerce",
       icon: Layers,
       show: canAccessRoute("adminTaxonomy"),
     },
     {
       to: "/admin/monetisation",
       label: t("admin.adminLayout.monetisationForfaitsPro"),
+      group: "commerce",
       icon: CreditCard,
       show: canAccessRoute("adminMonetization"),
     },
     {
       to: routes.admin.finance(),
       label: "Finance & Revenus",
+      group: "commerce",
       icon: Landmark,
       show: canAccessRoute("adminFinance"),
     },
     {
       to: "/admin/tendances",
       label: "Page d’accueil & tendances",
+      group: "commerce",
       icon: Flame,
       show: canAccessRoute("adminTrending"),
     },
     {
       to: "/admin/fonctionnalites",
       label: t("invoicing.product.nav.features"),
+      group: "governance",
       icon: Flag,
       show: canAccessRoute("adminFeatureFlags"),
     },
     {
       to: routes.admin.solutions(),
       label: "Solutions",
+      group: "governance",
       icon: Grid2X2,
       show: canAccessRoute("adminSolutions"),
     },
     {
       to: "/admin/roles",
       label: t("admin.adminLayout.matriceRolesPermissions"),
+      group: "governance",
       icon: KeyRound,
       show: canAccessRoute("adminRoles"),
     },
     {
       to: "/admin/audit",
       label: t("admin.adminAuditLogsPage.registreDAuditSecurite"),
+      group: "governance",
       icon: FileSpreadsheet,
       show: canAccessRoute("adminAudit"),
     },
   ];
 
   const visibleNavItems = navItems.filter((item) => item.show);
+  const normalizedNavQuery = navQuery.trim().toLocaleLowerCase("fr-FR");
+  const filteredNavItems = normalizedNavQuery
+    ? visibleNavItems.filter((item) =>
+        item.label.toLocaleLowerCase("fr-FR").includes(normalizedNavQuery),
+      )
+    : visibleNavItems;
+  const navGroups = [
+    { id: "overview", label: "Pilotage" },
+    { id: "operations", label: "Opérations" },
+    { id: "verticals", label: "Marchés verticaux" },
+    { id: "trust", label: "Confiance & sécurité" },
+    { id: "commerce", label: "Catalogue & revenus" },
+    { id: "governance", label: "Gouvernance" },
+  ] as const;
   // Longest matching path wins, so `/admin/crm/contacts` reports "Contacts"
   // rather than the `/admin` overview it also prefixes.
   const activeNavItem = visibleNavItems
@@ -245,6 +285,17 @@ export const AdminLayout: React.FC = () => {
         : location.pathname.startsWith(item.to),
     )
     .sort((a, b) => b.to.length - a.to.length)[0];
+  const recentNavItems = recentPaths
+    .map((path) => visibleNavItems.find((item) => item.to === path))
+    .filter((item): item is (typeof visibleNavItems)[number] => Boolean(item));
+
+  useEffect(() => {
+    if (!activeNavItem) return;
+    setRecentPaths((paths) =>
+      [activeNavItem.to, ...paths.filter((path) => path !== activeNavItem.to)]
+        .slice(0, 3),
+    );
+  }, [activeNavItem?.to]);
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-text-main">
@@ -368,7 +419,6 @@ export const AdminLayout: React.FC = () => {
             type="button"
             onClick={() => setIsSectionMenuOpen((open) => !open)}
             aria-expanded={isSectionMenuOpen}
-            aria-haspopup="menu"
             aria-controls="admin-section-menu"
             className="w-full flex items-center justify-between gap-3 bg-bg-surface rounded-control border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
           >
@@ -395,34 +445,63 @@ export const AdminLayout: React.FC = () => {
           </button>
 
           {isSectionMenuOpen && (
-            <div
+            <nav
               id="admin-section-menu"
-              role="menu"
               aria-label={t("admin.adminLayout.sectionsDeLaConsole")}
               className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-bg-surface rounded-control border border-stone-200 shadow-xl py-1.5 max-h-admin-menu-max overflow-y-auto animate-in fade-in slide-in-from-top"
             >
-              {visibleNavItems.map((item) => {
-                const Icon = item.icon;
+              <div className="sticky top-0 z-raised bg-bg-surface px-2 pb-2">
+                <label className="relative block">
+                  <span className="sr-only">Rechercher une section</span>
+                  <Search className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted" />
+                  <input
+                    type="search"
+                    value={navQuery}
+                    onChange={(event) => setNavQuery(event.target.value)}
+                    placeholder="Rechercher une section"
+                    className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </label>
+              </div>
+              {navGroups.map((group) => {
+                const items = filteredNavItems.filter(
+                  (item) => item.group === group.id,
+                );
+                if (items.length === 0) return null;
                 return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    role="menuitem"
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors ${
-                        isActive
-                          ? "bg-primary-light text-primary font-bold"
-                          : "text-stone-700 hover:bg-bg-subtle"
-                      }`
-                    }
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </NavLink>
+                  <div key={group.id} className="py-1">
+                    <div className="px-3.5 py-1 text-micro font-bold uppercase tracking-wider text-text-muted">
+                      {group.label}
+                    </div>
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          end={item.end}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors ${
+                              isActive
+                                ? "bg-primary-light text-primary font-bold"
+                                : "text-stone-700 hover:bg-bg-subtle"
+                            }`
+                          }
+                        >
+                          <Icon className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
                 );
               })}
-            </div>
+              {filteredNavItems.length === 0 && (
+                <p className="px-4 py-8 text-center text-xs text-text-secondary">
+                  Aucune section autorisée ne correspond à cette recherche.
+                </p>
+              )}
+            </nav>
           )}
         </div>
 
@@ -431,32 +510,79 @@ export const AdminLayout: React.FC = () => {
             column, which is narrower than the phone layout they were designed
             to fall back to. */}
         <aside className="hidden lg:block w-64 shrink-0">
-          <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-3 sticky top-20">
-            <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-stone-500">
-              Espace Interne & Gouvernance
-            </div>
+          <div className="sticky top-20 max-h-admin-sidebar-max overflow-y-auto rounded-control border border-stone-200 bg-bg-surface p-3 shadow-xs">
+            <label className="relative mb-3 block">
+              <span className="sr-only">Rechercher une section</span>
+              <Search className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted" />
+              <input
+                type="search"
+                value={navQuery}
+                onChange={(event) => setNavQuery(event.target.value)}
+                placeholder="Rechercher"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
 
             <nav className="space-y-1">
-              {visibleNavItems.map((item) => {
-                const Icon = item.icon;
+              {!normalizedNavQuery && recentNavItems.length > 1 && (
+                <div className="mb-3 border-b border-border-subtle pb-3">
+                  <div className="px-3 py-1 text-micro font-bold uppercase tracking-wider text-text-muted">
+                    Récents
+                  </div>
+                  {recentNavItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <NavLink
+                        key={`recent-${item.to}`}
+                        to={item.to}
+                        end={item.end}
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+              {navGroups.map((group) => {
+                const items = filteredNavItems.filter(
+                  (item) => item.group === group.id,
+                );
+                if (items.length === 0) return null;
                 return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors ${
-                        isActive
-                          ? "bg-primary text-text-inverse font-bold shadow-xs"
-                          : "text-stone-700 hover:bg-stone-100 hover:text-text-main"
-                      }`
-                    }
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
-                  </NavLink>
+                  <div key={group.id} className="pb-3 last:pb-0">
+                    <div className="px-3 py-1 text-micro font-bold uppercase tracking-wider text-text-muted">
+                      {group.label}
+                    </div>
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <NavLink
+                          key={item.to}
+                          to={item.to}
+                          end={item.end}
+                          className={({ isActive }) =>
+                            `flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors ${
+                              isActive
+                                ? "bg-primary text-text-inverse font-bold shadow-xs"
+                                : "text-stone-700 hover:bg-stone-100 hover:text-text-main"
+                            }`
+                          }
+                        >
+                          <Icon className="h-4 w-4 shrink-0" />
+                          <span>{item.label}</span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
                 );
               })}
+              {filteredNavItems.length === 0 && (
+                <p className="px-3 py-6 text-center text-xs text-text-secondary">
+                  Aucun résultat autorisé.
+                </p>
+              )}
             </nav>
 
             <div className="mt-6 pt-4 border-t border-stone-100 px-3">

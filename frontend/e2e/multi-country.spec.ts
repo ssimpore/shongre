@@ -112,10 +112,9 @@ test.describe("multi-country public routing", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     await page
-      .getByRole("button", { name: /Langue : Français/ })
+      .getByRole("button", { name: /préférences régionales : Français/i })
       .first()
       .click();
-    await page.getByRole("menuitem", { name: "Préférences" }).click();
     const preferences = page.getByRole("dialog", {
       name: "Préférences régionales",
     });
@@ -128,10 +127,9 @@ test.describe("multi-country public routing", () => {
     await expect(page).toHaveURL(new RegExp(`${alternative.basePath}(?:\\?|$)`));
 
     await page
-      .getByRole("button", { name: /Langue : Français/ })
+      .getByRole("button", { name: /préférences régionales : Français/i })
       .first()
       .click();
-    await page.getByRole("menuitem", { name: "Préférences" }).click();
     await page
       .getByRole("button", { name: "Réactiver la suggestion automatique" })
       .click();

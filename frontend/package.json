@@ -11,6 +11,7 @@
     "dev": "node scripts/next-cli.mjs dev",
     "prebuild": "npm run build --workspace=@shongre/design-tokens && npm run check:taxonomy",
     "build": "next build",
+    "postbuild": "npm run check:bundle",
     "preview": "node scripts/next-cli.mjs start",
     "start": "node scripts/next-cli.mjs start",
     "clean": "rm -rf .next out server.js",
@@ -35,6 +36,7 @@
     "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts",
     "check:navigation": "node scripts/check-navigation-integrity.mjs",
     "check:routes": "node scripts/check-route-coverage.mjs",
+    "check:bundle": "node scripts/check-client-bundle-budget.mjs",
     "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {

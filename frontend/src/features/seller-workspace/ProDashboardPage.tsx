@@ -21,6 +21,9 @@ import { services } from "../../api/client/service-registry";
 import type { ProAnalyticsSnapshot } from "../../api/contracts/workspace.contract";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
+
+type AnalyticsLoadState = "loading" | "success" | "error";
 
 function getPhotoUrl(photo: any): string {
   if (typeof photo === "string") return photo;
@@ -41,18 +44,30 @@ export const ProDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [analytics, setAnalytics] = useState<ProAnalyticsSnapshot | null>(null);
+  const [loadState, setLoadState] = useState<AnalyticsLoadState>("loading");
+  const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      setLoadState("error");
+      return;
+    }
+    let cancelled = false;
+    setLoadState("loading");
     services.workspace
       .getProAnalytics(currentUser.id)
       .then((snapshot) => {
+        if (cancelled) return;
         setAnalytics(snapshot);
+        setLoadState("success");
       })
       .catch(() => {
-        setAnalytics(null);
+        if (!cancelled) setLoadState("error");
       });
-  }, [currentUser?.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.id, reloadToken]);
 
   const hasCatalogue = Boolean(analytics?.topListings.length);
   const weeklyStats = analytics?.weeklyStats || [];
@@ -104,6 +119,36 @@ export const ProDashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {loadState === "loading" && (
+        <div
+          role="status"
+          aria-label="Chargement des performances"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {[1, 2, 3, 4].map((item) => (
+            <div
+              key={item}
+              className="h-28 animate-pulse rounded-xl border border-border-base bg-bg-muted motion-reduce:animate-none"
+            />
+          ))}
+        </div>
+      )}
+
+      {loadState === "error" && (
+        <StatePanel
+          variant="error"
+          title="Performances indisponibles"
+          description="Les données de votre activité n’ont pas pu être chargées. Aucun indicateur à zéro n’est affiché tant que leur état réel n’est pas connu."
+          action={
+            <Button onClick={() => setReloadToken((value) => value + 1)}>
+              Réessayer
+            </Button>
+          }
+        />
+      )}
+
+      {loadState === "success" && analytics && (
+        <>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
@@ -279,6 +324,8 @@ export const ProDashboardPage: React.FC = () => {
         onClose={() => setIsBillingModalOpen(false)}
         userType="professional"
       />
+        </>
+      )}
     </div>
   );
 };

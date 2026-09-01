@@ -9,6 +9,7 @@ import type {
   MonetizationOrder,
   MonetizationInvoice,
   MonetizationPayment,
+  ProfessionalCatalogPresentation,
   MonetizationQuote,
   MonetizationRefund,
   MonetizationSubscription,
@@ -36,6 +37,7 @@ import { colors, palette } from "@shongre/design-tokens";
 import {
   getBillingUsagePresentation,
   resolveAllEffectiveEntitlements,
+  selectProfessionalCatalogPresentation,
 } from "@shongre/shared";
 import type {
   BusinessRulesServiceContract,
@@ -52,6 +54,8 @@ import {
 } from "./demo-authorization";
 
 const createdAt = BASELINE_MONETIZATION_CATALOG.generatedAt;
+const DEMO_COMMERCIAL_NOW = "2026-08-28T12:00:00.000Z";
+const DEMO_COMMERCIAL_NOW_MS = Date.parse(DEMO_COMMERCIAL_NOW);
 const versions: CommercialConfigurationVersion[] = [
   {
     id: PROPOSED_MONETIZATION_DRAFT_CATALOG.configurationVersionId,
@@ -433,7 +437,7 @@ function ensureSeededBilling(accountId: string) {
 }
 
 function applyDueScheduledChanges(accountId: string) {
-  const changedAt = new Date().toISOString();
+  const changedAt = DEMO_COMMERCIAL_NOW;
   subscriptions
     .filter(
       (subscription) =>
@@ -512,6 +516,18 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     const catalog = catalogs.get(version?.id || "");
     if (!catalog) throw new Error("Configuration commerciale indisponible.");
     return structuredClone(catalog);
+  }
+
+  async getProfessionalCatalogPresentation(
+    marketCode: string,
+  ): Promise<ProfessionalCatalogPresentation> {
+    const activeCatalog = await this.getCatalog(marketCode);
+    const candidates = versions.flatMap((version) => {
+      if (version.id === activeCatalog.configurationVersionId) return [];
+      const catalog = catalogs.get(version.id);
+      return catalog ? [{ version, catalog: structuredClone(catalog) }] : [];
+    });
+    return selectProfessionalCatalogPresentation(activeCatalog, candidates);
   }
 
   async evaluate(
@@ -646,12 +662,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         return false;
       if (
         policy.campaignStartsAt &&
-        new Date(policy.campaignStartsAt) > new Date()
+        Date.parse(policy.campaignStartsAt) > DEMO_COMMERCIAL_NOW_MS
       )
         return false;
       if (
         policy.campaignEndsAt &&
-        new Date(policy.campaignEndsAt) <= new Date()
+        Date.parse(policy.campaignEndsAt) <= DEMO_COMMERCIAL_NOW_MS
       )
         return false;
       if (!policy.firstTimeCustomersOnly) return true;
@@ -677,7 +693,9 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       promotion?.freePeriodDays ||
       trialProduct?.commercialProfile.trialPolicy.durationDays;
     const trialEndsAt = trialDays
-      ? new Date(Date.now() + trialDays * 86_400_000).toISOString()
+      ? new Date(
+          DEMO_COMMERCIAL_NOW_MS + trialDays * 86_400_000,
+        ).toISOString()
       : undefined;
     const lines = request.productIds.map((id) => {
       const product = selectedProducts.find((entry) => entry.id === id)!;
@@ -726,7 +744,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         trialDays: product.id === trialProduct?.id ? trialDays : undefined,
       };
     });
-    const now = new Date().toISOString();
+    const now = DEMO_COMMERCIAL_NOW;
     const totalMinor = lines.reduce((sum, line) => sum + line.totalMinor, 0);
     const quote: MonetizationQuote = {
       id: `quote_${digest(key).slice(0, 24)}`,
@@ -773,7 +791,9 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           ? "PROMOTION_APPLIED"
           : "CATALOG_PRICE",
       status: "active",
-      expiresAt: new Date(Date.now() + 30 * 60_000).toISOString(),
+      expiresAt: new Date(
+        DEMO_COMMERCIAL_NOW_MS + 30 * 60_000,
+      ).toISOString(),
       createdAt: now,
     };
     quotes.set(key, quote);
@@ -795,7 +815,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     if (/provider[-_:]?outage/i.test(idempotencyKey)) {
       throw new Error("Le service de paiement simulé est indisponible.");
     }
-    const now = new Date().toISOString();
+    const now = DEMO_COMMERCIAL_NOW;
     const scenarioStatus: MonetizationOrder["status"] =
       /requires[-_:]?action/i.test(idempotencyKey)
         ? "requires_action"
@@ -866,7 +886,9 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       else if (line.billingPeriod === "month")
         periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
       const endsAt = price?.durationDays
-        ? new Date(Date.now() + price.durationDays * 86_400_000).toISOString()
+        ? new Date(
+            DEMO_COMMERCIAL_NOW_MS + price.durationDays * 86_400_000,
+          ).toISOString()
         : line.billingPeriod === "once"
           ? undefined
           : periodEnd.toISOString();
@@ -986,8 +1008,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     const active =
       promotion &&
       promotion.status === "active" &&
-      new Date(promotion.startsAt) <= new Date() &&
-      new Date(promotion.endsAt) > new Date();
+      Date.parse(promotion.startsAt) <= DEMO_COMMERCIAL_NOW_MS &&
+      Date.parse(promotion.endsAt) > DEMO_COMMERCIAL_NOW_MS;
     const targetFamilies = new Set(
       catalog.products
         .filter((product) => applicableProductIds.includes(product.id))
@@ -1115,6 +1137,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
             entitlements: accountEntitlements.filter(
               (entry) => entry.configurationVersionId === versionId,
             ),
+            at: new Date(DEMO_COMMERCIAL_NOW),
           })
         : [];
     });
@@ -1275,8 +1298,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     const targetPrice = targetProduct?.prices.find(
       (entry) =>
         entry.id === request.targetPriceId &&
-        (!entry.effectiveFrom || new Date(entry.effectiveFrom) <= new Date()) &&
-        (!entry.effectiveUntil || new Date(entry.effectiveUntil) > new Date()),
+        (!entry.effectiveFrom ||
+          Date.parse(entry.effectiveFrom) <= DEMO_COMMERCIAL_NOW_MS) &&
+        (!entry.effectiveUntil ||
+          Date.parse(entry.effectiveUntil) > DEMO_COMMERCIAL_NOW_MS),
     );
     if (
       !currentProduct ||
@@ -1318,7 +1343,8 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       0,
       Math.min(
         1,
-        (periodEnd - Date.now()) / Math.max(1, periodEnd - periodStart),
+        (periodEnd - DEMO_COMMERCIAL_NOW_MS) /
+          Math.max(1, periodEnd - periodStart),
       ),
     );
     const prorationMinor =
@@ -1394,7 +1420,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       );
     } else {
       const previousProductId = subscription.productId;
-      const changedAt = new Date().toISOString();
+      const changedAt = DEMO_COMMERCIAL_NOW;
       const catalog = catalogs.get(preview.targetConfigurationVersionId);
       const target = catalog?.products.find(
         (entry) => entry.id === request.targetProductId,
@@ -1434,7 +1460,10 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       );
     }
     subscription.updatedAt = new Date(
-      Math.max(Date.now(), new Date(previousUpdatedAt).getTime() + 1),
+      Math.max(
+        DEMO_COMMERCIAL_NOW_MS,
+        new Date(previousUpdatedAt).getTime() + 1,
+      ),
     ).toISOString();
     const result = structuredClone(subscription);
     subscriptionChangeResults.set(resultKey, result);
@@ -1467,7 +1496,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     subscription.status = request.cancelAtPeriodEnd
       ? "cancellation_pending"
       : "active";
-    subscription.updatedAt = new Date().toISOString();
+    subscription.updatedAt = new Date(
+      Math.max(
+        DEMO_COMMERCIAL_NOW_MS,
+        Date.parse(subscription.updatedAt) + 1,
+      ),
+    ).toISOString();
     pushSubscriptionEvent(
       subscription,
       request.cancelAtPeriodEnd ? "cancellation_scheduled" : "reactivated",

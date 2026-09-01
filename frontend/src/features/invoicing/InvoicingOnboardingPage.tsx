@@ -157,7 +157,7 @@ export function InvoicingOnboardingPage() {
   }
 
   return (
-    <main className="bg-bg-base px-4 py-10 sm:px-6 sm:py-14">
+    <div className="bg-bg-base px-4 py-10 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-4xl">
         <Button
           type="button"
@@ -271,6 +271,6 @@ export function InvoicingOnboardingPage() {
           </a>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

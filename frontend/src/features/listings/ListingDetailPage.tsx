@@ -74,6 +74,7 @@ import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
 import { ListingFulfillmentSummary } from "./components/ListingFulfillmentSummary";
 import { ListingSellerTrustSection } from "./components/ListingSellerTrustSection";
 import { ListingSafetyNotice } from "./components/ListingSafetyNotice";
+import { resolveListingIntentPresentation } from "../../domains/listing/listing-intent.presentation";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   getListingCategoryLabel,
@@ -88,7 +89,7 @@ import {
 } from "../../platform/seo/seo-policy";
 
 export const ListingDetailPage: React.FC = () => {
-  const { activeMarket, marketContext } = useMarketLocation();
+  const { activeMarket, effectiveConfig, marketContext } = useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -265,6 +266,15 @@ export const ListingDetailPage: React.FC = () => {
         return t("listings.listingDetailPage.message");
     }
   }, [taxonomyNode, t]);
+
+  const intentPresentation = useMemo(
+    () =>
+      resolveListingIntentPresentation(
+        taxonomyNode?.publication?.primaryCta,
+        Boolean(listing?.isOnlinePaymentAvailable),
+      ),
+    [listing?.isOnlinePaymentAvailable, taxonomyNode?.publication?.primaryCta],
+  );
 
   /**
    * Publishes the action bar's real height so the layout can reserve room below
@@ -529,7 +539,11 @@ export const ListingDetailPage: React.FC = () => {
     );
   }
 
-  const buyerFee = calculateBuyerFee(listing.price);
+  const buyerFee = calculateBuyerFee(
+    listing.price,
+    effectiveConfig.payments.buyerProtectionFeePercent,
+    effectiveConfig.payments.buyerProtectionFixedFee,
+  );
   // Buyer protection only applies to online payment, so it is the only case where
   // the price shown to the buyer differs from the amount they actually pay.
   const showsBuyerFee =
@@ -589,7 +603,7 @@ export const ListingDetailPage: React.FC = () => {
         {/* LEFT COLUMN: Media, Primary Summary, Characteristics, Description, Seller */}
         {/* ========================================================================= */}
         <div className="lg:col-span-8 space-y-6">
-          {/* 1. MEDIA GALLERY */}
+          {/* 1. MEDIA GALLERY — let buyers inspect the item before its details. */}
           <ListingMediaGallery
             photos={listing.photos}
             title={listing.title}
@@ -731,7 +745,7 @@ export const ListingDetailPage: React.FC = () => {
 
           {/* 7. SAFETY REASSURANCE NOTICE */}
           <ListingSafetyNotice
-            isOnlinePaymentAvailable={listing.isOnlinePaymentAvailable}
+            variant={intentPresentation.safetyVariant}
           />
 
           {/* 8. LISTING BOTTOM METADATA */}
@@ -769,7 +783,7 @@ export const ListingDetailPage: React.FC = () => {
                 reservation flows where the amount is actually known. */}
             <div className="space-y-1">
               <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
-                {t("listings.listingDetailPage.prixDeLArticle")}
+                {t(intentPresentation.priceLabelKey)}
               </span>
               <PriceDisplay
                 price={listing.price}

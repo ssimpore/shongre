@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { useEstablishedConsent, usePersona } from "./personas";
-import { waitForStableLayout } from "./overflow";
+import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 /**
  * Guards for the defects the August 2026 audit found in the running product.
@@ -136,6 +136,29 @@ test.describe("search matching", () => {
 });
 
 test.describe("publish wizard", () => {
+  test("preparation content remains reachable at 320px", async ({ page }) => {
+    await usePersona(page, "individual_seller");
+    await page.setViewportSize({ width: 320, height: 700 });
+    await page.goto("/deposer", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const preparation = page.getByRole("region", {
+      name: /Avant de commencer/i,
+    });
+    await expect(preparation).toBeVisible();
+    await expect(
+      preparation.getByRole("button", {
+        name: /(?:Commencer|Reprendre) mon annonce/,
+      }),
+    ).toBeVisible();
+    const width = await preparation.evaluate((element) => ({
+      client: element.clientWidth,
+      scroll: element.scrollWidth,
+    }));
+    expect(width.scroll).toBeLessThanOrEqual(width.client + 1);
+    await expectNoHorizontalOverflow(page, "320px publishing preparation");
+  });
+
   test("cannot skip ahead, and does not tick steps it skipped", async ({
     page,
   }) => {

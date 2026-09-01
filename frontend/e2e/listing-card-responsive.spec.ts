@@ -113,14 +113,24 @@ test.describe("canonical listing cards", () => {
     await page.setViewportSize({ width: 1408, height: 900 });
     await openAsGuest(page, "/");
 
-    const firstRail = page
+    const showcaseRails = page
       .locator(".listing-rail-track")
       .filter({
         has: page.locator('[data-listing-card-variant="showcase"]'),
-      })
-      .first();
-    await expect(firstRail).toBeVisible();
-    const geometry = await firstRail.evaluate((rail) => {
+      });
+    const denseRailIndex = await showcaseRails.evaluateAll((rails) =>
+      rails.findIndex(
+        (rail) =>
+          rail.querySelectorAll(":scope > .listing-rail-cell").length >= 5,
+      ),
+    );
+    expect(
+      denseRailIndex,
+      "homepage should expose a discovery rail with at least five listings",
+    ).toBeGreaterThanOrEqual(0);
+    const denseRail = showcaseRails.nth(denseRailIndex);
+    await expect(denseRail).toBeVisible();
+    const geometry = await denseRail.evaluate((rail) => {
       const viewport = rail.parentElement;
       const viewportRect = viewport?.getBoundingClientRect();
       const cards = Array.from(

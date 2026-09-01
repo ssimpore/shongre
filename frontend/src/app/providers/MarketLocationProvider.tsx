@@ -13,7 +13,6 @@ import {
   MarketConfiguration,
   MarketCity,
 } from "../../domains/market/market.types";
-import { marketService } from "../../domains/market/market.service";
 import {
   MARKETS_CHANGED_EVENT,
   MARKETS_STORAGE_KEY,
@@ -23,11 +22,10 @@ import {
   formatCurrencySymbol,
   formatPrice as formatPriceUtil,
 } from "../../utilities/formatters";
-import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
-import { refreshTaxonomyProjection } from "../../domains/taxonomy/taxonomy.data";
 import { resolveShippedLocale } from "../../i18n/locale";
 import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
 import { marketResolver } from "../../domains/market/market.resolver";
+import { normalizePriceFilterStops } from "../../domains/market/market.constants";
 import {
   getCountryConfig,
   listPublicCountries,
@@ -61,6 +59,50 @@ const INITIAL_DEFAULT_MARKET =
   INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
 const RUNTIME_MARKET_INFRASTRUCTURE =
   marketInfrastructureFromPublicEnvironment();
+
+/**
+ * Read-only market access for the application shell.
+ *
+ * The administrative MarketService also owns taxonomy eligibility mutations,
+ * which loads the complete publication taxonomy. The shell only needs the
+ * persisted market projection, so keeping these reads local prevents that
+ * multi-hundred-kilobyte domain bundle from becoming hydration JavaScript on
+ * every route.
+ */
+const listRuntimeMarkets = (): Market[] => {
+  const markets = storageService.getMarkets();
+  return markets.length > 0 ? markets : INITIAL_MARKETS;
+};
+
+const findRuntimeMarket = (code?: string): Market | undefined => {
+  if (!code) return undefined;
+  const normalized = code.toUpperCase();
+  return listRuntimeMarkets().find(
+    (market) => market.code.toUpperCase() === normalized,
+  );
+};
+
+const getRuntimeMarket = (code?: string): Market => {
+  const market = findRuntimeMarket(code || INITIAL_DEFAULT_MARKET.code);
+  if (!market) throw new Error(`Unsupported market [${code}].`);
+  return market;
+};
+
+const getRuntimeMarketConfig = (code?: string): MarketConfiguration => {
+  const resolved = marketResolver.resolveEffectiveConfig(
+    getRuntimeMarket(code),
+    INITIAL_DEFAULT_MARKET,
+  );
+  return {
+    ...resolved,
+    search: {
+      ...resolved.search,
+      priceFilterStopsMajor: normalizePriceFilterStops(
+        resolved.search?.priceFilterStopsMajor,
+      ),
+    },
+  };
+};
 
 export interface LocationModalOptions {
   initialLocation?: LocationSelection;
@@ -174,7 +216,7 @@ export const MarketLocationProvider: React.FC<{
     if (!hasRestoredPreferences) {
       return requestMarket;
     }
-    return marketService.getMarket(activeMarketCode);
+    return getRuntimeMarket(activeMarketCode);
   }, [
     activeMarketCode,
     hasRestoredPreferences,
@@ -184,7 +226,7 @@ export const MarketLocationProvider: React.FC<{
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
     if (!hasRestoredPreferences) return requestConfig;
-    return marketService.getEffectiveConfig(activeMarket.code);
+    return getRuntimeMarketConfig(activeMarket.code);
   }, [activeMarket, hasRestoredPreferences, marketDataVersion, requestConfig]);
 
   const resolvedMarketContext = useMemo<MarketContext | null>(() => {
@@ -206,7 +248,7 @@ export const MarketLocationProvider: React.FC<{
 
   const availableMarkets = useMemo<Market[]>(() => {
     const markets = hasRestoredPreferences
-      ? marketService.getMarkets()
+      ? listRuntimeMarkets()
       : INITIAL_MARKETS;
     return listPublicCountries().flatMap((country) => {
       const market = markets.find((entry) => entry.code === country.code);
@@ -247,10 +289,8 @@ export const MarketLocationProvider: React.FC<{
       requestCountryCode: initialMarketContext?.countryCode,
       defaultCountryCode: INITIAL_DEFAULT_MARKET.code,
     });
-    const restoredMarket = marketService.getMarket(resolvedMarketCode);
-    const restoredConfig = marketService.getEffectiveConfig(
-      restoredMarket.code,
-    );
+    const restoredMarket = getRuntimeMarket(resolvedMarketCode);
+    const restoredConfig = getRuntimeMarketConfig(restoredMarket.code);
     const isSameStoredMarket = storedMarketCode === restoredMarket.code;
     const restoredLocation = isSameStoredMarket
       ? storageService.getLocationPreference()
@@ -356,8 +396,13 @@ export const MarketLocationProvider: React.FC<{
        has to be rebuilt for a language change to reach category names. Without
        this, switching language re-rendered the chrome in English and left every
        category in the language the app happened to boot in. */
-      taxonomyService.reload();
-      refreshTaxonomyProjection(shippedLocale);
+      void Promise.all([
+        import("../../domains/taxonomy/taxonomy.service"),
+        import("../../domains/taxonomy/taxonomy.data"),
+      ]).then(([{ taxonomyService }, { refreshTaxonomyProjection }]) => {
+        taxonomyService.reload();
+        refreshTaxonomyProjection(shippedLocale);
+      });
     },
     [effectiveConfig.localization.defaultLocale],
   );
@@ -453,7 +498,7 @@ export const MarketLocationProvider: React.FC<{
 
   const setMarket = useCallback(
     (newMarketCode: string) => {
-      const market = marketService.getMarketByCode(newMarketCode);
+      const market = findRuntimeMarket(newMarketCode);
       if (!market) return;
       if (market.code === activeMarket.code) {
         storageService.saveManualMarketSelection(market.code);
@@ -500,7 +545,7 @@ export const MarketLocationProvider: React.FC<{
     }
     if (hasAppliedRestoredManualSelection.current) return;
     hasAppliedRestoredManualSelection.current = true;
-    const preferredMarket = marketService.getMarketByCode(
+    const preferredMarket = findRuntimeMarket(
       manualMarketSelection,
     );
     if (preferredMarket) applyMarketChange(preferredMarket);
@@ -554,7 +599,7 @@ export const MarketLocationProvider: React.FC<{
   const acceptMarketRecommendation = useCallback(() => {
     const code = marketRecommendation?.country?.code;
     if (!code) return;
-    const market = marketService.getMarketByCode(code);
+    const market = findRuntimeMarket(code);
     if (market) applyMarketChange(market);
   }, [applyMarketChange, marketRecommendation]);
 

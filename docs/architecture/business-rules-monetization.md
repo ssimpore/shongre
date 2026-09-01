@@ -16,7 +16,7 @@ Stripe Checkout → signed webhook → idempotency ledger → entitlements
 
 `@shongre/contracts/monetization` owns the public schemas. The current audited demo/backfill catalog lives in `packages/contracts/src/fixtures/monetization-catalog.ts`. Demo adapters use it directly. Database deployments import that validated snapshot with `npm run db:backfill:monetization --workspace=shongre-backend` after migration `00015_business_rules_monetization.sql`.
 
-The proposed replacement lives as `commercial-fr-v4-draft` in `packages/contracts/src/fixtures/monetization-proposed-catalog.ts`. It reuses the same schema and persistence path; it is not a second active catalog. `make monetization-draft-import` is deterministic and idempotent outside production. It never changes the active v3 snapshot.
+The proposed replacement lives as `commercial-fr-v4-draft` in `packages/contracts/src/fixtures/monetization-proposed-catalog.ts`. It reuses the same schema and persistence path; it is not a second active catalog. `make monetization-draft-import` is deterministic and idempotent outside production. It never changes the active v3 snapshot. The shared professional-catalog selector may expose this newer, migration-linked version as a clearly labelled public preview, but it returns only the target plan identities, disables checkout, and never merges the active legacy plans into that presentation.
 
 ## Domain model
 
@@ -99,7 +99,7 @@ Backend active catalogs are cached briefly by market. Every validated load becom
 
 ## Client boundary
 
-Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command center and public Pro page call the service registry. Auto, Education, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile exposes a read-only billing projection (plan, rights, usage and invoices); digital purchase, steering and subscription mutation stay absent until an approved Apple/Google storefront and server receipt-validation policy exists. Demo mode remains asynchronous, deterministic, and backend-independent.
+Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command center and public Pro page call the service registry. `GET /api/v1/monetization/professional-plans` and the demo adapter both use `selectProfessionalCatalogPresentation`: the public surface therefore receives one typed active-or-preview result with explicit product ids and `checkoutEnabled`, rather than independently choosing or combining tariffs. Its public-safe snapshot contains only the required products, verticals, campaign and price-protection copy; migration governance, commercial economics, provider mappings, commission policies and rules remain private. Auto, Education, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile exposes a read-only billing projection (plan, rights, usage and invoices); digital purchase, steering and subscription mutation stay absent until an approved Apple/Google storefront and server receipt-validation policy exists. Demo mode remains asynchronous, deterministic, and backend-independent.
 
 ## Typed API surface
 
@@ -107,6 +107,7 @@ Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command
 - `POST /api/v1/business-rules/eligibility`
 - `POST /api/v1/monetization/quotes`
 - `POST /api/v1/monetization/checkouts`
+- `GET /api/v1/monetization/professional-plans`
 - `POST /api/v1/monetization/promotions/validate`
 - `GET /api/v1/monetization/entitlements`
 - `GET /api/v1/monetization/subscriptions`

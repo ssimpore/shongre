@@ -340,6 +340,8 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
   const salary = job.salary?.minimum || job.salary?.maximum;
   const contractCode = idSuffix(job.contractTypeId);
   const salaryFrequency = idSuffix(job.salary?.frequencyId);
+  const salaryCurrency =
+    job.salary?.minimum?.currency || job.salary?.maximum?.currency || "EUR";
 
   return {
     id: listingId,
@@ -351,7 +353,22 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
       .filter(Boolean)
       .join(" · "),
     price: salary ? salary.amountMinor / 100 : 0,
-    currency: salary?.currency || "EUR",
+    currency: salaryCurrency,
+    pricePresentation: {
+      kind: "salary",
+      visibility: job.salary?.isPublic ? "public" : "undisclosed",
+      minimumAmountMinor: job.salary?.minimum?.amountMinor,
+      maximumAmountMinor: job.salary?.maximum?.amountMinor,
+      currency: salaryCurrency,
+      period:
+        salaryFrequency === "hour" ||
+        salaryFrequency === "day" ||
+        salaryFrequency === "week" ||
+        salaryFrequency === "month" ||
+        salaryFrequency === "year"
+          ? salaryFrequency
+          : undefined,
+    },
     isNegotiable: false,
     isFreeDonation: false,
     categorySlug: "emploi",

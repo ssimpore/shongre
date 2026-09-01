@@ -220,7 +220,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       </section>
 
       <div className="grid gap-5 xl:grid-cols-content-aside">
-        <main className="min-w-0 space-y-5">
+        <div className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
               <div>
@@ -351,7 +351,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
               </div>
             )}
           </section>
-        </main>
+        </div>
 
         <aside className="space-y-4">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">

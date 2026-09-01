@@ -1412,6 +1412,35 @@ export const monetizationCatalogSchema = z.object({
 });
 export type MonetizationCatalog = z.infer<typeof monetizationCatalogSchema>;
 
+export const professionalCatalogSnapshotSchema = monetizationCatalogSchema.pick(
+  {
+    configurationVersionId: true,
+    versionNumber: true,
+    marketCode: true,
+    currency: true,
+    generatedAt: true,
+    verticals: true,
+    products: true,
+    priceProtectionPolicies: true,
+    campaigns: true,
+    stale: true,
+  },
+);
+export type ProfessionalCatalogSnapshot = z.infer<
+  typeof professionalCatalogSnapshotSchema
+>;
+
+export const professionalCatalogPresentationSchema = z.object({
+  catalog: professionalCatalogSnapshotSchema,
+  mode: z.enum(["active", "draft_preview"]),
+  checkoutEnabled: z.boolean(),
+  planProductIds: z.array(z.string().min(1)),
+  addonProductIds: z.array(z.string().min(1)),
+});
+export type ProfessionalCatalogPresentation = z.infer<
+  typeof professionalCatalogPresentationSchema
+>;
+
 export const quoteRequestSchema = z.object({
   productIds: z.array(z.string().min(1)).min(1).max(20),
   organizationId: z.string().uuid().optional(),

@@ -256,14 +256,37 @@
     --enter-x: 100%;
   }
 
-  /* Horizontal rails (filter chips, tab strips, category rows) scroll without
-     showing a scrollbar — the affordance is the content bleeding off-edge. */
+  /* Compatibility name for horizontal rails. Fine-pointer users get a slim,
+     visible scrollbar so overflow is never discoverable only by accident;
+     touch users keep the clean native-swipe presentation. ScrollRail adds
+     explicit directional controls on top of this baseline affordance. */
   .no-scrollbar {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar) transparent;
   }
   .no-scrollbar::-webkit-scrollbar {
-    display: none;
+    display: block;
+    height: var(--spacing-scrollbar);
+  }
+  .no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar);
+    border-radius: var(--radius-pill);
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-hover);
+  }
+
+  @media (pointer: coarse) {
+    .no-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   /* Legacy transition aliases. A few specialized routes still use Tailwind's

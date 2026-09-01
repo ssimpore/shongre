@@ -540,7 +540,7 @@ export const CoursesSearchPage: React.FC = () => {
           )}
         </aside>
 
-        <main className="min-w-0">
+        <div className="min-w-0">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Button
@@ -639,7 +639,7 @@ export const CoursesSearchPage: React.FC = () => {
               </section>
             </div>
           )}
-        </main>
+        </div>
 
         {compared.length > 0 && (
           <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface shadow-xs xl:block xl:sticky xl:top-24">

@@ -119,6 +119,12 @@ const PHASES = [
 
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
+type PhaseOneStage = "intent" | "category" | "details";
+const PHASE_ONE_STAGES: Array<{ id: PhaseOneStage; label: string }> = [
+  { id: "intent", label: "Intention" },
+  { id: "category", label: "Catégorie" },
+  { id: "details", label: "Détails & photos" },
+];
 const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "title",
   "description",
@@ -246,6 +252,8 @@ export const PublishWizard: React.FC = () => {
   const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
+  const [phaseOneStage, setPhaseOneStage] =
+    useState<PhaseOneStage>("intent");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
@@ -357,6 +365,7 @@ export const PublishWizard: React.FC = () => {
         if (active && saved) {
           setDraft(saved);
           setHasSavedDraft(hasMeaningfulDraftContent(saved));
+          if (saved.taxonomyNodeId) setPhaseOneStage("details");
         }
       })
       .catch(() => {
@@ -421,6 +430,8 @@ export const PublishWizard: React.FC = () => {
             taxonomyVersion: undefined,
           },
     );
+    setPhaseOneStage("category");
+    scrollToTop();
   };
 
   const updateAttribute = (attrCode: string, value: any) => {
@@ -723,6 +734,8 @@ export const PublishWizard: React.FC = () => {
             attributes: {},
           },
     );
+    setPhaseOneStage("details");
+    scrollToTop();
   };
 
   const minimumPhotoCount = schema?.mediaGuidance?.minimumPhotoCount ?? 1;
@@ -931,6 +944,20 @@ export const PublishWizard: React.FC = () => {
   };
 
   const handleNextStep = () => {
+    if (currentStep === 1 && phaseOneStage === "intent") {
+      setPhaseOneStage("category");
+      scrollToTop();
+      return;
+    }
+    if (currentStep === 1 && phaseOneStage === "category") {
+      if (!draft.taxonomyNodeId) {
+        toast.error("Veuillez sélectionner une catégorie finale pour continuer.");
+        return;
+      }
+      setPhaseOneStage("details");
+      scrollToTop();
+      return;
+    }
     const error = getPhaseError(currentStep);
     if (error) {
       toast.error(error);
@@ -948,6 +975,16 @@ export const PublishWizard: React.FC = () => {
 
   const handlePrevStep = () => {
     if (currentStep === 1) {
+      if (phaseOneStage === "details") {
+        setPhaseOneStage("category");
+        scrollToTop();
+        return;
+      }
+      if (phaseOneStage === "category") {
+        setPhaseOneStage("intent");
+        scrollToTop();
+        return;
+      }
       setIsPreparationVisible(true);
       scrollToTop();
       return;
@@ -1153,22 +1190,70 @@ export const PublishWizard: React.FC = () => {
         </ol>
       </div>
 
+      {currentStep === 1 && (
+        <nav
+          aria-label="Progression dans ce que vous vendez"
+          className="rounded-2xl border border-border-base bg-bg-surface p-2 shadow-xs"
+        >
+          <ol className="grid grid-cols-3 gap-1.5">
+            {PHASE_ONE_STAGES.map((stage, index) => {
+              const currentIndex = PHASE_ONE_STAGES.findIndex(
+                (item) => item.id === phaseOneStage,
+              );
+              const isCurrent = stage.id === phaseOneStage;
+              const isDone = index < currentIndex;
+              const isDisabled =
+                stage.id === "details" && !draft.taxonomyNodeId;
+              return (
+                <li key={stage.id}>
+                  <button
+                    type="button"
+                    aria-current={isCurrent ? "step" : undefined}
+                    disabled={isDisabled}
+                    onClick={() => {
+                      setPhaseOneStage(stage.id);
+                      scrollToTop();
+                    }}
+                    className={`flex min-h-control-md w-full min-w-0 items-center justify-center gap-1.5 rounded-control px-2 text-center text-xs font-bold transition-colors ${
+                      isCurrent
+                        ? "bg-primary text-white"
+                        : isDone
+                          ? "bg-success-surface text-success hover:bg-success-surface/80"
+                          : isDisabled
+                            ? "cursor-not-allowed bg-bg-subtle text-text-disabled"
+                            : "bg-bg-subtle text-text-secondary hover:bg-bg-muted"
+                    }`}
+                  >
+                    <span aria-hidden="true">{isDone ? "✓" : index + 1}</span>
+                    <span className="truncate">{stage.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+      )}
+
       {/* ========================================================================= */}
       {/* STEP 1: CATEGORY & INTENT SELECTION */}
       {/* ========================================================================= */}
-      {showsPanel(1) && (
+      {showsPanel(1) && phaseOneStage !== "details" && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              {t("publishing.publishWizard.queSouhaitezVousPublier")}
+              {phaseOneStage === "intent"
+                ? t("publishing.publishWizard.queSouhaitezVousPublier")
+                : "Dans quelle catégorie ?"}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              {t("publishing.publishWizard.selectionnezLIntentionEtLa")}
+              {phaseOneStage === "intent"
+                ? "Choisissez d’abord l’objectif de votre annonce. Les catégories et règles proposées s’adapteront à ce choix."
+                : "Recherchez un terme ou parcourez les univers. Les caractéristiques apparaîtront après votre sélection."}
             </p>
           </div>
 
           {/* Listing Intent Selector */}
-          <div>
+          {phaseOneStage === "intent" && <div>
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
               {t("publishing.publishWizard.typeDAnnonceIntention")}
             </label>
@@ -1209,10 +1294,10 @@ export const PublishWizard: React.FC = () => {
                 );
               })}
             </div>
-          </div>
+          </div>}
 
           {/* Taxonomy Search */}
-          <div className="pt-4 border-t border-border-subtle space-y-3">
+          {phaseOneStage === "category" && <div className="space-y-3">
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
               {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
             </label>
@@ -1263,10 +1348,10 @@ export const PublishWizard: React.FC = () => {
                 ))}
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Root Categories Grid */}
-          <div className="pt-4 border-t border-border-subtle space-y-3">
+          {phaseOneStage === "category" && <div className="pt-4 border-t border-border-subtle space-y-3">
             <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
               {t("publishing.publishWizard.ouParcourezLesUnivers")}
             </label>
@@ -1291,10 +1376,10 @@ export const PublishWizard: React.FC = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           {/* Current Selected Breadcrumb Path */}
-          {schema && (
+          {phaseOneStage === "category" && schema && (
             <div className="p-3.5 bg-success-surface text-success rounded-xl border border-success-border text-xs flex items-center justify-between">
               <div>
                 <span className="font-bold block mb-0.5">
@@ -1316,7 +1401,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 2: CHARACTERISTICS & DYNAMIC ATTRIBUTES */}
       {/* ========================================================================= */}
-      {showsPanel(2) && (
+      {showsPanel(2) && phaseOneStage === "details" && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             {/* The category name is only known once one is chosen. Now that this
@@ -1463,7 +1548,7 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {/* STEP 3: PHOTOS & MEDIA */}
       {/* ========================================================================= */}
-      {showsPanel(3) && (
+      {showsPanel(3) && phaseOneStage === "details" && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -2676,7 +2761,11 @@ export const PublishWizard: React.FC = () => {
                 rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
               >
                 <span className="hidden sm:inline">
-                  Continuer : {PHASES[currentStep]?.label || ""}
+                  {currentStep === 1 && phaseOneStage === "intent"
+                    ? "Continuer : catégorie"
+                    : currentStep === 1 && phaseOneStage === "category"
+                      ? "Continuer : détails & photos"
+                      : `Continuer : ${PHASES[currentStep]?.label || ""}`}
                 </span>
                 <span className="sm:hidden">Continuer</span>
               </Button>

@@ -125,8 +125,8 @@ export const themeRadii = {
 export const themeText = {
   "card-title": "0.9375rem",
   hero: "2.75rem",
-  micro: "0.6875rem",
-  xs: "0.75rem",
+  micro: "0.75rem",
+  xs: "0.8125rem",
   sm: "0.875rem",
   base: "1rem",
   lg: "1.125rem",
@@ -155,8 +155,8 @@ export const themeText = {
 export const themeTextLineHeights = {
   "card-title": "1.4",
   hero: "1.08",
-  micro: "1.35",
-  xs: "1rem",
+  micro: "1rem",
+  xs: "1.125rem",
   sm: "1.25rem",
   base: "1.5rem",
   lg: "1.75rem",
@@ -253,15 +253,14 @@ export const themeSpacing = {
   "recent-search-card-wide": "19rem",
   "recent-search-card-min": "6.5rem",
   /* Messaging is a viewport-owned workspace rather than an ordinary document
-     page. The shell offset accounts for the application/header/account chrome;
-     the mobile navigation clearance is added by the consuming layout so the
-     composer never paints under the raised publication action. */
-  "messaging-shell-offset-mobile": "17rem",
+     page. On mobile the account rail, footer and global bottom navigation are
+     removed, so only the global header chrome is reserved. */
+  "messaging-shell-offset-mobile": "7.5rem",
   "messaging-shell-offset-desktop": "8.75rem",
   "messaging-shell-min": "37.5rem",
   "messaging-shell-max": "53.125rem",
   "messaging-shell-height-mobile":
-    "calc(100dvh - var(--spacing-messaging-shell-offset-mobile) - var(--mobile-nav-total-h))",
+    "calc(100dvh - var(--spacing-messaging-shell-offset-mobile))",
   "messaging-shell-height-desktop":
     "calc(100dvh - var(--spacing-messaging-shell-offset-desktop))",
   "auth-shell-min": "calc(100vh - 3.5rem)",
@@ -297,6 +296,9 @@ export const themeSpacing = {
   "message-bubble-wide": "70%",
   "side-sheet-width": "85vw",
   "admin-menu-max": "60vh",
+  /* Desktop admin navigation sits below the sticky global chrome and keeps a
+     small bottom gutter so its final destination remains keyboard-reachable. */
+  "admin-sidebar-max": "calc(100dvh - 6.5rem)",
   "pipeline-column-max": "70vh",
   /* Shared vertical ceiling for menus and popovers. The viewport expression
      keeps long option sets operable on short mobile screens; the fixed ceiling

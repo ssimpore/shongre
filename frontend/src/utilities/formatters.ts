@@ -1,12 +1,12 @@
-import { MARKET_CONFIG } from "../configuration/market.config";
-import { storageService } from "../services/storage.service";
-import { marketService } from "../domains/market/market.service";
 import type { Money } from "@shongre/contracts";
 import {
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
 } from "@shongre/shared";
-import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+import {
+  DEFAULT_MARKET_CURRENCY,
+  DEFAULT_MARKET_LOCALE,
+} from "../configuration/market-baseline";
 
 /**
  * Returns the locale-aware symbol used by `Intl` for a currency. Keeping this
@@ -15,7 +15,7 @@ import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
  */
 export function formatCurrencySymbol(
   currency: string,
-  locale: string = MARKET_CONFIG.defaultLocale,
+  locale: string = DEFAULT_MARKET_LOCALE,
 ): string {
   const cleanCurrency = currency.trim().toUpperCase();
   if (!cleanCurrency) return "";
@@ -39,7 +39,7 @@ export function formatCurrencySymbol(
 /** Human-readable currency name for regional preference controls. */
 export function getCurrencyDisplayName(
   currency: string,
-  locale: string = MARKET_CONFIG.defaultLocale,
+  locale: string = DEFAULT_MARKET_LOCALE,
 ): string {
   const cleanCurrency = currency.trim().toUpperCase();
   if (!cleanCurrency) return "";
@@ -59,7 +59,7 @@ export function formatMoney(
   money: Money,
   options: { locale?: string; currencyDisplay?: "symbol" | "code" } = {},
 ): string {
-  const locale = options.locale || MARKET_CONFIG.defaultLocale;
+  const locale = options.locale || DEFAULT_MARKET_LOCALE;
   try {
     const fractionDigits = getCurrencyMinorUnitDigits(money.currency, locale);
     return new Intl.NumberFormat(locale, {
@@ -91,24 +91,8 @@ export function formatPrice(
     return "Don / Gratuit";
   }
 
-  let locale = options.locale;
-  let currency = options.currency;
-
-  if (!locale || !currency) {
-    const marketCode =
-      options.marketCode ||
-      storageService.getActiveMarketCode() ||
-      DEFAULT_MARKET_CODE;
-    const config = marketService.getEffectiveConfig(marketCode);
-    locale =
-      locale ||
-      config.localization.defaultLocale ||
-      MARKET_CONFIG.defaultLocale;
-    currency =
-      currency ||
-      config.localization.defaultCurrency ||
-      MARKET_CONFIG.defaultCurrency;
-  }
+  const locale = options.locale || DEFAULT_MARKET_LOCALE;
+  const currency = options.currency || DEFAULT_MARKET_CURRENCY;
 
   const formatted = new Intl.NumberFormat(locale, {
     style: options.showCurrency !== false ? "currency" : "decimal",
@@ -158,7 +142,7 @@ export function formatRelativeTimestamp(
         : new Date(options.referenceDate)
       : new Date();
 
-    const locale = options.locale || MARKET_CONFIG.defaultLocale || "fr-FR";
+    const locale = options.locale || DEFAULT_MARKET_LOCALE;
     const isFrench = locale.toLowerCase().startsWith("fr");
     const isEnglish = locale.toLowerCase().startsWith("en");
     const style = options.style || "long";
@@ -354,7 +338,7 @@ export function formatRelativeDate(
 export function formatDate(isoDateString: string, locale?: string): string {
   try {
     const date = new Date(isoDateString);
-    const activeLocale = locale || MARKET_CONFIG.defaultLocale;
+    const activeLocale = locale || DEFAULT_MARKET_LOCALE;
     return date.toLocaleDateString(activeLocale, {
       day: "numeric",
       month: "short",
@@ -404,7 +388,7 @@ export function formatLogTimestamp(
   try {
     const date = new Date(isoDateString);
     if (Number.isNaN(date.getTime())) return isoDateString;
-    const activeLocale = locale || MARKET_CONFIG.defaultLocale;
+    const activeLocale = locale || DEFAULT_MARKET_LOCALE;
     const time = date.toLocaleTimeString(activeLocale, {
       hour: "2-digit",
       minute: "2-digit",
@@ -451,15 +435,10 @@ export function formatPhoneNumber(phone: string): string {
  */
 export function calculateBuyerFee(
   price: number,
-  feePercent = MARKET_CONFIG.buyerProtectionFeePercent,
-  fixedFee = MARKET_CONFIG.buyerProtectionFixedFee,
+  feePercent: number,
+  fixedFee: number,
 ): number {
   if (price <= 0) return 0;
   const variable = price * feePercent;
   return Math.round((variable + fixedFee) * 100) / 100;
 }
-
-export {
-  formatBusinessIdentifier,
-  validateBusinessIdentifier,
-} from "../configuration/market.config";

@@ -6,6 +6,7 @@ import type {
   MonetizationAdminOverview,
   MonetizationCatalog,
   MonetizationOrder,
+  ProfessionalCatalogPresentation,
   MonetizationQuote,
   MonetizationSubscription,
   PromotionValidationRequest,
@@ -32,6 +33,13 @@ export class HttpBusinessRulesService implements BusinessRulesServiceContract {
     return httpClient.get<MonetizationCatalog>("/business-rules/catalog", {
       params: { marketCode },
     });
+  }
+
+  getProfessionalCatalogPresentation(marketCode: string) {
+    return httpClient.get<ProfessionalCatalogPresentation>(
+      "/monetization/professional-plans",
+      { params: { marketCode } },
+    );
   }
 
   evaluate(context: RuleEvaluationContext) {

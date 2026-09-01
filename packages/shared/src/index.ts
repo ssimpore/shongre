@@ -7,3 +7,4 @@ export * from "./finance/ledger";
 export * from "./finance/commission-engine";
 export * from "./monetization/effective-entitlements";
 export * from "./monetization/billing-usage";
+export * from "./monetization/professional-catalog-presentation";

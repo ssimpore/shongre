@@ -1,6 +1,4 @@
-import { TAXONOMY } from "../domains/taxonomy/taxonomy.data";
-import { getTaxonomyLabel } from "../domains/taxonomy/taxonomy.service";
-import { Category } from "../types";
+import type { Category } from "../types";
 
 /**
  * Shared search copy.
@@ -231,6 +229,7 @@ export interface AutocompleteResults {
 export function getSearchSuggestions(
   rawInput: string,
   activeCategorySlug?: string,
+  categories: readonly Category[] = [],
   limit = 5,
 ): AutocompleteResults {
   const query = rawInput.trim().toLowerCase();
@@ -252,10 +251,16 @@ export function getSearchSuggestions(
   // 1. Search in Categories and Subcategories
   const matchedCategories: CategorySuggestion[] = [];
 
-  TAXONOMY.forEach((cat) => {
+  const compactLabelFor = (node: {
+    name: string;
+    label?: string;
+    shortLabel?: string;
+  }) => node.shortLabel || node.label || node.name;
+
+  categories.forEach((cat) => {
     const catNameLower = cat.name.toLowerCase();
     const catSlugLower = cat.slug.toLowerCase();
-    const compactLabel = getTaxonomyLabel(cat, "compact");
+    const compactLabel = compactLabelFor(cat);
     const compactLower = compactLabel.toLowerCase();
 
     // Match parent category
@@ -279,7 +284,7 @@ export function getSearchSuggestions(
       cat.subCategories.forEach((sub) => {
         const subNameLower = sub.name.toLowerCase();
         const subSlugLower = sub.slug.toLowerCase();
-        const subCompactLabel = getTaxonomyLabel(sub, "compact");
+        const subCompactLabel = compactLabelFor(sub);
         const subCompactLower = subCompactLabel.toLowerCase();
 
         if (
@@ -292,7 +297,7 @@ export function getSearchSuggestions(
             name: sub.name,
             slug: sub.slug,
             compactLabel: subCompactLabel,
-            parentName: getTaxonomyLabel(cat, "compact"),
+            parentName: compactLabelFor(cat),
             parentSlug: cat.slug,
             isSubCategory: true,
             categoryObj: cat,

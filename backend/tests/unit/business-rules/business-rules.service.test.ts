@@ -5,24 +5,25 @@ import { DemoBusinessRulesRepository } from "../../../src/infrastructure/databas
 import { BusinessRulesService } from "../../../src/modules/business-rules/business-rules.service.js";
 
 describe("BusinessRulesService quotes", () => {
-  it("publishes the five active professional verticals from one catalog", async () => {
+  it("presents the migration-target professional plans once without legacy overrides", async () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
-    const catalog = await service.getProfessionalPlanCatalog("FR");
-    expect(catalog.verticals.map((vertical) => vertical.id)).toEqual([
-      "general",
-      "auto",
-      "immo",
-      "emploi",
-      "education",
+    const presentation = await service.getProfessionalPlanCatalog("FR");
+
+    expect(presentation.mode).toBe("draft_preview");
+    expect(presentation.checkoutEnabled).toBe(false);
+    expect(presentation.planProductIds).toEqual([
+      "pro.target.starter",
+      "pro.target.growth",
+      "pro.target.performance",
     ]);
+    expect(new Set(presentation.planProductIds).size).toBe(
+      presentation.planProductIds.length,
+    );
     expect(
-      catalog.plans.some(
-        (plan) => plan.commercialProfile.familyId === "vertical.education",
+      presentation.planProductIds.some((productId) =>
+        productId.startsWith("plan.pro."),
       ),
-    ).toBe(true);
-    expect(
-      catalog.plans.every((plan) => plan.commercialProfile.professionalOnly),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it.each(

@@ -180,6 +180,8 @@ export const messagesFr = {
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choisir la langue",
   "language.current": "Langue : {language}. Cliquez pour changer.",
+  "language.regionalPreferencesCurrent":
+    "Langue et préférences régionales : {language}",
   "language.preferences": "Préférences",
 
   // --- Cookie consent -------------------------------------------------------
@@ -676,6 +678,31 @@ export const messagesFr = {
   // --- listings.listingSafetyNotice ---
   "listings.listingSafetyNotice.garantieSecuriteShongre":
     "Garantie & Sécurité Shongre",
+  "listings.listingSafetyNotice.paymentBody":
+    "Le paiement est traité par le prestataire indiqué dans la commande. Vérifiez son statut avant toute remise et ouvrez un litige depuis la commande en cas de problème.",
+  "listings.listingSafetyNotice.applicationTitle": "Candidature sécurisée",
+  "listings.listingSafetyNotice.applicationBody":
+    "Vérifiez l’identité de l’employeur et ne transmettez jamais de coordonnées bancaires ni de paiement pour candidater.",
+  "listings.listingSafetyNotice.serviceTitle": "Échangez en toute sécurité",
+  "listings.listingSafetyNotice.serviceBody":
+    "Convenez du contenu, du tarif, de l’horaire et du lieu dans la messagerie avant le rendez-vous. Ne versez rien en dehors d’un parcours de paiement proposé par Shongre.",
+  "listings.listingSafetyNotice.appointmentTitle": "Préparez le rendez-vous",
+  "listings.listingSafetyNotice.appointmentBody":
+    "Confirmez les conditions dans la messagerie, privilégiez un lieu adapté et vérifiez les informations importantes pendant le rendez-vous.",
+  "listings.listingSafetyNotice.exchangeTitle": "Échange en personne",
+  "listings.listingSafetyNotice.exchangeBody":
+    "Décrivez précisément chaque objet dans la messagerie et vérifiez leur état dans un lieu public avant de conclure l’échange.",
+  "listings.listingSafetyNotice.inPersonTitle": "Transaction en personne",
+  "listings.listingSafetyNotice.inPersonBody":
+    "Échangez dans la messagerie, choisissez un lieu public et vérifiez l’article avant de conclure la transaction.",
+  "shell.header.restoringSession": "Restauration de votre session",
+  "listings.listingDetailPage.remuneration": "Rémunération",
+  "listings.listingDetailPage.tarifIndicatif": "Tarif indicatif",
+  "listings.listingDetailPage.prixDuBien": "Prix du bien",
+  "listings.listingDetailPage.prixDuVehicule": "Prix du véhicule",
+  "listings.listingDetailPage.tarifDuCours": "Tarif du cours",
+  "listings.listingDetailPage.tarif": "Tarif",
+  "listings.listingDetailPage.valeurIndicative": "Valeur indicative",
 
   // --- listings.listingSellerTrustSection ---
   "listings.listingSellerTrustSection.vendeurPro": "Vendeur Pro",
@@ -2863,7 +2890,7 @@ export const messagesFr = {
     "Protection Acheteur incluse, calculée au paiement",
   "listings.listingDetailPage.modifierMonAnnonce": "Modifier mon annonce",
   "listings.listingDetailPage.gererMesAnnoncesStats":
-    "Gérer mes annonces & stats",
+    "Gérer mes annonces",
   "listings.listingDetailPage.reserverLArticle": "Réserver l'article",
   "listings.listingDetailPage.offreDePrix": "Offre de prix",
   "listings.listingDetailPage.offreDePrixCourt": "Offre",
@@ -4315,6 +4342,16 @@ export const messagesFr = {
   "pro.plans.subscriptionUnavailable.title": "Souscription indisponible",
   "pro.plans.subscriptionUnavailable.description":
     "Un compte Professionnel actif autorisé à gérer ses abonnements est requis. Les tarifs restent consultables.",
+  "pro.plans.preview.badge": "Brouillon v{version}",
+  "pro.plans.preview.title": "Aperçu du catalogue cible",
+  "pro.plans.preview.description":
+    "Les offres Pro Starter, Pro Growth et Pro Performance sont présentées depuis la version commerciale cible. Aucune souscription ni option payante ne peut être lancée avant sa publication.",
+  "pro.plans.preview.founding":
+    "Founding Professional : {trialDays} jours offerts, {maximumVerticals} verticale maximum et prix bloqué {lockMonths} mois au démarrage payant.",
+  "pro.plans.preview.catalogLabel": "Aperçu v{version} · marché {market}",
+  "pro.plans.preview.verticalDescription":
+    "Socle Pro commun avec module {vertical} attachable après validation opérationnelle.",
+  "pro.plans.preview.unavailable": "Disponible après publication",
   "admin.auto.tableLabel": "Tableau des annonces automobiles",
   "auto.publish.stepperLabel": "Étapes de publication du véhicule",
   "auto.compare.tableLabel": "Tableau comparatif des véhicules",

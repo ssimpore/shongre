@@ -483,7 +483,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/ProfessionalCatalogPresentation"
                 }
               }
             }
@@ -32319,6 +32319,75 @@
             }
           },
           "stale": { "type": "boolean" }
+        }
+      },
+      "ProfessionalCatalogSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "configurationVersionId",
+          "versionNumber",
+          "marketCode",
+          "currency",
+          "generatedAt",
+          "verticals",
+          "products",
+          "priceProtectionPolicies",
+          "campaigns",
+          "stale"
+        ],
+        "properties": {
+          "configurationVersionId": { "type": "string" },
+          "versionNumber": { "type": "integer", "minimum": 1 },
+          "marketCode": { "type": "string" },
+          "currency": { "type": "string", "minLength": 3, "maxLength": 3 },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "verticals": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/JsonValue" }
+          },
+          "products": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/JsonValue" }
+          },
+          "priceProtectionPolicies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PriceProtectionPolicy" }
+          },
+          "campaigns": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CommercialCampaign" }
+          },
+          "stale": { "type": "boolean" }
+        }
+      },
+      "ProfessionalCatalogPresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "catalog",
+          "mode",
+          "checkoutEnabled",
+          "planProductIds",
+          "addonProductIds"
+        ],
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/ProfessionalCatalogSnapshot"
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["active", "draft_preview"]
+          },
+          "checkoutEnabled": { "type": "boolean" },
+          "planProductIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "addonProductIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
         }
       },
       "MonetizationAdminOverview": {

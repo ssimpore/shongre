@@ -10,7 +10,8 @@ import { userRepository } from "../../../repositories/user.repository";
 import { storageService } from "../../../services/storage.service";
 import { Conversation, Message } from "../../../types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
-import { translate } from "../../../i18n/i18n.service";
+import { translateWithCatalogue } from "../../../i18n/i18n.service";
+import { messagingCatalogueEn } from "../../../i18n/messaging.catalogue.en";
 import { requireDemoCapability } from "./demo-authorization";
 
 const DEMO_ATTACHMENT_LIBRARY = [
@@ -62,14 +63,22 @@ export class DemoMessagingService implements MessagingServiceContract {
   ): Promise<MessageComposerOptions> {
     await simulateNetworkDelay();
     requireDemoCapability("message.send");
+    const catalogue = input.locale.toLowerCase().startsWith("en")
+      ? messagingCatalogueEn
+      : {};
+    const translate = (
+      key:
+        | (typeof DEMO_ATTACHMENT_LIBRARY)[number]["labelKey"]
+        | (typeof PRO_QUICK_REPLY_KEYS)[number],
+    ) => translateWithCatalogue(catalogue, key, input.locale);
     return {
       attachmentOptions: DEMO_ATTACHMENT_LIBRARY.map((option) => ({
         id: option.id,
-        label: translate(option.labelKey, input.locale),
+        label: translate(option.labelKey),
         url: option.url,
       })),
       quickReplies: input.isProfessional
-        ? PRO_QUICK_REPLY_KEYS.map((key) => translate(key, input.locale))
+        ? PRO_QUICK_REPLY_KEYS.map((key) => translate(key))
         : [],
     };
   }

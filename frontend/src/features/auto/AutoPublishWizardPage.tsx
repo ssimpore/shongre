@@ -1243,7 +1243,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </ol>
         </ScrollableRegion>
         <div className="mt-4 grid gap-5 lg:grid-cols-content-aside-xs">
-          <main className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
+          <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
             {stepContent}
             <div className="mt-7 flex justify-between border-t border-border-subtle pt-4">
               <Button
@@ -1263,7 +1263,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 </Button>
               )}
             </div>
-          </main>
+          </section>
           <aside className="self-start space-y-3 lg:sticky lg:top-4">
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
               <p className="text-xs font-black">Votre avancement</p>

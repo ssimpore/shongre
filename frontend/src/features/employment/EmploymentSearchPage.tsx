@@ -466,7 +466,7 @@ export const EmploymentSearchPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-bg-base">
+    <div className="min-h-screen bg-bg-base">
       <section className="border-b border-border-base bg-text-main text-white">
         <Container className="py-8 sm:py-10">
           <div className="max-w-3xl">
@@ -682,6 +682,6 @@ export const EmploymentSearchPage: React.FC = () => {
           />
         </Drawer>
       ) : null}
-    </main>
+    </div>
   );
 };

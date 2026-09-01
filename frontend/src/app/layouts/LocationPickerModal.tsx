@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
+import { IconButton } from "../../design-system/primitives/IconButton";
 import { Input } from "../../design-system/primitives/FormField";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { LocationSelection } from "../../types";
@@ -199,42 +200,41 @@ export const LocationPickerModal: React.FC = () => {
               setGeolocationState({ status: "idle" });
             }}
             leftIcon={<MapPin className="w-icon-md h-icon-md" />}
+            rightIcon={
+              <IconButton
+                size="sm"
+                variant="ghost"
+                ariaLabel={t("shell.locationPickerModal.useCurrentLocation")}
+                aria-describedby={
+                  geolocationMessage
+                    ? "precise-location-purpose location-geolocation-status"
+                    : "precise-location-purpose"
+                }
+                aria-busy={geolocationState.status === "locating"}
+                disabled={geolocationState.status === "locating"}
+                onClick={handleUseCurrentLocation}
+                className="-mr-2 text-text-muted hover:text-primary"
+              >
+                {geolocationState.status === "locating" ? (
+                  <LoaderCircle
+                    className="h-icon-sm w-icon-sm motion-safe:animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <LocateFixed
+                    className="h-icon-sm w-icon-sm"
+                    aria-hidden="true"
+                  />
+                )}
+              </IconButton>
+            }
             aria-describedby={
               geolocationMessage ? "location-geolocation-status" : undefined
             }
           />
-          <div className="flex flex-col gap-2 rounded-control border border-border-subtle bg-bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between">
-            <p
-              id="precise-location-purpose"
-              className="text-xs leading-relaxed text-text-secondary"
-            >
-              {t("shell.locationPickerModal.preciseLocationPurpose")}
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleUseCurrentLocation}
-              disabled={geolocationState.status === "locating"}
-              aria-describedby="precise-location-purpose"
-              aria-busy={geolocationState.status === "locating"}
-              className="shrink-0"
-            >
-              {geolocationState.status === "locating" ? (
-                <LoaderCircle
-                  className="mr-1.5 h-icon-sm w-icon-sm motion-safe:animate-spin"
-                  aria-hidden="true"
-                />
-              ) : (
-                <LocateFixed
-                  className="mr-1.5 h-icon-sm w-icon-sm"
-                  aria-hidden="true"
-                />
-              )}
-              {geolocationState.status === "locating"
-                ? t("shell.locationPickerModal.locationInProgress")
-                : t("shell.locationPickerModal.useCurrentLocation")}
-            </Button>
-          </div>
+          <span id="precise-location-purpose" className="sr-only">
+            {t("shell.locationPickerModal.preciseLocationPurpose")}
+          </span>
           {geolocationMessage ? (
             <p
               id="location-geolocation-status"

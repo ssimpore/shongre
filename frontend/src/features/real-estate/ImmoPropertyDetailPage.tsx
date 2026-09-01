@@ -237,7 +237,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     );
 
   return (
-    <main className="bg-bg-subtle pb-14">
+    <div className="bg-bg-subtle pb-14">
       <Container className="py-5">
         <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-text-muted">
           Immobilier / {propertyTypeLabels[property.propertyType]} /{" "}
@@ -558,6 +558,6 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           </section>
         ) : null}
       </Container>
-    </main>
+    </div>
   );
 };

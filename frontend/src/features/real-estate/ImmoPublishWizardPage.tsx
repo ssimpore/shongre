@@ -500,7 +500,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
     catalog.offers[0];
 
   return (
-    <main className="min-h-screen bg-bg-subtle pb-14">
+    <div className="min-h-screen bg-bg-subtle pb-14">
       <div className="border-b border-border-base bg-bg-surface">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <div>
@@ -1368,6 +1368,6 @@ export const ImmoPublishWizardPage: React.FC = () => {
           ) : null}
         </section>
       </div>
-    </main>
+    </div>
   );
 };

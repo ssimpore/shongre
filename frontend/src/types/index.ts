@@ -320,6 +320,15 @@ export interface ListingPhoto {
   alt?: string;
 }
 
+export interface ListingPricePresentation {
+  kind: "price" | "salary" | "rent" | "service_rate";
+  visibility: "public" | "undisclosed";
+  minimumAmountMinor?: number;
+  maximumAmountMinor?: number;
+  currency: string;
+  period?: "hour" | "day" | "week" | "month" | "year" | "total";
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -425,6 +434,8 @@ export interface Listing {
     complianceIssues?: string[];
   }>;
   currency?: string; // e.g. 'EUR', 'CHF'
+  /** Semantic price data for cards whose amount is not a one-off item price. */
+  pricePresentation?: ListingPricePresentation;
   originalPrice?: number; // for discounts/bons-plans
   stock?: number; // Inventory count for Pro listings (defaults to 1 for unique items)
 }

@@ -7,9 +7,10 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     storageService.setCurrentUserKey("pro_atelier");
   });
 
-  it("keeps the public catalog on the active version while a draft exists", async () => {
+  it("presents the target catalogue without replacing historical active evidence", async () => {
     const service = new DemoBusinessRulesService();
     const activeCatalog = await service.getCatalog("FR");
+    const presentation = await service.getProfessionalCatalogPresentation("FR");
 
     expect(activeCatalog.versionNumber).toBe(3);
     expect(
@@ -23,6 +24,21 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
           product.id === "plan.pro.business" && product.status === "active",
       ),
     ).toBe(true);
+    expect(presentation).toMatchObject({
+      mode: "draft_preview",
+      checkoutEnabled: false,
+      planProductIds: [
+        "pro.target.starter",
+        "pro.target.growth",
+        "pro.target.performance",
+      ],
+    });
+    expect(presentation.catalog.versionNumber).toBe(4);
+    expect(
+      presentation.planProductIds.some((productId) =>
+        productId.startsWith("plan.pro."),
+      ),
+    ).toBe(false);
   });
 
   it("keeps quote values catalog-owned and idempotent", async () => {

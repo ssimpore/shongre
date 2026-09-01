@@ -9760,6 +9760,27 @@ export interface components {
             readonly startsWhen: "paid_subscription_starts" | "customer_accepts_contract" | "migration_is_accepted";
             readonly status: components["schemas"]["CommercialConfigurationStatus"];
         };
+        readonly ProfessionalCatalogPresentation: {
+            readonly addonProductIds: readonly string[];
+            readonly catalog: components["schemas"]["ProfessionalCatalogSnapshot"];
+            readonly checkoutEnabled: boolean;
+            /** @enum {string} */
+            readonly mode: "active" | "draft_preview";
+            readonly planProductIds: readonly string[];
+        };
+        readonly ProfessionalCatalogSnapshot: {
+            readonly campaigns: readonly components["schemas"]["CommercialCampaign"][];
+            readonly configurationVersionId: string;
+            readonly currency: string;
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly marketCode: string;
+            readonly priceProtectionPolicies: readonly components["schemas"]["PriceProtectionPolicy"][];
+            readonly products: readonly components["schemas"]["JsonValue"][];
+            readonly stale: boolean;
+            readonly versionNumber: number;
+            readonly verticals: readonly components["schemas"]["JsonValue"][];
+        };
         readonly ProspectCandidate: {
             readonly company: {
                 readonly canonicalName: string;
@@ -10647,7 +10668,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["ProfessionalCatalogPresentation"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

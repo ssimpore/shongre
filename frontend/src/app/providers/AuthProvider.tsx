@@ -16,9 +16,7 @@ import {
   AuthResult,
   ShongreProductId,
 } from "../../types";
-import { userRepository } from "../../repositories/user.repository";
 import { services } from "../../api/client/service-registry";
-import { authService as demoProfileUpgradeService } from "../../domains/auth/auth.service";
 import {
   authorizationService,
   ResourceOwnershipContext,
@@ -137,6 +135,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       .then((user) => {
         if (active) setCurrentUser(user);
       })
+      .catch(() => {
+        if (active) setCurrentUser(null);
+      })
       .finally(() => {
         if (active) setIsRestoring(false);
       });
@@ -148,9 +149,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     const channel = new BroadcastChannel(AUTH_CHANNEL);
     channel.onmessage = () => {
-      void services.auth.getCurrentUser().then((user) => {
-        if (active) setCurrentUser(user);
-      });
+      void services.auth
+        .getCurrentUser()
+        .then((user) => {
+          if (active) setCurrentUser(user);
+        })
+        .catch(() => undefined);
     };
     return () => {
       active = false;
@@ -286,6 +290,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         errorMessage: "Vous devez être connecté pour effectuer cette action.",
       };
     }
+    const { authService: demoProfileUpgradeService } = await import(
+      "../../domains/auth/auth.service"
+    );
     const result = await demoProfileUpgradeService.upgradeIndividualToPro(
       currentUser.id,
       proData,
@@ -310,6 +317,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!currentUser) return;
+    const { userRepository } = await import(
+      "../../repositories/user.repository"
+    );
     const updated = await userRepository.updateProfile(currentUser.id, updates);
     setCurrentUser(updated);
   };

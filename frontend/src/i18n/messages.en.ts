@@ -1,4 +1,5 @@
 import { MessageCatalogue } from "./messages.fr";
+import { messagingCatalogueEn } from "./messaging.catalogue.en";
 
 /**
  * English (en-US).
@@ -174,6 +175,8 @@ export const messagesEn: MessageCatalogue = {
   // --- Language selector ----------------------------------------------------
   "language.choose": "Choose language",
   "language.current": "Language: {language}. Click to change.",
+  "language.regionalPreferencesCurrent":
+    "Language and regional preferences: {language}",
   "language.preferences": "Preferences",
 
   // --- Cookie consent -------------------------------------------------------
@@ -579,6 +582,31 @@ export const messagesEn: MessageCatalogue = {
   "listings.listingMediaGallery.fermerLePleinEcran": "Exit full screen",
   "listings.listingSafetyNotice.garantieSecuriteShongre":
     "Shongre guarantee & safety",
+  "listings.listingSafetyNotice.paymentBody":
+    "Payment is handled by the provider named in the order. Check its status before handover and open a dispute from the order if there is a problem.",
+  "listings.listingSafetyNotice.applicationTitle": "Apply safely",
+  "listings.listingSafetyNotice.applicationBody":
+    "Verify the employer's identity and never provide bank details or make a payment to apply.",
+  "listings.listingSafetyNotice.serviceTitle": "Arrange the service safely",
+  "listings.listingSafetyNotice.serviceBody":
+    "Agree the scope, rate, time and place in messaging before the appointment. Never pay outside a Shongre payment flow.",
+  "listings.listingSafetyNotice.appointmentTitle": "Prepare the appointment",
+  "listings.listingSafetyNotice.appointmentBody":
+    "Confirm the terms in messaging, choose a suitable place and verify the important information during the appointment.",
+  "listings.listingSafetyNotice.exchangeTitle": "Exchange in person",
+  "listings.listingSafetyNotice.exchangeBody":
+    "Describe each item accurately in messaging and check its condition in a public place before completing the exchange.",
+  "listings.listingSafetyNotice.inPersonTitle": "Meet and transact safely",
+  "listings.listingSafetyNotice.inPersonBody":
+    "Use messaging, choose a public place and inspect the item before completing the transaction.",
+  "shell.header.restoringSession": "Restoring your session",
+  "listings.listingDetailPage.remuneration": "Compensation",
+  "listings.listingDetailPage.tarifIndicatif": "Indicative rate",
+  "listings.listingDetailPage.prixDuBien": "Property price",
+  "listings.listingDetailPage.prixDuVehicule": "Vehicle price",
+  "listings.listingDetailPage.tarifDuCours": "Lesson rate",
+  "listings.listingDetailPage.tarif": "Rate",
+  "listings.listingDetailPage.valeurIndicative": "Indicative value",
   "listings.listingSellerTrustSection.vendeurPro": "Pro seller",
   "listings.listingSellerTrustSection.verifie": "Verified",
   "messaging.messagingPage.cetUtilisateurNePourraPlus":
@@ -626,17 +654,7 @@ export const messagesEn: MessageCatalogue = {
   "messaging.messageComposer.ajouterUnePhotoALa":
     "Add a photo to the conversation",
   "messaging.messageComposer.envoyer": "Send",
-  "messaging.messageComposer.demoAttachmentCondition": "Condition photo",
-  "messaging.messageComposer.demoAttachmentInvoice": "Invoice / warranty",
-  "messaging.messageComposer.demoAttachmentAccessories": "Included accessories",
-  "messaging.messageComposer.quickReplyAvailable":
-    "Hello, yes, the item is in stock.",
-  "messaging.messageComposer.quickReplyShipping":
-    "Hello, tracked shipping is available within 24 hours.",
-  "messaging.messageComposer.quickReplyPickup":
-    "Hello, we can arrange collection from the store.",
-  "messaging.messageComposer.quickReplyInvoice":
-    "Hello, a VAT invoice is available on request.",
+  ...messagingCatalogueEn,
   "messaging.messageTimeline.historiqueDeLaConversation":
     "Conversation history",
   "messaging.messageTimeline.photoPartagee": "Shared photo",
@@ -2336,7 +2354,7 @@ export const messagesEn: MessageCatalogue = {
     "Buyer protection included, calculated at payment",
   "listings.listingDetailPage.modifierMonAnnonce": "Edit my listing",
   "listings.listingDetailPage.gererMesAnnoncesStats":
-    "Manage my listings & stats",
+    "Manage my listings",
   "listings.listingDetailPage.reserverLArticle": "Reserve the item",
   "listings.listingDetailPage.offreDePrix": "Make an offer",
   "listings.listingDetailPage.offreDePrixCourt": "Offer",
@@ -3615,6 +3633,16 @@ export const messagesEn: MessageCatalogue = {
   "pro.plans.subscriptionUnavailable.title": "Subscription unavailable",
   "pro.plans.subscriptionUnavailable.description":
     "An active Professional account authorized to manage subscriptions is required. Pricing remains available.",
+  "pro.plans.preview.badge": "Draft v{version}",
+  "pro.plans.preview.title": "Target catalog preview",
+  "pro.plans.preview.description":
+    "Pro Starter, Pro Growth, and Pro Performance are presented from the target commercial version. No subscription or paid add-on can start before publication.",
+  "pro.plans.preview.founding":
+    "Founding Professional: {trialDays} free days, up to {maximumVerticals} vertical, and pricing locked for {lockMonths} months when paid service starts.",
+  "pro.plans.preview.catalogLabel": "Preview v{version} · {market} market",
+  "pro.plans.preview.verticalDescription":
+    "Shared Pro base with the {vertical} module attachable after operational validation.",
+  "pro.plans.preview.unavailable": "Available after publication",
   "admin.auto.tableLabel": "Vehicle listings table",
   "auto.publish.stepperLabel": "Vehicle publishing steps",
   "auto.compare.tableLabel": "Vehicle comparison table",

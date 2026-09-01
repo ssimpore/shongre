@@ -576,7 +576,7 @@ export const ImmoSearchPage: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-bg-subtle pb-12">
+    <div className="min-h-screen bg-bg-subtle pb-12">
       <section className="border-b border-border-base bg-bg-surface py-6">
         <Container>
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
@@ -788,6 +788,6 @@ export const ImmoSearchPage: React.FC = () => {
           />
         </Drawer>
       ) : null}
-    </main>
+    </div>
   );
 };

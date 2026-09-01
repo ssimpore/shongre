@@ -4,7 +4,7 @@ import {
   showsVerifiedBadge,
 } from "../../domains/user/user.domain";
 import React from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   User,
   List,
@@ -58,6 +58,8 @@ export const AccountLayout: React.FC = () => {
   const { unreadCount: unreadNotifCount } = useNotifications();
   const { canAccessRoute } = useAuthorization();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isMessagingRoute = location.pathname.startsWith("/compte/messages");
 
   const isPro = isProSeller(currentUser);
   const isVerified = showsVerifiedBadge(currentUser);
@@ -242,13 +244,29 @@ export const AccountLayout: React.FC = () => {
   ].filter((item) => item.visible);
 
   return (
-    <Container className="py-5 sm:py-7">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-5 sm:gap-7">
+    <Container
+      width={isMessagingRoute ? "full" : "page"}
+      gutter={isMessagingRoute ? "none" : "standard"}
+      className={
+        isMessagingRoute
+          ? "py-0 md:max-w-page md:px-6 md:py-7 lg:px-8"
+          : "py-5 sm:py-7"
+      }
+    >
+      <div
+        className={`grid min-w-0 grid-cols-1 lg:grid-cols-4 ${
+          isMessagingRoute ? "gap-0 md:gap-7" : "gap-5 sm:gap-7"
+        }`}
+      >
         {/* Mobile & Tablet Navigation Header (< lg).
             `min-w-0` is required: a grid item defaults to `min-width:auto`, so
             without it the nested `overflow-x-auto` rail stretches the whole
             track and the page scrolls sideways on phones. */}
-        <div className="lg:hidden min-w-0 bg-bg-surface rounded-card border border-border-base p-4 shadow-xs space-y-3">
+        <div
+          className={`${
+            isMessagingRoute ? "hidden" : "block"
+          } min-w-0 space-y-3 rounded-card border border-border-base bg-bg-surface p-4 shadow-xs lg:hidden`}
+        >
           {/* User Quick Info */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">

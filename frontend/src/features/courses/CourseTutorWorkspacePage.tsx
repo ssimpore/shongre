@@ -176,7 +176,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
       </header>
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-content-aside-sm">
-        <main className="min-w-0 space-y-5">
+        <div className="min-w-0 space-y-5">
           <section className="grid gap-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:grid-cols-action-content sm:items-center 2xl:grid-cols-workspace-metrics">
             <Image
               src={tutor.avatarUrl}
@@ -596,7 +596,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               </div>
             )}
           </section>
-        </main>
+        </div>
 
         <aside className="min-w-0 space-y-4">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">

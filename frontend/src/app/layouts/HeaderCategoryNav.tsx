@@ -18,8 +18,7 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
-import { marketService } from "../../domains/market/market.service";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
@@ -35,6 +34,8 @@ interface HeaderCategoryNavProps {
   initialCategories?: TaxonomyHeaderCategoryItem[];
   marketContext: MarketContext;
   marketCode: string;
+  disabledCategorySlugs?: readonly string[];
+  disabledSubCategorySlugs?: readonly string[];
   onSelectCategory: (categorySlug: string) => void;
 }
 
@@ -76,6 +77,7 @@ function localizedHeaderCategoryLabel(
 
 const CATEGORY_MENU_ID = "header-category-mega-menu";
 const OVERVIEW_MENU_KEY = "autres";
+const EMPTY_DISABLED_CATEGORY_KEYS: readonly string[] = [];
 const categoryTriggerId = (slug: string) => `header-category-trigger-${slug}`;
 
 const getDedicatedRootDestination = (slug: string): string | undefined => {
@@ -382,6 +384,8 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   initialCategories = [],
   marketContext,
   marketCode,
+  disabledCategorySlugs = EMPTY_DISABLED_CATEGORY_KEYS,
+  disabledSubCategorySlugs = EMPTY_DISABLED_CATEGORY_KEYS,
   onSelectCategory,
 }) => {
   const { locale, t } = useTranslation();
@@ -472,10 +476,20 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   useEffect(() => {
     let cancelled = false;
     const normalizedMarketCode = marketCode.toUpperCase();
-    const isAvailable = (node: TaxonomyNode) =>
-      (node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status) ===
-        "active" &&
-      marketService.isCategoryEnabledInMarket(normalizedMarketCode, node.id);
+    const disabledKeys = new Set(
+      [...disabledCategorySlugs, ...disabledSubCategorySlugs].map((value) =>
+        value.toLowerCase(),
+      ),
+    );
+    const isAvailable = (node: TaxonomyNode) => {
+      const marketStatus =
+        node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status;
+      return (
+        marketStatus === "active" &&
+        !disabledKeys.has(node.id.toLowerCase()) &&
+        !disabledKeys.has(node.slug.toLowerCase())
+      );
+    };
 
     void services.taxonomy
       .getHeaderNavigation(marketContext)
@@ -525,7 +539,13 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [locale, marketCode, marketContext]);
+  }, [
+    disabledCategorySlugs,
+    disabledSubCategorySlugs,
+    locale,
+    marketCode,
+    marketContext,
+  ]);
 
   useEffect(() => {
     if (!isDesktop) closeMenu();

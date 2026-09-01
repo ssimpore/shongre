@@ -690,7 +690,7 @@ export const AutoSearchPage: React.FC = () => {
             />
           </aside>
         )}
-        <main className="min-w-0">
+        <div className="min-w-0">
           <div className="mb-3 flex items-center justify-between gap-3">
             <button
               type="button"
@@ -756,7 +756,7 @@ export const AutoSearchPage: React.FC = () => {
               ))}
             </div>
           )}
-        </main>
+        </div>
         {compared.length > 0 && (
           <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface shadow-xs xl:block">
             <div className="flex items-center justify-between border-b border-border-subtle p-4">

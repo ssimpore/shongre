@@ -96,10 +96,9 @@ test.describe("text resizing", () => {
  * Open overlays have to stay inside the viewport too.
  *
  * The page-level overflow checks above never open anything, so a panel that
- * only exists after a click was invisible to them. The footer language picker
- * was exactly that: a 240px panel anchored to its trigger's left edge, with the
- * trigger sitting right of centre — on a phone it ran past the right edge and
- * widened the document, the one thing this file exists to prevent.
+ * only exists after a click was invisible to them. While French is the only
+ * shipped locale the control opens regional preferences directly, so this
+ * checks the honest surface users actually receive.
  */
 test.describe("open dropdowns stay on screen", () => {
   for (const viewport of [
@@ -134,26 +133,24 @@ test.describe("open dropdowns stay on screen", () => {
       await trigger.click();
 
       const box = await page.evaluate(() => {
-        const menu = document.querySelector(
-          '[role="menu"][aria-labelledby="footer-lang-button"]',
-        );
-        if (!menu) return null;
-        const r = menu.getBoundingClientRect();
+        const dialog = document.querySelector('[role="dialog"]');
+        if (!dialog) return null;
+        const r = dialog.getBoundingClientRect();
         return { left: r.left, right: r.right, viewport: window.innerWidth };
       });
 
-      expect(box, "the language menu should be open").not.toBeNull();
-      expect(box!.left, "menu runs off the left edge").toBeGreaterThanOrEqual(
+      expect(box, "regional preferences should be open").not.toBeNull();
+      expect(box!.left, "dialog runs off the left edge").toBeGreaterThanOrEqual(
         -1,
       );
-      expect(box!.right, "menu runs off the right edge").toBeLessThanOrEqual(
+      expect(box!.right, "dialog runs off the right edge").toBeLessThanOrEqual(
         box!.viewport + 1,
       );
 
       // …and opening it must not have widened the document.
       await expectNoHorizontalOverflow(
         page,
-        `language menu open @ ${viewport.name}`,
+        `regional preferences open @ ${viewport.name}`,
       );
     });
   }

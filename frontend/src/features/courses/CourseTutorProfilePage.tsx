@@ -135,7 +135,7 @@ export const CourseTutorProfilePage: React.FC = () => {
       </nav>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-content-aside">
-        <main className="min-w-0 space-y-5">
+        <div className="min-w-0 space-y-5">
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="grid gap-5 p-5 sm:grid-cols-media-content-sm sm:p-6">
               <div className="aspect-square overflow-hidden rounded-card bg-bg-subtle">
@@ -386,7 +386,7 @@ export const CourseTutorProfilePage: React.FC = () => {
               </div>
             </div>
           </section>
-        </main>
+        </div>
 
         <aside className="self-start lg:sticky lg:top-24">
           <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">

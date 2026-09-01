@@ -9,17 +9,16 @@ import { useSearchParams } from "react-router-dom";
 import type {
   BillingOverview,
   BusinessVerticalCode,
-  MonetizationCatalog,
   MonetizationPrice,
   MonetizationProduct,
   MonetizationQuote,
   MonetizationSubscription,
+  ProfessionalCatalogPresentation,
   SubscriptionChangePreview,
 } from "@shongre/contracts/monetization";
 import {
   hasCommercialEntitlementValue,
   isCommercialEntitlementOperational,
-  isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
 import {
   ArrowRight,
@@ -139,7 +138,11 @@ export const ProPlansPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const operationSequence = useRef(0);
   const handledCheckoutReturn = useRef<string | null>(null);
-  const [catalog, setCatalog] = useState<MonetizationCatalog | null>(null);
+  const [catalogPresentation, setCatalogPresentation] =
+    useState<ProfessionalCatalogPresentation | null>(null);
+  const catalog = catalogPresentation?.catalog || null;
+  const isDraftPreview = catalogPresentation?.mode === "draft_preview";
+  const checkoutEnabled = catalogPresentation?.checkoutEnabled === true;
   const [billing, setBilling] = useState<BillingOverview | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [interval, setInterval] = useState<BillingInterval>("month");
@@ -172,7 +175,11 @@ export const ProPlansPage: React.FC = () => {
   });
 
   const loadCatalog = useCallback(async () => {
-    setCatalog(await services.businessRules.getCatalog(activeMarket.code));
+    setCatalogPresentation(
+      await services.businessRules.getProfessionalCatalogPresentation(
+        activeMarket.code,
+      ),
+    );
   }, [activeMarket.code]);
 
   const loadBilling = useCallback(async () => {
@@ -249,44 +256,32 @@ export const ProPlansPage: React.FC = () => {
     [catalog],
   );
 
-  const plans = useMemo(
-    () =>
+  const plans = useMemo(() => {
+    const presentedPlanIds = new Set(catalogPresentation?.planProductIds || []);
+    return (
       catalog?.products
-        .filter(
-          (product) =>
-            isCommercialProductPurchasable(product) &&
-            product.kind === "subscription" &&
-            product.commercialProfile.professionalOnly &&
-            Boolean(product.commercialProfile.tier) &&
-            (selectedVertical === "general"
-              ? ["free", "generic"].includes(product.commercialProfile.planType)
-              : product.commercialProfile.verticalId === selectedVertical),
-        )
+        .filter((product) => presentedPlanIds.has(product.id))
         .sort(
           (left, right) =>
             left.commercialProfile.displayOrder -
             right.commercialProfile.displayOrder,
-        ) || [],
-    [catalog, selectedVertical],
-  );
-  const boosts = useMemo(
-    () =>
+        ) || []
+    );
+  }, [catalog, catalogPresentation?.planProductIds]);
+  const boosts = useMemo(() => {
+    const presentedAddonIds = new Set(
+      catalogPresentation?.addonProductIds || [],
+    );
+    return (
       catalog?.products
-        .filter(
-          (product) =>
-            isCommercialProductPurchasable(product) &&
-            ["pack", "credit_pack"].includes(product.kind) &&
-            (product.commercialProfile.verticalId === selectedVertical ||
-              (!product.commercialProfile.verticalId &&
-                product.sourceConsumers.includes("solutions-pro"))),
-        )
+        .filter((product) => presentedAddonIds.has(product.id))
         .sort(
           (left, right) =>
             left.commercialProfile.displayOrder -
             right.commercialProfile.displayOrder,
-        ) || [],
-    [catalog, selectedVertical],
-  );
+        ) || []
+    );
+  }, [catalog, catalogPresentation?.addonProductIds]);
   const comparisonRows = useMemo(() => {
     const keys = [
       ...new Set(
@@ -312,15 +307,19 @@ export const ProPlansPage: React.FC = () => {
     const product = catalog?.products.find(
       (candidate) => candidate.id === subscription.productId,
     );
+    const isActive = [
+      "trialing",
+      "active",
+      "past_due",
+      "paused",
+      "cancellation_pending",
+    ].includes(subscription.status);
     return (
-      product?.commercialProfile.familyId === selectedFamilyId &&
-      [
-        "trialing",
-        "active",
-        "past_due",
-        "paused",
-        "cancellation_pending",
-      ].includes(subscription.status)
+      isActive &&
+      (isDraftPreview
+        ? (product?.commercialProfile.verticalId || "general") ===
+          selectedVertical
+        : product?.commercialProfile.familyId === selectedFamilyId)
     );
   });
   const currentProduct = catalog?.products.find(
@@ -336,6 +335,12 @@ export const ProPlansPage: React.FC = () => {
         "cancellation_pending",
       ].includes(subscription.status),
     ) || [];
+  const foundingCampaign = catalog?.campaigns.find(
+    (campaign) => campaign.code === "FOUNDING_PRO",
+  );
+  const foundingPriceProtection = catalog?.priceProtectionPolicies.find(
+    (policy) => policy.id === foundingCampaign?.priceProtectionPolicyId,
+  );
   const closeCheckout = () => {
     if (isConfirming) return;
     setSelectedProduct(null);
@@ -353,6 +358,15 @@ export const ProPlansPage: React.FC = () => {
     price: MonetizationPrice,
     replacementSource?: MonetizationSubscription,
   ) => {
+    if (!checkoutEnabled) {
+      toast.warning(
+        t("pro.plans.preview.unavailable"),
+        t("pro.plans.preview.badge", {
+          version: catalog?.versionNumber || 1,
+        }),
+      );
+      return;
+    }
     if (
       product.id === currentSubscription?.productId &&
       price.id === currentSubscription.priceId
@@ -606,6 +620,46 @@ export const ProPlansPage: React.FC = () => {
 
         {catalog && (
           <>
+            {isDraftPreview && (
+              <section
+                aria-labelledby="catalog-preview-title"
+                className="mt-8 rounded-card border border-info-border bg-info-surface p-5 sm:p-6"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-bg-surface text-info shadow-xs">
+                    <LockKeyhole
+                      className="h-icon-lg w-icon-lg"
+                      aria-hidden="true"
+                    />
+                  </span>
+                  <div>
+                    <Badge variant="primary" size="sm">
+                      {t("pro.plans.preview.badge", {
+                        version: catalog.versionNumber,
+                      })}
+                    </Badge>
+                    <h2
+                      id="catalog-preview-title"
+                      className="mt-2 text-lg font-black text-text-main"
+                    >
+                      {t("pro.plans.preview.title")}
+                    </h2>
+                    <p className="mt-1 max-w-4xl text-sm leading-relaxed text-text-secondary">
+                      {t("pro.plans.preview.description")}
+                    </p>
+                    {foundingCampaign && foundingPriceProtection && (
+                      <p className="mt-2 text-xs font-bold text-info">
+                        {t("pro.plans.preview.founding", {
+                          trialDays: foundingCampaign.trialDays,
+                          maximumVerticals: foundingCampaign.maximumVerticals,
+                          lockMonths: foundingPriceProtection.durationMonths,
+                        })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
             <section aria-labelledby="plans-title" className="py-8 sm:py-10">
               <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                 <div>
@@ -616,15 +670,26 @@ export const ProPlansPage: React.FC = () => {
                     Un forfait pour chaque étape
                   </h2>
                   <p className="mt-1 text-sm text-text-secondary">
-                    {catalog.verticals.find(
-                      (vertical) => vertical.id === selectedVertical,
-                    )?.description ||
-                      "Niveaux issus du catalogue commercial actif."}
+                    {isDraftPreview
+                      ? t("pro.plans.preview.verticalDescription", {
+                          vertical:
+                            catalog.verticals.find(
+                              (vertical) => vertical.id === selectedVertical,
+                            )?.name || selectedVertical,
+                        })
+                      : catalog.verticals.find(
+                          (vertical) => vertical.id === selectedVertical,
+                        )?.description ||
+                        "Niveaux issus du catalogue commercial actif."}
                   </p>
                 </div>
                 <span className="text-xs text-text-muted">
-                  Catalogue v{catalog.versionNumber} · marché{" "}
-                  {catalog.marketCode}
+                  {isDraftPreview
+                    ? t("pro.plans.preview.catalogLabel", {
+                        version: catalog.versionNumber,
+                        market: catalog.marketCode,
+                      })
+                    : `Catalogue v${catalog.versionNumber} · marché ${catalog.marketCode}`}
                 </span>
               </div>
 
@@ -766,23 +831,28 @@ export const ProPlansPage: React.FC = () => {
                             variant={plan.recommended ? "primary" : "outline"}
                             fullWidth
                             data-marketplace-action="subscription.start"
-                            disabled={isCurrent || !canTransition}
+                            disabled={
+                              !checkoutEnabled || isCurrent || !canTransition
+                            }
                             onClick={() => void prepareOffer(plan, price)}
                           >
-                            {isCurrent
-                              ? "Forfait actuel"
-                              : !canTransition
-                                ? "Transition indisponible"
-                                : currentSubscription
-                                  ? "Changer de forfait"
-                                  : trialDays
-                                    ? `Essayer ${trialDays} jours`
-                                    : activeSubscriptions.length > 0
-                                      ? "Ajouter ce forfait"
-                                      : "Choisir ce forfait"}
+                            {!checkoutEnabled
+                              ? t("pro.plans.preview.unavailable")
+                              : isCurrent
+                                ? "Forfait actuel"
+                                : !canTransition
+                                  ? "Transition indisponible"
+                                  : currentSubscription
+                                    ? "Changer de forfait"
+                                    : trialDays
+                                      ? `Essayer ${trialDays} jours`
+                                      : activeSubscriptions.length > 0
+                                        ? "Ajouter ce forfait"
+                                        : "Choisir ce forfait"}
                           </Button>
                         )}
-                        {isAuthenticated &&
+                        {checkoutEnabled &&
+                          isAuthenticated &&
                           !currentSubscription &&
                           replacementSource &&
                           replacementSourceProduct && (
@@ -933,21 +1003,35 @@ export const ProPlansPage: React.FC = () => {
                             )}{" "}
                             HT
                           </strong>
-                          <Button
-                            to={
-                              isAuthenticated
-                                ? "/compte/annonces"
-                                : "/connexion"
-                            }
-                            data-marketplace-action="promotion.start"
-                            variant="outline"
-                            size="sm"
-                            rightIcon={
-                              <ChevronRight className="h-icon-md w-icon-md" />
-                            }
-                          >
-                            Choisir l’annonce
-                          </Button>
+                          {checkoutEnabled ? (
+                            <Button
+                              to={
+                                isAuthenticated
+                                  ? "/compte/annonces"
+                                  : "/connexion"
+                              }
+                              data-marketplace-action="promotion.start"
+                              variant="outline"
+                              size="sm"
+                              rightIcon={
+                                <ChevronRight className="h-icon-md w-icon-md" />
+                              }
+                            >
+                              Choisir l’annonce
+                            </Button>
+                          ) : (
+                            <Button
+                              data-marketplace-action="promotion.start"
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              rightIcon={
+                                <ChevronRight className="h-icon-md w-icon-md" />
+                              }
+                            >
+                              {t("pro.plans.preview.unavailable")}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </article>

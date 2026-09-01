@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
@@ -14,6 +14,9 @@ import { MarketRecommendationBanner } from "./MarketRecommendationBanner";
 import { MarketChangeConfirmationModal } from "./MarketChangeConfirmationModal";
 
 export const MainLayout: React.FC = () => {
+  const location = useLocation();
+  const isMessagingRoute = location.pathname.startsWith("/compte/messages");
+
   return (
     /* `--page-bottom-inset` is how a page declares that it pins something over
        the bottom of the viewport (the listing detail action bar is the only one
@@ -36,8 +39,14 @@ export const MainLayout: React.FC = () => {
       >
         <Outlet />
       </main>
-      <Footer />
-      <MobileBottomNav />
+      {isMessagingRoute ? (
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+      ) : (
+        <Footer />
+      )}
+      {!isMessagingRoute && <MobileBottomNav />}
       <LocationPickerModal />
       <PreferencesModal />
       <MarketChangeConfirmationModal />

@@ -5,6 +5,8 @@ import { AUTO_DEMO_PRIVATE_VEHICLES } from "../../mocks/autoDemoData";
 import { DEMO_COURSE_OFFERS, DEMO_TUTORS } from "../../mocks/coursesDemoData";
 import { IMMO_DEMO_PROPERTIES } from "../../mocks/realEstateDemoData";
 import { demoVerticalDiscoveryStore } from "./demo-vertical-discovery.store";
+import { projectEmploymentJob } from "./vertical-discovery.projection";
+import { formatListingPricePresentation } from "../listing/listing-price.presentation";
 
 afterEach(() => demoVerticalDiscoveryStore.reset());
 
@@ -107,6 +109,33 @@ describe("canonical vertical discovery projection", () => {
 
     expect(updated.title).toBe("Développeur·se React confirmé·e");
     expect(demoVerticalDiscoveryStore.getListings()).toHaveLength(before);
+  });
+
+  it("preserves public salary ranges, periods and undisclosed remuneration", () => {
+    const hourlyJob = structuredClone(
+      EMPLOYMENT_DEMO_JOBS.find(
+        (job) => job.salary?.frequencyId.endsWith(".hour"),
+      )!,
+    );
+    const hourlyListing = projectEmploymentJob(hourlyJob);
+    const hourlyLabel = formatListingPricePresentation(
+      hourlyListing.pricePresentation,
+      "fr-FR",
+    );
+
+    expect(hourlyLabel?.replace(/\s/gu, " ")).toContain("12,50 €");
+    expect(hourlyLabel).toContain("/ h");
+
+    hourlyJob.salary = hourlyJob.salary
+      ? { ...hourlyJob.salary, isPublic: false }
+      : undefined;
+    const undisclosedListing = projectEmploymentJob(hourlyJob);
+    expect(
+      formatListingPricePresentation(
+        undisclosedListing.pricePresentation,
+        "fr-FR",
+      ),
+    ).toBe("Rémunération non communiquée");
   });
 
   it("normalizes inactive Course and Immo states out of public discovery", () => {

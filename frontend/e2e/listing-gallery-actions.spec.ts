@@ -90,3 +90,45 @@ test("listing and vehicle details share the same favorite gallery action", async
     );
   }
 });
+
+test("listing details place the primary summary immediately below the media", async ({
+  page,
+}) => {
+  await usePersona(page, "individual_seller");
+  await seedConsentDecision(page);
+
+  for (const viewport of [
+    { width: 1408, height: 701 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/annonce/list-103", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const gallery = page.getByRole("group", {
+      name: /Galerie de photos/,
+    });
+    const heading = page.getByRole("heading", {
+      level: 1,
+      name: /Apple iPhone 15 Pro/,
+    });
+    await expect(gallery).toBeVisible();
+    await expect(heading).toBeVisible();
+
+    const order = await gallery.evaluate((galleryElement) => {
+      const headingElement = document.querySelector("h1");
+      if (!headingElement) return null;
+      return Boolean(
+        galleryElement.compareDocumentPosition(headingElement) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+    });
+    expect(order, `summary should follow media at ${viewport.width}px`).toBe(
+      true,
+    );
+    await expectNoHorizontalOverflow(
+      page,
+      `media-first listing detail at ${viewport.width}px`,
+    );
+  }
+});

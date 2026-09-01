@@ -44,6 +44,39 @@ describe("commercial configuration validation", () => {
     );
   });
 
+  it("blocks a target publication while a mapped legacy tariff remains selectable", () => {
+    const catalog = structuredClone(PROPOSED_MONETIZATION_DRAFT_CATALOG);
+    const mapping = catalog.migrationMappings[0];
+    catalog.products.find(
+      (product) => product.id === mapping.toProductId,
+    )!.status = "active";
+
+    expect(validateCommercialConfiguration(catalog)).toContainEqual(
+      expect.objectContaining({
+        code: "MIGRATION_SOURCE_STILL_SELECTABLE",
+        severity: "blocking",
+        entityIds: expect.arrayContaining([
+          mapping.fromProductId,
+          mapping.toProductId,
+        ]),
+      }),
+    );
+  });
+
+  it("blocks publication while a mapped target tariff is not selectable", () => {
+    const mapping = PROPOSED_MONETIZATION_DRAFT_CATALOG.migrationMappings[0];
+
+    expect(
+      validateCommercialConfiguration(PROPOSED_MONETIZATION_DRAFT_CATALOG),
+    ).toContainEqual(
+      expect.objectContaining({
+        code: "MIGRATION_TARGET_NOT_SELECTABLE",
+        severity: "blocking",
+        entityIds: expect.arrayContaining([mapping.id, mapping.toProductId]),
+      }),
+    );
+  });
+
   it("blocks ambiguous rules with identical precedence and divergent outcomes", () => {
     const source = BASELINE_MONETIZATION_CATALOG.rules[0];
     const catalog = structuredClone(BASELINE_MONETIZATION_CATALOG);

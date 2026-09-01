@@ -1,4 +1,4 @@
-import { CountryMarketDefinition } from "../../configuration/market.config";
+import type { CountryMarketDefinition } from "../../configuration/market.config";
 import type {
   CountryConfig,
   MarketDetectionRecommendation,

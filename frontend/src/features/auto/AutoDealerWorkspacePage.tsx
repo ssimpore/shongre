@@ -948,7 +948,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         </div>
       </nav>
       <div className="mt-5 grid gap-4 xl:grid-cols-content-aside-xs">
-        <main className="min-w-0">{content}</main>
+        <div className="min-w-0">{content}</div>
         <aside className="self-start space-y-4 xl:sticky xl:top-24">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center justify-between">

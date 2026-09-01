@@ -8,6 +8,7 @@ import type {
   MonetizationAdminOverview,
   MonetizationCatalog,
   MonetizationOrder,
+  ProfessionalCatalogPresentation,
   MonetizationQuote,
   MonetizationSubscription,
   PromotionValidationRequest,
@@ -46,6 +47,9 @@ export interface ComplimentaryGrantDecisionResult {
 
 export interface BusinessRulesServiceContract {
   getCatalog(marketCode: string): Promise<MonetizationCatalog>;
+  getProfessionalCatalogPresentation(
+    marketCode: string,
+  ): Promise<ProfessionalCatalogPresentation>;
   evaluate(context: RuleEvaluationContext): Promise<RuleEvaluationResult>;
   createQuote(request: QuoteRequest): Promise<MonetizationQuote>;
   createCheckout(

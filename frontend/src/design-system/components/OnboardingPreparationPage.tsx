@@ -39,13 +39,13 @@ export const OnboardingPreparationPage: React.FC<
   const headingId = useId();
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="mx-auto min-w-0 max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <section
         aria-labelledby={headingId}
-        className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
+        className="min-w-0 overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs"
       >
-        <div className="grid lg:grid-cols-2">
-          <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
+        <div className="grid min-w-0 lg:grid-cols-2">
+          <div className="flex min-w-0 flex-col justify-center p-5 sm:p-10 lg:p-12">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
               {eyebrow}
             </span>
@@ -59,19 +59,23 @@ export const OnboardingPreparationPage: React.FC<
               {description}
             </p>
 
-            <div className="mt-8 flex flex-col items-start gap-3">
+            <div className="mt-8 flex min-w-0 flex-col items-stretch gap-3 sm:items-start">
               <Button
                 variant="primary"
                 size="lg"
                 onClick={onStart}
                 disabled={!isReady}
                 rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
+                className="w-full min-w-0 !whitespace-normal sm:w-auto"
               >
                 {actionLabel}
               </Button>
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium text-stone-500">
-                <Clock3 className="h-icon-md w-icon-md" aria-hidden="true" />
-                {durationLabel}
+              <span className="inline-flex min-w-0 items-start gap-1.5 text-xs font-medium leading-relaxed text-stone-500">
+                <Clock3
+                  className="mt-0.5 h-icon-md w-icon-md shrink-0"
+                  aria-hidden="true"
+                />
+                <span>{durationLabel}</span>
               </span>
             </div>
 
@@ -87,7 +91,7 @@ export const OnboardingPreparationPage: React.FC<
             </p>
           </div>
 
-          <div className="border-t border-border-base bg-bg-subtle p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+          <div className="min-w-0 border-t border-border-base bg-bg-subtle p-5 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
             <h2 className="text-sm font-black text-stone-900">
               {checklistTitle}
             </h2>

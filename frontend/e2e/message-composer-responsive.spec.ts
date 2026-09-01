@@ -69,3 +69,21 @@ test("message composer and photo picker fit a mobile conversation", async ({
   await expect(page.getByRole("button", { name: "Fermer" })).toBeVisible();
   await expectNoHorizontalOverflow(page, "mobile message attachment picker");
 });
+
+test("conversation context and composer remain contained at 320px", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto(CONVERSATION_URL, { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
+
+  const context = page.locator("[data-conversation-context]");
+  await expect(context).toBeVisible();
+  await expect(page.locator("[data-message-composer]")).toBeVisible();
+  const width = await context.evaluate((element) => ({
+    client: element.clientWidth,
+    scroll: element.scrollWidth,
+  }));
+  expect(width.scroll).toBeLessThanOrEqual(width.client + 1);
+  await expectNoHorizontalOverflow(page, "320px conversation");
+});

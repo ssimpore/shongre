@@ -37,12 +37,10 @@ export interface ScrollRailProps {
 /**
  * Horizontal rail that reveals its own overflow.
  *
- * index.css documents the house pattern: rails scroll with `.no-scrollbar` and
- * "the affordance is the content bleeding off-edge". That works when an item is
- * visibly clipped mid-word — but when the last item happens to end near the
- * boundary there is no bleed to see, and the item simply looks absent. On the
- * taxonomy console the strip ran to 1508px in a 1440px viewport and hid an
- * entire tab ("Historique & Audit") with no cue at all.
+ * The compatibility `.no-scrollbar` class now keeps a slim scrollbar visible
+ * for fine-pointer users. That baseline is not enough for card and chip rails,
+ * where the final item can still look absent instead of clipped, so this
+ * primitive also exposes directional controls whenever overflow exists.
  *
  * So the cue is made explicit, and only when it is actually needed: a scroll
  * button appears on whichever side has more content. When everything fits, this

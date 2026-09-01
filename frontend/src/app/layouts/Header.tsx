@@ -14,6 +14,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
+import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
 import { HeaderCategoryNav } from "./HeaderCategoryNav";
 import {
   PlusCircle,
@@ -38,8 +39,8 @@ import {
 import { useAuth } from "../providers/AuthProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useFavorites } from "../providers/FavoritesProvider";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
+import { services } from "../../api/client/service-registry";
 import { storageService } from "../../services/storage.service";
 import { usePublishCta } from "../../security/usePublishCta";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -195,7 +196,7 @@ export const Header: React.FC = () => {
   /* The results page renders its own, richer search bar — see the desktop
      search slot below. */
   const isSearchRoute = location.pathname === "/recherche";
-  const { currentUser, isAuthenticated, logout } = useAuth();
+  const { currentUser, isAuthenticated, isRestoring, logout } = useAuth();
   const { can, canAccessRoute } = useAuthorization();
   const { isStaff: isStaffIdentity, canUseDemoMarketplace } =
     useStaffMarketplaceAccess();
@@ -223,7 +224,8 @@ export const Header: React.FC = () => {
               currentUser?.status === "deleted"
             ? t("shell.header.accountMenu.status.inactive")
             : null;
-  const { activeMarket, marketContext } = useMarketLocation();
+  const { activeMarket, currentLocale, effectiveConfig, marketContext } =
+    useMarketLocation();
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -393,6 +395,9 @@ export const Header: React.FC = () => {
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
+  const [mobileCategories, setMobileCategories] = useState<
+    TaxonomyHeaderCategoryItem[]
+  >([]);
   const [isHeaderSearchExpanded, setIsHeaderSearchExpanded] = useState(false);
   // Set when the drawer is opened via the search button rather than the burger,
   // so the field takes focus instead of the user having to tap it again.
@@ -404,6 +409,28 @@ export const Header: React.FC = () => {
     setIsMobileMenuOpen(false);
     setIsHeaderSearchExpanded(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMobileCategoriesOpen || !marketContext) return;
+    let cancelled = false;
+    void services.taxonomy
+      .getHeaderNavigation(marketContext)
+      .then((configuration) => {
+        if (!cancelled) {
+          setMobileCategories(
+            [...configuration.items].sort(
+              (left, right) => left.displayOrder - right.displayOrder,
+            ),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMobileCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isMobileCategoriesOpen, marketContext]);
 
   // Close the header dropdowns on route change, Escape, or a click outside.
   useEffect(() => {
@@ -626,7 +653,18 @@ export const Header: React.FC = () => {
 
             {/* User Account Menu (Desktop) */}
             <div className="relative hidden md:block ml-1" ref={accountMenuRef}>
-              {isAuthenticated && currentUser ? (
+              {isRestoring ? (
+                <div
+                  data-auth-restoring
+                  role="status"
+                  aria-label={t("shell.header.restoringSession")}
+                  aria-busy="true"
+                  className="flex h-control-md w-24 items-center gap-2 rounded-control border border-border-base bg-bg-surface px-2.5 lg:w-32"
+                >
+                  <span className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                  <span className="hidden h-2.5 flex-1 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none lg:block" />
+                </div>
+              ) : isAuthenticated && currentUser ? (
                 <button
                   type="button"
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
@@ -795,6 +833,12 @@ export const Header: React.FC = () => {
               currentPath={location.pathname}
               marketContext={marketContext}
               marketCode={activeMarket.code}
+              disabledCategorySlugs={
+                effectiveConfig.taxonomy?.disabledCategorySlugs
+              }
+              disabledSubCategorySlugs={
+                effectiveConfig.taxonomy?.disabledSubCategorySlugs
+              }
               onSelectCategory={handleCategorySelect}
             />
           </Container>
@@ -867,7 +911,21 @@ export const Header: React.FC = () => {
               <div className="flex-1 overflow-y-auto overscroll-contain pb-28">
                 {/* User status card / Login CTA (Targeted element 2) */}
                 <div className="p-4 sm:p-5 bg-bg-base border-b border-border-base shrink-0">
-                  {isAuthenticated && currentUser ? (
+                  {isRestoring ? (
+                    <div
+                      data-auth-restoring
+                      role="status"
+                      aria-label={t("shell.header.restoringSession")}
+                      aria-busy="true"
+                      className="flex items-center gap-3"
+                    >
+                      <span className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                      <span className="min-w-0 flex-1 space-y-2">
+                        <span className="block h-3 w-28 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                        <span className="block h-2.5 w-40 max-w-full animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                      </span>
+                    </div>
+                  ) : isAuthenticated && currentUser ? (
                     <div className="flex items-center gap-3">
                       <Avatar
                         src={currentUser.avatarUrl}
@@ -1009,7 +1067,7 @@ export const Header: React.FC = () => {
                       >
                         <span className="flex items-center gap-2.5">
                           <Layers className="w-icon-md h-icon-md text-primary" />
-                          Catégories ({TAXONOMY.length})
+                          Catégories
                         </span>
                         <ChevronDown
                           className={`w-icon-md h-icon-md text-stone-400 transition-transform ${
@@ -1020,23 +1078,38 @@ export const Header: React.FC = () => {
 
                       {isMobileCategoriesOpen && (
                         <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast">
-                          {TAXONOMY.map((cat) => (
+                          {mobileCategories.map((cat) => (
                             <Link
-                              key={cat.id}
+                              key={cat.categoryId}
                               to={`/categorie/${cat.slug}`}
                               onClick={() => setIsMobileMenuOpen(false)}
                               className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-stone-700 hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
                               title={getTaxonomyLabel(cat, "compact")}
                             >
                               <div className="flex items-center gap-2">
-                                <CategoryIcon category={cat} size="xs" />
-                                <span>{getTaxonomyLabel(cat, "compact")}</span>
+                                <CategoryIcon
+                                  category={cat.slug}
+                                  iconName={cat.iconName}
+                                  size="xs"
+                                />
+                                <span>
+                                  {getTaxonomyLabel(cat, {
+                                    compact: true,
+                                    locale: currentLocale,
+                                  })}
+                                </span>
                               </div>
-                              <span className="text-micro text-stone-500">
-                                {cat.subCategories.length}
-                              </span>
                             </Link>
                           ))}
+                          {mobileCategories.length === 0 && (
+                            <Link
+                              to={routes.categories()}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className="block rounded-lg px-2 py-2 text-xs font-semibold text-primary hover:bg-primary-light"
+                            >
+                              Voir toutes les catégories
+                            </Link>
+                          )}
                         </div>
                       )}
                     </div>

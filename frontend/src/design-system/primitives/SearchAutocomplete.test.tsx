@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { SearchAutocomplete, HighlightMatch } from "./SearchAutocomplete";
 import { getSearchSuggestions } from "../../configuration/search.config";
+import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 
 describe("HighlightMatch", () => {
   it("instantiates correctly with text", () => {
@@ -32,7 +33,7 @@ describe("getSearchSuggestions", () => {
   });
 
   it("matches categories when typing category name or keyword", () => {
-    const results = getSearchSuggestions("vehic");
+    const results = getSearchSuggestions("vehic", undefined, TAXONOMY);
     expect(
       results.categories.some(
         (c) => c.slug === "vehicules" || c.parentSlug === "vehicules",

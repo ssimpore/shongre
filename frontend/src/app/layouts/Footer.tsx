@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Briefcase,
@@ -8,8 +8,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
+import { services } from "../../api/client/service-registry";
 import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";
 import { NewsletterSignup } from "../../features/newsletter/components/NewsletterSignup";
 import { useConsent } from "../providers/ConsentProvider";
@@ -223,14 +224,38 @@ const FooterColumn: React.FC<{
 
 export const Footer: React.FC = () => {
   const { openPreferences } = useConsent();
-  const { activeMarket } = useMarketLocation();
-  const { t } = useTranslation();
+  const { activeMarket, marketContext } = useMarketLocation();
+  const { t, locale } = useTranslation();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     categories: false,
     professionals: false,
     help: false,
   });
+  const [footerCategories, setFooterCategories] = useState<
+    TaxonomyHeaderCategoryItem[]
+  >([]);
+  useEffect(() => {
+    if (!marketContext) return;
+    let cancelled = false;
+    void services.taxonomy
+      .getHeaderNavigation(marketContext)
+      .then((configuration) => {
+        if (!cancelled) {
+          setFooterCategories(
+            [...configuration.items]
+              .sort((left, right) => left.displayOrder - right.displayOrder)
+              .slice(0, 6),
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setFooterCategories([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [marketContext]);
   const toggleSection = (sectionKey: string) => {
     setOpenSections((previousSections) => ({
       ...previousSections,
@@ -250,15 +275,23 @@ export const Footer: React.FC = () => {
               isOpen={isDesktop || openSections.categories}
               onToggle={toggleSection}
             >
-              {TAXONOMY.slice(0, 6).map((category) => (
+              {footerCategories.map((category) => (
                 <FooterLink
-                  key={category.id}
+                  key={category.categoryId}
                   to={routes.category(category.slug)}
-                  title={getTaxonomyLabel(category, "compact")}
+                  title={getTaxonomyLabel(category, {
+                    compact: true,
+                    locale,
+                  })}
                 >
-                  {getTaxonomyLabel(category, "compact")}
+                  {getTaxonomyLabel(category, { compact: true, locale })}
                 </FooterLink>
               ))}
+              {footerCategories.length === 0 && (
+                <FooterLink to={routes.categories()}>
+                  {t("footer.sectionCategories")}
+                </FooterLink>
+              )}
             </FooterColumn>
 
             <FooterColumn
