@@ -137,4 +137,22 @@ describe("AnalyticsService", () => {
       },
     ]);
   });
+
+  it("requires one explicit market for monetary analytics and keeps CHF scoped", async () => {
+    const service = new AnalyticsService(new DemoAnalyticsRepository());
+    const base = { range: "30d" as const };
+    expect(() =>
+      service.monetization({ ...base, marketCode: "ALL" }),
+    ).toThrowError(
+      expect.objectContaining({
+        code: "VALIDATION_ERROR",
+        details: {
+          reasonCode: "MONETIZATION_ANALYTICS_MARKET_REQUIRED",
+        },
+      }),
+    );
+    await expect(
+      service.monetization({ ...base, marketCode: "CH" }),
+    ).resolves.toMatchObject({ currency: "CHF" });
+  });
 });

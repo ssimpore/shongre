@@ -6,8 +6,13 @@ import { useMarketLocation } from "../providers/MarketLocationProvider";
 
 export const MarketChangeConfirmationModal: React.FC = () => {
   const { t } = useTranslation();
-  const { pendingMarketChange, confirmMarketChange, cancelMarketChange } =
-    useMarketLocation();
+  const {
+    pendingMarketChange,
+    isChangingMarket,
+    marketChangeFailed,
+    confirmMarketChange,
+    cancelMarketChange,
+  } = useMarketLocation();
 
   return (
     <Modal
@@ -23,16 +28,33 @@ export const MarketChangeConfirmationModal: React.FC = () => {
       }
       maxWidth="md"
     >
+      {marketChangeFailed ? (
+        <p role="alert" className="mb-4 text-sm text-danger">
+          {t("shell.marketDetection.handoffFailed")}
+        </p>
+      ) : null}
       <div className="flex justify-end gap-2">
-        <Button variant="secondary" size="sm" onClick={cancelMarketChange}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={cancelMarketChange}
+          disabled={isChangingMarket}
+        >
           {t("common.cancel")}
         </Button>
-        <Button variant="primary" size="sm" onClick={confirmMarketChange}>
-          {pendingMarketChange
-            ? t("shell.marketDetection.confirmAction", {
-                country: pendingMarketChange.name,
-              })
-            : t("common.confirm")}
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={confirmMarketChange}
+          disabled={isChangingMarket}
+        >
+          {isChangingMarket
+            ? t("common.loading")
+            : pendingMarketChange
+              ? t("shell.marketDetection.confirmAction", {
+                  country: pendingMarketChange.name,
+                })
+              : t("common.confirm")}
         </Button>
       </div>
     </Modal>

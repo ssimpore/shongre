@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import type { AccountFinanceDashboard } from "@shongre/contracts/finance";
 import type { BillingOverview } from "@shongre/contracts/monetization";
 import {
@@ -18,6 +18,7 @@ import { ScrollableRegion } from "../../design-system/primitives/ScrollableRegio
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { BillingHistoryModal } from "../seller-workspace/components/BillingHistoryModal";
+import { useMarketBusinessRules } from "../../domains/monetization/useMarketBusinessRules";
 
 function AccountMetric({
   label,
@@ -51,6 +52,7 @@ export const AccountFinancePage: React.FC<{
   scope?: "account" | "organization";
 }> = ({ scope = "account" }) => {
   const { formatDate, formatDateTime, formatMoney } = useRegionalFormatters();
+  const marketBusinessRules = useMarketBusinessRules();
   usePageMeta({
     title: "Mes finances",
     description: "Dépenses, revenus vendeur, virements et factures Shongre.",
@@ -64,13 +66,13 @@ export const AccountFinancePage: React.FC<{
   const [isInvoiceHistoryOpen, setInvoiceHistoryOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setError(null);
     const [financeResult, billingResult] = await Promise.allSettled([
       scope === "organization"
         ? services.finance.getOrganizationDashboard()
         : services.finance.getAccountDashboard(),
-      services.businessRules.getBillingOverview(),
+      marketBusinessRules.getBillingOverview(),
     ]);
     if (financeResult.status === "rejected") {
       setError(
@@ -84,11 +86,11 @@ export const AccountFinancePage: React.FC<{
     setBilling(
       billingResult.status === "fulfilled" ? billingResult.value : null,
     );
-  };
+  }, [marketBusinessRules, scope]);
 
   useEffect(() => {
     void load();
-  }, [scope]);
+  }, [load]);
 
   if (!dashboard && !error) {
     return (

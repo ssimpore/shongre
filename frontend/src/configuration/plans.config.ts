@@ -4,14 +4,15 @@ import {
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
+import type { Money } from "@shongre/contracts";
 
 export interface ProPlan {
   id: "free" | "pro_starter" | "pro_business" | "pro_enterprise";
   productId: string;
   name: string;
   tagline: string;
-  monthlyPrice: number;
-  annualPriceMonthlyEquivalent: number;
+  monthlyPrice: Money;
+  annualPriceMonthlyEquivalent: Money;
   maxActiveListings: number;
   photosPerListing: number;
   storefrontCustomization: boolean;
@@ -64,10 +65,13 @@ export const resolveProPlans = (
         productId: product.id,
         name: product.name,
         tagline: product.description,
-        monthlyPrice: monthly.amount.amountMinor / 100,
+        monthlyPrice: monthly.amount,
         annualPriceMonthlyEquivalent: annual
-          ? annual.amount.amountMinor / 1200
-          : 0,
+          ? {
+              amountMinor: Math.round(annual.amount.amountMinor / 12),
+              currency: annual.amount.currency,
+            }
+          : { amountMinor: 0, currency: monthly.amount.currency },
         maxActiveListings: typeof maxListings === "number" ? maxListings : 0,
         photosPerListing: typeof maxPhotos === "number" ? maxPhotos : 0,
         storefrontCustomization: Boolean(entitlement(product, "storeEnabled")),
@@ -102,7 +106,7 @@ export interface ListingBoostOption {
   name: string;
   description: string;
   durationDays: number;
-  priceEur: number;
+  price: Money;
   badgeLabel: string;
   multiplierEstimate: string;
 }
@@ -132,7 +136,7 @@ export const resolveListingBoosts = (
         name: product.name,
         description: product.description,
         durationDays: price.durationDays || 1,
-        priceEur: price.amount.amountMinor / 100,
+        price: price.amount,
         badgeLabel: product.name,
         multiplierEstimate: "Visibilité payante",
       };

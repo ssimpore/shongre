@@ -109,11 +109,12 @@ describe("CommissionService", () => {
       idempotencyKey: "commission-refund-analytics-04",
       occurredAt: "2026-08-25T12:00:00.000Z",
     });
+    const calculationDate = calculation.calculatedAt.slice(0, 10);
     const rows = await service.listAnalytics({
       marketCode: "FR",
       currency: "EUR",
-      from: "2026-08-01",
-      to: "2026-08-31",
+      from: calculationDate,
+      to: calculationDate,
     });
     expect(rows).toContainEqual(
       expect.objectContaining({

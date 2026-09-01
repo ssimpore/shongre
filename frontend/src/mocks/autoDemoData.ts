@@ -550,6 +550,8 @@ const seller = {
   slug: "auto-select-lyon",
   locationLabel: "Lyon (69)",
   responseTimeMinutes: 42,
+  rating: 4.8,
+  reviewCount: 64,
   memberSinceYear: 2019,
   verifiedBusiness: true,
 };

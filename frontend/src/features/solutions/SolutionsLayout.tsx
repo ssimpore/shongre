@@ -4,7 +4,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 import { services } from "../../api/client/service-registry";
 import { Container, SkipLink } from "../../design-system";
-import { SOLUTION_LIFECYCLE_PRESENTATION } from "../../domains/solutions/solutions.presentation";
+import { solutionLifecycleLabel } from "../../domains/solutions/solutions.presentation";
 import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
@@ -101,7 +101,7 @@ function SolutionsHeader() {
         <a
           href={rootHref}
           className="flex items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          aria-label="Accueil Shongre Solutions"
+          aria-label={t("solutions.header.homeLabel")}
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-black text-white">
             S
@@ -111,13 +111,13 @@ function SolutionsHeader() {
               shongre
             </span>
             <span className="mt-1 block text-micro font-semibold text-text-muted sm:hidden">
-              Solutions
+              {t("solutions.header.solutions")}
             </span>
           </span>
         </a>
         <nav
           className="hidden items-center gap-7 md:flex"
-          aria-label="Navigation Solutions"
+          aria-label={t("solutions.header.navigationLabel")}
         >
           <div
             ref={solutionMenuRef}
@@ -149,7 +149,7 @@ function SolutionsHeader() {
                 }
               }}
             >
-              Solutions
+              {t("solutions.header.solutions")}
               <ChevronDown
                 className={`h-icon-xs w-icon-xs transition-transform duration-fast ${solutionMenuOpen ? "rotate-180" : ""}`}
                 aria-hidden="true"
@@ -165,8 +165,6 @@ function SolutionsHeader() {
                 >
                   <div className="space-y-1">
                     {solutions.map((solution) => {
-                      const lifecycle =
-                        SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle];
                       return (
                         <a
                           key={solution.id}
@@ -188,7 +186,7 @@ function SolutionsHeader() {
                                 {solution.name.replace(/^Shongre\s+/, "")}
                               </span>
                               <span className="shrink-0 text-micro font-semibold text-text-muted">
-                                {lifecycle.label}
+                                {solutionLifecycleLabel(t, solution.lifecycle)}
                               </span>
                             </span>
                             <span className="mt-0.5 block truncate text-xs text-text-secondary">
@@ -210,32 +208,44 @@ function SolutionsHeader() {
             ) : null}
           </div>
           <a href={`${rootHref}#ecosysteme`} className={navClass}>
-            Écosystème
+            {t("solutions.header.ecosystem")}
           </a>
         </nav>
         <div className="hidden items-center gap-5 md:flex">
           <a href={marketplaceHref} className={`${navClass} gap-2`}>
             <Store className="h-icon-sm w-icon-sm" aria-hidden="true" />
-            Plateforme Shongre
+            {t("solutions.header.platform")}
           </a>
           <a href={accountHref} className={navClass}>
-            {isAuthenticated ? "Mon compte" : "Se connecter"}
+            {t(
+              isAuthenticated
+                ? "solutions.header.account"
+                : "solutions.header.signIn",
+            )}
           </a>
           <a
             href={`${rootHref}#catalogue`}
             className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-xs font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            Découvrir les solutions
+            {t("solutions.header.discover")}
           </a>
         </div>
         <div className="flex items-center gap-2 md:hidden">
           <a href={accountHref} className="text-xs font-bold text-primary">
-            {isAuthenticated ? "Compte" : "Se connecter"}
+            {t(
+              isAuthenticated
+                ? "solutions.header.accountShort"
+                : "solutions.header.signIn",
+            )}
           </a>
           <button
             type="button"
             className="inline-flex h-control-touch w-control-touch items-center justify-center rounded-control border border-border-base focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-label={t(
+              mobileMenuOpen
+                ? "solutions.header.closeMenu"
+                : "solutions.header.openMenu",
+            )}
             aria-expanded={mobileMenuOpen}
             aria-controls="solutions-mobile-menu"
             onClick={() => setMobileMenuOpen((value) => !value)}
@@ -258,7 +268,7 @@ function SolutionsHeader() {
               href={`${rootHref}#catalogue`}
               className="touch-row text-sm font-bold"
             >
-              Solutions
+              {t("solutions.header.solutions")}
             </a>
             <div className="mt-1 grid gap-1 pl-3">
               {solutions.map((solution) => (
@@ -280,13 +290,13 @@ function SolutionsHeader() {
             href={`${rootHref}#ecosysteme`}
             className="touch-row py-2 text-sm font-bold"
           >
-            Écosystème
+            {t("solutions.header.ecosystem")}
           </a>
           <a
             href={marketplaceHref}
             className="touch-row py-2 text-sm font-bold"
           >
-            Plateforme Shongre
+            {t("solutions.header.platform")}
           </a>
         </Container>
       </div>
@@ -295,6 +305,7 @@ function SolutionsHeader() {
 }
 
 function SolutionsFooter() {
+  const { t } = useTranslation();
   const { openPreferences } = useConsent();
   const rootHref = applicationHref("solutions");
   const footerClass =
@@ -308,32 +319,32 @@ function SolutionsFooter() {
         </a>
         <nav
           className="flex flex-wrap items-center gap-x-6 gap-y-1"
-          aria-label="Informations Solutions"
+          aria-label={t("solutions.footer.informationLabel")}
         >
           <a
             href={applicationHref("marketplace", "/aide")}
             className={footerClass}
           >
-            À propos
+            {t("solutions.footer.about")}
           </a>
           <a
             href={applicationHref("marketplace", "/aide")}
             className={footerClass}
           >
-            Documentation
+            {t("solutions.footer.documentation")}
           </a>
           <a
             href={applicationHref("marketplace", "/securite")}
             className={footerClass}
           >
-            Sécurité
+            {t("solutions.footer.security")}
           </a>
           <button
             type="button"
             onClick={openPreferences}
             className={footerClass}
           >
-            Gestion des cookies
+            {t("solutions.footer.cookies")}
           </button>
         </nav>
       </Container>

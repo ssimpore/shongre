@@ -12,8 +12,11 @@ const manifestPath = resolve(
 );
 
 const BUDGETS = {
-  initialRawBytes: 2_600_000,
-  initialGzipBytes: 1_075_000,
+  // Generated taxonomy is measured independently below. Keeping it out of the
+  // executable hydration cap means an approved taxonomy addition cannot hide
+  // executable growth or fail the same bytes against two separate budgets.
+  initialExecutableRawBytes: 1_725_000,
+  initialExecutableGzipBytes: 449_000,
   executableChunkGzipBytes: 110_000,
   generatedTaxonomyChunkGzipBytes: 650_000,
 };
@@ -64,6 +67,15 @@ const totals = rows.reduce(
   }),
   { rawBytes: 0, gzipBytes: 0 },
 );
+const executableTotals = rows
+  .filter((row) => !row.isGeneratedTaxonomy)
+  .reduce(
+    (sum, row) => ({
+      rawBytes: sum.rawBytes + row.rawBytes,
+      gzipBytes: sum.gzipBytes + row.gzipBytes,
+    }),
+    { rawBytes: 0, gzipBytes: 0 },
+  );
 const largestExecutable = rows
   .filter((row) => !row.isGeneratedTaxonomy)
   .sort((left, right) => right.gzipBytes - left.gzipBytes)[0];
@@ -75,6 +87,9 @@ console.log("=".repeat(50));
 console.log(`Initial client JavaScript: ${kb(totals.gzipBytes)} gzip`);
 console.log(`Initial client JavaScript: ${kb(totals.rawBytes)} raw`);
 console.log(
+  `Executable hydration: ${kb(executableTotals.gzipBytes)} gzip / ${kb(executableTotals.rawBytes)} raw`,
+);
+console.log(
   `Largest executable chunk: ${kb(largestExecutable?.gzipBytes ?? 0)} gzip (${largestExecutable?.file ?? "none"})`,
 );
 console.log(
@@ -82,13 +97,13 @@ console.log(
 );
 
 const failures = [];
-if (totals.rawBytes > BUDGETS.initialRawBytes)
+if (executableTotals.rawBytes > BUDGETS.initialExecutableRawBytes)
   failures.push(
-    `initial raw JavaScript ${kb(totals.rawBytes)} exceeds ${kb(BUDGETS.initialRawBytes)}`,
+    `executable hydration ${kb(executableTotals.rawBytes)} raw exceeds ${kb(BUDGETS.initialExecutableRawBytes)}`,
   );
-if (totals.gzipBytes > BUDGETS.initialGzipBytes)
+if (executableTotals.gzipBytes > BUDGETS.initialExecutableGzipBytes)
   failures.push(
-    `initial gzip JavaScript ${kb(totals.gzipBytes)} exceeds ${kb(BUDGETS.initialGzipBytes)}`,
+    `executable hydration ${kb(executableTotals.gzipBytes)} gzip exceeds ${kb(BUDGETS.initialExecutableGzipBytes)}`,
   );
 if (
   largestExecutable &&
@@ -111,4 +126,6 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("\n✔ client hydration and generated-data budgets are within bounds\n");
+console.log(
+  "\n✔ client hydration and generated-data budgets are within bounds\n",
+);

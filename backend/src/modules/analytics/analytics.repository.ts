@@ -85,6 +85,19 @@ const dateOnly = (date: Date) => date.toISOString().slice(0, 10);
 const scopeMarket = (query: AnalyticsDashboardQuery) =>
   query.marketCode === "ALL" ? "FR" : query.marketCode;
 
+function requireMonetizationMarket(query: AnalyticsDashboardQuery) {
+  if (query.marketCode === "ALL") {
+    throw new Error(
+      "Monetization analytics require one market; currencies are not interchangeable.",
+    );
+  }
+  const market = getCountryConfig(query.marketCode);
+  if (!market?.enabled) {
+    throw new Error("Unknown market for monetization analytics.");
+  }
+  return market;
+}
+
 function demoDates(days = 7) {
   const result: { date: string; primary: number; secondary?: number }[] = [];
   const today = new Date();
@@ -289,8 +302,8 @@ export class DemoAnalyticsRepository implements AnalyticsRepository {
   async monetization(
     query: AnalyticsDashboardQuery,
   ): Promise<AnalyticsMonetization> {
-    const market = getCountryConfig(scopeMarket(query));
-    const currency = market?.currency ?? "EUR";
+    const market = requireMonetizationMarket(query);
+    const currency = market.currency;
     return {
       generatedAt: new Date().toISOString(),
       scope: query,
@@ -821,7 +834,7 @@ export class PostgresAnalyticsRepository implements AnalyticsRepository {
     query: AnalyticsDashboardQuery,
   ): Promise<AnalyticsMonetization> {
     const window = resolveAnalyticsWindow(query);
-    const currency = getCountryConfig(scopeMarket(query))?.currency ?? "EUR";
+    const currency = requireMonetizationMarket(query).currency;
     const [rows, financeResult] = await Promise.all([
       this.metrics(query),
       this.client().rpc("finance_platform_overview", {

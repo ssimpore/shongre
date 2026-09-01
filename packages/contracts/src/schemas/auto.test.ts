@@ -43,6 +43,8 @@ const vehicle = {
     displayName: "Vendeur Test",
     slug: "vendeur-test",
     locationLabel: "Lyon (69)",
+    rating: 4.8,
+    reviewCount: 64,
     memberSinceYear: 2022,
     verifiedBusiness: false,
   },
@@ -90,6 +92,10 @@ describe("Shongre Auto public contracts", () => {
     expect(publicVehicle).not.toHaveProperty("registrationHash");
     expect(publicVehicle).not.toHaveProperty("moderationStatus");
     expect(publicVehicle).not.toHaveProperty("riskSignals");
+    expect(publicVehicle.seller).toMatchObject({
+      rating: 4.8,
+      reviewCount: 64,
+    });
   });
 
   it("requires exactly one private-seller or dealer owner", () => {

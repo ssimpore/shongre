@@ -20,6 +20,10 @@ const valid = {
   API_URL: "https://api.shongre.invalid",
   NEXT_PUBLIC_FR_URL: "https://fr.shongre.invalid",
   NEXT_PUBLIC_INTL_URL: "https://intl.shongre.invalid",
+  SHONGRE_MARKETPLACE_ORIGIN: "https://marketplace.shongre.invalid",
+  SHONGRE_SOLUTIONS_ORIGIN: "https://solutions.shongre.invalid",
+  SHONGRE_PROSPECTS_ORIGIN: "https://prospects.shongre.invalid",
+  SHONGRE_FACTURATION_ORIGIN: "https://facturation.shongre.invalid",
   EXPO_PUBLIC_FR_URL: "https://fr.shongre.invalid",
   EXPO_PUBLIC_INTL_URL: "https://intl.shongre.invalid",
   NEXT_PUBLIC_API_URL: "https://api.shongre.invalid/api/v1",
@@ -27,9 +31,9 @@ const valid = {
   CORS_ORIGIN: "https://fr.shongre.invalid,https://intl.shongre.invalid",
   BACKEND_DATA_MODE: "database",
   DATABASE_INFRA_MODE: "hosted",
-  NEXT_PUBLIC_DATA_MODE: "demo",
+  NEXT_PUBLIC_DATA_MODE: "api",
   EXPO_PUBLIC_DATA_MODE: "api",
-  NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true",
+  NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
   NEXT_PUBLIC_ENABLE_AI_FEATURES: "false",
   PAYMENT_MODE: "live",
   EMAIL_MODE: "live",
@@ -62,7 +66,7 @@ const valid = {
   AUTH_EMAIL_DELIVERY_URL: "https://email.shongre.invalid/send",
   AUTH_EMAIL_DELIVERY_TOKEN: "ci-email-delivery-token-12345",
   STRIPE_SECRET_KEY: "sk_live_CIOnly123",
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "",
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_CIOnly123",
   STRIPE_WEBHOOK_SECRET: "whsec_CI123",
   STRIPE_CONNECT_WEBHOOK_SECRET: "whsec_CI456",
   COMPLIANCE_WEBHOOK_SECRET: "ci-compliance-webhook-secret-123456789",
@@ -100,4 +104,8 @@ function run(overrides, expectedStatus) {
 run({}, 0);
 run({ ENABLE_SOCIAL_AUTH: "true" }, 1);
 run({ STRIPE_SECRET_KEY: "sk_test_wrong_mode" }, 1);
+run({ NEXT_PUBLIC_DATA_MODE: "demo" }, 1);
+run({ NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true" }, 1);
+run({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_wrong_mode" }, 1);
+run({ SHONGRE_FACTURATION_ORIGIN: "https://solutions.shongre.invalid" }, 1);
 console.log("Production configuration and launch-scope invariants passed.");

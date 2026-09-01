@@ -17,6 +17,7 @@ import { searchConsoleWorker } from "./analytics/search-console-worker.js";
 import { captureServerException } from "../infrastructure/observability/sentry.js";
 import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
+import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 
 interface ScheduledJob {
   name: string;
@@ -89,6 +90,12 @@ const jobs: ScheduledJob[] = [
     run: () => notificationsWorker.run(),
   },
   {
+    name: "digital_fulfillment_outbox",
+    group: "communications",
+    intervalSeconds: 10,
+    run: () => digitalFulfillmentWorker.run(),
+  },
+  {
     name: "commercial_configuration",
     group: "commercial",
     intervalSeconds: 60,
@@ -138,6 +145,12 @@ const jobs: ScheduledJob[] = [
       await lifecycleWorker.runExpiredListingsCleanup();
       await lifecycleWorker.runBoostsExpiration();
     },
+  },
+  {
+    name: "digital_fulfillment_lifecycle",
+    group: "lifecycle",
+    intervalSeconds: 300,
+    run: () => digitalFulfillmentWorker.refreshLifecycle(),
   },
   {
     name: "provider_data_deletion",

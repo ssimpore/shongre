@@ -1,16 +1,27 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { resolveMarketContext } from "@shongre/contracts";
 import { listingRepository } from "../../../repositories/listing.repository";
 import { storageService } from "../../../services/storage.service";
 import { DemoPromotionsService } from "./demo-promotions.service";
+
+const france = resolveMarketContext({
+  hostname: "shongre.fr",
+  pathname: "/",
+  infrastructure: {
+    franceDomain: "shongre.fr",
+    globalDomain: "shongre.com",
+    canonicalProtocol: "https",
+  },
+});
 
 describe("DemoPromotionsService", () => {
   beforeEach(() => storageService.setCurrentUserKey("seller_camille"));
 
   it("requires an existing listing and activates a canonical offer idempotently", async () => {
     const service = new DemoPromotionsService();
-    expect(await service.getAvailableBoosts()).toEqual([]);
+    expect(await service.getAvailableBoosts(france)).toEqual([]);
 
-    const offers = await service.getAvailableBoosts("list-103");
+    const offers = await service.getAvailableBoosts(france, "list-103");
     expect(offers.map((offer) => offer.productId)).toEqual([
       "premium.urgent",
       "premium.search_bump",
@@ -22,8 +33,18 @@ describe("DemoPromotionsService", () => {
       paymentMethod: "demo-card",
       idempotencyKey: "demo-listing-promotion-list-103-urgent",
     };
-    const first = await service.applyBoost("list-103", offer.productId, input);
-    const replay = await service.applyBoost("list-103", offer.productId, input);
+    const first = await service.applyBoost(
+      france,
+      "list-103",
+      offer.productId,
+      input,
+    );
+    const replay = await service.applyBoost(
+      france,
+      "list-103",
+      offer.productId,
+      input,
+    );
 
     expect(replay).toEqual(first);
     expect(await listingRepository.getListingById("list-103")).toMatchObject({

@@ -41,6 +41,13 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const publicProfileUrl = publicProfileSlug
+    ? routes.seller.publicPage({
+        id: counterpart.id,
+        slug: publicProfileSlug,
+        isProfessional: counterpart.accountType === "pro",
+      })
+    : null;
 
   return (
     <div className="p-3.5 sm:px-5 bg-white border-b border-border-base flex items-center justify-between gap-3 shrink-0">
@@ -60,19 +67,41 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         )}
 
         {/* Counterpart Identity */}
-        <div className="relative shrink-0">
-          <Avatar
-            name={counterpart.name}
-            src={counterpart.avatarUrl}
-            size="md"
-          />
-        </div>
+        {publicProfileUrl ? (
+          <Link
+            to={publicProfileUrl}
+            className="relative shrink-0 rounded-pill focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <Avatar
+              name={counterpart.name}
+              src={counterpart.avatarUrl}
+              size="md"
+            />
+          </Link>
+        ) : (
+          <div className="relative shrink-0">
+            <Avatar
+              name={counterpart.name}
+              src={counterpart.avatarUrl}
+              size="md"
+            />
+          </div>
+        )}
 
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-black text-stone-900 truncate">
-              {counterpart.name}
-            </span>
+            {publicProfileUrl ? (
+              <Link
+                to={publicProfileUrl}
+                className="truncate rounded-control text-sm font-black text-stone-900 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                {counterpart.name}
+              </Link>
+            ) : (
+              <span className="truncate text-sm font-black text-stone-900">
+                {counterpart.name}
+              </span>
+            )}
             {counterpart.isVerified && (
               <span title={t("messaging.conversationHeader.identiteVerifiee")}>
                 <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
@@ -145,9 +174,9 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                 onClick={() => setIsMenuOpen(false)}
               />
               <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-lg border border-border-base p-1 z-dropdown space-y-0.5 text-xs font-semibold">
-                {publicProfileSlug && (
+                {publicProfileUrl && (
                   <Link
-                    to={routes.seller.profile(publicProfileSlug)}
+                    to={publicProfileUrl}
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-stone-700 hover:bg-stone-100 transition-colors"
                   >

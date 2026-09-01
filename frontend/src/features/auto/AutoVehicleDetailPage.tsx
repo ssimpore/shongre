@@ -34,6 +34,7 @@ import {
   Input,
   ListingRail,
   Modal,
+  SellerIdentityLink,
   Select,
   Skeleton,
   StatePanel,
@@ -233,6 +234,12 @@ export const AutoVehicleDetailPage: React.FC = () => {
         : "Non applicable",
     ],
   ];
+
+  const sellerPublicUrl = routes.seller.publicPage({
+    id: vehicle.seller.id,
+    slug: vehicle.seller.slug,
+    isProfessional: vehicle.seller.type === "dealer",
+  });
 
   return (
     <>
@@ -471,21 +478,16 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
           <aside className="self-start space-y-4 lg:sticky lg:top-24">
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-              <div className="flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-card bg-text-main text-sm font-black text-white">
-                  ASL
-                </div>
-                <div>
-                  <p className="text-sm font-black">
-                    {vehicle.seller.displayName}
-                  </p>
-                  <p className="text-micro text-text-muted">
-                    {vehicle.seller.type === "dealer"
-                      ? "Professionnel"
-                      : "Particulier"}
-                  </p>
-                </div>
-              </div>
+              <SellerIdentityLink
+                to={sellerPublicUrl}
+                name={vehicle.seller.displayName}
+                avatarUrl={vehicle.seller.logoUrl}
+                isVerified={vehicle.seller.verifiedBusiness}
+                isProfessional={vehicle.seller.type === "dealer"}
+                rating={vehicle.seller.rating}
+                reviewCount={vehicle.seller.reviewCount}
+                locationLabel={vehicle.seller.locationLabel}
+              />
               <div className="mt-4 space-y-2 text-xs text-text-secondary">
                 <p className="flex items-center gap-2">
                   <BadgeCheck className="h-icon-sm w-icon-sm text-success" />{" "}

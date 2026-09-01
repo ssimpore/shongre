@@ -169,6 +169,13 @@ test.describe("public browsing", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator("body")).toContainText("€");
+    const sellerIdentity = page.locator('[data-seller-identity="true"]');
+    await expect(sellerIdentity).toHaveCount(1);
+    await expect(sellerIdentity).toContainText("Camille Martin");
+    await expect(
+      sellerIdentity.getByRole("img", { name: "Note 5,0 sur 5, 42 avis" }),
+    ).toBeVisible();
+    await expect(sellerIdentity).toContainText("Lyon");
   });
 
   test("a pro storefront lists its catalogue behind real tabs", async ({
@@ -365,8 +372,8 @@ test.describe("admin console", () => {
     await expect(page.locator("#admin-section-menu")).toBeVisible();
 
     await page
-      .getByRole("menuitem", { name: /utilisateurs/i })
-      .first()
+      .getByRole("navigation", { name: "Sections de la console" })
+      .getByRole("link", { name: /utilisateurs/i })
       .click();
     await expect(page).toHaveURL(/\/admin\/utilisateurs/);
     // Navigating closes the menu rather than leaving it hanging over the page.

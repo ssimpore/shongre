@@ -199,6 +199,16 @@ const TransactionsPage = lazy(() =>
     default: m.TransactionsPage,
   })),
 );
+const DigitalPurchasesPage = lazy(() =>
+  import("../../features/digital-products/DigitalPurchasesPage").then((m) => ({
+    default: m.DigitalPurchasesPage,
+  })),
+);
+const DigitalSellerWorkspacePage = lazy(() =>
+  import("../../features/digital-products/DigitalSellerWorkspacePage").then(
+    (m) => ({ default: m.DigitalSellerWorkspacePage }),
+  ),
+);
 const AccountFinancePage = lazy(() =>
   import("../../features/account/AccountFinancePage").then((m) => ({
     default: m.AccountFinancePage,
@@ -502,6 +512,11 @@ const AdminModerationPage = lazy(() =>
   import("../../features/admin/AdminModerationPage").then((m) => ({
     default: m.AdminModerationPage,
   })),
+);
+const AdminDigitalProductsPage = lazy(() =>
+  import("../../features/digital-products/AdminDigitalProductsPage").then(
+    (m) => ({ default: m.AdminDigitalProductsPage }),
+  ),
 );
 const AdminVerificationsPage = lazy(() =>
   import("../../features/admin/AdminVerificationsPage").then((m) => ({
@@ -1177,6 +1192,22 @@ export const APP_ROUTES: RouteObject[] = [
             ),
           },
           {
+            path: "achats-numeriques",
+            element: (
+              <RequireRoutePolicy policyId="accountDigitalPurchases">
+                {withSuspense(DigitalPurchasesPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "produits-numeriques",
+            element: (
+              <RequireRoutePolicy policyId="accountDigitalSeller">
+                {withSuspense(DigitalSellerWorkspacePage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
             path: "finances",
             element: (
               <RequireRoutePolicy policyId="accountFinances">
@@ -1389,6 +1420,14 @@ export const APP_ROUTES: RouteObject[] = [
         element: (
           <RequireRoutePolicy policyId="adminModeration">
             {withSuspense(AdminModerationPage)}
+          </RequireRoutePolicy>
+        ),
+      },
+      {
+        path: "produits-numeriques",
+        element: (
+          <RequireRoutePolicy policyId="adminDigitalProducts">
+            {withSuspense(AdminDigitalProductsPage)}
           </RequireRoutePolicy>
         ),
       },

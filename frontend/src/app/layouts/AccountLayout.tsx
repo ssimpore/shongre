@@ -30,6 +30,7 @@ import {
   BadgeEuro,
   Scale,
   Target,
+  FileKey2,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -141,6 +142,18 @@ export const AccountLayout: React.FC = () => {
       label: "Transactions & Paiements",
       icon: <ShoppingBag className="w-icon-md h-icon-md" />,
       visible: canAccessRoute("accountPurchases"),
+    },
+    {
+      to: routes.workspace.digitalPurchases(),
+      label: t("digital.nav.purchases"),
+      icon: <FileKey2 className="w-icon-md h-icon-md text-primary" />,
+      visible: canAccessRoute("accountDigitalPurchases"),
+    },
+    {
+      to: routes.workspace.digitalSeller(),
+      label: t("digital.nav.seller"),
+      icon: <FileKey2 className="w-icon-md h-icon-md text-primary" />,
+      visible: canAccessRoute("accountDigitalSeller"),
     },
     {
       to: routes.workspace.finances(),

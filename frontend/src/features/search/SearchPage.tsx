@@ -1236,7 +1236,7 @@ export const SearchPage: React.FC = () => {
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
           <div
             id="search-results-toolbar"
-            className="scroll-mt-24 bg-bg-surface p-4 rounded-card border border-border-base shadow-xs flex items-center justify-between gap-x-3 gap-y-2 flex-wrap lg:flex-nowrap mb-4"
+            className="mb-4 flex scroll-mt-24 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-card border border-border-base bg-bg-surface p-2 shadow-xs sm:p-4 lg:flex-nowrap"
           >
             <div className="flex items-center gap-3 min-w-0 shrink">
               {/* The result count is the only feedback a filter change gives on

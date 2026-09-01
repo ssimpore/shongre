@@ -24,6 +24,8 @@ import {
   PostgresWorkspaceRepository,
   DemoCoursesRepository,
   PostgresCoursesRepository,
+  DemoSolutionsRepository,
+  PostgresSolutionsRepository,
   createRepositoryContainer,
 } from "../../src/infrastructure/database/repositories/index.js";
 import { UserProfile, Listing } from "../../src/shared/types/index.js";
@@ -237,6 +239,33 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
         "getTutorWorkspace",
         "getOrganization",
         "getOrganizationWorkspace",
+      ]) {
+        expect(
+          typeof (postgresRepo as unknown as Record<string, unknown>)[method],
+        ).toBe("function");
+      }
+    });
+  });
+
+  describe("Solutions repository contract", () => {
+    const demoRepo = new DemoSolutionsRepository();
+    const postgresRepo = new PostgresSolutionsRepository();
+
+    it("starts with a deterministic empty production-shaped demo catalog", async () => {
+      await expect(
+        demoRepo.list({ publicOnly: true, marketCode: "FR" }),
+      ).resolves.toEqual([]);
+    });
+
+    it("keeps the Postgres adapter compatible with the complete contract", () => {
+      for (const method of [
+        "list",
+        "getById",
+        "create",
+        "update",
+        "reorder",
+        "transition",
+        "listLifecycleHistory",
       ]) {
         expect(
           typeof (postgresRepo as unknown as Record<string, unknown>)[method],

@@ -7,9 +7,11 @@ import {
   catalogueCoverageFor,
   DEFAULT_LOCALE,
   translateWithCatalogue,
+  translateWithSupplementalCatalogue,
 } from "./i18n.service";
 import { messagesFr, MessageKey } from "./messages.fr";
 import { messagesEn } from "./messages.en";
+import { digitalMessagesFr } from "./digital.catalogue.fr";
 import { SHIPPED_LOCALES } from "./locale";
 
 const UNSHIPPED_CATALOGUE_MISSING_KEY_BUDGETS: Record<string, number> = {
@@ -60,6 +62,19 @@ describe("translate", () => {
         year: 2026,
       }),
     ).toContain("© 2026");
+  });
+
+  it("resolves a feature catalogue without registering it in the shell", () => {
+    expect(
+      (messagesFr as Record<string, string | undefined>)["digital.admin.title"],
+    ).toBeUndefined();
+    expect(
+      translateWithSupplementalCatalogue(
+        digitalMessagesFr,
+        "digital.admin.title",
+        "fr-FR",
+      ),
+    ).toBe("Opérations produits numériques");
   });
 
   // A partially translated locale must degrade to readable French, never to a
@@ -153,7 +168,10 @@ describe("catalogue integrity", () => {
   });
 
   it("English introduces no key French does not have", () => {
-    const sourceKeys = new Set(Object.keys(messagesFr));
+    const sourceKeys = new Set([
+      ...Object.keys(messagesFr),
+      ...Object.keys(digitalMessagesFr),
+    ]);
     const orphans = Object.keys(messagesEn).filter(
       (key) => !sourceKeys.has(key),
     );

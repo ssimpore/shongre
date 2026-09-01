@@ -35,6 +35,7 @@ import {
   Layers,
   Shield,
   Headphones,
+  FileKey2,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
@@ -125,6 +126,8 @@ function AccountMenuItemIcon({
       return <Heart {...props} />;
     case "purchases":
       return <ShoppingBag {...props} />;
+    case "digital_purchases":
+      return <FileKey2 {...props} />;
     case "support":
       return <Headphones {...props} />;
     case "account":

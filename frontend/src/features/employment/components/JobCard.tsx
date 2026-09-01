@@ -5,8 +5,12 @@ import type {
   JobPostingCard,
 } from "@shongre/contracts/employment";
 import { ListingCardViewCard } from "../../../design-system/primitives/ListingCard";
+import { Image } from "../../../design-system/primitives/Image";
+import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { presentEmploymentListingCard } from "../../../domains/listing/listing-card.presentation";
+
+const JOB_LISTING_FALLBACK_IMAGE = "/images/categories/emploi.jpg";
 
 export const JobCard: React.FC<{
   job: JobPostingCard;
@@ -29,7 +33,19 @@ export const JobCard: React.FC<{
         listing={listing}
         href={`/emploi/offre/${job.slug}`}
         variant={compact ? "compact" : "list"}
-        imageFit="contain"
+        image={
+          <Image
+            src={listing.imageUrl}
+            fallbackSrc={JOB_LISTING_FALLBACK_IMAGE}
+            alt=""
+            sizes={compact ? IMAGE_SIZES.compact : IMAGE_SIZES.thumbnail}
+            className={`h-full w-full motion-surface group-hover:scale-105 ${
+              listing.imageUrl
+                ? "bg-bg-subtle object-contain p-4"
+                : "object-cover"
+            }`}
+          />
+        }
         isFavorite={job.saved}
         favoriteLabel={`${job.saved ? "Retirer" : "Enregistrer"} l’offre ${
           job.title

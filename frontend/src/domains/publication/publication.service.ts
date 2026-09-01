@@ -20,6 +20,7 @@ import {
   normalizeCommercialCategory,
 } from "../monetization/demo-commercial-catalog";
 import { marketService } from "../market/market.service";
+import { digitalFulfillmentVersionInputSchema } from "@shongre/contracts/digital-products";
 
 const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_";
 
@@ -106,12 +107,49 @@ export class PublicationService {
     }
 
     // 4. Location
-    if (!draft.location?.city || !draft.location?.postalCode) {
+    const isDigital = draft.digitalFulfillment !== undefined;
+    if (!isDigital && (!draft.location?.city || !draft.location?.postalCode)) {
       errors.push({
         field: "location",
         code: "LOCATION_REQUIRED",
         message: "La localisation (ville et code postal) est requise.",
       });
+    }
+    if (isDigital) {
+      const fulfillment = digitalFulfillmentVersionInputSchema.safeParse(
+        draft.digitalFulfillment,
+      );
+      if (!fulfillment.success) {
+        errors.push({
+          field: "digitalFulfillment",
+          code: "DIGITAL_FULFILLMENT_INVALID",
+          message: "La remise numérique doit être complétée avant publication.",
+        });
+      }
+      if (draft.transaction?.allowReservation) {
+        errors.push({
+          field: "transaction.allowReservation",
+          code: "DIGITAL_RESERVATION_UNSUPPORTED",
+          message:
+            "La réservation physique ne s’applique pas à un produit numérique.",
+        });
+      }
+      if (!draft.transaction?.allowDirectPurchase) {
+        errors.push({
+          field: "transaction.allowDirectPurchase",
+          code: "DIGITAL_CHECKOUT_REQUIRED",
+          message:
+            "Le paiement Shongre confirmé est requis pour remettre un produit numérique.",
+        });
+      }
+      if ((draft.selectedMarkets?.length ?? 1) > 1) {
+        errors.push({
+          field: "selectedMarkets",
+          code: "DIGITAL_MULTI_MARKET_DISABLED",
+          message:
+            "La publication numérique multi-marché n’est pas encore activée.",
+        });
+      }
     }
 
     // 5. Pricing & Stock
@@ -134,7 +172,7 @@ export class PublicationService {
     }
 
     const usesInventory =
-      resolvedSchema?.listingFamily === "physical_product" ||
+      (!isDigital && resolvedSchema?.listingFamily === "physical_product") ||
       resolvedSchema?.listingFamily === "vehicle" ||
       resolvedSchema?.listingFamily === "professional_equipment";
     if (usesInventory && (user?.role === "pro_seller" || draft.proInventory)) {
@@ -416,14 +454,17 @@ export class PublicationService {
 
     // Delivery Options mapping
     const deliveryOptions: DeliveryOption[] = [];
-    if (draft.fulfillment.allowHandDelivery) {
+    if (draft.digitalFulfillment) {
+      deliveryOptions.push({ type: "digital", available: true, price: 0 });
+    }
+    if (!draft.digitalFulfillment && draft.fulfillment.allowHandDelivery) {
       deliveryOptions.push({
         type: "hand_delivery",
         available: true,
         price: 0,
       });
     }
-    if (draft.fulfillment.allowParcelShipping) {
+    if (!draft.digitalFulfillment && draft.fulfillment.allowParcelShipping) {
       deliveryOptions.push({
         type: "relay_point",
         available: true,
@@ -437,7 +478,7 @@ export class PublicationService {
         courierName: "Colissimo",
       });
     }
-    if (draft.fulfillment.allowBulkyDelivery) {
+    if (!draft.digitalFulfillment && draft.fulfillment.allowBulkyDelivery) {
       deliveryOptions.push({
         type: "custom_carrier",
         available: true,
@@ -509,6 +550,9 @@ export class PublicationService {
       originalPrice: draft.pricing.originalPrice,
       isNegotiable: draft.pricing.isNegotiable,
       isFreeDonation: draft.pricing.isFreeDonation,
+      fulfillmentTypes: draft.fulfillmentTypes ?? ["PHYSICAL"],
+      requiresPhysicalDelivery: !draft.digitalFulfillment,
+      productVersion: draft.digitalFulfillment?.productVersion,
       categorySlug: rootNode?.slug || "divers",
       subCategorySlug: node?.slug || "autres",
       categoryLabel: getCompactTaxonomyLabel(rootNode, "Divers"),
@@ -527,7 +571,9 @@ export class PublicationService {
       postalCode: draft.location.postalCode,
       department:
         draft.location.department || `${draft.location.postalCode.slice(0, 2)}`,
-      region: draft.location.region || "France Métropolitaine",
+      region: draft.digitalFulfillment
+        ? ""
+        : draft.location.region || "France Métropolitaine",
       latitude: draft.location.latitude,
       longitude: draft.location.longitude,
       photos: draft.photos.map((p, idx) => ({

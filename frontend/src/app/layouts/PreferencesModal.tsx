@@ -15,6 +15,7 @@ export const PreferencesModal: React.FC = () => {
   const {
     activeMarket,
     availableMarkets,
+    selectableCountries,
     setMarket,
     manualMarketSelection,
     resetManualMarketSelection,
@@ -69,7 +70,7 @@ export const PreferencesModal: React.FC = () => {
             role="radiogroup"
             aria-label={t("shell.preferencesModal.marchePays")}
           >
-            {availableMarkets.map((m) => {
+            {selectableCountries.map((m) => {
               const isSelected = activeMarket.code === m.code;
               return (
                 <button

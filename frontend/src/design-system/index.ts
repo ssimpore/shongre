@@ -39,6 +39,7 @@ export * from "./components/IdentityBadges";
 export * from "./components/LocationSelector";
 export * from "./components/OnboardingPreparationPage";
 export * from "./components/Price";
+export * from "./components/SellerIdentityLink";
 export * from "./components/Skeleton";
 export * from "./components/Tabs";
 

@@ -89,7 +89,12 @@ export type ListingStatus =
   | "flagged";
 
 export type DeliveryType =
-  "hand_delivery" | "relay_point" | "home_delivery" | "cocolis" | "express";
+  | "hand_delivery"
+  | "relay_point"
+  | "home_delivery"
+  | "cocolis"
+  | "express"
+  | "digital";
 
 export type ListingMarketPublicationStatus =
   | "draft"
@@ -158,6 +163,9 @@ export interface Listing {
   longitude?: number;
   allowedDelivery: DeliveryType[];
   shippingCost?: number;
+  fulfillmentModel?: import("@shongre/contracts/digital-products").FulfillmentType;
+  digitalFulfillmentVersionId?: string;
+  productVersion?: string;
   images: string[];
   isUrgent?: boolean;
   isFeatured?: boolean;
@@ -215,8 +223,11 @@ export type PublicListing = Omit<
   | "externalStockId"
   | "duplicateGroupId"
   | "safetyRiskScore"
+  | "digitalFulfillmentVersionId"
 > & {
   seller?: PublicSellerProfile;
+  fulfillmentTypes: import("@shongre/contracts/digital-products").FulfillmentType[];
+  requiresPhysicalDelivery: boolean;
 };
 
 export interface SearchFilters {
@@ -289,6 +300,9 @@ export interface Transaction {
   depositAmount?: number;
   remainingBalance?: number;
   deliveryMethod: DeliveryType;
+  fulfillmentModel?: import("@shongre/contracts/digital-products").FulfillmentType;
+  digitalFulfillmentVersionId?: string;
+  productVersion?: string;
   shippingAddress?: {
     street?: string;
     city?: string;

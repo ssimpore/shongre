@@ -12,7 +12,7 @@ fi
 required=(
   APP_ENV ENVIRONMENT_ID API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID
   PUBLIC_FR_URL PUBLIC_INTL_URL API_URL FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
-  NEXT_PUBLIC_DATA_MODE BACKEND_DATA_MODE DATABASE_INFRA_MODE EXPO_PUBLIC_DATA_MODE
+  NEXT_PUBLIC_DATA_MODE NEXT_PUBLIC_ENABLE_MOCK_STORAGE BACKEND_DATA_MODE DATABASE_INFRA_MODE EXPO_PUBLIC_DATA_MODE
   NEXT_PUBLIC_APP_ENV NEXT_PUBLIC_ENVIRONMENT_ID NEXT_PUBLIC_FR_URL NEXT_PUBLIC_INTL_URL NEXT_PUBLIC_API_URL
   EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_FR_URL EXPO_PUBLIC_INTL_URL EXPO_PUBLIC_API_URL
   PAYMENT_MODE EMAIL_MODE AI_MODE ANALYTICS_MODE
@@ -111,6 +111,8 @@ done
 
 if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
   for pair in \
+    "NEXT_PUBLIC_DATA_MODE:api" \
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:false" \
     "PAYMENT_PROVIDER:stripe" \
     "KYC_PROVIDER:stripe" \
     "BUSINESS_REGISTRY_PROVIDER:siret" \
@@ -125,6 +127,14 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
     expected="${pair#*:}"
     if [[ "${!name:-}" != "$expected" ]]; then
       shongre_fail "$name must be $expected for the certified launch scope"
+      failed=1
+    fi
+  done
+  for key in \
+    SHONGRE_MARKETPLACE_ORIGIN SHONGRE_SOLUTIONS_ORIGIN \
+    SHONGRE_PROSPECTS_ORIGIN SHONGRE_FACTURATION_ORIGIN; do
+    if [[ -z "${!key:-}" ]]; then
+      shongre_fail "$key is required for split-application routing in $APP_ENV"
       failed=1
     fi
   done
@@ -158,7 +168,7 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
   fi
 fi
 
-if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-}" API_URL="${API_URL:-}" NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-}" EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-}" node --input-type=module -e '
+if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-}" API_URL="${API_URL:-}" NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-}" EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-}" SHONGRE_MARKETPLACE_ORIGIN="${SHONGRE_MARKETPLACE_ORIGIN:-}" SHONGRE_SOLUTIONS_ORIGIN="${SHONGRE_SOLUTIONS_ORIGIN:-}" SHONGRE_PROSPECTS_ORIGIN="${SHONGRE_PROSPECTS_ORIGIN:-}" SHONGRE_FACTURATION_ORIGIN="${SHONGRE_FACTURATION_ORIGIN:-}" node --input-type=module -e '
   const names = ["PUBLIC_FR_URL", "PUBLIC_INTL_URL", "API_URL"];
   const urls = Object.fromEntries(names.map((name) => [name, new URL(process.env[name])]));
   for (const [name, url] of Object.entries(urls)) {
@@ -173,6 +183,24 @@ if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="
     const url = new URL(process.env[name]);
     if (url.origin !== urls.API_URL.origin || url.pathname.replace(/\/$/, "") !== "/api/v1") {
       throw new Error(`${name} must equal API_URL plus /api/v1`);
+    }
+  }
+  if (["staging", "production"].includes(process.env.APP_ENV)) {
+    const applicationNames = [
+      "SHONGRE_MARKETPLACE_ORIGIN",
+      "SHONGRE_SOLUTIONS_ORIGIN",
+      "SHONGRE_PROSPECTS_ORIGIN",
+      "SHONGRE_FACTURATION_ORIGIN",
+    ];
+    const applicationUrls = applicationNames.map((name) => {
+      const url = new URL(process.env[name]);
+      if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+        throw new Error(`${name} must be an HTTPS origin`);
+      }
+      return url;
+    });
+    if (new Set(applicationUrls.map((url) => url.host)).size !== applicationUrls.length) {
+      throw new Error("split application origins must use distinct hosts");
     }
   }
 '; then

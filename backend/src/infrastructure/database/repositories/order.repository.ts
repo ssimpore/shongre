@@ -227,6 +227,10 @@ export class PostgresOrderRepository implements IOrderRepository {
         ? Number(row.remaining_balance)
         : undefined,
       deliveryMethod: (row.delivery_method as DeliveryType) || "hand_delivery",
+      fulfillmentModel: row.fulfillment_model || "PHYSICAL",
+      digitalFulfillmentVersionId:
+        row.digital_fulfillment_version_id || undefined,
+      productVersion: row.product_version || undefined,
       shippingAddress: row.shipping_address || undefined,
       handoverCodeRequired:
         row.delivery_method === "hand_delivery" &&
@@ -392,6 +396,9 @@ export class PostgresOrderRepository implements IOrderRepository {
       deposit_amount: order.depositAmount || 0,
       remaining_balance: order.remainingBalance || 0,
       delivery_method: order.deliveryMethod,
+      fulfillment_model: order.fulfillmentModel || "PHYSICAL",
+      digital_fulfillment_version_id: order.digitalFulfillmentVersionId || null,
+      product_version: order.productVersion || null,
       shipping_address: order.shippingAddress || null,
       handover_pin_hash: order.handoverPinHash || null,
       handover_pin_issued_at: order.handoverPinIssuedAt || null,
@@ -445,6 +452,13 @@ export class PostgresOrderRepository implements IOrderRepository {
     const supabase = getSupabaseAdminClient();
     const payload: any = { updated_at: new Date().toISOString() };
     if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.fulfillmentModel !== undefined)
+      payload.fulfillment_model = updates.fulfillmentModel;
+    if (updates.digitalFulfillmentVersionId !== undefined)
+      payload.digital_fulfillment_version_id =
+        updates.digitalFulfillmentVersionId || null;
+    if (updates.productVersion !== undefined)
+      payload.product_version = updates.productVersion || null;
     if (updates.isPinVerified !== undefined)
       payload.is_pin_verified = updates.isPinVerified;
     if (updates.handoverPinHash !== undefined)

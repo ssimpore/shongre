@@ -24,6 +24,7 @@ export * from "./discovery-configuration.repository.js";
 export * from "./auth.repository.js";
 export * from "./support.repository.js";
 export * from "./feature-flag.repository.js";
+export * from "./solutions.repository.js";
 export * from "./moderation.repository.js";
 export * from "./repository-container.js";
 export * from "./crm.repository.js";

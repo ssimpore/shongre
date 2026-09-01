@@ -294,6 +294,8 @@ export const propertySellerSchema = z.object({
   verificationLabels: z.array(z.string()),
   responseTimeLabel: z.string().optional(),
   professionalIdentity: z.string().optional(),
+  rating: z.number().min(0).max(5).optional(),
+  reviewCount: z.number().int().nonnegative().optional(),
 });
 
 export const propertyPromotionSchema = z.object({

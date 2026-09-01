@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { getCountryConfig } from "@shongre/contracts";
 import {
   commissionAnalyticsQuerySchema,
   commissionCalculationInputSchema,
@@ -22,6 +24,32 @@ import {
   businessRulesService,
 } from "../business-rules/business-rules.service.js";
 
+function marketScopedIdempotencyKey(marketCode: string, key: string) {
+  return `${marketCode}:${createHash("sha256").update(key).digest("hex")}`;
+}
+
+function requireCatalogEvidence(
+  input: CommissionCalculationInput,
+  catalog: Awaited<ReturnType<BusinessRulesService["getCatalog"]>>,
+) {
+  const market = getCountryConfig(input.marketCode);
+  if (
+    !market?.enabled ||
+    catalog.stale ||
+    catalog.marketCode !== market.marketCode ||
+    catalog.currency !== market.currency ||
+    input.countryCode !== market.code ||
+    input.currency !== market.currency
+  ) {
+    throw new AppError({
+      code: "CONFLICT",
+      message: "Les preuves commerciales de commission sont incohérentes.",
+      details: { reasonCode: "COMMISSION_MARKET_EVIDENCE_MISMATCH" },
+    });
+  }
+  return catalog;
+}
+
 export class CommissionService {
   constructor(
     private readonly repository: CommissionRepository = config.dataMode ===
@@ -40,7 +68,10 @@ export class CommissionService {
       transactionId: undefined,
       orderId: rawInput.orderId,
     });
-    const catalog = await this.commercialRules.getCatalog(input.marketCode);
+    const catalog = requireCatalogEvidence(
+      input,
+      await this.commercialRules.getCatalog(input.marketCode),
+    );
     const resolvedInput = commissionCalculationInputSchema.parse({
       ...input,
       verticalId:
@@ -69,13 +100,29 @@ export class CommissionService {
           "Une transaction et une clé d’idempotence sont requises pour comptabiliser la commission.",
       });
     }
-    const existing = await this.repository.getCalculationByIdempotency(
+    const scopedIdempotencyKey = marketScopedIdempotencyKey(
+      input.marketCode,
       input.idempotencyKey,
     );
+    const existing =
+      await this.repository.getCalculationByIdempotency(scopedIdempotencyKey);
     if (existing) return existing;
-    const catalog = await this.commercialRules.getCatalog(input.marketCode);
+    const legacyExisting = await this.repository.getCalculationByIdempotency(
+      input.idempotencyKey,
+    );
+    if (
+      legacyExisting?.inputSnapshot.marketCode === input.marketCode &&
+      legacyExisting.currency === input.currency
+    ) {
+      return legacyExisting;
+    }
+    const catalog = requireCatalogEvidence(
+      input,
+      await this.commercialRules.getCatalog(input.marketCode),
+    );
     const resolvedInput = commissionCalculationInputSchema.parse({
       ...input,
+      idempotencyKey: scopedIdempotencyKey,
       verticalId:
         input.verticalId ||
         catalog.verticals.find((vertical) =>
@@ -106,13 +153,29 @@ export class CommissionService {
           "Une commande et une clé d’idempotence sont requises pour verrouiller la commission.",
       });
     }
-    const existing = await this.repository.getCalculationByIdempotency(
+    const scopedIdempotencyKey = marketScopedIdempotencyKey(
+      input.marketCode,
       input.idempotencyKey,
     );
+    const existing =
+      await this.repository.getCalculationByIdempotency(scopedIdempotencyKey);
     if (existing) return existing;
-    const catalog = await this.commercialRules.getCatalog(input.marketCode);
+    const legacyExisting = await this.repository.getCalculationByIdempotency(
+      input.idempotencyKey,
+    );
+    if (
+      legacyExisting?.inputSnapshot.marketCode === input.marketCode &&
+      legacyExisting.currency === input.currency
+    ) {
+      return legacyExisting;
+    }
+    const catalog = requireCatalogEvidence(
+      input,
+      await this.commercialRules.getCatalog(input.marketCode),
+    );
     const resolvedInput = commissionCalculationInputSchema.parse({
       ...input,
+      idempotencyKey: scopedIdempotencyKey,
       verticalId:
         input.verticalId ||
         catalog.verticals.find((vertical) =>
@@ -140,11 +203,14 @@ export class CommissionService {
       effectiveAt: string;
     },
   ) {
-    const existing = await this.repository.getCalculationByIdempotency(
+    const quote = await this.getCalculation(calculationId);
+    const scopedIdempotencyKey = marketScopedIdempotencyKey(
+      quote.inputSnapshot.marketCode,
       input.idempotencyKey,
     );
+    const existing =
+      await this.repository.getCalculationByIdempotency(scopedIdempotencyKey);
     if (existing) return existing;
-    const quote = await this.getCalculation(calculationId);
     if (quote.state !== "quoted") {
       throw new AppError({
         code: "CONFLICT",
@@ -155,14 +221,14 @@ export class CommissionService {
     const earnedInput = commissionCalculationInputSchema.parse({
       ...quote.inputSnapshot,
       transactionId: input.transactionId,
-      idempotencyKey: input.idempotencyKey,
+      idempotencyKey: scopedIdempotencyKey,
       effectiveAt: input.effectiveAt,
       quoteExpiresAt: undefined,
     });
     const earnedSnapshot = {
       quoteSnapshotHash: quote.snapshotHash,
       transactionId: input.transactionId,
-      idempotencyKey: input.idempotencyKey,
+      idempotencyKey: scopedIdempotencyKey,
       effectiveAt: input.effectiveAt,
       input: earnedInput,
     };
@@ -170,7 +236,7 @@ export class CommissionService {
     const earned = commissionCalculationSchema.parse({
       ...quote,
       id: `commission_${snapshotHash}`,
-      idempotencyKey: input.idempotencyKey,
+      idempotencyKey: scopedIdempotencyKey,
       transactionId: input.transactionId,
       state: "earned",
       inputSnapshot: earnedInput,
@@ -200,11 +266,14 @@ export class CommissionService {
       occurredAt?: string;
     },
   ) {
-    const existing = await this.repository.getReversalByIdempotency(
+    const calculation = await this.getCalculation(calculationId);
+    const scopedIdempotencyKey = marketScopedIdempotencyKey(
+      calculation.inputSnapshot.marketCode,
       input.idempotencyKey,
     );
+    const existing =
+      await this.repository.getReversalByIdempotency(scopedIdempotencyKey);
     if (existing) return existing;
-    const calculation = await this.getCalculation(calculationId);
     const totals = await this.repository.getReversalTotals(calculationId);
     const remainingBaseMinor = Math.max(
       0,
@@ -230,7 +299,7 @@ export class CommissionService {
       previouslyCreditedSellerMinor: totals.sellerCreditMinor,
       previouslyCreditedBuyerMinor: totals.buyerCreditMinor,
       previouslyReversedRevenueMinor: totals.revenueMinor,
-      idempotencyKey: input.idempotencyKey,
+      idempotencyKey: scopedIdempotencyKey,
       occurredAt: input.occurredAt || new Date().toISOString(),
     });
     return this.repository.saveReversal(reversal);

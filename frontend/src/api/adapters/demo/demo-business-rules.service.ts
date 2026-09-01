@@ -22,6 +22,7 @@ import type {
   RuleEvaluationContext,
   RuleEvaluationResult,
 } from "@shongre/contracts/monetization";
+import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import {
   commercialDraftPatchSchema,
   complimentaryGrantDecisionInputSchema,
@@ -507,8 +508,42 @@ function digest(value: string) {
   return (hash >>> 0).toString(16).padStart(8, "0").repeat(8);
 }
 
+function requireDemoMarketContext(
+  marketContext: MarketContext,
+  operation: "read" | "paid" | "admin" = "read",
+) {
+  const country = marketContext.countryCode
+    ? getCountryConfig(marketContext.countryCode)
+    : undefined;
+  const validKind =
+    operation === "admin"
+      ? ["market", "coming_soon"].includes(marketContext.kind)
+      : marketContext.kind === "market";
+  if (
+    !validKind ||
+    !country?.enabled ||
+    marketContext.country?.code !== country.code ||
+    marketContext.currency !== country.currency ||
+    marketContext.timezone !== country.timezone ||
+    !marketContext.locale ||
+    !country.supportedLocales.includes(marketContext.locale)
+  ) {
+    throw new Error("Contexte commercial du marché invalide");
+  }
+  if (
+    operation === "paid" &&
+    (!country.monetization.enabled ||
+      !country.marketplace.enabled ||
+      !country.capabilities.payments ||
+      !["active", "beta"].includes(country.launchStatus))
+  ) {
+    throw new Error("Opérations payantes indisponibles sur ce marché");
+  }
+  return country;
+}
+
 export class DemoBusinessRulesService implements BusinessRulesServiceContract {
-  async getCatalog(marketCode: string) {
+  private async getCatalogByMarketCode(marketCode: string) {
     await simulateNetworkDelay();
     const version = versions.find(
       (entry) => entry.marketCode === marketCode && entry.status === "active",
@@ -518,10 +553,19 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(catalog);
   }
 
+  async getCatalog(marketContext: MarketContext) {
+    const country = requireDemoMarketContext(marketContext);
+    const catalog = await this.getCatalogByMarketCode(country.marketCode);
+    if (catalog.currency !== country.currency) {
+      throw new Error("Le catalogue ne correspond pas au marché sélectionné");
+    }
+    return catalog;
+  }
+
   async getProfessionalCatalogPresentation(
-    marketCode: string,
+    marketContext: MarketContext,
   ): Promise<ProfessionalCatalogPresentation> {
-    const activeCatalog = await this.getCatalog(marketCode);
+    const activeCatalog = await this.getCatalog(marketContext);
     const candidates = versions.flatMap((version) => {
       if (version.id === activeCatalog.configurationVersionId) return [];
       const catalog = catalogs.get(version.id);
@@ -531,6 +575,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async evaluate(
+    marketContext: MarketContext,
     context: RuleEvaluationContext,
   ): Promise<RuleEvaluationResult> {
     requireDemoAnyCapability([
@@ -538,7 +583,11 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       "commercial_rules.read",
     ]);
     await simulateNetworkDelay();
-    const catalog = await this.getCatalog(context.marketCode);
+    const country = requireDemoMarketContext(marketContext, "admin");
+    if (context.marketCode !== country.marketCode) {
+      throw new Error("Le marché simulé ne correspond pas au contexte actif");
+    }
+    const catalog = await this.getCatalogByMarketCode(context.marketCode);
     const ordered = [...catalog.rules].sort((a, b) => b.priority - a.priority);
     const outcomes: Record<string, string | number | boolean> = {};
     const explanation = ordered.map((rule) => {
@@ -595,17 +644,21 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     };
   }
 
-  async createQuote(request: QuoteRequest) {
+  async createQuote(marketContext: MarketContext, request: QuoteRequest) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
-    const key = `${accountId}:${request.idempotencyKey}`;
+    const country = requireDemoMarketContext(marketContext, "paid");
+    if (request.marketCode !== country.marketCode) {
+      throw new Error("Le marché du devis ne correspond pas au contexte actif");
+    }
+    const key = `${accountId}:${country.marketCode}:${request.idempotencyKey}`;
     const existing = quotes.get(key);
     if (existing) return structuredClone(existing);
-    const catalog = await this.getCatalog(request.marketCode);
+    const catalog = await this.getCatalogByMarketCode(request.marketCode);
     const promotionValidation = request.promotionCode
-      ? await this.validatePromotion({
+      ? await this.validatePromotion(marketContext, {
           code: request.promotionCode,
           productIds: request.productIds,
           marketCode: request.marketCode,
@@ -693,9 +746,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       promotion?.freePeriodDays ||
       trialProduct?.commercialProfile.trialPolicy.durationDays;
     const trialEndsAt = trialDays
-      ? new Date(
-          DEMO_COMMERCIAL_NOW_MS + trialDays * 86_400_000,
-        ).toISOString()
+      ? new Date(DEMO_COMMERCIAL_NOW_MS + trialDays * 86_400_000).toISOString()
       : undefined;
     const lines = request.productIds.map((id) => {
       const product = selectedProducts.find((entry) => entry.id === id)!;
@@ -791,9 +842,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
           ? "PROMOTION_APPLIED"
           : "CATALOG_PRICE",
       status: "active",
-      expiresAt: new Date(
-        DEMO_COMMERCIAL_NOW_MS + 30 * 60_000,
-      ).toISOString(),
+      expiresAt: new Date(DEMO_COMMERCIAL_NOW_MS + 30 * 60_000).toISOString(),
       createdAt: now,
     };
     quotes.set(key, quote);
@@ -801,17 +850,28 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(quote);
   }
 
-  async createCheckout(quoteId: string, idempotencyKey: string) {
+  async createCheckout(
+    marketContext: MarketContext,
+    quoteId: string,
+    idempotencyKey: string,
+  ) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const accountId = currentAccountId();
-    const orderKey = `${accountId}:${idempotencyKey}`;
-    const existing = orders.get(orderKey);
-    if (existing) return structuredClone(existing);
     const quote = quotes.get(quoteId);
     if (!quote) throw new Error("Devis introuvable");
     if (quote.accountId !== accountId)
       throw new Error("Ce devis appartient à un autre compte");
+    const country = requireDemoMarketContext(marketContext, "paid");
+    if (
+      quote.marketCode !== country.marketCode ||
+      quote.currency !== country.currency
+    ) {
+      throw new Error("Le devis ne correspond pas au marché actif");
+    }
+    const orderKey = `${accountId}:${country.marketCode}:${idempotencyKey}`;
+    const existing = orders.get(orderKey);
+    if (existing) return structuredClone(existing);
     if (/provider[-_:]?outage/i.test(idempotencyKey)) {
       throw new Error("Le service de paiement simulé est indisponible.");
     }
@@ -995,10 +1055,17 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(order);
   }
 
-  async validatePromotion(request: PromotionValidationRequest) {
+  async validatePromotion(
+    marketContext: MarketContext,
+    request: PromotionValidationRequest,
+  ) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
-    const catalog = await this.getCatalog(request.marketCode);
+    const country = requireDemoMarketContext(marketContext, "paid");
+    if (request.marketCode !== country.marketCode) {
+      throw new Error("La promotion ne correspond pas au marché actif");
+    }
+    const catalog = await this.getCatalogByMarketCode(request.marketCode);
     const promotion = catalog.promotions.find(
       (entry) => entry.code === request.code.toUpperCase(),
     );
@@ -1079,40 +1146,65 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     } as const;
   }
 
-  async getActiveEntitlements() {
+  async getActiveEntitlements(marketContext: MarketContext) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext);
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
     return structuredClone(
       activeEntitlements.filter(
-        (entry) => entry.accountId === accountId && entry.status === "active",
+        (entry) =>
+          entry.accountId === accountId &&
+          entry.status === "active" &&
+          Boolean(
+            entry.configurationVersionId &&
+            catalogs.get(entry.configurationVersionId)?.marketCode ===
+              country.marketCode,
+          ),
       ),
     );
   }
 
-  async getSubscriptions() {
+  async getSubscriptions(marketContext: MarketContext) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext);
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
     return structuredClone(
-      subscriptions.filter((entry) => entry.accountId === accountId),
+      subscriptions.filter(
+        (entry) =>
+          entry.accountId === accountId &&
+          entry.marketCode === country.marketCode,
+      ),
     );
   }
 
-  async getBillingOverview(): Promise<BillingOverview> {
+  async getBillingOverview(
+    marketContext: MarketContext,
+  ): Promise<BillingOverview> {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext);
     const accountId = currentAccountId();
     const user = storageService.getCurrentUser();
     ensureSeededBilling(accountId);
     applyDueScheduledChanges(accountId);
     const accountSubscriptions = subscriptions.filter(
-      (entry) => entry.accountId === accountId,
+      (entry) =>
+        entry.accountId === accountId &&
+        entry.marketCode === country.marketCode,
     );
     const accountEntitlements = activeEntitlements.filter(
-      (entry) => entry.accountId === accountId && entry.status === "active",
+      (entry) =>
+        entry.accountId === accountId &&
+        entry.status === "active" &&
+        Boolean(
+          entry.configurationVersionId &&
+          catalogs.get(entry.configurationVersionId)?.marketCode ===
+            country.marketCode,
+        ),
     );
     const currentSubscription = accountSubscriptions.find((entry) =>
       [
@@ -1201,41 +1293,97 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       orders: [
         ...new Map(
           [...orders.values()]
-            .filter((entry) => entry.accountId === accountId)
+            .filter(
+              (entry) =>
+                entry.accountId === accountId &&
+                entry.marketCode === country.marketCode,
+            )
             .map((entry) => [entry.id, entry]),
         ).values(),
       ].map((entry) => structuredClone(entry)),
       payments: structuredClone(
-        payments.filter((entry) => entry.accountId === accountId),
+        payments.filter(
+          (entry) =>
+            entry.accountId === accountId &&
+            orders.get(entry.orderId)?.marketCode === country.marketCode,
+        ),
       ),
       invoices: structuredClone(
-        invoices.filter((entry) => entry.accountId === accountId),
+        invoices.filter(
+          (entry) =>
+            entry.accountId === accountId &&
+            entry.marketCode === country.marketCode,
+        ),
       ),
       refunds: structuredClone(
-        refunds.filter((entry) => entry.accountId === accountId),
+        refunds.filter(
+          (entry) =>
+            entry.accountId === accountId &&
+            orders.get(entry.orderId)?.marketCode === country.marketCode,
+        ),
       ),
       creditBalances: structuredClone(
-        creditBalances.filter((entry) => entry.accountId === accountId),
+        creditBalances
+          .filter((entry) => entry.accountId === accountId)
+          .map((entry) => ({
+            ...entry,
+            transactions: entry.transactions.filter((transaction) => {
+              if (!transaction.sourceId) return false;
+              return (
+                orders.get(transaction.sourceId)?.marketCode ===
+                  country.marketCode ||
+                subscriptions.find(
+                  (subscription) =>
+                    subscription.id === transaction.sourceId &&
+                    subscription.marketCode === country.marketCode,
+                ) !== undefined
+              );
+            }),
+            reserved: 0,
+          }))
+          .map((entry) => ({
+            ...entry,
+            available: Math.max(
+              0,
+              entry.transactions.reduce(
+                (total, transaction) => total + transaction.quantity,
+                0,
+              ),
+            ),
+          }))
+          .filter((entry) => entry.transactions.length > 0),
       ),
       subscriptionEvents: structuredClone(
-        subscriptionEvents.filter((entry) => entry.accountId === accountId),
+        subscriptionEvents.filter(
+          (entry) =>
+            entry.accountId === accountId &&
+            subscriptions.find(
+              (subscription) =>
+                subscription.id === entry.subscriptionId &&
+                subscription.marketCode === country.marketCode,
+            ) !== undefined,
+        ),
       ),
       effectiveEntitlements,
     };
   }
 
-  async getInvoiceDocument(invoiceId: string) {
+  async getInvoiceDocument(marketContext: MarketContext, invoiceId: string) {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext);
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
     const invoice = invoices.find(
-      (entry) => entry.id === invoiceId && entry.accountId === accountId,
+      (entry) =>
+        entry.id === invoiceId &&
+        entry.accountId === accountId &&
+        entry.marketCode === country.marketCode,
     );
     if (!invoice) throw new Error("Facture introuvable");
     const user = storageService.getCurrentUser();
     const format = (amountMinor: number) =>
-      new Intl.NumberFormat("fr-FR", {
+      new Intl.NumberFormat(marketContext.locale!, {
         style: "currency",
         currency: invoice.total.currency,
       }).format(amountMinor / 100);
@@ -1253,14 +1401,20 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     };
   }
 
-  async previewSubscriptionChange(request: SubscriptionChangeRequest) {
+  async previewSubscriptionChange(
+    marketContext: MarketContext,
+    request: SubscriptionChangeRequest,
+  ) {
     requireDemoCapability("subscription.manage.own");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext, "paid");
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
     const subscription = subscriptions.find(
       (entry) =>
-        entry.id === request.subscriptionId && entry.accountId === accountId,
+        entry.id === request.subscriptionId &&
+        entry.accountId === accountId &&
+        entry.marketCode === country.marketCode,
     );
     if (!subscription) throw new Error("Abonnement introuvable");
     if (
@@ -1277,7 +1431,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       throw new Error("SUBSCRIPTION_CATALOG_EVIDENCE_MISSING");
     }
     const currentCatalog = catalogs.get(subscription.configurationVersionId);
-    const catalog = await this.getCatalog(subscription.marketCode);
+    const catalog = await this.getCatalogByMarketCode(subscription.marketCode);
     if (
       !currentCatalog ||
       currentCatalog.marketCode !== catalog.marketCode ||
@@ -1385,16 +1539,25 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     } as const;
   }
 
-  async applySubscriptionChange(request: SubscriptionChangeRequest) {
+  async applySubscriptionChange(
+    marketContext: MarketContext,
+    request: SubscriptionChangeRequest,
+  ) {
     requireDemoCapability("subscription.manage.own");
     const accountId = currentAccountId();
-    const resultKey = `${accountId}:${request.idempotencyKey}`;
+    const country = requireDemoMarketContext(marketContext, "paid");
+    const resultKey = `${accountId}:${country.marketCode}:${request.idempotencyKey}`;
     const existingResult = subscriptionChangeResults.get(resultKey);
     if (existingResult) return structuredClone(existingResult);
-    const preview = await this.previewSubscriptionChange(request);
+    const preview = await this.previewSubscriptionChange(
+      marketContext,
+      request,
+    );
     await simulateNetworkDelay();
     const subscription = subscriptions.find(
-      (entry) => entry.id === request.subscriptionId,
+      (entry) =>
+        entry.id === request.subscriptionId &&
+        entry.marketCode === country.marketCode,
     )!;
     if (
       request.expectedSubscriptionUpdatedAt &&
@@ -1471,15 +1634,19 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
   }
 
   async updateSubscriptionCancellation(
+    marketContext: MarketContext,
     request: SubscriptionCancellationRequest,
   ) {
     requireDemoCapability("subscription.manage.own");
     await simulateNetworkDelay();
+    const country = requireDemoMarketContext(marketContext, "paid");
     const accountId = currentAccountId();
     ensureSeededBilling(accountId);
     const subscription = subscriptions.find(
       (entry) =>
-        entry.id === request.subscriptionId && entry.accountId === accountId,
+        entry.id === request.subscriptionId &&
+        entry.accountId === accountId &&
+        entry.marketCode === country.marketCode,
     );
     if (!subscription) throw new Error("Abonnement introuvable");
     const catalog = subscription.configurationVersionId
@@ -1497,10 +1664,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       ? "cancellation_pending"
       : "active";
     subscription.updatedAt = new Date(
-      Math.max(
-        DEMO_COMMERCIAL_NOW_MS,
-        Date.parse(subscription.updatedAt) + 1,
-      ),
+      Math.max(DEMO_COMMERCIAL_NOW_MS, Date.parse(subscription.updatedAt) + 1),
     ).toISOString();
     pushSubscriptionEvent(
       subscription,
@@ -1512,10 +1676,12 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     return structuredClone(subscription);
   }
 
-  async getAdminOverview(marketCode: string) {
+  async getAdminOverview(marketContext: MarketContext) {
     requireDemoCapability("monetization.manage");
     await simulateNetworkDelay();
-    const catalog = await this.getCatalog(marketCode);
+    const country = requireDemoMarketContext(marketContext, "admin");
+    const marketCode = country.marketCode;
+    const catalog = await this.getCatalogByMarketCode(marketCode);
     const marketVersions = versions.filter(
       (version) => version.marketCode === marketCode,
     );
@@ -1531,25 +1697,67 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
       conflictCount: marketVersions
         .flatMap((version) => version.conflicts)
         .filter((entry) => entry.severity === "blocking").length,
-      quoteCountToday: quotes.size / 2,
-      activeSubscriptionCount: subscriptions.filter((entry) =>
-        ["active", "trialing", "past_due", "cancellation_pending"].includes(
-          entry.status,
-        ),
+      quoteCountToday: [
+        ...new Map(
+          [...quotes.values()]
+            .filter((entry) => entry.marketCode === marketCode)
+            .map((entry) => [entry.id, entry]),
+        ).values(),
+      ].length,
+      activeSubscriptionCount: subscriptions.filter(
+        (entry) =>
+          entry.marketCode === marketCode &&
+          ["active", "trialing", "past_due", "cancellation_pending"].includes(
+            entry.status,
+          ),
       ).length,
       orders: [
         ...new Map(
-          [...orders.values()].map((entry) => [entry.id, entry]),
+          [...orders.values()]
+            .filter((entry) => entry.marketCode === marketCode)
+            .map((entry) => [entry.id, entry]),
         ).values(),
       ].map((order) => structuredClone(order)),
-      entitlements: structuredClone(activeEntitlements),
-      payments: structuredClone(payments),
-      invoices: structuredClone(invoices),
-      refunds: structuredClone(refunds),
-      subscriptions: structuredClone(subscriptions),
-      creditBalances: structuredClone(creditBalances),
-      subscriptionEvents: structuredClone(subscriptionEvents),
-      auditEvents: structuredClone(auditEvents),
+      entitlements: structuredClone(
+        activeEntitlements.filter(
+          (entry) =>
+            entry.configurationVersionId &&
+            catalogs.get(entry.configurationVersionId)?.marketCode ===
+              marketCode,
+        ),
+      ),
+      payments: structuredClone(
+        payments.filter(
+          (entry) => orders.get(entry.orderId)?.marketCode === marketCode,
+        ),
+      ),
+      invoices: structuredClone(
+        invoices.filter((entry) => entry.marketCode === marketCode),
+      ),
+      refunds: structuredClone(
+        refunds.filter(
+          (entry) => orders.get(entry.orderId)?.marketCode === marketCode,
+        ),
+      ),
+      subscriptions: structuredClone(
+        subscriptions.filter((entry) => entry.marketCode === marketCode),
+      ),
+      creditBalances: [],
+      subscriptionEvents: structuredClone(
+        subscriptionEvents.filter(
+          (entry) =>
+            subscriptions.find(
+              (subscription) =>
+                subscription.id === entry.subscriptionId &&
+                subscription.marketCode === marketCode,
+            ) !== undefined,
+        ),
+      ),
+      auditEvents: structuredClone(
+        auditEvents.filter((entry) =>
+          marketVersions.some((version) => entry.entityId.includes(version.id)),
+        ),
+      ),
     } satisfies MonetizationAdminOverview;
   }
 
@@ -1649,7 +1857,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     await simulateNetworkDelay();
     patch = commercialDraftPatchSchema.parse(patch);
     const marketCode = patch.marketCode;
-    const current = await this.getCatalog(marketCode);
+    const current = await this.getCatalogByMarketCode(marketCode);
     const number =
       Math.max(
         ...versions

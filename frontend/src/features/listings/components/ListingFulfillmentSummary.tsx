@@ -1,9 +1,10 @@
 import React from "react";
-import { MapPin, Package, Truck, Store } from "lucide-react";
+import { FileKey2, MapPin, Package, Truck, Store } from "lucide-react";
 import { Listing } from "../../../types";
 import { fulfillmentResolver } from "../../../domains/fulfillment/fulfillment.resolver";
 import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { digitalMessagesFr } from "../../../i18n/digital.catalogue.fr";
 import { formatPrice } from "../../../utilities/formatters";
 
 export interface ListingFulfillmentSummaryProps {
@@ -14,7 +15,66 @@ export interface ListingFulfillmentSummaryProps {
 export const ListingFulfillmentSummary: React.FC<
   ListingFulfillmentSummaryProps
 > = ({ listing, className = "" }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(digitalMessagesFr);
+  const digitalTypes = (listing.fulfillmentTypes ?? []).filter(
+    (type) => type !== "PHYSICAL",
+  );
+  const isDigital =
+    listing.requiresPhysicalDelivery === false || digitalTypes.length > 0;
+
+  if (isDigital) {
+    const labels = digitalTypes.map((type) => {
+      switch (type) {
+        case "FILE_DOWNLOAD":
+          return t("digital.fulfillment.file");
+        case "ACCESS_LINK":
+          return t("digital.fulfillment.link");
+        case "ACCESS_CREDENTIALS":
+          return t("digital.fulfillment.credentials");
+        case "SELLER_PROVISIONED":
+          return t("digital.fulfillment.provisioned");
+        default:
+          return t("digital.common.title");
+      }
+    });
+    return (
+      <div
+        className={`rounded-3xl border border-primary/20 bg-primary-light/30 p-6 shadow-sm sm:p-8 ${className}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+            <FileKey2 className="h-icon-md w-icon-md" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="text-base font-black text-text-main">
+              {t("digital.common.title")}
+            </h2>
+            <p className="mt-1 text-sm font-bold text-primary">
+              {t("digital.common.noShipping")}
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {labels.map((label) => (
+                <li
+                  key={label}
+                  className="rounded-full border border-primary/20 bg-bg-surface px-3 py-1 text-xs font-bold text-text-main"
+                >
+                  {label}
+                </li>
+              ))}
+            </ul>
+            {listing.productVersion ? (
+              <p className="mt-3 text-xs text-text-secondary">
+                {t("digital.purchases.version", {
+                  version: listing.productVersion,
+                })}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const caps = fulfillmentResolver.resolveCapabilities({
     taxonomyNodeId:
       TaxonomyMigration.resolveCanonicalNode(

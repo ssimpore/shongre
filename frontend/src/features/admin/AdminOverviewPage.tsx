@@ -49,8 +49,7 @@ export const AdminOverviewPage: React.FC = () => {
   >([]);
   const [reportsCount, setReportsCount] = useState<number | null>(null);
   const [recentAudits, setRecentAudits] = useState<AdminAuditLogEntry[]>([]);
-  const [loadState, setLoadState] =
-    useState<DashboardLoadState>("loading");
+  const [loadState, setLoadState] = useState<DashboardLoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
 
   const canReadPlatformStats = can("admin.configuration.manage");
@@ -176,84 +175,84 @@ export const AdminOverviewPage: React.FC = () => {
       {/* KPI Stats Cards */}
       {loadState !== "error" &&
         (canReadPlatformStats || canReviewVerification || canReviewReports) && (
-        <section
-          aria-label={t("admin.adminOverviewPage.indicateursDeLaConsole")}
-          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
-        >
-          {canReadPlatformStats && (
-            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
-              <div className="flex items-center justify-between text-stone-500 mb-2">
-                <span className="text-xs font-semibold">
-                  {t("admin.adminOverviewPage.utilisateursEnregistres")}
-                </span>
-                <Users className="w-icon-md h-icon-md text-text-disabled" />
+          <section
+            aria-label={t("admin.adminOverviewPage.indicateursDeLaConsole")}
+            className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
+          >
+            {canReadPlatformStats && (
+              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+                <div className="flex items-center justify-between text-stone-500 mb-2">
+                  <span className="text-xs font-semibold">
+                    {t("admin.adminOverviewPage.utilisateursEnregistres")}
+                  </span>
+                  <Users className="w-icon-md h-icon-md text-text-disabled" />
+                </div>
+                <div className="text-2xl font-black text-text-main">
+                  {stats?.totalUsers ?? "…"}
+                </div>
+                <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+                  <span className="text-success font-bold">100%</span>{" "}
+                  {t("admin.adminOverviewPage.partitionnesParRole")}
+                </div>
               </div>
-              <div className="text-2xl font-black text-text-main">
-                {stats?.totalUsers ?? "…"}
-              </div>
-              <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                <span className="text-success font-bold">100%</span>{" "}
-                {t("admin.adminOverviewPage.partitionnesParRole")}
-              </div>
-            </div>
-          )}
+            )}
 
-          {canReviewVerification && (
-            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
-              <div className="flex items-center justify-between text-stone-500 mb-2">
-                <span className="text-xs font-semibold">
-                  {t("admin.adminOverviewPage.verificationsProEnAttente")}
-                </span>
-                <Clock className="w-icon-md h-icon-md text-amber-500" />
+            {canReviewVerification && (
+              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+                <div className="flex items-center justify-between text-stone-500 mb-2">
+                  <span className="text-xs font-semibold">
+                    {t("admin.adminOverviewPage.verificationsProEnAttente")}
+                  </span>
+                  <Clock className="w-icon-md h-icon-md text-amber-500" />
+                </div>
+                <div className="text-2xl font-black text-warning">
+                  {loadState === "success" ? pendingVerifications.length : "…"}
+                </div>
+                <div className="text-xs text-stone-500 mt-1">
+                  {loadState !== "success"
+                    ? "Chargement des dossiers…"
+                    : pendingVerifications.length > 0
+                      ? "Dossiers KBIS à valider"
+                      : "Tous les dossiers sont traités"}
+                </div>
               </div>
-              <div className="text-2xl font-black text-warning">
-                {loadState === "success" ? pendingVerifications.length : "…"}
-              </div>
-              <div className="text-xs text-stone-500 mt-1">
-                {loadState !== "success"
-                  ? "Chargement des dossiers…"
-                  : pendingVerifications.length > 0
-                  ? "Dossiers KBIS à valider"
-                  : "Tous les dossiers sont traités"}
-              </div>
-            </div>
-          )}
+            )}
 
-          {canReviewReports && (
-            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
-              <div className="flex items-center justify-between text-stone-500 mb-2">
-                <span className="text-xs font-semibold">
-                  Signalements ouverts
-                </span>
-                <ShieldAlert className="w-icon-md h-icon-md text-primary" />
+            {canReviewReports && (
+              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+                <div className="flex items-center justify-between text-stone-500 mb-2">
+                  <span className="text-xs font-semibold">
+                    Signalements ouverts
+                  </span>
+                  <ShieldAlert className="w-icon-md h-icon-md text-primary" />
+                </div>
+                <div className="text-2xl font-black text-primary">
+                  {loadState === "success" ? (reportsCount ?? 0) : "…"}
+                </div>
+                <div className="text-xs text-stone-500 mt-1">
+                  {t("admin.adminOverviewPage.conformiteEtSecurite")}
+                </div>
               </div>
-              <div className="text-2xl font-black text-primary">
-                {loadState === "success" ? (reportsCount ?? 0) : "…"}
-              </div>
-              <div className="text-xs text-stone-500 mt-1">
-                {t("admin.adminOverviewPage.conformiteEtSecurite")}
-              </div>
-            </div>
-          )}
+            )}
 
-          {canReadPlatformStats && (
-            <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
-              <div className="flex items-center justify-between text-stone-500 mb-2">
-                <span className="text-xs font-semibold">
-                  {t("admin.adminOverviewPage.catalogueDAnnonces")}
-                </span>
-                <TrendingUp className="w-icon-md h-icon-md text-success" />
+            {canReadPlatformStats && (
+              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+                <div className="flex items-center justify-between text-stone-500 mb-2">
+                  <span className="text-xs font-semibold">
+                    {t("admin.adminOverviewPage.catalogueDAnnonces")}
+                  </span>
+                  <TrendingUp className="w-icon-md h-icon-md text-success" />
+                </div>
+                <div className="text-2xl font-black text-text-main">
+                  {stats?.totalListings ?? "…"}
+                </div>
+                <div className="text-xs text-stone-500 mt-1">
+                  {t("admin.adminOverviewPage.offresActivesEtArchivees")}
+                </div>
               </div>
-              <div className="text-2xl font-black text-text-main">
-                {stats?.totalListings ?? "…"}
-              </div>
-              <div className="text-xs text-stone-500 mt-1">
-                {t("admin.adminOverviewPage.offresActivesEtArchivees")}
-              </div>
-            </div>
-          )}
-        </section>
-      )}
+            )}
+          </section>
+        )}
 
       {/* Grid: Pending Pro Dossiers & Recent Audit Log */}
       {loadState !== "error" && (canReviewVerification || canReadAudit) && (
@@ -394,29 +393,30 @@ export const AdminOverviewPage: React.FC = () => {
                     Aucune action d’audit récente.
                   </p>
                 )}
-                {loadState === "success" && recentAudits.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-2.5 bg-stone-50 rounded-lg border border-stone-200 text-xs flex flex-col gap-1"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-text-main flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-pill bg-primary" />
-                        {auditActionLabel(log.action)}
-                      </span>
-                      <span className="text-micro text-stone-500 shrink-0">
-                        {formatLogTimestamp(log.timestamp)}
-                      </span>
+                {loadState === "success" &&
+                  recentAudits.map((log) => (
+                    <div
+                      key={log.id}
+                      className="p-2.5 bg-stone-50 rounded-lg border border-stone-200 text-xs flex flex-col gap-1"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-text-main flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-pill bg-primary" />
+                          {auditActionLabel(log.action)}
+                        </span>
+                        <span className="text-micro text-stone-500 shrink-0">
+                          {formatLogTimestamp(log.timestamp)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-text-secondary line-clamp-1">
+                        {log.target}
+                      </div>
+                      <div className="text-micro text-stone-500">
+                        {t("admin.adminOverviewPage.par")}
+                        <strong className="text-stone-700">{log.actor}</strong>
+                      </div>
                     </div>
-                    <div className="text-xs text-text-secondary line-clamp-1">
-                      {log.target}
-                    </div>
-                    <div className="text-micro text-stone-500">
-                      {t("admin.adminOverviewPage.par")}
-                      <strong className="text-stone-700">{log.actor}</strong>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           )}

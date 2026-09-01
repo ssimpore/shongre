@@ -58,12 +58,16 @@ export function toPublicListing(listing: Listing): PublicListing {
     externalStockId: _externalStockId,
     duplicateGroupId: _duplicateGroupId,
     safetyRiskScore: _safetyRiskScore,
+    digitalFulfillmentVersionId: _digitalFulfillmentVersionId,
     attributes,
     ...publicFields
   } = listing;
   const publicSeller = seller ? toPublicSellerProfile(seller) : null;
   return {
     ...publicFields,
+    fulfillmentTypes: [listing.fulfillmentModel ?? "PHYSICAL"],
+    requiresPhysicalDelivery:
+      !listing.fulfillmentModel || listing.fulfillmentModel === "PHYSICAL",
     attributes: Object.fromEntries(
       Object.entries(attributes || {}).filter(
         ([key]) => !INTERNAL_ATTRIBUTE_KEYS.has(key),

@@ -65,6 +65,14 @@ export default function RootLayout() {
                 name="account/billing"
                 options={{ title: "Facturation" }}
               />
+              <Stack.Screen
+                name="account/digital-purchases"
+                options={{ title: "Achats numériques" }}
+              />
+              <Stack.Screen
+                name="account/digital-selling"
+                options={{ title: "Vente numérique" }}
+              />
             </Stack>
           </AuthProvider>
         </MarketProvider>

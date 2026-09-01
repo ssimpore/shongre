@@ -56,6 +56,7 @@ describe("header account-menu model", () => {
       "listings",
       "favorites",
       "purchases",
+      "digital_purchases",
       "public_profile",
       "pro_solutions",
     ]);
@@ -120,6 +121,11 @@ describe("header account-menu model", () => {
   it("removes customer actions that account status no longer authorizes", () => {
     const suspended = persona({ status: "suspended", isSuspended: true });
 
-    expect(ids(suspended)).toEqual(["account", "purchases", "public_profile"]);
+    expect(ids(suspended)).toEqual([
+      "account",
+      "purchases",
+      "digital_purchases",
+      "public_profile",
+    ]);
   });
 });

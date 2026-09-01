@@ -42,11 +42,19 @@ import {
   toApplicationListingCondition,
   toTaxonomyV4ItemCondition,
 } from "@shongre/contracts";
+import type {
+  DigitalFulfillmentVersionInput,
+  FulfillmentType,
+} from "@shongre/contracts/digital-products";
 import {
   taxonomyV4Service,
   TaxonomyV4Error,
   TaxonomyV4Service,
 } from "../taxonomy/taxonomy.v4.service.js";
+import {
+  digitalProductsService,
+  DigitalProductsService,
+} from "../digital-products/digital-products.service.js";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -87,6 +95,8 @@ export interface PublicationDraftInput {
   organizationId?: string;
   branchId?: string;
   externalStockId?: string;
+  fulfillmentTypes?: FulfillmentType[];
+  digitalFulfillment?: DigitalFulfillmentVersionInput;
 }
 
 export interface SellerListingUpdate {
@@ -168,6 +178,7 @@ const DELIVERY_TYPES = new Set<DeliveryType>([
   "home_delivery",
   "cocolis",
   "express",
+  "digital",
 ]);
 
 type ManagedTaxonomyDefinition = {
@@ -231,6 +242,7 @@ export class ListingsService {
     private markets: IMarketRepository = repositories.markets,
     private storage: StorageService = storageService,
     private taxonomyV4: TaxonomyV4Service = taxonomyV4Service,
+    private digitalProducts: DigitalProductsService = digitalProductsService,
   ) {}
 
   async getListings(
@@ -459,6 +471,46 @@ export class ListingsService {
 
     const marketCode = requireMarketCode(draft.marketCode);
     const primaryMarket = await this.markets.getEffective(marketCode);
+    const requestedFulfillmentTypes = draft.fulfillmentTypes?.length
+      ? [...new Set(draft.fulfillmentTypes)]
+      : (["PHYSICAL"] as FulfillmentType[]);
+    const isDigital = draft.digitalFulfillment !== undefined;
+    if (
+      isDigital !==
+      requestedFulfillmentTypes.some((type) => type !== "PHYSICAL")
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le modèle de remise explicite de l’annonce est incohérent.",
+      });
+    }
+    if (isDigital) {
+      if (
+        requestedFulfillmentTypes.includes("PHYSICAL") ||
+        requestedFulfillmentTypes.length !==
+          draft.digitalFulfillment!.fulfillmentTypes.length ||
+        requestedFulfillmentTypes.some(
+          (type) =>
+            !draft.digitalFulfillment!.fulfillmentTypes.includes(
+              type as Exclude<FulfillmentType, "PHYSICAL">,
+            ),
+        )
+      ) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            "Les modes de remise numérique ne correspondent pas à la version fournie.",
+        });
+      }
+      await this.digitalProducts.assertPublicationInput({
+        sellerId,
+        marketCode,
+        categoryId: draft.categoryId,
+        priceMajor: Number(effectivePrice),
+        currency: primaryMarket.currency,
+        fulfillment: draft.digitalFulfillment,
+      });
+    }
 
     if (
       draft.taxonomyVersion === "4.0.0" ||
@@ -571,6 +623,13 @@ export class ListingsService {
         code: "VALIDATION_ERROR",
         message: "Le marché principal doit faire partie des marchés publiés.",
       });
+    if (isDigital && requestedMarketCodes.length !== 1) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "La publication numérique multi-marché reste désactivée tant qu’une politique approuvée n’est pas disponible pour chaque achat.",
+      });
+    }
     const selectedMarketCodes = [
       marketCode,
       ...requestedMarketCodes.filter((code) => code !== marketCode),
@@ -595,18 +654,19 @@ export class ListingsService {
     const market = selectedMarkets.find(
       (candidate) => candidate.code === marketCode,
     )!;
-    const allowedDelivery = (draft.allowedDelivery || [
-      "hand_delivery",
-    ]) as DeliveryType[];
+    const allowedDelivery = (
+      isDigital ? ["digital"] : draft.allowedDelivery || ["hand_delivery"]
+    ) as DeliveryType[];
     if (
       allowedDelivery.length === 0 ||
       allowedDelivery.some(
         (method) =>
           !DELIVERY_TYPES.has(method) ||
-          selectedMarkets.some(
-            (selectedMarket) =>
-              !selectedMarket.allowedDeliveryMethods.includes(method),
-          ),
+          (!isDigital &&
+            selectedMarkets.some(
+              (selectedMarket) =>
+                !selectedMarket.allowedDeliveryMethods.includes(method),
+            )),
       )
     ) {
       throw new AppError({
@@ -679,13 +739,16 @@ export class ListingsService {
     const newId = randomUUID();
 
     const createdAt = new Date().toISOString();
-    if (!draft.city?.trim() || !draft.postalCode?.trim())
+    if (!isDigital && (!draft.city?.trim() || !draft.postalCode?.trim()))
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "La ville et le code postal sont obligatoires.",
       });
-    const publicationStatus =
-      safety.riskScore >= 50 ? "pending_review" : "active";
+    const publicationStatus = isDigital
+      ? "draft"
+      : safety.riskScore >= 50
+        ? "pending_review"
+        : "active";
     const marketPublications = selectedMarkets.map((selectedMarket) => {
       const custom = draft.marketPublications?.[selectedMarket.code];
       const currency = (
@@ -726,8 +789,11 @@ export class ListingsService {
           allowedDelivery.map((method) => [method, true]),
         ),
         complianceState:
-          safety.riskScore >= 50 ? ("pending" as const) : ("approved" as const),
-        publishedAt: safety.riskScore >= 50 ? undefined : createdAt,
+          isDigital || safety.riskScore >= 50
+            ? ("pending" as const)
+            : ("approved" as const),
+        publishedAt:
+          isDigital || safety.riskScore >= 50 ? undefined : createdAt,
         sortDate: createdAt,
       } satisfies NonNullable<Listing["marketPublications"]>[number];
     });
@@ -753,7 +819,11 @@ export class ListingsService {
       description: draft.description || "",
       price: Number(effectivePrice),
       currency: market.currency,
-      status: safety.riskScore >= 50 ? "flagged" : "published",
+      status: isDigital
+        ? "draft"
+        : safety.riskScore >= 50
+          ? "flagged"
+          : "published",
       condition: toApplicationListingCondition(
         draft.attributes || {},
         draft.condition || "bon-etat",
@@ -763,11 +833,17 @@ export class ListingsService {
       marketCode,
       marketCodes: selectedMarketCodes,
       marketPublications,
-      city: draft.city.trim(),
-      postalCode: draft.postalCode.trim(),
+      city: isDigital ? "" : draft.city!.trim(),
+      postalCode: isDigital ? "" : draft.postalCode!.trim(),
       country: market.code,
       allowedDelivery,
       shippingCost: draft.shippingCost || 0,
+      fulfillmentModel: isDigital
+        ? draft.digitalFulfillment!.primaryFulfillmentType
+        : "PHYSICAL",
+      productVersion: isDigital
+        ? draft.digitalFulfillment!.productVersion
+        : undefined,
       images,
       isUrgent: false,
       isFeatured: false,
@@ -796,6 +872,14 @@ export class ListingsService {
     const saved = await this.listingRepo.save(listing);
     try {
       await this.storage.attachListingMedia(sellerId, saved.id, images);
+      if (isDigital) {
+        await this.digitalProducts.createFulfillmentVersion({
+          sellerId,
+          marketCode,
+          listingId: saved.id,
+          fulfillment: draft.digitalFulfillment,
+        });
+      }
     } catch (error) {
       await this.listingRepo.delete(saved.id);
       throw error;

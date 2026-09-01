@@ -13,6 +13,7 @@ export type HeaderAccountMenuItemId =
   | "listings"
   | "favorites"
   | "purchases"
+  | "digital_purchases"
   | "public_profile"
   | "pro_solutions"
   | "support";
@@ -64,6 +65,13 @@ const CUSTOMER_DESTINATIONS = [
     policyId: "accountPurchases",
     to: routes.workspace.purchases,
     labelKey: "shell.header.accountMenu.purchases",
+    marketplaceAction: "purchase.manage",
+  },
+  {
+    id: "digital_purchases",
+    policyId: "accountDigitalPurchases",
+    to: routes.workspace.digitalPurchases,
+    labelKey: "digital.nav.purchases",
     marketplaceAction: "purchase.manage",
   },
 ] as const satisfies readonly {

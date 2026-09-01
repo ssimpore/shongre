@@ -119,9 +119,9 @@ exact("NEXT_PUBLIC_APP_ENV", "production");
 exact("EXPO_PUBLIC_APP_ENV", "production");
 exact("BACKEND_DATA_MODE", "database");
 exact("DATABASE_INFRA_MODE", "hosted");
-exact("NEXT_PUBLIC_DATA_MODE", "demo");
+exact("NEXT_PUBLIC_DATA_MODE", "api");
 exact("EXPO_PUBLIC_DATA_MODE", "api");
-exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
+exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
 exact("NEXT_PUBLIC_ENABLE_AI_FEATURES", "false");
 exact("PAYMENT_MODE", "live");
 exact("EMAIL_MODE", "live");
@@ -165,6 +165,12 @@ exact("EXPO_PUBLIC_FR_URL", value("PUBLIC_FR_URL"));
 exact("EXPO_PUBLIC_INTL_URL", value("PUBLIC_INTL_URL"));
 const publicApiUrl = httpsUrl("NEXT_PUBLIC_API_URL");
 const mobileApiUrl = httpsUrl("EXPO_PUBLIC_API_URL");
+const applicationOrigins = [
+  "SHONGRE_MARKETPLACE_ORIGIN",
+  "SHONGRE_SOLUTIONS_ORIGIN",
+  "SHONGRE_PROSPECTS_ORIGIN",
+  "SHONGRE_FACTURATION_ORIGIN",
+].map((name) => httpsUrl(name));
 httpsUrl("SUPABASE_URL");
 httpsUrl("AUTH_EMAIL_DELIVERY_URL");
 httpsUrl("BUSINESS_REGISTRY_API_URL");
@@ -174,6 +180,13 @@ if (franceUrl && internationalUrl) {
   check(
     franceUrl.origin !== internationalUrl.origin,
     "PUBLIC_FR_URL and PUBLIC_INTL_URL must use distinct production origins",
+  );
+}
+if (applicationOrigins.every(Boolean)) {
+  check(
+    new Set(applicationOrigins.map((url) => url.host)).size ===
+      applicationOrigins.length,
+    "Production application origins must use four distinct hosts",
   );
 }
 for (const [name, clientUrl] of [
@@ -260,8 +273,8 @@ check(
   "STRIPE_SECRET_KEY must be a live-mode secret key",
 );
 check(
-  !value("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
-  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be empty while the web frontend is demo-only",
+  /^pk_live_[A-Za-z0-9]+$/.test(value("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY")),
+  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live-mode publishable key",
 );
 for (const name of ["STRIPE_WEBHOOK_SECRET", "STRIPE_CONNECT_WEBHOOK_SECRET"]) {
   check(/^whsec_[A-Za-z0-9]+$/.test(value(name)), `${name} must be configured`);
@@ -298,6 +311,11 @@ if (requireEvidence) {
     "business_registry=PASS",
     "gemini_moderation=PASS",
     "transactional_email=PASS",
+    "sms_delivery=PASS",
+    "push_delivery=PASS",
+    "geocoding=PASS",
+    "malware_scan=PASS",
+    "search_index=PASS",
   ]);
   evidenceFile("RELEASE_APPROVAL_EVIDENCE_FILE", 14, [
     `release_sha=${releaseSha}`,

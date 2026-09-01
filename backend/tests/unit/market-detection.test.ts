@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { COUNTRY_REGISTRY } from "@shongre/contracts";
+import { COUNTRY_REGISTRY, listPublicCountries } from "@shongre/contracts";
 import { MarketDetectionService } from "../../src/modules/markets/market-detection.service.js";
 
 const service = new MarketDetectionService();
 
 describe("MarketDetectionService", () => {
-  it.each(COUNTRY_REGISTRY)(
+  it.each(listPublicCountries())(
     "resolves trusted ISO signal $code through the canonical registry",
     (country) => {
       const recommendation = service.detectFromCountrySignal({
@@ -36,6 +36,33 @@ describe("MarketDetectionService", () => {
         "x-edge-country": country.code,
       }),
     ).toMatchObject({ country: null, experience: "global_gateway" });
+    expect(
+      edgeService.detectFromHeaders({
+        "x-country": country.code,
+        "x-shongre-market": country.code,
+      }),
+    ).toMatchObject({
+      status: "unknown",
+      country: null,
+      experience: "global_gateway",
+    });
+  });
+
+  it("fails safely for a missing or malformed trusted header", () => {
+    const edgeService = new MarketDetectionService("x-edge-country");
+    expect(edgeService.detectFromHeaders({})).toMatchObject({
+      status: "unknown",
+      confidence: "low",
+      country: null,
+    });
+    expect(
+      edgeService.detectFromHeaders({ "x-edge-country": "France" }),
+    ).toMatchObject({
+      status: "uncertain",
+      confidence: "low",
+      proxyOrVpnLikely: true,
+      country: null,
+    });
   });
 
   it("fails to the global gateway for an unknown country", () => {
@@ -64,7 +91,11 @@ describe("MarketDetectionService", () => {
     ).toMatchObject({ status: "uncertain" });
   });
 
-  it.each(COUNTRY_REGISTRY.filter((country) => country.detection.enabled))(
+  it.each(
+    COUNTRY_REGISTRY.filter(
+      (country) => country.detection.enabled && country.gatewayVisible,
+    ),
+  )(
     "resolves consented coordinates for $code without returning them",
     (country) => {
       const bounds = country.detection.coordinateBounds[0];

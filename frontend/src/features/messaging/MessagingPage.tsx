@@ -115,7 +115,7 @@ export const MessagingPage: React.FC = () => {
             name: counterpartName || "Utilisateur Shongre",
             avatarUrl: counterpartAvatar,
             accountType:
-              c.sellerType === "pro" && !isBuyer ? "pro" : "individual",
+              c.sellerType === "pro" && isBuyer ? "pro" : "individual",
             isVerified: true,
             rating: 4.9,
             reviewCount: 12,
@@ -575,6 +575,7 @@ export const MessagingPage: React.FC = () => {
                 <ConversationHeader
                   counterpart={activeConversationPreview.counterpart}
                   capabilities={capabilities}
+                  publicProfileSlug={activeConversationPreview.counterpart.id}
                   onBack={handleBackToInbox}
                   onBlockToggle={handleBlockToggle}
                   onReport={() =>

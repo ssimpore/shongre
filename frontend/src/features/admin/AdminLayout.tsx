@@ -27,6 +27,7 @@ import {
   BarChart3,
   Grid2X2,
   Search,
+  FileKey2,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -169,6 +170,13 @@ export const AdminLayout: React.FC = () => {
       show: canAccessRoute("adminModeration"),
     },
     {
+      to: routes.admin.digitalProducts(),
+      label: t("digital.nav.admin"),
+      group: "trust",
+      icon: FileKey2,
+      show: canAccessRoute("adminDigitalProducts"),
+    },
+    {
       to: "/admin/utilisateurs",
       label: "Utilisateurs & Profils",
       group: "trust",
@@ -292,8 +300,10 @@ export const AdminLayout: React.FC = () => {
   useEffect(() => {
     if (!activeNavItem) return;
     setRecentPaths((paths) =>
-      [activeNavItem.to, ...paths.filter((path) => path !== activeNavItem.to)]
-        .slice(0, 3),
+      [
+        activeNavItem.to,
+        ...paths.filter((path) => path !== activeNavItem.to),
+      ].slice(0, 3),
     );
   }, [activeNavItem?.to]);
 

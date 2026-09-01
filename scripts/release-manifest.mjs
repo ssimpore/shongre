@@ -52,6 +52,7 @@ function readJson(path) {
 const REQUIRED_HOSTED_SMOKE_TESTS = [
   "serves the international gateway with environment-safe headers",
   "serves the France marketplace with environment-safe headers",
+  "serves each canonical Shongre application hostname",
   "serves live and ready API probes through the Tunnel",
   "returns a market-scoped public listings feed",
 ];

@@ -1,71 +1,16 @@
-import type { ShongreApplicationId } from "../../platform/applications/application-registry";
-
-export const SOLUTION_LIFECYCLES = [
-  "DRAFT",
-  "INTERNAL",
-  "COMING_SOON",
-  "BETA",
-  "AVAILABLE",
-  "MAINTENANCE",
-  "DEPRECATED",
-  "RETIRED",
-] as const;
-
-export const MIN_SOLUTION_SORT_ORDER = 0;
-
-export type SolutionLifecycle = (typeof SOLUTION_LIFECYCLES)[number];
-export type SolutionIconId =
-  "prospects" | "facturation" | "marketplace" | "pilotage" | "apps";
-
-export interface SolutionReleaseNote {
-  id: string;
-  title: string;
-  body: string;
-  publishedAt: string;
-}
-
-export interface SolutionDefinition {
-  id: string;
-  name: string;
-  slug: string;
-  shortDescription: string;
-  description: string;
-  icon: SolutionIconId;
-  category: string;
-  lifecycle: SolutionLifecycle;
-  availableFrom?: string;
-  availableUntil?: string;
-  markets: string[];
-  languages: string[];
-  audiences: string[];
-  capabilities: string[];
-  launchApplicationId?: ShongreApplicationId;
-  launchPath?: string;
-  documentationUrl?: string;
-  entitlementKey?: string;
-  requiresAuthentication: boolean;
-  requiresEntitlement: boolean;
-  releaseNotes: SolutionReleaseNote[];
-  notice?: string;
-  maintenanceMessage?: string;
-  replacementSlug?: string;
-  sortOrder: number;
-  catalogVisible: boolean;
-  featured: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SolutionLifecycleHistoryEntry {
-  id: string;
-  solutionId: string;
-  from: SolutionLifecycle | null;
-  to: SolutionLifecycle;
-  explanation: string;
-  actorId: string;
-  actorName: string;
-  occurredAt: string;
-}
+export {
+  MIN_SOLUTION_SORT_ORDER,
+  SOLUTION_LIFECYCLES,
+} from "@shongre/contracts/solutions";
+export type {
+  CreateSolutionInput,
+  SolutionDefinition,
+  SolutionIconId,
+  SolutionLifecycle,
+  SolutionLifecycleHistoryEntry,
+  SolutionReleaseNote,
+  UpdateSolutionInput,
+} from "@shongre/contracts/solutions";
 
 export interface SolutionsAdminActor {
   id: string;
@@ -77,15 +22,6 @@ export interface SolutionListOptions {
   marketCode?: string;
   language?: string;
 }
-
-export type CreateSolutionInput = Omit<
-  SolutionDefinition,
-  "id" | "createdAt" | "updatedAt" | "releaseNotes"
-> & { releaseNotes?: SolutionReleaseNote[] };
-
-export type UpdateSolutionInput = Partial<
-  Omit<SolutionDefinition, "id" | "createdAt" | "updatedAt" | "lifecycle">
->;
 
 export type SolutionLaunchReason =
   | "READY"
@@ -103,7 +39,7 @@ export interface SolutionLaunchDecision {
   allowed: boolean;
   reason: SolutionLaunchReason;
   href?: string;
-  actionLabel: string;
+  /** Backend-authored, locale-specific catalog content; UI fallbacks stay in i18n. */
   message?: string;
 }
 

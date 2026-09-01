@@ -8,6 +8,8 @@ import {
   ShieldCheck,
   MapPin,
   Filter,
+  FileKey2,
+  RefreshCw,
 } from "lucide-react";
 
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -21,6 +23,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { EmptyState } from "../../design-system";
 import { TransactionDetailModal } from "./components/TransactionDetailModal";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
 type TabMode = "purchases" | "sales";
@@ -28,7 +31,7 @@ type StatusFilter =
   "all" | "pending" | "in_progress" | "completed" | "disputed";
 
 export const TransactionsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(digitalMessagesFr);
   usePageMeta({
     title: t("meta.transactions.title"),
     description: t("meta.transactions.description"),
@@ -39,6 +42,7 @@ export const TransactionsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTransactionId = searchParams.get("transactionId");
+  const checkoutReturn = searchParams.get("checkout");
   const currentUserId = currentUser?.id ?? "";
   const [activeTab, setActiveTab] = useState<TabMode>("purchases");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -47,6 +51,13 @@ export const TransactionsPage: React.FC = () => {
   const [purchasesCount, setPurchasesCount] = useState(0);
   const [salesCount, setSalesCount] = useState(0);
   const [, setLoading] = useState(true);
+  const [paymentReturnStatus] = useState<"processing" | "cancelled" | null>(
+    checkoutReturn === "success"
+      ? "processing"
+      : checkoutReturn === "cancelled"
+        ? "cancelled"
+        : null,
+  );
 
   const fetchTransactions = async () => {
     if (!currentUser?.id) return;
@@ -79,6 +90,14 @@ export const TransactionsPage: React.FC = () => {
   useEffect(() => {
     fetchTransactions();
   }, [activeTab, currentUser?.id, requestedTransactionId]);
+
+  useEffect(() => {
+    if (!checkoutReturn) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("checkout");
+    next.delete("session_id");
+    setSearchParams(next, { replace: true });
+  }, [checkoutReturn, searchParams, setSearchParams]);
 
   const openTransaction = (transaction: Transaction) => {
     setSelectedTx(transaction);
@@ -202,6 +221,48 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Payment state information */}
+      {paymentReturnStatus ? (
+        <div
+          role="status"
+          className={`rounded-2xl border p-4 ${
+            paymentReturnStatus === "processing"
+              ? "border-warning-border bg-warning-surface text-warning"
+              : "border-border-base bg-bg-base text-text-secondary"
+          }`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {paymentReturnStatus === "processing" ? (
+                <Clock className="h-icon-md w-icon-md" aria-hidden="true" />
+              ) : (
+                <ShoppingBag
+                  className="h-icon-md w-icon-md"
+                  aria-hidden="true"
+                />
+              )}
+              <span className="text-sm font-bold">
+                {paymentReturnStatus === "processing"
+                  ? t("digital.checkout.processing")
+                  : t("digital.checkout.cancelled")}
+              </span>
+            </div>
+            {paymentReturnStatus === "processing" ? (
+              <Button
+                variant="secondary"
+                leftIcon={
+                  <RefreshCw
+                    className="h-icon-sm w-icon-sm"
+                    aria-hidden="true"
+                  />
+                }
+                onClick={() => void fetchTransactions()}
+              >
+                {t("digital.checkout.refresh")}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       <div className="p-4 bg-success-surface border border-success-border rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-success">
         <div className="flex items-start sm:items-center gap-3">
           <ShieldCheck className="w-icon-xl h-icon-xl text-success shrink-0" />
@@ -393,7 +454,12 @@ export const TransactionsPage: React.FC = () => {
 
                       {/* Delivery badge */}
                       <div className="flex items-center gap-2 mt-1.5 text-micro">
-                        {tx.deliveryMethod === "hand_delivery" ? (
+                        {tx.deliveryMethod === "digital" ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-primary-light px-2 py-0.5 font-semibold text-primary">
+                            <FileKey2 className="h-icon-xs w-icon-xs" />
+                            {t("digital.common.noShipping")}
+                          </span>
+                        ) : tx.deliveryMethod === "hand_delivery" ? (
                           <span className="inline-flex items-center gap-1 font-semibold text-success bg-success-surface px-2 py-0.5 rounded">
                             <MapPin className="w-icon-xs h-icon-xs" /> Remise en
                             main propre
@@ -462,7 +528,11 @@ export const TransactionsPage: React.FC = () => {
                     }`}
                   >
                     <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
-                    <span>Remise / Envoi</span>
+                    <span>
+                      {tx.deliveryMethod === "digital"
+                        ? t("digital.purchases.processing")
+                        : "Remise / Envoi"}
+                    </span>
                   </div>
                   <span className="text-stone-300 shrink-0">→</span>
                   <div

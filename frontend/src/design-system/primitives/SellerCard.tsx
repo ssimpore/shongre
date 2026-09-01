@@ -9,6 +9,7 @@ import { UserProfile } from "../../types";
 import { Avatar } from "./Badge";
 import { Badge } from "./Badge";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { routes } from "../../configuration/routes";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
@@ -29,10 +30,12 @@ export const SellerCard: React.FC<SellerCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const isPro = isProSeller(user);
-  const profileUrl =
-    isPro && user.storeSlug
-      ? `/boutique/${user.storeSlug}`
-      : `/profil/${user.slug || user.id}`;
+  const profileUrl = routes.seller.publicPage({
+    id: user.id,
+    slug: user.slug,
+    storeSlug: user.storeSlug,
+    isProfessional: isPro,
+  });
 
   return (
     <div
@@ -58,7 +61,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
             </Link>
             {isPro && (
               <Badge variant="pro" size="sm">
-                Pro
+                {t("ui.sellerCard.pro")}
               </Badge>
             )}
             {showsVerifiedBadge(user) && (

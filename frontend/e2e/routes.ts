@@ -213,6 +213,11 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
 
 export const BUYER_ROUTES: RouteUnderTest[] = [
   {
+    path: "/compte/achats-numeriques",
+    name: "digital-purchases",
+    persona: "individual_buyer",
+  },
+  {
     path: "/compte/finances",
     name: "account-finance",
     persona: "individual_buyer",
@@ -297,6 +302,11 @@ export const BUYER_ROUTES: RouteUnderTest[] = [
 
 export const SELLER_ROUTES: RouteUnderTest[] = [
   { path: "/deposer", name: "publish-wizard", persona: "individual_seller" },
+  {
+    path: "/compte/produits-numeriques",
+    name: "digital-products-seller",
+    persona: "individual_seller",
+  },
   {
     path: "/compte/annonces",
     name: "my-listings",
@@ -496,6 +506,11 @@ export const PRO_ROUTES: RouteUnderTest[] = [
 export const ADMIN_ROUTES: RouteUnderTest[] = [
   { path: "/admin/finance", name: "platform-finance", persona: "finance" },
   { path: "/admin", name: "admin-overview", persona: "admin" },
+  {
+    path: "/admin/produits-numeriques",
+    name: "admin-digital-products",
+    persona: "admin",
+  },
   { path: "/admin/support", name: "admin-support", persona: "support" },
   {
     path: "/admin/fonctionnalites",

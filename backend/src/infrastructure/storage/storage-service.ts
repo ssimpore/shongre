@@ -1,4 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
+import { extname } from "node:path";
+import type {
+  DigitalAssetProjection,
+  DigitalMarketPolicy,
+} from "@shongre/contracts/digital-products";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { config } from "../../app/config/index.js";
@@ -48,11 +53,354 @@ const detectedImageType = (buffer: Buffer): string | null => {
   return null;
 };
 
+const detectedDigitalType = (buffer: Buffer): string | null => {
+  if (buffer.subarray(0, 5).toString("ascii") === "%PDF-")
+    return "application/pdf";
+  if (
+    buffer.length >= 4 &&
+    buffer[0] === 0x50 &&
+    buffer[1] === 0x4b &&
+    [0x03, 0x05, 0x07].includes(buffer[2]) &&
+    [0x04, 0x06, 0x08].includes(buffer[3])
+  )
+    return "application/zip";
+  return detectedImageType(buffer);
+};
+
+function safeDownloadName(fileName: string): string {
+  const leaf = fileName.replace(/\\/g, "/").split("/").pop() || "download";
+  const normalized = leaf
+    .normalize("NFKC")
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .replace(/[^\p{L}\p{N}._ -]/gu, "_")
+    .replace(/^\.+/, "")
+    .trim()
+    .slice(0, 160);
+  return normalized || "download";
+}
+
 export class StorageService {
   private readonly publicListingBucket = "listing-media";
   private readonly stagingListingBucket = "listing-media-staging";
   private readonly privateDocumentBucket = "private-documents";
   private readonly stagingPrivateDocumentBucket = "private-documents-staging";
+  private readonly privateDigitalProductBucket = "digital-products";
+  private readonly stagingDigitalProductBucket = "digital-products-staging";
+
+  async createDigitalProductUpload(
+    ownerUserId: string,
+    input: {
+      fileName: string;
+      contentType: string;
+      sizeBytes: number;
+      listingId?: string;
+      replacesAssetId?: string;
+    },
+    policy: DigitalMarketPolicy,
+  ) {
+    const fileName = safeDownloadName(String(input.fileName || ""));
+    const extension = extname(fileName).toLowerCase();
+    const contentType = String(input.contentType || "").toLowerCase();
+    const sizeBytes = Number(input.sizeBytes);
+    if (
+      !ownerUserId ||
+      !fileName ||
+      !policy.allowedFileExtensions.includes(extension) ||
+      !policy.allowedMimeTypes.includes(contentType) ||
+      !Number.isSafeInteger(sizeBytes) ||
+      sizeBytes <= 0 ||
+      sizeBytes > policy.maxFileSizeBytes
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Ce fichier ne respecte pas la politique des produits numériques.",
+      });
+    }
+    if (config.dataMode === "demo") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Utilisez le scénario de téléversement simulé en mode démonstration.",
+      });
+    }
+    const supabase = getSupabaseAdminClient();
+    const assetId = randomUUID();
+    const stagingPath = `${ownerUserId}/${assetId}${extension}`;
+    const { data: upload, error: uploadError } = await supabase.storage
+      .from(this.stagingDigitalProductBucket)
+      .createSignedUploadUrl(stagingPath, { upsert: false });
+    if (uploadError || !upload?.signedUrl) {
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible de préparer le téléversement privé.",
+        originalError: uploadError,
+      });
+    }
+    const { error: recordError } = await supabase.rpc(
+      "create_digital_asset_upload_record",
+      {
+        p_asset_id: assetId,
+        p_owner_user_id: ownerUserId,
+        p_market_code: policy.marketCode,
+        p_listing_id: input.listingId ?? null,
+        p_replaces_asset_id: input.replacesAssetId ?? null,
+        p_staging_path: stagingPath,
+        p_file_name: fileName,
+        p_extension: extension,
+        p_content_type: contentType,
+        p_size_bytes: sizeBytes,
+      },
+    );
+    if (recordError) {
+      await supabase.storage
+        .from(this.stagingDigitalProductBucket)
+        .remove([stagingPath]);
+      const policyRejection =
+        /DIGITAL_UPLOAD_(?:LIMIT_REACHED|POLICY_REJECTED)/.test(
+          recordError.message ?? "",
+        );
+      throw new AppError({
+        code: policyRejection ? "CONFLICT" : "INTERNAL_ERROR",
+        message: policyRejection
+          ? "La limite ou la politique de fichiers empêche ce téléversement."
+          : "Impossible d’enregistrer le fichier privé.",
+        originalError: recordError,
+      });
+    }
+    const { data: row, error } = await supabase
+      .from("digital_assets")
+      .select("*")
+      .eq("id", assetId)
+      .eq("owner_user_id", ownerUserId)
+      .single();
+    if (error || !row)
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible de relire le fichier privé.",
+        originalError: error,
+      });
+    return {
+      asset: this.digitalAssetProjection(row),
+      signedUploadUrl: upload.signedUrl,
+      expiresAt: new Date(Date.now() + 10 * 60_000).toISOString(),
+    };
+  }
+
+  async completeDigitalProductUpload(
+    ownerUserId: string,
+    assetId: string,
+    policy: DigitalMarketPolicy,
+  ): Promise<DigitalAssetProjection> {
+    if (config.dataMode === "demo") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Utilisez le scénario de contrôle simulé en mode démonstration.",
+      });
+    }
+    const { data, error } = await getSupabaseAdminClient().rpc(
+      "enqueue_digital_asset_scan",
+      {
+        p_owner_user_id: ownerUserId,
+        p_market_code: policy.marketCode,
+        p_asset_id: assetId,
+      },
+    );
+    const asset = data?.[0];
+    if (error || !asset)
+      throw new AppError({
+        code: error?.code === "P0002" ? "NOT_FOUND" : "CONFLICT",
+        message:
+          error?.code === "P0002"
+            ? "Téléversement numérique introuvable."
+            : "Ce fichier ne peut pas être traité dans son état actuel.",
+        originalError: error,
+      });
+    return this.digitalAssetProjection(asset);
+  }
+
+  async processDigitalProductAsset(
+    assetId: string,
+    marketCode: string,
+  ): Promise<DigitalAssetProjection> {
+    if (config.dataMode === "demo") {
+      throw new Error("DIGITAL_ASSET_SCAN_DEMO_UNSUPPORTED");
+    }
+    const supabase = getSupabaseAdminClient();
+    const { data: asset, error: assetError } = await supabase
+      .from("digital_assets")
+      .select("*")
+      .eq("id", assetId)
+      .eq("market_code", marketCode)
+      .single();
+    if (assetError || !asset) throw new Error("DIGITAL_ASSET_SCAN_NOT_FOUND");
+    if (asset.status === "READY") return this.digitalAssetProjection(asset);
+    if (
+      !new Set(["PROCESSING", "SCANNING", "QUARANTINED"]).has(asset.status) ||
+      !new Set(["PENDING", "SCANNING", "FAILED"]).has(asset.malware_scan_status)
+    ) {
+      throw new Error("DIGITAL_ASSET_SCAN_STATE_INVALID");
+    }
+    const { data: blob, error: downloadError } = await supabase.storage
+      .from(this.stagingDigitalProductBucket)
+      .download(asset.staging_path);
+    if (downloadError || !blob) throw new Error("DIGITAL_ASSET_BLOB_NOT_FOUND");
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const detectedType = detectedDigitalType(buffer);
+    if (
+      !detectedType ||
+      detectedType !== asset.declared_content_type ||
+      buffer.byteLength !== Number(asset.declared_size_bytes)
+    ) {
+      await supabase.storage
+        .from(this.stagingDigitalProductBucket)
+        .remove([asset.staging_path]);
+      const { data: rejected, error: rejectedError } = await supabase
+        .from("digital_assets")
+        .update({ status: "REJECTED", malware_scan_status: "FAILED" })
+        .eq("id", asset.id)
+        .select("*")
+        .single();
+      if (rejectedError || !rejected)
+        throw new Error("DIGITAL_ASSET_REJECTION_FAILED");
+      return this.digitalAssetProjection(rejected);
+    }
+    await supabase
+      .from("digital_assets")
+      .update({ status: "SCANNING", malware_scan_status: "SCANNING" })
+      .eq("id", asset.id);
+    let scan;
+    try {
+      scan = await malwareScanner.scan({
+        buffer,
+        contentType: detectedType,
+        fileName: asset.safe_file_name,
+      });
+    } catch (error) {
+      await supabase
+        .from("digital_assets")
+        .update({ status: "QUARANTINED", malware_scan_status: "FAILED" })
+        .eq("id", asset.id);
+      throw new Error("DIGITAL_ASSET_SCAN_RETRYABLE", { cause: error });
+    }
+    const digest = createHash("sha256").update(buffer).digest("hex");
+    if (scan.verdict === "malicious") {
+      await supabase.storage
+        .from(this.stagingDigitalProductBucket)
+        .remove([asset.staging_path]);
+      const { data: quarantined, error: quarantineError } = await supabase
+        .from("digital_assets")
+        .update({
+          status: "QUARANTINED",
+          malware_scan_status: "MALICIOUS",
+          malware_scan_provider: scan.provider,
+          malware_scan_signature: scan.signature ?? null,
+          malware_scanned_at: new Date().toISOString(),
+          sha256_digest: digest,
+        })
+        .eq("id", asset.id)
+        .select("*")
+        .single();
+      if (quarantineError || !quarantined)
+        throw new Error("DIGITAL_ASSET_QUARANTINE_FAILED");
+      return this.digitalAssetProjection(quarantined);
+    }
+    const privatePath = `${asset.owner_user_id}/${asset.id}${asset.declared_extension}`;
+    const { error: privateUploadError } = await supabase.storage
+      .from(this.privateDigitalProductBucket)
+      .upload(privatePath, buffer, {
+        contentType: "application/octet-stream",
+        cacheControl: "private, no-store",
+        upsert: true,
+      });
+    if (privateUploadError)
+      throw new Error("DIGITAL_ASSET_PRIVATE_COPY_FAILED");
+    const ready = asset.moderation_status === "NOT_REQUIRED";
+    const { data: updated, error: updateError } = await supabase
+      .from("digital_assets")
+      .update({
+        private_path: privatePath,
+        detected_content_type: detectedType,
+        actual_size_bytes: buffer.byteLength,
+        sha256_digest: digest,
+        malware_scan_status: "CLEAN",
+        malware_scan_provider: scan.provider,
+        malware_scan_signature: scan.signature ?? null,
+        malware_scanned_at: new Date().toISOString(),
+        status: ready ? "READY" : "PROCESSING",
+        ready_at: ready ? new Date().toISOString() : null,
+      })
+      .eq("id", asset.id)
+      .eq("owner_user_id", asset.owner_user_id)
+      .select("*")
+      .single();
+    if (updateError || !updated) {
+      await supabase.storage
+        .from(this.privateDigitalProductBucket)
+        .remove([privatePath]);
+      throw new Error("DIGITAL_ASSET_SCAN_PERSIST_FAILED", {
+        cause: updateError,
+      });
+    }
+    await supabase.storage
+      .from(this.stagingDigitalProductBucket)
+      .remove([asset.staging_path]);
+    return this.digitalAssetProjection(updated);
+  }
+
+  async createDigitalProductSignedUrl(
+    path: string,
+    safeFileName: string,
+    expiresInSeconds = 300,
+  ) {
+    const boundedExpiry = Math.min(300, Math.max(30, expiresInSeconds));
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.storage
+      .from(this.privateDigitalProductBucket)
+      .createSignedUrl(path, boundedExpiry, {
+        download: safeDownloadName(safeFileName),
+      });
+    if (error || !data?.signedUrl)
+      throw new AppError({
+        code: "INTERNAL_ERROR",
+        message: "Impossible de créer le téléchargement temporaire.",
+        originalError: error,
+      });
+    return {
+      signedUrl: data.signedUrl,
+      expiresAt: new Date(Date.now() + boundedExpiry * 1000).toISOString(),
+    };
+  }
+
+  private digitalAssetProjection(asset: {
+    id: string;
+    listing_id: string | null;
+    version: number;
+    safe_file_name: string;
+    declared_content_type: string;
+    declared_size_bytes: number;
+    actual_size_bytes: number | null;
+    status: DigitalAssetProjection["status"];
+    malware_scan_status: string;
+    created_at: string;
+    ready_at: string | null;
+  }): DigitalAssetProjection {
+    const scanStatus =
+      asset.malware_scan_status as DigitalAssetProjection["scanStatus"];
+    return {
+      id: asset.id,
+      listingId: asset.listing_id,
+      version: asset.version,
+      safeFileName: asset.safe_file_name,
+      contentType: asset.declared_content_type,
+      sizeBytes: Number(asset.actual_size_bytes ?? asset.declared_size_bytes),
+      status: asset.status,
+      scanStatus,
+      createdAt: asset.created_at,
+      readyAt: asset.ready_at,
+    };
+  }
 
   async assertOwnedPrivateDocumentKeys(
     ownerUserId: string,

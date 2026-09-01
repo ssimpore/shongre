@@ -18,6 +18,7 @@ import type {
   SubscriptionChangePreview,
   SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
+import type { MarketContext } from "@shongre/contracts";
 import type {
   BusinessRulesServiceContract,
   ComplimentaryGrantDecisionInput,
@@ -29,88 +30,126 @@ import type {
 import { httpClient } from "./http-client";
 
 export class HttpBusinessRulesService implements BusinessRulesServiceContract {
-  getCatalog(marketCode: string) {
+  private marketHeaders(marketContext: MarketContext) {
+    if (!marketContext.countryCode) {
+      throw new Error("Un contexte marché explicite est requis.");
+    }
+    return { "X-Shongre-Market": marketContext.countryCode };
+  }
+
+  getCatalog(marketContext: MarketContext) {
     return httpClient.get<MonetizationCatalog>("/business-rules/catalog", {
-      params: { marketCode },
+      headers: this.marketHeaders(marketContext),
+      params: { marketCode: marketContext.countryCode ?? undefined },
     });
   }
 
-  getProfessionalCatalogPresentation(marketCode: string) {
+  getProfessionalCatalogPresentation(marketContext: MarketContext) {
     return httpClient.get<ProfessionalCatalogPresentation>(
       "/monetization/professional-plans",
-      { params: { marketCode } },
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  evaluate(context: RuleEvaluationContext) {
+  evaluate(marketContext: MarketContext, context: RuleEvaluationContext) {
     return httpClient.post<RuleEvaluationResult>(
       "/admin/business-rules/simulate",
       context,
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  createQuote(request: QuoteRequest) {
-    return httpClient.post<MonetizationQuote>("/monetization/quotes", request);
-  }
-
-  createCheckout(quoteId: string, idempotencyKey: string) {
-    return httpClient.post<MonetizationOrder>("/monetization/checkouts", {
-      quoteId,
-      idempotencyKey,
+  createQuote(marketContext: MarketContext, request: QuoteRequest) {
+    return httpClient.post<MonetizationQuote>("/monetization/quotes", request, {
+      headers: this.marketHeaders(marketContext),
     });
   }
 
-  validatePromotion(request: PromotionValidationRequest) {
+  createCheckout(
+    marketContext: MarketContext,
+    quoteId: string,
+    idempotencyKey: string,
+  ) {
+    return httpClient.post<MonetizationOrder>(
+      "/monetization/checkouts",
+      { quoteId, idempotencyKey },
+      { headers: this.marketHeaders(marketContext) },
+    );
+  }
+
+  validatePromotion(
+    marketContext: MarketContext,
+    request: PromotionValidationRequest,
+  ) {
     return httpClient.post<PromotionValidationResult>(
       "/monetization/promotions/validate",
       request,
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  getActiveEntitlements() {
-    return httpClient.get<ActiveEntitlement[]>("/monetization/entitlements");
+  getActiveEntitlements(marketContext: MarketContext) {
+    return httpClient.get<ActiveEntitlement[]>("/monetization/entitlements", {
+      headers: this.marketHeaders(marketContext),
+    });
   }
 
-  getSubscriptions() {
+  getSubscriptions(marketContext: MarketContext) {
     return httpClient.get<MonetizationSubscription[]>(
       "/monetization/subscriptions",
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  getBillingOverview() {
-    return httpClient.get<BillingOverview>("/monetization/billing");
+  getBillingOverview(marketContext: MarketContext) {
+    return httpClient.get<BillingOverview>("/monetization/billing", {
+      headers: this.marketHeaders(marketContext),
+    });
   }
 
-  getInvoiceDocument(invoiceId: string) {
+  getInvoiceDocument(marketContext: MarketContext, invoiceId: string) {
     return httpClient.get<InvoiceDocument>(
       `/monetization/invoices/${encodeURIComponent(invoiceId)}/document`,
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  previewSubscriptionChange(request: SubscriptionChangeRequest) {
+  previewSubscriptionChange(
+    marketContext: MarketContext,
+    request: SubscriptionChangeRequest,
+  ) {
     return httpClient.post<SubscriptionChangePreview>(
       `/monetization/subscriptions/${encodeURIComponent(request.subscriptionId)}/change-preview`,
       request,
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  applySubscriptionChange(request: SubscriptionChangeRequest) {
+  applySubscriptionChange(
+    marketContext: MarketContext,
+    request: SubscriptionChangeRequest,
+  ) {
     return httpClient.post<MonetizationSubscription>(
       `/monetization/subscriptions/${encodeURIComponent(request.subscriptionId)}/change`,
       request,
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  updateSubscriptionCancellation(request: SubscriptionCancellationRequest) {
+  updateSubscriptionCancellation(
+    marketContext: MarketContext,
+    request: SubscriptionCancellationRequest,
+  ) {
     return httpClient.patch<MonetizationSubscription>(
       `/monetization/subscriptions/${encodeURIComponent(request.subscriptionId)}`,
       { cancelAtPeriodEnd: request.cancelAtPeriodEnd },
+      { headers: this.marketHeaders(marketContext) },
     );
   }
 
-  getAdminOverview(marketCode: string) {
+  getAdminOverview(marketContext: MarketContext) {
     return httpClient.get<MonetizationAdminOverview>("/admin/business-rules", {
-      params: { marketCode },
+      headers: this.marketHeaders(marketContext),
     });
   }
 

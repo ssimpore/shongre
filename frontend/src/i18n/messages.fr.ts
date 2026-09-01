@@ -1,3 +1,5 @@
+import type { DigitalMessageKey } from "./digital.catalogue.fr";
+
 /**
  * The source catalogue. Every key the product uses is declared here first, and
  * `MessageKey` is derived from it — so a typo in a `t()` call is a type error
@@ -93,6 +95,113 @@ export const messagesFr = {
     "Les comptes Staff peuvent parcourir la marketplace, mais ne peuvent pas effectuer cette action. Aucune opération n’a été lancée.",
   "solutions.header.chooseSolution": "Choisir une solution Shongre",
   "solutions.header.seeAll": "Voir toutes les solutions",
+  "solutions.header.homeLabel": "Accueil Shongre Solutions",
+  "solutions.header.navigationLabel": "Navigation Solutions",
+  "solutions.header.solutions": "Solutions",
+  "solutions.header.ecosystem": "Écosystème",
+  "solutions.header.platform": "Plateforme Shongre",
+  "solutions.header.account": "Mon compte",
+  "solutions.header.accountShort": "Compte",
+  "solutions.header.signIn": "Se connecter",
+  "solutions.header.discover": "Découvrir les solutions",
+  "solutions.header.openMenu": "Ouvrir le menu",
+  "solutions.header.closeMenu": "Fermer le menu",
+  "solutions.footer.informationLabel": "Informations Solutions",
+  "solutions.footer.about": "À propos",
+  "solutions.footer.documentation": "Documentation",
+  "solutions.footer.security": "Sécurité",
+  "solutions.footer.cookies": "Gestion des cookies",
+  "solutions.catalog.metaTitle":
+    "Shongre Solutions — Toutes vos applications professionnelles",
+  "solutions.catalog.metaDescription":
+    "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.",
+  "solutions.catalog.heroTitle": "Les outils Shongre, réunis au même endroit.",
+  "solutions.catalog.heroDescription":
+    "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail sans multiplier les comptes.",
+  "solutions.catalog.count_one": "{count} solution",
+  "solutions.catalog.count_other": "{count} solutions",
+  "solutions.catalog.marketLabel": "Marché du catalogue",
+  "solutions.catalog.title": "Catalogue des solutions Shongre",
+  "solutions.catalog.loading": "Chargement du catalogue",
+  "solutions.catalog.errorTitle": "Catalogue indisponible",
+  "solutions.catalog.errorDescription": "Le catalogue n’a pas pu être chargé.",
+  "solutions.catalog.emptyTitle": "Aucune solution pour ce marché",
+  "solutions.catalog.emptyDescription":
+    "Le catalogue s’enrichit progressivement selon les pays et les langues disponibles.",
+  "solutions.catalog.learnMore": "En savoir plus",
+  "solutions.catalog.ecosystemTitle":
+    "Un compte. Une organisation. Plusieurs solutions.",
+  "solutions.catalog.securityTitle": "Sécurité et contrôle",
+  "solutions.catalog.securityDescription":
+    "Vos données sont protégées et vos accès maîtrisés.",
+  "solutions.catalog.collaborationTitle": "Travail collaboratif",
+  "solutions.catalog.collaborationDescription":
+    "Invitez vos équipes et partagez les espaces de travail.",
+  "solutions.catalog.evolutionTitle": "Des solutions qui évoluent",
+  "solutions.catalog.evolutionDescription":
+    "De nouvelles fonctionnalités rejoignent le même socle Shongre.",
+  "solutions.detail.metaMissingTitle": "Solution introuvable — Shongre",
+  "solutions.detail.metaTitle": "{name} — Shongre Solutions",
+  "solutions.detail.metaMissingDescription":
+    "Cette solution Shongre n’est pas disponible.",
+  "solutions.detail.unavailableTitle": "Solution indisponible",
+  "solutions.detail.loadError": "Le chargement de la solution a échoué.",
+  "solutions.detail.notFoundTitle": "Solution introuvable",
+  "solutions.detail.notFoundDescription":
+    "Cette adresse ne correspond à aucune solution publique du catalogue.",
+  "solutions.detail.backToAll": "Toutes les solutions",
+  "solutions.detail.availableIn": "Disponible en {markets}",
+  "solutions.detail.capabilitiesTitle": "Ce que vous pouvez faire",
+  "solutions.detail.accessTitle": "Accès et disponibilité",
+  "solutions.detail.audience": "Audience",
+  "solutions.detail.markets": "Marchés",
+  "solutions.detail.languages": "Langues",
+  "solutions.detail.access": "Accès",
+  "solutions.detail.publicAccess": "Accès public",
+  "solutions.detail.informationLabel": "Information : {status}",
+  "solutions.detail.betaTitle": "Version bêta",
+  "solutions.detail.latestUpdate": "Dernière mise à jour — {date}",
+  "solutions.detail.releaseNotes": "Consulter les notes de version",
+  "solutions.lifecycle.draft.label": "Brouillon",
+  "solutions.lifecycle.draft.description":
+    "Visible uniquement dans la console.",
+  "solutions.lifecycle.internal.label": "Interne",
+  "solutions.lifecycle.internal.description": "Réservée aux équipes Shongre.",
+  "solutions.lifecycle.comingSoon.label": "À venir",
+  "solutions.lifecycle.comingSoon.description":
+    "Présentation publique sans lancement.",
+  "solutions.lifecycle.beta.label": "Bêta",
+  "solutions.lifecycle.beta.description":
+    "Accessible avec un périmètre de disponibilité explicite.",
+  "solutions.lifecycle.available.label": "Disponible",
+  "solutions.lifecycle.available.description": "La solution peut être lancée.",
+  "solutions.lifecycle.maintenance.label": "Maintenance",
+  "solutions.lifecycle.maintenance.description":
+    "Visible, temporairement non lançable.",
+  "solutions.lifecycle.deprecated.label": "En fin de vie",
+  "solutions.lifecycle.deprecated.description":
+    "Accessible avec une orientation de migration.",
+  "solutions.lifecycle.retired.label": "Retirée",
+  "solutions.lifecycle.retired.description":
+    "Masquée du catalogue public et conservée en historique.",
+  "solutions.launch.retired": "Solution retirée",
+  "solutions.launch.restricted": "Accès restreint",
+  "solutions.launch.notify": "Être informé",
+  "solutions.launch.comingSoonMessage":
+    "Cette solution sera disponible prochainement.",
+  "solutions.launch.maintenance": "Maintenance en cours",
+  "solutions.launch.maintenanceMessage":
+    "Cette solution est momentanément indisponible.",
+  "solutions.launch.marketUnavailable": "Indisponible dans ce marché",
+  "solutions.launch.signIn": "Se connecter pour continuer",
+  "solutions.launch.activate": "Activer cette solution",
+  "solutions.launch.destinationUnavailable": "Destination indisponible",
+  "solutions.launch.openProspects": "Ouvrir Prospects",
+  "solutions.launch.openFacturation": "Découvrir Facturation",
+  "solutions.launch.openMarketplace": "Ouvrir la Marketplace",
+  "solutions.launch.openSolution": "Ouvrir la solution",
+  "solutions.launch.deprecatedMessage":
+    "Une solution de remplacement est recommandée.",
   "admin.solutions.order.title": "Ordre et visibilité",
   "admin.solutions.order.description":
     "Activez les solutions à présenter, puis utilisez les flèches pour définir l’ordre du catalogue public et du sélecteur Solutions. Le cycle de vie continue de contrôler la publication.",
@@ -108,6 +217,8 @@ export const messagesFr = {
   "admin.solutions.visibility.saved": "Visibilité du catalogue mise à jour.",
   "admin.solutions.visibility.error":
     "Impossible de modifier la visibilité du catalogue.",
+  "admin.solutions.transitionConfirmTitle": "Passer à « {lifecycle} » ?",
+  "admin.solutions.created": "Création",
   "nav.categoryNavigation": "Navigation par catégorie",
   "nav.category.active": "Catégorie active",
   "nav.category.immobilier": "Immobilier",
@@ -279,17 +390,28 @@ export const messagesFr = {
   "shell.preferencesModal.langueDeLInterface": "Langue de l'interface",
 
   // --- shell.marketDetection ---
-  "shell.marketDetection.recommendationTitle": "Pays suggéré : {country}",
+  "shell.marketDetection.recommendationTitle":
+    "Vous semblez être en {country}. Accéder à Shongre {country} ?",
   "shell.marketDetection.recommendationBody":
     "Cette suggestion est une estimation et ne change rien sans votre confirmation.",
   "shell.marketDetection.lowConfidence":
     "Le signal peut être imprécis, notamment avec un VPN ou un proxy.",
   "shell.marketDetection.viewCountry": "Continuer vers {country}",
+  "shell.marketDetection.chooseAnother": "Choisir un autre pays",
   "shell.marketDetection.ignore": "Ignorer",
+  "shell.marketDetection.unknownTitle":
+    "Nous n’avons pas pu estimer votre pays",
+  "shell.marketDetection.failureTitle":
+    "La suggestion de pays est momentanément indisponible",
+  "shell.marketDetection.selectCountryBody":
+    "La navigation publique reste disponible. Choisissez votre pays ou réessayez.",
+  "shell.marketDetection.chooseCountry": "Choisir mon pays",
   "shell.marketDetection.confirmTitle": "Changer de pays ?",
   "shell.marketDetection.confirmCrossDomain":
     "Vous allez quitter ce domaine pour ouvrir le marché {country}. Le chemin courant et les paramètres de recherche sûrs seront conservés lorsque cette page existe dans ce marché.",
   "shell.marketDetection.confirmAction": "Ouvrir {country}",
+  "shell.marketDetection.handoffFailed":
+    "Le transfert sécurisé de votre session n’a pas abouti. Réessayez sans quitter cette page.",
   "shell.marketDetection.gatewayChooseCountry": "Choisissez votre pays",
   "shell.marketDetection.gatewaySuggestedCountry": "Pays suggéré : {country}",
   "shell.marketDetection.gatewayEstimate":
@@ -374,12 +496,16 @@ export const messagesFr = {
     "Recherches les plus populaires",
 
   // --- ui.sellerCard ---
+  "ui.sellerCard.pro": "Pro",
   "ui.sellerCard.verifie": "Vérifié",
   "ui.sellerCard.visiterLaBoutiqueOfficielleCatalogue":
     "Visiter la boutique officielle & catalogue",
   "ui.sellerCard.visiterLaBoutique": "Visiter la boutique",
   "ui.sellerCard.voirLeProfilAnnonces": "Voir le profil & annonces",
   "ui.sellerCard.voirLeProfil": "Voir le profil",
+  "ui.sellerIdentity.openIndividual": "Voir le profil de {name}",
+  "ui.sellerIdentity.openProfessional": "Visiter la boutique de {name}",
+  "ui.sellerIdentity.avatar": "Avatar de {name}",
 
   // --- auth.forgotPasswordPage ---
   "auth.forgotPasswordPage.votreEmailExempleFr": "votre.email@exemple.fr",
@@ -2889,8 +3015,7 @@ export const messagesFr = {
   "listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu":
     "Protection Acheteur incluse, calculée au paiement",
   "listings.listingDetailPage.modifierMonAnnonce": "Modifier mon annonce",
-  "listings.listingDetailPage.gererMesAnnoncesStats":
-    "Gérer mes annonces",
+  "listings.listingDetailPage.gererMesAnnoncesStats": "Gérer mes annonces",
   "listings.listingDetailPage.reserverLArticle": "Réserver l'article",
   "listings.listingDetailPage.offreDePrix": "Offre de prix",
   "listings.listingDetailPage.offreDePrixCourt": "Offre",
@@ -4024,6 +4149,7 @@ export const messagesFr = {
     "Les placements payants sont identifiés et n’empêchent jamais l’accès aux offres gratuites.",
   "employment.search.filters": "Affiner les offres",
   "employment.search.results": "Résultats d’emploi",
+  "employment.search.recentlyViewed": "Offres consultées récemment",
   "employment.search.createAlert": "Créer une alerte gratuite",
   "employment.search.empty": "Aucune offre ne correspond à ces filtres",
   "employment.workspace.candidateTitle": "Mon espace candidat",
@@ -4119,6 +4245,8 @@ export const messagesFr = {
   "admin.monetization.transitionReason": "Motif de la transition",
   "admin.monetization.transitionReasonDefault":
     "Validation du catalogue commercial",
+  "monetization.marketRequired":
+    "Sélectionnez un pays avant d’accéder aux offres payantes.",
   "admin.monetization.governanceTab": "Gouvernance",
   "admin.monetization.governanceTitle": "Migration, coûts et synchronisation",
   "admin.monetization.governanceDescription":
@@ -4332,6 +4460,8 @@ export const messagesFr = {
   "admin.immo.marketsTableLabel": "Tableau des marchés immobiliers",
   "admin.immo.visibilityOptionsTableLabel": "Tableau des options de visibilité",
   "admin.immo.listingsTableLabel": "Tableau des annonces immobilières",
+  "immo.propertyDetail.individualAdvertiser": "Particulier",
+  "immo.propertyDetail.professionalAdvertiser": "Professionnel",
 
   "admin.solutions.catalogTableLabel": "Tableau du catalogue de solutions",
   "admin.monetization.firstTableLabel": "Tableau des grilles de commission",
@@ -5425,10 +5555,16 @@ export const messagesFr = {
     "sous-catégories / types enfants seront déplacés.",
   "admin.moveNodeModal.annoncesActivesConserverontLeurLiaisonDIdStableSansRupture":
     "annonces actives conserveront leur liaison d'ID stable sans rupture.",
+
+  // --- digital products shared by the application shell ------------------
+  "digital.common.title": "Produits numériques",
+  "digital.nav.purchases": "Achats numériques",
+  "digital.nav.seller": "Vente numérique",
+  "digital.nav.admin": "Produits numériques",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */
-export type CatalogueKey = keyof typeof messagesFr;
+export type CatalogueKey = keyof typeof messagesFr | DigitalMessageKey;
 
 /**
  * The base key of a countable message.

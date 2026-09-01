@@ -73,11 +73,17 @@ export class DemoOrdersService implements OrdersServiceContract {
     requireDemoCapability("order.create");
     const listing = await listingRepository.getListingById(input.listingId);
     if (!listing) throw new Error("Annonce introuvable");
+    const deliveryOption = listing.deliveryOptions.find(
+      (option) => option.type === input.deliveryMethod && option.available,
+    );
+    if (!deliveryOption) {
+      throw new Error("Ce mode de remise n’est pas disponible.");
+    }
 
     const pricing = transactionService.calculateOrderPricingSnapshot(
       listing.price,
       1,
-      4.99,
+      deliveryOption.price || 0,
       listing.sellerType,
       listing.marketCodes?.[0] || DEFAULT_MARKET_CODE,
     );

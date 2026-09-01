@@ -116,7 +116,7 @@ const StoreBadge: React.FC<{
       </span>
     </>
   );
-  const className = `${EXTERNAL_CONTROL} h-control-touch min-w-0 gap-2 rounded-control border px-2.5 sm:min-w-36 sm:px-3.5 ${
+  const className = `${EXTERNAL_CONTROL} h-control-touch min-w-0 gap-1 overflow-hidden rounded-control border px-1.5 sm:min-w-36 sm:gap-2 sm:px-3.5 ${
     url
       ? "border-stone-700 bg-stone-950 text-white hover:border-stone-500 hover:bg-stone-900"
       : "border-stone-800 bg-stone-950/60 text-stone-400"
@@ -370,7 +370,11 @@ export const Footer: React.FC = () => {
                   {t("footer.appPitch")}
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              {/* A single mobile column gives each store badge enough inline
+                  space when text is enlarged to 200%. Two rem-scaled icons,
+                  gaps and labels otherwise outgrow the narrow footer card even
+                  though the unzoomed two-column layout fits. */}
+              <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                 {MOBILE_STORE_LINKS.map((store) => {
                   const isAvailable = Boolean(store.url);
                   return (

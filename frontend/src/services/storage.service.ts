@@ -29,7 +29,6 @@ import { telemetryService } from "./telemetry.service";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 import { getCountryConfig } from "@shongre/contracts";
 import { staffRoleFromLegacyRole } from "@shongre/contracts/access-control";
-import { MANUAL_MARKET_SELECTION_KEY } from "../domains/market/market-selection.preference";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
@@ -62,7 +61,6 @@ const KEYS = {
   PUBLISH_DRAFT: "shongre_publish_draft_v1",
   MARKETS: MARKETS_STORAGE_KEY,
   ACTIVE_MARKET: "shongre_active_market_v1",
-  MANUAL_MARKET_SELECTION: MANUAL_MARKET_SELECTION_KEY,
   USER_LOCALE: "shongre_user_locale_v1",
   USER_CURRENCY: "shongre_user_currency_v1",
 };
@@ -845,21 +843,6 @@ class StorageService {
 
   saveActiveMarketCode(code: string): void {
     this.set(KEYS.ACTIVE_MARKET, (code || DEFAULT_MARKET_CODE).toUpperCase());
-  }
-
-  getManualMarketSelection(): string | null {
-    const code = this.get<string | null>(KEYS.MANUAL_MARKET_SELECTION, null);
-    return code && getCountryConfig(code) ? code.toUpperCase() : null;
-  }
-
-  saveManualMarketSelection(code: string): void {
-    const country = getCountryConfig(code);
-    if (!country) return;
-    this.set(KEYS.MANUAL_MARKET_SELECTION, country.code);
-  }
-
-  clearManualMarketSelection(): void {
-    this.remove(KEYS.MANUAL_MARKET_SELECTION);
   }
 
   // User Local Preferences

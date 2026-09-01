@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { CUSTOMER_MARKETPLACE_CAPABILITIES } from "@shongre/contracts/access-control";
+import { resolveMarketContext } from "@shongre/contracts";
 import { storageService } from "../../../services/storage.service";
 import { authorizationService } from "../../../security/authorization.service";
 import { DEMO_USERS } from "../../../mocks/initialDemoData";
@@ -23,6 +24,16 @@ import { demoSupportService } from "./demo-support.service";
 import { demoMarketingService } from "./demo-marketing.service";
 import { demoBusinessRulesService } from "./demo-business-rules.service";
 import { auditService } from "../../../security/audit.service";
+
+const france = resolveMarketContext({
+  hostname: "shongre.fr",
+  pathname: "/",
+  infrastructure: {
+    franceDomain: "shongre.fr",
+    globalDomain: "shongre.com",
+    canonicalProtocol: "https",
+  },
+});
 
 const ACTIVE_STAFF_PERSONAS = [
   "support_hugo",
@@ -111,19 +122,19 @@ describe("demo Staff/customer marketplace separation", () => {
       demoOrdersService.getPurchases("user_super_admin_alex"),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
-      demoPaymentsService.createCheckout("quote", "staff-checkout"),
+      demoPaymentsService.createCheckout(france, "quote", "staff-checkout"),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
-      demoPromotionsService.getAvailableBoosts("listing-demo"),
+      demoPromotionsService.getAvailableBoosts(france, "listing-demo"),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
-      demoPromotionsService.getProSubscriptionPlans(),
+      demoPromotionsService.getProSubscriptionPlans(france),
     ).resolves.toEqual(expect.any(Array));
     await expect(
-      demoBusinessRulesService.getCatalog("FR"),
+      demoBusinessRulesService.getCatalog(france),
     ).resolves.toMatchObject({ marketCode: "FR", products: expect.any(Array) });
     await expect(
-      demoBusinessRulesService.getBillingOverview(),
+      demoBusinessRulesService.getBillingOverview(france),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
       demoFinanceService.getAccountDashboard(),
@@ -191,7 +202,7 @@ describe("demo Staff/customer marketplace separation", () => {
       demoListingsService.createListingDraft("user_ops_elena"),
     ).resolves.toMatchObject({ marketCode: "FR", currentStep: 1 });
     await expect(
-      demoPromotionsService.getAvailableBoosts("listing-demo"),
+      demoPromotionsService.getAvailableBoosts(france, "listing-demo"),
     ).resolves.toEqual(expect.any(Array));
     await expect(
       demoMarketingService.subscribePublic({

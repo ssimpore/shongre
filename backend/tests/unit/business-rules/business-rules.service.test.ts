@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import type { MonetizationCatalog } from "@shongre/contracts/monetization";
 import { DemoBusinessRulesRepository } from "../../../src/infrastructure/database/repositories/business-rules.repository.js";
 import { BusinessRulesService } from "../../../src/modules/business-rules/business-rules.service.js";
 
@@ -251,6 +252,41 @@ describe("BusinessRulesService quotes", () => {
     const first = await service.createQuote("individual_quote_test", request);
     const second = await service.createQuote("individual_quote_test", request);
     expect(second).toEqual(first);
+  });
+
+  it("partitions quote idempotency by market without leaking an earlier result", async () => {
+    class TwoMarketRepository extends DemoBusinessRulesRepository {
+      override async getActiveCatalog(marketCode: string) {
+        const catalog = structuredClone(
+          await super.getActiveCatalog("FR"),
+        )! as MonetizationCatalog;
+        if (marketCode === "FR") return catalog;
+        if (marketCode !== "BE") return null;
+        catalog.marketCode = "BE";
+        catalog.products = catalog.products.map((product) => ({
+          ...product,
+          scope: { ...product.scope, marketCodes: ["BE"] },
+        }));
+        return catalog;
+      }
+    }
+    const service = new BusinessRulesService(new TwoMarketRepository());
+    const accountId = "individual_cross_market_idempotency";
+    const idempotencyKey = "same-client-key-two-markets-0001";
+    const france = await service.createQuote(accountId, {
+      productIds: ["premium.search_bump"],
+      marketCode: "FR",
+      idempotencyKey,
+    });
+    const belgium = await service.createQuote(accountId, {
+      productIds: ["premium.search_bump"],
+      marketCode: "BE",
+      idempotencyKey,
+    });
+
+    expect(france.marketCode).toBe("FR");
+    expect(belgium.marketCode).toBe("BE");
+    expect(belgium.id).not.toBe(france.id);
   });
 
   it("rejects a configured paid product whose fulfillment is suspended", async () => {

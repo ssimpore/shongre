@@ -69,24 +69,48 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
   reviewCount,
   size = "sm",
   className,
-}) => (
-  <div
-    className={cn("inline-flex items-center gap-1 text-stone-800", className)}
-  >
-    <Star
-      aria-hidden="true"
-      className={cn(
-        size === "sm" ? "h-icon-sm w-icon-sm" : "h-icon-md w-icon-md",
-        "fill-amber-400 text-amber-400",
-      )}
-    />
-    <span className={cn(size === "sm" ? "text-xs" : "text-sm", "font-bold")}>
-      {rating.toFixed(1)}
-    </span>
-    {reviewCount !== undefined && (
-      <span className="text-xs font-normal text-text-muted">
-        ({reviewCount})
+}) => {
+  const { currentLocale } = useMarketLocation();
+  const { t } = useTranslation();
+  const formattedRating = new Intl.NumberFormat(currentLocale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(rating);
+
+  return (
+    <div
+      role="img"
+      aria-label={
+        reviewCount === undefined
+          ? formattedRating
+          : t("ui.listingCard.noteAvis", {
+              rating: formattedRating,
+              count: reviewCount,
+            })
+      }
+      className={cn("inline-flex items-center gap-1 text-stone-800", className)}
+    >
+      <Star
+        aria-hidden="true"
+        className={cn(
+          size === "sm" ? "h-icon-sm w-icon-sm" : "h-icon-md w-icon-md",
+          "fill-amber-400 text-amber-400",
+        )}
+      />
+      <span
+        aria-hidden="true"
+        className={cn(size === "sm" ? "text-xs" : "text-sm", "font-bold")}
+      >
+        {formattedRating}
       </span>
-    )}
-  </div>
-);
+      {reviewCount !== undefined && (
+        <span
+          aria-hidden="true"
+          className="text-xs font-normal text-text-muted"
+        >
+          ({t("common.reviewCount", { count: reviewCount })})
+        </span>
+      )}
+    </div>
+  );
+};

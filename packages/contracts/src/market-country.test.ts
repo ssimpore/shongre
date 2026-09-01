@@ -61,7 +61,8 @@ describe("canonical Shongre country routing", () => {
 
   it.each(
     COUNTRY_REGISTRY.filter(
-      (country) => publicMarketExperience(country) !== "active",
+      (country) =>
+        country.gatewayVisible && publicMarketExperience(country) !== "active",
     ),
   )("keeps non-active market $code fail closed", (country) => {
     expect(country.marketplace.enabled).toBe(false);
@@ -252,7 +253,11 @@ describe("canonical Shongre country routing", () => {
     },
   );
 
-  it.each(COUNTRY_REGISTRY.filter((country) => country.detection.enabled))(
+  it.each(
+    COUNTRY_REGISTRY.filter(
+      (country) => country.detection.enabled && country.gatewayVisible,
+    ),
+  )(
     "resolves configured coordinates for $code without country-specific logic",
     (country) => {
       const bounds = country.detection.coordinateBounds[0];
@@ -264,6 +269,49 @@ describe("canonical Shongre country routing", () => {
       expect(result.source).toBe("coordinates");
     },
   );
+
+  it("does not expose hidden or disabled registry entries as recommendations", () => {
+    const visible = COUNTRY_REGISTRY.find(
+      (country) => !country.isDefault && country.gatewayVisible,
+    )!;
+    const hiddenRegistry = COUNTRY_REGISTRY.map((country) =>
+      country.code === visible.code
+        ? { ...country, gatewayVisible: false }
+        : country,
+    );
+    expect(
+      resolveCountryRecommendation({
+        countryCode: visible.code,
+        source: "ip",
+        registry: hiddenRegistry,
+      }),
+    ).toMatchObject({
+      status: "unknown",
+      country: null,
+      experience: "global_gateway",
+    });
+
+    const inactive = COUNTRY_REGISTRY.find(
+      (country) => country.launchStatus === "coming_soon",
+    )!;
+    const disabledRegistry = COUNTRY_REGISTRY.map((country) =>
+      country.code === inactive.code
+        ? {
+            ...country,
+            enabled: false,
+            launchStatus: "disabled" as const,
+            gatewayVisible: false,
+          }
+        : country,
+    );
+    expect(
+      resolveCountryRecommendation({
+        countryCode: inactive.code,
+        source: "ip",
+        registry: disabledRegistry,
+      }).country,
+    ).toBeNull();
+  });
 
   it("rejects activation when any readiness dimension is incomplete", () => {
     const active = COUNTRY_REGISTRY.find(

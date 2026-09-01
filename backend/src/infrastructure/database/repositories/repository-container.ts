@@ -111,6 +111,11 @@ import {
   PostgresFeatureFlagRepository,
 } from "./feature-flag.repository.js";
 import {
+  ISolutionsRepository,
+  DemoSolutionsRepository,
+  PostgresSolutionsRepository,
+} from "./solutions.repository.js";
+import {
   IModerationRepository,
   DemoModerationRepository,
   PostgresModerationRepository,
@@ -159,6 +164,7 @@ export interface RepositoryContainer {
   discoveryConfiguration: IDiscoveryConfigurationRepository;
   support: ISupportRepository;
   featureFlags: IFeatureFlagRepository;
+  solutions: ISolutionsRepository;
   moderation: IModerationRepository;
   crm: ICrmRepository;
   crmShongre: ICrmShongreIntegrationRepository;
@@ -198,6 +204,7 @@ export function createRepositoryContainer(
       discoveryConfiguration: new PostgresDiscoveryConfigurationRepository(),
       support: new PostgresSupportRepository(),
       featureFlags: new PostgresFeatureFlagRepository(),
+      solutions: new PostgresSolutionsRepository(),
       moderation: new PostgresModerationRepository(),
       crm: new PostgresCrmRepository(),
       crmShongre: new PostgresCrmShongreIntegrationRepository(),
@@ -230,6 +237,7 @@ export function createRepositoryContainer(
     discoveryConfiguration: new DemoDiscoveryConfigurationRepository(),
     support: new DemoSupportRepository(),
     featureFlags: new DemoFeatureFlagRepository(),
+    solutions: new DemoSolutionsRepository(),
     moderation: new DemoModerationRepository(),
     crm: new DemoCrmRepository(),
     crmShongre: new DemoCrmShongreIntegrationRepository(),

@@ -140,14 +140,22 @@ export default function ListingDetailScreen() {
           {listing.isFeatured ? (
             <Text style={styles.featured}>À la une · sponsorisé</Text>
           ) : null}
+          {listing.requiresPhysicalDelivery === false ? (
+            <Text style={styles.digital}>Produit numérique</Text>
+          ) : null}
         </View>
         <Text accessibilityRole="header" style={styles.heading}>
           {listing.title}
         </Text>
         <Text style={styles.price}>{formatMoney(listing.price)}</Text>
         <Text style={styles.muted}>
-          {listing.conditionLabel} · {listing.city}
+          {listing.requiresPhysicalDelivery === false
+            ? `${listing.conditionLabel} · Aucune livraison physique`
+            : `${listing.conditionLabel} · ${listing.city}`}
         </Text>
+        {listing.productVersion ? (
+          <Text style={styles.muted}>Version {listing.productVersion}</Text>
+        ) : null}
       </View>
       {listing.seller ? (
         <View style={styles.seller}>
@@ -200,6 +208,10 @@ const styles = StyleSheet.create({
   },
   featured: {
     color: colors.warning,
+    fontFamily: nativeTypography.fontFamily.bold,
+  },
+  digital: {
+    color: colors.primary,
     fontFamily: nativeTypography.fontFamily.bold,
   },
   heading: {

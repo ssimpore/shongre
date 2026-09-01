@@ -29,6 +29,7 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
 import {
   Badge,
   Button,
@@ -222,6 +223,12 @@ export const EmploymentJobDetailPage: React.FC = () => {
     }
   };
 
+  const employerPublicUrl = routes.seller.publicPage({
+    id: job.employer.id,
+    slug: job.employer.slug,
+    isProfessional: Boolean(job.employer.organizationId),
+  });
+
   return (
     <div className="min-h-screen bg-bg-base">
       <Container className="py-5 sm:py-8">
@@ -260,7 +267,12 @@ export const EmploymentJobDetailPage: React.FC = () => {
                       className="h-icon-sm w-icon-sm"
                       aria-hidden="true"
                     />
-                    {job.employer.name}
+                    <Link
+                      to={employerPublicUrl}
+                      className="rounded-control transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >
+                      {job.employer.name}
+                    </Link>
                     {job.employer.isPubliclyVerified ? (
                       <span className="inline-flex items-center gap-1 text-success">
                         <BadgeCheck
@@ -428,7 +440,13 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-7">
               <h2 className="text-lg font-black">
-                À propos de {job.employer.name}
+                À propos de{" "}
+                <Link
+                  to={employerPublicUrl}
+                  className="rounded-control transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  {job.employer.name}
+                </Link>
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                 {job.employerDescription || job.employer.description}

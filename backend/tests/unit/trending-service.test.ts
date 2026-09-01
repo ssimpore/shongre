@@ -17,7 +17,7 @@ describe("TrendingService", () => {
     });
   });
 
-  it("serves the active listing as a topic and honors hidden overrides", async () => {
+  it("serves active physical and digital listings and honors hidden overrides", async () => {
     const trendingRepository = new DemoTrendingRepository();
     const service = new TrendingService(
       trendingRepository,
@@ -26,8 +26,15 @@ describe("TrendingService", () => {
 
     const visible = await service.getSection({ marketCode: "FR" });
     expect(visible.enabled).toBe(true);
-    expect(visible.topics).toHaveLength(1);
-    expect(visible.topics[0].listings[0].status).toBe("published");
+    expect(visible.topics).toHaveLength(2);
+    expect(
+      visible.topics.every((topic) =>
+        topic.listings.every((listing) => listing.status === "published"),
+      ),
+    ).toBe(true);
+    expect(visible.topics.map((topic) => topic.id)).toContain(
+      "category:digital_products.downloads.documents",
+    );
 
     await trendingRepository.upsertOverride("FR", {
       topicKey: "bicycles",
@@ -35,6 +42,9 @@ describe("TrendingService", () => {
       isHidden: true,
     });
     const hidden = await service.getSection({ marketCode: "FR" });
-    expect(hidden.topics).toHaveLength(0);
+    expect(hidden.topics).toHaveLength(1);
+    expect(hidden.topics[0].id).toBe(
+      "category:digital_products.downloads.documents",
+    );
   });
 });

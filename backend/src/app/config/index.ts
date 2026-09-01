@@ -58,6 +58,9 @@ export interface AppConfig {
   mfaEncryptionKey: string;
   providerCredentialEncryptionKeyBase64: string;
   providerCredentialKeyVersion: string;
+  digitalFulfillmentEncryptionKeyBase64: string;
+  digitalFulfillmentKeyVersion: string;
+  digitalFulfillmentPreviousKeys: Record<string, string>;
   authTokenTtlSeconds: number;
   authRefreshTokenTtlSeconds: number;
   authRecentAuthenticationSeconds: number;
@@ -219,6 +222,34 @@ function envList(name: string): string[] {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+function base64KeyRing(name: string): Record<string, string> {
+  const raw = process.env[name];
+  if (!raw) return {};
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`[Config Error] ${name} must be a JSON object.`);
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`[Config Error] ${name} must be a JSON object.`);
+  }
+  const result: Record<string, string> = {};
+  for (const [version, encoded] of Object.entries(parsed)) {
+    if (
+      !version.trim() ||
+      typeof encoded !== "string" ||
+      Buffer.from(encoded, "base64").length !== 32
+    ) {
+      throw new Error(
+        `[Config Error] ${name} contains an invalid AES-256 key.`,
+      );
+    }
+    result[version] = encoded;
+  }
+  return result;
 }
 
 function positiveInteger(name: string, fallback: number): number {
@@ -407,6 +438,17 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
   }
   if (!candidate.providerCredentialKeyVersion)
     missing.push("PROVIDER_CREDENTIAL_KEY_VERSION");
+  if (
+    !process.env.DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 ||
+    Buffer.from(candidate.digitalFulfillmentEncryptionKeyBase64, "base64")
+      .length !== 32
+  ) {
+    missing.push(
+      "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 (32 bytes, base64)",
+    );
+  }
+  if (!candidate.digitalFulfillmentKeyVersion)
+    missing.push("DIGITAL_FULFILLMENT_KEY_VERSION");
   if (candidate.malwareScannerMode !== "http")
     missing.push("MALWARE_SCAN_MODE=http");
   requireHttpsUrl("MALWARE_SCAN_URL", candidate.malwareScannerUrl);
@@ -573,6 +615,14 @@ const candidateConfig: AppConfig = {
     Buffer.from("shongre-provider-dev-key-32byte!", "utf8").toString("base64"),
   providerCredentialKeyVersion:
     process.env.PROVIDER_CREDENTIAL_KEY_VERSION || "development-v1",
+  digitalFulfillmentEncryptionKeyBase64:
+    process.env.DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 ||
+    Buffer.from("shongre-digital-dev-key-32bytes!", "utf8").toString("base64"),
+  digitalFulfillmentKeyVersion:
+    process.env.DIGITAL_FULFILLMENT_KEY_VERSION || "development-v1",
+  digitalFulfillmentPreviousKeys: base64KeyRing(
+    "DIGITAL_FULFILLMENT_PREVIOUS_KEYS_JSON",
+  ),
   // Access tokens are deliberately short lived. AUTH_TOKEN_TTL_SECONDS remains
   // accepted as a backwards-compatible alias for existing deployments.
   authTokenTtlSeconds: parseInt(

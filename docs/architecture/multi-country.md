@@ -79,13 +79,25 @@ Coordinates are resolved in memory and are absent from responses, analytics,
 logs and local storage. Denied permission leaves manual city and country choice
 available.
 
-A manual country choice is versioned browser preference and wins until reset.
+A manual country choice is a versioned browser preference and suppresses
+automatic detection until reset. The repository partitions it by guest or
+authenticated account; declining a recommendation stores only that ISO country
+code, additionally scoped to the current market, so another account or market
+is not silenced. A direct canonical host/path request remains the current
+market: a stored preference never causes navigation during restoration.
+
 Cross-domain changes require an explicit confirmation. A non-sensitive
 `marketPreference` handoff marker transfers that confirmed choice to the target
-origin and is removed from the address bar after consumption. Access and
-refresh tokens are never used for this preference transfer. Market switch URLs
-preserve bounded public search parameters and remove credentials, OAuth state
-and tracking parameters.
+origin and is removed from the address bar after consumption. Authenticated
+moves must complete the short-lived, single-use domain handoff; if it fails the
+visitor remains on the source page and can retry. Access and refresh tokens are
+never used for preference transfer. Market switch URLs preserve bounded public
+search parameters and remove credentials, OAuth state and tracking parameters.
+
+Demo detection is asynchronous and deterministic. Known personas may provide a
+fixture country; guests remain unknown rather than being labelled French by
+default. Unknown, unavailable and failed detection leaves public browsing
+untouched and exposes the same public country selector plus retry action.
 
 ## Market context and data isolation
 
@@ -169,8 +181,11 @@ OAUTH_ALLOWED_RETURN_ORIGINS=https://shongre.fr,https://shongre.com
 ```
 
 Only enable trusted forwarded-host resolution when the CDN overwrites the
-header. Both domain cache keys must vary on `Host`; redirects must not be cached
-as another host's page. Reverse proxy `/api/v1/*` to the one backend deployment.
+header. The CDN must also delete every inbound header named by
+`SHONGRE_IP_COUNTRY_HEADER` before injecting its own two-letter ISO result;
+application configuration alone cannot prove that ingress guarantee. Both
+domain cache keys must vary on `Host`; redirects must not be cached as another
+host's page. Reverse proxy `/api/v1/*` to the one backend deployment.
 
 Local France remains `http://127.0.0.1:3000/`. Use `/be`, `/ch`, `/sn`, `/bf`
 for country paths and `http://global.localhost:3000/` for the gateway. The

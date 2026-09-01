@@ -56,21 +56,29 @@ test.describe("hosted Cloudflare path", () => {
     expectSecurityHeaders(response.headers());
   });
 
-  test("serves each canonical Shongre application hostname", async ({ request }) => {
-    test.skip(
-      applicationHosts.some((application) => !application.url),
+  test("serves each canonical Shongre application hostname", async ({
+    page,
+  }) => {
+    expect(
+      applicationHosts.every((application) => Boolean(application.url)),
       "Hosted application URLs are required.",
-    );
+    ).toBe(true);
     for (const application of applicationHosts) {
-      const response = await request.get(application.url!);
-      expect(response.ok()).toBe(true);
-      expect(response.headers()["x-shongre-application"]).toBe(application.id);
-      expectSecurityHeaders(response.headers());
-      const html = await response.text();
-      expect(html).toMatch(application.title);
-      expect(html).toContain(
-        `<link rel="canonical" href="${new URL(application.url!).origin}"`,
+      const response = await page.goto(application.url!, {
+        waitUntil: "domcontentloaded",
+      });
+      expect(response?.ok()).toBe(true);
+      expect(response?.headers()["x-shongre-application"]).toBe(application.id);
+      expectSecurityHeaders(response!.headers());
+      await expect(page).toHaveTitle(application.title);
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        "href",
+        new URL(application.url!).origin,
       );
+      if (application.id === "solutions") {
+        await expect(page.getByLabel("Chargement du catalogue")).toHaveCount(0);
+        await expect(page.getByText("Catalogue indisponible")).toHaveCount(0);
+      }
     }
   });
 

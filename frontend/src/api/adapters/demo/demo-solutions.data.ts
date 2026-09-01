@@ -16,8 +16,8 @@ export const DEMO_SOLUTIONS: readonly SolutionDefinition[] = [
     category: "Développement commercial",
     lifecycle: "AVAILABLE",
     availableFrom: "2026-06-01T00:00:00.000Z",
-    markets: ["FR", "BE", "LU"],
-    languages: ["fr-FR", "fr-BE"],
+    markets: ["FR", "BE", "CH"],
+    languages: ["fr-FR", "fr-BE", "fr-CH"],
     audiences: ["Organisations professionnelles", "Équipes commerciales"],
     capabilities: [
       "Définir un profil cible",
@@ -56,8 +56,8 @@ export const DEMO_SOLUTIONS: readonly SolutionDefinition[] = [
     category: "Gestion financière",
     lifecycle: "BETA",
     availableFrom: "2026-08-15T00:00:00.000Z",
-    markets: ["FR", "BE", "LU"],
-    languages: ["fr-FR", "fr-BE"],
+    markets: ["FR", "BE", "CH"],
+    languages: ["fr-FR", "fr-BE", "fr-CH"],
     audiences: ["Organisations professionnelles", "Comptables"],
     capabilities: [
       "Configurer votre organisation",
@@ -97,7 +97,7 @@ export const DEMO_SOLUTIONS: readonly SolutionDefinition[] = [
     icon: "pilotage",
     category: "Pilotage",
     lifecycle: "COMING_SOON",
-    markets: ["FR", "BE", "LU"],
+    markets: ["FR", "BE", "CH"],
     languages: ["fr-FR"],
     audiences: ["Dirigeants", "Responsables d’équipe"],
     capabilities: [
@@ -126,8 +126,8 @@ export const DEMO_SOLUTIONS: readonly SolutionDefinition[] = [
     category: "Commerce",
     lifecycle: "AVAILABLE",
     availableFrom: "2026-01-01T00:00:00.000Z",
-    markets: ["FR", "BE", "LU"],
-    languages: ["fr-FR", "fr-BE"],
+    markets: ["FR", "BE", "CH"],
+    languages: ["fr-FR", "fr-BE", "fr-CH"],
     audiences: ["Particuliers", "Organisations professionnelles"],
     capabilities: [
       "Rechercher des annonces",

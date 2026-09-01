@@ -41,6 +41,7 @@ import {
   aiService,
   supportService,
   featureFlagService,
+  solutionsService,
   moderationService,
   crmService,
   crmShongreService,
@@ -51,6 +52,7 @@ import {
   marketingProviderWebhookService,
   analyticsService,
   invoicingService,
+  digitalProductsService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
@@ -298,6 +300,341 @@ export class ApiV1Router {
   }
 
   private registerRoutes() {
+    // --------------------------------------------------------------------------
+    // DIGITAL PRODUCTS — policy-gated, versioned and buyer-owned fulfillment.
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/digital/policy",
+      permission("marketplace.customer.access"),
+      async ({ marketCode }) =>
+        digitalProductsService.getPolicyProjection(
+          requireOpenApiRequestMarket(marketCode),
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/seller-profile",
+      permission("listing.create"),
+      async ({ principal, marketCode }) =>
+        digitalProductsService.getOwnSellerProfile(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+        ),
+    );
+    this.addRoute(
+      "PUT",
+      "/digital/seller-profile",
+      permission("listing.create"),
+      async ({ principal, marketCode, body }) =>
+        digitalProductsService.acceptSellerResponsibilities({
+          sellerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          fulfillmentTypes: body?.fulfillmentTypes,
+          acceptedPolicyVersion: body?.acceptedPolicyVersion,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/seller/provisioning-tasks",
+      permission("order.manage.seller"),
+      async ({ principal, marketCode }) => ({
+        items: await digitalProductsService.listSellerProvisioningTasks(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+        ),
+      }),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/assets/uploads",
+      permission("listing.create"),
+      async ({ principal, marketCode, body }) =>
+        digitalProductsService.initializePrivateUpload(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          body,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/assets/uploads/:id/complete",
+      permission("listing.create"),
+      async ({ principal, marketCode, params }) =>
+        digitalProductsService.completePrivateUpload(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/assets/:id",
+      permission("listing.create"),
+      async ({ principal, marketCode, params }) =>
+        digitalProductsService.getOwnAsset(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+        ),
+    );
+    this.addRoute(
+      "DELETE",
+      "/digital/assets/:id",
+      permission("listing.create"),
+      async ({ principal, marketCode, params }) =>
+        digitalProductsService.removeOwnAsset(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/access-secrets",
+      permission("listing.create"),
+      async ({ principal, marketCode, body }) =>
+        digitalProductsService.createProtectedAccess({
+          ...body,
+          sellerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/credential-batches",
+      permission("listing.create"),
+      async ({ principal, marketCode, body }) => {
+        const { productAccessClass, ...batch } = body ?? {};
+        return digitalProductsService.createCredentialBatch(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          productAccessClass,
+          batch,
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/credential-batches/:id/credentials",
+      permission("listing.create"),
+      async ({ principal, marketCode, params, body }) =>
+        digitalProductsService.importCredentialInventory({
+          sellerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          batchId: params.id,
+          productAccessClass: body?.productAccessClass,
+          credentials: body?.credentials,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/credential-batches/:id/inventory",
+      permission("listing.create"),
+      async ({ principal, marketCode, params }) =>
+        digitalProductsService.getOwnInventory(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/listings/:id/fulfillment-versions",
+      permission("listing.publish"),
+      async ({ principal, marketCode, params, body }) =>
+        digitalProductsService.createFulfillmentVersion({
+          sellerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          listingId: params.id,
+          fulfillment: body,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/entitlements",
+      permission("order.read.own"),
+      async ({ principal, marketCode }) =>
+        digitalProductsService.listBuyerEntitlements(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/entitlements/:id",
+      permission("order.read.own"),
+      async ({ principal, marketCode, params }) =>
+        digitalProductsService.getBuyerEntitlement(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/entitlements/:id/download-grants",
+      permission("order.read.own"),
+      async ({ principal, marketCode, params, body, requestId }) =>
+        digitalProductsService.createDownloadGrant({
+          buyerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          entitlementId: params.id,
+          assetId: body?.assetId,
+          requestId,
+        }),
+    );
+    this.addRoute(
+      "POST",
+      "/digital/entitlements/:id/reveal-grants",
+      permission("order.read.own"),
+      async ({ principal, marketCode, params, requestId }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.createRevealGrant({
+          buyerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          entitlementId: params.id,
+          requestId,
+        });
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/access-grants/:id/consume",
+      permission("order.read.own"),
+      async ({ principal, params, res }) => {
+        requireRecentAuthentication(principal);
+        res.setHeader("Cache-Control", "private, no-store, max-age=0");
+        res.setHeader("Pragma", "no-cache");
+        res.setHeader("Referrer-Policy", "no-referrer");
+        res.setHeader("X-Robots-Tag", "noindex, nofollow");
+        return digitalProductsService.consumeAccessGrant(
+          principal.userId,
+          params.id,
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/entitlements/:id/provision",
+      permission("order.manage.seller"),
+      async ({ principal, marketCode, params, body, requestId }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.submitSellerProvisionedAccess({
+          ...body,
+          sellerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          entitlementId: params.id,
+          requestId,
+        });
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/entitlements/:id/reports",
+      permission("order.read.own"),
+      async ({ principal, marketCode, params, body }) =>
+        digitalProductsService.reportInvalidAccess({
+          buyerId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          entitlementId: params.id,
+          reportType: body?.reportType,
+          description: body?.description,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/digital/admin/overview",
+      permission("moderation.review"),
+      async ({ principal, marketCode }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.getAdminOverview(
+          requireOpenApiRequestMarket(marketCode),
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
+      "/digital/admin/policy",
+      permission("market.manage"),
+      async ({ principal, marketCode }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.getAdminPolicy(
+          requireOpenApiRequestMarket(marketCode),
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/admin/policy",
+      permission("market.manage"),
+      async ({ principal, marketCode, body }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.createPolicyDraft({
+          staffId: principal.userId,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          policy: body?.policy,
+          reason: body?.reason,
+        });
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/admin/policies/:id/activate",
+      permission("market.manage"),
+      async ({ principal, marketCode, params, body }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.activatePolicy({
+          staffId: principal.userId,
+          policyId: params.id,
+          marketCode: requireOpenApiRequestMarket(marketCode),
+          reason: body?.reason,
+        });
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/admin/assets/:id/moderation",
+      permission("moderation.action"),
+      async ({ principal, marketCode, params, body }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.moderateAsset(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+          body?.decision,
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/admin/fulfillment-versions/:id/moderation",
+      permission("moderation.action"),
+      async ({ principal, marketCode, params, body }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.moderateFulfillmentVersion(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+          body?.decision,
+        );
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/digital/admin/reports/:id/resolve",
+      permission("support.case.manage"),
+      async ({ principal, marketCode, params, body }) => {
+        requireRecentAuthentication(principal);
+        return digitalProductsService.resolveAccessReport(
+          principal.userId,
+          requireOpenApiRequestMarket(marketCode),
+          params.id,
+          body,
+        );
+      },
+    );
+
     // --------------------------------------------------------------------------
     // ANALYTICS — provider-neutral ingestion and role-separated intelligence.
     // --------------------------------------------------------------------------
@@ -2431,11 +2768,11 @@ export class ApiV1Router {
       "/payments/intent",
       permission("payment.initiate"),
       async ({ principal, body, marketCode }) =>
-        businessRulesService.createCheckout(
+        businessRulesService.createCheckoutForContext(
           principal.userId,
           body?.quoteId,
           body?.idempotencyKey,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     // Payouts move money to a bank account. The destination is the caller's own
@@ -2446,6 +2783,8 @@ export class ApiV1Router {
       permission("order.manage.seller"),
       async ({ principal, body, marketCode }) => {
         const resolvedMarketCode = requireApiRequestMarket(marketCode);
+        const marketContext = requireApiMarketContext(resolvedMarketCode);
+        await businessRulesService.getPaidCatalogForContext(marketContext);
         const country = getCountryConfig(resolvedMarketCode)!;
         const currency = String(body?.currency || "").toUpperCase();
         if (currency !== country.currency)
@@ -2466,6 +2805,7 @@ export class ApiV1Router {
           },
         });
         return paymentsService.requestSellerPayout(
+          marketContext,
           principal.userId,
           body?.amountMinor,
           currency,
@@ -2479,8 +2819,8 @@ export class ApiV1Router {
       permission("order.manage.seller"),
       async ({ principal, params, marketCode }) =>
         paymentsService.getSellerBalance(
+          requireApiMarketContext(marketCode),
           resolveOwnerId(principal, params.sellerId, "payment.refund"),
-          getCountryConfig(requireApiRequestMarket(marketCode))!.currency,
         ),
     );
 
@@ -2492,8 +2832,8 @@ export class ApiV1Router {
       "/business-rules/catalog",
       PUBLIC,
       async ({ marketCode }) =>
-        businessRulesService.getCatalog(
-          requireOpenApiRequestMarket(marketCode),
+        businessRulesService.getCatalogForContext(
+          requireApiMarketContext(requireOpenApiRequestMarket(marketCode)),
         ),
     );
     this.addRoute(
@@ -2501,8 +2841,8 @@ export class ApiV1Router {
       "/monetization/professional-plans",
       PUBLIC,
       async ({ marketCode }) =>
-        businessRulesService.getProfessionalPlanCatalog(
-          requireOpenApiRequestMarket(marketCode),
+        businessRulesService.getProfessionalPlanCatalogForContext(
+          requireApiMarketContext(requireOpenApiRequestMarket(marketCode)),
         ),
     );
     this.addRoute(
@@ -2517,9 +2857,10 @@ export class ApiV1Router {
             message:
               "Le marché de la requête ne correspond pas au contexte actif.",
           });
-        return businessRulesService.getAccountEligibility(
+        return businessRulesService.getAccountEligibilityForContext(
           principal.userId,
           body,
+          requireApiMarketContext(activeMarket),
         );
       },
     );
@@ -2534,7 +2875,11 @@ export class ApiV1Router {
             code: "VALIDATION_ERROR",
             message: "Le marché du devis ne correspond pas au contexte actif.",
           });
-        return businessRulesService.createQuote(principal.userId, body);
+        return businessRulesService.createQuoteForContext(
+          principal.userId,
+          body,
+          requireApiMarketContext(activeMarket),
+        );
       },
     );
     this.addRoute(
@@ -2549,7 +2894,11 @@ export class ApiV1Router {
             message:
               "Le marché de l’essai ne correspond pas au contexte actif.",
           });
-        return businessRulesService.createTrialQuote(principal.userId, body);
+        return businessRulesService.createTrialQuoteForContext(
+          principal.userId,
+          body,
+          requireApiMarketContext(activeMarket),
+        );
       },
     );
     this.addRoute(
@@ -2557,11 +2906,11 @@ export class ApiV1Router {
       "/monetization/checkouts",
       permission("marketplace.customer.access"),
       async ({ principal, body, marketCode }) =>
-        businessRulesService.createCheckout(
+        businessRulesService.createCheckoutForContext(
           principal.userId,
           body?.quoteId,
           body?.idempotencyKey,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2576,7 +2925,11 @@ export class ApiV1Router {
             message:
               "Le marché de la promotion ne correspond pas au contexte actif.",
           });
-        return businessRulesService.validatePromotion(principal.userId, body);
+        return businessRulesService.validatePromotionForContext(
+          principal.userId,
+          body,
+          requireApiMarketContext(activeMarket),
+        );
       },
     );
     this.addRoute(
@@ -2584,9 +2937,9 @@ export class ApiV1Router {
       "/monetization/entitlements",
       permission("marketplace.customer.access"),
       async ({ principal, marketCode }) =>
-        businessRulesService.getActiveEntitlements(
+        businessRulesService.getActiveEntitlementsForContext(
           principal.userId,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2594,9 +2947,9 @@ export class ApiV1Router {
       "/monetization/subscriptions",
       permission("marketplace.customer.access"),
       async ({ principal, marketCode }) =>
-        businessRulesService.getSubscriptions(
+        businessRulesService.getSubscriptionsForContext(
           principal.userId,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2604,9 +2957,9 @@ export class ApiV1Router {
       "/monetization/billing",
       permission("marketplace.customer.access"),
       async ({ principal, marketCode }) =>
-        businessRulesService.getBillingOverview(
+        businessRulesService.getBillingOverviewForContext(
           principal.userId,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
 
@@ -2694,10 +3047,10 @@ export class ApiV1Router {
       "/monetization/invoices/:id/document",
       permission("marketplace.customer.access"),
       async ({ principal, params, marketCode }) =>
-        businessRulesService.getInvoiceDocument(
+        businessRulesService.getInvoiceDocumentForContext(
           principal.userId,
           params.id,
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2705,13 +3058,13 @@ export class ApiV1Router {
       "/monetization/subscriptions/:id/change-preview",
       permission("subscription.manage.own"),
       async ({ principal, params, body, marketCode }) =>
-        businessRulesService.previewSubscriptionChange(
+        businessRulesService.previewSubscriptionChangeForContext(
           principal.userId,
           {
             ...body,
             subscriptionId: params.id,
           },
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2719,13 +3072,13 @@ export class ApiV1Router {
       "/monetization/subscriptions/:id/change",
       permission("subscription.manage.own"),
       async ({ principal, params, body, marketCode }) =>
-        businessRulesService.applySubscriptionChange(
+        businessRulesService.applySubscriptionChangeForContext(
           principal.userId,
           {
             ...body,
             subscriptionId: params.id,
           },
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2733,13 +3086,13 @@ export class ApiV1Router {
       "/monetization/subscriptions/:id",
       permission("subscription.manage.own"),
       async ({ principal, params, body, marketCode }) =>
-        businessRulesService.updateSubscriptionCancellation(
+        businessRulesService.updateSubscriptionCancellationForContext(
           principal.userId,
           {
             subscriptionId: params.id,
             cancelAtPeriodEnd: body?.cancelAtPeriodEnd,
           },
-          requireApiRequestMarket(marketCode),
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
@@ -2747,15 +3100,19 @@ export class ApiV1Router {
       "/admin/business-rules",
       permission("commercial_rules.read"),
       async ({ marketCode }) =>
-        businessRulesService.getAdminOverview(
-          requireApiRequestMarket(marketCode),
+        businessRulesService.getAdminOverviewForContext(
+          requireApiMarketContext(marketCode),
         ),
     );
     this.addRoute(
       "POST",
       "/admin/business-rules/simulate",
       permission("commercial_rules.read"),
-      async ({ body }) => businessRulesService.evaluate(body),
+      async ({ body, marketCode }) =>
+        businessRulesService.evaluateForContext(
+          body,
+          requireApiMarketContext(marketCode),
+        ),
     );
     this.addRoute(
       "POST",
@@ -3464,6 +3821,86 @@ export class ApiV1Router {
           params.ruleId,
           body,
         ),
+    );
+
+    // --------------------------------------------------------------------------
+    // SOLUTIONS — shared definitions with explicit market associations.
+    // --------------------------------------------------------------------------
+    this.addRoute("GET", "/solutions", PUBLIC, async ({ marketCode, query }) =>
+      solutionsService.listPublicSolutions(
+        requireApiMarketContext(marketCode),
+        query.get("locale") || undefined,
+      ),
+    );
+    this.addRoute(
+      "GET",
+      "/solutions/:solutionSlug",
+      PUBLIC,
+      async ({ marketCode, params, query }) =>
+        solutionsService.getPublicSolutionBySlug(
+          requireApiMarketContext(marketCode),
+          params.solutionSlug,
+          query.get("locale") || undefined,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/solutions",
+      permission("admin.configuration.manage"),
+      async ({ principal }) => solutionsService.listAdminSolutions(principal),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/solutions",
+      permission("admin.configuration.manage"),
+      async ({ principal, body, req }) =>
+        solutionsService.createSolution(
+          principal,
+          body,
+          req.headers["idempotency-key"],
+        ),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/solutions/order",
+      permission("admin.configuration.manage"),
+      async ({ principal, body, req }) =>
+        solutionsService.reorderSolutions(
+          principal,
+          body,
+          req.headers["idempotency-key"],
+        ),
+    );
+    this.addRoute(
+      "PATCH",
+      "/admin/solutions/:solutionId",
+      permission("admin.configuration.manage"),
+      async ({ principal, params, body, req }) =>
+        solutionsService.updateSolution(
+          principal,
+          params.solutionId,
+          body,
+          req.headers["idempotency-key"],
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/solutions/:solutionId/lifecycle",
+      permission("admin.configuration.manage"),
+      async ({ principal, params, body, req }) =>
+        solutionsService.transitionLifecycle(
+          principal,
+          params.solutionId,
+          body,
+          req.headers["idempotency-key"],
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/solutions/:solutionId/lifecycle-history",
+      permission("admin.configuration.manage"),
+      async ({ principal, params }) =>
+        solutionsService.listLifecycleHistory(principal, params.solutionId),
     );
 
     // --------------------------------------------------------------------------

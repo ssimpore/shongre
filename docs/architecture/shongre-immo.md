@@ -9,8 +9,8 @@ The implementation also introduces reusable vertical commercial primitives: mark
 ```text
 React page
   → RealEstateServiceContract
-    → DemoRealEstateService (current NEXT_PUBLIC_DATA_MODE=demo)
-    → HttpRealEstateService (future API mode)
+    → DemoRealEstateService (standalone local/demo mode)
+    → HttpRealEstateService (hosted staging/production API mode)
       → /api/v1/real-estate/*
         → RealEstateService
           → IRealEstateRepository

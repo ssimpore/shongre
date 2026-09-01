@@ -298,7 +298,8 @@ export type DeliveryType =
   | "home_delivery"
   | "custom_carrier"
   | "cocolis"
-  | "express";
+  | "express"
+  | "digital";
 
 export interface DeliveryOption {
   type: DeliveryType;
@@ -336,6 +337,9 @@ export interface Listing {
   price: number; // in EUR (0 for free/don)
   isNegotiable: boolean;
   isFreeDonation: boolean;
+  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
+  requiresPhysicalDelivery?: boolean;
+  productVersion?: string;
   categorySlug: string;
   subCategorySlug: string;
   categoryLabel: string;

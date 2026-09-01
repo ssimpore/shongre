@@ -20,6 +20,7 @@ import type {
   SubscriptionChangePreview,
   SubscriptionChangeRequest,
 } from "@shongre/contracts/monetization";
+import type { MarketContext } from "@shongre/contracts";
 
 export interface InvoiceDocument {
   fileName: string;
@@ -46,33 +47,53 @@ export interface ComplimentaryGrantDecisionResult {
 }
 
 export interface BusinessRulesServiceContract {
-  getCatalog(marketCode: string): Promise<MonetizationCatalog>;
+  getCatalog(marketContext: MarketContext): Promise<MonetizationCatalog>;
   getProfessionalCatalogPresentation(
-    marketCode: string,
+    marketContext: MarketContext,
   ): Promise<ProfessionalCatalogPresentation>;
-  evaluate(context: RuleEvaluationContext): Promise<RuleEvaluationResult>;
-  createQuote(request: QuoteRequest): Promise<MonetizationQuote>;
+  evaluate(
+    marketContext: MarketContext,
+    context: RuleEvaluationContext,
+  ): Promise<RuleEvaluationResult>;
+  createQuote(
+    marketContext: MarketContext,
+    request: QuoteRequest,
+  ): Promise<MonetizationQuote>;
   createCheckout(
+    marketContext: MarketContext,
     quoteId: string,
     idempotencyKey: string,
   ): Promise<MonetizationOrder>;
   validatePromotion(
+    marketContext: MarketContext,
     request: PromotionValidationRequest,
   ): Promise<PromotionValidationResult>;
-  getActiveEntitlements(): Promise<ActiveEntitlement[]>;
-  getSubscriptions(): Promise<MonetizationSubscription[]>;
-  getBillingOverview(): Promise<BillingOverview>;
-  getInvoiceDocument(invoiceId: string): Promise<InvoiceDocument>;
+  getActiveEntitlements(
+    marketContext: MarketContext,
+  ): Promise<ActiveEntitlement[]>;
+  getSubscriptions(
+    marketContext: MarketContext,
+  ): Promise<MonetizationSubscription[]>;
+  getBillingOverview(marketContext: MarketContext): Promise<BillingOverview>;
+  getInvoiceDocument(
+    marketContext: MarketContext,
+    invoiceId: string,
+  ): Promise<InvoiceDocument>;
   previewSubscriptionChange(
+    marketContext: MarketContext,
     request: SubscriptionChangeRequest,
   ): Promise<SubscriptionChangePreview>;
   applySubscriptionChange(
+    marketContext: MarketContext,
     request: SubscriptionChangeRequest,
   ): Promise<MonetizationSubscription>;
   updateSubscriptionCancellation(
+    marketContext: MarketContext,
     request: SubscriptionCancellationRequest,
   ): Promise<MonetizationSubscription>;
-  getAdminOverview(marketCode: string): Promise<MonetizationAdminOverview>;
+  getAdminOverview(
+    marketContext: MarketContext,
+  ): Promise<MonetizationAdminOverview>;
   createDraft(
     patch: CommercialDraftPatch,
   ): Promise<CommercialConfigurationVersion>;

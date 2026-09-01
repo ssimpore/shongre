@@ -29,6 +29,12 @@ validate_profile() (
   fi
 
   if [[ "$profile" == "staging" || "$profile" == "production" ]]; then
+    export NEXT_PUBLIC_DATA_MODE=api
+    export NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
+    export SHONGRE_MARKETPLACE_ORIGIN="https://marketplace-${profile}.shongre.invalid"
+    export SHONGRE_SOLUTIONS_ORIGIN="https://solutions-${profile}.shongre.invalid"
+    export SHONGRE_PROSPECTS_ORIGIN="https://prospects-${profile}.shongre.invalid"
+    export SHONGRE_FACTURATION_ORIGIN="https://facturation-${profile}.shongre.invalid"
     export JWT_SECRET=matrix-validation-jwt-secret-123456789
     export MFA_ENCRYPTION_KEY=matrix-validation-mfa-secret-123456789
     export PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=

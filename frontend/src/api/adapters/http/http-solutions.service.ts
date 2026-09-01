@@ -1,47 +1,147 @@
 import type { SolutionsServiceContract } from "../../contracts/solutions.contract";
+import type {
+  CreateSolutionInput,
+  SolutionDefinition,
+  SolutionLifecycle,
+  SolutionLifecycleHistoryEntry,
+  SolutionListOptions,
+  SolutionsAdminActor,
+  UpdateSolutionInput,
+} from "../../../domains/solutions/solutions.types";
+import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
+import { httpClient } from "./http-client";
 
-/**
- * Reserved adapter boundary. The current frontend contract explicitly remains
- * offline in demo mode; implementing these methods requires the future public
- * API contract and backend authorization checks.
- */
-class HttpSolutionsService implements SolutionsServiceContract {
-  private unavailable(): never {
-    throw new Error("L’adaptateur HTTP Solutions n’est pas activé.");
+let mutationSequence = 0;
+
+function idempotencyKey(operation: string): string {
+  if (
+    typeof globalThis.crypto !== "undefined" &&
+    typeof globalThis.crypto.randomUUID === "function"
+  ) {
+    return `solutions:${operation}:${globalThis.crypto.randomUUID()}`;
   }
-  listPublicSolutions(): ReturnType<
-    SolutionsServiceContract["listPublicSolutions"]
-  > {
-    return Promise.reject(this.unavailable());
+  mutationSequence += 1;
+  return deterministicRuntimeId("solutions-mutation", [
+    operation,
+    String(mutationSequence),
+  ]);
+}
+
+function mutationHeaders(operation: string): HeadersInit {
+  return { "Idempotency-Key": idempotencyKey(operation) };
+}
+
+function marketOptions(options: SolutionListOptions) {
+  return {
+    params: { locale: options.language },
+    headers: options.marketCode
+      ? { "X-Shongre-Market": options.marketCode.toUpperCase() }
+      : undefined,
+  };
+}
+
+const CLEARABLE_UPDATE_FIELDS = [
+  "availableFrom",
+  "availableUntil",
+  "launchApplicationId",
+  "launchPath",
+  "documentationUrl",
+  "entitlementKey",
+  "notice",
+  "maintenanceMessage",
+  "replacementSlug",
+] as const;
+
+function serializeUpdate(input: UpdateSolutionInput): Record<string, unknown> {
+  const payload: Record<string, unknown> = { ...input };
+  for (const field of CLEARABLE_UPDATE_FIELDS) {
+    if (
+      Object.prototype.hasOwnProperty.call(input, field) &&
+      input[field] === undefined
+    ) {
+      payload[field] = null;
+    }
   }
-  getSolutionBySlug(): ReturnType<
-    SolutionsServiceContract["getSolutionBySlug"]
-  > {
-    return Promise.reject(this.unavailable());
+  return payload;
+}
+
+export class HttpSolutionsService implements SolutionsServiceContract {
+  listPublicSolutions(
+    options: SolutionListOptions = {},
+  ): Promise<SolutionDefinition[]> {
+    return httpClient.get<SolutionDefinition[]>(
+      "/solutions",
+      marketOptions(options),
+    );
   }
-  listAdminSolutions(): ReturnType<
-    SolutionsServiceContract["listAdminSolutions"]
-  > {
-    return Promise.reject(this.unavailable());
+
+  getSolutionBySlug(
+    slug: string,
+    options: SolutionListOptions & { includeAdminOnly?: boolean } = {},
+  ): Promise<SolutionDefinition | null> {
+    return httpClient.get<SolutionDefinition | null>(
+      `/solutions/${encodeURIComponent(slug)}`,
+      marketOptions(options),
+    );
   }
-  createSolution(): ReturnType<SolutionsServiceContract["createSolution"]> {
-    return Promise.reject(this.unavailable());
+
+  listAdminSolutions(
+    _actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition[]> {
+    return httpClient.get<SolutionDefinition[]>("/admin/solutions");
   }
-  updateSolution(): ReturnType<SolutionsServiceContract["updateSolution"]> {
-    return Promise.reject(this.unavailable());
+
+  createSolution(
+    input: CreateSolutionInput,
+    _actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition> {
+    return httpClient.post<SolutionDefinition>("/admin/solutions", input, {
+      headers: mutationHeaders("create"),
+    });
   }
-  reorderSolutions(): ReturnType<SolutionsServiceContract["reorderSolutions"]> {
-    return Promise.reject(this.unavailable());
+
+  updateSolution(
+    solutionId: string,
+    input: UpdateSolutionInput,
+    _actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition> {
+    return httpClient.patch<SolutionDefinition>(
+      `/admin/solutions/${encodeURIComponent(solutionId)}`,
+      serializeUpdate(input),
+      { headers: mutationHeaders("update") },
+    );
   }
-  transitionLifecycle(): ReturnType<
-    SolutionsServiceContract["transitionLifecycle"]
-  > {
-    return Promise.reject(this.unavailable());
+
+  reorderSolutions(
+    solutionIds: readonly string[],
+    _actor: SolutionsAdminActor,
+  ): Promise<SolutionDefinition[]> {
+    return httpClient.put<SolutionDefinition[]>(
+      "/admin/solutions/order",
+      { solutionIds },
+      { headers: mutationHeaders("reorder") },
+    );
   }
-  listLifecycleHistory(): ReturnType<
-    SolutionsServiceContract["listLifecycleHistory"]
-  > {
-    return Promise.reject(this.unavailable());
+
+  transitionLifecycle(
+    solutionId: string,
+    lifecycle: SolutionLifecycle,
+    options: { explanation: string; actor: SolutionsAdminActor },
+  ): Promise<SolutionDefinition> {
+    return httpClient.post<SolutionDefinition>(
+      `/admin/solutions/${encodeURIComponent(solutionId)}/lifecycle`,
+      { lifecycle, explanation: options.explanation },
+      { headers: mutationHeaders("transition") },
+    );
+  }
+
+  listLifecycleHistory(
+    solutionId: string,
+    _actor: SolutionsAdminActor,
+  ): Promise<SolutionLifecycleHistoryEntry[]> {
+    return httpClient.get<SolutionLifecycleHistoryEntry[]>(
+      `/admin/solutions/${encodeURIComponent(solutionId)}/lifecycle-history`,
+    );
   }
 }
 

@@ -76,11 +76,14 @@ import { resolveTaxonomyFieldState } from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV4Field } from "./TaxonomyV4Field";
+import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import {
   isCurrentTaxonomyV4Schema,
   retainTaxonomyV4Attributes,
   toTaxonomyV4ListingIntent,
 } from "../../domains/publication/publication.taxonomy-state";
+import { DigitalFulfillmentEditor } from "./DigitalFulfillmentEditor";
 
 /**
  * Publication is three phases, not ten steps.
@@ -232,6 +235,8 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
   const { currencySymbol, marketContext, currentLocale } = useMarketLocation();
+  const marketPromotions = useMarketPromotions();
+  const { formatMoney } = useRegionalFormatters();
   usePageMeta({
     title: t("meta.publishWizard.title"),
     description: t("meta.publishWizard.description"),
@@ -252,8 +257,7 @@ export const PublishWizard: React.FC = () => {
   const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
-  const [phaseOneStage, setPhaseOneStage] =
-    useState<PhaseOneStage>("intent");
+  const [phaseOneStage, setPhaseOneStage] = useState<PhaseOneStage>("intent");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
@@ -336,6 +340,7 @@ export const PublishWizard: React.FC = () => {
         allowStorePickup: false,
         packageSpecs: { sizeTier: "medium" },
       },
+      fulfillmentTypes: ["PHYSICAL"],
       proInventory: {
         stock: 1,
         sku: "",
@@ -398,7 +403,7 @@ export const PublishWizard: React.FC = () => {
   useEffect(() => {
     let active = true;
     setVisibilityOffersState("loading");
-    services.promotions
+    marketPromotions
       .getAvailableBoosts()
       .then((offers) => {
         if (!active) return;
@@ -413,7 +418,7 @@ export const PublishWizard: React.FC = () => {
     return () => {
       active = false;
     };
-  }, []);
+  }, [marketPromotions]);
 
   const updateDraft = (updates: Partial<PublicationDraftState>) => {
     setDraft((prev) => ({ ...prev, ...updates }));
@@ -951,7 +956,9 @@ export const PublishWizard: React.FC = () => {
     }
     if (currentStep === 1 && phaseOneStage === "category") {
       if (!draft.taxonomyNodeId) {
-        toast.error("Veuillez sélectionner une catégorie finale pour continuer.");
+        toast.error(
+          "Veuillez sélectionner une catégorie finale pour continuer.",
+        );
         return;
       }
       setPhaseOneStage("details");
@@ -1253,130 +1260,138 @@ export const PublishWizard: React.FC = () => {
           </div>
 
           {/* Listing Intent Selector */}
-          {phaseOneStage === "intent" && <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
-              {t("publishing.publishWizard.typeDAnnonceIntention")}
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {(schema?.supportedIntents ?? INTENT_ORDER).map((intent) => {
-                const it = INTENT_PRESENTATION[intent];
-                if (!it) return null;
-                return (
-                  <button
-                    key={intent}
-                    type="button"
-                    onClick={() => selectListingIntent(intent)}
-                    aria-pressed={draft.listingIntent === intent}
-                    className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
-                      draft.listingIntent === intent
-                        ? "border-primary bg-primary-light text-primary font-bold"
-                        : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
-                    }`}
-                  >
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+          {phaseOneStage === "intent" && (
+            <div>
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+                {t("publishing.publishWizard.typeDAnnonceIntention")}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(schema?.supportedIntents ?? INTENT_ORDER).map((intent) => {
+                  const it = INTENT_PRESENTATION[intent];
+                  if (!it) return null;
+                  return (
+                    <button
+                      key={intent}
+                      type="button"
+                      onClick={() => selectListingIntent(intent)}
+                      aria-pressed={draft.listingIntent === intent}
+                      className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                         draft.listingIntent === intent
-                          ? "bg-primary text-white"
-                          : "bg-primary-light text-primary"
+                          ? "border-primary bg-primary-light text-primary font-bold"
+                          : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                       }`}
                     >
-                      <it.Icon className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-xs font-bold">
-                        {it.label}
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+                          draft.listingIntent === intent
+                            ? "bg-primary text-white"
+                            : "bg-primary-light text-primary"
+                        }`}
+                      >
+                        <it.Icon className="h-4 w-4" aria-hidden="true" />
                       </span>
-                      <span className="mt-0.5 block truncate text-micro text-stone-500">
-                        {it.desc}
+                      <span className="min-w-0">
+                        <span className="block truncate text-xs font-bold">
+                          {it.label}
+                        </span>
+                        <span className="mt-0.5 block truncate text-micro text-stone-500">
+                          {it.desc}
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>}
+          )}
 
           {/* Taxonomy Search */}
-          {phaseOneStage === "category" && <div className="space-y-3">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-              {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
-            </label>
-            <div className="relative">
-              <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                placeholder={t("publishing.publishWizard.exCanapeDAngleIphone")}
-                aria-label={t(
-                  "publishing.publishWizard.rechercherUneCategorie",
-                )}
-                value={categorySearchQuery}
-                onChange={(e) => setCategorySearchQuery(e.target.value)}
-                className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
-              />
-            </div>
+          {phaseOneStage === "category" && (
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
+                {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
+              </label>
+              <div className="relative">
+                <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  placeholder={t(
+                    "publishing.publishWizard.exCanapeDAngleIphone",
+                  )}
+                  aria-label={t(
+                    "publishing.publishWizard.rechercherUneCategorie",
+                  )}
+                  value={categorySearchQuery}
+                  onChange={(e) => setCategorySearchQuery(e.target.value)}
+                  className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
+                />
+              </div>
 
-            {categorySearchResults && (
-              <div className="p-2 border border-border-base rounded-xl divide-y divide-border-subtle bg-bg-base/40 text-xs">
-                {categorySearchResults.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => {
-                      selectTaxonomyNode(n.id);
-                      setCategorySearchQuery("");
-                    }}
-                    className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <CategoryIcon category={n} size="sm" />
-                      <div>
-                        <div className="font-bold text-stone-900">
-                          {getTaxonomyLabel(n, "compact")}
-                        </div>
-                        <div className="text-micro text-stone-500">
-                          {taxonomyService
-                            .getBreadcrumbs(n.id, "compact")
-                            .map((b) => b.label)
-                            .join(" › ")}
+              {categorySearchResults && (
+                <div className="p-2 border border-border-base rounded-xl divide-y divide-border-subtle bg-bg-base/40 text-xs">
+                  {categorySearchResults.map((n) => (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => {
+                        selectTaxonomyNode(n.id);
+                        setCategorySearchQuery("");
+                      }}
+                      className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <CategoryIcon category={n} size="sm" />
+                        <div>
+                          <div className="font-bold text-stone-900">
+                            {getTaxonomyLabel(n, "compact")}
+                          </div>
+                          <div className="text-micro text-stone-500">
+                            {taxonomyService
+                              .getBreadcrumbs(n.id, "compact")
+                              .map((b) => b.label)
+                              .join(" › ")}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    {draft.taxonomyNodeId === n.id && (
-                      <Check className="w-icon-md h-icon-md text-primary shrink-0" />
-                    )}
+                      {draft.taxonomyNodeId === n.id && (
+                        <Check className="w-icon-md h-icon-md text-primary shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Root Categories Grid */}
+          {phaseOneStage === "category" && (
+            <div className="pt-4 border-t border-border-subtle space-y-3">
+              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
+                {t("publishing.publishWizard.ouParcourezLesUnivers")}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-64 overflow-y-auto p-1">
+                {taxonomyService.getRootCategories().map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => selectTaxonomyNode(cat.id)}
+                    title={getTaxonomyLabel(cat, "compact")}
+                    className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
+                      schema?.ancestors[0]?.id === cat.id ||
+                      draft.taxonomyNodeId === cat.id
+                        ? "border-primary bg-primary-light text-primary font-bold shadow-xs"
+                        : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
+                    }`}
+                  >
+                    <CategoryIcon category={cat} size="md" />
+                    <span className="text-xs font-bold line-clamp-1">
+                      {getTaxonomyLabel(cat, "compact")}
+                    </span>
                   </button>
                 ))}
               </div>
-            )}
-          </div>}
-
-          {/* Root Categories Grid */}
-          {phaseOneStage === "category" && <div className="pt-4 border-t border-border-subtle space-y-3">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-              {t("publishing.publishWizard.ouParcourezLesUnivers")}
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-64 overflow-y-auto p-1">
-              {taxonomyService.getRootCategories().map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => selectTaxonomyNode(cat.id)}
-                  title={getTaxonomyLabel(cat, "compact")}
-                  className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
-                    schema?.ancestors[0]?.id === cat.id ||
-                    draft.taxonomyNodeId === cat.id
-                      ? "border-primary bg-primary-light text-primary font-bold shadow-xs"
-                      : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
-                  }`}
-                >
-                  <CategoryIcon category={cat} size="md" />
-                  <span className="text-xs font-bold line-clamp-1">
-                    {getTaxonomyLabel(cat, "compact")}
-                  </span>
-                </button>
-              ))}
             </div>
-          </div>}
+          )}
 
           {/* Current Selected Breadcrumb Path */}
           {phaseOneStage === "category" && schema && (
@@ -1954,10 +1969,14 @@ export const PublishWizard: React.FC = () => {
                 aria-label={t(
                   "publishing.publishWizard.autoriserLePaiementSecuriseDirect",
                 )}
-                disabled={!transactionCaps.canDirectPurchase}
+                disabled={
+                  Boolean(draft.digitalFulfillment) ||
+                  !transactionCaps.canDirectPurchase
+                }
                 checked={
-                  draft.transaction.allowDirectPurchase &&
-                  transactionCaps.canDirectPurchase
+                  Boolean(draft.digitalFulfillment) ||
+                  (draft.transaction.allowDirectPurchase &&
+                    transactionCaps.canDirectPurchase)
                 }
                 onChange={(e) =>
                   updateDraft({
@@ -1971,42 +1990,44 @@ export const PublishWizard: React.FC = () => {
             </div>
 
             {/* Reservation */}
-            <div
-              className={`p-4 rounded-xl border transition-all ${
-                transactionCaps.canReserve
-                  ? "border-border-base bg-bg-base/40"
-                  : "border-stone-200 bg-stone-50 opacity-60"
-              } flex items-center justify-between`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
-                  <Clock className="w-icon-md h-icon-md" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-stone-900">
-                    {t("publishing.publishWizard.reservationAvecAcompte")}
-                  </div>
-                  <div className="text-micro text-stone-500">
-                    {t("publishing.publishWizard.permetALAcheteurDe")}
-                  </div>
-                </div>
-              </div>
-              <Checkbox
-                disabled={!transactionCaps.canReserve}
-                checked={
-                  draft.transaction.allowReservation &&
+            {!draft.digitalFulfillment ? (
+              <div
+                className={`p-4 rounded-xl border transition-all ${
                   transactionCaps.canReserve
-                }
-                onChange={(e) =>
-                  updateDraft({
-                    transaction: {
-                      ...draft.transaction,
-                      allowReservation: e.target.checked,
-                    },
-                  })
-                }
-              />
-            </div>
+                    ? "border-border-base bg-bg-base/40"
+                    : "border-stone-200 bg-stone-50 opacity-60"
+                } flex items-center justify-between`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
+                    <Clock className="w-icon-md h-icon-md" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-stone-900">
+                      {t("publishing.publishWizard.reservationAvecAcompte")}
+                    </div>
+                    <div className="text-micro text-stone-500">
+                      {t("publishing.publishWizard.permetALAcheteurDe")}
+                    </div>
+                  </div>
+                </div>
+                <Checkbox
+                  disabled={!transactionCaps.canReserve}
+                  checked={
+                    draft.transaction.allowReservation &&
+                    transactionCaps.canReserve
+                  }
+                  onChange={(e) =>
+                    updateDraft({
+                      transaction: {
+                        ...draft.transaction,
+                        allowReservation: e.target.checked,
+                      },
+                    })
+                  }
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       )}
@@ -2016,180 +2037,213 @@ export const PublishWizard: React.FC = () => {
       {/* ========================================================================= */}
       {showsPanel(7) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
-              {t("publishing.publishWizard.modesDeRemiseExpedition")}
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              {t(
-                "publishing.publishWizard.determinezCommentLesAcheteursPeuvent",
-              )}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {/* Hand Delivery */}
-            <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
-                  <MapPin className="w-icon-md h-icon-md" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-stone-900">
-                    Remise en main propre
-                  </div>
-                  <div className="text-micro text-stone-500">
-                    {t("publishing.publishWizard.gratuitAvecValidationParCode")}
-                  </div>
-                </div>
-              </div>
-              <Checkbox
-                checked={draft.fulfillment.allowHandDelivery}
-                onChange={(e) =>
-                  updateDraft({
-                    fulfillment: {
-                      ...draft.fulfillment,
-                      allowHandDelivery: e.target.checked,
-                    },
-                  })
-                }
-              />
-            </div>
-
-            {/* Parcel Shipping */}
-            {fulfillmentCaps.allowParcelShipping && (
-              <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center">
-                      <Package className="w-icon-md h-icon-md" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-stone-900">
-                        {t(
-                          "publishing.publishWizard.livraisonEnColisMondialRelay",
-                        )}
-                      </div>
-                      <div className="text-micro text-stone-500">
-                        {t(
-                          "publishing.publishWizard.etiquettePrepayeeGenereeAutomatiquementL",
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <Checkbox
-                    checked={draft.fulfillment.allowParcelShipping}
-                    onChange={(e) =>
-                      updateDraft({
-                        fulfillment: {
-                          ...draft.fulfillment,
-                          allowParcelShipping: e.target.checked,
-                        },
-                      })
+          <DigitalFulfillmentEditor
+            marketCode={draft.marketCode}
+            sellerId={currentUser?.id}
+            value={draft.digitalFulfillment}
+            onChange={(digitalFulfillment) =>
+              updateDraft({
+                digitalFulfillment,
+                fulfillmentTypes: digitalFulfillment
+                  ? digitalFulfillment.fulfillmentTypes
+                  : ["PHYSICAL"],
+                selectedMarkets: digitalFulfillment
+                  ? [draft.marketCode]
+                  : draft.selectedMarkets,
+                transaction: digitalFulfillment
+                  ? {
+                      ...draft.transaction,
+                      allowDirectPurchase: true,
+                      allowReservation: false,
                     }
-                  />
-                </div>
+                  : draft.transaction,
+                fulfillment: digitalFulfillment
+                  ? {
+                      ...draft.fulfillment,
+                      allowHandDelivery: false,
+                      allowParcelShipping: false,
+                      allowBulkyDelivery: false,
+                      allowSellerDelivery: false,
+                      allowStorePickup: false,
+                    }
+                  : {
+                      ...draft.fulfillment,
+                      allowHandDelivery: true,
+                    },
+              })
+            }
+          />
 
-                {draft.fulfillment.allowParcelShipping && (
-                  <div className="pt-3 border-t border-border-subtle">
-                    <label className="text-xs font-bold text-stone-700 block mb-1.5">
-                      {t("publishing.publishWizard.gabaritDuColisPoidsEstime")}
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                      {[
-                        {
-                          id: "small",
-                          label: "Petit (< 500g)",
-                          desc: "T-shirt, smartphone",
-                        },
-                        {
-                          id: "medium",
-                          label: "Moyen (< 2kg)",
-                          desc: "Chaussures, tablette",
-                        },
-                        {
-                          id: "large",
-                          label: "Grand (< 5kg)",
-                          desc: "Manteau, cafetière",
-                        },
-                        {
-                          id: "xlarge",
-                          label: "Très grand (< 30kg)",
-                          desc: "Ampli, petit meuble",
-                        },
-                      ].map((pkg) => (
-                        <button
-                          key={pkg.id}
-                          type="button"
-                          onClick={() =>
-                            updateDraft({
-                              fulfillment: {
-                                ...draft.fulfillment,
-                                packageSpecs: {
-                                  sizeTier: pkg.id as PackageSizeTier,
-                                },
-                              },
-                            })
-                          }
-                          className={`p-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
-                            draft.fulfillment.packageSpecs?.sizeTier === pkg.id
-                              ? "bg-stone-900 text-white font-bold"
-                              : "bg-white text-stone-800 border-border-base hover:bg-stone-50"
-                          }`}
-                        >
-                          <div className="text-xs font-bold">{pkg.label}</div>
-                          <div className="text-micro opacity-70 mt-0.5">
-                            {pkg.desc}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Bulky Delivery */}
-            {fulfillmentCaps.allowBulkyDelivery && (
+          {!draft.digitalFulfillment ? (
+            <div className="space-y-3">
+              {/* Hand Delivery */}
               <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center">
-                    <Truck className="w-icon-md h-icon-md" />
+                  <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
+                    <MapPin className="w-icon-md h-icon-md" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-stone-900">
-                      {t(
-                        "publishing.publishWizard.transportDeMeublesGrosColis",
-                      )}
+                      Remise en main propre
                     </div>
                     <div className="text-micro text-stone-500">
                       {t(
-                        "publishing.publishWizard.idealPourCanapesTablesElectromenager",
+                        "publishing.publishWizard.gratuitAvecValidationParCode",
                       )}
                     </div>
                   </div>
                 </div>
                 <Checkbox
-                  checked={draft.fulfillment.allowBulkyDelivery}
+                  checked={draft.fulfillment.allowHandDelivery}
                   onChange={(e) =>
                     updateDraft({
                       fulfillment: {
                         ...draft.fulfillment,
-                        allowBulkyDelivery: e.target.checked,
+                        allowHandDelivery: e.target.checked,
                       },
                     })
                   }
                 />
               </div>
-            )}
-          </div>
+
+              {/* Parcel Shipping */}
+              {fulfillmentCaps.allowParcelShipping && (
+                <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center">
+                        <Package className="w-icon-md h-icon-md" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-stone-900">
+                          {t(
+                            "publishing.publishWizard.livraisonEnColisMondialRelay",
+                          )}
+                        </div>
+                        <div className="text-micro text-stone-500">
+                          {t(
+                            "publishing.publishWizard.etiquettePrepayeeGenereeAutomatiquementL",
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Checkbox
+                      checked={draft.fulfillment.allowParcelShipping}
+                      onChange={(e) =>
+                        updateDraft({
+                          fulfillment: {
+                            ...draft.fulfillment,
+                            allowParcelShipping: e.target.checked,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+
+                  {draft.fulfillment.allowParcelShipping && (
+                    <div className="pt-3 border-t border-border-subtle">
+                      <label className="text-xs font-bold text-stone-700 block mb-1.5">
+                        {t(
+                          "publishing.publishWizard.gabaritDuColisPoidsEstime",
+                        )}
+                      </label>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        {[
+                          {
+                            id: "small",
+                            label: "Petit (< 500g)",
+                            desc: "T-shirt, smartphone",
+                          },
+                          {
+                            id: "medium",
+                            label: "Moyen (< 2kg)",
+                            desc: "Chaussures, tablette",
+                          },
+                          {
+                            id: "large",
+                            label: "Grand (< 5kg)",
+                            desc: "Manteau, cafetière",
+                          },
+                          {
+                            id: "xlarge",
+                            label: "Très grand (< 30kg)",
+                            desc: "Ampli, petit meuble",
+                          },
+                        ].map((pkg) => (
+                          <button
+                            key={pkg.id}
+                            type="button"
+                            onClick={() =>
+                              updateDraft({
+                                fulfillment: {
+                                  ...draft.fulfillment,
+                                  packageSpecs: {
+                                    sizeTier: pkg.id as PackageSizeTier,
+                                  },
+                                },
+                              })
+                            }
+                            className={`p-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
+                              draft.fulfillment.packageSpecs?.sizeTier ===
+                              pkg.id
+                                ? "bg-stone-900 text-white font-bold"
+                                : "bg-white text-stone-800 border-border-base hover:bg-stone-50"
+                            }`}
+                          >
+                            <div className="text-xs font-bold">{pkg.label}</div>
+                            <div className="text-micro opacity-70 mt-0.5">
+                              {pkg.desc}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bulky Delivery */}
+              {fulfillmentCaps.allowBulkyDelivery && (
+                <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center">
+                      <Truck className="w-icon-md h-icon-md" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-stone-900">
+                        {t(
+                          "publishing.publishWizard.transportDeMeublesGrosColis",
+                        )}
+                      </div>
+                      <div className="text-micro text-stone-500">
+                        {t(
+                          "publishing.publishWizard.idealPourCanapesTablesElectromenager",
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Checkbox
+                    checked={draft.fulfillment.allowBulkyDelivery}
+                    onChange={(e) =>
+                      updateDraft({
+                        fulfillment: {
+                          ...draft.fulfillment,
+                          allowBulkyDelivery: e.target.checked,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
       )}
 
       {/* ========================================================================= */}
       {/* STEP 8: LOCATION & PRIVACY */}
       {/* ========================================================================= */}
-      {showsPanel(8) && (
+      {showsPanel(8) && !draft.digitalFulfillment && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-stone-900">
@@ -2514,7 +2568,6 @@ export const PublishWizard: React.FC = () => {
                   name:
                     schema?.publication.standardPolicy.label ||
                     "Publication standard gratuite",
-                  priceEur: 0,
                   description: t("publishing.publishWizard.standardIncludes", {
                     photos:
                       schema?.publication.standardPolicy.mediaAllowance || 12,
@@ -2548,9 +2601,11 @@ export const PublishWizard: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-sm font-black text-primary mt-3">
-                    {pack.priceEur === 0
+                    {pack.id === "standard"
                       ? t("publishing.publishWizard.free")
-                      : formatPrice(pack.priceEur)}
+                      : "price" in pack
+                        ? formatMoney(pack.price)
+                        : t("publishing.publishWizard.paidOptionsUnavailable")}
                   </div>
                 </button>
               ))}

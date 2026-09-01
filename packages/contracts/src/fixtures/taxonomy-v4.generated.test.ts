@@ -10,19 +10,19 @@ const bundle = taxonomyV4PublicBundleSchema.parse(JSON.parse(rawBundle));
 describe("generated taxonomy v4 public projection", () => {
   it("matches the normalized source coverage", () => {
     expect(bundle.metadata.sourceCounts).toEqual({
-      categories: 294,
-      listingTypes: 208,
+      categories: 301,
+      listingTypes: 212,
       attributes: 323,
-      bindings: 10_751,
+      bindings: 10_831,
     });
-    expect(bundle.categories).toHaveLength(294);
+    expect(bundle.categories).toHaveLength(301);
     expect(
       bundle.categories.filter((category) => !category.parentId),
-    ).toHaveLength(18);
+    ).toHaveLength(19);
     expect(
       bundle.categories.filter((category) => category.publishable),
-    ).toHaveLength(208);
-    expect(bundle.listingTypes).toHaveLength(208);
+    ).toHaveLength(212);
+    expect(bundle.listingTypes).toHaveLength(212);
     expect(bundle.attributes).toHaveLength(317);
     expect(bundle.attributeGroups).toHaveLength(56);
     expect(
@@ -31,15 +31,15 @@ describe("generated taxonomy v4 public projection", () => {
     expect(bundle.optionSets).toHaveLength(104);
     expect(bundle.options).toHaveLength(725);
     expect(bundle.optionParentLinks).toHaveLength(75);
-    expect(bundle.bindings).toHaveLength(10_751);
+    expect(bundle.bindings).toHaveLength(10_831);
     expect(bundle.dependencyRules).toHaveLength(203);
     expect(bundle.validationRules).toHaveLength(499);
-    expect(bundle.projections.filters).toHaveLength(2_704);
-    expect(bundle.projections.cardFields).toHaveLength(1_402);
-    expect(bundle.projections.detailFields).toHaveLength(10_059);
-    expect(bundle.projections.publicationFlow).toHaveLength(1_612);
-    expect(bundle.projections.search).toHaveLength(208);
-    expect(bundle.projections.seo).toHaveLength(294);
+    expect(bundle.projections.filters).toHaveLength(2_720);
+    expect(bundle.projections.cardFields).toHaveLength(1_406);
+    expect(bundle.projections.detailFields).toHaveLength(10_139);
+    expect(bundle.projections.publicationFlow).toHaveLength(1_632);
+    expect(bundle.projections.search).toHaveLength(212);
+    expect(bundle.projections.seo).toHaveLength(301);
     expect(
       bundle.attributes.some(
         (attribute) => attribute.id === "moderation_risk_level",
@@ -73,6 +73,62 @@ describe("generated taxonomy v4 public projection", () => {
         }
       }
     });
+  });
+
+  it("publishes the canonical digital-products branch without client-owned category rules", () => {
+    const root = bundle.categories.find(
+      (category) => category.id === "digital_products",
+    );
+    const publishableChildren = bundle.categories.filter(
+      (category) =>
+        category.id.startsWith("digital_products.") && category.publishable,
+    );
+
+    expect(root).toMatchObject({
+      slug: "produits-numeriques",
+      labels: { "fr-FR": "Produits numériques" },
+      publishable: false,
+    });
+    expect(publishableChildren.map((category) => category.id).sort()).toEqual([
+      "digital_products.access.courses",
+      "digital_products.access.software_licenses",
+      "digital_products.downloads.creative_assets",
+      "digital_products.downloads.documents",
+    ]);
+    for (const category of [root!, ...publishableChildren]) {
+      expect(category.marketAvailability).toEqual([
+        expect.objectContaining({
+          marketCode: "FR",
+          status: "active",
+          marketplaceEnabled: true,
+          indexable: true,
+        }),
+        expect.objectContaining({
+          marketCode: "BE",
+          status: "active",
+          marketplaceEnabled: true,
+          indexable: true,
+        }),
+        expect.objectContaining({
+          marketCode: "CH",
+          status: "active",
+          marketplaceEnabled: true,
+          indexable: true,
+        }),
+        expect.objectContaining({
+          marketCode: "SN",
+          status: "coming_soon",
+          marketplaceEnabled: false,
+          indexable: false,
+        }),
+        expect.objectContaining({
+          marketCode: "BF",
+          status: "coming_soon",
+          marketplaceEnabled: false,
+          indexable: false,
+        }),
+      ]);
+    }
   });
 
   it("requires localized compact labels without changing canonical names", () => {

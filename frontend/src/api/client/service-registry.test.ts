@@ -1,4 +1,5 @@
 import { afterEach, describe, it, expect } from "vitest";
+import { resolveMarketContext } from "@shongre/contracts";
 import {
   activateServiceRegistry,
   createServiceRegistry,
@@ -9,6 +10,15 @@ import { isDemoMode } from "./data-mode.service";
 // Lazy adapters are transformed on demand. Full-suite CPU contention can push
 // this integration-style boundary check beyond Vitest's five-second default.
 const LAZY_DOMAIN_IMPORT_TIMEOUT_MS = 15_000;
+const france = resolveMarketContext({
+  hostname: "shongre.fr",
+  pathname: "/",
+  infrastructure: {
+    franceDomain: "shongre.fr",
+    globalDomain: "shongre.com",
+    canonicalProtocol: "https",
+  },
+});
 
 const SERVICE_KEYS = [
   "listings",
@@ -32,6 +42,7 @@ const SERVICE_KEYS = [
   "auto",
   "realEstate",
   "employment",
+  "digitalProducts",
   "businessRules",
   "finance",
   "commissions",
@@ -86,12 +97,14 @@ describe("Service Registry & API Adapter Boundary", () => {
   it(
     "preserves Promise-based APIs across representative lazy demo domains",
     async () => {
-      const [categories, boosts, proPlans, catalog] = await Promise.all([
-        services.taxonomy.getRootCategories(),
-        services.promotions.getAvailableBoosts(),
-        services.promotions.getProSubscriptionPlans(),
-        services.businessRules.getCatalog("FR"),
-      ]);
+      const [categories, boosts, proPlans, catalog, digitalPolicy] =
+        await Promise.all([
+          services.taxonomy.getRootCategories(),
+          services.promotions.getAvailableBoosts(france),
+          services.promotions.getProSubscriptionPlans(france),
+          services.businessRules.getCatalog(france),
+          services.digitalProducts.getPolicy("FR"),
+        ]);
 
       expect(Array.isArray(categories)).toBe(true);
       expect(categories.length).toBeGreaterThan(0);
@@ -105,6 +118,7 @@ describe("Service Registry & API Adapter Boundary", () => {
       expect(catalog.products.length).toBeGreaterThan(0);
       expect(catalog.rules.length).toBeGreaterThan(0);
       expect(catalog.commissionPolicies.length).toBeGreaterThan(0);
+      expect(digitalPolicy.marketCode).toBe("FR");
     },
     LAZY_DOMAIN_IMPORT_TIMEOUT_MS,
   );

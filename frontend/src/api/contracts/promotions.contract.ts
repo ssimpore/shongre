@@ -1,4 +1,5 @@
 import { ListingBoostOption, ProPlan } from "../../configuration/plans.config";
+import type { MarketContext } from "@shongre/contracts";
 
 export interface PromotionActivationResult {
   success: boolean;
@@ -7,14 +8,19 @@ export interface PromotionActivationResult {
 }
 
 export interface PromotionsServiceContract {
-  getAvailableBoosts(listingId?: string): Promise<ListingBoostOption[]>;
-  getProSubscriptionPlans(): Promise<ProPlan[]>;
+  getAvailableBoosts(
+    marketContext: MarketContext,
+    listingId?: string,
+  ): Promise<ListingBoostOption[]>;
+  getProSubscriptionPlans(marketContext: MarketContext): Promise<ProPlan[]>;
   applyBoost(
+    marketContext: MarketContext,
     listingId: string,
     productId: string,
     input: { paymentMethod: string; idempotencyKey: string },
   ): Promise<PromotionActivationResult>;
   subscribeToProPlan(
+    marketContext: MarketContext,
     sellerId: string,
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }>;

@@ -30,10 +30,7 @@ test.describe("current location picker", () => {
     await expect(dialog.locator("#precise-location-purpose")).toContainText(
       "Vos coordonnées précises ne sont pas enregistrées",
     );
-    await expect(dialog.locator("#precise-location-purpose")).toBeAttached();
-    await expect(dialog.locator("#precise-location-purpose")).toHaveClass(
-      /sr-only/,
-    );
+    await expect(dialog.locator("#precise-location-purpose")).toBeVisible();
 
     const accessibility = await new AxeBuilder({ page })
       .include('[role="dialog"]')
@@ -79,10 +76,7 @@ test.describe("current location picker", () => {
     await page.getByRole("button", { name: "Ouvrir le menu" }).click();
     await page.locator("#header-mobile-minimal-location-button").click();
     const dialog = page.getByRole("dialog", { name: "Zone géographique" });
-    await expect(dialog.locator("#precise-location-purpose")).toBeAttached();
-    await expect(dialog.locator("#precise-location-purpose")).toHaveClass(
-      /sr-only/,
-    );
+    await expect(dialog.locator("#precise-location-purpose")).toBeVisible();
     await dialog
       .getByRole("button", { name: "Utiliser ma position actuelle" })
       .click();

@@ -17,6 +17,7 @@ import {
 } from "../../configuration/market-baseline";
 import { CategoryIcon } from "./CategoryIcon";
 import { formatListingPricePresentation } from "../../domains/listing/listing-price.presentation";
+import { Badge } from "./Badge";
 
 export interface ListingCardProps {
   listing: Listing;
@@ -86,6 +87,9 @@ function toListingCardView(
     deliveryAvailable: listing.deliveryOptions.some(
       (option) => option.available && option.type !== "hand_delivery",
     ),
+    fulfillmentTypes: listing.fulfillmentTypes,
+    requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
+    productVersion: listing.productVersion,
     onlinePaymentAvailable: listing.isOnlinePaymentAvailable,
     isNegotiable: listing.isNegotiable,
     isFreeDonation: listing.isFreeDonation,
@@ -202,6 +206,9 @@ export function ListingCard({
     typeof configuredPath === "string" && configuredPath.startsWith("/")
       ? configuredPath
       : `/annonce/${listing.id}`;
+  const isDigital =
+    listing.requiresPhysicalDelivery === false ||
+    listing.fulfillmentTypes?.some((type) => type !== "PHYSICAL");
 
   return (
     <ListingCardViewCard
@@ -226,6 +233,11 @@ export function ListingCard({
       isFavorite={isFavorite(listing.id)}
       favoriteLabel={t("ui.listingCard.ajouterAuxFavoris")}
       onFavoriteToggle={() => void toggleFavorite(listing.id)}
+      quickAction={
+        isDigital ? (
+          <Badge variant="primary">{t("digital.common.title")}</Badge>
+        ) : undefined
+      }
       renderCharacteristicIcon={
         variant === "showcase"
           ? (_characteristic, index) =>

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import type { MarketContext } from "@shongre/contracts";
 import {
   IPaymentProvider,
   PaymentIntentResult,
@@ -5,6 +7,7 @@ import {
 } from "../../integrations/providers/index.js";
 import { repositories } from "../../infrastructure/database/repositories/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { requireMonetizationMarketContext } from "../business-rules/monetization-market-context.js";
 
 export type { PaymentIntentResult };
 
@@ -23,11 +26,13 @@ export class PaymentsService {
   }
 
   async requestSellerPayout(
+    marketContext: MarketContext,
     sellerId: string,
     amountMinor: number,
     currency: string,
     idempotencyKey: string,
   ): Promise<{ payoutId: string; status: "completed" | "processing" }> {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
     if (
       !Number.isSafeInteger(amountMinor) ||
       amountMinor <= 0 ||
@@ -41,26 +46,33 @@ export class PaymentsService {
         message: "La demande de versement est invalide.",
       });
     }
+    if (currency !== market.currency) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La devise ne correspond pas au marché actif.",
+      });
+    }
     const accountReference = await this.getPayoutAccount(sellerId);
     return this.paymentProvider.requestPayout(
       accountReference,
       amountMinor,
       currency,
-      idempotencyKey,
+      `${market.marketCode}:${createHash("sha256").update(idempotencyKey).digest("hex")}`,
     );
   }
 
   async getSellerBalance(
+    marketContext: MarketContext,
     sellerId: string,
-    currency: string,
   ): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;
   }> {
+    const market = requireMonetizationMarketContext(marketContext, "read");
     return this.paymentProvider.getBalance(
       await this.getPayoutAccount(sellerId),
-      currency,
+      market.currency,
     );
   }
 

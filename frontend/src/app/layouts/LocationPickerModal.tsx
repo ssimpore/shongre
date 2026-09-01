@@ -232,9 +232,12 @@ export const LocationPickerModal: React.FC = () => {
               geolocationMessage ? "location-geolocation-status" : undefined
             }
           />
-          <span id="precise-location-purpose" className="sr-only">
+          <p
+            id="precise-location-purpose"
+            className="text-micro leading-relaxed text-text-secondary"
+          >
             {t("shell.locationPickerModal.preciseLocationPurpose")}
-          </span>
+          </p>
           {geolocationMessage ? (
             <p
               id="location-geolocation-status"

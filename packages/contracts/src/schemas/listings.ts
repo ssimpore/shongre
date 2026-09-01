@@ -5,6 +5,7 @@ import {
   discoveryPresentationSchema,
   listingPromotionStateSchema,
 } from "./discovery";
+import { fulfillmentTypeSchema } from "./digital-products";
 
 export const listingCardSchema = z.object({
   id: z.string().min(1),
@@ -27,6 +28,9 @@ export const listingCardSchema = z.object({
   publishedAt: z.string(),
   photoCount: z.number().int().nonnegative().optional(),
   deliveryAvailable: z.boolean().optional(),
+  fulfillmentTypes: z.array(fulfillmentTypeSchema).min(1).max(5).optional(),
+  requiresPhysicalDelivery: z.boolean().optional(),
+  productVersion: z.string().min(1).max(120).optional(),
   onlinePaymentAvailable: z.boolean().optional(),
   isNegotiable: z.boolean().optional(),
   isFreeDonation: z.boolean().optional(),

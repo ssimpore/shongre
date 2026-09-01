@@ -35,6 +35,7 @@ try {
           specs: [
             "serves the international gateway with environment-safe headers",
             "serves the France marketplace with environment-safe headers",
+            "serves each canonical Shongre application hostname",
             "serves live and ready API probes through the Tunnel",
             "returns a market-scoped public listings feed",
           ].map((title) => ({
@@ -43,7 +44,7 @@ try {
           })),
         },
       ],
-      stats: { expected: 4, skipped: 0, unexpected: 0, duration: 1234 },
+      stats: { expected: 5, skipped: 0, unexpected: 0, duration: 1234 },
     }),
   );
   writeFileSync(

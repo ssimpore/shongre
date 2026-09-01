@@ -130,7 +130,7 @@ export class StripeOrderPaymentGateway implements OrderPaymentGateway {
       accountId: input.buyerId,
       verticalType: "marketplace",
       marketCode: input.marketCode,
-      returnRoute: "/transactions",
+      returnRoute: "/compte/achats",
       mode: "payment",
       lines: [
         {

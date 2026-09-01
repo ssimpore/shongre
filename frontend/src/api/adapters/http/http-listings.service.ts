@@ -42,6 +42,9 @@ export type BackendListing = {
   longitude?: number;
   allowedDelivery: Listing["deliveryOptions"][number]["type"][];
   shippingCost?: number;
+  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
+  requiresPhysicalDelivery?: boolean;
+  productVersion?: string;
   images: string[];
   attributes: Record<string, unknown>;
   isUrgent?: boolean;
@@ -80,6 +83,9 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     currency: listing.currency,
     isNegotiable: false,
     isFreeDonation: listing.price === 0,
+    fulfillmentTypes: listing.fulfillmentTypes,
+    requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
+    productVersion: listing.productVersion,
     categorySlug: categoryParts[0] || listing.categoryId,
     subCategorySlug: listing.categoryId,
     categoryLabel: categoryParts[0] || "Annonce",
@@ -180,9 +186,15 @@ const publicationPayload = (draft: PublicationDraftState) => {
       location_city: draft.location.city,
     },
     allowedDelivery: [
-      ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
-      ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
+      ...(draft.digitalFulfillment
+        ? ["digital"]
+        : [
+            ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
+            ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
+          ]),
     ],
+    fulfillmentTypes: draft.fulfillmentTypes ?? ["PHYSICAL"],
+    digitalFulfillment: draft.digitalFulfillment,
     condition: draft.condition,
   };
 };

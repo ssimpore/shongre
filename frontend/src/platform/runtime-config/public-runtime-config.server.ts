@@ -58,13 +58,14 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     }
   } else {
     const errors: string[] = [];
-    if (dataMode !== "demo") errors.push("NEXT_PUBLIC_DATA_MODE=demo");
-    if (!mockStorageEnabled)
-      errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true");
-    if (stripePublishableKey)
+    if (dataMode !== "api") errors.push("NEXT_PUBLIC_DATA_MODE=api");
+    if (mockStorageEnabled)
+      errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
+    if (!/^pk_live_[A-Za-z0-9]+$/.test(stripePublishableKey)) {
       errors.push(
-        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be empty in demo mode",
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live publishable key",
       );
+    }
     if (errors.length > 0) {
       throw new Error(
         `[Web Config] Production runtime configuration is unsafe: ${errors.join(", ")}.`,

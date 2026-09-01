@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   creditTransactionSchema,
+  MONETIZATION_SCOPE_CLASSIFICATION,
   monetizationInvoiceSchema,
   monetizationSubscriptionSchema,
   subscriptionChangePreviewSchema,
@@ -11,6 +12,26 @@ const later = "2026-09-23T10:00:00.000Z";
 const eur = (amountMinor: number) => ({ amountMinor, currency: "EUR" });
 
 describe("monetization lifecycle contracts", () => {
+  it("classifies shared definitions separately from market-owned decisions", () => {
+    expect(MONETIZATION_SCOPE_CLASSIFICATION).toMatchObject({
+      providerDefinition: "PLATFORM_GLOBAL",
+      productDefinition: "MULTI_MARKET_SHARED",
+      catalogVersion: "MARKET_SCOPED",
+      quote: "MARKET_SCOPED",
+      subscription: "MARKET_SCOPED",
+      webhookEvent: "MARKET_SCOPED",
+      analyticsEvent: "MARKET_SCOPED",
+      idempotencyKey: "MARKET_SCOPED",
+    });
+    expect(
+      Object.values(MONETIZATION_SCOPE_CLASSIFICATION).every((scope) =>
+        ["PLATFORM_GLOBAL", "MARKET_SCOPED", "MULTI_MARKET_SHARED"].includes(
+          scope,
+        ),
+      ),
+    ).toBe(true);
+  });
+
   it("accepts a complete scheduled cancellation state", () => {
     expect(
       monetizationSubscriptionSchema.parse({

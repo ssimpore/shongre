@@ -68,6 +68,30 @@ const demoListings: ListingCardView[] = [
     isFeatured: false,
   },
   {
+    id: "list_digital_file",
+    title: "Guide d’installation numérique",
+    price: { amountMinor: 2900, currency: "EUR" },
+    imageUrl:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
+    city: "",
+    marketCode: "FR",
+    conditionLabel: "Version numérique",
+    characteristics: ["Produit numérique", "Fichier privé"],
+    publishedAt: "2026-08-30T10:00:00.000Z",
+    fulfillmentTypes: ["FILE_DOWNLOAD"],
+    requiresPhysicalDelivery: false,
+    productVersion: "2026.09",
+    seller: {
+      id: "user_camille",
+      name: "Camille Martin",
+      sellerType: "individual",
+      isIdentityVerified: true,
+      isBusinessVerified: false,
+    },
+    isUrgent: false,
+    isFeatured: false,
+  },
+  {
     id: "list_be_1",
     title: "Vélo urbain léger avec garde-boue",
     price: { amountMinor: 78000, currency: "EUR" },
@@ -133,6 +157,11 @@ export class DemoListingsService implements ListingsService {
       conditionLabel: draft.condition,
       characteristics: [],
       publishedAt: "2026-08-21T10:00:00.000Z",
+      fulfillmentTypes: draft.digitalFulfillment
+        ? draft.digitalFulfillment.fulfillmentTypes
+        : ["PHYSICAL"],
+      requiresPhysicalDelivery: !draft.digitalFulfillment,
+      productVersion: draft.digitalFulfillment?.productVersion,
       isUrgent: false,
       isFeatured: false,
     };
@@ -189,6 +218,10 @@ export class HttpListingsService implements ListingsService {
             condition: draft.condition,
             images: draft.images,
             attributes: draft.attributes,
+            fulfillmentTypes: draft.digitalFulfillment
+              ? draft.digitalFulfillment.fulfillmentTypes
+              : ["PHYSICAL"],
+            digitalFulfillment: draft.digitalFulfillment,
           },
         }),
       },

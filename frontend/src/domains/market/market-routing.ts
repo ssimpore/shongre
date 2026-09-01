@@ -33,6 +33,27 @@ export function isDevelopmentMarketHost(hostname: string): boolean {
   );
 }
 
+export function crossesProductionMarketOrigin(input: {
+  currentOrigin: string;
+  currentHostname: string;
+  destination: string;
+}): boolean {
+  return (
+    !isDevelopmentMarketHost(input.currentHostname) &&
+    new URL(input.destination, input.currentOrigin).origin !==
+      new URL(input.currentOrigin).origin
+  );
+}
+
+export function shouldUseAuthenticatedMarketHandoff(input: {
+  isAuthenticated: boolean;
+  currentOrigin: string;
+  currentHostname: string;
+  destination: string;
+}): boolean {
+  return input.isAuthenticated && crossesProductionMarketOrigin(input);
+}
+
 export function currentRuntimeInternalPath(context: MarketContext): string {
   if (typeof window === "undefined") return context.internalPath;
   const pathname = window.location.pathname;

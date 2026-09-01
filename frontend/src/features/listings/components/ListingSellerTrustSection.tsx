@@ -8,6 +8,7 @@ import {
   showsVerifiedBadge,
 } from "../../../domains/user/user.domain";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { routes } from "../../../configuration/routes";
 
 export interface ListingSellerTrustSectionProps {
   seller: UserProfile;
@@ -20,10 +21,12 @@ export const ListingSellerTrustSection: React.FC<
 > = ({ seller, reviews = [], className = "" }) => {
   const { t } = useTranslation();
   const isPro = isProSeller(seller);
-  const profileUrl =
-    isPro && seller.storeSlug
-      ? `/boutique/${seller.storeSlug}`
-      : `/profil/${seller.slug || seller.id}`;
+  const profileUrl = routes.seller.publicPage({
+    id: seller.id,
+    slug: seller.slug,
+    storeSlug: seller.storeSlug,
+    isProfessional: isPro,
+  });
 
   return (
     <div

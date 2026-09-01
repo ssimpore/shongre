@@ -25,6 +25,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
 import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
@@ -43,10 +44,11 @@ export interface DirectPurchaseCheckoutModalProps {
 export const DirectPurchaseCheckoutModal: React.FC<
   DirectPurchaseCheckoutModalProps
 > = ({ isOpen, onClose, listing, onSuccess }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(digitalMessagesFr);
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
   const toast = useToast();
+  const requiresPhysicalDelivery = listing.requiresPhysicalDelivery !== false;
 
   const [step, setStep] = useState<"delivery" | "payment" | "success">(
     "delivery",
@@ -102,6 +104,10 @@ export const DirectPurchaseCheckoutModal: React.FC<
           title: "Livraison express",
           description: "Délai confirmé dans la commande",
         },
+        digital: {
+          title: t("digital.common.noShipping"),
+          description: t("digital.purchases.processing"),
+        },
       };
     return listing.deliveryOptions
       .filter((option) => option.available)
@@ -112,7 +118,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
         description: labels[option.type].description,
         price: option.price || 0,
       }));
-  }, [listing.deliveryOptions]);
+  }, [listing.deliveryOptions, t]);
 
   // Set default quote if selected is not found
   const selectedQuote = useMemo(() => {
@@ -122,7 +128,8 @@ export const DirectPurchaseCheckoutModal: React.FC<
   const deliveryMethod: DeliveryType =
     selectedQuote?.deliveryType === "custom_carrier"
       ? "home_delivery"
-      : selectedQuote?.deliveryType || "hand_delivery";
+      : selectedQuote?.deliveryType ||
+        (requiresPhysicalDelivery ? "hand_delivery" : "digital");
 
   // 2. Price is always quoted by the same backend service that creates checkout.
   useEffect(() => {
@@ -153,7 +160,10 @@ export const DirectPurchaseCheckoutModal: React.FC<
   }, [deliveryMethod, listing.id]);
 
   const handleProceedToPayment = () => {
-    if (selectedQuote?.deliveryType !== "hand_delivery") {
+    if (
+      requiresPhysicalDelivery &&
+      selectedQuote?.deliveryType !== "hand_delivery"
+    ) {
       if (
         !shippingAddress.addressLine.trim() ||
         !shippingAddress.postalCode.trim()
@@ -177,12 +187,14 @@ export const DirectPurchaseCheckoutModal: React.FC<
       const result = await services.orders.createDirectPurchase({
         listingId: listing.id,
         deliveryMethod,
-        shippingAddress: {
-          street: shippingAddress.addressLine,
-          postalCode: shippingAddress.postalCode,
-          city: shippingAddress.city,
-          country: listing.marketCode || activeMarket.countryCode,
-        },
+        shippingAddress: requiresPhysicalDelivery
+          ? {
+              street: shippingAddress.addressLine,
+              postalCode: shippingAddress.postalCode,
+              city: shippingAddress.city,
+              country: listing.marketCode || activeMarket.countryCode,
+            }
+          : undefined,
         idempotencyKey: operationKey.current,
       });
 
@@ -324,86 +336,87 @@ export const DirectPurchaseCheckoutModal: React.FC<
             </div>
 
             {/* Destination Address if shipping */}
-            {selectedQuote?.deliveryType !== "hand_delivery" && (
-              <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
-                <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
-                  <MapPin className="w-icon-md h-icon-md text-primary" />
-                  <span>
-                    {t(
-                      "transactions.directPurchaseCheckoutModal.adresseDeLivraison",
-                    )}
-                  </span>
-                </h4>
+            {requiresPhysicalDelivery &&
+              selectedQuote?.deliveryType !== "hand_delivery" && (
+                <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
+                  <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                    <MapPin className="w-icon-md h-icon-md text-primary" />
+                    <span>
+                      {t(
+                        "transactions.directPurchaseCheckoutModal.adresseDeLivraison",
+                      )}
+                    </span>
+                  </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <FormField
-                    label={t(
-                      "transactions.directPurchaseCheckoutModal.nomPrenom",
-                    )}
-                  >
-                    <Input
-                      value={shippingAddress.fullName}
-                      onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          fullName: e.target.value,
-                        })
-                      }
-                    />
-                  </FormField>
-                  <FormField
-                    label={t(
-                      "transactions.directPurchaseCheckoutModal.telephone",
-                    )}
-                  >
-                    <Input
-                      value={shippingAddress.phone}
-                      onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          phone: e.target.value,
-                        })
-                      }
-                    />
-                  </FormField>
-                  <div className="sm:col-span-2">
-                    <FormField label="Adresse">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <FormField
+                      label={t(
+                        "transactions.directPurchaseCheckoutModal.nomPrenom",
+                      )}
+                    >
                       <Input
-                        value={shippingAddress.addressLine}
+                        value={shippingAddress.fullName}
                         onChange={(e) =>
                           setShippingAddress({
                             ...shippingAddress,
-                            addressLine: e.target.value,
+                            fullName: e.target.value,
+                          })
+                        }
+                      />
+                    </FormField>
+                    <FormField
+                      label={t(
+                        "transactions.directPurchaseCheckoutModal.telephone",
+                      )}
+                    >
+                      <Input
+                        value={shippingAddress.phone}
+                        onChange={(e) =>
+                          setShippingAddress({
+                            ...shippingAddress,
+                            phone: e.target.value,
+                          })
+                        }
+                      />
+                    </FormField>
+                    <div className="sm:col-span-2">
+                      <FormField label="Adresse">
+                        <Input
+                          value={shippingAddress.addressLine}
+                          onChange={(e) =>
+                            setShippingAddress({
+                              ...shippingAddress,
+                              addressLine: e.target.value,
+                            })
+                          }
+                        />
+                      </FormField>
+                    </div>
+                    <FormField label="Code postal">
+                      <Input
+                        value={shippingAddress.postalCode}
+                        onChange={(e) =>
+                          setShippingAddress({
+                            ...shippingAddress,
+                            postalCode: e.target.value,
+                          })
+                        }
+                      />
+                    </FormField>
+                    <FormField label="Ville">
+                      <Input
+                        value={shippingAddress.city}
+                        onChange={(e) =>
+                          setShippingAddress({
+                            ...shippingAddress,
+                            city: e.target.value,
                           })
                         }
                       />
                     </FormField>
                   </div>
-                  <FormField label="Code postal">
-                    <Input
-                      value={shippingAddress.postalCode}
-                      onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          postalCode: e.target.value,
-                        })
-                      }
-                    />
-                  </FormField>
-                  <FormField label="Ville">
-                    <Input
-                      value={shippingAddress.city}
-                      onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          city: e.target.value,
-                        })
-                      }
-                    />
-                  </FormField>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Pricing Summary */}
             <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-3 text-sm font-medium">
@@ -416,7 +429,11 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 </span>
               </div>
               <div className="flex justify-between text-stone-600">
-                <span>Frais de livraison ({selectedQuote?.title})</span>
+                <span>
+                  {requiresPhysicalDelivery
+                    ? `Frais de livraison (${selectedQuote?.title})`
+                    : t("digital.common.noShipping")}
+                </span>
                 <span className="font-bold text-stone-900">
                   {authoritativeQuote?.shippingFeeMinor === 0
                     ? "Gratuit"

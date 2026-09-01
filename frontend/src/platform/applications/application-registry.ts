@@ -1,13 +1,10 @@
 import type { AppEnvironment } from "@shongre/contracts/environment";
+import {
+  SHONGRE_APPLICATION_IDS,
+  type ShongreApplicationId,
+} from "@shongre/contracts/applications";
 
-export const SHONGRE_APPLICATION_IDS = [
-  "marketplace",
-  "solutions",
-  "prospects",
-  "facturation",
-] as const;
-
-export type ShongreApplicationId = (typeof SHONGRE_APPLICATION_IDS)[number];
+export { SHONGRE_APPLICATION_IDS, type ShongreApplicationId };
 
 export interface ShongreApplicationRuntime {
   applicationId: ShongreApplicationId;

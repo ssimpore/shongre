@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useContext, useMemo } from "react";
 import { useMarketLocation } from "../app/providers/MarketLocationProvider";
-import { MessageKey } from "./messages.fr";
+import type { MessageCatalogue, MessageKey } from "./messages.fr";
 import {
   DEFAULT_LOCALE,
   resolveLocale,
   translate,
+  translateWithSupplementalCatalogue,
   TranslateOptions,
 } from "./i18n.service";
 
@@ -49,13 +50,30 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({
  * obvious correct behaviour — render French — and crashing a page over a missing
  * text provider is a worse failure than the one it reports.
  */
-export const useTranslation = (): I18nContextValue => {
+export const useTranslation = (
+  supplementalCatalogue?: MessageCatalogue,
+): I18nContextValue => {
   const context = useContext(I18nContext);
+  const locale = context?.locale ?? DEFAULT_LOCALE;
+
+  if (supplementalCatalogue) {
+    return {
+      locale,
+      t: (key: MessageKey, options?: TranslateOptions) =>
+        translateWithSupplementalCatalogue(
+          supplementalCatalogue,
+          key,
+          locale,
+          options,
+        ),
+    };
+  }
+
   if (context) return context;
 
   return {
-    locale: DEFAULT_LOCALE,
+    locale,
     t: (key: MessageKey, options?: TranslateOptions) =>
-      translate(key, DEFAULT_LOCALE, options),
+      translate(key, locale, options),
   };
 };

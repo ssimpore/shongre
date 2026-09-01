@@ -43,6 +43,16 @@ export default function AccountScreen() {
             variant="secondary"
           />
           <Button
+            label="Mes achats numériques"
+            onPress={() => router.push("/account/digital-purchases" as never)}
+            variant="secondary"
+          />
+          <Button
+            label="Vendre des produits numériques"
+            onPress={() => router.push("/account/digital-selling" as never)}
+            variant="secondary"
+          />
+          <Button
             label="Se déconnecter"
             onPress={() => void logout()}
             variant="ghost"

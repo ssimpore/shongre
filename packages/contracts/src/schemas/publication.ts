@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { marketCodeSchema } from "./primitives";
 import { taxonomyV4ListingIntentSchema } from "./taxonomy";
+import { digitalFulfillmentVersionInputSchema } from "./digital-products";
 
 export const PUBLICATION_CONSTRAINTS = {
   title: { minLength: 3, maxLength: 120 },
@@ -112,39 +113,57 @@ export function toApplicationListingCondition(
   return fallback;
 }
 
-export const publicationInputSchema = z.object({
-  title: z
-    .string()
-    .min(PUBLICATION_CONSTRAINTS.title.minLength)
-    .max(PUBLICATION_CONSTRAINTS.title.maxLength),
-  description: z
-    .string()
-    .max(PUBLICATION_CONSTRAINTS.description.maxLength)
-    .default(""),
-  amountMinor: z.number().int().positive(),
-  currency: z.string().length(3),
-  categoryId: z.string().min(1),
-  listingTypeId: z.string().min(1).optional(),
-  listingIntent: taxonomyV4ListingIntentSchema.optional(),
-  taxonomyVersion: z.literal("4.0.0").optional(),
-  attributes: z.record(z.string(), z.unknown()).default({}),
-  marketCode: marketCodeSchema,
-  selectedMarkets: z.array(marketCodeSchema).min(1).optional(),
-  marketPublications: z
-    .record(
-      z.object({
-        priceMinor: z.number().int().nonnegative().optional(),
-        currency: z.string().length(3).optional(),
-        localizedContent: z.record(z.unknown()).optional(),
-      }),
-    )
-    .optional(),
-  city: z.string().min(1),
-  postalCode: z.string().min(3),
-  condition: z.string().min(1),
-  images: z
-    .array(z.string())
-    .max(PUBLICATION_CONSTRAINTS.imageCount.max)
-    .default([]),
-});
+export const publicationInputSchema = z
+  .object({
+    title: z
+      .string()
+      .min(PUBLICATION_CONSTRAINTS.title.minLength)
+      .max(PUBLICATION_CONSTRAINTS.title.maxLength),
+    description: z
+      .string()
+      .max(PUBLICATION_CONSTRAINTS.description.maxLength)
+      .default(""),
+    amountMinor: z.number().int().positive(),
+    currency: z.string().length(3),
+    categoryId: z.string().min(1),
+    listingTypeId: z.string().min(1).optional(),
+    listingIntent: taxonomyV4ListingIntentSchema.optional(),
+    taxonomyVersion: z.literal("4.0.0").optional(),
+    attributes: z.record(z.string(), z.unknown()).default({}),
+    marketCode: marketCodeSchema,
+    selectedMarkets: z.array(marketCodeSchema).min(1).optional(),
+    marketPublications: z
+      .record(
+        z.object({
+          priceMinor: z.number().int().nonnegative().optional(),
+          currency: z.string().length(3).optional(),
+          localizedContent: z.record(z.unknown()).optional(),
+        }),
+      )
+      .optional(),
+    city: z.string().default(""),
+    postalCode: z.string().default(""),
+    condition: z.string().min(1),
+    images: z
+      .array(z.string())
+      .max(PUBLICATION_CONSTRAINTS.imageCount.max)
+      .default([]),
+    digitalFulfillment: digitalFulfillmentVersionInputSchema.optional(),
+  })
+  .superRefine((value, context) => {
+    if (!value.digitalFulfillment && !value.city.trim()) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["city"],
+        message: "Physical publication requires a city.",
+      });
+    }
+    if (!value.digitalFulfillment && value.postalCode.trim().length < 3) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["postalCode"],
+        message: "Physical publication requires a postal code.",
+      });
+    }
+  });
 export type PublicationInput = z.infer<typeof publicationInputSchema>;

@@ -61,6 +61,31 @@ describe("route builders", () => {
     );
   });
 
+  it("routes individual sellers to profiles and professionals to storefronts", () => {
+    expect(
+      routes.seller.publicPage({
+        id: "user_marie",
+        slug: "marie-durand",
+        isProfessional: false,
+      }),
+    ).toBe("/profil/marie-durand");
+    expect(
+      routes.seller.publicPage({
+        id: "user_dealer_owner",
+        slug: "michel-girard-auto-select-lyon",
+        storeSlug: "auto-select-lyon",
+        isProfessional: true,
+      }),
+    ).toBe("/boutique/auto-select-lyon");
+    expect(
+      routes.seller.publicPage({
+        id: "organization-technova",
+        slug: "technova",
+        isProfessional: true,
+      }),
+    ).toBe("/boutique/technova");
+  });
+
   it("builds the standalone Prospects CRM surface without admin routes", () => {
     expect(routes.prospects.workspace()).toBe("/app");
     expect(routes.prospects.company("company / été")).toBe(

@@ -20,13 +20,17 @@ process production data or money.
    selection: Stripe/Identity in test mode, SIRENE, Gemini staging and the
    sandbox transactional-email boundary. Demo providers are rejected by the
    staging environment gate. Run real sandbox tests for payment, refund,
-   transfer/payout, Identity, registry verification, Gemini moderation, and
-   transactional email.
+   transfer/payout, Identity, registry verification, Gemini moderation,
+   transactional email, SMS, push, geocoding, malware scanning, and the
+   selected search index. Keep any provider without approved policy and
+   credentials disabled.
 4. Complete the database and object-storage restore drill and record restricted
    evidence. Run the hosted load smoke and observability evidence probes. The
    provider-smoke and approval files must name the exact `release_sha`; the
    staging certificate must embed successful public-browser and performance
-   evidence for the same commit.
+   evidence for the same commit. The browser certificate must exercise the
+   France and international marketplace origins and every split application
+   origin; a skipped or error-state Solutions catalog fails certification.
 5. Load production secrets from the secret manager and run
    `make production-release-check`. Never paste values into tickets or logs.
 

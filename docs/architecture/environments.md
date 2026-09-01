@@ -54,6 +54,8 @@ match exactly.
 | Analytics           | off                        | test                     | test                 | development          | staging                  | production                   |
 | Search indexing     | disabled                   | disabled                 | disabled             | disabled             | disabled                 | enabled                      |
 | Real customers      | no                         | no                       | no                   | no                   | no                       | yes                          |
+| Web data mode       | demo                       | demo                     | demo or isolated API | demo or isolated API | API                      | API                          |
+| Web mock storage    | enabled                    | enabled                  | explicit             | explicit             | disabled                 | disabled                     |
 
 The table describes deployment intent. Executable enforcement comes from the
 typed safety module, environment validator, startup checks, and protected
@@ -68,6 +70,20 @@ PUBLIC_FR_URL=
 PUBLIC_INTL_URL=
 API_URL=
 ```
+
+The split Web runtime additionally requires four explicit application origins
+in staging and production:
+
+```env
+SHONGRE_MARKETPLACE_ORIGIN=
+SHONGRE_SOLUTIONS_ORIGIN=
+SHONGRE_PROSPECTS_ORIGIN=
+SHONGRE_FACTURATION_ORIGIN=
+```
+
+Those four values must be distinct HTTPS hosts. Tracked staging and production
+profiles intentionally leave them empty: the deployment owner must bind the
+reviewed DNS/TLS topology in the host-managed frontend environment file.
 
 The client projections are derived from them. `NEXT_PUBLIC_API_URL` and
 `EXPO_PUBLIC_API_URL` must be the configured API origin plus `/api/v1`.

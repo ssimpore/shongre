@@ -2,8 +2,12 @@ import { ArrowRight, Bell, CheckCircle2, ExternalLink } from "lucide-react";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import { resolveSolutionLaunch } from "../../domains/solutions/solutions.launch";
-import { SOLUTION_LIFECYCLE_PRESENTATION } from "../../domains/solutions/solutions.presentation";
+import {
+  presentSolutionLaunch,
+  solutionLifecycleLabel,
+} from "../../domains/solutions/solutions.presentation";
 import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
+import { useTranslation } from "../../i18n/I18nProvider";
 import type { UserProfile } from "../../types";
 import { SolutionIcon } from "./SolutionIcon";
 import { SolutionPreview } from "./SolutionPreview";
@@ -17,13 +21,14 @@ export function SolutionCatalogRow({
   marketCode: string;
   user: UserProfile | null;
 }) {
-  const lifecycle = SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle];
+  const { t } = useTranslation();
   const launch = resolveSolutionLaunch({
     solution,
     marketCode,
     user,
     applications: getPublicRuntimeConfig().applications,
   });
+  const launchCopy = presentSolutionLaunch(t, solution, launch);
   const detailHref = applicationHref("solutions", `/${solution.slug}`);
   const comingSoon = launch.reason === "COMING_SOON";
 
@@ -49,7 +54,7 @@ export function SolutionCatalogRow({
               {solution.lifecycle === "AVAILABLE" ? (
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               ) : null}
-              {lifecycle.label}
+              {solutionLifecycleLabel(t, solution.lifecycle)}
             </span>
           </div>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-text-secondary">
@@ -59,7 +64,7 @@ export function SolutionCatalogRow({
             href={detailHref}
             className="mt-3 inline-flex min-h-8 items-center gap-2 rounded-control text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            En savoir plus{" "}
+            {t("solutions.catalog.learnMore")}{" "}
             <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
           </a>
         </div>
@@ -75,7 +80,7 @@ export function SolutionCatalogRow({
             href={launch.href}
             className={`inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${solution.lifecycle === "AVAILABLE" ? "bg-primary text-white shadow-sm hover:bg-primary-hover" : "border border-primary bg-white text-primary hover:bg-primary-light"}`}
           >
-            {launch.actionLabel}
+            {launchCopy.actionLabel}
             <ExternalLink className="h-icon-sm w-icon-sm" aria-hidden="true" />
           </a>
         ) : (
@@ -86,12 +91,12 @@ export function SolutionCatalogRow({
             {comingSoon ? (
               <Bell className="h-icon-sm w-icon-sm" aria-hidden="true" />
             ) : null}
-            {launch.actionLabel}
+            {launchCopy.actionLabel}
           </span>
         )}
-        {launch.message ? (
+        {launchCopy.message ? (
           <p className="mt-2 text-center text-micro leading-relaxed text-text-muted lg:max-w-48">
-            {launch.message}
+            {launchCopy.message}
           </p>
         ) : null}
       </div>

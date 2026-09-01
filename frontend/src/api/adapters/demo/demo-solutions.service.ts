@@ -151,7 +151,7 @@ function applyScenario(
     facturation.requiresEntitlement = true;
   }
   if (facturation && scenario === "market_unavailable") {
-    facturation.markets = ["BE", "LU"];
+    facturation.markets = ["BE", "CH"];
   }
   if (facturation && scenario === "retired") {
     facturation.lifecycle = "RETIRED";
@@ -254,7 +254,12 @@ export class DemoSolutionsService implements SolutionsServiceContract {
     if (index < 0) throw new Error("Solution introuvable.");
     const updated: SolutionDefinition = {
       ...values[index],
-      ...clone(input),
+      ...Object.fromEntries(
+        Object.entries(clone(input)).map(([key, value]) => [
+          key,
+          value === null ? undefined : value,
+        ]),
+      ),
       id: values[index].id,
       lifecycle: values[index].lifecycle,
       createdAt: values[index].createdAt,

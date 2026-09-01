@@ -4,12 +4,12 @@ import type {
   MonetizationInvoice,
 } from "@shongre/contracts/monetization";
 import { Download, FileText } from "lucide-react";
-import { services } from "../../../api";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
+import { useMarketBusinessRules } from "../../../domains/monetization/useMarketBusinessRules";
 
 interface BillingHistoryModalProps {
   isOpen: boolean;
@@ -34,6 +34,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
 }) => {
   const { formatDate, formatMoneyMinor } = useRegionalFormatters();
   const toast = useToast();
+  const marketBusinessRules = useMarketBusinessRules();
   const [billing, setBilling] = useState<BillingOverview | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
     let active = true;
     setLoading(true);
     setError(null);
-    services.businessRules
+    marketBusinessRules
       .getBillingOverview()
       .then((result) => {
         if (active) setBilling(result);
@@ -65,7 +66,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
     return () => {
       active = false;
     };
-  }, [isOpen]);
+  }, [isOpen, marketBusinessRules]);
 
   const invoices = (billing?.invoices || []).filter((invoice) => {
     if (filter === "all") return true;
@@ -77,9 +78,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
   const downloadInvoice = async (invoice: MonetizationInvoice) => {
     setDownloadingId(invoice.id);
     try {
-      const document = await services.businessRules.getInvoiceDocument(
-        invoice.id,
-      );
+      const document = await marketBusinessRules.getInvoiceDocument(invoice.id);
       const blob = new Blob([document.content], { type: document.mimeType });
       const url = URL.createObjectURL(blob);
       const link = window.document.createElement("a");

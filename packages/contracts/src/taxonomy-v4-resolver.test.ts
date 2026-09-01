@@ -28,7 +28,7 @@ describe("TaxonomyV4PublicResolver", () => {
       expect(context.countryCode).toBe(country);
       expect(context.locale).toBe(locale);
       expect(context.currency).toBe(currency);
-      expect(resolver.tree(context, locale).items).toHaveLength(294);
+      expect(resolver.tree(context, locale).items).toHaveLength(301);
     },
   );
 

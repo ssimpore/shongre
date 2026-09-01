@@ -128,17 +128,17 @@ export const AdminProviderDetailPage: React.FC = () => {
       {/* Provider Header Card */}
       <div className="bg-bg-surface p-6 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
+          <div className="flex min-w-0 items-start gap-4">
             <div className="w-12 h-12 rounded-control bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-lg text-stone-800 shrink-0">
               {provider.name.charAt(0)}
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h1 className="text-xl font-black text-text-main">
                   {provider.name}
                 </h1>
-                <span className="text-xs font-mono font-bold bg-stone-100 text-text-secondary px-2 py-0.5 rounded border border-stone-200">
+                <span className="max-w-full break-all rounded border border-stone-200 bg-stone-100 px-2 py-0.5 font-mono text-xs font-bold text-text-secondary">
                   {provider.code}
                 </span>
                 <span
@@ -171,7 +171,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           </div>
 
           {/* Status & Health Indicators */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 md:justify-end">
             {isActive ? (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-success bg-success-surface border border-success-border px-2.5 py-1 rounded-pill">
                 <CheckCircle2 className="w-icon-sm h-icon-sm" />
@@ -210,7 +210,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                       : "Santé inconnue"}
             </span>
 
-            <span className="text-xs font-mono font-bold bg-stone-800 text-stone-200 px-2.5 py-1 rounded-pill uppercase">
+            <span className="max-w-full break-all rounded-pill bg-stone-800 px-2.5 py-1 font-mono text-xs font-bold uppercase text-stone-200">
               {labelIdentifier(configuration.environment)}
             </span>
           </div>

@@ -25,7 +25,6 @@ describe("resolveSolutionLaunch", () => {
       allowed: true,
       reason: "READY",
       href: "/facturation",
-      actionLabel: "Découvrir Facturation",
     });
   });
 
@@ -45,7 +44,7 @@ describe("resolveSolutionLaunch", () => {
     expect(
       resolveSolutionLaunch({
         solution: facturation,
-        marketCode: "CH",
+        marketCode: "SN",
         user: null,
         applications,
       }).reason,

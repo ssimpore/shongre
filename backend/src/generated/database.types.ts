@@ -456,6 +456,323 @@ export interface Database {
         safe_metadata: Json;
         occurred_at: string;
       }>;
+      digital_market_policies: GeneratedTable<{
+        id: string;
+        market_code: string;
+        version: number;
+        status: "DRAFT" | "ACTIVE" | "DISABLED" | "RETIRED";
+        enabled: boolean;
+        allowed_account_types: string[];
+        allowed_seller_types: string[];
+        allowed_category_ids: string[];
+        allowed_fulfillment_types: string[];
+        allowed_fulfillment_combinations: Json;
+        required_verification_dimensions: string[];
+        moderation_required: boolean;
+        allowed_mime_types: string[];
+        allowed_file_extensions: string[];
+        max_file_count: number;
+        max_file_size_bytes: number;
+        max_total_file_size_bytes: number;
+        credential_inventory_policy: Json;
+        external_link_policy: Json;
+        provisioning_deadline_hours: number;
+        default_entitlement_duration_days: number;
+        default_download_limit: number;
+        default_reveal_limit: number;
+        currency: string;
+        minimum_price_minor: number;
+        maximum_price_minor: number;
+        tax_policy_version: string | null;
+        refund_policy_version: string | null;
+        withdrawal_presentation_version: string | null;
+        payment_provider_configuration_id: string | null;
+        legal_approval_id: string | null;
+        capabilities: Json;
+        refund_access_behavior: string;
+        dispute_access_behavior: string;
+        listing_removal_access_behavior: string;
+        seller_restriction_access_behavior: string;
+        requirements: Json;
+        effective_at: string | null;
+        approved_at: string | null;
+        approved_by: string | null;
+        created_by: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      digital_seller_profiles: GeneratedTable<{
+        seller_id: string;
+        market_code: string;
+        policy_id: string;
+        policy_version: number;
+        fulfillment_types: string[];
+        status: "ACTIVE" | "REACCEPTANCE_REQUIRED" | "SUSPENDED";
+        accepted_at: string;
+        updated_at: string;
+      }>;
+      digital_assets: GeneratedTable<{
+        id: string;
+        owner_user_id: string;
+        market_code: string;
+        listing_id: string | null;
+        version: number;
+        replaces_asset_id: string | null;
+        staging_path: string;
+        private_path: string | null;
+        original_file_name: string;
+        safe_file_name: string;
+        declared_extension: string;
+        declared_content_type: string;
+        detected_content_type: string | null;
+        declared_size_bytes: number;
+        actual_size_bytes: number | null;
+        sha256_digest: string | null;
+        status:
+          | "UPLOAD_PENDING"
+          | "PROCESSING"
+          | "SCANNING"
+          | "READY"
+          | "QUARANTINED"
+          | "REJECTED"
+          | "REMOVED"
+          | "UNAVAILABLE";
+        malware_scan_status:
+          "PENDING" | "SCANNING" | "CLEAN" | "MALICIOUS" | "FAILED";
+        malware_scan_provider: string | null;
+        malware_scan_signature: string | null;
+        malware_scanned_at: string | null;
+        moderation_status: "PENDING" | "APPROVED" | "REJECTED" | "NOT_REQUIRED";
+        created_at: string;
+        ready_at: string | null;
+        removed_at: string | null;
+      }>;
+      digital_access_secret_versions: GeneratedTable<{
+        id: string;
+        owner_user_id: string;
+        market_code: string;
+        listing_id: string | null;
+        version: number;
+        target_domain: string | null;
+        encrypted_payload: string;
+        encryption_iv: string;
+        encryption_tag: string;
+        key_version: string;
+        credential_hint: string;
+        status: "ACTIVE" | "ROTATED" | "REVOKED" | "COMPROMISED";
+        expires_at: string | null;
+        created_at: string;
+        rotated_at: string | null;
+        revoked_at: string | null;
+      }>;
+      digital_credential_batches: GeneratedTable<{
+        id: string;
+        owner_user_id: string;
+        market_code: string;
+        listing_id: string | null;
+        allocation_mode:
+          | "REUSABLE"
+          | "UNIQUE_INVENTORY"
+          | "APPROVED_PROVIDER"
+          | "SELLER_AFTER_PAYMENT";
+        credential_kinds: string[];
+        version: number;
+        status: "IMPORTING" | "ACTIVE" | "DEPLETED" | "SUSPENDED" | "REVOKED";
+        imported_count: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+      digital_credentials: GeneratedTable<{
+        id: string;
+        batch_id: string;
+        fingerprint: string;
+        encrypted_payload: string;
+        encryption_iv: string;
+        encryption_tag: string;
+        key_version: string;
+        credential_hint: string;
+        status:
+          | "AVAILABLE"
+          | "RESERVED"
+          | "CONSUMED"
+          | "REVOKED"
+          | "COMPROMISED"
+          | "INVALID";
+        reserved_at: string | null;
+        consumed_at: string | null;
+        expires_at: string | null;
+        created_at: string;
+      }>;
+      digital_fulfillment_versions: GeneratedTable<{
+        id: string;
+        listing_id: string;
+        seller_id: string;
+        market_code: string;
+        policy_id: string;
+        policy_version: number;
+        version: number;
+        product_version: string;
+        fulfillment_types: string[];
+        primary_fulfillment_type: string;
+        buyer_facing_description: string;
+        compatibility: string[];
+        requirements: string[];
+        public_terms_label: string | null;
+        product_access_class: string | null;
+        access_secret_version_id: string | null;
+        credential_allocation_mode: string | null;
+        credential_kinds: string[];
+        provisioning_time_hours: number | null;
+        entitlement_duration_days: number;
+        download_limit: number | null;
+        reveal_limit: number | null;
+        status:
+          | "DRAFT"
+          | "PROCESSING"
+          | "READY"
+          | "PUBLISHED"
+          | "RETIRED"
+          | "SUSPENDED";
+        moderation_status: "PENDING" | "APPROVED" | "REJECTED" | "NOT_REQUIRED";
+        created_at: string;
+        published_at: string | null;
+        retired_at: string | null;
+      }>;
+      digital_fulfillment_assets: GeneratedTable<{
+        fulfillment_version_id: string;
+        asset_id: string;
+        position: number;
+      }>;
+      digital_fulfillment_credential_batches: GeneratedTable<{
+        fulfillment_version_id: string;
+        batch_id: string;
+      }>;
+      digital_order_items: GeneratedTable<{
+        id: string;
+        order_id: string;
+        listing_id: string;
+        fulfillment_version_id: string;
+        buyer_id: string;
+        seller_id: string;
+        market_code: string;
+        product_version: string;
+        fulfillment_types: string[];
+        primary_fulfillment_type: string;
+        price_minor: number;
+        currency: string;
+        commercial_evidence_id: string;
+        payment_intent_id: string;
+        payment_confirmed_at: string;
+        created_at: string;
+      }>;
+      digital_entitlements: GeneratedTable<{
+        id: string;
+        buyer_id: string;
+        seller_id: string;
+        order_id: string;
+        order_item_id: string;
+        listing_id: string;
+        fulfillment_version_id: string;
+        assigned_credential_id: string | null;
+        provisioned_secret_version_id: string | null;
+        market_code: string;
+        product_version: string;
+        fulfillment_types: string[];
+        primary_fulfillment_type: string;
+        status: string;
+        payment_status: string;
+        price_minor: number;
+        currency: string;
+        commercial_evidence_id: string;
+        available_at: string | null;
+        expires_at: string | null;
+        download_limit: number | null;
+        download_count: number;
+        reveal_limit: number | null;
+        reveal_count: number;
+        credential_revealed_at: string | null;
+        delivered_at: string | null;
+        refunded_at: string | null;
+        disputed_at: string | null;
+        revoked_at: string | null;
+        compromised_at: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      digital_credential_assignments: GeneratedTable<{
+        id: string;
+        entitlement_id: string;
+        credential_id: string;
+        assigned_at: string;
+        consumed_at: string | null;
+      }>;
+      digital_provisioning_tasks: GeneratedTable<{
+        id: string;
+        entitlement_id: string;
+        seller_id: string;
+        market_code: string;
+        status: string;
+        deadline_at: string;
+        attempt_count: number;
+        next_attempt_at: string | null;
+        completed_at: string | null;
+        failure_code: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      digital_access_grants: GeneratedTable<{
+        id: string;
+        entitlement_id: string;
+        buyer_id: string;
+        asset_id: string | null;
+        action: "DOWNLOAD" | "OPEN_LINK" | "REVEAL_SECRET";
+        expires_at: string;
+        consumed_at: string | null;
+        revoked_at: string | null;
+        created_at: string;
+      }>;
+      digital_access_audit_events: GeneratedTable<{
+        id: string;
+        entitlement_id: string | null;
+        actor_id: string | null;
+        market_code: string;
+        action: string;
+        result: string;
+        request_id: string | null;
+        safe_metadata: Json;
+        occurred_at: string;
+      }>;
+      digital_access_reports: GeneratedTable<{
+        id: string;
+        entitlement_id: string;
+        reporter_id: string;
+        market_code: string;
+        report_type: string;
+        safe_description: string;
+        status: "OPEN" | "IN_REVIEW" | "RESOLVED" | "REJECTED";
+        resolution_code: string | null;
+        resolved_by: string | null;
+        created_at: string;
+        resolved_at: string | null;
+      }>;
+      digital_fulfillment_outbox: GeneratedTable<{
+        id: string;
+        market_code: string;
+        event_type: string;
+        aggregate_type: string;
+        aggregate_id: string;
+        idempotency_key: string;
+        payload: Json;
+        status:
+          "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "DEAD_LETTER";
+        attempt_count: number;
+        available_at: string;
+        claimed_at: string | null;
+        claimed_by: string | null;
+        completed_at: string | null;
+        last_error_code: string | null;
+        created_at: string;
+      }>;
       listings: {
         Row: {
           id: string;
@@ -538,6 +855,14 @@ export interface Database {
           vertical_type: "tutoring" | null;
           vertical_entity_id: string | null;
           vertical_schema_version: number | null;
+          fulfillment_model:
+            | "PHYSICAL"
+            | "FILE_DOWNLOAD"
+            | "ACCESS_LINK"
+            | "ACCESS_CREDENTIALS"
+            | "SELLER_PROVISIONED";
+          digital_fulfillment_version_id: string | null;
+          product_version: string | null;
           created_at: string;
           updated_at: string;
           expires_at: string;
@@ -623,6 +948,14 @@ export interface Database {
           vertical_type?: "tutoring" | null;
           vertical_entity_id?: string | null;
           vertical_schema_version?: number | null;
+          fulfillment_model?:
+            | "PHYSICAL"
+            | "FILE_DOWNLOAD"
+            | "ACCESS_LINK"
+            | "ACCESS_CREDENTIALS"
+            | "SELLER_PROVISIONED";
+          digital_fulfillment_version_id?: string | null;
+          product_version?: string | null;
           created_at?: string;
           updated_at?: string;
           expires_at?: string;
@@ -652,6 +985,14 @@ export interface Database {
           sort_date: string;
           created_at: string;
           updated_at: string;
+          fulfillment_model:
+            | "PHYSICAL"
+            | "FILE_DOWNLOAD"
+            | "ACCESS_LINK"
+            | "ACCESS_CREDENTIALS"
+            | "SELLER_PROVISIONED";
+          digital_fulfillment_version_id: string | null;
+          product_version: string | null;
         };
         Insert: {
           listing_id: string;
@@ -813,6 +1154,14 @@ export interface Database {
           carrier_name?: string | null;
           tracking_number?: string | null;
           shipped_at?: string | null;
+          fulfillment_model?:
+            | "PHYSICAL"
+            | "FILE_DOWNLOAD"
+            | "ACCESS_LINK"
+            | "ACCESS_CREDENTIALS"
+            | "SELLER_PROVISIONED";
+          digital_fulfillment_version_id?: string | null;
+          product_version?: string | null;
           commission_calculation_id?: string | null;
           platform_commission_minor?: number | null;
           seller_payable_minor?: number | null;
@@ -2381,6 +2730,116 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      reserve_digital_credential: {
+        Args: { p_entitlement_id: string; p_batch_ids: string[] };
+        Returns: string;
+      };
+      grant_paid_digital_entitlement: {
+        Args: {
+          p_order_id: string;
+          p_payment_intent_id: string;
+          p_request_id: string;
+        };
+        Returns: Database["public"]["Tables"]["digital_entitlements"]["Row"][];
+      };
+      record_digital_secret_reveal: {
+        Args: {
+          p_entitlement_id: string;
+          p_buyer_id: string;
+          p_market_code: string;
+          p_request_id: string;
+        };
+        Returns: Database["public"]["Tables"]["digital_entitlements"]["Row"][];
+      };
+      issue_digital_access_grant: {
+        Args: {
+          p_entitlement_id: string;
+          p_buyer_id: string;
+          p_market_code: string;
+          p_action: string;
+          p_asset_id: string | null;
+          p_request_id: string;
+        };
+        Returns: string;
+      };
+      consume_digital_access_grant: {
+        Args: { p_grant_id: string; p_buyer_id: string };
+        Returns: Database["public"]["Tables"]["digital_access_grants"]["Row"][];
+      };
+      create_digital_policy_draft: {
+        Args: {
+          p_staff_id: string;
+          p_policy: Json;
+          p_reason: string;
+        };
+        Returns: string;
+      };
+      activate_digital_policy: {
+        Args: {
+          p_staff_id: string;
+          p_policy_id: string;
+          p_reason: string;
+        };
+        Returns: string;
+      };
+      claim_digital_fulfillment_outbox: {
+        Args: {
+          p_worker_id: string;
+          p_limit?: number;
+          p_lease_seconds?: number;
+        };
+        Returns: Database["public"]["Tables"]["digital_fulfillment_outbox"]["Row"][];
+      };
+      complete_digital_fulfillment_outbox: {
+        Args: {
+          p_event_id: string;
+          p_worker_id: string;
+          p_success: boolean;
+          p_error_code?: string | null;
+          p_retry_at?: string | null;
+        };
+        Returns: boolean;
+      };
+      enqueue_digital_asset_scan: {
+        Args: {
+          p_owner_user_id: string;
+          p_market_code: string;
+          p_asset_id: string;
+        };
+        Returns: Database["public"]["Tables"]["digital_assets"]["Row"][];
+      };
+      refresh_digital_fulfillment_lifecycle: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
+      apply_digital_order_access_state: {
+        Args: { p_order_id: string; p_state: string };
+        Returns: number;
+      };
+      attach_provisioned_digital_secret: {
+        Args: {
+          p_entitlement_id: string;
+          p_seller_id: string;
+          p_secret_version_id: string;
+          p_request_id: string;
+        };
+        Returns: boolean;
+      };
+      create_digital_asset_upload_record: {
+        Args: {
+          p_asset_id: string;
+          p_owner_user_id: string;
+          p_market_code: string;
+          p_listing_id: string | null;
+          p_replaces_asset_id: string | null;
+          p_staging_path: string;
+          p_file_name: string;
+          p_extension: string;
+          p_content_type: string;
+          p_size_bytes: number;
+        };
+        Returns: string;
+      };
       ensure_owned_organization: {
         Args: {
           p_owner_id: string;

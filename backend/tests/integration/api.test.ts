@@ -159,6 +159,113 @@ describe("API v1 Endpoints Integration", () => {
     expect(markets.some((m: any) => m.code === "FR")).toBe(true);
   });
 
+  it("keeps probable-country detection non-authoritative and privacy-safe", async () => {
+    const response = await fetch(`${baseUrl}/api/v1/markets/detection`, {
+      headers: {
+        "X-Country": "BE",
+        "X-Shongre-Market": "BE",
+        "X-Forwarded-For": "203.0.113.42",
+      },
+    });
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    // Automated tests do not enable a trusted edge header. Arbitrary browser
+    // headers therefore cannot turn into a country recommendation.
+    expect(body).toMatchObject({
+      status: "unknown",
+      country: null,
+      experience: "global_gateway",
+    });
+    expect(JSON.stringify(body)).not.toMatch(
+      /203\.0\.113\.42|ipAddress|latitude|longitude/,
+    );
+  });
+
+  it("serves Solutions through a market-scoped contract and protects catalog writes", async () => {
+    const unauthorized = await fetch(`${baseUrl}/api/v1/admin/solutions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    expect(unauthorized.status).toBe(401);
+
+    const createBody = {
+      name: "Shongre Integration",
+      slug: "integration-catalog",
+      shortDescription: "Catalogue de test d’intégration",
+      description:
+        "Définition créée uniquement dans le dépôt de démonstration du backend.",
+      icon: "apps",
+      category: "Test",
+      lifecycle: "COMING_SOON",
+      markets: ["FR"],
+      languages: ["fr-FR"],
+      audiences: ["Professionnels"],
+      capabilities: ["Tester le catalogue"],
+      requiresAuthentication: false,
+      requiresEntitlement: false,
+      releaseNotes: [],
+      sortOrder: 10,
+      catalogVisible: true,
+      featured: false,
+    };
+    const idempotencyKey = "solutions-integration-create";
+    const create = () =>
+      fetch(`${baseUrl}/api/v1/admin/solutions`, {
+        method: "POST",
+        headers: {
+          ...auth(adminToken),
+          "Idempotency-Key": idempotencyKey,
+        },
+        body: JSON.stringify(createBody),
+      });
+    const createdResponse = await create();
+    expect(createdResponse.status).toBe(201);
+    const created = await createdResponse.json();
+    const retriedResponse = await create();
+    expect(retriedResponse.status).toBe(201);
+    expect((await retriedResponse.json()).id).toBe(created.id);
+
+    const [franceResponse, belgiumResponse] = await Promise.all([
+      fetch(`${baseUrl}/api/v1/solutions?locale=fr-FR`, {
+        headers: { "X-Shongre-Market": "FR" },
+      }),
+      fetch(`${baseUrl}/api/v1/solutions?locale=fr-BE`, {
+        headers: { "X-Shongre-Market": "BE" },
+      }),
+    ]);
+    expect(franceResponse.status).toBe(200);
+    expect(belgiumResponse.status).toBe(200);
+    expect(
+      (await franceResponse.json()).map((value: any) => value.id),
+    ).toContain(created.id);
+    expect(
+      (await belgiumResponse.json()).map((value: any) => value.id),
+    ).not.toContain(created.id);
+  });
+
+  it("resolves consented coordinates ephemerally without echoing them", async () => {
+    const response = await fetch(
+      `${baseUrl}/api/v1/markets/detection/coordinates`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: 48.8566,
+          longitude: 2.3522,
+          accuracy: 20,
+        }),
+      },
+    );
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({
+      source: "coordinates",
+      country: { code: "FR" },
+    });
+    expect(JSON.stringify(body)).not.toMatch(/latitude|longitude|48\.8566/);
+  });
+
   it("rejects the removed unversioned API shadow", async () => {
     const res = await fetch(`${baseUrl}/listings`);
     expect(res.status).toBe(404);
@@ -239,7 +346,7 @@ describe("API v1 Endpoints Integration", () => {
         marketCode,
         locale,
       });
-      expect(tree.items).toHaveLength(294);
+      expect(tree.items).toHaveLength(301);
       expect(
         tree.items.some((node: any) => node.sourceKey === "vehicles.cars.suv"),
       ).toBe(true);

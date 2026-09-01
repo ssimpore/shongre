@@ -36,6 +36,10 @@ import {
   commissionService,
 } from "../commission/commission.service.js";
 import { analyticsService } from "../analytics/analytics.service.js";
+import {
+  digitalProductsService,
+  type DigitalProductsService,
+} from "../digital-products/digital-products.service.js";
 
 const DEFAULT_HOME_DELIVERY_MINOR =
   BASELINE_MONETIZATION_CATALOG.products.find(
@@ -101,6 +105,7 @@ export class OrdersService {
     private readonly markets: IMarketRepository = repositories.markets,
     private readonly compliance: IComplianceRepository = repositories.compliance,
     private readonly paymentGateway: OrderPaymentGateway = orderPaymentGateway,
+    private readonly digitalProducts: DigitalProductsService = digitalProductsService,
   ) {}
 
   async getOrderById(orderId: string): Promise<Transaction | null> {
@@ -129,7 +134,19 @@ export class OrdersService {
       input.idempotencyKey,
     );
     const market = await this.markets.getEffective(listing.marketCode);
-    if (
+    const isDigital = (listing.fulfillmentModel || "PHYSICAL") !== "PHYSICAL";
+    if (isDigital) {
+      if (input.deliveryMethod !== "digital") {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Ce produit est remis uniquement en ligne.",
+        });
+      }
+      await this.digitalProducts.assertListingCheckout(
+        listing.id,
+        listing.marketCode,
+      );
+    } else if (
       !market.isActive ||
       !market.allowedDeliveryMethods.includes(input.deliveryMethod) ||
       !listing.allowedDelivery.includes(input.deliveryMethod)
@@ -141,6 +158,7 @@ export class OrdersService {
       });
     }
     if (
+      !isDigital &&
       input.deliveryMethod !== "hand_delivery" &&
       (!input.shippingAddress?.street?.trim() ||
         !input.shippingAddress.city?.trim() ||
@@ -154,7 +172,7 @@ export class OrdersService {
     }
 
     const shippingFeeMinor =
-      input.deliveryMethod === "hand_delivery"
+      isDigital || input.deliveryMethod === "hand_delivery"
         ? 0
         : listing.shippingCost !== undefined
           ? Math.max(0, Math.round(listing.shippingCost * 100))
@@ -182,7 +200,19 @@ export class OrdersService {
       input.buyerId,
     );
     const market = await this.markets.getEffective(listing.marketCode);
-    if (
+    const isDigital = (listing.fulfillmentModel || "PHYSICAL") !== "PHYSICAL";
+    if (isDigital) {
+      if (input.deliveryMethod !== "digital") {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Ce produit est remis uniquement en ligne.",
+        });
+      }
+      await this.digitalProducts.assertListingCheckout(
+        listing.id,
+        listing.marketCode,
+      );
+    } else if (
       !market.isActive ||
       !market.allowedDeliveryMethods.includes(input.deliveryMethod) ||
       !listing.allowedDelivery.includes(input.deliveryMethod)
@@ -194,7 +224,7 @@ export class OrdersService {
       });
     }
     const shippingFeeMinor =
-      input.deliveryMethod === "hand_delivery"
+      isDigital || input.deliveryMethod === "hand_delivery"
         ? 0
         : listing.shippingCost !== undefined
           ? Math.max(0, Math.round(listing.shippingCost * 100))
@@ -227,6 +257,13 @@ export class OrdersService {
       input.buyerId,
       input.idempotencyKey,
     );
+    if ((listing.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "La réservation physique n’est pas disponible pour un produit numérique.",
+      });
+    }
     if (!input.agreedLocation?.trim() || input.agreedLocation.length > 500) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -384,6 +421,13 @@ export class OrdersService {
     buyerId: string,
   ): Promise<Transaction> {
     const order = await this.requireOrder(orderId);
+    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Un accès numérique ne se confirme pas comme une livraison physique.",
+      });
+    }
     if (order.buyerId !== buyerId) {
       throw new AppError({
         code: "FORBIDDEN",
@@ -420,6 +464,12 @@ export class OrdersService {
     input: { carrierName: string; trackingNumber: string },
   ): Promise<Transaction> {
     const order = await this.requireOrder(orderId);
+    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Un produit numérique ne peut pas être déclaré expédié.",
+      });
+    }
     if (order.sellerId !== sellerId) {
       throw new AppError({
         code: "FORBIDDEN",
@@ -522,6 +572,12 @@ export class OrdersService {
       disputeReason: reason.trim(),
       disputeDetails: details.trim(),
     });
+    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      await this.digitalProducts.applyAuthoritativeOrderAccessState(
+        order.id,
+        "DISPUTED",
+      );
+    }
     logger.warn("order_dispute_opened", { orderId, userId });
     return this.toParticipantOrder(updated);
   }
@@ -605,6 +661,12 @@ export class OrdersService {
           }
         : {}),
     });
+    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      await this.digitalProducts.applyAuthoritativeOrderAccessState(
+        order.id,
+        "REFUND_REQUESTED",
+      );
+    }
     let finalizedOrder = pending;
     let commissionReversal = null;
     if (refund.status === "succeeded") {
@@ -951,6 +1013,9 @@ export class OrdersService {
           ? input.remainingBalanceMinor / 100
           : undefined,
       deliveryMethod: input.deliveryMethod,
+      fulfillmentModel: input.listing.fulfillmentModel || "PHYSICAL",
+      digitalFulfillmentVersionId: input.listing.digitalFulfillmentVersionId,
+      productVersion: input.listing.productVersion,
       shippingAddress: input.shippingAddress,
       handoverCodeRequired: false,
       isPinVerified: false,
@@ -983,7 +1048,9 @@ export class OrdersService {
       }
       saved = raced;
     }
-    await this.setListingStatus(input.listing.id, "reserved");
+    if ((input.listing.fulfillmentModel || "PHYSICAL") === "PHYSICAL") {
+      await this.setListingStatus(input.listing.id, "reserved");
+    }
     const checkout = await this.ensureProviderCheckout(
       saved,
       input.listing,
@@ -1043,6 +1110,12 @@ export class OrdersService {
       sellerPayableMinor: commission.sellerPayableMinor,
       commissionSnapshotHash: commission.snapshotHash,
     });
+    if ((updated.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      await this.digitalProducts.confirmAuthoritativePayment(
+        updated.id,
+        checkout.paymentIntentId,
+      );
+    }
     await this.setListingStatus(order.listingId, "reserved");
     void this.emitFinancialAnalytics("transaction_completed", order, {
       listingId: order.listingId,
@@ -1337,6 +1410,7 @@ export class OrdersService {
   ): Promise<void> {
     const listing = await this.listingRepo.findById(listingId);
     if (!listing || (onlyFrom && listing.status !== onlyFrom)) return;
+    if ((listing.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") return;
     if (listing.status !== status)
       await this.listingRepo.update(listingId, { status });
   }
@@ -1394,6 +1468,12 @@ export class OrdersService {
     const updated = await this.orderRepo.update(order.id, {
       status: "refunded",
     });
+    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+      await this.digitalProducts.applyAuthoritativeOrderAccessState(
+        order.id,
+        "REFUNDED",
+      );
+    }
     await this.setListingStatus(order.listingId, "published", "reserved");
     return { order: updated, commissionReversal };
   }

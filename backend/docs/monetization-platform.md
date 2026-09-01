@@ -24,6 +24,14 @@ The repository already contained a strong monetization foundation:
 
 The implementation was consolidated around those systems. No parallel pricing store, plan service, demo mode or Admin workflow was introduced.
 
+Market ownership is explicit in
+`MONETIZATION_SCOPE_CLASSIFICATION`: provider identities are platform-global;
+stable product, feature and entitlement definitions are multi-market shared;
+all commercial policy, evidence, decisions and operational records are market
+scoped. Runtime calls receive canonical `MarketContext`; exact registry,
+catalog, currency and readiness mismatches fail closed. Market-scoped hashes
+isolate idempotent retries without changing the existing persistence model.
+
 Migration `00085_commercial_governance_and_target_catalog.sql` extends the same configuration snapshot with normalized migration, price-protection, campaign, economics, provider-mapping, paid-placement and unpriced-offer projections. It also adds append-only price-protection evidence and customer-specific Enterprise contracts; these are governance and history records, not a competing quote or billing engine.
 
 Migration `00087_atomic_subscription_catalog_transitions.sql` completes the transition boundary. It backfills and hydrates exact catalog evidence on subscriptions, entitlements, orders and invoices; rejects mismatched evidence; and applies a subscription change through one row-locked, idempotent transaction. The catalog's typed subscription policy controls timing, proration, cancellation and payment-failure access. No plan name selects lifecycle behavior.
@@ -76,9 +84,13 @@ Frontend (future production mode)
   -> backend services
 ```
 
-The HTTP adapters shown above already exist behind the service registry. Demo remains the default data mode; this work does not switch a client to the backend or a live provider.
+The HTTP adapters shown above already exist behind the service registry and now
+receive `MarketContext` explicitly. Market-bound frontend hooks keep components
+away from headers and market policy. Demo remains the default data mode; it is
+asynchronous, deterministic and partitioned by account plus market, and this
+work does not switch a client to the backend or a live provider.
 
-Commercial data is represented in minor currency units and bound to immutable configuration, product and price versions. The backend remains authoritative for checkout, lifecycle, quota and entitlement decisions. The frontend remains fully operable with the backend stopped, as required by the current demo-mode boundary.
+Commercial data is represented in minor currency units and bound to immutable configuration, product and price versions. Paid operations reject stale or incomplete catalog evidence. The backend remains authoritative for checkout, lifecycle, quota and entitlement decisions. The frontend remains fully operable with the backend stopped, as required by the current demo-mode boundary.
 
 ## Active plan catalog
 

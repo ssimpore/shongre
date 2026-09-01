@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
   publicationInputSchema,
@@ -8,6 +9,13 @@ import {
   toTaxonomyV4ItemCondition,
 } from "@shongre/contracts";
 import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts";
+import {
+  digitalFulfillmentVersionInputSchema,
+  type CredentialAllocationMode,
+  type DigitalFulfillmentType,
+  type DigitalPolicyProjection,
+  type DigitalSellerProfile,
+} from "@shongre/contracts/digital-products";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { resolveTaxonomyFieldState } from "@shongre/features";
 import { Button } from "@/components/Button";
@@ -26,6 +34,8 @@ import { useMarket } from "@/features/market/MarketProvider";
 import { permissionsService } from "@/services/permissions/permissions.service";
 import { TaxonomyV4Field } from "@/features/taxonomy/TaxonomyV4Field";
 import { taxonomyService } from "@/features/taxonomy/taxonomy.service";
+import { mobileDigitalProductsService } from "@/features/digital-products/digital-products.service";
+import { mobileDigitalDraftStore } from "@/features/digital-products/digital-draft.store";
 
 const taxonomyBundle = getTaxonomyV4PublicBundle();
 const NATIVE_MANAGED_FIELDS = new Set([
@@ -151,6 +161,145 @@ export default function PublishScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [publishing, setPublishing] = useState(false);
+  const [loadedDigitalContext, setLoadedDigitalContext] = useState<{
+    scope: string;
+    policy: DigitalPolicyProjection;
+    profile: DigitalSellerProfile | null;
+  } | null>(null);
+  const [fulfillmentMode, setFulfillmentMode] = useState<
+    "PHYSICAL" | DigitalFulfillmentType | "LINK_AND_CREDENTIALS"
+  >("PHYSICAL");
+  const [productVersion, setProductVersion] = useState("");
+  const [buyerFacingDescription, setBuyerFacingDescription] = useState("");
+  const [compatibility, setCompatibility] = useState("");
+  const [requirements, setRequirements] = useState("");
+  const [provisioningHours, setProvisioningHours] = useState("72");
+  const [privateAssetIds, setPrivateAssetIds] = useState<string[]>([]);
+  const [privateAssetStatus, setPrivateAssetStatus] = useState("");
+  const [destinationUrl, setDestinationUrl] = useState("");
+  const [destinationDomain, setDestinationDomain] = useState("");
+  const [accessUsername, setAccessUsername] = useState("");
+  const [accessPassword, setAccessPassword] = useState("");
+  const [privateInstructions, setPrivateInstructions] = useState("");
+  const [accessSecretId, setAccessSecretId] = useState<string>();
+  const [credentialAllocationMode, setCredentialAllocationMode] =
+    useState<CredentialAllocationMode>("REUSABLE");
+  const [uniqueCredentials, setUniqueCredentials] = useState("");
+  const [credentialBatchIds, setCredentialBatchIds] = useState<string[]>([]);
+  const [protectedCredentialKinds, setProtectedCredentialKinds] = useState<
+    ("USERNAME" | "PASSWORD")[]
+  >([]);
+  const [inventoryCount, setInventoryCount] = useState(0);
+  const [accessClass, setAccessClass] = useState("");
+  const [digitalOperation, setDigitalOperation] = useState("");
+  const restoredDigitalDraftKey = useRef("");
+  const digitalContextScope = user
+    ? `${user.id}:${activeMarket.code}`
+    : "unauthenticated";
+  const digitalPolicy =
+    loadedDigitalContext?.scope === digitalContextScope
+      ? loadedDigitalContext.policy
+      : null;
+  const digitalProfile =
+    loadedDigitalContext?.scope === digitalContextScope
+      ? loadedDigitalContext.profile
+      : null;
+
+  const digitalFulfillmentTypes: DigitalFulfillmentType[] =
+    fulfillmentMode === "PHYSICAL"
+      ? []
+      : fulfillmentMode === "LINK_AND_CREDENTIALS"
+        ? ["ACCESS_LINK", "ACCESS_CREDENTIALS"]
+        : [fulfillmentMode];
+  const isDigital = digitalFulfillmentTypes.length > 0;
+
+  useEffect(() => {
+    let active = true;
+    if (!user) return;
+    const scope = `${user.id}:${activeMarket.code}`;
+    void Promise.all([
+      mobileDigitalProductsService.getPolicy(activeMarket.code),
+      mobileDigitalProductsService.getSellerProfile(activeMarket.code, user.id),
+    ])
+      .then(([policy, profile]) => {
+        if (!active) return;
+        setLoadedDigitalContext({ scope, policy, profile });
+        setAccessClass(
+          (current) =>
+            current || policy.credentialInventory.allowedClasses[0] || "",
+        );
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoadedDigitalContext(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const draftKey = `${user.id}:${activeMarket.code}`;
+    restoredDigitalDraftKey.current = "";
+    void mobileDigitalDraftStore
+      .read(user.id, activeMarket.code)
+      .then((draft) => {
+        if (draft) {
+          setFulfillmentMode(draft.fulfillmentMode);
+          setProductVersion(draft.productVersion);
+          setBuyerFacingDescription(draft.buyerFacingDescription);
+          setCompatibility(draft.compatibility);
+          setRequirements(draft.requirements);
+          setProvisioningHours(draft.provisioningHours);
+          setPrivateAssetIds(draft.privateAssetIds);
+          setAccessSecretId(draft.accessSecretId);
+          setCredentialAllocationMode(draft.credentialAllocationMode);
+          setCredentialBatchIds(draft.credentialBatchIds);
+          setInventoryCount(draft.inventoryCount);
+          setAccessClass(draft.accessClass);
+          setProtectedCredentialKinds(draft.protectedCredentialKinds);
+        }
+        restoredDigitalDraftKey.current = draftKey;
+      });
+  }, [activeMarket.code, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const draftKey = `${user.id}:${activeMarket.code}`;
+    if (restoredDigitalDraftKey.current !== draftKey) return;
+    void mobileDigitalDraftStore.write(user.id, activeMarket.code, {
+      fulfillmentMode,
+      productVersion,
+      buyerFacingDescription,
+      compatibility,
+      requirements,
+      provisioningHours,
+      privateAssetIds,
+      accessSecretId,
+      credentialAllocationMode,
+      credentialBatchIds,
+      inventoryCount,
+      accessClass,
+      protectedCredentialKinds,
+    });
+  }, [
+    accessClass,
+    accessSecretId,
+    activeMarket.code,
+    buyerFacingDescription,
+    compatibility,
+    credentialAllocationMode,
+    credentialBatchIds,
+    fulfillmentMode,
+    inventoryCount,
+    privateAssetIds,
+    productVersion,
+    protectedCredentialKinds,
+    provisioningHours,
+    requirements,
+    user,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -334,6 +483,135 @@ export default function PublishScreen() {
       setImages((current) => [...current, result.assets[0].uri].slice(0, 12));
   };
 
+  const choosePrivateFile = async () => {
+    if (!user || !digitalPolicy || !digitalProfile) {
+      setError("Acceptez d’abord les responsabilités de vente numérique.");
+      return;
+    }
+    const result = await DocumentPicker.getDocumentAsync({
+      multiple: false,
+      copyToCacheDirectory: false,
+    });
+    if (result.canceled) return;
+    const file = result.assets[0];
+    setDigitalOperation("file");
+    setPrivateAssetStatus("Téléversement et contrôles en cours…");
+    try {
+      const asset = await mobileDigitalProductsService.uploadPrivateFile(
+        activeMarket.code,
+        user.id,
+        {
+          uri: file.uri,
+          name: file.name,
+          contentType: file.mimeType || "application/octet-stream",
+          sizeBytes: file.size || 0,
+        },
+      );
+      setPrivateAssetIds((current) => [...current, asset.id]);
+      setPrivateAssetStatus(
+        asset.status === "READY"
+          ? "Fichier privé prêt"
+          : "Fichier en cours de traitement ou de modération",
+      );
+    } catch {
+      setPrivateAssetStatus("Fichier rejeté ou téléversement interrompu.");
+    } finally {
+      setDigitalOperation("");
+    }
+  };
+
+  const protectReusableAccess = async () => {
+    if (!accessClass) {
+      setError("Sélectionnez une classe d’accès autorisée.");
+      return;
+    }
+    if (
+      digitalFulfillmentTypes.includes("ACCESS_LINK") &&
+      !destinationUrl.trim()
+    ) {
+      setError("Un lien HTTPS est requis pour ce mode de remise.");
+      return;
+    }
+    if (
+      digitalFulfillmentTypes.includes("ACCESS_CREDENTIALS") &&
+      credentialAllocationMode === "REUSABLE" &&
+      !accessUsername.trim() &&
+      !accessPassword
+    ) {
+      setError("Ajoutez au moins un identifiant, mot de passe, code ou clé.");
+      return;
+    }
+    const fields = [
+      ...(accessUsername.trim()
+        ? [
+            {
+              kind: "USERNAME" as const,
+              label: "Identifiant",
+              value: accessUsername,
+            },
+          ]
+        : []),
+      ...(accessPassword
+        ? [
+            {
+              kind: "PASSWORD" as const,
+              label: "Mot de passe, code ou clé",
+              value: accessPassword,
+            },
+          ]
+        : []),
+    ];
+    setDigitalOperation("access");
+    try {
+      const protectedAccess = await mobileDigitalProductsService.protectAccess(
+        activeMarket.code,
+        {
+          productAccessClass: accessClass,
+          destinationUrl: destinationUrl.trim() || undefined,
+          displayDomain: destinationDomain.trim() || undefined,
+          fields,
+          instructions: privateInstructions.trim() || undefined,
+        },
+      );
+      setAccessSecretId(protectedAccess.id);
+      setProtectedCredentialKinds(fields.map((field) => field.kind));
+      setAccessUsername("");
+      setAccessPassword("");
+      setPrivateInstructions("");
+      setDestinationUrl("");
+      setDestinationDomain(protectedAccess.destinationDomain ?? "");
+    } catch {
+      setError(
+        "Le lien ou les accès ne respectent pas la politique du marché.",
+      );
+    } finally {
+      setDigitalOperation("");
+    }
+  };
+
+  const importInventory = async () => {
+    if (!accessClass) return;
+    const values = uniqueCredentials
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+    setDigitalOperation("inventory");
+    try {
+      const result = await mobileDigitalProductsService.importUniqueCredentials(
+        activeMarket.code,
+        accessClass,
+        values,
+      );
+      setCredentialBatchIds((current) => [...current, result.batchId]);
+      setInventoryCount(result.availableCount);
+      setUniqueCredentials("");
+    } catch {
+      setError("L’inventaire n’a pas pu être chiffré et importé.");
+    } finally {
+      setDigitalOperation("");
+    }
+  };
+
   const publish = async () => {
     if (!user) {
       router.push("/auth/login");
@@ -396,6 +674,88 @@ export default function PublishScreen() {
       );
       return;
     }
+    if (isDigital) {
+      if (
+        !digitalPolicy?.enabled ||
+        !digitalPolicy.capabilities.publication ||
+        !digitalPolicy.allowedCategoryIds.includes(activeCategoryId)
+      ) {
+        setError(
+          "La publication numérique n’est pas autorisée pour cette catégorie et ce marché.",
+        );
+        return;
+      }
+      if (
+        !digitalProfile ||
+        digitalProfile.policyVersion !== digitalPolicy.version ||
+        digitalFulfillmentTypes.some(
+          (type) => !digitalProfile.fulfillmentTypes.includes(type),
+        )
+      ) {
+        setError(
+          "Le profil vendeur numérique doit être complété ou mis à jour.",
+        );
+        return;
+      }
+    }
+    const digitalFulfillment = isDigital
+      ? digitalFulfillmentVersionInputSchema.safeParse({
+          fulfillmentTypes: digitalFulfillmentTypes,
+          primaryFulfillmentType: digitalFulfillmentTypes[0],
+          productVersion,
+          buyerFacingDescription,
+          productAccessClass: digitalFulfillmentTypes.some(
+            (type) => type !== "FILE_DOWNLOAD",
+          )
+            ? accessClass
+            : undefined,
+          compatibility: compatibility
+            .split(/\r?\n/)
+            .map((value) => value.trim())
+            .filter(Boolean),
+          requirements: requirements
+            .split(/\r?\n/)
+            .map((value) => value.trim())
+            .filter(Boolean),
+          privateAssetVersionIds: privateAssetIds,
+          accessSecretVersionId: accessSecretId,
+          credentialBatchIds,
+          credentialAllocationMode: digitalFulfillmentTypes.includes(
+            "ACCESS_CREDENTIALS",
+          )
+            ? credentialAllocationMode
+            : undefined,
+          credentialKinds: digitalFulfillmentTypes.includes(
+            "ACCESS_CREDENTIALS",
+          )
+            ? credentialAllocationMode === "UNIQUE_INVENTORY"
+              ? ["LICENSE_KEY"]
+              : protectedCredentialKinds
+            : [],
+          provisioningTimeHours: digitalFulfillmentTypes.includes(
+            "SELLER_PROVISIONED",
+          )
+            ? Number(provisioningHours)
+            : undefined,
+          entitlementDurationDays:
+            digitalPolicy?.defaultEntitlementDurationDays,
+          downloadLimit: digitalFulfillmentTypes.includes("FILE_DOWNLOAD")
+            ? digitalPolicy?.defaultDownloadLimit
+            : undefined,
+          revealLimit: digitalFulfillmentTypes.some(
+            (type) => type === "ACCESS_LINK" || type === "ACCESS_CREDENTIALS",
+          )
+            ? digitalPolicy?.defaultRevealLimit
+            : undefined,
+        })
+      : null;
+    if (digitalFulfillment && !digitalFulfillment.success) {
+      setError(
+        digitalFulfillment.error.issues[0]?.message ||
+          "Vérifiez la remise numérique.",
+      );
+      return;
+    }
     const parsed = publicationInputSchema.safeParse({
       title,
       description,
@@ -407,10 +767,11 @@ export default function PublishScreen() {
       taxonomyVersion: "4.0.0",
       attributes: resolvedAttributes,
       marketCode: activeMarket.code,
-      city,
-      postalCode,
+      city: isDigital ? "" : city,
+      postalCode: isDigital ? "" : postalCode,
       condition: toApplicationListingCondition(resolvedAttributes, "good"),
       images,
+      digitalFulfillment: digitalFulfillment?.data,
     });
     if (!parsed.success) {
       setError(
@@ -422,6 +783,7 @@ export default function PublishScreen() {
     setError("");
     try {
       const listing = await listingsService.publish(parsed.data);
+      await mobileDigitalDraftStore.clear(user.id, activeMarket.code);
       Alert.alert(
         "Annonce envoyée",
         "Votre annonce est publiée ou en cours de vérification selon les contrôles de sécurité.",
@@ -541,14 +903,263 @@ export default function PublishScreen() {
         keyboardType="decimal-pad"
         placeholder="0,00"
       />
-      <FormField label="Ville" value={city} onChangeText={setCity} />
-      <FormField
-        label="Code postal"
-        value={postalCode}
-        onChangeText={setPostalCode}
-        keyboardType="number-pad"
-        autoComplete="postal-code"
-      />
+
+      <View style={styles.categoryGroup} accessibilityRole="radiogroup">
+        <Text style={styles.label}>Mode de remise</Text>
+        <Text style={styles.subtitle}>
+          Le mode de remise est explicite et indépendant de la catégorie.
+        </Text>
+        <View style={styles.categoryRow}>
+          {[
+            ["PHYSICAL", "Produit physique"],
+            ["FILE_DOWNLOAD", "Fichier privé"],
+            ["ACCESS_LINK", "Lien d’accès"],
+            ["ACCESS_CREDENTIALS", "Accès avec identifiants"],
+            ["SELLER_PROVISIONED", "Accès préparé après paiement"],
+            ["LINK_AND_CREDENTIALS", "Lien et identifiants"],
+          ].map(([mode, label]) => (
+            <Button
+              key={mode}
+              label={label}
+              variant={fulfillmentMode === mode ? "primary" : "secondary"}
+              onPress={() => setFulfillmentMode(mode as typeof fulfillmentMode)}
+              style={styles.categoryButton}
+            />
+          ))}
+        </View>
+      </View>
+
+      {!isDigital ? (
+        <>
+          <FormField label="Ville" value={city} onChangeText={setCity} />
+          <FormField
+            label="Code postal"
+            value={postalCode}
+            onChangeText={setPostalCode}
+            keyboardType="number-pad"
+            autoComplete="postal-code"
+          />
+        </>
+      ) : (
+        <View style={styles.digitalPanel}>
+          <Text style={styles.label}>
+            Produit numérique — aucune livraison physique
+          </Text>
+          {!digitalPolicy?.enabled ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              La vente numérique est désactivée tant que les décisions requises
+              pour ce marché ne sont pas approuvées.
+            </Text>
+          ) : null}
+          {!digitalProfile ||
+          digitalProfile.policyVersion !== digitalPolicy?.version ? (
+            <Button
+              label="Configurer mes responsabilités vendeur"
+              variant="secondary"
+              onPress={() => router.push("/account/digital-selling" as never)}
+            />
+          ) : null}
+          <FormField
+            label="Version du produit"
+            value={productVersion}
+            onChangeText={setProductVersion}
+            maxLength={120}
+          />
+          <FormField
+            label="Ce que l’acheteur recevra"
+            value={buyerFacingDescription}
+            onChangeText={setBuyerFacingDescription}
+            multiline
+            maxLength={2000}
+          />
+          <FormField
+            label="Compatibilité, une valeur par ligne"
+            value={compatibility}
+            onChangeText={setCompatibility}
+            multiline
+          />
+          <FormField
+            label="Prérequis, une valeur par ligne"
+            value={requirements}
+            onChangeText={setRequirements}
+            multiline
+          />
+
+          {digitalFulfillmentTypes.includes("FILE_DOWNLOAD") ? (
+            <View style={styles.categoryGroup}>
+              <Button
+                label={
+                  digitalOperation === "file"
+                    ? "Téléversement et contrôles…"
+                    : "Choisir un fichier privé"
+                }
+                variant="secondary"
+                disabled={digitalOperation !== ""}
+                onPress={() => void choosePrivateFile()}
+              />
+              {privateAssetStatus ? (
+                <Text accessibilityRole="text" style={styles.subtitle}>
+                  {privateAssetStatus}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+
+          {digitalFulfillmentTypes.some(
+            (type) => type === "ACCESS_LINK" || type === "ACCESS_CREDENTIALS",
+          ) ? (
+            <View style={styles.categoryGroup}>
+              <Text style={styles.label}>Accès privé chiffré</Text>
+              <View style={styles.categoryRow}>
+                {digitalPolicy?.credentialInventory.allowedClasses.map(
+                  (value) => (
+                    <Button
+                      key={value}
+                      label={value}
+                      variant={accessClass === value ? "primary" : "secondary"}
+                      onPress={() => setAccessClass(value)}
+                    />
+                  ),
+                )}
+              </View>
+              {digitalFulfillmentTypes.includes("ACCESS_CREDENTIALS") ? (
+                <View style={styles.categoryRow}>
+                  <Button
+                    label="Accès réutilisable"
+                    variant={
+                      credentialAllocationMode === "REUSABLE"
+                        ? "primary"
+                        : "secondary"
+                    }
+                    onPress={() => setCredentialAllocationMode("REUSABLE")}
+                  />
+                  <Button
+                    label="Clés uniques"
+                    variant={
+                      credentialAllocationMode === "UNIQUE_INVENTORY"
+                        ? "primary"
+                        : "secondary"
+                    }
+                    onPress={() =>
+                      setCredentialAllocationMode("UNIQUE_INVENTORY")
+                    }
+                  />
+                </View>
+              ) : null}
+              {digitalFulfillmentTypes.includes("ACCESS_LINK") ||
+              credentialAllocationMode === "REUSABLE" ? (
+                <>
+                  <FormField
+                    label="Lien secret HTTPS"
+                    value={destinationUrl}
+                    onChangeText={setDestinationUrl}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <FormField
+                    label="Domaine affiché"
+                    value={destinationDomain}
+                    onChangeText={setDestinationDomain}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {digitalFulfillmentTypes.includes("ACCESS_CREDENTIALS") &&
+                  credentialAllocationMode === "REUSABLE" ? (
+                    <>
+                      <FormField
+                        label="Identifiant"
+                        value={accessUsername}
+                        onChangeText={setAccessUsername}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                      />
+                      <FormField
+                        label="Mot de passe, code ou clé"
+                        value={accessPassword}
+                        onChangeText={setAccessPassword}
+                        secureTextEntry
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                      />
+                    </>
+                  ) : null}
+                  <FormField
+                    label="Instructions privées"
+                    value={privateInstructions}
+                    onChangeText={setPrivateInstructions}
+                    multiline
+                  />
+                  <Button
+                    label={
+                      accessSecretId
+                        ? "Accès chiffré et masqué"
+                        : "Valider et protéger l’accès"
+                    }
+                    disabled={digitalOperation !== ""}
+                    loading={digitalOperation === "access"}
+                    onPress={() => void protectReusableAccess()}
+                  />
+                </>
+              ) : null}
+              {digitalFulfillmentTypes.includes("ACCESS_CREDENTIALS") &&
+              credentialAllocationMode === "UNIQUE_INVENTORY" ? (
+                <>
+                  <FormField
+                    label="Clés uniques, une par ligne"
+                    value={uniqueCredentials}
+                    onChangeText={setUniqueCredentials}
+                    multiline
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <Button
+                    label={
+                      inventoryCount
+                        ? `${inventoryCount} accès uniques disponibles`
+                        : "Chiffrer et importer l’inventaire"
+                    }
+                    disabled={
+                      digitalOperation !== "" || !uniqueCredentials.trim()
+                    }
+                    loading={digitalOperation === "inventory"}
+                    onPress={() => void importInventory()}
+                  />
+                </>
+              ) : null}
+            </View>
+          ) : null}
+
+          {digitalFulfillmentTypes.includes("SELLER_PROVISIONED") ? (
+            <View style={styles.categoryGroup}>
+              <Text style={styles.label}>Classe d’accès autorisée</Text>
+              <View style={styles.categoryRow}>
+                {digitalPolicy?.credentialInventory.allowedClasses.map(
+                  (value) => (
+                    <Button
+                      key={value}
+                      label={value}
+                      variant={accessClass === value ? "primary" : "secondary"}
+                      onPress={() => setAccessClass(value)}
+                    />
+                  ),
+                )}
+              </View>
+              <FormField
+                label="Délai de préparation en heures"
+                value={provisioningHours}
+                onChangeText={setProvisioningHours}
+                keyboardType="number-pad"
+              />
+            </View>
+          ) : null}
+          <Text style={styles.subtitle}>
+            L’achat numérique n’est pas activé dans l’application native. Le
+            paiement et l’accès restent disponibles sur le Web lorsque la
+            politique du marché l’autorise.
+          </Text>
+        </View>
+      )}
 
       {schemaState === "loading" ? (
         <Text accessibilityRole="text" style={styles.subtitle}>
@@ -666,6 +1277,12 @@ const styles = StyleSheet.create({
   categoryGroup: { gap: spacing.sm },
   categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   categoryButton: { minHeight: nativeSizing.controlTouch },
+  digitalPanel: {
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+  },
   preview: {
     width: "100%",
     aspectRatio: 16 / 9,

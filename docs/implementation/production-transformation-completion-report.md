@@ -1,5 +1,12 @@
 # Shongre production transformation completion report
 
+> Historical implementation report (2026-08-25). The current release decision,
+> inventory, validation state, and blockers are maintained in the
+> [production capability matrix](../architecture/production-capability-matrix.md).
+> As of 2026-09-01, hosted staging and production Web require API mode with mock
+> storage disabled; earlier demo-only production statements in this report are
+> superseded.
+
 Completion date: 2026-08-25  
 Scope: repository-achievable implementation from the principal architecture
 brief. Live-provider, legal and deployed-environment evidence is explicitly

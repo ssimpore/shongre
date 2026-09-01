@@ -204,6 +204,19 @@ export const routes = {
   seller: {
     profile: (id: string) => `/profil/${pathSegment(id)}`,
     storefront: (id: string) => `/boutique/${pathSegment(id)}`,
+    publicPage: (seller: {
+      id: string;
+      slug?: string;
+      storeSlug?: string;
+      isProfessional: boolean;
+    }) => {
+      const identifier = seller.isProfessional
+        ? seller.storeSlug || seller.slug || seller.id
+        : seller.slug || seller.id;
+      return seller.isProfessional
+        ? `/boutique/${pathSegment(identifier)}`
+        : `/profil/${pathSegment(identifier)}`;
+    },
   },
   workspace: {
     overview: () => "/compte",
@@ -216,6 +229,8 @@ export const routes = {
     notificationPreferences: () => "/compte/notifications/preferences",
     purchases: (transactionId?: string) =>
       withQuery("/compte/achats", { transactionId }),
+    digitalPurchases: () => "/compte/achats-numeriques",
+    digitalSeller: () => "/compte/produits-numeriques",
     finances: () => "/compte/finances",
     verification: () => "/compte/verification",
     security: () => "/compte/securite-compte",
@@ -261,6 +276,7 @@ export const routes = {
     overview: () => `/admin`,
     solutions: () => `/admin/solutions`,
     moderation: () => `/admin/moderation`,
+    digitalProducts: () => `/admin/produits-numeriques`,
     verifications: () => `/admin/verifications`,
     providers: () => `/admin/fournisseurs`,
     providerDetail: (id: string) => `/admin/fournisseurs/${pathSegment(id)}`,

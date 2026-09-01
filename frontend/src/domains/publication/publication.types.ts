@@ -176,6 +176,8 @@ export interface PublicationDraftState {
   pricing: PublicationPriceConfig;
   transaction: SellerTransactionChoice;
   fulfillment: SellerFulfillmentChoice;
+  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
+  digitalFulfillment?: import("@shongre/contracts/digital-products").DigitalFulfillmentVersionInput;
   proInventory?: ProInventoryData;
   location: {
     city: string;

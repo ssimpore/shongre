@@ -22,11 +22,9 @@ import {
   MessageSquare,
   DollarSign,
   ShoppingBag,
-  CheckCircle2,
   Send,
   Edit3,
   Sliders,
-  Star,
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
 import { listingRepository } from "../../repositories/listing.repository";
@@ -43,9 +41,13 @@ import {
   formatPrice,
   formatRelativeDate,
   calculateBuyerFee,
-  plural,
 } from "../../utilities/formatters";
-import { Breadcrumbs, FavoriteButton, PriceDisplay } from "../../design-system";
+import {
+  Breadcrumbs,
+  FavoriteButton,
+  PriceDisplay,
+  SellerIdentityLink,
+} from "../../design-system";
 import { Button } from "../../design-system/primitives/Button";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -57,7 +59,6 @@ import {
 } from "../../design-system/primitives/FormField";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../design-system/primitives/ListingRail";
-import { Image } from "../../design-system/primitives/Image";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -76,6 +77,7 @@ import { ListingSellerTrustSection } from "./components/ListingSellerTrustSectio
 import { ListingSafetyNotice } from "./components/ListingSafetyNotice";
 import { resolveListingIntentPresentation } from "../../domains/listing/listing-intent.presentation";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
 import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
@@ -91,7 +93,7 @@ import {
 export const ListingDetailPage: React.FC = () => {
   const { activeMarket, effectiveConfig, marketContext } = useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
-  const { t } = useTranslation();
+  const { t } = useTranslation(digitalMessagesFr);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -694,10 +696,16 @@ export const ListingDetailPage: React.FC = () => {
 
             {/* Metadata Footer: Location, Publication Date */}
             <div className="flex items-center gap-4 text-xs font-medium text-stone-500 pt-5 mt-2 border-t border-stone-100 flex-wrap">
-              <span className="flex items-center gap-1.5 text-stone-700">
-                <MapPin className="w-icon-md h-icon-md text-primary" />
-                {listing.city} ({listing.postalCode})
-              </span>
+              {listing.requiresPhysicalDelivery !== false ? (
+                <span className="flex items-center gap-1.5 text-stone-700">
+                  <MapPin className="w-icon-md h-icon-md text-primary" />
+                  {listing.city} ({listing.postalCode})
+                </span>
+              ) : (
+                <Badge variant="primary">
+                  {t("digital.common.noShipping")}
+                </Badge>
+              )}
               <span className="flex items-center gap-1.5">
                 <Clock className="w-icon-md h-icon-md text-stone-400" />
                 Publiée {formatRelativeDate(listing.createdAt)}
@@ -744,9 +752,7 @@ export const ListingDetailPage: React.FC = () => {
           {seller && <ListingSellerTrustSection seller={seller} reviews={[]} />}
 
           {/* 7. SAFETY REASSURANCE NOTICE */}
-          <ListingSafetyNotice
-            variant={intentPresentation.safetyVariant}
-          />
+          <ListingSafetyNotice variant={intentPresentation.safetyVariant} />
 
           {/* 8. LISTING BOTTOM METADATA */}
           <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-stone-500 flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
@@ -807,69 +813,22 @@ export const ListingDetailPage: React.FC = () => {
                 button, not only further down the page — it is part of the same
                 decision. */}
             {seller && (
-              <Link
-                to={
-                  isProSeller(seller)
-                    ? routes.seller.storefront(
-                        seller.storeSlug || seller.slug || seller.id,
-                      )
-                    : routes.seller.profile(seller.slug || seller.id)
-                }
-                className="group flex items-start gap-3 p-4 rounded-2xl border border-stone-200/60 bg-stone-50/60 hover:bg-stone-50 hover:border-stone-300 transition-colors"
-              >
-                <div className="relative shrink-0">
-                  <Image
-                    src={seller.avatarUrl}
-                    alt=""
-                    sizes="44px"
-                    className="w-11 h-11 rounded-full object-cover border border-stone-200"
-                  />
-                  {seller.isVerified && (
-                    <span
-                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-success text-white flex items-center justify-center border-2 border-white"
-                      aria-hidden="true"
-                    >
-                      <CheckCircle2 className="w-2.5 h-2.5" />
-                    </span>
-                  )}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-bold text-sm text-stone-900 truncate group-hover:text-primary transition-colors">
-                      {seller.name}
-                    </span>
-                    {isProSeller(seller) && (
-                      <Badge variant="pro" size="sm">
-                        Pro
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-1 flex-wrap">
-                    {seller.rating > 0 && (
-                      <span className="flex items-center gap-1 font-semibold text-stone-700">
-                        <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
-                        {seller.rating.toFixed(1)}
-                        <span className="font-normal text-stone-500">
-                          ({plural(seller.reviewCount || 0, "avis", "avis")})
-                        </span>
-                      </span>
-                    )}
-                    {seller.rating > 0 && seller.city && (
-                      <span aria-hidden="true">·</span>
-                    )}
-                    {seller.city && (
-                      <span className="flex items-center gap-1 truncate">
-                        <MapPin className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
-                        {seller.city}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <ChevronRight className="w-icon-md h-icon-md text-stone-400 shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-              </Link>
+              <SellerIdentityLink
+                to={routes.seller.publicPage({
+                  id: seller.id,
+                  slug: seller.slug,
+                  storeSlug: seller.storeSlug,
+                  isProfessional: isProSeller(seller),
+                })}
+                name={seller.name}
+                avatarUrl={seller.avatarUrl}
+                isVerified={seller.isVerified}
+                isProfessional={isProSeller(seller)}
+                rating={seller.rating}
+                reviewCount={seller.reviewCount}
+                locationLabel={seller.city}
+                surface="subtle"
+              />
             )}
 
             {/* ===================================================================== */}

@@ -70,6 +70,10 @@
       "description": "Operations owned by the admin-reports API domain."
     },
     {
+      "name": "admin-solutions",
+      "description": "Audited governance of the multi-market Shongre application catalog."
+    },
+    {
       "name": "admin-stats",
       "description": "Operations owned by the admin-stats API domain."
     },
@@ -198,6 +202,10 @@
       "description": "Operations owned by the reviews API domain."
     },
     {
+      "name": "solutions",
+      "description": "Market-aware public discovery of Shongre applications."
+    },
+    {
       "name": "taxonomy",
       "description": "Operations owned by the taxonomy API domain."
     },
@@ -219,6 +227,1046 @@
     }
   ],
   "paths": {
+    "/digital/policy": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalPolicy",
+        "tags": ["digital-products"],
+        "summary": "Read the public-safe digital-product policy for the resolved market",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Digital-product policy projection.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalPolicyProjection"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/seller-profile": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalSellerProfile",
+        "tags": ["digital-products"],
+        "summary": "Read the current seller digital responsibilities profile",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Seller profile or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/DigitalSellerProfile" },
+                    { "type": "null" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      },
+      "put": {
+        "operationId": "putDigitalSellerProfile",
+        "tags": ["digital-products"],
+        "summary": "Accept versioned digital seller responsibilities",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalSellerProfileInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated seller profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalSellerProfile"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/seller/provisioning-tasks": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalSellerProvisioningTasks",
+        "tags": ["digital-products"],
+        "summary": "List paid digital orders that the authenticated seller must provision",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Privacy-safe seller provisioning tasks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DigitalProvisioningTask"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.manage.seller",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/assets/uploads": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAssetUpload",
+        "tags": ["digital-products"],
+        "summary": "Initialize a private paid-asset upload",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalAssetUploadInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Short-lived private upload authorization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalAssetUploadResult"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/assets/uploads/{id}/complete": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAssetUploadComplete",
+        "tags": ["digital-products"],
+        "summary": "Complete and start validation, scanning and moderation of a private asset",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current asset-processing projection.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalAsset" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/assets/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalAsset",
+        "tags": ["digital-products"],
+        "summary": "Read private asset processing status without storage keys",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned asset projection.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalAsset" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      },
+      "delete": {
+        "operationId": "deleteDigitalAsset",
+        "tags": ["digital-products"],
+        "summary": "Remove an unconsumed private asset version",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset removed.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/access-secrets": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAccessSecret",
+        "tags": ["digital-products"],
+        "summary": "Validate and encrypt a reusable private link or access instruction",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalAccessSecretInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Opaque protected-access version reference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalAccessSecretReference"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/credential-batches": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalCredentialBatch",
+        "tags": ["digital-products"],
+        "summary": "Create a private credential inventory batch",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalCredentialBatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Opaque batch reference.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalCredentialBatchReference"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/credential-batches/{id}/credentials": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalCredentialInventory",
+        "tags": ["digital-products"],
+        "summary": "Securely import unique or reusable credential inventory",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalCredentialImportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventory counts without raw credentials.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalInventory" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/credential-batches/{id}/inventory": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalCredentialInventory",
+        "tags": ["digital-products"],
+        "summary": "Read owned inventory availability without secrets",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory counts.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalInventory" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/listings/{id}/fulfillment-versions": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalFulfillmentVersion",
+        "tags": ["digital-products"],
+        "summary": "Create an immutable listing fulfillment version",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalFulfillmentVersionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versioned fulfillment record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalFulfillmentVersion"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.publish",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalEntitlements",
+        "tags": ["digital-products"],
+        "summary": "List the buyer's digital purchases",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Digital purchases for the authenticated buyer and resolved market.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["items"],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DigitalEntitlement"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements/{id}": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalEntitlement",
+        "tags": ["digital-products"],
+        "summary": "Read one buyer-owned digital purchase",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Buyer-owned entitlement.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalEntitlement" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements/{id}/download-grants": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalDownloadGrant",
+        "tags": ["digital-products"],
+        "summary": "Create a short-lived single-use private file grant",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["assetId"],
+                "properties": {
+                  "assetId": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Short-lived download grant.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalAccessGrant" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements/{id}/reveal-grants": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalRevealGrant",
+        "tags": ["digital-products"],
+        "summary": "Create a recent-auth protected single-use link or credential grant",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Short-lived reveal grant.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalAccessGrant" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/access-grants/{id}/consume": {
+      "post": {
+        "operationId": "postDigitalAccessGrantConsume",
+        "tags": ["digital-products"],
+        "summary": "Consume a buyer-owned temporary access grant exactly once",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store download or revealed-access response.",
+            "headers": {
+              "Cache-Control": {
+                "schema": { "type": "string" },
+                "description": "Always private, no-store."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalConsumedAccess"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements/{id}/provision": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalProvisionedAccess",
+        "tags": ["digital-products"],
+        "summary": "Submit buyer-specific access after authoritative payment",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalAccessSecretInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Provisioning completed.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.manage.seller",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/entitlements/{id}/reports": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAccessReport",
+        "tags": ["digital-products"],
+        "summary": "Report invalid access or request reset or replacement",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalAccessReportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Privacy-safe support report.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "status"],
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "status": { "type": "string", "enum": ["OPEN"] }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.read.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/digital/admin/overview": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalAdminOverview",
+        "tags": ["digital-products-admin"],
+        "summary": "Inspect digital assets, inventory counts, entitlements and reports",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Privacy-safe digital operations overview.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalAdminOverview"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.review",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/admin/policy": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "get": {
+        "operationId": "getDigitalAdminPolicy",
+        "tags": ["digital-products-admin"],
+        "summary": "Read the latest full digital-product policy version for the resolved market",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Latest evidence-bearing digital market policy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalMarketPolicyAdmin"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.manage",
+        "x-shongre-deny-staff-marketplace": false
+      },
+      "post": {
+        "operationId": "postDigitalAdminPolicyDraft",
+        "tags": ["digital-products-admin"],
+        "summary": "Create an audited disabled digital-product policy draft",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["policy", "reason"],
+                "properties": {
+                  "policy": {
+                    "$ref": "#/components/schemas/DigitalMarketPolicyAdmin"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 240
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created disabled policy draft.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalMarketPolicyAdmin"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.manage",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/admin/policies/{id}/activate": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAdminPolicyActivate",
+        "tags": ["digital-products-admin"],
+        "summary": "Activate a complete evidence-backed digital-product policy version",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["reason"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 240
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated policy; prior active version is retired and affected sellers require reacceptance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalMarketPolicyAdmin"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.manage",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/admin/assets/{id}/moderation": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAssetModeration",
+        "tags": ["digital-products-admin"],
+        "summary": "Approve or reject a scanned private asset without reading its contents",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalModerationDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated asset projection.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DigitalAsset" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.action",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/admin/fulfillment-versions/{id}/moderation": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalFulfillmentModeration",
+        "tags": ["digital-products-admin"],
+        "summary": "Approve or reject a digital fulfillment version",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalModerationDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated fulfillment version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigitalFulfillmentVersion"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "moderation.action",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
+    "/digital/admin/reports/{id}/resolve": {
+      "parameters": [{ "$ref": "#/components/parameters/MarketContext" }],
+      "post": {
+        "operationId": "postDigitalAccessReportResolve",
+        "tags": ["digital-products-admin"],
+        "summary": "Resolve an invalid-access, reset or replacement report",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/IdPath" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DigitalAccessReportResolution"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Report resolved.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "support.case.manage",
+        "x-shongre-deny-staff-marketplace": false
+      }
+    },
     "/account/delete": {
       "post": {
         "operationId": "postAccountDelete",
@@ -3115,6 +4163,337 @@
             "BearerAuth": []
           }
         ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/solutions": {
+      "get": {
+        "operationId": "getSolutions",
+        "tags": ["solutions"],
+        "summary": "List public solutions for the resolved market",
+        "description": "Returns only catalog-visible public lifecycle entries associated with the explicit canonical market. Market identity is never inferred from locale or currency.",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 32 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Market-scoped public solution catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SolutionDefinition" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/solutions/{solutionSlug}": {
+      "get": {
+        "operationId": "getSolutionBySlug",
+        "tags": ["solutions"],
+        "summary": "Read a public solution for the resolved market",
+        "parameters": [
+          {
+            "name": "solutionSlug",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/SolutionSlug" }
+          },
+          { "$ref": "#/components/parameters/MarketContext" },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 32 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public solution or null when no public catalog entry exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/SolutionDefinition" },
+                    { "type": "null" }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/solutions": {
+      "get": {
+        "operationId": "getAdminSolutions",
+        "tags": ["admin-solutions"],
+        "summary": "List the complete multi-market solution catalog",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Complete solution catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SolutionDefinition" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      },
+      "post": {
+        "operationId": "postAdminSolution",
+        "tags": ["admin-solutions"],
+        "summary": "Create a solution with audited catalog evidence",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/RequiredIdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateSolutionInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created solution.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SolutionDefinition" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-idempotency": "required",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/solutions/order": {
+      "put": {
+        "operationId": "putAdminSolutionsOrder",
+        "tags": ["admin-solutions"],
+        "summary": "Atomically reorder every solution",
+        "parameters": [
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/RequiredIdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ReorderSolutionsInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reordered catalog.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SolutionDefinition" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-idempotency": "required",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/solutions/{solutionId}": {
+      "patch": {
+        "operationId": "patchAdminSolution",
+        "tags": ["admin-solutions"],
+        "summary": "Update mutable solution catalog fields",
+        "parameters": [
+          {
+            "name": "solutionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/RequiredIdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateSolutionInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated solution.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SolutionDefinition" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-idempotency": "required",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/solutions/{solutionId}/lifecycle": {
+      "post": {
+        "operationId": "postAdminSolutionLifecycle",
+        "tags": ["admin-solutions"],
+        "summary": "Apply an audited solution lifecycle transition",
+        "parameters": [
+          {
+            "name": "solutionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" },
+          { "$ref": "#/components/parameters/RequiredIdempotencyKey" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransitionSolutionLifecycleInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transitioned solution.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SolutionDefinition" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "admin.configuration.manage",
+        "x-shongre-idempotency": "required",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/solutions/{solutionId}/lifecycle-history": {
+      "get": {
+        "operationId": "getAdminSolutionLifecycleHistory",
+        "tags": ["admin-solutions"],
+        "summary": "List immutable lifecycle evidence for a solution",
+        "parameters": [
+          {
+            "name": "solutionId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lifecycle history newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SolutionLifecycleHistoryEntry"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
         "x-shongre-access": "permission",
         "x-shongre-permission": "admin.configuration.manage",
         "x-shongre-source": "backend/src/api/v1/router.ts"
@@ -31446,6 +32825,12 @@
       }
     },
     "parameters": {
+      "IdPath": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": { "type": "string", "minLength": 1, "maxLength": 200 }
+      },
       "RequestId": {
         "name": "X-Request-Id",
         "in": "header",
@@ -31475,6 +32860,17 @@
           "minLength": 8,
           "maxLength": 255
         }
+      },
+      "RequiredIdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "description": "Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict.",
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 255
+        }
       }
     },
     "headers": {
@@ -31486,6 +32882,1155 @@
       }
     },
     "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["success"],
+        "properties": { "success": { "type": "boolean", "const": true } }
+      },
+      "DigitalFulfillmentType": {
+        "type": "string",
+        "enum": [
+          "FILE_DOWNLOAD",
+          "ACCESS_LINK",
+          "ACCESS_CREDENTIALS",
+          "SELLER_PROVISIONED"
+        ]
+      },
+      "FulfillmentType": {
+        "oneOf": [
+          { "type": "string", "const": "PHYSICAL" },
+          { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+        ]
+      },
+      "DigitalCredentialKind": {
+        "type": "string",
+        "enum": [
+          "LICENSE_KEY",
+          "ACTIVATION_CODE",
+          "USERNAME",
+          "PASSWORD",
+          "PIN",
+          "TOKEN",
+          "STRUCTURED_INSTRUCTIONS"
+        ]
+      },
+      "DigitalPolicyRequirement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "description": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      },
+      "DigitalPolicyProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "marketCode",
+          "version",
+          "status",
+          "enabled",
+          "allowedAccountTypes",
+          "allowedSellerTypes",
+          "allowedCategoryIds",
+          "allowedFulfillmentTypes",
+          "allowedFulfillmentCombinations",
+          "requiredVerificationDimensions",
+          "moderationRequired",
+          "allowedMimeTypes",
+          "allowedFileExtensions",
+          "maxFileCount",
+          "maxFileSizeBytes",
+          "maxTotalFileSizeBytes",
+          "credentialInventory",
+          "provisioningDeadlineHours",
+          "defaultEntitlementDurationDays",
+          "defaultDownloadLimit",
+          "defaultRevealLimit",
+          "currency",
+          "minimumPrice",
+          "maximumPrice",
+          "capabilities",
+          "requirements",
+          "purchaseUnavailableReasons"
+        ],
+        "properties": {
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "version": { "type": "integer", "minimum": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "DISABLED", "RETIRED"]
+          },
+          "enabled": { "type": "boolean" },
+          "allowedAccountTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          "allowedSellerTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          "allowedCategoryIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "allowedFulfillmentTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+          },
+          "allowedFulfillmentCombinations": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+            }
+          },
+          "requiredVerificationDimensions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "moderationRequired": { "type": "boolean" },
+          "allowedMimeTypes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "allowedFileExtensions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "maxFileCount": { "type": "integer", "minimum": 1 },
+          "maxFileSizeBytes": { "type": "integer", "minimum": 1 },
+          "maxTotalFileSizeBytes": { "type": "integer", "minimum": 1 },
+          "credentialInventory": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reusableAllowed",
+              "uniqueAllowed",
+              "providerGeneratedAllowed",
+              "sellerEnteredAfterPaymentAllowed",
+              "minimumAvailableBeforePurchase",
+              "allowedKinds",
+              "allowedClasses",
+              "prohibitedClasses"
+            ],
+            "properties": {
+              "reusableAllowed": { "type": "boolean" },
+              "uniqueAllowed": { "type": "boolean" },
+              "providerGeneratedAllowed": { "type": "boolean" },
+              "sellerEnteredAfterPaymentAllowed": { "type": "boolean" },
+              "minimumAvailableBeforePurchase": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "allowedKinds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DigitalCredentialKind"
+                }
+              },
+              "allowedClasses": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "prohibitedClasses": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "provisioningDeadlineHours": { "type": "integer", "minimum": 1 },
+          "defaultEntitlementDurationDays": { "type": "integer", "minimum": 1 },
+          "defaultDownloadLimit": { "type": "integer", "minimum": 1 },
+          "defaultRevealLimit": { "type": "integer", "minimum": 1 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "minimumPrice": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "maximumPrice": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "onboarding",
+              "listingDrafts",
+              "publication",
+              "checkout",
+              "fulfillment",
+              "nativeCheckout"
+            ],
+            "properties": {
+              "onboarding": { "type": "boolean" },
+              "listingDrafts": { "type": "boolean" },
+              "publication": { "type": "boolean" },
+              "checkout": { "type": "boolean" },
+              "fulfillment": { "type": "boolean" },
+              "nativeCheckout": { "type": "boolean" }
+            }
+          },
+          "requirements": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DigitalPolicyRequirement" }
+          },
+          "purchaseUnavailableReasons": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "DigitalMarketPolicyAdmin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "marketCode",
+          "version",
+          "status",
+          "enabled",
+          "allowedAccountTypes",
+          "allowedSellerTypes",
+          "allowedCategoryIds",
+          "allowedFulfillmentTypes",
+          "allowedFulfillmentCombinations",
+          "requiredVerificationDimensions",
+          "moderationRequired",
+          "allowedMimeTypes",
+          "allowedFileExtensions",
+          "maxFileCount",
+          "maxFileSizeBytes",
+          "maxTotalFileSizeBytes",
+          "credentialInventory",
+          "externalLinks",
+          "provisioningDeadlineHours",
+          "defaultEntitlementDurationDays",
+          "defaultDownloadLimit",
+          "defaultRevealLimit",
+          "currency",
+          "minimumPrice",
+          "maximumPrice",
+          "taxPolicyVersion",
+          "refundPolicyVersion",
+          "withdrawalPresentationVersion",
+          "paymentProviderConfigurationId",
+          "legalApprovalId",
+          "capabilities",
+          "refundAccessBehavior",
+          "disputeAccessBehavior",
+          "listingRemovalAccessBehavior",
+          "sellerRestrictionAccessBehavior",
+          "requirements",
+          "effectiveAt",
+          "approvedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "readOnly": true },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "version": { "type": "integer", "minimum": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "DISABLED", "RETIRED"]
+          },
+          "enabled": { "type": "boolean" },
+          "allowedAccountTypes": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          "allowedSellerTypes": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "enum": ["individual", "professional"]
+            }
+          },
+          "allowedCategoryIds": {
+            "type": "array",
+            "maxItems": 500,
+            "items": { "type": "string" }
+          },
+          "allowedFulfillmentTypes": {
+            "type": "array",
+            "maxItems": 4,
+            "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+          },
+          "allowedFulfillmentCombinations": {
+            "type": "array",
+            "maxItems": 30,
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 4,
+              "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+            }
+          },
+          "requiredVerificationDimensions": {
+            "type": "array",
+            "maxItems": 30,
+            "items": { "type": "string" }
+          },
+          "moderationRequired": { "type": "boolean" },
+          "allowedMimeTypes": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string" }
+          },
+          "allowedFileExtensions": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "pattern": "^\\.[a-z0-9]{1,16}$" }
+          },
+          "maxFileCount": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "maxFileSizeBytes": { "type": "integer", "minimum": 1 },
+          "maxTotalFileSizeBytes": { "type": "integer", "minimum": 1 },
+          "credentialInventory": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reusableAllowed",
+              "uniqueAllowed",
+              "providerGeneratedAllowed",
+              "sellerEnteredAfterPaymentAllowed",
+              "minimumAvailableBeforePurchase",
+              "allowedKinds",
+              "allowedClasses",
+              "prohibitedClasses"
+            ],
+            "properties": {
+              "reusableAllowed": { "type": "boolean" },
+              "uniqueAllowed": { "type": "boolean" },
+              "providerGeneratedAllowed": { "type": "boolean" },
+              "sellerEnteredAfterPaymentAllowed": { "type": "boolean" },
+              "minimumAvailableBeforePurchase": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "allowedKinds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DigitalCredentialKind"
+                }
+              },
+              "allowedClasses": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "prohibitedClasses": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" }
+              }
+            }
+          },
+          "externalLinks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "allowedSchemes",
+              "acceptedDomains",
+              "allowSubdomains",
+              "allowQuery",
+              "allowFragment"
+            ],
+            "properties": {
+              "allowedSchemes": {
+                "type": "array",
+                "maxItems": 1,
+                "items": { "type": "string", "const": "https" }
+              },
+              "acceptedDomains": {
+                "type": "array",
+                "maxItems": 1000,
+                "items": { "type": "string" }
+              },
+              "allowSubdomains": { "type": "boolean" },
+              "allowQuery": { "type": "boolean" },
+              "allowFragment": { "type": "boolean" }
+            }
+          },
+          "provisioningDeadlineHours": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2160
+          },
+          "defaultEntitlementDurationDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "defaultDownloadLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "defaultRevealLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "minimumPrice": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "maximumPrice": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "taxPolicyVersion": { "type": ["string", "null"], "maxLength": 160 },
+          "refundPolicyVersion": {
+            "type": ["string", "null"],
+            "maxLength": 160
+          },
+          "withdrawalPresentationVersion": {
+            "type": ["string", "null"],
+            "maxLength": 160
+          },
+          "paymentProviderConfigurationId": {
+            "type": ["string", "null"],
+            "maxLength": 200
+          },
+          "legalApprovalId": { "type": ["string", "null"], "maxLength": 200 },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "onboarding",
+              "listingDrafts",
+              "publication",
+              "checkout",
+              "fulfillment",
+              "nativeCheckout"
+            ],
+            "properties": {
+              "onboarding": { "type": "boolean" },
+              "listingDrafts": { "type": "boolean" },
+              "publication": { "type": "boolean" },
+              "checkout": { "type": "boolean" },
+              "fulfillment": { "type": "boolean" },
+              "nativeCheckout": { "type": "boolean" }
+            }
+          },
+          "refundAccessBehavior": {
+            "type": "string",
+            "enum": [
+              "REVOKE_ON_REQUEST",
+              "REVOKE_ON_REFUND",
+              "CONTINUE_UNTIL_REVIEW"
+            ]
+          },
+          "disputeAccessBehavior": {
+            "type": "string",
+            "enum": ["REVOKE", "SUSPEND", "CONTINUE_UNTIL_REVIEW"]
+          },
+          "listingRemovalAccessBehavior": {
+            "type": "string",
+            "enum": ["REVOKE", "SUSPEND", "PRESERVE_EXISTING_PURCHASES"]
+          },
+          "sellerRestrictionAccessBehavior": {
+            "type": "string",
+            "enum": ["REVOKE", "SUSPEND", "PRESERVE_EXISTING_PURCHASES"]
+          },
+          "requirements": {
+            "type": "array",
+            "maxItems": 50,
+            "items": { "$ref": "#/components/schemas/DigitalPolicyRequirement" }
+          },
+          "effectiveAt": { "type": ["string", "null"], "format": "date-time" },
+          "approvedAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "DigitalSellerProfileInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fulfillmentTypes", "acceptedPolicyVersion"],
+        "properties": {
+          "fulfillmentTypes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/FulfillmentType" }
+          },
+          "acceptedPolicyVersion": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "DigitalSellerProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sellerId",
+          "marketCode",
+          "policyVersion",
+          "fulfillmentTypes",
+          "acceptedAt",
+          "status"
+        ],
+        "properties": {
+          "sellerId": { "type": "string" },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "policyVersion": { "type": "integer", "minimum": 1 },
+          "fulfillmentTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/FulfillmentType" }
+          },
+          "acceptedAt": { "type": "string", "format": "date-time" },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "REACCEPTANCE_REQUIRED", "SUSPENDED"]
+          }
+        }
+      },
+      "DigitalProvisioningTask": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "entitlementId",
+          "orderId",
+          "listingId",
+          "marketCode",
+          "title",
+          "productVersion",
+          "productAccessClass",
+          "status",
+          "deadlineAt",
+          "attemptCount",
+          "nextAttemptAt",
+          "completedAt",
+          "failureCode",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "entitlementId": { "type": "string", "format": "uuid" },
+          "orderId": { "type": "string" },
+          "listingId": { "type": "string" },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "title": { "type": "string", "maxLength": 240 },
+          "productVersion": { "type": "string", "maxLength": 120 },
+          "productAccessClass": { "type": "string", "maxLength": 120 },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "IN_PROGRESS",
+              "RETRY_PENDING",
+              "COMPLETED",
+              "FAILED",
+              "ESCALATED",
+              "CANCELLED"
+            ]
+          },
+          "deadlineAt": { "type": "string", "format": "date-time" },
+          "attemptCount": { "type": "integer", "minimum": 0 },
+          "nextAttemptAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "completedAt": { "type": ["string", "null"], "format": "date-time" },
+          "failureCode": { "type": ["string", "null"], "maxLength": 120 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DigitalAssetUploadInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fileName", "contentType", "sizeBytes"],
+        "properties": {
+          "fileName": { "type": "string", "minLength": 1, "maxLength": 255 },
+          "contentType": { "type": "string", "minLength": 3, "maxLength": 160 },
+          "sizeBytes": { "type": "integer", "minimum": 1 },
+          "listingId": { "type": "string" },
+          "replacesAssetId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "DigitalAsset": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "listingId",
+          "version",
+          "safeFileName",
+          "contentType",
+          "sizeBytes",
+          "status",
+          "scanStatus",
+          "createdAt",
+          "readyAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "listingId": { "type": ["string", "null"] },
+          "version": { "type": "integer", "minimum": 1 },
+          "safeFileName": { "type": "string" },
+          "contentType": { "type": "string" },
+          "sizeBytes": { "type": "integer", "minimum": 0 },
+          "status": {
+            "type": "string",
+            "enum": [
+              "UPLOAD_PENDING",
+              "PROCESSING",
+              "SCANNING",
+              "READY",
+              "QUARANTINED",
+              "REJECTED",
+              "REMOVED",
+              "UNAVAILABLE"
+            ]
+          },
+          "scanStatus": {
+            "type": "string",
+            "enum": ["PENDING", "SCANNING", "CLEAN", "MALICIOUS", "FAILED"]
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "readyAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "DigitalAssetUploadResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["asset", "signedUploadUrl", "expiresAt"],
+        "properties": {
+          "asset": { "$ref": "#/components/schemas/DigitalAsset" },
+          "signedUploadUrl": { "type": "string", "format": "uri" },
+          "expiresAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DigitalSecretFieldInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "label", "value"],
+        "properties": {
+          "kind": { "$ref": "#/components/schemas/DigitalCredentialKind" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "value": { "type": "string", "minLength": 1, "maxLength": 16384 }
+        }
+      },
+      "DigitalAccessSecretInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["productAccessClass"],
+        "properties": {
+          "listingId": { "type": "string" },
+          "productAccessClass": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "destinationUrl": {
+            "type": "string",
+            "format": "uri",
+            "writeOnly": true
+          },
+          "displayDomain": { "type": "string", "maxLength": 253 },
+          "fields": {
+            "type": "array",
+            "maxItems": 30,
+            "items": { "$ref": "#/components/schemas/DigitalSecretFieldInput" },
+            "writeOnly": true
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 16384,
+            "writeOnly": true
+          }
+        }
+      },
+      "DigitalAccessSecretReference": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "destinationDomain", "masked"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "destinationDomain": { "type": ["string", "null"] },
+          "masked": { "type": "boolean", "const": true }
+        }
+      },
+      "DigitalCredentialBatchInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["productAccessClass", "allocationMode", "credentialKinds"],
+        "properties": {
+          "listingId": { "type": "string" },
+          "productAccessClass": { "type": "string" },
+          "allocationMode": {
+            "type": "string",
+            "enum": [
+              "REUSABLE",
+              "UNIQUE_INVENTORY",
+              "APPROVED_PROVIDER",
+              "SELLER_AFTER_PAYMENT"
+            ]
+          },
+          "credentialKinds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/DigitalCredentialKind" }
+          }
+        }
+      },
+      "DigitalCredentialBatchReference": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "version"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "version": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "DigitalCredentialImportItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 30,
+            "items": { "$ref": "#/components/schemas/DigitalSecretFieldInput" },
+            "writeOnly": true
+          },
+          "destinationUrl": {
+            "type": "string",
+            "format": "uri",
+            "writeOnly": true
+          },
+          "instructions": {
+            "type": "string",
+            "maxLength": 16384,
+            "writeOnly": true
+          },
+          "expiresAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DigitalCredentialImportInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["productAccessClass", "credentials"],
+        "properties": {
+          "productAccessClass": { "type": "string" },
+          "credentials": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/DigitalCredentialImportItem"
+            },
+            "writeOnly": true
+          }
+        }
+      },
+      "DigitalInventory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "batchId",
+          "listingId",
+          "availableCount",
+          "reservedCount",
+          "consumedCount",
+          "canPurchase"
+        ],
+        "properties": {
+          "batchId": { "type": "string", "format": "uuid" },
+          "listingId": { "type": ["string", "null"] },
+          "availableCount": { "type": "integer", "minimum": 0 },
+          "reservedCount": { "type": "integer", "minimum": 0 },
+          "consumedCount": { "type": "integer", "minimum": 0 },
+          "canPurchase": { "type": "boolean" }
+        }
+      },
+      "DigitalFulfillmentVersionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fulfillmentTypes",
+          "primaryFulfillmentType",
+          "productVersion",
+          "buyerFacingDescription"
+        ],
+        "properties": {
+          "fulfillmentTypes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+          },
+          "primaryFulfillmentType": {
+            "$ref": "#/components/schemas/DigitalFulfillmentType"
+          },
+          "productVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "buyerFacingDescription": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          },
+          "compatibility": {
+            "type": "array",
+            "maxItems": 30,
+            "items": { "type": "string" }
+          },
+          "requirements": {
+            "type": "array",
+            "maxItems": 30,
+            "items": { "type": "string" }
+          },
+          "publicTermsLabel": { "type": "string", "maxLength": 240 },
+          "productAccessClass": { "type": "string", "maxLength": 120 },
+          "privateAssetVersionIds": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "accessSecretVersionId": { "type": "string", "format": "uuid" },
+          "credentialBatchIds": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "credentialAllocationMode": {
+            "type": "string",
+            "enum": [
+              "REUSABLE",
+              "UNIQUE_INVENTORY",
+              "APPROVED_PROVIDER",
+              "SELLER_AFTER_PAYMENT"
+            ]
+          },
+          "credentialKinds": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DigitalCredentialKind" }
+          },
+          "provisioningTimeHours": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2160
+          },
+          "entitlementDurationDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "downloadLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "revealLimit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+        }
+      },
+      "DigitalFulfillmentVersion": {
+        "allOf": [
+          { "$ref": "#/components/schemas/DigitalFulfillmentVersionInput" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "listingId",
+              "sellerId",
+              "marketCode",
+              "version",
+              "status",
+              "moderationStatus",
+              "createdAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "listingId": { "type": "string" },
+              "sellerId": { "type": "string" },
+              "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+              "version": { "type": "integer" },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "DRAFT",
+                  "PROCESSING",
+                  "READY",
+                  "PUBLISHED",
+                  "RETIRED",
+                  "SUSPENDED"
+                ]
+              },
+              "moderationStatus": {
+                "type": "string",
+                "enum": ["PENDING", "APPROVED", "REJECTED", "NOT_REQUIRED"]
+              },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "publishedAt": {
+                "type": ["string", "null"],
+                "format": "date-time"
+              }
+            }
+          }
+        ]
+      },
+      "DigitalMaskedSecret": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "label", "maskedValue", "revealed"],
+        "properties": {
+          "kind": { "$ref": "#/components/schemas/DigitalCredentialKind" },
+          "label": { "type": "string" },
+          "maskedValue": { "type": "string" },
+          "revealed": { "type": "boolean" }
+        }
+      },
+      "DigitalEntitlement": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "orderId",
+          "orderItemId",
+          "listingId",
+          "sellerId",
+          "marketCode",
+          "title",
+          "fulfillmentTypes",
+          "primaryFulfillmentType",
+          "productVersion",
+          "fulfillmentVersion",
+          "status",
+          "paymentStatus",
+          "price",
+          "commercialEvidenceId",
+          "availableAt",
+          "expiresAt",
+          "downloadLimit",
+          "downloadsUsed",
+          "revealLimit",
+          "revealsUsed",
+          "destinationDomain",
+          "files",
+          "maskedSecrets",
+          "provisioningDeadlineAt",
+          "supportAvailable",
+          "replacementAvailable",
+          "simulated",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "orderId": { "type": "string" },
+          "orderItemId": { "type": "string" },
+          "listingId": { "type": "string" },
+          "sellerId": { "type": "string" },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "title": { "type": "string" },
+          "fulfillmentTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DigitalFulfillmentType" }
+          },
+          "primaryFulfillmentType": {
+            "$ref": "#/components/schemas/DigitalFulfillmentType"
+          },
+          "productVersion": { "type": "string" },
+          "fulfillmentVersion": { "type": "integer" },
+          "status": { "type": "string" },
+          "paymentStatus": { "type": "string" },
+          "price": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "commercialEvidenceId": { "type": "string" },
+          "availableAt": { "type": ["string", "null"], "format": "date-time" },
+          "expiresAt": { "type": ["string", "null"], "format": "date-time" },
+          "downloadLimit": { "type": ["integer", "null"] },
+          "downloadsUsed": { "type": "integer" },
+          "revealLimit": { "type": ["integer", "null"] },
+          "revealsUsed": { "type": "integer" },
+          "destinationDomain": { "type": ["string", "null"] },
+          "files": {
+            "type": "array",
+            "maxItems": 20,
+            "items": { "$ref": "#/components/schemas/DigitalAsset" }
+          },
+          "maskedSecrets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DigitalMaskedSecret" }
+          },
+          "provisioningDeadlineAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "supportAvailable": { "type": "boolean" },
+          "replacementAvailable": { "type": "boolean" },
+          "simulated": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DigitalAdminOverview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assets", "inventory", "entitlements", "openReportCount"],
+        "properties": {
+          "assets": {
+            "type": "array",
+            "maxItems": 500,
+            "items": { "$ref": "#/components/schemas/DigitalAsset" }
+          },
+          "inventory": {
+            "type": "array",
+            "maxItems": 500,
+            "items": { "$ref": "#/components/schemas/DigitalInventory" }
+          },
+          "entitlements": {
+            "type": "array",
+            "maxItems": 500,
+            "items": { "$ref": "#/components/schemas/DigitalEntitlement" }
+          },
+          "openReportCount": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "DigitalAccessGrant": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "entitlementId",
+          "action",
+          "expiresAt",
+          "consumePath"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "entitlementId": { "type": "string", "format": "uuid" },
+          "action": {
+            "type": "string",
+            "enum": ["DOWNLOAD", "OPEN_LINK", "REVEAL_SECRET"]
+          },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "consumePath": {
+            "type": "string",
+            "pattern": "^/api/v1/digital/access-grants/"
+          },
+          "destinationDomain": { "type": "string" }
+        }
+      },
+      "DigitalConsumedAccess": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "url", "fileName", "expiresAt", "simulated"],
+            "properties": {
+              "kind": { "type": "string", "const": "DOWNLOAD" },
+              "url": { "type": "string", "format": "uri", "writeOnly": true },
+              "fileName": { "type": "string" },
+              "expiresAt": { "type": "string", "format": "date-time" },
+              "simulated": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "entitlementId",
+              "destinationUrl",
+              "destinationDomain",
+              "fields",
+              "instructions",
+              "revealedAt",
+              "remainingReveals",
+              "simulated"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["EXTERNAL_LINK", "CREDENTIALS"]
+              },
+              "entitlementId": { "type": "string", "format": "uuid" },
+              "destinationUrl": {
+                "type": ["string", "null"],
+                "format": "uri",
+                "writeOnly": true
+              },
+              "destinationDomain": { "type": ["string", "null"] },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DigitalSecretFieldInput"
+                },
+                "writeOnly": true
+              },
+              "instructions": {
+                "type": "array",
+                "items": { "type": "string" },
+                "writeOnly": true
+              },
+              "revealedAt": { "type": "string", "format": "date-time" },
+              "remainingReveals": { "type": ["integer", "null"] },
+              "simulated": { "type": "boolean" }
+            }
+          }
+        ]
+      },
+      "DigitalAccessReportInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reportType", "description"],
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "enum": [
+              "INVALID_LINK",
+              "INVALID_CREDENTIALS",
+              "UNAVAILABLE_FILE",
+              "COMPROMISED_ACCESS",
+              "RESET_REQUEST",
+              "REPLACEMENT_REQUEST",
+              "PROVISIONING_FAILURE"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          }
+        }
+      },
+      "DigitalAccessReportResolution": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["resolutionCode"],
+        "properties": {
+          "resolutionCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "entitlementStatus": {
+            "type": "string",
+            "enum": ["ACCESS_AVAILABLE", "REVOKED", "UNAVAILABLE"]
+          }
+        }
+      },
+      "DigitalModerationDecision": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["decision"],
+        "properties": {
+          "decision": { "type": "string", "enum": ["APPROVED", "REJECTED"] }
+        }
+      },
       "Capability": {
         "type": "string",
         "description": "Canonical Shongre capability identifier from packages/contracts/src/access-control.ts.",
@@ -34297,6 +36842,366 @@
               "providerId": { "type": "string" }
             }
           }
+        }
+      },
+      "SolutionLifecycle": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "INTERNAL",
+          "COMING_SOON",
+          "BETA",
+          "AVAILABLE",
+          "MAINTENANCE",
+          "DEPRECATED",
+          "RETIRED"
+        ]
+      },
+      "SolutionSlug": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      },
+      "SolutionIcon": {
+        "type": "string",
+        "enum": ["prospects", "facturation", "marketplace", "pilotage", "apps"]
+      },
+      "ShongreApplicationId": {
+        "type": "string",
+        "enum": ["marketplace", "solutions", "prospects", "facturation"]
+      },
+      "SolutionReleaseNote": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "body", "publishedAt"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "body": { "type": "string", "minLength": 1, "maxLength": 5000 },
+          "publishedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SolutionWritableFields": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "slug": { "$ref": "#/components/schemas/SolutionSlug" },
+          "shortDescription": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "icon": { "$ref": "#/components/schemas/SolutionIcon" },
+          "category": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "lifecycle": { "$ref": "#/components/schemas/SolutionLifecycle" },
+          "availableFrom": { "type": "string", "format": "date-time" },
+          "availableUntil": { "type": "string", "format": "date-time" },
+          "markets": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/MarketCode" }
+          },
+          "languages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 2, "maxLength": 32 }
+          },
+          "audiences": {
+            "type": "array",
+            "maxItems": 40,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+          },
+          "capabilities": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+          },
+          "launchApplicationId": {
+            "$ref": "#/components/schemas/ShongreApplicationId"
+          },
+          "launchPath": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "^/(?!/).*$"
+          },
+          "documentationUrl": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          },
+          "entitlementKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "requiresAuthentication": { "type": "boolean" },
+          "requiresEntitlement": { "type": "boolean" },
+          "releaseNotes": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "$ref": "#/components/schemas/SolutionReleaseNote" }
+          },
+          "notice": { "type": "string", "minLength": 1, "maxLength": 5000 },
+          "maintenanceMessage": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 5000
+          },
+          "replacementSlug": { "$ref": "#/components/schemas/SolutionSlug" },
+          "sortOrder": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+          "catalogVisible": { "type": "boolean" },
+          "featured": { "type": "boolean" }
+        }
+      },
+      "CreateSolutionInput": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SolutionWritableFields" },
+          {
+            "type": "object",
+            "required": [
+              "name",
+              "slug",
+              "shortDescription",
+              "description",
+              "icon",
+              "category",
+              "lifecycle",
+              "markets",
+              "languages",
+              "audiences",
+              "capabilities",
+              "requiresAuthentication",
+              "requiresEntitlement",
+              "sortOrder",
+              "catalogVisible",
+              "featured"
+            ]
+          }
+        ],
+        "unevaluatedProperties": false
+      },
+      "UpdateSolutionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "slug": { "$ref": "#/components/schemas/SolutionSlug" },
+          "shortDescription": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000
+          },
+          "icon": { "$ref": "#/components/schemas/SolutionIcon" },
+          "category": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "availableFrom": {
+            "oneOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "availableUntil": {
+            "oneOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          },
+          "markets": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/MarketCode" }
+          },
+          "languages": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 2, "maxLength": 32 }
+          },
+          "audiences": {
+            "type": "array",
+            "maxItems": 40,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+          },
+          "capabilities": {
+            "type": "array",
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+          },
+          "launchApplicationId": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/ShongreApplicationId" },
+              { "type": "null" }
+            ]
+          },
+          "launchPath": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "pattern": "^/(?!/).*$"
+              },
+              { "type": "null" }
+            ]
+          },
+          "documentationUrl": {
+            "oneOf": [
+              { "type": "string", "format": "uri", "pattern": "^https://" },
+              { "type": "null" }
+            ]
+          },
+          "entitlementKey": {
+            "oneOf": [
+              { "type": "string", "minLength": 1, "maxLength": 200 },
+              { "type": "null" }
+            ]
+          },
+          "requiresAuthentication": { "type": "boolean" },
+          "requiresEntitlement": { "type": "boolean" },
+          "releaseNotes": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "$ref": "#/components/schemas/SolutionReleaseNote" }
+          },
+          "notice": {
+            "oneOf": [
+              { "type": "string", "minLength": 1, "maxLength": 5000 },
+              { "type": "null" }
+            ]
+          },
+          "maintenanceMessage": {
+            "oneOf": [
+              { "type": "string", "minLength": 1, "maxLength": 5000 },
+              { "type": "null" }
+            ]
+          },
+          "replacementSlug": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/SolutionSlug" },
+              { "type": "null" }
+            ]
+          },
+          "sortOrder": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+          "catalogVisible": { "type": "boolean" },
+          "featured": { "type": "boolean" }
+        }
+      },
+      "SolutionDefinition": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SolutionWritableFields" },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "slug",
+              "shortDescription",
+              "description",
+              "icon",
+              "category",
+              "lifecycle",
+              "markets",
+              "languages",
+              "audiences",
+              "capabilities",
+              "requiresAuthentication",
+              "requiresEntitlement",
+              "releaseNotes",
+              "sortOrder",
+              "catalogVisible",
+              "featured",
+              "createdAt",
+              "updatedAt"
+            ],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "updatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        ],
+        "unevaluatedProperties": false
+      },
+      "ReorderSolutionsInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["solutionIds"],
+        "properties": {
+          "solutionIds": {
+            "type": "array",
+            "maxItems": 1000,
+            "uniqueItems": true,
+            "items": { "type": "string", "format": "uuid" }
+          }
+        }
+      },
+      "TransitionSolutionLifecycleInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lifecycle", "explanation"],
+        "properties": {
+          "lifecycle": { "$ref": "#/components/schemas/SolutionLifecycle" },
+          "explanation": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          }
+        }
+      },
+      "SolutionLifecycleHistoryEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "solutionId",
+          "from",
+          "to",
+          "explanation",
+          "actorId",
+          "actorName",
+          "occurredAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "solutionId": { "type": "string", "format": "uuid" },
+          "from": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/SolutionLifecycle" },
+              { "type": "null" }
+            ]
+          },
+          "to": { "$ref": "#/components/schemas/SolutionLifecycle" },
+          "explanation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "actorId": { "type": "string", "minLength": 1 },
+          "actorName": { "type": "string", "minLength": 1 },
+          "occurredAt": { "type": "string", "format": "date-time" }
         }
       },
       "MarketCode": {

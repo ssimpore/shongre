@@ -11,11 +11,11 @@ import {
 describe("generated taxonomy SEO projection", () => {
   it("covers every current taxonomy node with a unique canonical route", () => {
     const records = listTaxonomySeoRecords();
-    expect(records).toHaveLength(294);
-    expect(new Set(records.map(({ node }) => node.id)).size).toBe(294);
+    expect(records).toHaveLength(301);
+    expect(new Set(records.map(({ node }) => node.id)).size).toBe(301);
     expect(
       new Set(records.map(({ projection }) => projection.urlPattern)).size,
-    ).toBe(294);
+    ).toBe(301);
 
     records.forEach(({ node, projection }) => {
       expect(projection.categoryId).toBe(node.id);

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import type {
   CommercialAuditEvent,
   CommercialConfigurationVersion,
@@ -62,6 +63,10 @@ import { AppError } from "../../shared/errors/app-error.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
 import { validateCommercialConfiguration } from "./configuration-validator.js";
 import { evaluateCommercialRules } from "./rule-evaluator.js";
+import {
+  requireCatalogForMarketContext,
+  requireMonetizationMarketContext,
+} from "./monetization-market-context.js";
 
 const CACHE_TTL_MS = 60_000;
 const QUOTE_TTL_MS = 30 * 60_000;
@@ -104,6 +109,45 @@ function hashSnapshot(value: unknown): string {
 
 function deterministicId(namespace: string, value: string): string {
   return `${namespace}_${createHash("sha256").update(value).digest("hex").slice(0, 24)}`;
+}
+
+function marketScopedIdempotencyKey(marketCode: string, key: string): string {
+  return `${marketCode}:${createHash("sha256").update(key).digest("hex")}`;
+}
+
+function requirePaidCatalogForMarketCode(
+  catalog: MonetizationCatalog,
+  marketCode: string,
+): MonetizationCatalog {
+  const country = getCountryConfig(marketCode);
+  const inconsistentPrice = catalog.products
+    .flatMap((product) => product.prices)
+    .some((price) => price.amount.currency !== catalog.currency);
+  if (
+    !country ||
+    !country.enabled ||
+    !country.monetization.enabled ||
+    !country.marketplace.enabled ||
+    !country.capabilities.payments ||
+    !["active", "beta"].includes(country.launchStatus) ||
+    catalog.marketCode !== country.marketCode ||
+    catalog.currency !== country.currency ||
+    inconsistentPrice
+  ) {
+    throw new AppError({
+      code: "CONFLICT",
+      message: "La politique commerciale du marché est incomplète.",
+      details: { reasonCode: "MONETIZATION_MARKET_NOT_READY" },
+    });
+  }
+  if (catalog.stale) {
+    throw new AppError({
+      code: "CONFLICT",
+      message: "Le catalogue commercial doit être actualisé avant paiement.",
+      details: { reasonCode: "COMMERCIAL_CATALOG_STALE" },
+    });
+  }
+  return catalog;
 }
 
 function quoteHashPayload(
@@ -195,6 +239,205 @@ export class BusinessRulesService {
         : new DemoBusinessRulesRepository());
   }
 
+  async getCatalogForContext(
+    marketContext: MarketContext,
+    options: { includeDrafts?: boolean } = {},
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    return requireCatalogForMarketContext(
+      await this.getCatalog(market.marketCode, options),
+      marketContext,
+      "read",
+    );
+  }
+
+  async getPaidCatalogForContext(marketContext: MarketContext) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    return requireCatalogForMarketContext(
+      await this.getCatalog(market.marketCode),
+      marketContext,
+      "paid",
+    );
+  }
+
+  async getProfessionalPlanCatalogForContext(marketContext: MarketContext) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    const presentation = await this.getProfessionalPlanCatalog(
+      market.marketCode,
+    );
+    requireCatalogForMarketContext(presentation.catalog, marketContext, "read");
+    return presentation;
+  }
+
+  async createQuoteForContext(
+    accountId: string,
+    rawRequest: QuoteRequest,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    if (rawRequest.marketCode !== market.marketCode) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le marché du devis ne correspond pas au contexte actif.",
+        details: { reasonCode: "QUOTE_MARKET_CONTEXT_MISMATCH" },
+      });
+    }
+    return this.createQuote(accountId, rawRequest);
+  }
+
+  async createTrialQuoteForContext(
+    accountId: string,
+    rawRequest: QuoteRequest,
+    marketContext: MarketContext,
+  ) {
+    const quote = await this.createQuoteForContext(
+      accountId,
+      rawRequest,
+      marketContext,
+    );
+    if (!quote.trial) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce compte n’est pas éligible à un nouvel essai.",
+        details: { reasonCode: "TRIAL_NOT_ELIGIBLE" },
+      });
+    }
+    return quote;
+  }
+
+  async createCheckoutForContext(
+    accountId: string,
+    quoteId: string,
+    idempotencyKey: string,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    return this.createCheckout(
+      accountId,
+      quoteId,
+      idempotencyKey,
+      market.marketCode,
+    );
+  }
+
+  async validatePromotionForContext(
+    accountId: string,
+    request: PromotionValidationRequest,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    if (request.marketCode !== market.marketCode) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Le marché de la promotion ne correspond pas au contexte actif.",
+      });
+    }
+    return this.validatePromotion(accountId, request);
+  }
+
+  async getActiveEntitlementsForContext(
+    accountId: string,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    return this.getActiveEntitlements(accountId, market.marketCode);
+  }
+
+  async getSubscriptionsForContext(
+    accountId: string,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    return this.getSubscriptions(accountId, market.marketCode);
+  }
+
+  async getBillingOverviewForContext(
+    accountId: string,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    return this.getBillingOverview(accountId, market.marketCode);
+  }
+
+  async getInvoiceDocumentForContext(
+    accountId: string,
+    invoiceId: string,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    return this.getInvoiceDocument(accountId, invoiceId, market.marketCode);
+  }
+
+  async previewSubscriptionChangeForContext(
+    accountId: string,
+    request: SubscriptionChangeRequest,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    return this.previewSubscriptionChange(
+      accountId,
+      request,
+      market.marketCode,
+    );
+  }
+
+  async applySubscriptionChangeForContext(
+    accountId: string,
+    request: SubscriptionChangeRequest,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    return this.applySubscriptionChange(accountId, request, market.marketCode);
+  }
+
+  async updateSubscriptionCancellationForContext(
+    accountId: string,
+    request: SubscriptionCancellationRequest,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "paid");
+    return this.updateSubscriptionCancellation(
+      accountId,
+      request,
+      market.marketCode,
+    );
+  }
+
+  async getAdminOverviewForContext(marketContext: MarketContext) {
+    const market = requireMonetizationMarketContext(marketContext, "admin");
+    return this.getAdminOverview(market.marketCode);
+  }
+
+  async evaluateForContext(
+    rawContext: RuleEvaluationContext,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "admin");
+    if (rawContext.marketCode !== market.marketCode) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le marché simulé ne correspond pas au contexte actif.",
+      });
+    }
+    return this.evaluate(rawContext);
+  }
+
+  async getAccountEligibilityForContext(
+    accountId: string,
+    rawContext: RuleEvaluationContext,
+    marketContext: MarketContext,
+  ) {
+    const market = requireMonetizationMarketContext(marketContext, "read");
+    if (rawContext.marketCode !== market.marketCode) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le marché demandé ne correspond pas au contexte actif.",
+      });
+    }
+    return this.getAccountEligibility(accountId, rawContext);
+  }
+
   async getCatalog(
     marketCode: string,
     options: { includeDrafts?: boolean } = {},
@@ -210,6 +453,20 @@ export class BusinessRulesService {
       const catalog = normalizeEducationMonetizationCatalog(
         monetizationCatalogSchema.parse(loaded),
       );
+      const country = getCountryConfig(marketCode)!;
+      if (
+        catalog.marketCode !== marketCode ||
+        catalog.currency !== country.currency ||
+        catalog.products
+          .flatMap((product) => product.prices)
+          .some((price) => price.amount.currency !== catalog.currency)
+      ) {
+        throw new AppError({
+          code: "CONFLICT",
+          message: "Le catalogue commercial ne correspond pas au marché.",
+          details: { reasonCode: "COMMERCIAL_CATALOG_MARKET_MISMATCH" },
+        });
+      }
       this.lastKnownValid.set(marketCode, catalog);
       this.cache.set(marketCode, {
         catalog,
@@ -578,12 +835,27 @@ export class BusinessRulesService {
     rawRequest: QuoteRequest,
   ): Promise<MonetizationQuote> {
     const request = quoteRequestSchema.parse(rawRequest);
+    const scopedIdempotencyKey = marketScopedIdempotencyKey(
+      request.marketCode,
+      request.idempotencyKey,
+    );
     const existing = await this.repository.getQuoteByIdempotency(
+      accountId,
+      scopedIdempotencyKey,
+    );
+    if (existing) return existing;
+    // Preserve retries created before market-scoped idempotency was introduced,
+    // but never allow such a key to return another market's quote.
+    const legacyExisting = await this.repository.getQuoteByIdempotency(
       accountId,
       request.idempotencyKey,
     );
-    if (existing) return existing;
-    const catalog = await this.getCatalog(request.marketCode);
+    if (legacyExisting?.marketCode === request.marketCode)
+      return legacyExisting;
+    const catalog = requirePaidCatalogForMarketCode(
+      await this.getCatalog(request.marketCode),
+      request.marketCode,
+    );
     const products = request.productIds.map((id) =>
       catalog.products.find((product) => product.id === id),
     );
@@ -915,7 +1187,10 @@ export class BusinessRulesService {
           : undefined,
     };
     const quote = monetizationQuoteSchema.parse({
-      id: deterministicId("quote", `${accountId}:${request.idempotencyKey}`),
+      id: deterministicId(
+        "quote",
+        `${accountId}:${request.marketCode}:${request.idempotencyKey}`,
+      ),
       ...quotePayload,
       snapshotHash: hashSnapshot(quoteHashPayload(quotePayload)),
       reasonCode: trialDays
@@ -927,13 +1202,11 @@ export class BusinessRulesService {
       createdAt,
       expiresAt: new Date(Date.now() + QUOTE_TTL_MS).toISOString(),
     });
-    const saved = await this.repository.saveQuote(
-      quote,
-      request.idempotencyKey,
-    );
+    const saved = await this.repository.saveQuote(quote, scopedIdempotencyKey);
     logger.info("monetization_quote_created", {
       userId: accountId,
       quoteId: saved.id,
+      marketCode: saved.marketCode,
       configurationVersionId: saved.configurationVersionId,
       totalMinor: saved.totalMinor,
       currency: saved.currency,
@@ -965,6 +1238,10 @@ export class BusinessRulesService {
         details: { reasonCode: "QUOTE_MARKET_CONTEXT_MISMATCH" },
       });
     }
+    requirePaidCatalogForMarketCode(
+      await this.getCatalog(quote.marketCode),
+      quote.marketCode,
+    );
     if (hashSnapshot(quoteHashPayload(quote)) !== quote.snapshotHash) {
       logger.error("monetization_quote_snapshot_mismatch", {
         userId: accountId,
@@ -1125,7 +1402,7 @@ export class BusinessRulesService {
         createdAt,
         updatedAt: createdAt,
       }),
-      idempotencyKey,
+      marketScopedIdempotencyKey(quote.marketCode, idempotencyKey),
     );
   }
 

@@ -136,6 +136,55 @@ export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
     updatedAt: "2026-08-25T10:00:00.000Z",
     expiresAt: "2026-10-24T10:00:00.000Z",
   },
+  list_digital_file: {
+    id: "list_digital_file",
+    sellerId: "user_camille",
+    categoryId: "digital_products.downloads.documents",
+    listingTypeId: "digital_products.downloads.documents.listing",
+    listingIntent: "SELL",
+    title: "Guide PDF — organisation du studio",
+    description:
+      "Scénario de démonstration d’un produit téléchargeable après confirmation du paiement.",
+    price: 29,
+    currency: "EUR",
+    status: "published",
+    condition: "new",
+    marketCode: "FR",
+    marketCodes: ["FR"],
+    marketPublications: [
+      {
+        marketCode: "FR",
+        status: "active",
+        isPrimary: true,
+        priceMinor: 2_900,
+        currency: "EUR",
+        complianceState: "approved",
+        availableServices: { digital: true },
+        sortDate: "2026-09-01T08:00:00.000Z",
+        publishedAt: "2026-09-01T08:00:00.000Z",
+      },
+    ],
+    city: "En ligne",
+    postalCode: "00000",
+    country: "FR",
+    allowedDelivery: ["digital"],
+    shippingCost: 0,
+    fulfillmentModel: "FILE_DOWNLOAD",
+    digitalFulfillmentVersionId: "40000000-0000-4000-8000-000000000001",
+    productVersion: "2026.09-demo",
+    images: [
+      "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=800&q=80",
+    ],
+    isUrgent: false,
+    isFeatured: false,
+    viewCount: 41,
+    favoriteCount: 6,
+    attributes: { simulated: true },
+    createdAt: "2026-09-01T08:00:00.000Z",
+    updatedAt: "2026-09-01T08:00:00.000Z",
+    publishedAt: "2026-09-01T08:00:00.000Z",
+    expiresAt: "2026-10-31T08:00:00.000Z",
+  },
 };
 
 export class DemoListingRepository implements IListingRepository {
@@ -531,6 +580,10 @@ export class PostgresListingRepository implements IListingRepository {
         "hand_delivery",
       ],
       shippingCost: row.shipping_cost ? Number(row.shipping_cost) : 0,
+      fulfillmentModel: row.fulfillment_model || "PHYSICAL",
+      digitalFulfillmentVersionId:
+        row.digital_fulfillment_version_id || undefined,
+      productVersion: row.product_version || undefined,
       images: Array.isArray(row.listing_media)
         ? [...row.listing_media]
             .sort(
@@ -789,6 +842,10 @@ export class PostgresListingRepository implements IListingRepository {
       country: listing.country,
       allowed_delivery: listing.allowedDelivery,
       shipping_cost: listing.shippingCost || 0,
+      fulfillment_model: listing.fulfillmentModel || "PHYSICAL",
+      digital_fulfillment_version_id:
+        listing.digitalFulfillmentVersionId || null,
+      product_version: listing.productVersion || null,
       is_urgent: Boolean(listing.isUrgent),
       is_featured: Boolean(listing.isFeatured),
       promotion_state: listing.promotionState || "inactive",
@@ -845,6 +902,17 @@ export class PostgresListingRepository implements IListingRepository {
     if (updates.city !== undefined) payload.city = updates.city;
     if (updates.postalCode !== undefined)
       payload.postal_code = updates.postalCode;
+    if (updates.allowedDelivery !== undefined)
+      payload.allowed_delivery = updates.allowedDelivery;
+    if (updates.shippingCost !== undefined)
+      payload.shipping_cost = updates.shippingCost;
+    if (updates.fulfillmentModel !== undefined)
+      payload.fulfillment_model = updates.fulfillmentModel;
+    if (updates.digitalFulfillmentVersionId !== undefined)
+      payload.digital_fulfillment_version_id =
+        updates.digitalFulfillmentVersionId || null;
+    if (updates.productVersion !== undefined)
+      payload.product_version = updates.productVersion || null;
     if (updates.isUrgent !== undefined) payload.is_urgent = updates.isUrgent;
     if (updates.isFeatured !== undefined)
       payload.is_featured = updates.isFeatured;

@@ -103,6 +103,65 @@ test.describe("Shongre Immo", () => {
     ).toHaveCount(1);
   });
 
+  test("property advertiser identity opens an owner profile or agency storefront", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/immo/bien/appartement-lumineux-lyon-montchat", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+    const ownerContactPanel = page
+      .getByRole("complementary")
+      .filter({ hasText: "Contacter l’annonceur" });
+    const ownerLink = ownerContactPanel.getByRole("link", {
+      name: "Voir le profil de Marie D.",
+    });
+    await expect(
+      ownerLink.getByRole("img", { name: "Avatar de Marie D." }),
+    ).toBeVisible();
+    await expect(ownerLink).toContainText("MD");
+    await expect(
+      ownerLink.getByRole("img", { name: "Note 4,9 sur 5, 7 avis" }),
+    ).toBeVisible();
+    await expect(ownerLink).toContainText("Lyon");
+    await ownerLink.click();
+    await expect(page).toHaveURL(/\/profil\/marie-durand$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Marie Durand/i }),
+    ).toBeVisible();
+
+    await page.goto("/immo/bien/maison-familiale-ecully-jardin", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+    const agencyContactPanel = page
+      .getByRole("complementary")
+      .filter({ hasText: "Contacter l’annonceur" });
+    const agencyLink = agencyContactPanel.getByRole("link", {
+      name: "Visiter la boutique de Agence Canopée",
+    });
+    await expect(
+      agencyLink.getByRole("img", { name: "Avatar de Agence Canopée" }),
+    ).toBeVisible();
+    await expect(agencyLink).toContainText("AC");
+    await expect(agencyLink).toContainText("Agence Canopée");
+    await expect(agencyLink.getByText("Pro", { exact: true })).toBeVisible();
+    await expect(
+      agencyLink.getByRole("img", { name: "Note 4,9 sur 5, 86 avis" }),
+    ).toBeVisible();
+    await expect(agencyLink).toContainText("Écully");
+    await expect(agencyLink).toHaveAttribute(
+      "href",
+      "/boutique/agence-canopee",
+    );
+    await agencyLink.click();
+    await expect(page).toHaveURL(/\/boutique\/agence-canopee$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Agence Canopée/i }),
+    ).toBeVisible();
+  });
+
   test("publisher preserves non-sensitive draft state through its service-shaped payload", async ({
     page,
   }) => {

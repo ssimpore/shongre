@@ -11,8 +11,7 @@ import type { MessageCatalogue } from "./messages.fr";
 export const messagingCatalogueEn = {
   "messaging.messageComposer.demoAttachmentCondition": "Condition photo",
   "messaging.messageComposer.demoAttachmentInvoice": "Invoice / warranty",
-  "messaging.messageComposer.demoAttachmentAccessories":
-    "Included accessories",
+  "messaging.messageComposer.demoAttachmentAccessories": "Included accessories",
   "messaging.messageComposer.quickReplyAvailable":
     "Hello, yes, the item is in stock.",
   "messaging.messageComposer.quickReplyShipping":

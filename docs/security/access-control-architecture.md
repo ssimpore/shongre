@@ -334,9 +334,10 @@ Automated coverage includes:
   run SQL-level authenticated-role probes before production rollout. Static RLS
   tests validate its policy contract, but they do not replace a real database
   migration rehearsal.
-- Keep `NEXT_PUBLIC_DATA_MODE=demo` until the repository explicitly authorizes
-  the HTTP adapter. The adapter contracts are prepared; enabling the backend is
-  intentionally outside the current frontend constraint.
+- Keep local/demo identities isolated from API identities. Hosted staging and
+  production require `NEXT_PUBLIC_DATA_MODE=api`, mock storage disabled, and a
+  successful authenticated API-mode staging rehearsal. A missing HTTP adapter
+  or failed backend call is a release blocker and must never fall back to demo.
 - Any future raw-table RLS policy still using the retired `is_admin()` helper
   will deny access by design and must be replaced with its exact capability
   before that direct-table workflow is enabled.

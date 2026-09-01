@@ -21,17 +21,40 @@ import {
 import type { MarketCoordinateDetectionInput } from "../../contracts/markets.contract";
 import { requireDemoCapability } from "./demo-authorization";
 
+export interface DemoMarketDetectionScenario {
+  probableCountryCode?: string | null;
+  failAttempts?: number;
+}
+
 export class DemoMarketsService implements MarketsServiceContract {
   private readonly configurationChanges = new Map<
     string,
     MarketConfigurationChangeRequest
   >();
   private changeSequence = 0;
+  private detectionAttempt = 0;
+
+  constructor(
+    private readonly detectionScenario: DemoMarketDetectionScenario = {},
+  ) {}
 
   async detectProbableCountry(): Promise<MarketDetectionRecommendation> {
     await simulateNetworkDelay();
+    this.detectionAttempt += 1;
+    if (this.detectionAttempt <= (this.detectionScenario.failAttempts ?? 0)) {
+      throw new Error("DEMO_MARKET_DETECTION_UNAVAILABLE");
+    }
+    const hasConfiguredCountry = Object.prototype.hasOwnProperty.call(
+      this.detectionScenario,
+      "probableCountryCode",
+    );
     return resolveCountryRecommendation({
-      countryCode: getDefaultCountryConfig().code,
+      // A known demo persona supplies a deterministic scenario signal. A guest
+      // has no probable country; unknown visitors are never labelled French by
+      // default merely because France is the default marketplace.
+      countryCode: hasConfiguredCountry
+        ? this.detectionScenario.probableCountryCode
+        : storageService.getCurrentUser()?.country,
       source: "demo",
       confidence: "high",
     });

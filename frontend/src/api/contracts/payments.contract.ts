@@ -1,4 +1,5 @@
 import type { MonetizationOrder } from "@shongre/contracts/monetization";
+import type { MarketContext } from "@shongre/contracts";
 
 export const PAYOUT_REQUEST_CONSTRAINTS = {
   minimumAmountMinor: 100,
@@ -8,15 +9,22 @@ export const PAYOUT_REQUEST_CONSTRAINTS = {
 
 export interface PaymentsServiceContract {
   createCheckout(
+    marketContext: MarketContext,
     quoteId: string,
     idempotencyKey: string,
   ): Promise<MonetizationOrder>;
-  requestSellerPayout(input: {
-    amountMinor: number;
-    currency: string;
-    idempotencyKey: string;
-  }): Promise<{ payoutId: string; status: "completed" | "processing" }>;
-  getSellerBalance(sellerId: string): Promise<{
+  requestSellerPayout(
+    marketContext: MarketContext,
+    input: {
+      amountMinor: number;
+      currency: string;
+      idempotencyKey: string;
+    },
+  ): Promise<{ payoutId: string; status: "completed" | "processing" }>;
+  getSellerBalance(
+    marketContext: MarketContext,
+    sellerId: string,
+  ): Promise<{
     availableMinor: number;
     pendingMinor: number;
     currency: string;

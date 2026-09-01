@@ -949,6 +949,92 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/solutions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the complete multi-market solution catalog */
+        readonly get: operations["getAdminSolutions"];
+        readonly put?: never;
+        /** Create a solution with audited catalog evidence */
+        readonly post: operations["postAdminSolution"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/solutions/{solutionId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        /** Update mutable solution catalog fields */
+        readonly patch: operations["patchAdminSolution"];
+        readonly trace?: never;
+    };
+    readonly "/admin/solutions/{solutionId}/lifecycle": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Apply an audited solution lifecycle transition */
+        readonly post: operations["postAdminSolutionLifecycle"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/solutions/{solutionId}/lifecycle-history": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List immutable lifecycle evidence for a solution */
+        readonly get: operations["getAdminSolutionLifecycleHistory"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/solutions/order": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Atomically reorder every solution */
+        readonly put: operations["putAdminSolutionsOrder"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/stats": {
         readonly parameters: {
             readonly query?: never;
@@ -3101,6 +3187,486 @@ export interface paths {
          * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
          */
         readonly post: operations["completeCrmTask"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/access-grants/{id}/consume": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Consume a buyer-owned temporary access grant exactly once */
+        readonly post: operations["postDigitalAccessGrantConsume"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/access-secrets": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Validate and encrypt a reusable private link or access instruction */
+        readonly post: operations["postDigitalAccessSecret"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/assets/{id}/moderation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Approve or reject a scanned private asset without reading its contents */
+        readonly post: operations["postDigitalAssetModeration"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/fulfillment-versions/{id}/moderation": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Approve or reject a digital fulfillment version */
+        readonly post: operations["postDigitalFulfillmentModeration"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/overview": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Inspect digital assets, inventory counts, entitlements and reports */
+        readonly get: operations["getDigitalAdminOverview"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/policies/{id}/activate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Activate a complete evidence-backed digital-product policy version */
+        readonly post: operations["postDigitalAdminPolicyActivate"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/policy": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the latest full digital-product policy version for the resolved market */
+        readonly get: operations["getDigitalAdminPolicy"];
+        readonly put?: never;
+        /** Create an audited disabled digital-product policy draft */
+        readonly post: operations["postDigitalAdminPolicyDraft"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/admin/reports/{id}/resolve": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Resolve an invalid-access, reset or replacement report */
+        readonly post: operations["postDigitalAccessReportResolve"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/assets/{id}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read private asset processing status without storage keys */
+        readonly get: operations["getDigitalAsset"];
+        readonly put?: never;
+        readonly post?: never;
+        /** Remove an unconsumed private asset version */
+        readonly delete: operations["deleteDigitalAsset"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/assets/uploads": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Initialize a private paid-asset upload */
+        readonly post: operations["postDigitalAssetUpload"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/assets/uploads/{id}/complete": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Complete and start validation, scanning and moderation of a private asset */
+        readonly post: operations["postDigitalAssetUploadComplete"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/credential-batches": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Create a private credential inventory batch */
+        readonly post: operations["postDigitalCredentialBatch"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/credential-batches/{id}/credentials": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Securely import unique or reusable credential inventory */
+        readonly post: operations["postDigitalCredentialInventory"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/credential-batches/{id}/inventory": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read owned inventory availability without secrets */
+        readonly get: operations["getDigitalCredentialInventory"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the buyer's digital purchases */
+        readonly get: operations["getDigitalEntitlements"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements/{id}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read one buyer-owned digital purchase */
+        readonly get: operations["getDigitalEntitlement"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements/{id}/download-grants": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Create a short-lived single-use private file grant */
+        readonly post: operations["postDigitalDownloadGrant"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements/{id}/provision": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Submit buyer-specific access after authoritative payment */
+        readonly post: operations["postDigitalProvisionedAccess"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements/{id}/reports": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Report invalid access or request reset or replacement */
+        readonly post: operations["postDigitalAccessReport"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/entitlements/{id}/reveal-grants": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Create a recent-auth protected single-use link or credential grant */
+        readonly post: operations["postDigitalRevealGrant"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/listings/{id}/fulfillment-versions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Create an immutable listing fulfillment version */
+        readonly post: operations["postDigitalFulfillmentVersion"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/policy": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the public-safe digital-product policy for the resolved market */
+        readonly get: operations["getDigitalPolicy"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/seller-profile": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the current seller digital responsibilities profile */
+        readonly get: operations["getDigitalSellerProfile"];
+        /** Accept versioned digital seller responsibilities */
+        readonly put: operations["putDigitalSellerProfile"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/digital/seller/provisioning-tasks": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List paid digital orders that the authenticated seller must provision */
+        readonly get: operations["getDigitalSellerProvisioningTasks"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -7413,6 +7979,43 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/solutions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List public solutions for the resolved market
+         * @description Returns only catalog-visible public lifecycle entries associated with the explicit canonical market. Market identity is never inferred from locale or currency.
+         */
+        readonly get: operations["getSolutions"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/solutions/{solutionSlug}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read a public solution for the resolved market */
+        readonly get: operations["getSolutionBySlug"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/support/cases": {
         readonly parameters: {
             readonly query?: never;
@@ -8275,6 +8878,7 @@ export interface components {
             };
             readonly timezone?: string;
         };
+        readonly CreateSolutionInput: components["schemas"]["SolutionWritableFields"] & Record<string, never>;
         readonly CrmAccount: components["schemas"]["CrmAccountInput"] & {
             /** Format: date-time */
             readonly createdAt: string;
@@ -8770,6 +9374,399 @@ export interface components {
             };
             readonly expectedVersion: number;
         };
+        readonly DigitalAccessGrant: {
+            /** @enum {string} */
+            readonly action: "DOWNLOAD" | "OPEN_LINK" | "REVEAL_SECRET";
+            readonly consumePath: string;
+            readonly destinationDomain?: string;
+            /** Format: uuid */
+            readonly entitlementId: string;
+            /** Format: date-time */
+            readonly expiresAt: string;
+            /** Format: uuid */
+            readonly id: string;
+        };
+        readonly DigitalAccessReportInput: {
+            readonly description: string;
+            /** @enum {string} */
+            readonly reportType: "INVALID_LINK" | "INVALID_CREDENTIALS" | "UNAVAILABLE_FILE" | "COMPROMISED_ACCESS" | "RESET_REQUEST" | "REPLACEMENT_REQUEST" | "PROVISIONING_FAILURE";
+        };
+        readonly DigitalAccessReportResolution: {
+            /** @enum {string} */
+            readonly entitlementStatus?: "ACCESS_AVAILABLE" | "REVOKED" | "UNAVAILABLE";
+            readonly resolutionCode: string;
+        };
+        readonly DigitalAccessSecretInput: {
+            /** Format: uri */
+            readonly destinationUrl?: string;
+            readonly displayDomain?: string;
+            readonly fields?: readonly components["schemas"]["DigitalSecretFieldInput"][];
+            readonly instructions?: string;
+            readonly listingId?: string;
+            readonly productAccessClass: string;
+        };
+        readonly DigitalAccessSecretReference: {
+            readonly destinationDomain: string | null;
+            /** Format: uuid */
+            readonly id: string;
+            /** @constant */
+            readonly masked: true;
+        };
+        readonly DigitalAdminOverview: {
+            readonly assets: readonly components["schemas"]["DigitalAsset"][];
+            readonly entitlements: readonly components["schemas"]["DigitalEntitlement"][];
+            readonly inventory: readonly components["schemas"]["DigitalInventory"][];
+            readonly openReportCount: number;
+        };
+        readonly DigitalAsset: {
+            readonly contentType: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly listingId: string | null;
+            /** Format: date-time */
+            readonly readyAt: string | null;
+            readonly safeFileName: string;
+            /** @enum {string} */
+            readonly scanStatus: "PENDING" | "SCANNING" | "CLEAN" | "MALICIOUS" | "FAILED";
+            readonly sizeBytes: number;
+            /** @enum {string} */
+            readonly status: "UPLOAD_PENDING" | "PROCESSING" | "SCANNING" | "READY" | "QUARANTINED" | "REJECTED" | "REMOVED" | "UNAVAILABLE";
+            readonly version: number;
+        };
+        readonly DigitalAssetUploadInput: {
+            readonly contentType: string;
+            readonly fileName: string;
+            readonly listingId?: string;
+            /** Format: uuid */
+            readonly replacesAssetId?: string;
+            readonly sizeBytes: number;
+        };
+        readonly DigitalAssetUploadResult: {
+            readonly asset: components["schemas"]["DigitalAsset"];
+            /** Format: date-time */
+            readonly expiresAt: string;
+            /** Format: uri */
+            readonly signedUploadUrl: string;
+        };
+        readonly DigitalConsumedAccess: {
+            /** Format: date-time */
+            readonly expiresAt: string;
+            readonly fileName: string;
+            /** @constant */
+            readonly kind: "DOWNLOAD";
+            readonly simulated: boolean;
+            /** Format: uri */
+            readonly url: string;
+        } | {
+            readonly destinationDomain: string | null;
+            /** Format: uri */
+            readonly destinationUrl: string | null;
+            /** Format: uuid */
+            readonly entitlementId: string;
+            readonly fields: readonly components["schemas"]["DigitalSecretFieldInput"][];
+            readonly instructions: readonly string[];
+            /** @enum {string} */
+            readonly kind: "EXTERNAL_LINK" | "CREDENTIALS";
+            readonly remainingReveals: number | null;
+            /** Format: date-time */
+            readonly revealedAt: string;
+            readonly simulated: boolean;
+        };
+        readonly DigitalCredentialBatchInput: {
+            /** @enum {string} */
+            readonly allocationMode: "REUSABLE" | "UNIQUE_INVENTORY" | "APPROVED_PROVIDER" | "SELLER_AFTER_PAYMENT";
+            readonly credentialKinds: readonly components["schemas"]["DigitalCredentialKind"][];
+            readonly listingId?: string;
+            readonly productAccessClass: string;
+        };
+        readonly DigitalCredentialBatchReference: {
+            /** Format: uuid */
+            readonly id: string;
+            readonly version: number;
+        };
+        readonly DigitalCredentialImportInput: {
+            readonly credentials: readonly components["schemas"]["DigitalCredentialImportItem"][];
+            readonly productAccessClass: string;
+        };
+        readonly DigitalCredentialImportItem: {
+            /** Format: uri */
+            readonly destinationUrl?: string;
+            /** Format: date-time */
+            readonly expiresAt?: string;
+            readonly fields: readonly components["schemas"]["DigitalSecretFieldInput"][];
+            readonly instructions?: string;
+        };
+        /** @enum {string} */
+        readonly DigitalCredentialKind: "LICENSE_KEY" | "ACTIVATION_CODE" | "USERNAME" | "PASSWORD" | "PIN" | "TOKEN" | "STRUCTURED_INSTRUCTIONS";
+        readonly DigitalEntitlement: {
+            /** Format: date-time */
+            readonly availableAt: string | null;
+            readonly commercialEvidenceId: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly destinationDomain: string | null;
+            readonly downloadLimit: number | null;
+            readonly downloadsUsed: number;
+            /** Format: date-time */
+            readonly expiresAt: string | null;
+            readonly files: readonly components["schemas"]["DigitalAsset"][];
+            readonly fulfillmentTypes: readonly components["schemas"]["DigitalFulfillmentType"][];
+            readonly fulfillmentVersion: number;
+            /** Format: uuid */
+            readonly id: string;
+            readonly listingId: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly maskedSecrets: readonly components["schemas"]["DigitalMaskedSecret"][];
+            readonly orderId: string;
+            readonly orderItemId: string;
+            readonly paymentStatus: string;
+            readonly price: components["schemas"]["MonetizationMoney"];
+            readonly primaryFulfillmentType: components["schemas"]["DigitalFulfillmentType"];
+            readonly productVersion: string;
+            /** Format: date-time */
+            readonly provisioningDeadlineAt: string | null;
+            readonly replacementAvailable: boolean;
+            readonly revealLimit: number | null;
+            readonly revealsUsed: number;
+            readonly sellerId: string;
+            readonly simulated: boolean;
+            readonly status: string;
+            readonly supportAvailable: boolean;
+            readonly title: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /** @enum {string} */
+        readonly DigitalFulfillmentType: "FILE_DOWNLOAD" | "ACCESS_LINK" | "ACCESS_CREDENTIALS" | "SELLER_PROVISIONED";
+        readonly DigitalFulfillmentVersion: components["schemas"]["DigitalFulfillmentVersionInput"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly listingId: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            /** @enum {string} */
+            readonly moderationStatus: "PENDING" | "APPROVED" | "REJECTED" | "NOT_REQUIRED";
+            /** Format: date-time */
+            readonly publishedAt?: string | null;
+            readonly sellerId: string;
+            /** @enum {string} */
+            readonly status: "DRAFT" | "PROCESSING" | "READY" | "PUBLISHED" | "RETIRED" | "SUSPENDED";
+            readonly version: number;
+        };
+        readonly DigitalFulfillmentVersionInput: {
+            /** Format: uuid */
+            readonly accessSecretVersionId?: string;
+            readonly buyerFacingDescription: string;
+            readonly compatibility?: readonly string[];
+            /** @enum {string} */
+            readonly credentialAllocationMode?: "REUSABLE" | "UNIQUE_INVENTORY" | "APPROVED_PROVIDER" | "SELLER_AFTER_PAYMENT";
+            readonly credentialBatchIds?: readonly string[];
+            readonly credentialKinds?: readonly components["schemas"]["DigitalCredentialKind"][];
+            readonly downloadLimit?: number;
+            readonly entitlementDurationDays?: number;
+            readonly fulfillmentTypes: readonly components["schemas"]["DigitalFulfillmentType"][];
+            readonly primaryFulfillmentType: components["schemas"]["DigitalFulfillmentType"];
+            readonly privateAssetVersionIds?: readonly string[];
+            readonly productAccessClass?: string;
+            readonly productVersion: string;
+            readonly provisioningTimeHours?: number;
+            readonly publicTermsLabel?: string;
+            readonly requirements?: readonly string[];
+            readonly revealLimit?: number;
+        };
+        readonly DigitalInventory: {
+            readonly availableCount: number;
+            /** Format: uuid */
+            readonly batchId: string;
+            readonly canPurchase: boolean;
+            readonly consumedCount: number;
+            readonly listingId: string | null;
+            readonly reservedCount: number;
+        };
+        readonly DigitalMarketPolicyAdmin: {
+            readonly allowedAccountTypes: readonly ("individual" | "professional")[];
+            readonly allowedCategoryIds: readonly string[];
+            readonly allowedFileExtensions: readonly string[];
+            readonly allowedFulfillmentCombinations: readonly (readonly components["schemas"]["DigitalFulfillmentType"][])[];
+            readonly allowedFulfillmentTypes: readonly components["schemas"]["DigitalFulfillmentType"][];
+            readonly allowedMimeTypes: readonly string[];
+            readonly allowedSellerTypes: readonly ("individual" | "professional")[];
+            /** Format: date-time */
+            readonly approvedAt: string | null;
+            readonly capabilities: {
+                readonly checkout: boolean;
+                readonly fulfillment: boolean;
+                readonly listingDrafts: boolean;
+                readonly nativeCheckout: boolean;
+                readonly onboarding: boolean;
+                readonly publication: boolean;
+            };
+            readonly credentialInventory: {
+                readonly allowedClasses: readonly string[];
+                readonly allowedKinds: readonly components["schemas"]["DigitalCredentialKind"][];
+                readonly minimumAvailableBeforePurchase: number;
+                readonly prohibitedClasses: readonly string[];
+                readonly providerGeneratedAllowed: boolean;
+                readonly reusableAllowed: boolean;
+                readonly sellerEnteredAfterPaymentAllowed: boolean;
+                readonly uniqueAllowed: boolean;
+            };
+            readonly currency: string;
+            readonly defaultDownloadLimit: number;
+            readonly defaultEntitlementDurationDays: number;
+            readonly defaultRevealLimit: number;
+            /** @enum {string} */
+            readonly disputeAccessBehavior: "REVOKE" | "SUSPEND" | "CONTINUE_UNTIL_REVIEW";
+            /** Format: date-time */
+            readonly effectiveAt: string | null;
+            readonly enabled: boolean;
+            readonly externalLinks: {
+                readonly acceptedDomains: readonly string[];
+                readonly allowedSchemes: readonly "https"[];
+                readonly allowFragment: boolean;
+                readonly allowQuery: boolean;
+                readonly allowSubdomains: boolean;
+            };
+            /** Format: uuid */
+            readonly id?: string;
+            readonly legalApprovalId: string | null;
+            /** @enum {string} */
+            readonly listingRemovalAccessBehavior: "REVOKE" | "SUSPEND" | "PRESERVE_EXISTING_PURCHASES";
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly maxFileCount: number;
+            readonly maxFileSizeBytes: number;
+            readonly maximumPrice: components["schemas"]["MonetizationMoney"];
+            readonly maxTotalFileSizeBytes: number;
+            readonly minimumPrice: components["schemas"]["MonetizationMoney"];
+            readonly moderationRequired: boolean;
+            readonly paymentProviderConfigurationId: string | null;
+            readonly provisioningDeadlineHours: number;
+            /** @enum {string} */
+            readonly refundAccessBehavior: "REVOKE_ON_REQUEST" | "REVOKE_ON_REFUND" | "CONTINUE_UNTIL_REVIEW";
+            readonly refundPolicyVersion: string | null;
+            readonly requiredVerificationDimensions: readonly string[];
+            readonly requirements: readonly components["schemas"]["DigitalPolicyRequirement"][];
+            /** @enum {string} */
+            readonly sellerRestrictionAccessBehavior: "REVOKE" | "SUSPEND" | "PRESERVE_EXISTING_PURCHASES";
+            /** @enum {string} */
+            readonly status: "DRAFT" | "ACTIVE" | "DISABLED" | "RETIRED";
+            readonly taxPolicyVersion: string | null;
+            readonly version: number;
+            readonly withdrawalPresentationVersion: string | null;
+        };
+        readonly DigitalMaskedSecret: {
+            readonly kind: components["schemas"]["DigitalCredentialKind"];
+            readonly label: string;
+            readonly maskedValue: string;
+            readonly revealed: boolean;
+        };
+        readonly DigitalModerationDecision: {
+            /** @enum {string} */
+            readonly decision: "APPROVED" | "REJECTED";
+        };
+        readonly DigitalPolicyProjection: {
+            readonly allowedAccountTypes: readonly ("individual" | "professional")[];
+            readonly allowedCategoryIds: readonly string[];
+            readonly allowedFileExtensions: readonly string[];
+            readonly allowedFulfillmentCombinations: readonly (readonly components["schemas"]["DigitalFulfillmentType"][])[];
+            readonly allowedFulfillmentTypes: readonly components["schemas"]["DigitalFulfillmentType"][];
+            readonly allowedMimeTypes: readonly string[];
+            readonly allowedSellerTypes: readonly ("individual" | "professional")[];
+            readonly capabilities: {
+                readonly checkout: boolean;
+                readonly fulfillment: boolean;
+                readonly listingDrafts: boolean;
+                readonly nativeCheckout: boolean;
+                readonly onboarding: boolean;
+                readonly publication: boolean;
+            };
+            readonly credentialInventory: {
+                readonly allowedClasses: readonly string[];
+                readonly allowedKinds: readonly components["schemas"]["DigitalCredentialKind"][];
+                readonly minimumAvailableBeforePurchase: number;
+                readonly prohibitedClasses: readonly string[];
+                readonly providerGeneratedAllowed: boolean;
+                readonly reusableAllowed: boolean;
+                readonly sellerEnteredAfterPaymentAllowed: boolean;
+                readonly uniqueAllowed: boolean;
+            };
+            readonly currency: string;
+            readonly defaultDownloadLimit: number;
+            readonly defaultEntitlementDurationDays: number;
+            readonly defaultRevealLimit: number;
+            readonly enabled: boolean;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly maxFileCount: number;
+            readonly maxFileSizeBytes: number;
+            readonly maximumPrice: components["schemas"]["MonetizationMoney"];
+            readonly maxTotalFileSizeBytes: number;
+            readonly minimumPrice: components["schemas"]["MonetizationMoney"];
+            readonly moderationRequired: boolean;
+            readonly provisioningDeadlineHours: number;
+            readonly purchaseUnavailableReasons: readonly string[];
+            readonly requiredVerificationDimensions: readonly string[];
+            readonly requirements: readonly components["schemas"]["DigitalPolicyRequirement"][];
+            /** @enum {string} */
+            readonly status: "DRAFT" | "ACTIVE" | "DISABLED" | "RETIRED";
+            readonly version: number;
+        };
+        readonly DigitalPolicyRequirement: {
+            readonly description: {
+                readonly [key: string]: string;
+            };
+            readonly id: string;
+            readonly label: {
+                readonly [key: string]: string;
+            };
+        };
+        readonly DigitalProvisioningTask: {
+            readonly attemptCount: number;
+            /** Format: date-time */
+            readonly completedAt: string | null;
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: date-time */
+            readonly deadlineAt: string;
+            /** Format: uuid */
+            readonly entitlementId: string;
+            readonly failureCode: string | null;
+            /** Format: uuid */
+            readonly id: string;
+            readonly listingId: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            /** Format: date-time */
+            readonly nextAttemptAt: string | null;
+            readonly orderId: string;
+            readonly productAccessClass: string;
+            readonly productVersion: string;
+            /** @enum {string} */
+            readonly status: "PENDING" | "IN_PROGRESS" | "RETRY_PENDING" | "COMPLETED" | "FAILED" | "ESCALATED" | "CANCELLED";
+            readonly title: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly DigitalSecretFieldInput: {
+            readonly kind: components["schemas"]["DigitalCredentialKind"];
+            readonly label: string;
+            readonly value: string;
+        };
+        readonly DigitalSellerProfile: {
+            /** Format: date-time */
+            readonly acceptedAt: string;
+            readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly policyVersion: number;
+            readonly sellerId: string;
+            /** @enum {string} */
+            readonly status: "ACTIVE" | "REACCEPTANCE_REQUIRED" | "SUSPENDED";
+        };
+        readonly DigitalSellerProfileInput: {
+            readonly acceptedPolicyVersion: number;
+            readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
+        };
         readonly DomainHandoffExchange: {
             readonly code: string;
             readonly targetCountry: components["schemas"]["MarketCode"];
@@ -8800,6 +9797,7 @@ export interface components {
         readonly ErrorResponse: {
             readonly error: components["schemas"]["ErrorDetail"];
         };
+        readonly FulfillmentType: "PHYSICAL" | components["schemas"]["DigitalFulfillmentType"];
         readonly InvoicingDocument: {
             readonly complianceRulesetVersion: string;
             readonly content: string;
@@ -10089,6 +11087,9 @@ export interface components {
             readonly supportedLocales: readonly string[];
             readonly timezone: string;
         };
+        readonly ReorderSolutionsInput: {
+            readonly solutionIds: readonly string[];
+        };
         readonly SellerAnalytics: {
             /** Format: date-time */
             readonly generatedAt: string;
@@ -10103,6 +11104,72 @@ export interface components {
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly metrics: readonly components["schemas"]["AnalyticsMetric"][];
             readonly sellerId: string;
+        };
+        /** @enum {string} */
+        readonly ShongreApplicationId: "marketplace" | "solutions" | "prospects" | "facturation";
+        readonly SolutionDefinition: components["schemas"]["SolutionWritableFields"] & {
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        /** @enum {string} */
+        readonly SolutionIcon: "prospects" | "facturation" | "marketplace" | "pilotage" | "apps";
+        /** @enum {string} */
+        readonly SolutionLifecycle: "DRAFT" | "INTERNAL" | "COMING_SOON" | "BETA" | "AVAILABLE" | "MAINTENANCE" | "DEPRECATED" | "RETIRED";
+        readonly SolutionLifecycleHistoryEntry: {
+            readonly actorId: string;
+            readonly actorName: string;
+            readonly explanation: string;
+            readonly from: components["schemas"]["SolutionLifecycle"] | null;
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: date-time */
+            readonly occurredAt: string;
+            /** Format: uuid */
+            readonly solutionId: string;
+            readonly to: components["schemas"]["SolutionLifecycle"];
+        };
+        readonly SolutionReleaseNote: {
+            readonly body: string;
+            readonly id: string;
+            /** Format: date-time */
+            readonly publishedAt: string;
+            readonly title: string;
+        };
+        readonly SolutionSlug: string;
+        readonly SolutionWritableFields: {
+            readonly audiences?: readonly string[];
+            /** Format: date-time */
+            readonly availableFrom?: string;
+            /** Format: date-time */
+            readonly availableUntil?: string;
+            readonly capabilities?: readonly string[];
+            readonly catalogVisible?: boolean;
+            readonly category?: string;
+            readonly description?: string;
+            /** Format: uri */
+            readonly documentationUrl?: string;
+            readonly entitlementKey?: string;
+            readonly featured?: boolean;
+            readonly icon?: components["schemas"]["SolutionIcon"];
+            readonly languages?: readonly string[];
+            readonly launchApplicationId?: components["schemas"]["ShongreApplicationId"];
+            readonly launchPath?: string;
+            readonly lifecycle?: components["schemas"]["SolutionLifecycle"];
+            readonly maintenanceMessage?: string;
+            readonly markets?: readonly components["schemas"]["MarketCode"][];
+            readonly name?: string;
+            readonly notice?: string;
+            readonly releaseNotes?: readonly components["schemas"]["SolutionReleaseNote"][];
+            readonly replacementSlug?: components["schemas"]["SolutionSlug"];
+            readonly requiresAuthentication?: boolean;
+            readonly requiresEntitlement?: boolean;
+            readonly shortDescription?: string;
+            readonly slug?: components["schemas"]["SolutionSlug"];
+            readonly sortOrder?: number;
         };
         readonly StaffAccessUpdateRequest: {
             readonly reason: string;
@@ -10136,6 +11203,10 @@ export interface components {
             readonly subscriptionId?: string;
             readonly targetPriceId: string;
             readonly targetProductId: string;
+        };
+        readonly SuccessResponse: {
+            /** @constant */
+            readonly success: true;
         };
         readonly TaxonomyHeaderCategoryItem: {
             readonly categoryId: string;
@@ -10434,6 +11505,37 @@ export interface components {
             readonly status: "draft";
             readonly target: components["schemas"]["TaxonomyV4FieldReference"];
         };
+        readonly TransitionSolutionLifecycleInput: {
+            readonly explanation: string;
+            readonly lifecycle: components["schemas"]["SolutionLifecycle"];
+        };
+        readonly UpdateSolutionInput: {
+            readonly audiences?: readonly string[];
+            readonly availableFrom?: string | null;
+            readonly availableUntil?: string | null;
+            readonly capabilities?: readonly string[];
+            readonly catalogVisible?: boolean;
+            readonly category?: string;
+            readonly description?: string;
+            readonly documentationUrl?: string | null;
+            readonly entitlementKey?: string | null;
+            readonly featured?: boolean;
+            readonly icon?: components["schemas"]["SolutionIcon"];
+            readonly languages?: readonly string[];
+            readonly launchApplicationId?: components["schemas"]["ShongreApplicationId"] | null;
+            readonly launchPath?: string | null;
+            readonly maintenanceMessage?: string | null;
+            readonly markets?: readonly components["schemas"]["MarketCode"][];
+            readonly name?: string;
+            readonly notice?: string | null;
+            readonly releaseNotes?: readonly components["schemas"]["SolutionReleaseNote"][];
+            readonly replacementSlug?: components["schemas"]["SolutionSlug"] | null;
+            readonly requiresAuthentication?: boolean;
+            readonly requiresEntitlement?: boolean;
+            readonly shortDescription?: string;
+            readonly slug?: components["schemas"]["SolutionSlug"];
+            readonly sortOrder?: number;
+        };
     };
     responses: {
         /** @description Malformed request. */
@@ -10520,10 +11622,13 @@ export interface components {
     parameters: {
         /** @description Strongly recommended for retryable financial and import mutations. Reusing a key with a different payload is a conflict. */
         readonly IdempotencyKey: string;
+        readonly IdPath: string;
         /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
         readonly MarketContext: components["schemas"]["MarketCode"];
         /** @description Caller correlation id. The server returns the accepted or generated value. */
         readonly RequestId: string;
+        /** @description Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict. */
+        readonly RequiredIdempotencyKey: string;
     };
     requestBodies: never;
     headers: {
@@ -12401,6 +13506,209 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminSolutions: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Complete solution catalog. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["SolutionDefinition"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminSolution: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict. */
+                readonly "Idempotency-Key": components["parameters"]["RequiredIdempotencyKey"];
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CreateSolutionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Created solution. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SolutionDefinition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly patchAdminSolution: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict. */
+                readonly "Idempotency-Key": components["parameters"]["RequiredIdempotencyKey"];
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly solutionId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["UpdateSolutionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated solution. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SolutionDefinition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminSolutionLifecycle: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict. */
+                readonly "Idempotency-Key": components["parameters"]["RequiredIdempotencyKey"];
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly solutionId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TransitionSolutionLifecycleInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Transitioned solution. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SolutionDefinition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminSolutionLifecycleHistory: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly solutionId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Lifecycle history newest first. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["SolutionLifecycleHistoryEntry"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminSolutionsOrder: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Required for privileged catalog mutations. Reusing a key with a different operation or payload is a conflict. */
+                readonly "Idempotency-Key": components["parameters"]["RequiredIdempotencyKey"];
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ReorderSolutionsInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Reordered catalog. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["SolutionDefinition"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -16979,6 +18287,934 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAccessGrantConsume: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description No-store download or revealed-access response. */
+            readonly 200: {
+                headers: {
+                    /** @description Always private, no-store. */
+                    readonly "Cache-Control"?: string;
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalConsumedAccess"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAccessSecret: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalAccessSecretInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Opaque protected-access version reference. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAccessSecretReference"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAssetModeration: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalModerationDecision"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated asset projection. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAsset"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalFulfillmentModeration: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalModerationDecision"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated fulfillment version. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalFulfillmentVersion"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalAdminOverview: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Privacy-safe digital operations overview. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAdminOverview"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAdminPolicyActivate: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly reason: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Activated policy; prior active version is retired and affected sellers require reacceptance. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalMarketPolicyAdmin"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalAdminPolicy: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Latest evidence-bearing digital market policy. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalMarketPolicyAdmin"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAdminPolicyDraft: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly policy: components["schemas"]["DigitalMarketPolicyAdmin"];
+                    readonly reason: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Created disabled policy draft. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalMarketPolicyAdmin"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAccessReportResolve: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalAccessReportResolution"];
+            };
+        };
+        readonly responses: {
+            /** @description Report resolved. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalAsset: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Owned asset projection. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAsset"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteDigitalAsset: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Asset removed. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAssetUpload: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalAssetUploadInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Short-lived private upload authorization. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAssetUploadResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAssetUploadComplete: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current asset-processing projection. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAsset"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalCredentialBatch: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalCredentialBatchInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Opaque batch reference. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalCredentialBatchReference"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalCredentialInventory: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalCredentialImportInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Inventory counts without raw credentials. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalInventory"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalCredentialInventory: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Inventory counts. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalInventory"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalEntitlements: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Digital purchases for the authenticated buyer and resolved market. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["DigitalEntitlement"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalEntitlement: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Buyer-owned entitlement. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalEntitlement"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalDownloadGrant: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    /** Format: uuid */
+                    readonly assetId: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Short-lived download grant. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAccessGrant"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalProvisionedAccess: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalAccessSecretInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Provisioning completed. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalAccessReport: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalAccessReportInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Privacy-safe support report. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        /** Format: uuid */
+                        readonly id: string;
+                        /** @enum {string} */
+                        readonly status: "OPEN";
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalRevealGrant: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Short-lived reveal grant. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalAccessGrant"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDigitalFulfillmentVersion: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalFulfillmentVersionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Versioned fulfillment record. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalFulfillmentVersion"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalPolicy: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Digital-product policy projection. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalPolicyProjection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalSellerProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Seller profile or null. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalSellerProfile"] | null;
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putDigitalSellerProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DigitalSellerProfileInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated seller profile. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DigitalSellerProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDigitalSellerProvisioningTasks: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Privacy-safe seller provisioning tasks. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly items: readonly components["schemas"]["DigitalProvisioningTask"][];
+                    };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
             readonly 500: components["responses"]["InternalError"];
         };
     };
@@ -25770,6 +28006,70 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSolutions: {
+        readonly parameters: {
+            readonly query?: {
+                readonly locale?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Market-scoped public solution catalog. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["SolutionDefinition"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSolutionBySlug: {
+        readonly parameters: {
+            readonly query?: {
+                readonly locale?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly solutionSlug: components["schemas"]["SolutionSlug"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Public solution or null when no public catalog entry exists. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SolutionDefinition"] | null;
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 500: components["responses"]["InternalError"];
         };
     };

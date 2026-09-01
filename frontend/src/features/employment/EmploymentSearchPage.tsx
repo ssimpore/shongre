@@ -24,6 +24,7 @@ import {
   DropdownMenu,
   FilterPanel,
   Input,
+  ListingRail,
   LocationSelector,
   Skeleton,
   StatePanel,
@@ -219,6 +220,7 @@ const EmploymentFilters: React.FC<{
 
 export const EmploymentSearchPage: React.FC = () => {
   const { t } = useTranslation();
+  const recentlyViewedLabel = t("employment.search.recentlyViewed");
   const { currentUser } = useAuth();
   const { activeMarket, marketContext } = useMarketLocation();
   const toast = useToast();
@@ -537,13 +539,13 @@ export const EmploymentSearchPage: React.FC = () => {
               id="employment-recent-title"
               className="text-lg font-black text-text-main"
             >
-              Offres consultées récemment
+              {recentlyViewedLabel}
             </h2>
-            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <ListingRail label={recentlyViewedLabel} className="mt-3">
               {recentJobs.map((job) => (
                 <JobCard key={job.id} job={job} catalog={catalog} compact />
               ))}
-            </div>
+            </ListingRail>
           </section>
         )}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

@@ -11,8 +11,8 @@ Phase 1 includes tutor discovery, tutor profiles, course offers, learner request
 ```text
 React page
   → CoursesServiceContract
-    → DemoCoursesService (current NEXT_PUBLIC_DATA_MODE=demo)
-    → HttpCoursesService (future API mode)
+    → DemoCoursesService (standalone local/demo mode)
+    → HttpCoursesService (hosted staging/production API mode)
       → /api/v1/education/* (sole canonical OpenAPI namespace)
         → CoursesService
           → ICoursesRepository

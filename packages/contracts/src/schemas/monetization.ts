@@ -1,6 +1,55 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 
+export const monetizationScopeClassificationSchema = z.enum([
+  "PLATFORM_GLOBAL",
+  "MARKET_SCOPED",
+  "MULTI_MARKET_SHARED",
+]);
+export type MonetizationScopeClassification = z.infer<
+  typeof monetizationScopeClassificationSchema
+>;
+
+/**
+ * Canonical classification for every commercial aggregate. Definitions that
+ * may be reused are shared once, while every decision and accounting record is
+ * bound to one market. Provider definitions are global; their usable mappings
+ * are market- and environment-specific catalog evidence.
+ */
+export const MONETIZATION_SCOPE_CLASSIFICATION = Object.freeze({
+  providerDefinition: "PLATFORM_GLOBAL",
+  commercialFeatureDefinition: "MULTI_MARKET_SHARED",
+  productDefinition: "MULTI_MARKET_SHARED",
+  entitlementDefinition: "MULTI_MARKET_SHARED",
+  marketPolicy: "MARKET_SCOPED",
+  catalogVersion: "MARKET_SCOPED",
+  priceVersion: "MARKET_SCOPED",
+  taxRule: "MARKET_SCOPED",
+  commissionPolicy: "MARKET_SCOPED",
+  eligibilityDecision: "MARKET_SCOPED",
+  promotionCampaign: "MARKET_SCOPED",
+  providerMapping: "MARKET_SCOPED",
+  quote: "MARKET_SCOPED",
+  cart: "MARKET_SCOPED",
+  checkout: "MARKET_SCOPED",
+  order: "MARKET_SCOPED",
+  subscription: "MARKET_SCOPED",
+  activeEntitlement: "MARKET_SCOPED",
+  invoice: "MARKET_SCOPED",
+  payment: "MARKET_SCOPED",
+  refund: "MARKET_SCOPED",
+  payout: "MARKET_SCOPED",
+  webhookEvent: "MARKET_SCOPED",
+  backgroundJob: "MARKET_SCOPED",
+  cacheEntry: "MARKET_SCOPED",
+  rateLimit: "MARKET_SCOPED",
+  notification: "MARKET_SCOPED",
+  reconciliationRecord: "MARKET_SCOPED",
+  analyticsEvent: "MARKET_SCOPED",
+  auditEvent: "MARKET_SCOPED",
+  idempotencyKey: "MARKET_SCOPED",
+} as const satisfies Record<string, MonetizationScopeClassification>);
+
 /** Shared commercial editor constraints; schemas, UI, and services consume one policy. */
 export const MONETIZATION_ADMIN_CONSTRAINTS = {
   nonNegativeInteger: { min: 0, step: 1 },

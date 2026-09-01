@@ -11,8 +11,8 @@ The France configuration includes cars, motorcycles and scooters, utilities, tru
 ```text
 React page
   → AutoServiceContract
-    → DemoAutoService (current NEXT_PUBLIC_DATA_MODE=demo)
-    → HttpAutoService (future API mode)
+    → DemoAutoService (standalone local/demo mode)
+    → HttpAutoService (hosted staging/production API mode)
       → /api/v1/auto/*
         → AutoService
           → IAutoRepository
@@ -20,7 +20,7 @@ React page
               → PostgreSQL / Supabase infrastructure
 ```
 
-The browser does not import backend code or contact Supabase business tables. Current demo behavior is deterministic and asynchronous. The same page components can move to HTTP mode through the service registry.
+The browser does not import backend code or contact Supabase business tables. Demo behavior is deterministic and asynchronous. The same page components use HTTP mode through the service registry in hosted staging and production.
 
 ## Versioned contracts and ownership
 

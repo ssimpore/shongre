@@ -32,11 +32,13 @@ import {
   resolveMarketContext,
   type MarketDetectionRecommendation,
   type MarketContext,
+  type PublicCountryConfig,
 } from "@shongre/contracts";
 import { buildRuntimeMarketUrl } from "../../domains/market/market-routing";
 import {
+  crossesProductionMarketOrigin,
   currentRuntimeInternalPath,
-  isDevelopmentMarketHost,
+  shouldUseAuthenticatedMarketHandoff,
 } from "../../domains/market/market-routing";
 import { useAuth } from "./AuthProvider";
 import { services } from "../../api/client/service-registry";
@@ -50,10 +52,12 @@ import {
 } from "../../domains/market/geolocation.service";
 import {
   consumeManualMarketSelectionHandoff,
+  marketSelectionPreferenceRepository,
   MANUAL_MARKET_SELECTION_QUERY,
   resolveInitialMarketSelection,
 } from "../../domains/market/market-selection.preference";
 import { marketDetectionController } from "../../domains/market/market-detection.controller";
+import { resolveMarketDetectionOutcome } from "../../domains/market/market-detection.policy";
 
 const INITIAL_DEFAULT_MARKET =
   INITIAL_MARKETS.find((market) => market.isDefault) ?? INITIAL_MARKETS[0];
@@ -109,20 +113,30 @@ export interface LocationModalOptions {
   onApply?: (location: LocationSelection) => void;
 }
 
+interface MarketChangeTarget {
+  code: string;
+  name: string;
+}
+
 interface MarketContextType {
   marketContext: MarketContext | null;
   activeMarket: Market;
   effectiveConfig: MarketConfiguration;
   availableMarkets: Market[];
+  selectableCountries: PublicCountryConfig[];
   setMarket: (marketCode: string) => void;
   manualMarketSelection: string | null;
   resetManualMarketSelection: () => void;
   marketRecommendation: MarketDetectionRecommendation | null;
   isDetectingMarket: boolean;
+  marketDetectionIssue: "unknown" | "unavailable" | "error" | null;
+  retryMarketDetection: () => void;
   acceptMarketRecommendation: () => void;
   dismissMarketRecommendation: () => void;
   requestPreciseLocation: () => Promise<ResolvedCurrentLocation>;
-  pendingMarketChange: Market | null;
+  pendingMarketChange: MarketChangeTarget | null;
+  isChangingMarket: boolean;
+  marketChangeFailed: boolean;
   confirmMarketChange: () => void;
   cancelMarketChange: () => void;
   location: LocationSelection;
@@ -155,7 +169,9 @@ export const MarketLocationProvider: React.FC<{
   children: React.ReactNode;
   initialMarketContext?: MarketContext;
 }> = ({ children, initialMarketContext }) => {
-  const { isAuthenticated } = useAuth();
+  const { currentUser, isAuthenticated, isRestoring } = useAuth();
+  const preferenceAccountId = currentUser?.id ?? null;
+  const preferenceSubject = currentUser ? `account:${currentUser.id}` : "guest";
   const requestMarket = useMemo(
     () =>
       INITIAL_MARKETS.find(
@@ -177,18 +193,26 @@ export const MarketLocationProvider: React.FC<{
     initialMarketContext?.countryCode || INITIAL_DEFAULT_MARKET.code,
   );
   const [marketDataVersion, setMarketDataVersion] = useState(0);
-  const [hasRestoredPreferences, setHasRestoredPreferences] = useState(false);
+  const [restoredPreferenceSubject, setRestoredPreferenceSubject] = useState<
+    string | null
+  >(null);
+  const hasRestoredPreferences =
+    !isRestoring && restoredPreferenceSubject === preferenceSubject;
   const [manualMarketSelection, setManualMarketSelection] = useState<
     string | null
   >(null);
   const [marketRecommendation, setMarketRecommendation] =
     useState<MarketDetectionRecommendation | null>(null);
   const [isDetectingMarket, setIsDetectingMarket] = useState(false);
-  const [pendingMarketChange, setPendingMarketChange] = useState<Market | null>(
-    null,
-  );
-  const hasAttemptedAutomaticDetection = useRef(false);
-  const hasAppliedRestoredManualSelection = useRef(false);
+  const [marketDetectionIssue, setMarketDetectionIssue] = useState<
+    "unknown" | "unavailable" | "error" | null
+  >(null);
+  const [pendingMarketChange, setPendingMarketChange] =
+    useState<MarketChangeTarget | null>(null);
+  const [isChangingMarket, setIsChangingMarket] = useState(false);
+  const [marketChangeFailed, setMarketChangeFailed] = useState(false);
+  const automaticDetectionScope = useRef<string | null>(null);
+  const detectionRequestId = useRef(0);
 
   useEffect(() => {
     const refreshMarketConfiguration = () => {
@@ -255,6 +279,7 @@ export const MarketLocationProvider: React.FC<{
       return market ? [market] : [];
     });
   }, [hasRestoredPreferences, marketDataVersion]);
+  const selectableCountries = useMemo(() => listPublicCountries(), []);
 
   const [location, setLocationState] = useState<LocationSelection>({
     city: `Toute la ${requestMarket.name}`,
@@ -278,12 +303,17 @@ export const MarketLocationProvider: React.FC<{
   const [isPreferencesModalOpen, setIsPreferencesModalOpen] = useState(false);
 
   useEffect(() => {
+    if (isRestoring) return;
+    detectionRequestId.current += 1;
+    setIsDetectingMarket(false);
     const storedMarketCode = storageService.getActiveMarketCode();
     const transferredManualMarket = consumeManualMarketSelectionHandoff(
       initialMarketContext?.countryCode,
+      preferenceAccountId,
     );
     const storedManualMarket =
-      transferredManualMarket || storageService.getManualMarketSelection();
+      transferredManualMarket ||
+      marketSelectionPreferenceRepository.getManualCountry(preferenceAccountId);
     const resolvedMarketCode = resolveInitialMarketSelection({
       manualCountryCode: storedManualMarket,
       requestCountryCode: initialMarketContext?.countryCode,
@@ -337,8 +367,15 @@ export const MarketLocationProvider: React.FC<{
     }
     storageService.saveActiveMarketCode(restoredMarket.code);
     setManualMarketSelection(storedManualMarket);
-    setHasRestoredPreferences(true);
-  }, [initialMarketContext]);
+    setMarketRecommendation(null);
+    setMarketDetectionIssue(null);
+    setRestoredPreferenceSubject(preferenceSubject);
+  }, [
+    initialMarketContext,
+    isRestoring,
+    preferenceAccountId,
+    preferenceSubject,
+  ]);
 
   const openLocationModal = useCallback(
     (options: LocationModalOptions = {}) => {
@@ -437,22 +474,19 @@ export const MarketLocationProvider: React.FC<{
   }, []);
 
   const applyMarketChange = useCallback(
-    (market: Market) => {
-      setActiveMarketCode(market.code);
-      storageService.saveActiveMarketCode(market.code);
-      storageService.saveManualMarketSelection(market.code);
+    (market: MarketChangeTarget) => {
+      marketSelectionPreferenceRepository.saveManualCountry(
+        market.code,
+        preferenceAccountId,
+      );
+      marketSelectionPreferenceRepository.clearDeclinedRecommendation(
+        preferenceAccountId,
+        activeMarket.code,
+      );
       setManualMarketSelection(market.code);
       setMarketRecommendation(null);
-      setPendingMarketChange(null);
-
-      const defaultLoc: LocationSelection = {
-        city: `Toute la ${market.name}`,
-        postalCode: "",
-        radiusKm: 0,
-        label: `Toute la ${market.name}`,
-      };
-      setLocationState(defaultLoc);
-      storageService.saveLocationPreference(defaultLoc);
+      setMarketDetectionIssue(null);
+      setMarketChangeFailed(false);
       if (initialMarketContext && typeof window !== "undefined") {
         const directDestination = new URL(
           buildRuntimeMarketUrl({
@@ -467,17 +501,23 @@ export const MarketLocationProvider: React.FC<{
           market.code,
         );
         const sourceCountry = getCountryConfig(
-          initialMarketContext.countryCode || activeMarketCode,
+          initialMarketContext.countryCode || "",
         );
         const targetCountry = getCountryConfig(market.code);
-        const crossesRegistrableDomain =
-          directDestination.origin !== window.location.origin;
-        const canHandoff =
-          isAuthenticated &&
-          crossesRegistrableDomain &&
-          !isDevelopmentMarketHost(window.location.hostname);
+        const canHandoff = shouldUseAuthenticatedMarketHandoff({
+          isAuthenticated,
+          currentOrigin: window.location.origin,
+          currentHostname: window.location.hostname,
+          destination: directDestination.toString(),
+        });
 
-        if (canHandoff && sourceCountry && targetCountry) {
+        setIsChangingMarket(true);
+        if (canHandoff) {
+          if (!sourceCountry || !targetCountry) {
+            setIsChangingMarket(false);
+            setMarketChangeFailed(true);
+            return;
+          }
           void services.auth
             .beginDomainHandoff({
               sourceCountry: sourceCountry.code,
@@ -487,23 +527,53 @@ export const MarketLocationProvider: React.FC<{
             .then(({ authorizationUrl }) =>
               window.location.assign(authorizationUrl),
             )
-            .catch(() => window.location.assign(directDestination.toString()));
+            .catch(() => {
+              setIsChangingMarket(false);
+              setMarketChangeFailed(true);
+            });
           return;
         }
         window.location.assign(directDestination.toString());
+        return;
       }
+
+      const runtimeMarket = findRuntimeMarket(market.code);
+      if (!runtimeMarket) return;
+      setActiveMarketCode(runtimeMarket.code);
+      storageService.saveActiveMarketCode(runtimeMarket.code);
+      setPendingMarketChange(null);
+      setIsChangingMarket(false);
+      const defaultLoc: LocationSelection = {
+        city: `Toute la ${runtimeMarket.name}`,
+        postalCode: "",
+        radiusKm: 0,
+        label: `Toute la ${runtimeMarket.name}`,
+      };
+      setLocationState(defaultLoc);
+      storageService.saveLocationPreference(defaultLoc);
     },
-    [activeMarketCode, initialMarketContext, isAuthenticated],
+    [
+      activeMarket.code,
+      initialMarketContext,
+      isAuthenticated,
+      preferenceAccountId,
+    ],
   );
 
-  const setMarket = useCallback(
-    (newMarketCode: string) => {
-      const market = findRuntimeMarket(newMarketCode);
-      if (!market) return;
+  const requestMarketChange = useCallback(
+    (market: MarketChangeTarget) => {
       if (market.code === activeMarket.code) {
-        storageService.saveManualMarketSelection(market.code);
+        marketSelectionPreferenceRepository.saveManualCountry(
+          market.code,
+          preferenceAccountId,
+        );
+        marketSelectionPreferenceRepository.clearDeclinedRecommendation(
+          preferenceAccountId,
+          activeMarket.code,
+        );
         setManualMarketSelection(market.code);
         setMarketRecommendation(null);
+        setMarketDetectionIssue(null);
         return;
       }
       if (initialMarketContext && typeof window !== "undefined") {
@@ -512,18 +582,42 @@ export const MarketLocationProvider: React.FC<{
           context: initialMarketContext,
           infrastructure: RUNTIME_MARKET_INFRASTRUCTURE,
         });
-        const crossesDomain =
-          !isDevelopmentMarketHost(window.location.hostname) &&
-          new URL(destination, window.location.origin).origin !==
-            window.location.origin;
+        const crossesDomain = crossesProductionMarketOrigin({
+          currentOrigin: window.location.origin,
+          currentHostname: window.location.hostname,
+          destination,
+        });
         if (crossesDomain) {
           setPendingMarketChange(market);
+          setMarketChangeFailed(false);
           return;
         }
       }
       applyMarketChange(market);
     },
-    [activeMarket.code, applyMarketChange, initialMarketContext],
+    [
+      activeMarket.code,
+      applyMarketChange,
+      initialMarketContext,
+      preferenceAccountId,
+    ],
+  );
+
+  const setMarket = useCallback(
+    (newMarketCode: string) => {
+      const market = findRuntimeMarket(newMarketCode);
+      if (market) {
+        requestMarketChange(market);
+        return;
+      }
+      const country = selectableCountries.find(
+        (entry) => entry.code === newMarketCode.toUpperCase(),
+      );
+      if (country) {
+        requestMarketChange({ code: country.code, name: country.name });
+      }
+    },
+    [requestMarketChange, selectableCountries],
   );
 
   const confirmMarketChange = useCallback(() => {
@@ -531,81 +625,106 @@ export const MarketLocationProvider: React.FC<{
   }, [applyMarketChange, pendingMarketChange]);
 
   const cancelMarketChange = useCallback(() => {
+    if (isChangingMarket) return;
     setPendingMarketChange(null);
-  }, []);
-
-  useEffect(() => {
-    if (
-      !hasRestoredPreferences ||
-      !manualMarketSelection ||
-      !initialMarketContext?.countryCode ||
-      initialMarketContext.countryCode === manualMarketSelection
-    ) {
-      return;
-    }
-    if (hasAppliedRestoredManualSelection.current) return;
-    hasAppliedRestoredManualSelection.current = true;
-    const preferredMarket = findRuntimeMarket(
-      manualMarketSelection,
-    );
-    if (preferredMarket) applyMarketChange(preferredMarket);
-  }, [
-    applyMarketChange,
-    hasRestoredPreferences,
-    initialMarketContext?.countryCode,
-    manualMarketSelection,
-  ]);
+    setMarketChangeFailed(false);
+  }, [isChangingMarket]);
 
   const detectProbableMarket = useCallback(
     async (force = false) => {
       if (manualMarketSelection && !force) return;
+      const requestId = detectionRequestId.current + 1;
+      detectionRequestId.current = requestId;
       setIsDetectingMarket(true);
+      setMarketDetectionIssue(null);
       try {
         const recommendation =
           await marketDetectionController.detectProbableCountry();
-        setMarketRecommendation(
-          recommendation.country?.code === activeMarket.code
-            ? null
-            : recommendation,
+        if (detectionRequestId.current !== requestId) return;
+        const outcome = resolveMarketDetectionOutcome({
+          recommendation,
+          currentCountryCode: activeMarket.code,
+          declinedCountryCode:
+            marketSelectionPreferenceRepository.getDeclinedRecommendation(
+              preferenceAccountId,
+              activeMarket.code,
+            ),
+        });
+        if (outcome.kind === "recommendation") {
+          setMarketRecommendation(outcome.recommendation);
+        } else {
+          setMarketRecommendation(null);
+        }
+        setMarketDetectionIssue(
+          outcome.kind === "country_selection_required" ? outcome.reason : null,
         );
       } catch {
+        if (detectionRequestId.current !== requestId) return;
         setMarketRecommendation(null);
+        setMarketDetectionIssue("error");
       } finally {
-        setIsDetectingMarket(false);
+        if (detectionRequestId.current === requestId) {
+          setIsDetectingMarket(false);
+        }
       }
     },
-    [activeMarket.code, manualMarketSelection],
+    [activeMarket.code, manualMarketSelection, preferenceAccountId],
   );
 
   useEffect(() => {
-    if (
-      !hasRestoredPreferences ||
-      manualMarketSelection ||
-      hasAttemptedAutomaticDetection.current
-    ) {
+    if (!hasRestoredPreferences || manualMarketSelection) {
       return;
     }
-    hasAttemptedAutomaticDetection.current = true;
+    const scope = `${preferenceSubject}:${activeMarket.code}`;
+    if (automaticDetectionScope.current === scope) return;
+    automaticDetectionScope.current = scope;
     void detectProbableMarket();
-  }, [detectProbableMarket, hasRestoredPreferences, manualMarketSelection]);
+  }, [
+    activeMarket.code,
+    detectProbableMarket,
+    hasRestoredPreferences,
+    manualMarketSelection,
+    preferenceSubject,
+  ]);
 
   const resetManualMarketSelection = useCallback(() => {
-    storageService.clearManualMarketSelection();
+    marketSelectionPreferenceRepository.clearManualCountry(preferenceAccountId);
+    marketSelectionPreferenceRepository.clearDeclinedRecommendation(
+      preferenceAccountId,
+      activeMarket.code,
+    );
     setManualMarketSelection(null);
-    hasAttemptedAutomaticDetection.current = true;
+    automaticDetectionScope.current = `${preferenceSubject}:${activeMarket.code}`;
+    void detectProbableMarket(true);
+  }, [
+    activeMarket.code,
+    detectProbableMarket,
+    preferenceAccountId,
+    preferenceSubject,
+  ]);
+
+  const retryMarketDetection = useCallback(() => {
     void detectProbableMarket(true);
   }, [detectProbableMarket]);
 
   const acceptMarketRecommendation = useCallback(() => {
-    const code = marketRecommendation?.country?.code;
-    if (!code) return;
-    const market = findRuntimeMarket(code);
-    if (market) applyMarketChange(market);
-  }, [applyMarketChange, marketRecommendation]);
+    const country = marketRecommendation?.country;
+    if (!country) return;
+    requestMarketChange({ code: country.code, name: country.name });
+  }, [marketRecommendation, requestMarketChange]);
 
   const dismissMarketRecommendation = useCallback(() => {
+    const code = marketRecommendation?.country?.code;
+    if (code) {
+      marketSelectionPreferenceRepository.declineRecommendation(
+        code,
+        preferenceAccountId,
+        activeMarket.code,
+      );
+    }
     setMarketRecommendation(null);
-  }, []);
+    setMarketDetectionIssue(null);
+  }, [activeMarket.code, marketRecommendation, preferenceAccountId]);
 
   const setLocation = useCallback((loc: LocationSelection) => {
     setLocationState(loc);
@@ -630,9 +749,19 @@ export const MarketLocationProvider: React.FC<{
     const coordinates = await requestCurrentCoordinates();
     const recommendation =
       await marketDetectionController.detectCountryFromCoordinates(coordinates);
-    if (recommendation.country?.code !== activeMarket.code) {
-      setMarketRecommendation(recommendation);
+    const outcome = resolveMarketDetectionOutcome({
+      recommendation,
+      currentCountryCode: activeMarket.code,
+    });
+    if (outcome.kind === "recommendation") {
+      setMarketRecommendation(outcome.recommendation);
+      setMarketDetectionIssue(null);
       throw new CurrentLocationError("outside_market");
+    }
+    if (outcome.kind === "country_selection_required") {
+      setMarketRecommendation(null);
+      setMarketDetectionIssue(outcome.reason);
+      throw new CurrentLocationError("unresolved");
     }
     return resolveNearestMarketCity(
       coordinates,
@@ -666,15 +795,20 @@ export const MarketLocationProvider: React.FC<{
         activeMarket,
         effectiveConfig,
         availableMarkets,
+        selectableCountries,
         setMarket,
         manualMarketSelection,
         resetManualMarketSelection,
         marketRecommendation,
         isDetectingMarket,
+        marketDetectionIssue,
+        retryMarketDetection,
         acceptMarketRecommendation,
         dismissMarketRecommendation,
         requestPreciseLocation,
         pendingMarketChange,
+        isChangingMarket,
+        marketChangeFailed,
         confirmMarketChange,
         cancelMarketChange,
         location,

@@ -31,10 +31,26 @@ redirect.
 
 `SolutionsService` is the stable asynchronous boundary used by public and admin
 screens. It supports public listing/detail reads and authorized admin creation,
-editing, lifecycle transition, and history reads. Current execution uses the
-deterministic `DemoSolutionsService` and the central Shongre browser storage
-service. The reserved HTTP adapter intentionally performs no request until a
-backend public contract exists.
+editing, ordering, lifecycle transition, and history reads. Demo client mode
+uses the deterministic `DemoSolutionsService` and the owned Shongre browser
+storage service. API mode uses `HttpSolutionsService` and the canonical typed
+operations in `backend/openapi/openapi.json`; components do not construct API
+requests or select an adapter.
+
+The catalog data classification is explicit:
+
+- the application identifier definition is `PLATFORM_GLOBAL` and comes from
+  `@shongre/contracts/applications`;
+- one solution definition is `MULTI_MARKET_SHARED`;
+- availability is represented by explicit `solution_markets` associations and
+  is therefore `MARKET_SCOPED`;
+- lifecycle history and idempotency receipts retain the solution and actor
+  evidence required for governance.
+
+Public API reads receive the resolved canonical `MarketContext`; an optional
+locale only selects catalog language and never establishes market authority.
+Unknown, disabled, or mismatched market contexts fail closed. The service does
+not infer a market from currency, language, storage, or a France fallback.
 
 Each catalog record owns product presentation and launch metadata:
 
@@ -56,7 +72,11 @@ The supported lifecycle is:
 `DRAFT → INTERNAL → COMING_SOON → BETA → AVAILABLE → MAINTENANCE → DEPRECATED → RETIRED`
 
 Transitions need not be linear, but every admin transition requires a recorded
-actor, timestamp, and explanation. Public behavior is centralized:
+actor, timestamp, and explanation. The PostgreSQL mutation function serializes
+changes with an advisory lock and records catalog state, lifecycle evidence,
+idempotency receipt, and the general audit event in one transaction. Reusing a
+key with the same request returns the recorded result; reusing it for different
+input fails closed. Public behavior is centralized:
 
 - `DRAFT` is admin-only;
 - `INTERNAL` is restricted to Shongre staff;
@@ -69,16 +89,22 @@ actor, timestamp, and explanation. Public behavior is centralized:
 
 The normalized launch decision evaluates lifecycle, market, authentication,
 entitlement, access class, maintenance, and destination availability. UI
-visibility is presentation only; the demo service also enforces admin capability
-checks. A future backend adapter must enforce the same contracts server-side.
+visibility is presentation only. The backend enforces public market scope and
+privileged mutations independently of the client. Catalog writes require an
+active Staff principal with `admin.configuration.manage`, MFA through the Staff
+permission gate, recent authentication, and an idempotency key. The principal,
+not a caller-supplied actor, owns audit attribution.
 
 ## Markets, accounts, and entitlements
 
-Catalog eligibility is country-aware. Seed products support France, Belgium,
-and Luxembourg where declared, and the active market is passed to public reads
-and launch decisions. Locale and availability dates remain explicit. Currency
-does not belong to the catalog unless a future commercial offer displays money;
-authoritative prices remain in monetization services using minor units.
+Catalog eligibility is country-aware. Deterministic demo records use only
+canonical France, Belgium, and Switzerland associations where declared. The
+active market is passed to public reads and launch decisions. Locale and
+availability dates remain explicit. Currency does not belong to the catalog
+unless a future commercial offer displays money; authoritative prices remain
+in monetization services using minor units. Senegal and Burkina Faso remain
+`coming_soon` market contexts and cannot gain marketplace capability from a
+Solutions catalog entry.
 
 Prospects and Facturation remain separately entitled Shongre products. Existing
 organizations add those entitlements to the same account and organization;
@@ -121,9 +147,27 @@ The request proxy recognizes only configured application hosts. Other hosts
 continue through the existing deny-by-default market resolver. Product hosts
 receive the same CSP, security headers, cookie-consent gate, and application
 providers as the marketplace. Cross-host links never place sessions or tokens
-in query strings. A future unified login handoff must use fixed allowlisted
-return destinations, server-managed sessions, SameSite/CSRF protections, and
-the reviewed callback process in `docs/architecture/authentication.md`.
+in query strings. Authenticated cross-domain movement uses the existing
+short-lived, single-use handoff with a fixed allowlisted return destination and
+Shongre-owned host cookies, as documented in
+`docs/architecture/authentication.md`; cookies are not shared between the
+France and international domains.
+
+## Persistence and transport
+
+Migration `00088_solution_catalog.sql` owns the production catalog tables,
+market associations, release notes, append-only lifecycle history, idempotency
+receipts, public projection function, and transactional mutation function. RLS
+is enabled and browser roles are revoked; only the backend service role may
+execute the functions. Production receives no demo catalog seed. An empty
+catalog is a valid, non-blocking public state until authorized Staff publishes
+approved records.
+
+Transport changes follow the normal OpenAPI-first sequence. Public reads are
+`GET /api/v1/solutions` and `GET /api/v1/solutions/{solutionSlug}`. Admin reads
+and mutations remain under `/api/v1/admin/solutions`; every mutation declares
+required idempotency and every operation declares access and Staff policy in
+the canonical specification.
 
 ## Deployment boundary
 
@@ -139,3 +183,11 @@ Hosted certification can set `PLAYWRIGHT_SOLUTIONS_URL`,
 existing hosted-smoke variables. The smoke test verifies the resolved
 application header, hostname-specific title, canonical URL, and shared security
 headers for every application host.
+
+Rollout applies migration `00088` before deploying the backend and Web images,
+then verifies an empty public response, creates a non-public draft through the
+authorized API, and promotes content only after host and entitlement checks.
+Rollback disables catalog visibility and rolls the application image forward;
+the migration is not reversed and catalog/history evidence is retained. Before
+cutover, the complete migration history must reconstruct on the target engine
+and generated database types must be refreshed from that proven schema.

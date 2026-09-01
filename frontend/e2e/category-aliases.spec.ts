@@ -10,7 +10,11 @@ test.describe('compact taxonomy aliases', () => {
   });
 
   test('uses short labels in navigation, autocomplete and listing cards', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'Outils pro', exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByLabel('Navigation par catégorie')
+        .getByRole('link', { name: 'Outils pro', exact: true }),
+    ).toBeVisible();
 
     const search = page.getByRole('combobox');
     await search.fill('Outils pro');

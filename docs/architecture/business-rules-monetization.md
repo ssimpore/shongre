@@ -18,6 +18,28 @@ Stripe Checkout → signed webhook → idempotency ledger → entitlements
 
 The proposed replacement lives as `commercial-fr-v4-draft` in `packages/contracts/src/fixtures/monetization-proposed-catalog.ts`. It reuses the same schema and persistence path; it is not a second active catalog. `make monetization-draft-import` is deterministic and idempotent outside production. It never changes the active v3 snapshot. The shared professional-catalog selector may expose this newer, migration-linked version as a clearly labelled public preview, but it returns only the target plan identities, disables checkout, and never merges the active legacy plans into that presentation.
 
+## Market ownership classification
+
+`MONETIZATION_SCOPE_CLASSIFICATION` is the public, typed classification of
+commercial state:
+
+- `PLATFORM_GLOBAL`: provider definitions only; a provider's existence grants no
+  market availability;
+- `MULTI_MARKET_SHARED`: stable feature, product and entitlement definitions,
+  stored once and activated only through explicit market catalog associations;
+- `MARKET_SCOPED`: policies, catalog and price versions, taxes, commissions,
+  eligibility, campaigns, provider mappings, quotes, carts, checkout, orders,
+  subscriptions, effective entitlements, invoices, payments, refunds, payouts,
+  callbacks, jobs, caches, rate limits, notifications, reconciliation,
+  analytics, audit evidence and idempotency keys.
+
+Every request enters monetization with the canonical `MarketContext` resolved
+from host and path. Service controllers bind that context to HTTP or demo
+adapters; components do not derive a market from currency, locale, text or
+storage. The backend cross-validates the context with `CountryConfig` and the
+catalog's exact market and currency. A valid country without an approved active
+commercial catalog is not a purchasable market.
+
 ## Domain model
 
 - `commercial_rule_sets` groups a stable business domain.
@@ -56,14 +78,15 @@ This lets a category-specific Auto quota override a generic individual quota wit
 
 Clients send product ids, optional published price ids (for monthly/annual choice), and context—never amounts. The server:
 
-1. loads the active version or last-known-valid version;
+1. loads the exact active market version; a stale last-known-valid copy may
+   support a read-only display but never a paid operation;
 2. validates product status, audience, market/category scope, dependencies, and exclusions;
 3. resolves effective prices and promotions;
 4. requires approved direct-cost/margin evidence when the selected price declares economics;
 5. calculates discounts and taxes in minor units;
 6. snapshots product versions and entitlements;
 7. hashes the canonical snapshot;
-8. stores an idempotent, expiring quote.
+8. stores an idempotent, expiring quote under an account-and-market-scoped key.
 
 Checkout accepts only `quoteId` and an idempotency key. It recomputes the canonical quote hash before contacting a provider, and provider idempotency is bound to the quote rather than a caller-selected key. Stripe Checkout metadata carries the quote id and snapshot hash. The signed webhook claims the provider event, locks the order, verifies the snapshot hash, updates order/quote status, records promotion redemption, creates subscriptions, and grants each entitlement once. Subscription/invoice events renew periods, mark past-due state, or expire rights idempotently. Replayed events return without repeating effects.
 
@@ -80,6 +103,14 @@ Upgrade, downgrade, billing-interval, same-plan renewal, cancellation and paymen
 ## Cache and resilience
 
 Backend active catalogs are cached briefly by market. Every validated load becomes the last-known-valid copy for that same market. A transient database/configuration failure may serve only that same-market copy with `stale: true`. If no valid copy has loaded, the request fails closed; it never substitutes France or another market. Admin health surfaces show stale state.
+
+Paid commands reject stale catalogs. Quote, checkout, payout and commission
+idempotency keys are namespaced with a one-way market-scoped digest before they
+reach repositories or providers, so a caller retry remains idempotent within one
+market without colliding with the same opaque key in another market. Monetary
+analytics requires one explicit market and derives its ISO currency from the
+country registry; the aggregate `ALL` scope is rejected instead of being
+attributed to France.
 
 ## Security boundaries
 
@@ -99,7 +130,7 @@ Backend active catalogs are cached briefly by market. Every validated load becom
 
 ## Client boundary
 
-Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. The command center and public Pro page call the service registry. `GET /api/v1/monetization/professional-plans` and the demo adapter both use `selectProfessionalCatalogPresentation`: the public surface therefore receives one typed active-or-preview result with explicit product ids and `checkoutEnabled`, rather than independently choosing or combining tariffs. Its public-safe snapshot contains only the required products, verticals, campaign and price-protection copy; migration governance, commercial economics, provider mappings, commission policies and rules remain private. Auto, Education, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile exposes a read-only billing projection (plan, rights, usage and invoices); digital purchase, steering and subscription mutation stay absent until an approved Apple/Google storefront and server receipt-validation policy exists. Demo mode remains asynchronous, deterministic, and backend-independent.
+Web uses `BusinessRulesServiceContract` with demo and HTTP adapters. Market-bound hooks bind the canonical `MarketContext` before a component can call catalog, billing, promotion, quote, checkout or subscription operations. `GET /api/v1/monetization/professional-plans` and the demo adapter both use `selectProfessionalCatalogPresentation`: the public surface therefore receives one typed active-or-preview result with explicit product ids and `checkoutEnabled`, rather than independently choosing or combining tariffs. Its public-safe snapshot contains only the required products, verticals, campaign and price-protection copy; migration governance, commercial economics, provider mappings, commission policies and rules remain private. Auto, Education, and Immo retain their established API shapes through shared projections of the same commercial catalog. Mobile exposes a read-only billing projection (plan, rights, usage and invoices); digital purchase, steering and subscription mutation stay absent until an approved Apple/Google storefront and server receipt-validation policy exists. Demo mode remains asynchronous, deterministic, market-partitioned and backend-independent.
 
 ## Typed API surface
 

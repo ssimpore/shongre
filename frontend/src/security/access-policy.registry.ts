@@ -82,6 +82,14 @@ export const ROUTE_POLICIES = {
   accountNotifications: customer("/compte/notifications"),
   accountNotificationPreferences: customer("/compte/notifications/preferences"),
   accountPurchases: customer("/compte/achats", "order.read.own"),
+  accountDigitalPurchases: customer(
+    "/compte/achats-numeriques",
+    "order.read.own",
+  ),
+  accountDigitalSeller: customer(
+    "/compte/produits-numeriques",
+    "listing.create",
+  ),
   accountFinances: customer("/compte/finances", "finance.account.read.own"),
   accountVerification: customer("/compte/verification"),
   accountSecurity: customer("/compte/securite-compte"),
@@ -149,6 +157,10 @@ export const ROUTE_POLICIES = {
     ...staff("/admin/moderation", "moderation.review"),
     alternativeCapabilities: ["report.review", "listing.moderate"],
   },
+  adminDigitalProducts: staff(
+    "/admin/produits-numeriques",
+    "moderation.review",
+  ),
   adminUsers: staff("/admin/utilisateurs", "user.read"),
   adminVerifications: {
     ...staff("/admin/verifications", "compliance.review"),

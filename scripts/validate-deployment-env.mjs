@@ -57,13 +57,6 @@ for (const key of [
 ]) {
   requireValue(frontend, key, undefined, "frontend env");
 }
-requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "demo", "frontend env");
-requireValue(
-  frontend,
-  "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
-  "true",
-  "frontend env",
-);
 requireValue(
   frontend,
   "NEXT_PUBLIC_ENABLE_AI_FEATURES",
@@ -91,6 +84,43 @@ const modes = {
 };
 const expectedModes = modes[expectedEnvironment];
 if (expectedModes) {
+  requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "api", "frontend env");
+  requireValue(
+    frontend,
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
+    "false",
+    "frontend env",
+  );
+  const applicationOrigins = [
+    "SHONGRE_MARKETPLACE_ORIGIN",
+    "SHONGRE_SOLUTIONS_ORIGIN",
+    "SHONGRE_PROSPECTS_ORIGIN",
+    "SHONGRE_FACTURATION_ORIGIN",
+  ].map((key) => {
+    requireValue(frontend, key, undefined, "frontend env");
+    const candidate = new URL(frontend.get(key));
+    if (
+      candidate.protocol !== "https:" ||
+      candidate.username ||
+      candidate.password ||
+      candidate.pathname !== "/" ||
+      candidate.search ||
+      candidate.hash
+    ) {
+      throw new Error(
+        `[Deploy Config] frontend env ${key} must be an HTTPS origin.`,
+      );
+    }
+    return candidate;
+  });
+  if (
+    new Set(applicationOrigins.map((candidate) => candidate.host)).size !==
+    applicationOrigins.length
+  ) {
+    throw new Error(
+      "[Deploy Config] frontend application origins must use distinct hosts.",
+    );
+  }
   for (const [key, expected] of [
     ["NODE_ENV", "production"],
     ["BACKEND_DATA_MODE", "database"],

@@ -1,6 +1,6 @@
 # Shongre Immo — launch checklist
 
-The default and currently supported frontend runtime remains `NEXT_PUBLIC_DATA_MODE=demo`. Do not select `api` mode merely because the HTTP adapter exists.
+Standalone local development defaults to `NEXT_PUBLIC_DATA_MODE=demo`. Hosted staging and production require `api` mode, mock storage disabled, and every technical, legal, provider, and operational gate below; the existence of an HTTP adapter alone is not launch evidence.
 
 ## Technical gates
 

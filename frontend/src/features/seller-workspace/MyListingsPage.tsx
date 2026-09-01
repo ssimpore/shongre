@@ -28,8 +28,9 @@ import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
-import { services } from "../../api/client/service-registry";
 import type { ListingBoostOption } from "../../configuration/plans.config";
+import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 const BOOST_STYLES: Record<
   ListingBoostOption["id"],
@@ -74,6 +75,7 @@ function getPhotoUrl(photo: any): string {
 
 export const MyListingsPage: React.FC = () => {
   const { t } = useTranslation();
+  const marketPromotions = useMarketPromotions();
   const publishLabel = t("sellerworkspace.myListingsPage.deposerUneAnnonce");
   usePageMeta({
     title: t("meta.myListings.title"),
@@ -85,6 +87,7 @@ export const MyListingsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
   const { activeMarket, currentLocale } = useMarketLocation();
+  const { formatMoney } = useRegionalFormatters();
   const publishCta = usePublishCta();
 
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -151,7 +154,7 @@ export const MyListingsPage: React.FC = () => {
     setBoostOffers([]);
     setBoostOffersState("loading");
     try {
-      const offers = await services.promotions.getAvailableBoosts(listing.id);
+      const offers = await marketPromotions.getAvailableBoosts(listing.id);
       setBoostOffers(offers);
       setBoostOffersState("ready");
     } catch {
@@ -166,7 +169,7 @@ export const MyListingsPage: React.FC = () => {
     setActivatingBoostId(offer.id);
     promotionSequence.current += 1;
     try {
-      const result = await services.promotions.applyBoost(
+      const result = await marketPromotions.applyBoost(
         listingId,
         offer.productId,
         {
@@ -659,7 +662,7 @@ export const MyListingsPage: React.FC = () => {
                         {offer.badgeLabel}
                       </span>
                       <span className="font-black text-sm text-stone-900 shrink-0">
-                        {formatPrice(offer.priceEur)}
+                        {formatMoney(offer.price)}
                       </span>
                     </div>
                     <p className="text-xs text-stone-600">

@@ -61,6 +61,8 @@ The canonical sources are:
 | MON-35 | Mobile customers can inspect current plan, rights, usage and invoices                                                                                                                                | Complete and verified                                                | Read-only `MobileBillingService` and `/account/billing`; exact shared contract types; deterministic professional/individual states                                                                         | Mobile typecheck and billing service tests                                                                                                                             |
 | MON-36 | Mobile digital purchase/change/restore/refund/cancel controls                                                                                                                                        | Blocked by an explicit product, legal, provider, or pricing decision | Store policy deliberately exposes no checkout or external steering; server authority is preserved                                                                                                          | Product/Legal/Mobile Payments must approve Apple/Google storefront and region strategy, server receipt validation, restore/refund/cancel and tax handling              |
 | MON-37 | Proposed incomplete imports, expanded teams/locations and deferred add-ons are not sold as working features                                                                                          | Complete and verified                                                | Entitlement implementation status and availability remove them from commercial rights and UI; validator prevents re-enabling without dependencies                                                          | Catalog suspended-capability and validator tests                                                                                                                       |
+| MON-38 | Monetization data has one explicit global, shared or market-scoped classification                                                                                                                    | Complete and verified                                                | Typed `MONETIZATION_SCOPE_CLASSIFICATION` covers provider and definition ownership plus every commercial decision, evidence and operational record                                                         | Shared-contract schema test asserts the classification and forbids commercial transaction state from being global                                                      |
+| MON-39 | Canonical market context crosses service, HTTP/demo and domain boundaries without currency, locale or France inference                                                                               | Complete and verified                                                | Market-bound Web hooks, context-requiring contracts/adapters, backend `requireMonetizationMarketContext`, exact catalog guards, market-scoped idempotency and analytics rejection of `ALL`                 | FR/BE/CH context tuple, SN/BF denial, forged context, stale catalog, currency mismatch, cross-market retry and demo isolation tests                                    |
 
 ## Explicit release blockers
 
@@ -78,21 +80,11 @@ The canonical sources are:
 No blocker above is represented by a fake success, placeholder provider id,
 France fallback, or automatically copied market configuration.
 
-## Verification snapshot
+## Verification requirements
 
-The implementation was verified on 2026-08-31 with the repository's canonical
-environment wrappers:
-
-- shared contracts: 23 files, 201 tests passed;
-- backend: 133 files, 760 tests passed;
-- Web: 131 files, 864 tests passed;
-- mobile: 7 files, 22 tests passed;
-- focused provider safety: 5 files, 24 tests passed;
-- Chromium Pro-plans journey: 4 tests passed against an isolated production
-  build;
-- backend, Web and mobile type checks passed;
-- backend and Web production builds passed; mobile lint passed;
-- OpenAPI lint, generated contracts, 448 runtime operations and the 453-entry
-  endpoint inventory are current;
-- all 87 ordered migrations passed static validation; and
-- `git diff --check` passed.
+Run-specific counts belong in the delivery note. Monetization changes must run
+the canonical contract, backend, frontend, integration, critical-money,
+type-check, OpenAPI, i18n and boundary gates. The market matrix must include
+France, Belgium, Switzerland, a coming-soon market, unknown and mismatched
+contexts, plus market-partitioned persistence and deterministic provider
+outcomes.

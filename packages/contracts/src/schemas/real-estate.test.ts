@@ -63,6 +63,8 @@ const property = {
     id: "owner-test",
     displayName: "Marie D.",
     verificationLabels: ["Téléphone vérifié"],
+    rating: 4.9,
+    reviewCount: 7,
   },
   promotion: { urgent: false, featured: false, sponsored: false },
   customAttributes: {},
@@ -102,6 +104,10 @@ describe("Shongre Immo contracts", () => {
       "createdAt",
     ])
       expect(publicProperty).not.toHaveProperty(field);
+    expect(publicProperty.seller).toMatchObject({
+      rating: 4.9,
+      reviewCount: 7,
+    });
   });
 
   it("requires integer minor-unit prices", () => {

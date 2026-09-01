@@ -30,8 +30,9 @@ import {
 } from "../../design-system/primitives/FormField";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { SOLUTION_LIFECYCLE_PRESENTATION } from "../../domains/solutions/solutions.presentation";
+import { solutionLifecycleLabel } from "../../domains/solutions/solutions.presentation";
 import {
   SOLUTION_LIFECYCLES,
   type SolutionDefinition,
@@ -46,7 +47,6 @@ import type { ShongreApplicationId } from "../../platform/applications/applicati
 
 type Draft = Omit<SolutionDefinition, "id" | "createdAt" | "updatedAt">;
 
-const MARKET_OPTIONS = ["FR", "BE", "LU"] as const;
 const DESTINATIONS: Array<{ value: "" | ShongreApplicationId; label: string }> =
   [
     { value: "", label: "Aucune destination" },
@@ -96,6 +96,7 @@ function lifecycleVariant(lifecycle: SolutionLifecycle) {
 
 export function AdminSolutionsPage() {
   const { currentUser, can } = useAuth();
+  const { selectableCountries } = useMarketLocation();
   const toast = useToast();
   const { t } = useTranslation();
   const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
@@ -462,10 +463,7 @@ export function AdminSolutionsPage() {
                       {solution.name}
                     </span>
                     <span className="text-micro text-text-secondary">
-                      {
-                        SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle]
-                          .label
-                      }
+                      {solutionLifecycleLabel(t, solution.lifecycle)}
                       {" · "}
                       {t(
                         solution.catalogVisible
@@ -582,7 +580,7 @@ export function AdminSolutionsPage() {
                   </option>
                   {SOLUTION_LIFECYCLES.map((value) => (
                     <option key={value} value={value}>
-                      {SOLUTION_LIFECYCLE_PRESENTATION[value].label}
+                      {solutionLifecycleLabel(t, value)}
                     </option>
                   ))}
                 </Select>
@@ -633,10 +631,7 @@ export function AdminSolutionsPage() {
                           size="sm"
                           variant={lifecycleVariant(solution.lifecycle)}
                         >
-                          {
-                            SOLUTION_LIFECYCLE_PRESENTATION[solution.lifecycle]
-                              .label
-                          }
+                          {solutionLifecycleLabel(t, solution.lifecycle)}
                         </Badge>
                       </td>
                       <td className="px-3 py-4 text-text-secondary">
@@ -664,10 +659,7 @@ export function AdminSolutionsPage() {
                   </h2>
                   {!creating && selected ? (
                     <Badge variant={lifecycleVariant(selected.lifecycle)}>
-                      {
-                        SOLUTION_LIFECYCLE_PRESENTATION[selected.lifecycle]
-                          .label
-                      }
+                      {solutionLifecycleLabel(t, selected.lifecycle)}
                     </Badge>
                   ) : null}
                 </div>
@@ -748,7 +740,7 @@ export function AdminSolutionsPage() {
                     >
                       {SOLUTION_LIFECYCLES.map((value) => (
                         <option key={value} value={value}>
-                          {SOLUTION_LIFECYCLE_PRESENTATION[value].label}
+                          {solutionLifecycleLabel(t, value)}
                         </option>
                       ))}
                     </Select>
@@ -934,18 +926,18 @@ export function AdminSolutionsPage() {
                     {t("admin.adminSolutionsPage.marches")}
                   </legend>
                   <div className="mt-2 flex flex-wrap gap-4">
-                    {MARKET_OPTIONS.map((market) => (
+                    {selectableCountries.map((country) => (
                       <label
-                        key={market}
+                        key={country.code}
                         className="inline-flex min-h-8 items-center gap-2 text-xs font-semibold"
                       >
                         <input
                           type="checkbox"
-                          checked={draft.markets.includes(market)}
-                          onChange={() => toggleMarket(market)}
+                          checked={draft.markets.includes(country.code)}
+                          onChange={() => toggleMarket(country.code)}
                           className="h-4 w-4 accent-primary"
                         />
-                        {market}
+                        {country.name}
                       </label>
                     ))}
                   </div>
@@ -1127,7 +1119,7 @@ export function AdminSolutionsPage() {
                     >
                       {SOLUTION_LIFECYCLES.map((value) => (
                         <option key={value} value={value}>
-                          {SOLUTION_LIFECYCLE_PRESENTATION[value].label}
+                          {solutionLifecycleLabel(t, value)}
                         </option>
                       ))}
                     </Select>
@@ -1156,7 +1148,9 @@ export function AdminSolutionsPage() {
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => void applyTransition()}
-        title={`Passer à « ${SOLUTION_LIFECYCLE_PRESENTATION[transition].label} » ?`}
+        title={t("admin.solutions.transitionConfirmTitle", {
+          lifecycle: solutionLifecycleLabel(t, transition),
+        })}
         message={
           transition === "RETIRED"
             ? "La solution disparaîtra immédiatement du catalogue public. Son historique sera conservé."
@@ -1179,9 +1173,9 @@ export function AdminSolutionsPage() {
               <li key={entry.id} className="py-4">
                 <p className="text-sm font-bold text-text-main">
                   {entry.from
-                    ? SOLUTION_LIFECYCLE_PRESENTATION[entry.from].label
-                    : "Création"}{" "}
-                  → {SOLUTION_LIFECYCLE_PRESENTATION[entry.to].label}
+                    ? solutionLifecycleLabel(t, entry.from)
+                    : t("admin.solutions.created")}{" "}
+                  → {solutionLifecycleLabel(t, entry.to)}
                 </p>
                 <p className="mt-1 text-xs text-text-secondary">
                   {entry.explanation}

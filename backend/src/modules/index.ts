@@ -33,6 +33,8 @@ export * from "./employment/employment.service.js";
 export * from "./providers/index.js";
 export * from "./support/support.service.js";
 export * from "./feature-flags/index.js";
+export * from "./solutions/index.js";
+export * from "./digital-products/index.js";
 export * from "./moderation/moderation.service.js";
 export * from "./crm/crm.service.js";
 export * from "./crm/crm-shongre.service.js";

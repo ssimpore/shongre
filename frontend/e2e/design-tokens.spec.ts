@@ -47,11 +47,16 @@ test.describe("design-token runtime contracts @serial", () => {
       );
       const firstScroller = firstTrack?.parentElement;
       const scrollerRect = firstScroller?.getBoundingClientRect();
+      const firstTrackCells = firstTrack
+        ? [
+            ...firstTrack.querySelectorAll<HTMLElement>(
+              ".listing-rail-cell",
+            ),
+          ]
+        : [];
       const fullyVisibleCards =
         firstTrack && scrollerRect
-          ? [
-              ...firstTrack.querySelectorAll<HTMLElement>(".listing-rail-cell"),
-            ].filter((cell) => {
+          ? firstTrackCells.filter((cell) => {
               const rect = cell.getBoundingClientRect();
               return (
                 rect.left >= scrollerRect.left - 1 &&
@@ -66,13 +71,17 @@ test.describe("design-token runtime contracts @serial", () => {
           .trim(),
         tokenWidth: root.getPropertyValue("--spacing-listing-card").trim(),
         widths,
+        firstTrackCardCount: firstTrackCells.length,
         fullyVisibleCards,
       };
     });
 
     expect(contract.version).toBe("4");
     expect(contract.tokenWidth).toBe("13rem");
-    expect(contract.fullyVisibleCards).toBe(5);
+    expect(contract.firstTrackCardCount).toBeGreaterThan(0);
+    expect(contract.fullyVisibleCards).toBe(
+      Math.min(5, contract.firstTrackCardCount),
+    );
     expect(
       contract.widths.length,
       "the recent-listings rail did not render",

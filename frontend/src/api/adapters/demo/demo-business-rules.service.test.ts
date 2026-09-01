@@ -1,6 +1,23 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { resolveMarketContext } from "@shongre/contracts";
 import { storageService } from "../../../services/storage.service";
 import { DemoBusinessRulesService } from "./demo-business-rules.service";
+
+const infrastructure = {
+  franceDomain: "shongre.fr",
+  globalDomain: "shongre.com",
+  canonicalProtocol: "https" as const,
+};
+const france = resolveMarketContext({
+  hostname: "shongre.fr",
+  pathname: "/",
+  infrastructure,
+});
+const belgium = resolveMarketContext({
+  hostname: "shongre.com",
+  pathname: "/be",
+  infrastructure,
+});
 
 describe("DemoBusinessRulesService billing lifecycle", () => {
   beforeEach(() => {
@@ -9,8 +26,9 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("presents the target catalogue without replacing historical active evidence", async () => {
     const service = new DemoBusinessRulesService();
-    const activeCatalog = await service.getCatalog("FR");
-    const presentation = await service.getProfessionalCatalogPresentation("FR");
+    const activeCatalog = await service.getCatalog(france);
+    const presentation =
+      await service.getProfessionalCatalogPresentation(france);
 
     expect(activeCatalog.versionNumber).toBe(3);
     expect(
@@ -48,8 +66,8 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       marketCode: "FR" as const,
       idempotencyKey: "frontend-quote-urgent-01",
     };
-    const first = await service.createQuote(request);
-    const second = await service.createQuote(request);
+    const first = await service.createQuote(france, request);
+    const second = await service.createQuote(france, request);
     expect(second).toEqual(first);
     expect(first.totalMinor).toBe(
       first.subtotalMinor - first.discountMinor + first.taxMinor,
@@ -60,7 +78,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
   it("quotes the Founding Pros free phase before its fixed discount periods", async () => {
     storageService.setCurrentUserKey("pro_auto_michel");
     const service = new DemoBusinessRulesService();
-    const quote = await service.createQuote({
+    const quote = await service.createQuote(france, {
       productIds: ["auto.dealer.growth"],
       marketCode: "FR",
       categoryId: "vehicles",
@@ -79,7 +97,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("explains the specific Auto quota in a deterministic simulation", async () => {
     const service = new DemoBusinessRulesService();
-    const result = await service.evaluate({
+    const result = await service.evaluate(france, {
       marketCode: "FR",
       currency: "EUR",
       userType: "individual",
@@ -95,13 +113,17 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("materializes purchased entitlements from the quoted catalog snapshot", async () => {
     const service = new DemoBusinessRulesService();
-    const quote = await service.createQuote({
+    const quote = await service.createQuote(france, {
       productIds: ["premium.search_bump"],
       marketCode: "FR",
       idempotencyKey: "frontend-entitlement-quote-02",
     });
-    await service.createCheckout(quote.id, "frontend-entitlement-checkout-02");
-    expect(await service.getActiveEntitlements()).toContainEqual(
+    await service.createCheckout(
+      france,
+      quote.id,
+      "frontend-entitlement-checkout-02",
+    );
+    expect(await service.getActiveEntitlements(france)).toContainEqual(
       expect.objectContaining({
         productId: "premium.search_bump",
         key: "searchBumpCredits",
@@ -113,30 +135,55 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
   it("fails closed when monetization is not configured for the selected market", async () => {
     const service = new DemoBusinessRulesService();
 
-    await expect(service.getCatalog("BE")).rejects.toThrow(
+    await expect(service.getCatalog(belgium)).rejects.toThrow(
       "Configuration commerciale indisponible",
     );
+  });
+
+  it("does not expose France billing state through the Belgium context", async () => {
+    const service = new DemoBusinessRulesService();
+    const billing = await service.getBillingOverview(belgium);
+    expect(billing).toMatchObject({
+      subscriptions: [],
+      entitlements: [],
+      orders: [],
+      payments: [],
+      invoices: [],
+      refunds: [],
+    });
+  });
+
+  it("rejects a quote request that conflicts with the canonical context", async () => {
+    const service = new DemoBusinessRulesService();
+    await expect(
+      service.createQuote(france, {
+        productIds: ["premium.urgent"],
+        marketCode: "BE",
+        idempotencyKey: "demo-context-mismatch-quote-01",
+      }),
+    ).rejects.toThrow("contexte actif");
   });
 
   it("does not grant rights when the deterministic payment needs action", async () => {
     storageService.setCurrentUserKey("buyer_payment_action");
     const service = new DemoBusinessRulesService();
-    const quote = await service.createQuote({
+    const quote = await service.createQuote(france, {
       productIds: ["premium.search_bump"],
       marketCode: "FR",
       idempotencyKey: "frontend-payment-action-quote-01",
     });
-    const before = await service.getActiveEntitlements();
+    const before = await service.getActiveEntitlements(france);
 
     const order = await service.createCheckout(
+      france,
       quote.id,
       "frontend-checkout-requires-action-01",
     );
-    const after = await service.getActiveEntitlements();
+    const after = await service.getActiveEntitlements(france);
 
     expect(order.status).toBe("requires_action");
     expect(after).toEqual(before);
-    expect((await service.getBillingOverview()).payments).toContainEqual(
+    expect((await service.getBillingOverview(france)).payments).toContainEqual(
       expect.objectContaining({ orderId: order.id, status: "requires_action" }),
     );
   });
@@ -150,36 +197,40 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     async (expectedStatus, checkoutKey) => {
       storageService.setCurrentUserKey("buyer_thomas");
       const service = new DemoBusinessRulesService();
-      const quote = await service.createQuote({
+      const quote = await service.createQuote(france, {
         productIds: ["premium.urgent"],
         marketCode: "FR",
         idempotencyKey: `quote-${checkoutKey}`,
       });
-      const before = await service.getActiveEntitlements();
+      const before = await service.getActiveEntitlements(france);
 
-      const order = await service.createCheckout(quote.id, checkoutKey);
+      const order = await service.createCheckout(france, quote.id, checkoutKey);
 
       expect(order.status).toBe(expectedStatus);
-      expect(await service.getActiveEntitlements()).toEqual(before);
+      expect(await service.getActiveEntitlements(france)).toEqual(before);
     },
   );
 
   it("keeps provider outages side-effect free in deterministic demo mode", async () => {
     storageService.setCurrentUserKey("seller_camille");
     const service = new DemoBusinessRulesService();
-    const quote = await service.createQuote({
+    const quote = await service.createQuote(france, {
       productIds: ["premium.urgent"],
       marketCode: "FR",
       idempotencyKey: "frontend-provider-outage-quote-01",
     });
 
-    const before = await service.getActiveEntitlements();
+    const before = await service.getActiveEntitlements(france);
     await expect(
-      service.createCheckout(quote.id, "frontend-checkout-provider-outage-01"),
+      service.createCheckout(
+        france,
+        quote.id,
+        "frontend-checkout-provider-outage-01",
+      ),
     ).rejects.toThrow("indisponible");
-    expect(await service.getActiveEntitlements()).toEqual(before);
+    expect(await service.getActiveEntitlements(france)).toEqual(before);
     expect(
-      (await service.getBillingOverview()).orders.some(
+      (await service.getBillingOverview(france)).orders.some(
         (order) => order.quoteId === quote.id,
       ),
     ).toBe(false);
@@ -187,8 +238,8 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("keeps billing state scoped to the active account and supports plan changes", async () => {
     const service = new DemoBusinessRulesService();
-    const catalog = await service.getCatalog("FR");
-    const initial = await service.getBillingOverview();
+    const catalog = await service.getCatalog(france);
+    const initial = await service.getBillingOverview(france);
     expect(initial.currentSubscription?.productId).toBe("plan.pro.business");
     expect(
       initial.invoices.find(
@@ -209,11 +260,11 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       expectedSubscriptionUpdatedAt: initial.currentSubscription!.updatedAt,
       idempotencyKey: "test-auto-business-upgrade-1",
     };
-    const preview = await service.previewSubscriptionChange(request);
+    const preview = await service.previewSubscriptionChange(france, request);
     expect(preview.effectiveAt).toBe("immediately");
     expect(preview.tax.amountMinor).toBeGreaterThan(0);
 
-    const changed = await service.applySubscriptionChange(request);
+    const changed = await service.applySubscriptionChange(france, request);
     expect(changed).toMatchObject({
       productId: "auto.dealer.growth",
       productVersionId: target.versionId,
@@ -221,8 +272,10 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       marketCode: "FR",
       currency: "EUR",
     });
-    expect(await service.applySubscriptionChange(request)).toEqual(changed);
-    const changedBilling = await service.getBillingOverview();
+    expect(await service.applySubscriptionChange(france, request)).toEqual(
+      changed,
+    );
+    const changedBilling = await service.getBillingOverview(france);
     expect(
       changedBilling.effectiveEntitlements.find(
         (entitlement) =>
@@ -257,7 +310,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     const downgradePrice = downgrade.prices.find(
       (price) => price.billingPeriod === "month",
     )!;
-    const scheduled = await service.applySubscriptionChange({
+    const scheduled = await service.applySubscriptionChange(france, {
       subscriptionId: changed.id,
       targetProductId: downgrade.id,
       targetPriceId: downgradePrice.id,
@@ -273,19 +326,19 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       scheduledChangeAt: changed.currentPeriodEnd,
     });
     expect(
-      (await service.getBillingOverview()).effectiveEntitlements.find(
+      (await service.getBillingOverview(france)).effectiveEntitlements.find(
         (entitlement) => entitlement.key === "maxActiveVehicles",
       )?.value,
     ).toBe(80);
 
-    const cancellation = await service.updateSubscriptionCancellation({
+    const cancellation = await service.updateSubscriptionCancellation(france, {
       subscriptionId: changed.id,
       cancelAtPeriodEnd: true,
     });
     expect(cancellation.status).toBe("cancellation_pending");
     expect(cancellation.cancelAtPeriodEnd).toBe(true);
 
-    const reactivated = await service.updateSubscriptionCancellation({
+    const reactivated = await service.updateSubscriptionCancellation(france, {
       subscriptionId: changed.id,
       cancelAtPeriodEnd: false,
     });
@@ -294,8 +347,8 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("rejects a plan change based on stale subscription state", async () => {
     const service = new DemoBusinessRulesService();
-    const catalog = await service.getCatalog("FR");
-    const subscription = (await service.getBillingOverview())
+    const catalog = await service.getCatalog(france);
+    const subscription = (await service.getBillingOverview(france))
       .currentSubscription!;
     const target = catalog.products.find(
       (product) => product.id === "auto.dealer.growth",
@@ -305,7 +358,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
     )!;
 
     await expect(
-      service.previewSubscriptionChange({
+      service.previewSubscriptionChange(france, {
         subscriptionId: subscription.id,
         targetProductId: target.id,
         targetPriceId: targetPrice.id,
@@ -317,9 +370,9 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
 
   it("does not expose one account billing data to another account", async () => {
     const service = new DemoBusinessRulesService();
-    await service.getBillingOverview();
+    await service.getBillingOverview(france);
     storageService.setCurrentUserKey("buyer_thomas");
-    const buyerBilling = await service.getBillingOverview();
+    const buyerBilling = await service.getBillingOverview(france);
     expect(buyerBilling.currentSubscription).toBeUndefined();
     expect(buyerBilling.invoices).toEqual([]);
   });
@@ -327,7 +380,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
   it("quotes a vertical trial once and exposes scoped effective entitlements", async () => {
     storageService.setCurrentUserKey("pro_auto_michel");
     const service = new DemoBusinessRulesService();
-    const quote = await service.createQuote({
+    const quote = await service.createQuote(france, {
       productIds: ["auto.dealer.starter"],
       marketCode: "FR",
       categoryId: "vehicles",
@@ -338,8 +391,12 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       reasonCode: "TRIAL_ELIGIBLE",
       trial: { productId: "auto.dealer.starter", durationDays: 30 },
     });
-    await service.createCheckout(quote.id, "frontend-auto-trial-checkout-01");
-    const overview = await service.getBillingOverview();
+    await service.createCheckout(
+      france,
+      quote.id,
+      "frontend-auto-trial-checkout-01",
+    );
+    const overview = await service.getBillingOverview(france);
     expect(
       overview.subscriptions.find(
         (entry) => entry.productId === "auto.dealer.starter",
@@ -375,7 +432,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
   it("requires an authorized second actor for an audited complimentary plan grant", async () => {
     storageService.setCurrentUserKey("admin_antoine");
     const service = new DemoBusinessRulesService();
-    const catalog = await service.getCatalog("FR");
+    const catalog = await service.getCatalog(france);
     const product = catalog.products.find(
       (candidate) => candidate.id === "course.school.organization",
     )!;
@@ -403,7 +460,7 @@ describe("DemoBusinessRulesService billing lifecycle", () => {
       idempotencyKey: "complimentary-decision-course-001",
     });
     expect(decision.grantId).toMatch(/^complimentary_grant_/);
-    const overview = await service.getAdminOverview("FR");
+    const overview = await service.getAdminOverview(france);
     expect(overview.entitlements).toContainEqual(
       expect.objectContaining({
         accountId: "organization_partner_demo",

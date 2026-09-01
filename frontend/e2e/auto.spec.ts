@@ -115,6 +115,37 @@ test.describe("Shongre Auto", () => {
     ).toHaveCount(1);
   });
 
+  test("vehicle seller identity opens the professional storefront", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const sellerLink = page.getByRole("link", {
+      name: "Visiter la boutique de Auto Select Lyon",
+    });
+    await expect(sellerLink.getByText("Pro", { exact: true })).toBeVisible();
+    await expect(sellerLink).toContainText("4,8");
+    await expect(sellerLink).toContainText("64 avis");
+    await expect(sellerLink).toContainText("Lyon (69)");
+    await expect(
+      sellerLink.getByLabel("Note 4,8 sur 5, 64 avis"),
+    ).toBeVisible();
+    await expect(sellerLink).toHaveAttribute(
+      "href",
+      "/boutique/auto-select-lyon",
+    );
+    await sellerLink.click();
+
+    await expect(page).toHaveURL(/\/boutique\/auto-select-lyon$/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: /Auto Select Lyon/i }),
+    ).toBeVisible();
+  });
+
   test("vehicle detail supports multiple publication photos without breaking single-photo listings", async ({
     page,
   }) => {

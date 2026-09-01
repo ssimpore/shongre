@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  crossesProductionMarketOrigin,
   publicListingUrl,
   publicRouteUrl,
   sanitizeMarketSwitchQuery,
+  shouldUseAuthenticatedMarketHandoff,
 } from "./market-routing";
 
 const infrastructure = {
@@ -46,5 +48,45 @@ describe("public country URL builders", () => {
       ),
     );
     expect(safe.toString()).toBe("q=velo&sort=recent&attr.color=blue");
+  });
+
+  it("requires explicit cross-domain confirmation outside local development", () => {
+    expect(
+      crossesProductionMarketOrigin({
+        currentOrigin: "https://shongre.fr",
+        currentHostname: "shongre.fr",
+        destination: "https://shongre.com/be/recherche?q=velo",
+      }),
+    ).toBe(true);
+    expect(
+      crossesProductionMarketOrigin({
+        currentOrigin: "http://127.0.0.1:3000",
+        currentHostname: "127.0.0.1",
+        destination: "http://127.0.0.1:3000/be/recherche?q=velo",
+      }),
+    ).toBe(false);
+  });
+
+  it("uses the one-use authentication handoff only for authenticated cross-domain moves", () => {
+    const crossDomain = {
+      currentOrigin: "https://shongre.fr",
+      currentHostname: "shongre.fr",
+      destination: "https://shongre.com/ch/annonce/123",
+    };
+    expect(
+      shouldUseAuthenticatedMarketHandoff({
+        ...crossDomain,
+        isAuthenticated: true,
+      }),
+    ).toBe(true);
+    expect(
+      shouldUseAuthenticatedMarketHandoff({
+        ...crossDomain,
+        isAuthenticated: false,
+      }),
+    ).toBe(false);
+    expect(crossDomain.destination).not.toMatch(
+      /token|access_token|refresh_token/,
+    );
   });
 });

@@ -98,7 +98,7 @@ test.describe("multi-country public routing", () => {
     }
   });
 
-  test("keeps a manual market choice until the user resets it", async ({
+  test("keeps a manual choice authoritative without silently changing a direct request", async ({
     page,
   }) => {
     const defaultCountry = getDefaultCountryConfig();
@@ -124,7 +124,10 @@ test.describe("multi-country public routing", () => {
     await expect(page).toHaveURL(new RegExp(`${alternative.basePath}(?:\\?|$)`));
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveURL(new RegExp(`${alternative.basePath}(?:\\?|$)`));
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: /Vous semblez être en/i }),
+    ).toHaveCount(0);
 
     await page
       .getByRole("button", { name: /préférences régionales : Français/i })

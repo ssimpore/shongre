@@ -130,9 +130,13 @@ export function translateWithCatalogue(
   key: MessageKey,
   locale: string,
   options?: TranslateOptions,
+  supplemental?: MessageCatalogue,
 ): string {
   const lookup = (candidate: string): string | undefined =>
     (active as Record<string, string | undefined>)[candidate] ??
+    (supplemental as Record<string, string | undefined> | undefined)?.[
+      candidate
+    ] ??
     (messagesFr as Record<string, string | undefined>)[candidate];
 
   const effectiveKey =
@@ -149,6 +153,23 @@ export function translateWithCatalogue(
   if (template === undefined) return key;
 
   return interpolate(template, options);
+}
+
+/** Resolve copy supplied by a lazily loaded feature catalogue. */
+export function translateWithSupplementalCatalogue(
+  supplemental: MessageCatalogue,
+  key: MessageKey,
+  locale: string = DEFAULT_LOCALE,
+  options?: TranslateOptions,
+): string {
+  const resolved = resolveLocale(locale);
+  return translateWithCatalogue(
+    CATALOGUES[resolved] ?? {},
+    key,
+    resolved,
+    options,
+    supplemental,
+  );
 }
 
 /**

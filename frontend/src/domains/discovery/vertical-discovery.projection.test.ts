@@ -113,8 +113,8 @@ describe("canonical vertical discovery projection", () => {
 
   it("preserves public salary ranges, periods and undisclosed remuneration", () => {
     const hourlyJob = structuredClone(
-      EMPLOYMENT_DEMO_JOBS.find(
-        (job) => job.salary?.frequencyId.endsWith(".hour"),
+      EMPLOYMENT_DEMO_JOBS.find((job) =>
+        job.salary?.frequencyId.endsWith(".hour"),
       )!,
     );
     const hourlyListing = projectEmploymentJob(hourlyJob);

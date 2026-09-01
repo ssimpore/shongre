@@ -30,7 +30,6 @@ export function resolveSolutionLaunch(input: {
     return {
       allowed: false,
       reason: "RETIRED",
-      actionLabel: "Solution retirée",
     };
   }
   if (
@@ -40,39 +39,31 @@ export function resolveSolutionLaunch(input: {
     return {
       allowed: false,
       reason: "ACCESS_RESTRICTED",
-      actionLabel: "Accès restreint",
     };
   }
   if (solution.lifecycle === "COMING_SOON") {
     return {
       allowed: false,
       reason: "COMING_SOON",
-      actionLabel: "Être informé",
-      message: "Cette solution sera disponible prochainement.",
     };
   }
   if (solution.lifecycle === "MAINTENANCE") {
     return {
       allowed: false,
       reason: "MAINTENANCE",
-      actionLabel: "Maintenance en cours",
-      message:
-        solution.maintenanceMessage ||
-        "Cette solution est momentanément indisponible.",
+      message: solution.maintenanceMessage,
     };
   }
   if (!solution.markets.includes(marketCode.toUpperCase())) {
     return {
       allowed: false,
       reason: "MARKET_UNAVAILABLE",
-      actionLabel: "Indisponible dans ce marché",
     };
   }
   if (solution.requiresAuthentication && !user) {
     return {
       allowed: false,
       reason: "AUTHENTICATION_REQUIRED",
-      actionLabel: "Se connecter pour continuer",
     };
   }
   const productId = productForEntitlement(solution);
@@ -84,25 +75,14 @@ export function resolveSolutionLaunch(input: {
     return {
       allowed: false,
       reason: "ENTITLEMENT_REQUIRED",
-      actionLabel: "Activer cette solution",
     };
   }
   if (!solution.launchApplicationId) {
     return {
       allowed: false,
       reason: "DESTINATION_UNAVAILABLE",
-      actionLabel: "Destination indisponible",
     };
   }
-
-  const actionLabel =
-    solution.slug === "prospects"
-      ? "Ouvrir Prospects"
-      : solution.slug === "facturation"
-        ? "Découvrir Facturation"
-        : solution.slug === "marketplace"
-          ? "Ouvrir la Marketplace"
-          : "Ouvrir la solution";
   let href: string;
   try {
     href = resolveApplicationHref(
@@ -114,18 +94,13 @@ export function resolveSolutionLaunch(input: {
     return {
       allowed: false,
       reason: "DESTINATION_UNAVAILABLE",
-      actionLabel: "Destination indisponible",
     };
   }
 
   return {
     allowed: true,
     reason: solution.lifecycle === "DEPRECATED" ? "DEPRECATED" : "READY",
-    actionLabel,
     href,
-    message:
-      solution.lifecycle === "DEPRECATED"
-        ? solution.notice || "Une solution de remplacement est recommandée."
-        : undefined,
+    message: solution.lifecycle === "DEPRECATED" ? solution.notice : undefined,
   };
 }

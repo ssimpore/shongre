@@ -13,6 +13,9 @@ export interface BackendListing {
   createdAt: string;
   deliveryAvailable?: boolean;
   onlinePaymentAvailable?: boolean;
+  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
+  requiresPhysicalDelivery?: boolean;
+  productVersion?: string;
   isUrgent?: boolean;
   isFeatured?: boolean;
   seller?: {
@@ -46,6 +49,9 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
     conditionLabel: item.condition,
     publishedAt: item.createdAt,
     deliveryAvailable: Boolean(item.deliveryAvailable),
+    fulfillmentTypes: item.fulfillmentTypes,
+    requiresPhysicalDelivery: item.requiresPhysicalDelivery,
+    productVersion: item.productVersion,
     onlinePaymentAvailable: Boolean(item.onlinePaymentAvailable),
     seller: item.seller
       ? {

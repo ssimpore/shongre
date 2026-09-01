@@ -290,9 +290,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         errorMessage: "Vous devez être connecté pour effectuer cette action.",
       };
     }
-    const { authService: demoProfileUpgradeService } = await import(
-      "../../domains/auth/auth.service"
-    );
+    const { authService: demoProfileUpgradeService } =
+      await import("../../domains/auth/auth.service");
     const result = await demoProfileUpgradeService.upgradeIndividualToPro(
       currentUser.id,
       proData,
@@ -317,9 +316,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!currentUser) return;
-    const { userRepository } = await import(
-      "../../repositories/user.repository"
-    );
+    const { userRepository } =
+      await import("../../repositories/user.repository");
     const updated = await userRepository.updateProfile(currentUser.id, updates);
     setCurrentUser(updated);
   };

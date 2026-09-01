@@ -33,7 +33,6 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
-import { services } from "../../api";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { ScrollableRegion } from "../../design-system";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -49,6 +48,7 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useAuthorization } from "../../security/useAuthorization";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { useMarketBusinessRules } from "../../domains/monetization/useMarketBusinessRules";
 
 type BillingInterval = "month" | "year";
 
@@ -133,6 +133,7 @@ export const ProPlansPage: React.FC = () => {
   const { can } = useAuthorization();
   const { canUseDemoMarketplace } = useStaffMarketplaceAccess();
   const { activeMarket } = useMarketLocation();
+  const marketBusinessRules = useMarketBusinessRules();
   const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
   const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -176,19 +177,17 @@ export const ProPlansPage: React.FC = () => {
 
   const loadCatalog = useCallback(async () => {
     setCatalogPresentation(
-      await services.businessRules.getProfessionalCatalogPresentation(
-        activeMarket.code,
-      ),
+      await marketBusinessRules.getProfessionalCatalogPresentation(),
     );
-  }, [activeMarket.code]);
+  }, [marketBusinessRules]);
 
   const loadBilling = useCallback(async () => {
     if (!canManageSubscriptions) {
       setBilling(null);
       return;
     }
-    setBilling(await services.businessRules.getBillingOverview());
-  }, [canManageSubscriptions]);
+    setBilling(await marketBusinessRules.getBillingOverview());
+  }, [canManageSubscriptions, marketBusinessRules]);
 
   const refreshCommercialState = useCallback(
     () => Promise.all([loadCatalog(), loadBilling()]),
@@ -392,7 +391,7 @@ export const ProPlansPage: React.FC = () => {
     try {
       if (sourceSubscription) {
         setChangePreview(
-          await services.businessRules.previewSubscriptionChange({
+          await marketBusinessRules.previewSubscriptionChange({
             subscriptionId: sourceSubscription.id,
             targetProductId: product.id,
             targetPriceId: price.id,
@@ -402,7 +401,7 @@ export const ProPlansPage: React.FC = () => {
         );
       } else {
         setQuote(
-          await services.businessRules.createQuote({
+          await marketBusinessRules.createQuote({
             productIds: [product.id],
             priceIds: { [product.id]: price.id },
             marketCode: activeMarket.code,
@@ -431,7 +430,7 @@ export const ProPlansPage: React.FC = () => {
     operationSequence.current += 1;
     try {
       setQuote(
-        await services.businessRules.createQuote({
+        await marketBusinessRules.createQuote({
           productIds: [selectedProduct.id],
           priceIds: { [selectedProduct.id]: selectedPrice.id },
           marketCode: activeMarket.code,
@@ -459,7 +458,7 @@ export const ProPlansPage: React.FC = () => {
     const operationKey = `confirm:${selectedProduct.id}:${selectedPrice.id}:${operationSequence.current}`;
     try {
       if (changePreview && changeSourceSubscription) {
-        await services.businessRules.applySubscriptionChange({
+        await marketBusinessRules.applySubscriptionChange({
           subscriptionId: changeSourceSubscription.id,
           targetProductId: selectedProduct.id,
           targetPriceId: selectedPrice.id,
@@ -472,7 +471,7 @@ export const ProPlansPage: React.FC = () => {
             : `Le changement est programmé au ${formatDate(changePreview.nextBillingAt)}.`,
         );
       } else if (quote) {
-        const order = await services.businessRules.createCheckout(
+        const order = await marketBusinessRules.createCheckout(
           quote.id,
           operationKey,
         );
@@ -509,7 +508,7 @@ export const ProPlansPage: React.FC = () => {
   const toggleCancellation = async () => {
     if (!currentSubscription) return;
     try {
-      await services.businessRules.updateSubscriptionCancellation({
+      await marketBusinessRules.updateSubscriptionCancellation({
         subscriptionId: currentSubscription.id,
         cancelAtPeriodEnd: !currentSubscription.cancelAtPeriodEnd,
       });
@@ -995,7 +994,7 @@ export const ProPlansPage: React.FC = () => {
                         <p className="flex-1 text-xs leading-relaxed text-text-secondary">
                           {boost.description}
                         </p>
-                        <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-3">
+                        <div className="mt-4 flex flex-col items-stretch gap-3 border-t border-border-subtle pt-3 sm:flex-row sm:items-center sm:justify-between">
                           <strong className="text-base text-text-main">
                             {formatMoney(
                               price.amount.amountMinor,
@@ -1013,6 +1012,7 @@ export const ProPlansPage: React.FC = () => {
                               data-marketplace-action="promotion.start"
                               variant="outline"
                               size="sm"
+                              className="max-w-full self-start sm:self-auto"
                               rightIcon={
                                 <ChevronRight className="h-icon-md w-icon-md" />
                               }
@@ -1024,6 +1024,7 @@ export const ProPlansPage: React.FC = () => {
                               data-marketplace-action="promotion.start"
                               variant="outline"
                               size="sm"
+                              className="max-w-full self-start sm:self-auto"
                               disabled
                               rightIcon={
                                 <ChevronRight className="h-icon-md w-icon-md" />

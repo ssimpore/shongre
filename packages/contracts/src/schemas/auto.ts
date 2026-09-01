@@ -353,6 +353,8 @@ export const vehicleSellerSummarySchema = z.object({
   logoUrl: z.string().url().optional(),
   locationLabel: z.string(),
   responseTimeMinutes: z.number().int().nonnegative().optional(),
+  rating: z.number().min(0).max(5).optional(),
+  reviewCount: z.number().int().nonnegative().optional(),
   memberSinceYear: z.number().int().min(2000).max(2200),
   verifiedBusiness: z.boolean(),
 });

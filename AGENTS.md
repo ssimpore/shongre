@@ -267,7 +267,12 @@ component → hook/controller → service contract → demo or HTTP adapter
 - Separate public media from private message, payment, and verification
   documents. Storage keys are not proof of ownership; private uploads require
   authenticated, authorized, documented flows and malware/quarantine controls
-  where configured.
+  where configured. Paid digital assets and access secrets remain private and
+  versioned; permanent URLs, raw storage keys, credentials, and secret links
+  never enter public contracts. Secret payloads are encrypted by the backend and
+  decrypted only after an entitlement-scoped, audited access decision. Paid-file
+  upload completion queues a privacy-safe durable scan event; a worker validates,
+  scans, and promotes clean content into private storage with bounded retries.
 - Database work must consider real query patterns, bounded pagination, N+1
   behavior, tenant/market indexes, and concurrency. Use `EXPLAIN` and production
   evidence for performance decisions; do not index every column speculatively.
@@ -491,7 +496,9 @@ France-only happy path is insufficient for market-sensitive work.
   rather than category condition trees. Header category-bar selection,
   activation, and display order are market-scoped taxonomy configuration managed
   through the authorized admin service; clients consume its public projection
-  and must not hardcode an editorial category list.
+  and must not hardcode an editorial category list. Fulfillment behavior is an
+  explicit typed listing and order model; never infer physical or digital
+  fulfillment from a category ID, slug, name, label, or translated copy.
 - A listing is stored once and may have explicit market publications. The shared
   record alone does not prove availability. Backend services own lifecycle
   transitions across draft, review, published, reserved, sold, expired,
@@ -542,7 +549,12 @@ France-only happy path is insufficient for market-sensitive work.
   une**. Promotion state must account for scheduling and expiry rather than a
   stale boolean.
 - Payment, escrow, refund, payout, reservation, pickup, handover, cancellation,
-  and dispute state are backend-authoritative and concurrency-safe. Demo UI must
+  dispute, digital entitlement, credential assignment, download, reveal, and
+  provisioning state are backend-authoritative and concurrency-safe. Digital
+  access is granted only from an idempotently processed authoritative payment
+  state and uses versioned fulfillment evidence plus short-lived scoped grants;
+  redirects, query parameters, client state, and seller actions are never proof
+  of payment. Demo UI must
   clearly represent simulated outcomes and never claim that a live payment
   occurred.
 - Messaging, notifications, reports, and blocking use centralized services and

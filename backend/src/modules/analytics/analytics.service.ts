@@ -149,6 +149,18 @@ export class AnalyticsService {
     return this.repository.search(query);
   }
   monetization(query: AnalyticsDashboardQuery) {
+    const market =
+      query.marketCode === "ALL"
+        ? undefined
+        : getCountryConfig(query.marketCode);
+    if (!market?.enabled) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Un marché explicite est requis pour agréger des données monétaires.",
+        details: { reasonCode: "MONETIZATION_ANALYTICS_MARKET_REQUIRED" },
+      });
+    }
     return this.repository.monetization(query);
   }
   seo(query: AnalyticsDashboardQuery) {

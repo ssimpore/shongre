@@ -5,6 +5,8 @@ import { buildSrcSet } from "./responsiveImage";
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Required: pass `''` only for images that are purely decorative. */
   alt: string;
+  /** Optional owned asset to render when `src` is absent or fails to load. */
+  fallbackSrc?: string;
   /** Icon size used by the fallback placeholder. */
   fallbackIconClassName?: string;
   /**
@@ -29,8 +31,9 @@ export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
  * Listing photos come from third-party URLs that can 404, hotlink-block, or be
  * removed by the seller. A bare `<img>` renders the browser's broken-image
  * chrome in those cases, which looked like a rendering bug rather than missing
- * media. This renders a neutral, on-brand placeholder instead and applies the
- * project's standard `loading="lazy"` / `referrerPolicy` defaults.
+ * media. This first tries an owned caller-supplied fallback and otherwise
+ * renders the neutral placeholder, while applying the project's standard
+ * `loading="lazy"` / `referrerPolicy` defaults.
  *
  * It also owns the two things every consumer would otherwise have to remember:
  *
@@ -47,6 +50,7 @@ export const Image: React.FC<ImageProps> = ({
   alt,
   className = "",
   fallbackIconClassName = "w-5 h-5",
+  fallbackSrc,
   loading,
   referrerPolicy = "no-referrer",
   decoding = "async",
@@ -59,6 +63,7 @@ export const Image: React.FC<ImageProps> = ({
 }) => {
   const [hasFailed, setHasFailed] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
 
   // A new src deserves a fresh attempt rather than inheriting the failed state.
   // Keep this reset in an effect instead of updating state during render; the
@@ -67,9 +72,13 @@ export const Image: React.FC<ImageProps> = ({
   useEffect(() => {
     setHasFailed(false);
     setHasArrived(false);
-  }, [src]);
+    setIsUsingFallback(false);
+  }, [fallbackSrc, src]);
 
-  if (hasFailed || !src) {
+  const isFallbackSource = !src || isUsingFallback;
+  const resolvedSrc = isFallbackSource ? fallbackSrc : src;
+
+  if (hasFailed || !resolvedSrc) {
     return (
       <div
         role="img"
@@ -82,11 +91,13 @@ export const Image: React.FC<ImageProps> = ({
   }
 
   const srcSet =
-    sizes && typeof src === "string" ? buildSrcSet(src) : undefined;
+    sizes && typeof resolvedSrc === "string"
+      ? buildSrcSet(resolvedSrc)
+      : undefined;
 
   return (
     <img
-      src={src}
+      src={resolvedSrc}
       srcSet={srcSet}
       sizes={srcSet ? sizes : undefined}
       alt={alt}
@@ -105,7 +116,12 @@ export const Image: React.FC<ImageProps> = ({
         onLoad?.(e);
       }}
       onError={(e) => {
-        setHasFailed(true);
+        if (!isFallbackSource && fallbackSrc) {
+          setIsUsingFallback(true);
+          setHasArrived(false);
+        } else {
+          setHasFailed(true);
+        }
         onError?.(e);
       }}
       {...props}

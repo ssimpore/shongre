@@ -8,8 +8,8 @@ describe("canonical taxonomy coverage gate", () => {
   it("keeps every active publishable leaf complete", () => {
     const report = buildTaxonomyCoverageReport();
 
-    expect(report.totals.roots).toBe(18);
-    expect(report.totals.publishableLeaves).toBe(208);
+    expect(report.totals.roots).toBe(19);
+    expect(report.totals.publishableLeaves).toBe(212);
     expect(report.totals.completeLeaves).toBe(report.totals.publishableLeaves);
     expect(report.blockingIssues).toEqual([]);
   });

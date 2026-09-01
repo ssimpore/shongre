@@ -58,6 +58,7 @@ import { AdminCommissionPanel } from "./AdminCommissionPanel";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { useMarketBusinessRules } from "../../domains/monetization/useMarketBusinessRules";
 
 type TabId =
   | "catalog"
@@ -177,6 +178,7 @@ function formatRuleOutcomeValue(
 export const AdminMonetizationPage: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
+  const marketBusinessRules = useMarketBusinessRules();
   const {
     formatDate,
     formatDateTime,
@@ -271,9 +273,7 @@ export const AdminMonetizationPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await services.businessRules.getAdminOverview(
-        activeMarket.code,
-      );
+      const result = await marketBusinessRules.getAdminOverview();
       setOverview(result);
       setSelectedProductId(
         (current) => current || result.catalog.products[0]?.id || null,
@@ -289,7 +289,7 @@ export const AdminMonetizationPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeMarket.code]);
+  }, [marketBusinessRules]);
 
   useEffect(() => {
     void loadOverview();
@@ -357,7 +357,7 @@ export const AdminMonetizationPage: React.FC = () => {
     setError(null);
     try {
       setEvaluation(
-        await services.businessRules.evaluate({
+        await marketBusinessRules.evaluate({
           marketCode: activeMarket.code,
           currency: activeMarket.currency,
           userType: simulation.userType,

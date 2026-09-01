@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **453**
-- Specification SHA-256: `03e21f09dd1142c1`
+- Operations: **488**
+- Specification SHA-256: `d55b53a9bb091912`
 
 ## account
 
@@ -113,6 +113,17 @@
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/admin/reports/{reportId}/resolve` | `postAdminReportsByReportIdResolve` | `permission` | `report.review` | `200` |
 | `GET` | `/admin/reports` | `getAdminReports` | `permission` | `report.review` | `200` |
+
+## admin-solutions
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/admin/solutions/{solutionId}/lifecycle-history` | `getAdminSolutionLifecycleHistory` | `permission` | `admin.configuration.manage` | `200` |
+| `POST` | `/admin/solutions/{solutionId}/lifecycle` | `postAdminSolutionLifecycle` | `permission` | `admin.configuration.manage` | `200` |
+| `PATCH` | `/admin/solutions/{solutionId}` | `patchAdminSolution` | `permission` | `admin.configuration.manage` | `200` |
+| `PUT` | `/admin/solutions/order` | `putAdminSolutionsOrder` | `permission` | `admin.configuration.manage` | `200` |
+| `GET` | `/admin/solutions` | `getAdminSolutions` | `permission` | `admin.configuration.manage` | `200` |
+| `POST` | `/admin/solutions` | `postAdminSolution` | `permission` | `admin.configuration.manage` | `201` |
 
 ## admin-stats
 
@@ -294,6 +305,43 @@
 | `GET` | `/crm/tasks` | `listCrmTasks` | `permission` | `crm.tasks.read` | `200` |
 | `POST` | `/crm/tasks` | `createCrmTask` | `permission` | `crm.tasks.create` | `201` |
 | `GET` | `/provider-connections` | `listProviderConnections` | `permission` | `provider.configuration.read` | `200` |
+
+## digital-products-admin
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/digital/admin/assets/{id}/moderation` | `postDigitalAssetModeration` | `permission` | `moderation.action` | `200` |
+| `POST` | `/digital/admin/fulfillment-versions/{id}/moderation` | `postDigitalFulfillmentModeration` | `permission` | `moderation.action` | `200` |
+| `GET` | `/digital/admin/overview` | `getDigitalAdminOverview` | `permission` | `moderation.review` | `200` |
+| `POST` | `/digital/admin/policies/{id}/activate` | `postDigitalAdminPolicyActivate` | `permission` | `market.manage` | `200` |
+| `GET` | `/digital/admin/policy` | `getDigitalAdminPolicy` | `permission` | `market.manage` | `200` |
+| `POST` | `/digital/admin/policy` | `postDigitalAdminPolicyDraft` | `permission` | `market.manage` | `200` |
+| `POST` | `/digital/admin/reports/{id}/resolve` | `postDigitalAccessReportResolve` | `permission` | `support.case.manage` | `200` |
+
+## digital-products
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/digital/access-grants/{id}/consume` | `postDigitalAccessGrantConsume` | `permission` | `order.read.own` | `200` |
+| `POST` | `/digital/access-secrets` | `postDigitalAccessSecret` | `permission` | `listing.create` | `200` |
+| `DELETE` | `/digital/assets/{id}` | `deleteDigitalAsset` | `permission` | `listing.create` | `200` |
+| `GET` | `/digital/assets/{id}` | `getDigitalAsset` | `permission` | `listing.create` | `200` |
+| `POST` | `/digital/assets/uploads/{id}/complete` | `postDigitalAssetUploadComplete` | `permission` | `listing.create` | `200` |
+| `POST` | `/digital/assets/uploads` | `postDigitalAssetUpload` | `permission` | `listing.create` | `200` |
+| `POST` | `/digital/credential-batches/{id}/credentials` | `postDigitalCredentialInventory` | `permission` | `listing.create` | `200` |
+| `GET` | `/digital/credential-batches/{id}/inventory` | `getDigitalCredentialInventory` | `permission` | `listing.create` | `200` |
+| `POST` | `/digital/credential-batches` | `postDigitalCredentialBatch` | `permission` | `listing.create` | `200` |
+| `POST` | `/digital/entitlements/{id}/download-grants` | `postDigitalDownloadGrant` | `permission` | `order.read.own` | `200` |
+| `POST` | `/digital/entitlements/{id}/provision` | `postDigitalProvisionedAccess` | `permission` | `order.manage.seller` | `200` |
+| `POST` | `/digital/entitlements/{id}/reports` | `postDigitalAccessReport` | `permission` | `order.read.own` | `200` |
+| `POST` | `/digital/entitlements/{id}/reveal-grants` | `postDigitalRevealGrant` | `permission` | `order.read.own` | `200` |
+| `GET` | `/digital/entitlements/{id}` | `getDigitalEntitlement` | `permission` | `order.read.own` | `200` |
+| `GET` | `/digital/entitlements` | `getDigitalEntitlements` | `permission` | `order.read.own` | `200` |
+| `POST` | `/digital/listings/{id}/fulfillment-versions` | `postDigitalFulfillmentVersion` | `permission` | `listing.publish` | `200` |
+| `GET` | `/digital/policy` | `getDigitalPolicy` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/digital/seller-profile` | `getDigitalSellerProfile` | `permission` | `listing.create` | `200` |
+| `PUT` | `/digital/seller-profile` | `putDigitalSellerProfile` | `permission` | `listing.create` | `200` |
+| `GET` | `/digital/seller/provisioning-tasks` | `getDigitalSellerProvisioningTasks` | `permission` | `order.manage.seller` | `200` |
 
 ## education
 
@@ -667,6 +715,13 @@
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/reviews/submit` | `postReviewsSubmit` | `permission` | `review.create` | `200` |
 | `GET` | `/reviews/user/{userId}` | `getReviewsUserByUserId` | `public` | — | `200` |
+
+## solutions
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/solutions/{solutionSlug}` | `getSolutionBySlug` | `public` | — | `200` |
+| `GET` | `/solutions` | `getSolutions` | `public` | — | `200` |
 
 ## support
 

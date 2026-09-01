@@ -261,9 +261,9 @@ describe("Taxonomy Service & Integrity", () => {
       );
     });
 
-    it("provides non-empty workbook labels for all 18 v4 root categories", () => {
+    it("provides non-empty generated labels for all 19 v4 root categories", () => {
       const roots = taxonomyService.getRootCategories();
-      expect(roots).toHaveLength(18);
+      expect(roots).toHaveLength(19);
 
       const shortLabelMap = Object.fromEntries(
         roots.map((r) => [r.id, taxonomyService.getLabel(r, "compact")]),
@@ -274,6 +274,7 @@ describe("Taxonomy Service & Integrity", () => {
       expect(shortLabelMap["home_garden"]).toBe("Maison");
       expect(shortLabelMap["education"]).toBe("Éducation");
       expect(shortLabelMap["free_exchange"]).toBe("Dons & Échanges");
+      expect(shortLabelMap["digital_products"]).toBe("Numérique");
 
       roots.forEach((root) => {
         const compact = taxonomyService.getLabel(root, "compact");

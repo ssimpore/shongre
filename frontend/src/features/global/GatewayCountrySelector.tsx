@@ -7,7 +7,10 @@ import {
   type MarketDetectionRecommendation,
   type PublicCountryConfig,
 } from "@shongre/contracts";
-import { saveManualMarketSelectionPreference } from "../../domains/market/market-selection.preference";
+import {
+  marketSelectionPreferenceRepository,
+  saveManualMarketSelectionPreference,
+} from "../../domains/market/market-selection.preference";
 import { marketDetectionController } from "../../domains/market/market-detection.controller";
 import { useTranslation } from "../../i18n/I18nProvider";
 
@@ -27,6 +30,11 @@ export function GatewayCountrySelector({
 
   useEffect(() => {
     let active = true;
+    if (marketSelectionPreferenceRepository.getManualCountry()) {
+      return () => {
+        active = false;
+      };
+    }
     void marketDetectionController
       .detectProbableCountry()
       .then((result) => {

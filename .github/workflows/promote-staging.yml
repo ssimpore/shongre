@@ -73,6 +73,9 @@ jobs:
           PLAYWRIGHT_BASE_URL: ${{ vars.PUBLIC_INTL_URL }}
           PLAYWRIGHT_FR_URL: ${{ vars.PUBLIC_FR_URL }}
           PLAYWRIGHT_API_URL: ${{ vars.API_URL }}
+          PLAYWRIGHT_SOLUTIONS_URL: ${{ vars.SHONGRE_SOLUTIONS_ORIGIN }}
+          PLAYWRIGHT_PROSPECTS_URL: ${{ vars.SHONGRE_PROSPECTS_ORIGIN }}
+          PLAYWRIGHT_FACTURATION_URL: ${{ vars.SHONGRE_FACTURATION_ORIGIN }}
           PLAYWRIGHT_EXPECTED_ENVIRONMENT: staging
           PLAYWRIGHT_EXPECTED_RELEASE: ${{ inputs.release_sha }}
           PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/.release/hosted-smoke-report.json

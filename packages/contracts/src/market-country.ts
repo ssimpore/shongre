@@ -988,7 +988,12 @@ export function resolveCountryRecommendation(input: {
   const normalizedCode = String(input.countryCode || "")
     .trim()
     .toUpperCase();
-  const country = registry.find((entry) => entry.code === normalizedCode);
+  // Detection exposes only the same enabled, gateway-visible projection used
+  // by selectors. A configured but hidden/disabled country is not a browser
+  // recommendation and must fail to the global-gateway outcome.
+  const country = listPublicCountries(registry).find(
+    (entry) => entry.code === normalizedCode,
+  );
   if (!country) {
     return {
       status: input.proxyOrVpnLikely ? "uncertain" : "unknown",
@@ -1006,7 +1011,7 @@ export function resolveCountryRecommendation(input: {
     source: input.source,
     confidence,
     proxyOrVpnLikely: input.proxyOrVpnLikely === true,
-    country: toPublicCountryConfig(country),
+    country,
     experience: publicMarketExperience(country),
   };
 }
@@ -1041,7 +1046,10 @@ export function resolveCountryFromCoordinates(input: {
   checkedRegistry(registry);
 
   const candidates = registry
-    .filter((entry) => entry.enabled && entry.detection.enabled)
+    .filter(
+      (entry) =>
+        entry.enabled && entry.gatewayVisible && entry.detection.enabled,
+    )
     .flatMap((entry) =>
       entry.detection.coordinateBounds
         .filter((bounds) => containsCoordinates(bounds, latitude, longitude))

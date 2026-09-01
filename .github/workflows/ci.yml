@@ -51,14 +51,18 @@ jobs:
           PUBLIC_FR_URL: https://fr.shongre.invalid
           PUBLIC_INTL_URL: https://intl.shongre.invalid
           API_URL: https://api.shongre.invalid
+          SHONGRE_MARKETPLACE_ORIGIN: https://marketplace.shongre.invalid
+          SHONGRE_SOLUTIONS_ORIGIN: https://solutions.shongre.invalid
+          SHONGRE_PROSPECTS_ORIGIN: https://prospects.shongre.invalid
+          SHONGRE_FACTURATION_ORIGIN: https://facturation.shongre.invalid
           BACKEND_DATA_MODE: database
           DATABASE_INFRA_MODE: hosted
-          NEXT_PUBLIC_DATA_MODE: demo
+          NEXT_PUBLIC_DATA_MODE: api
           NEXT_PUBLIC_APP_ENV: production
           NEXT_PUBLIC_ENVIRONMENT_ID: shongre-production
           NEXT_PUBLIC_FR_URL: https://fr.shongre.invalid
           NEXT_PUBLIC_INTL_URL: https://intl.shongre.invalid
-          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true"
+          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
           NEXT_PUBLIC_ENABLE_AI_FEATURES: "false"
           NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
           EXPO_PUBLIC_DATA_MODE: api
@@ -67,7 +71,7 @@ jobs:
           EXPO_PUBLIC_FR_URL: https://fr.shongre.invalid
           EXPO_PUBLIC_INTL_URL: https://intl.shongre.invalid
           EXPO_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
-          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_${{ github.run_id }}CIOnly
           CORS_ORIGIN: https://fr.shongre.invalid,https://intl.shongre.invalid
           DATABASE_URL: postgresql://ci:ci@db.shongre.invalid:5432/shongre
           SUPABASE_PROJECT_REF: ci-production-ref

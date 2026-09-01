@@ -6,28 +6,35 @@ import type { SolutionDefinition } from "../../domains/solutions/solutions.types
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
+import type { MessageKey } from "../../i18n/messages.fr";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { SolutionCatalogRow } from "./SolutionCatalogRow";
 
 const ecosystem = [
   {
     icon: ShieldCheck,
-    title: "Sécurité et contrôle",
-    body: "Vos données sont protégées et vos accès maîtrisés.",
+    titleKey: "solutions.catalog.securityTitle",
+    bodyKey: "solutions.catalog.securityDescription",
   },
   {
     icon: Users,
-    title: "Travail collaboratif",
-    body: "Invitez vos équipes et partagez les espaces de travail.",
+    titleKey: "solutions.catalog.collaborationTitle",
+    bodyKey: "solutions.catalog.collaborationDescription",
   },
   {
     icon: Puzzle,
-    title: "Des solutions qui évoluent",
-    body: "De nouvelles fonctionnalités rejoignent le même socle Shongre.",
+    titleKey: "solutions.catalog.evolutionTitle",
+    bodyKey: "solutions.catalog.evolutionDescription",
   },
-] as const;
+] as const satisfies readonly {
+  icon: typeof ShieldCheck;
+  titleKey: MessageKey;
+  bodyKey: MessageKey;
+}[];
 
 export function SolutionsPage() {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket, availableMarkets, currentLocale } = useMarketLocation();
   const [marketCode, setMarketCode] = useState(activeMarket.code);
@@ -36,9 +43,8 @@ export function SolutionsPage() {
   const [error, setError] = useState("");
 
   usePageMeta({
-    title: "Shongre Solutions — Toutes vos applications professionnelles",
-    description:
-      "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.",
+    title: t("solutions.catalog.metaTitle"),
+    description: t("solutions.catalog.metaDescription"),
     canonicalUrl: applicationHref("solutions"),
     alternateCountries: [],
   });
@@ -53,16 +59,12 @@ export function SolutionsPage() {
           language: currentLocale,
         }),
       );
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Le catalogue n’a pas pu être chargé.",
-      );
+    } catch {
+      setError(t("solutions.catalog.errorDescription"));
     } finally {
       setLoading(false);
     }
-  }, [currentLocale, marketCode]);
+  }, [currentLocale, marketCode, t]);
 
   useEffect(() => {
     void load();
@@ -74,34 +76,34 @@ export function SolutionsPage() {
         <Container>
           <div className="max-w-3xl">
             <h1 className="text-4xl font-black leading-none tracking-tight text-text-main sm:text-5xl lg:text-6xl">
-              Les outils Shongre,
-              <br /> réunis au même endroit.
+              {t("solutions.catalog.heroTitle")}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
-              Activez les solutions utiles à votre organisation et retrouvez
-              chaque espace de travail sans multiplier les comptes.
+              {t("solutions.catalog.heroDescription")}
             </p>
           </div>
           <div className="mt-7 inline-grid min-h-control-touch grid-cols-2 divide-x divide-border-base overflow-hidden rounded-control border border-border-base bg-white text-sm font-semibold text-text-main">
             <span className="flex items-center gap-2 px-4">
               <Grid2X2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
-              {solutions.length || 3} solutions
+              {t("solutions.catalog.count", {
+                count: solutions.length,
+              })}
             </span>
             <label className="flex items-center gap-2 px-4">
               <Globe2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
-              <span className="sr-only">Marché du catalogue</span>
+              <span className="sr-only">
+                {t("solutions.catalog.marketLabel")}
+              </span>
               <select
                 value={marketCode}
                 onChange={(event) => setMarketCode(event.target.value)}
                 className="min-h-control-md bg-transparent text-sm font-semibold focus-visible:outline-2 focus-visible:outline-primary"
               >
-                {availableMarkets
-                  .filter((market) => ["FR", "BE", "LU"].includes(market.code))
-                  .map((market) => (
-                    <option key={market.code} value={market.code}>
-                      {market.name}
-                    </option>
-                  ))}
+                {availableMarkets.map((market) => (
+                  <option key={market.code} value={market.code}>
+                    {market.name}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -115,12 +117,12 @@ export function SolutionsPage() {
       >
         <Container className="py-2 sm:py-4">
           <h2 id="catalogue-title" className="sr-only">
-            Catalogue des solutions Shongre
+            {t("solutions.catalog.title")}
           </h2>
           {loading ? (
             <div
               className="space-y-4 py-6"
-              aria-label="Chargement du catalogue"
+              aria-label={t("solutions.catalog.loading")}
             >
               {[0, 1, 2].map((item) => (
                 <Skeleton key={item} className="h-36 rounded-xl" />
@@ -129,15 +131,17 @@ export function SolutionsPage() {
           ) : error ? (
             <StatePanel
               variant="error"
-              title="Catalogue indisponible"
+              title={t("solutions.catalog.errorTitle")}
               description={error}
-              action={<Button onClick={() => void load()}>Réessayer</Button>}
+              action={
+                <Button onClick={() => void load()}>{t("common.retry")}</Button>
+              }
             />
           ) : solutions.length === 0 ? (
             <StatePanel
               variant="notFound"
-              title="Aucune solution pour ce marché"
-              description="Le catalogue s’enrichit progressivement selon les pays et les langues disponibles."
+              title={t("solutions.catalog.emptyTitle")}
+              description={t("solutions.catalog.emptyDescription")}
             />
           ) : (
             solutions.map((solution) => (
@@ -162,12 +166,12 @@ export function SolutionsPage() {
             id="ecosystem-title"
             className="text-3xl font-black leading-tight tracking-tight text-text-main"
           >
-            Un compte. Une organisation. Plusieurs solutions.
+            {t("solutions.catalog.ecosystemTitle")}
           </h2>
           <div className="grid gap-0 sm:grid-cols-3 sm:divide-x sm:divide-border-base lg:col-span-2">
-            {ecosystem.map(({ icon: Icon, title, body }) => (
+            {ecosystem.map(({ icon: Icon, titleKey, bodyKey }) => (
               <article
-                key={title}
+                key={titleKey}
                 className="flex gap-4 border-t border-border-base py-5 first:border-t-0 sm:border-t-0 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0"
               >
                 <Icon
@@ -176,9 +180,11 @@ export function SolutionsPage() {
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="text-sm font-black text-text-main">{title}</h3>
+                  <h3 className="text-sm font-black text-text-main">
+                    {t(titleKey)}
+                  </h3>
                   <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-                    {body}
+                    {t(bodyKey)}
                   </p>
                 </div>
               </article>

@@ -279,13 +279,13 @@ export const CrmOverviewPage: React.FC = () => {
         {kpis.map(({ label, value, detail, icon: Icon, tone }) => (
           <article
             key={label}
-            className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs"
+            className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs"
           >
-            <div className="flex items-start justify-between gap-2">
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+            <div className="flex min-w-0 items-start justify-between gap-2">
+              <span className="min-w-0 break-words text-micro font-bold uppercase tracking-wider text-stone-500">
                 {label}
               </span>
-              <span className={`rounded-lg border p-1.5 ${tone}`}>
+              <span className={`shrink-0 rounded-lg border p-1.5 ${tone}`}>
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </div>

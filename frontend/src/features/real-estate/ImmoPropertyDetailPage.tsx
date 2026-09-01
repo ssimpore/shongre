@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   BadgeCheck,
   BedDouble,
@@ -22,6 +22,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
 import {
   Badge,
   Button,
@@ -30,6 +31,7 @@ import {
   FormField,
   Image,
   Input,
+  SellerIdentityLink,
   Select,
   Skeleton,
   StatePanel,
@@ -43,6 +45,7 @@ import {
   propertyTypeLabels,
   transactionLabels,
 } from "./immo-format";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type LeadForm = {
   type: PropertyLead["type"];
@@ -68,6 +71,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
   const { currentLocale } = useMarketLocation();
+  const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -236,6 +240,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
       </Container>
     );
 
+  const sellerPublicUrl = routes.seller.publicPage({
+    id: property.seller.id,
+    slug: property.seller.slug,
+    isProfessional: property.seller.type !== "owner",
+  });
+  const isProfessionalSeller = property.seller.type !== "owner";
+  const sellerKindLabel = t(
+    isProfessionalSeller
+      ? "immo.propertyDetail.professionalAdvertiser"
+      : "immo.propertyDetail.individualAdvertiser",
+  );
   return (
     <div className="bg-bg-subtle pb-14">
       <Container className="py-5">
@@ -375,14 +390,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   <BadgeCheck className="h-icon-lg w-icon-lg text-primary" />
                   Annonceur
                 </h2>
-                <p className="mt-4 font-black text-text-main">
-                  {property.seller.displayName}
-                </p>
-                <p className="text-xs text-text-secondary">
-                  {property.seller.type === "owner"
-                    ? "Particulier"
-                    : "Professionnel"}
-                </p>
+                <Link
+                  to={sellerPublicUrl}
+                  className="group mt-4 block w-fit rounded-control focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                >
+                  <span className="block font-black text-text-main transition-colors group-hover:text-primary">
+                    {property.seller.displayName}
+                  </span>
+                  <span className="block text-xs text-text-secondary">
+                    {sellerKindLabel}
+                  </span>
+                </Link>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {property.seller.verificationLabels.map((label) => (
                     <Badge key={label} variant="success">
@@ -398,6 +416,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           </div>
 
           <aside className="sticky top-24 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
+            <SellerIdentityLink
+              to={sellerPublicUrl}
+              name={property.seller.displayName}
+              avatarUrl={property.seller.logoUrl}
+              isVerified={property.seller.verificationLabels.length > 0}
+              isProfessional={isProfessionalSeller}
+              rating={property.seller.rating}
+              reviewCount={property.seller.reviewCount}
+              locationLabel={property.address.city}
+              className="mb-4 border-b border-border-subtle pb-4"
+            />
             {!sentLeadId ? (
               <form
                 data-marketplace-action="message.send"

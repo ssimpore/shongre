@@ -49,9 +49,7 @@ export const ListingSafetyNotice: React.FC<ListingSafetyNoticeProps> = ({
         <span>{copy.title}</span>
       </div>
 
-      <p className="text-micro text-success leading-relaxed">
-        {copy.body}
-      </p>
+      <p className="text-micro text-success leading-relaxed">{copy.body}</p>
 
       {variant === "payment" && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-micro font-semibold text-success pt-1">
