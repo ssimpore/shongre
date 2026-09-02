@@ -25,10 +25,10 @@
   },
   "peerDependencies": {
     "lucide-react": ">=0.500.0",
-    "lucide-react-native": ">=0.500.0",
+    "lucide-react-native": "^1.37.0",
     "react": "^19.2.0",
-    "react-native": ">=0.86.0",
-    "react-router-dom": ">=7.0.0"
+    "react-native": "^0.86.2",
+    "react-router-dom": "^7.18.3"
   },
   "peerDependenciesMeta": {
     "lucide-react": {
