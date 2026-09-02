@@ -3,6 +3,11 @@ import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 
 export type TaxonomyNodeAvailability = (node: TaxonomyNode) => boolean;
 
+export interface CategoryNavigationRootReference {
+  id: string;
+  slug: string;
+}
+
 const byTaxonomyOrder = (left: TaxonomyNode, right: TaxonomyNode) =>
   left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
 
@@ -39,10 +44,14 @@ async function loadNodeBranch(
  */
 export async function loadCategoryNavigationBranch(
   taxonomy: TaxonomyServiceContract,
-  rootSlug: string,
+  rootReference: string | CategoryNavigationRootReference,
   isAvailable: TaxonomyNodeAvailability,
 ): Promise<TaxonomyNode | null> {
-  const root = await taxonomy.getNodeBySlug(rootSlug);
+  const root =
+    typeof rootReference === "string"
+      ? await taxonomy.getNodeBySlug(rootReference)
+      : ((await taxonomy.getNodeById(rootReference.id)) ??
+        (await taxonomy.getNodeBySlug(rootReference.slug)));
   if (!root) return null;
 
   return loadNodeBranch(taxonomy, root, isAvailable, new Set());

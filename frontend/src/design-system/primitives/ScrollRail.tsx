@@ -15,6 +15,8 @@ export interface ScrollRailProps {
   className?: string;
   /** Accessible name for the scroll controls (e.g. "onglets", "catégories"). */
   label?: string;
+  /** Optional shared placement class for both directional controls. */
+  controlClassName?: string;
   /**
    * Snaps items to the track's leading edge.
    *
@@ -55,6 +57,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
   className = "",
   label = "contenu",
   snap = false,
+  controlClassName = "top-1/2",
 }) => {
   const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -129,7 +132,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label={t("common.scrollRailLeft", { label })}
-          className={`absolute left-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
+          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
         </button>
@@ -140,7 +143,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(1)}
           aria-label={t("common.scrollRailRight", { label })}
-          className={`absolute right-1 top-1/2 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky`}
+          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
         </button>

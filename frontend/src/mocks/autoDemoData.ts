@@ -704,6 +704,7 @@ export const AUTO_DEMO_PRIVATE_VEHICLES: VehiclePrivate[] = [
       critAirClass: "2",
     },
     promotionLabels: ["sponsored"],
+    publishedAt: "2026-08-12T08:00:00.000Z",
   }),
   vehicle({
     id: "vehicle_3008_petrol",

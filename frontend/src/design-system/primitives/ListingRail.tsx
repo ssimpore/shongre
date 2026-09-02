@@ -38,6 +38,7 @@ export const ListingRail: React.FC<ListingRailProps> = ({
   <ScrollRail
     snap
     label={label}
+    controlClassName="listing-rail-control top-1/2"
     className={`-mx-4 px-4 sm:mx-0 sm:px-0 py-1.5 ${className}`}
   >
     <div className="listing-rail-track flex flex-nowrap items-stretch gap-3 sm:gap-4">

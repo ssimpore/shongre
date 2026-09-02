@@ -2507,6 +2507,7 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.sansTracas": "hassle-free.",
   "home.homePage.achetezEtVendezEnToute":
     "Buy and sell with tracked payments, clear handover options and explicit seller statuses.",
+  "home.homePage.trustedMarketplace": "A platform built on trust",
   "home.homePage.garantiesShongre": "Shongre guarantees",
   "home.homePage.paiementsSecurises": "Secure payments",
   "home.homePage.livraisonIntegree": "Clear handover and shipping",

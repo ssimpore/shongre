@@ -124,7 +124,7 @@ export const themeRadii = {
  */
 export const themeText = {
   "card-title": "0.9375rem",
-  hero: "2.75rem",
+  hero: "clamp(2.25rem, 3.75vw, 3rem)",
   micro: "0.75rem",
   xs: "0.8125rem",
   sm: "0.875rem",
@@ -154,7 +154,7 @@ export const themeText = {
 
 export const themeTextLineHeights = {
   "card-title": "1.4",
-  hero: "1.08",
+  hero: "1.06",
   micro: "1rem",
   xs: "1.125rem",
   sm: "1.25rem",

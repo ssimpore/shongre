@@ -5,7 +5,6 @@ import {
   BedDouble,
   CalendarDays,
   CheckCircle2,
-  Heart,
   KeyRound,
   MapPin,
   Maximize2,
@@ -28,6 +27,7 @@ import {
   Button,
   Checkbox,
   Container,
+  FavoriteButton,
   FormField,
   Image,
   Input,
@@ -276,20 +276,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     <Badge variant="urgent">Urgent</Badge>
                   ) : null}
                 </div>
-                <Button
-                  data-marketplace-action="favorite.manage"
-                  variant="secondary"
-                  size="sm"
-                  className="absolute right-3 top-3"
-                  onClick={favorite}
-                  leftIcon={
-                    <Heart
-                      className={`h-icon-md w-icon-md ${isFavorite(property.listingId) ? "fill-primary" : ""}`}
-                    />
-                  }
+                <div
+                  data-listing-gallery-actions="true"
+                  className="absolute right-3 top-3 z-raised flex items-center gap-2"
                 >
-                  {isFavorite(property.listingId) ? "Enregistré" : "Favori"}
-                </Button>
+                  <FavoriteButton
+                    isFavorite={isFavorite(property.listingId)}
+                    onToggle={favorite}
+                    size="md"
+                    variant="floating"
+                  />
+                </div>
               </div>
               <div className="p-5 sm:p-6">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">

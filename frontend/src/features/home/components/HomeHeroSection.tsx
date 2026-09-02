@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, Search, ShieldCheck } from "lucide-react";
+import { ArrowRight, Search, ShieldCheck, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import { Container, Heading } from "../../../design-system";
@@ -14,22 +14,40 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <section className="relative overflow-hidden bg-bg-base py-3 sm:py-4">
+    <section
+      data-home-hero="true"
+      className="relative overflow-hidden bg-bg-base py-3 sm:py-4"
+    >
       <Container className="relative z-raised">
-        <div className="rounded-3xl bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
-          <div className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 md:gap-8 xl:gap-12">
-            <div className="flex w-full flex-col justify-between text-left">
-              <div className="flex flex-col gap-6 sm:gap-7">
-                <Heading as="h1" size="display-md" family="display">
+        <div className="rounded-3xl border border-border-subtle bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
+          <div className="grid w-full grid-cols-1 items-stretch gap-8 md:grid-cols-2 md:gap-10 xl:gap-12">
+            <div className="flex min-w-0 w-full flex-col justify-between text-left">
+              <div className="flex flex-col items-start gap-5">
+                <div
+                  data-home-hero-eyebrow="true"
+                  className="inline-flex w-fit items-center gap-2 rounded-pill border border-primary-border bg-bg-surface/90 px-3 py-2 text-sm font-medium text-primary shadow-2xs"
+                >
+                  <Sparkles
+                    className="h-icon-md w-icon-md shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>{t("home.homePage.trustedMarketplace")}</span>
+                </div>
+                <Heading
+                  as="h1"
+                  size="display-md"
+                  family="display"
+                  className="text-hero"
+                >
                   {section.title}
                 </Heading>
                 {section.subtitle ? (
-                  <p className="max-w-xl text-sm font-normal leading-relaxed text-text-secondary sm:text-base">
+                  <p className="max-w-md text-sm font-normal leading-relaxed text-text-secondary sm:text-base">
                     {section.subtitle}
                   </p>
                 ) : null}
               </div>
-              <div className="mt-5 w-full sm:mt-6">
+              <div className="mt-5 w-full">
                 <GlobalSearchBar
                   variant="minimal"
                   showCategory={false}
@@ -57,13 +75,16 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
           </div>
           <Link
             to="/securite"
-            className="group mt-5 flex min-h-8 min-w-0 items-center gap-2 border-t border-border-subtle pt-4 text-xs font-medium text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:mt-6 sm:text-sm"
+            data-home-hero-trust="true"
+            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-surface/80 px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
             aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
           >
-            <ShieldCheck
-              className="h-icon-lg w-icon-lg shrink-0 text-success"
-              aria-hidden="true"
-            />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-success-surface text-success">
+              <ShieldCheck
+                className="h-icon-lg w-icon-lg"
+                aria-hidden="true"
+              />
+            </span>
             <span className="min-w-0 flex-1 truncate">
               {t("home.homePage.trustSummary")}
             </span>

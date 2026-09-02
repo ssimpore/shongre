@@ -112,6 +112,10 @@ test.describe("boosted listings hero rail", () => {
     await waitForStableLayout(page);
 
     const main = page.getByRole("main");
+    const hero = main.locator('[data-home-hero="true"]');
+    await expect(
+      hero.locator('[data-home-hero-eyebrow="true"]'),
+    ).toHaveText("Plateforme de confiance");
     const trustLine = main.getByRole("link", { name: /Paiement suivi/ });
     await expect(
       page.getByRole("list", { name: "Garanties Shongre" }),
@@ -122,7 +126,9 @@ test.describe("boosted listings hero rail", () => {
 
     const trustBox = await trustLine.boundingBox();
     expect(trustBox).not.toBeNull();
-    expect(trustBox!.height).toBeLessThanOrEqual(48);
+    expect(trustBox!.height).toBeGreaterThanOrEqual(48);
+    expect(trustBox!.height).toBeLessThanOrEqual(64);
+    await expect(trustLine).toHaveAttribute("data-home-hero-trust", "true");
 
     await trustLine.click();
     await expect(page).toHaveURL(/\/securite$/);

@@ -10,7 +10,39 @@ describe("shared feature presentation", () => {
     expect(
       getListingPromotionBadges({ isUrgent: false, isFeatured: true }),
     ).toEqual([
-      { label: "À la une · sponsorisé", tone: "featured", sponsored: true },
+      { label: "Sponsorisé", tone: "featured", sponsored: true },
+    ]);
+  });
+  it("uses the concise label for featured paid placement sources", () => {
+    expect(
+      getListingPromotionBadges({
+        isUrgent: false,
+        isFeatured: false,
+        promotion: {
+          state: "active",
+          type: "featured_placement",
+          label: "À la une",
+        },
+      }),
+    ).toEqual([
+      { label: "Sponsorisé", tone: "featured", sponsored: true },
+    ]);
+    expect(
+      getListingPromotionBadges({
+        isUrgent: false,
+        isFeatured: false,
+        promotion: {
+          state: "active",
+          type: "search_bump",
+          label: "Remonté",
+        },
+      }),
+    ).toEqual([
+      {
+        label: "Remonté · sponsorisé",
+        tone: "featured",
+        sponsored: true,
+      },
     ]);
   });
   it("uses one notification tone mapping", () => {

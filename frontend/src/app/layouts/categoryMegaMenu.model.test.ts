@@ -79,6 +79,25 @@ describe("category mega-menu taxonomy projection", () => {
     expect(hasCategoryMenuContent(null)).toBe(false);
   });
 
+  it("resolves an admin-configured root by stable id before its display slug", async () => {
+    const root = node("electronics", "electronique", 1);
+    const taxonomy = {
+      getNodeById: vi.fn().mockResolvedValue(root),
+      getNodeBySlug: vi.fn().mockResolvedValue(null),
+      getChildren: vi.fn().mockResolvedValue([]),
+    } as unknown as TaxonomyServiceContract;
+
+    await expect(
+      loadCategoryNavigationBranch(
+        taxonomy,
+        { id: "electronics", slug: "multimedia-electronique" },
+        () => true,
+      ),
+    ).resolves.toMatchObject({ id: "electronics", slug: "electronique" });
+    expect(taxonomy.getNodeById).toHaveBeenCalledWith("electronics");
+    expect(taxonomy.getNodeBySlug).not.toHaveBeenCalled();
+  });
+
   it("builds the Autres panel from every unpromoted canonical root id", async () => {
     const promoted = node("promoted", "promue", 1);
     const later = node("later", "plus-tard", 3);

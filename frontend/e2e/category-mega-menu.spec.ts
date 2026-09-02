@@ -57,6 +57,67 @@ test.describe("desktop category mega-menu", () => {
     await expect(vehicles).toHaveAttribute("aria-expanded", "false");
   });
 
+  test("opens every category after an admin configuration change", async ({
+    page,
+  }) => {
+    const configuredCategories = [
+      {
+        categoryId: "electronics",
+        label: "Multimédia",
+        slug: "multimedia-electronique",
+      },
+      { categoryId: "fashion", label: "Mode", slug: "mode-accessoires" },
+      {
+        categoryId: "home_garden",
+        label: "Maison",
+        slug: "maison-jardin",
+      },
+    ];
+    await page.addInitScript((categories) => {
+      localStorage.setItem(
+        "shongre_taxonomy_header_navigation:v1",
+        JSON.stringify({
+          FR: {
+            revision: 8,
+            updatedAt: "2026-09-02T18:00:00.000Z",
+            items: categories.map(({ categoryId }, displayOrder) => ({
+              categoryId,
+              isActive: true,
+              displayOrder,
+            })),
+          },
+        }),
+      );
+    }, configuredCategories);
+
+    await page.setViewportSize({ width: 1408, height: 800 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const nav = categoryNav(page);
+    await nav.hover();
+    await expect(
+      nav.locator('a[data-header-nav-item="true"][aria-haspopup="menu"]'),
+    ).toHaveCount(configuredCategories.length + 1);
+
+    for (const category of configuredCategories) {
+      const trigger = nav.getByRole("link", {
+        name: category.label,
+        exact: true,
+      });
+      await expect(trigger).toHaveAttribute(
+        "id",
+        `header-category-trigger-${category.slug}`,
+      );
+      await trigger.hover();
+      const menu = page.getByRole("menu");
+      await expect(menu).toBeVisible();
+      await expect(menu).toHaveAttribute("data-active-category", category.slug);
+      await expect(trigger).toHaveAttribute("aria-expanded", "true");
+      await expect(trigger).toHaveText(category.label);
+    }
+  });
+
   test("opens from focus, supports keyboard movement, closes on focus exit and Escape", async ({
     page,
   }) => {

@@ -68,7 +68,7 @@ test.describe("Staff marketplace navigation", () => {
       waitUntil: "domcontentloaded",
     });
 
-    const favorite = page.getByRole("button", { name: "Favori" });
+    const favorite = page.getByRole("button", { name: /favoris/i });
     const send = page.getByRole("button", { name: "Envoyer la demande" });
     await expect(favorite).toBeVisible();
     await expect(send).toBeVisible();
@@ -144,7 +144,9 @@ test.describe("Staff marketplace navigation", () => {
     await expect(page.locator("[data-header-publish-cta]")).toBeVisible();
     await expect(page.getByRole("link", { name: "Favoris" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Messagerie" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Favori" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /favoris/i }),
+    ).toBeVisible();
 
     await page.getByRole("textbox", { name: "Nom" }).fill("Thomas Laurent");
     await page

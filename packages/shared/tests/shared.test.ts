@@ -38,4 +38,15 @@ describe("cross-platform shared logic", () => {
       }),
     ).toBe("hier");
   });
+
+  it("formats a compact localized duration without relative direction copy", () => {
+    expect(
+      formatRelativeTime("2026-08-12T10:00:00Z", {
+        referenceDate: "2026-09-02T10:00:00Z",
+        locale: "fr-FR",
+        style: "short",
+        includeDirection: false,
+      }),
+    ).toBe("3 sem.");
+  });
 });

@@ -202,6 +202,129 @@ test.describe("canonical listing cards", () => {
     ).toHaveCount(0);
   });
 
+  test("keeps promoted-card overlays, rail controls and content zones visibly separated", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await usePersona(page, "individual_buyer");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const card = page
+      .locator('[data-listing-card="true"]')
+      .filter({
+        has: page.locator('[data-listing-card-promotion="true"]'),
+      })
+      .first();
+    await expect(card).toBeAttached();
+    await card.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      window.scrollTo({
+        top: window.scrollY + rect.top - (window.innerHeight - rect.height) / 2,
+      });
+    });
+    await expect(card).toBeVisible();
+
+    const geometry = await card.evaluate((element) => {
+      const rectFor = (selector: string) => {
+        const node = element.querySelector<HTMLElement>(selector);
+        if (!node || node.getClientRects().length === 0) return null;
+        const rect = node.getBoundingClientRect();
+        return {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+          clientWidth: node.clientWidth,
+          scrollWidth: node.scrollWidth,
+        };
+      };
+      const media = rectFor('[data-listing-card-media="true"]');
+      const promotion = rectFor('[data-listing-card-promotion="true"] > span');
+      const promotionText = rectFor(
+        '[data-listing-card-promotion="true"] > span > span',
+      );
+      const actions = rectFor('[data-listing-card-actions="true"]');
+      const railShell = element.closest<HTMLElement>(".scroll-rail-shell");
+      const visibleRailControl = railShell
+        ? Array.from(
+            railShell.querySelectorAll<HTMLElement>(".listing-rail-control"),
+          ).find((control) => control.getClientRects().length > 0)
+        : undefined;
+      const railControlRect = visibleRailControl?.getBoundingClientRect();
+      const cardRect = element.getBoundingClientRect();
+      const orderedContent = [
+        '[data-listing-card-category-row="true"]',
+        "h3",
+        '[data-listing-card-price="true"]',
+        'ul[aria-label="Caractéristiques principales"]',
+        '[data-listing-card-footer="true"]',
+      ]
+        .map(rectFor)
+        .filter((rect): rect is NonNullable<typeof rect> => Boolean(rect));
+
+      return {
+        promotionFits: Boolean(
+          promotionText &&
+          promotionText.scrollWidth <= promotionText.clientWidth + 1,
+        ),
+        overlayColumnsSeparated: Boolean(
+          promotion && actions && promotion.right + 7 <= actions.left,
+        ),
+        overlaysStayOnMedia: Boolean(
+          media &&
+          promotion &&
+          actions &&
+          promotion.left >= media.left &&
+          actions.right <= media.right &&
+          promotion.top >= media.top &&
+          actions.bottom <= media.bottom,
+        ),
+        railControlCenteredOnCard: Boolean(
+          railControlRect &&
+          Math.abs(
+            (railControlRect.top + railControlRect.bottom) / 2 -
+              (cardRect.top + cardRect.bottom) / 2,
+          ) <= 8,
+        ),
+        contentZonesSeparated: orderedContent.every(
+          (rect, index) =>
+            index === 0 ||
+            rect.top >= (orderedContent[index - 1]?.bottom ?? rect.top) - 0.5,
+        ),
+      };
+    });
+
+    expect(geometry.promotionFits).toBe(true);
+    expect(geometry.overlayColumnsSeparated).toBe(true);
+    expect(geometry.overlaysStayOnMedia).toBe(true);
+    expect(geometry.railControlCenteredOnCard).toBe(true);
+    expect(geometry.contentZonesSeparated).toBe(true);
+
+    const railShell = card.locator(
+      "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' scroll-rail-shell ')]",
+    );
+    const track = railShell.locator(":scope > div").first();
+    const rightControl = railShell.getByRole("button", {
+      name: /vers la droite$/,
+    });
+    const initialScrollLeft = await track.evaluate((element) =>
+      Math.round(element.scrollLeft),
+    );
+    await rightControl.click();
+    await expect
+      .poll(() =>
+        track.evaluate((element) => Math.round(element.scrollLeft)),
+      )
+      .toBeGreaterThan(initialScrollLeft);
+    await expect(
+      railShell.getByRole("button", { name: /vers la gauche$/ }),
+    ).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator(".listing-rail-control:visible")).toHaveCount(0);
+  });
+
   test("places delivery at the image bottom-right and keeps it out of the footer", async ({
     page,
   }) => {

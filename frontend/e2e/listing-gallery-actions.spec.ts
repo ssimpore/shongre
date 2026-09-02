@@ -34,7 +34,7 @@ const expectActionInsideGallery = async (
   );
 };
 
-test("listing and vehicle details share the same favorite gallery action", async ({
+test("listing, property and vehicle details share the same favorite gallery action", async ({
   page,
 }) => {
   await usePersona(page, "individual_buyer");
@@ -65,6 +65,36 @@ test("listing and vehicle details share the same favorite gallery action", async
     await expect(listingFavorite).toHaveAttribute(
       "aria-pressed",
       initialListingState === "true" ? "false" : "true",
+    );
+
+    await page.goto("/immo/bien/appartement-lumineux-lyon-montchat", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const propertyFavorite = page.getByRole("button", {
+      name: /favoris/i,
+    });
+    await expect(propertyFavorite).toBeVisible();
+    await expect(propertyFavorite).toHaveText("");
+    await expect(propertyFavorite).toHaveAttribute(
+      "class",
+      sharedFavoriteClasses!,
+    );
+    const propertyMedia = page
+      .locator('[data-listing-gallery-actions="true"]')
+      .locator("..");
+    await expectActionInsideGallery(propertyMedia, propertyFavorite);
+    const initialPropertyState =
+      await propertyFavorite.getAttribute("aria-pressed");
+    await propertyFavorite.click();
+    await expect(propertyFavorite).toHaveAttribute(
+      "aria-pressed",
+      initialPropertyState === "true" ? "false" : "true",
+    );
+    await expectNoHorizontalOverflow(
+      page,
+      `property favorite overlay at ${viewport.width}px`,
     );
 
     await page.goto("/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019", {

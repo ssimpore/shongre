@@ -2,6 +2,8 @@ export interface RelativeTimeOptions {
   locale?: string;
   referenceDate?: Date | string | number;
   style?: "long" | "short" | "narrow";
+  /** Include relative direction copy such as "il y a" or "dans". */
+  includeDirection?: boolean;
 }
 
 export function formatRelativeTime(
@@ -29,10 +31,21 @@ export function formatRelativeTime(
     numeric: "auto",
     style: options.style ?? "long",
   });
-  if (absolute < 45) return formatter.format(0, "second");
+  const format = (value: number, unit: Intl.RelativeTimeFormatUnit) => {
+    if (options.includeDirection !== false) {
+      return formatter.format(value, unit);
+    }
+
+    return new Intl.NumberFormat(options.locale ?? "fr-FR", {
+      style: "unit",
+      unit,
+      unitDisplay: options.style ?? "long",
+    }).format(Math.abs(value));
+  };
+  if (absolute < 45) return format(0, "second");
   const [unit, divisor] = units.find(([, size]) => absolute >= size) ?? [
     "second",
     1,
   ];
-  return formatter.format(Math.round(seconds / divisor), unit);
+  return format(Math.round(seconds / divisor), unit);
 }

@@ -32,9 +32,13 @@ export function getListingPromotionBadges(
     const label =
       listing.promotion.label ||
       (listing.promotion.type === "search_bump" ? "Remonté" : "À la une");
-    return [
-      { label: `${label} · sponsorisé`, tone: "featured", sponsored: true },
-    ];
+    const normalizedLabel = label.trim().toLocaleLowerCase("fr-FR");
+    const sponsoredLabel = normalizedLabel.startsWith("à la une")
+      ? "Sponsorisé"
+      : normalizedLabel.includes("sponsorisé")
+        ? label
+        : `${label} · sponsorisé`;
+    return [{ label: sponsoredLabel, tone: "featured", sponsored: true }];
   }
   return [
     ...(listing.isUrgent
@@ -43,7 +47,7 @@ export function getListingPromotionBadges(
     ...(listing.isFeatured
       ? [
           {
-            label: "À la une · sponsorisé",
+            label: "Sponsorisé",
             tone: "featured" as const,
             sponsored: true,
           },

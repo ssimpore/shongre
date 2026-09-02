@@ -2997,6 +2997,7 @@ export const messagesFr = {
   "home.homePage.sansTracas": "sans tracas.",
   "home.homePage.achetezEtVendezEnToute":
     "Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.",
+  "home.homePage.trustedMarketplace": "Plateforme de confiance",
   "home.homePage.garantiesShongre": "Garanties Shongre",
   "home.homePage.paiementsSecurises": "Paiements sécurisés",
   "home.homePage.livraisonIntegree": "Remise et expédition claires",

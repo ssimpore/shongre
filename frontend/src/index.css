@@ -602,6 +602,15 @@
   aspect-ratio: var(--aspect-media);
 }
 
+.listing-card-seller-grid {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.listing-card-promotion-badge {
+  padding-inline: var(--spacing-base);
+  letter-spacing: normal;
+}
+
 /* Horizontal results use a fixed shared footprint so cards stay aligned when
    titles, badges or metadata differ. The image is deliberately a semantic
    token-backed slot rather than an ad-hoc width utility: it grows enough on
@@ -689,6 +698,19 @@
 .listing-rail-cell > * {
   flex: 1 1 auto;
   min-height: 0;
+}
+
+/* Touch is the clearest rail control on phones, where an overlaid arrow would
+   cover a compact card. Fine-pointer controls return from `sm` upward; their
+   shared `top-1/2` placement centres them against the complete card row. */
+.listing-rail-control {
+  display: none;
+}
+
+@variant sm {
+  .listing-rail-control {
+    display: flex;
+  }
 }
 
 /* Smooth Infinite Marquee Animations */

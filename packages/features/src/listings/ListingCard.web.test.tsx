@@ -47,7 +47,8 @@ describe("canonical web listing card", () => {
     expect(html).toContain("listing-card-shell");
     expect(html).toContain("line-clamp-2");
     expect(html).toContain("min-h-control-md");
-    expect(html).toContain("À la une · sponsorisé");
+    expect(html).toContain("Sponsorisé");
+    expect(html).not.toContain("À la une");
     expect(html).toContain("Appartement");
     expect(html).toContain("68 m²");
     expect(html).not.toContain("3 pièces");
@@ -58,10 +59,19 @@ describe("canonical web listing card", () => {
     expect(html).toContain("focus-visible:outline-2");
     expect(html).toContain("Agence Canopée avec un nom très long");
     expect(html).toContain('data-listing-card-footer="true"');
+    expect(html).toContain('data-listing-card-content="true"');
+    expect(html).toContain('data-listing-card-category-row="true"');
+    expect(html).toContain('data-listing-card-price="true"');
     expect(html).toContain('data-listing-card-seller="true"');
     expect(html).toContain('data-listing-card-seller-avatar="true"');
+    expect(html).toContain('data-listing-card-meta="true"');
     expect(html).not.toContain('data-listing-card-seller-verified="true"');
     expect(html).toContain(">Pro<");
+    expect(html).toContain('data-listing-card-top-overlay="true"');
+    expect(html).toContain('data-listing-card-promotion="true"');
+    expect(html).toContain('data-listing-card-actions="true"');
+    expect(html).toContain('data-listing-card-media-meta="true"');
+    expect(html).toContain('data-listing-card-photo-count="true"');
     expect(html).toContain('data-listing-card-delivery-overlay="true"');
     expect(html).toContain('src="https://example.test/seller-avatar.jpg"');
     expect(html).toContain('title="Agence Canopée avec un nom très long"');
@@ -71,6 +81,8 @@ describe("canonical web listing card", () => {
     expect(
       html.indexOf('data-listing-card-delivery-overlay="true"'),
     ).toBeLessThan(html.indexOf('data-listing-card-footer="true"'));
+    expect(html).toContain("listing-card-seller-grid");
+    expect(html).not.toContain("absolute left-0 top-2 hidden sm:block");
     expect(html).toContain("min-w-0 break-words");
   });
 
@@ -117,6 +129,26 @@ describe("canonical web listing card", () => {
     expect(html).not.toContain("Caractéristiques principales");
     expect(html).not.toContain("photos");
     expect(html).not.toContain("aria-pressed");
+  });
+
+  it("uses a compact publication age without relative direction copy", () => {
+    const dateNow = vi
+      .spyOn(Date, "now")
+      .mockReturnValue(new Date("2026-09-02T10:00:00.000Z").getTime());
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={{
+          ...baseListing,
+          publishedAt: "2026-08-12T10:00:00.000Z",
+        }}
+        href="/annonce/listing-card-test"
+        locale="fr-FR"
+      />,
+    );
+    dateNow.mockRestore();
+
+    expect(html).toContain("3 sem.");
+    expect(html).not.toContain("il y a");
   });
 
   it("limits horizontal result cards to two decision attributes", () => {

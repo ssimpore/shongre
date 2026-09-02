@@ -51,6 +51,34 @@ function SellerVerificationShield({ visible }: { visible: boolean }) {
   );
 }
 
+function ListingMeta({ city, published }: { city: string; published: string }) {
+  return (
+    <span
+      data-listing-card-meta="true"
+      className="flex min-w-0 items-center gap-2"
+    >
+      <span className="inline-flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+        <SemanticIcon
+          name="map-pin"
+          size="xs"
+          className="shrink-0 text-primary"
+        />
+        <span className="min-w-0 truncate" title={city}>
+          {city}
+        </span>
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1">
+        <SemanticIcon
+          name="calendar"
+          size="xs"
+          className="shrink-0 text-primary"
+        />
+        <span>{published}</span>
+      </span>
+    </span>
+  );
+}
+
 export function ListingCard({
   listing,
   href,
@@ -74,6 +102,7 @@ export function ListingCard({
   const published = formatRelativeTime(listing.publishedAt, {
     locale,
     style: "short",
+    includeDirection: false,
   });
   const badges = getListingPromotionBadges(listing);
   const characteristics = getListingCardCharacteristics(listing);
@@ -116,74 +145,48 @@ export function ListingCard({
               Shongre
             </div>
           ))}
-        {(listing.photoCount ?? 0) > 1 ? (
-          <span
-            aria-label={`${listing.photoCount} photos`}
-            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs ${showcase ? "bottom-3 left-3" : "bottom-2 left-2"}`}
+        {(listing.photoCount ?? 0) > 1 || listing.deliveryAvailable ? (
+          <div
+            data-listing-card-media-meta="true"
+            className={`absolute flex min-w-0 items-end justify-between gap-2 ${showcase ? "inset-x-3 bottom-3" : "inset-x-2 bottom-2"}`}
           >
-            <SemanticIcon name="camera" size="xs" />
-            {listing.photoCount}
-          </span>
-        ) : null}
-        {listing.deliveryAvailable ? (
-          <span
-            data-listing-card-delivery-overlay="true"
-            aria-label="Livraison disponible"
-            title="Livraison disponible"
-            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-white backdrop-blur-xs ${showcase ? "bottom-3 right-3" : "bottom-2 right-2"}`}
-          >
-            <SemanticIcon name="truck" size="xs" />
-            Livraison
-          </span>
-        ) : null}
-        {badges.length ? (
-          <div className="absolute left-2 top-2 flex max-w-3/4 flex-wrap gap-1">
-            {badges.map((badge) => (
-              <Badge
-                key={badge.tone}
-                variant={badge.tone === "featured" ? "featured" : "urgent"}
+            {(listing.photoCount ?? 0) > 1 ? (
+              <span
+                data-listing-card-photo-count="true"
+                aria-label={`${listing.photoCount} photos`}
+                className="inline-flex shrink-0 items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs"
               >
-                {badge.label}
-              </Badge>
-            ))}
+                <SemanticIcon name="camera" size="xs" />
+                {listing.photoCount}
+              </span>
+            ) : null}
+            {listing.deliveryAvailable ? (
+              <span
+                data-listing-card-delivery-overlay="true"
+                aria-label="Livraison disponible"
+                title="Livraison disponible"
+                className="ml-auto inline-flex min-w-0 items-center gap-1 truncate rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-white backdrop-blur-xs"
+              >
+                <SemanticIcon name="truck" size="xs" />
+                Livraison
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>
       <div
+        data-listing-card-content="true"
         className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
       >
-        {listing.categoryLabel || sellerName || hasSellerRating ? (
-          <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
+        {listing.categoryLabel || hasSellerRating ? (
+          <div
+            data-listing-card-category-row="true"
+            className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted"
+          >
             <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
               {listing.categoryLabel ? (
                 <span className="min-w-0 shrink truncate">
                   {listing.categoryLabel}
-                </span>
-              ) : null}
-              {listing.categoryLabel && sellerName ? (
-                <span aria-hidden="true" className="shrink-0 sm:hidden">
-                  ·
-                </span>
-              ) : null}
-              {sellerName ? (
-                <span className="contents sm:hidden">
-                  <Avatar
-                    src={sellerImageUrl}
-                    name={sellerName}
-                    size="sm"
-                    aria-hidden="true"
-                    data-listing-card-seller-avatar="true"
-                    className="[&>div]:h-5 [&>div]:w-5 [&>div]:text-micro"
-                  />
-                  <span className="inline-flex min-w-0 items-center gap-1">
-                    <span className="min-w-0 truncate">{sellerName}</span>
-                    <SellerVerificationShield
-                      visible={showSellerVerificationShield}
-                    />
-                  </span>
-                  {listing.seller?.sellerType === "pro" ? (
-                    <Badge variant="pro">Pro</Badge>
-                  ) : null}
                 </span>
               ) : null}
             </span>
@@ -213,7 +216,10 @@ export function ListingCard({
         >
           {listing.title}
         </h3>
-        <div className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <div
+          data-listing-card-price="true"
+          className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5"
+        >
           <Text
             as="span"
             size="body-lg"
@@ -256,20 +262,20 @@ export function ListingCard({
         ) : null}
         <div
           data-listing-card-footer="true"
-          className="relative mt-auto grid min-w-0 gap-1.5 border-t border-border-subtle pt-2 text-micro text-text-muted sm:gap-px sm:pt-1"
+          className="mt-auto min-w-0 border-t border-border-subtle pt-2 text-micro text-text-muted sm:pt-1"
         >
           {sellerName ? (
-            <>
+            <div className="listing-card-seller-grid grid min-w-0 items-center gap-x-2 gap-y-px">
               <span
                 aria-hidden="true"
                 data-listing-card-seller-avatar="true"
-                className="absolute left-0 top-2 hidden sm:block"
+                className="row-span-2 self-center"
               >
                 <Avatar src={sellerImageUrl} name={sellerName} size="sm" />
               </span>
               <span
                 data-listing-card-seller="true"
-                className="hidden min-w-0 items-center gap-1.5 sm:flex sm:pl-8"
+                className="flex min-w-0 items-center gap-1.5"
               >
                 <span className="inline-flex min-w-0 flex-1 items-center gap-1">
                   <span
@@ -288,30 +294,11 @@ export function ListingCard({
                   </span>
                 ) : null}
               </span>
-            </>
-          ) : null}
-          <span
-            className={`flex min-w-0 items-center gap-2 ${sellerName ? "sm:pl-8" : ""}`}
-          >
-            <span className="inline-flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
-              <SemanticIcon
-                name="map-pin"
-                size="xs"
-                className="shrink-0 text-primary"
-              />
-              <span className="min-w-0 truncate" title={listing.city}>
-                {listing.city}
-              </span>
-            </span>
-            <span className="inline-flex shrink-0 items-center gap-1">
-              <SemanticIcon
-                name="calendar"
-                size="xs"
-                className="shrink-0 text-primary"
-              />
-              <span>{published}</span>
-            </span>
-          </span>
+              <ListingMeta city={listing.city} published={published} />
+            </div>
+          ) : (
+            <ListingMeta city={listing.city} published={published} />
+          )}
         </div>
       </div>
     </>
@@ -337,24 +324,52 @@ export function ListingCard({
           {linkContent}
         </a>
       )}
-      {quickAction || onFavoriteToggle ? (
-        <div className="absolute right-2 top-2 flex items-center gap-1">
-          {quickAction}
-          {onFavoriteToggle ? (
-            <button
-              type="button"
-              data-marketplace-action="favorite.manage"
-              onClick={toggle}
-              aria-label={favoriteLabel}
-              aria-pressed={isFavorite}
-              className="flex h-control-sm w-control-sm items-center justify-center rounded-pill bg-bg-surface/95 text-primary shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      {badges.length || quickAction || onFavoriteToggle ? (
+        <div
+          data-listing-card-top-overlay="true"
+          className="pointer-events-none absolute inset-x-2 top-2 flex min-w-0 items-start justify-between gap-2"
+        >
+          {badges.length ? (
+            <div
+              data-listing-card-promotion="true"
+              className="flex min-w-0 flex-1 flex-wrap gap-1"
             >
-              <SemanticIcon
-                name="heart"
-                size="md"
-                className={isFavorite ? "fill-current" : undefined}
-              />
-            </button>
+              {badges.map((badge) => (
+                <Badge
+                  key={badge.tone}
+                  variant={badge.tone === "featured" ? "featured" : "urgent"}
+                  className="listing-card-promotion-badge max-w-full min-w-0 text-overline"
+                >
+                  <span className="truncate">{badge.label}</span>
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <span />
+          )}
+          {quickAction || onFavoriteToggle ? (
+            <div
+              data-listing-card-actions="true"
+              className="pointer-events-auto flex shrink-0 items-center gap-1"
+            >
+              {quickAction}
+              {onFavoriteToggle ? (
+                <button
+                  type="button"
+                  data-marketplace-action="favorite.manage"
+                  onClick={toggle}
+                  aria-label={favoriteLabel}
+                  aria-pressed={isFavorite}
+                  className="flex h-control-sm w-control-sm items-center justify-center rounded-pill bg-bg-surface/95 text-primary shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  <SemanticIcon
+                    name="heart"
+                    size="md"
+                    className={isFavorite ? "fill-current" : undefined}
+                  />
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}

@@ -537,13 +537,35 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
           return;
         }
 
+        const configuredCategory = configuredCategories.find(
+          (category) => category.slug === menuKey,
+        );
         const branch = await loadCategoryNavigationBranch(
           services.taxonomy,
-          menuKey,
+          configuredCategory
+            ? {
+                id: configuredCategory.categoryId,
+                slug: configuredCategory.slug,
+              }
+            : menuKey,
           isAvailable,
         );
         if (branch) {
-          setBranchesBySlug((current) => new Map(current).set(menuKey, branch));
+          const projectedBranch = configuredCategory
+            ? {
+                ...branch,
+                slug: configuredCategory.slug,
+                labels: configuredCategory.labels,
+                shortLabels: configuredCategory.shortLabels,
+                name: localizedHeaderCategoryLabel(
+                  configuredCategory,
+                  locale,
+                ),
+              }
+            : branch;
+          setBranchesBySlug((current) =>
+            new Map(current).set(menuKey, projectedBranch),
+          );
         }
       } finally {
         loadingMenuKeysRef.current.delete(menuKey);
@@ -553,6 +575,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       branchesBySlug,
       isAvailable,
       loadHeaderConfiguration,
+      locale,
       overviewRoots.length,
     ],
   );
@@ -807,19 +830,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         >
           <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
             {headerNavItems.map((item, index) => {
-              const taxonomyNode =
-                item.kind === "category"
-                  ? branchesBySlug.get(item.slug)
-                  : undefined;
               const menuKey =
                 item.kind === "category"
                   ? item.slug
                   : item.kind === "overview"
                     ? OVERVIEW_MENU_KEY
                     : undefined;
-              const label = taxonomyNode
-                ? getTaxonomyLabel(taxonomyNode, { compact: true, locale })
-                : item.kind === "category"
+              const label =
+                item.kind === "category"
                   ? localizedHeaderCategoryLabel(item, locale)
                   : t(item.labelKey);
               const dedicatedDestination =
