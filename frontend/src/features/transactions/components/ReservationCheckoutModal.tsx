@@ -6,7 +6,7 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { FormField, Input } from "../../../design-system/primitives/FormField";
 import { Image } from "../../../design-system/primitives/Image";
-import { formatPrice } from "../../../utilities/formatters";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface ReservationCheckoutModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ interface ReservationCheckoutModalProps {
 export const ReservationCheckoutModal: React.FC<
   ReservationCheckoutModalProps
 > = ({ isOpen, onClose, listing, onReservationComplete }) => {
+  const { formatPrice } = useMarketLocation();
   const [agreedLocation, setAgreedLocation] = useState(
     `${listing.city} (${listing.postalCode})`,
   );
@@ -98,7 +99,9 @@ export const ReservationCheckoutModal: React.FC<
                 {listing.title}
               </h3>
               <p className="mt-1 text-base font-black text-primary">
-                {formatPrice(listing.price)}
+                {formatPrice(listing.price, {
+                  sourceCurrency: listing.currency,
+                })}
               </p>
               <p className="mt-1 text-xs text-stone-500">
                 Vendeur : {listing.sellerName}

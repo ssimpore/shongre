@@ -91,7 +91,7 @@ const TOTAL_STEPS = AUTO_CONSTRAINTS.publication.stepCount;
 
 export const AutoPublishWizardPage: React.FC = () => {
   const { t } = useTranslation();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -1062,6 +1062,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                     currency: catalog.config.currency,
                   },
                   currentLocale,
+                  convertMoney,
                 )}
               </p>
             </div>
@@ -1102,7 +1103,11 @@ export const AutoPublishWizardPage: React.FC = () => {
                       </span>
                       <Badge>
                         {plan.monthlyPrice
-                          ? formatAutoMoney(plan.monthlyPrice, currentLocale)
+                          ? formatAutoMoney(
+                              plan.monthlyPrice,
+                              currentLocale,
+                              convertMoney,
+                            )
                           : "Gratuit"}
                       </Badge>
                     </div>
@@ -1173,6 +1178,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 currency: catalog.config.currency,
               },
               currentLocale,
+              convertMoney,
             )}{" "}
             · {data.locationLabel}
           </p>

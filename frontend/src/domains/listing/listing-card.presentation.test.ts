@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type { JobPostingCard } from "@shongre/contracts/employment";
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
+import { DETERMINISTIC_DEMO_CURRENCY_CATALOG } from "@shongre/contracts";
+import { convertMoney } from "@shongre/shared";
 import {
   presentEmploymentListingCard,
   presentPropertyListingCard,
@@ -85,6 +87,53 @@ describe("structured category listing-card presentation", () => {
     ).toEqual(["Terrain"]);
   });
 
+  it("projects a listing into the selected currency without changing its source money", () => {
+    const sourcePrice = { amountMinor: 129_000, currency: "EUR" };
+    const property = {
+      id: "property-converted",
+      title: "Studio",
+      propertyType: "apartment",
+      financials: {
+        price: sourcePrice,
+        period: "month",
+        isNegotiable: false,
+      },
+      characteristics: {
+        condition: "good",
+        livingAreaSquareMeters: 24,
+        rooms: 1,
+      },
+      address: {
+        publicLabel: "Bruxelles",
+        city: "Bruxelles",
+        countryCode: "BE",
+      },
+      media: { photos: [] },
+      seller: {
+        id: "owner",
+        displayName: "Marie",
+        type: "owner",
+        verificationLabels: [],
+      },
+      promotion: { urgent: false, featured: false, sponsored: false },
+      sortDate: "2026-08-20T10:00:00Z",
+    } as unknown as PropertyPublic;
+
+    const card = presentPropertyListingCard(property, "fr-BE", (money) =>
+      convertMoney(
+        money,
+        "CHF",
+        DETERMINISTIC_DEMO_CURRENCY_CATALOG,
+        new Date("2026-09-02T00:00:00.000Z"),
+      ),
+    );
+
+    expect(card.price).toEqual({ amountMinor: 121_260, currency: "CHF" });
+    expect(card.priceLabel).toMatch(/^≈/);
+    expect(card.priceLabel).toContain("CHF");
+    expect(sourcePrice).toEqual({ amountMinor: 129_000, currency: "EUR" });
+  });
+
   it("selects vehicle year, mileage and fuel", () => {
     const vehicle = {
       id: "vehicle-1",
@@ -156,7 +205,7 @@ describe("structured category listing-card presentation", () => {
       "EUR",
     );
     expect(card.priceLabel?.replace(/\s/gu, " ")).toContain(
-      "4 000 € – 5 000 €",
+      "4 000,00 € – 5 000,00 €",
     );
     expect(card.priceLabel).toContain("par mois");
     expect(card.characteristics).toEqual([

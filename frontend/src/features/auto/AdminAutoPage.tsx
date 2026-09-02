@@ -48,7 +48,7 @@ type Tab = (typeof TABS)[number];
 
 export const AdminAutoPage: React.FC = () => {
   const { t } = useTranslation();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { formatNumber } = useRegionalFormatters();
   const toast = useToast();
   const [overview, setOverview] = useState<AutoAdminOverview | null>(null);
@@ -335,7 +335,11 @@ export const AdminAutoPage: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     {plan.monthlyPrice
-                      ? formatAutoMoney(plan.monthlyPrice, currentLocale)
+                      ? formatAutoMoney(
+                          plan.monthlyPrice,
+                          currentLocale,
+                          convertMoney,
+                        )
                       : "Gratuit"}
                   </td>
                   <td className="px-4 py-3">
@@ -386,8 +390,8 @@ export const AdminAutoPage: React.FC = () => {
                 <div>
                   <p className="font-bold">{addOn.name}</p>
                   <p className="mt-1 text-micro text-text-muted">
-                    {formatAutoMoney(addOn.price, currentLocale)} ·{" "}
-                    {labelIdentifier(addOn.type)}
+                    {formatAutoMoney(addOn.price, currentLocale, convertMoney)}{" "}
+                    · {labelIdentifier(addOn.type)}
                   </p>
                 </div>
                 <button

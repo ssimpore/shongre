@@ -1,4 +1,9 @@
-import type { ListingCardView, MarketCode, Money } from "@shongre/contracts";
+import type {
+  ListingCardView,
+  MarketCode,
+  Money,
+  MoneyConversionProjection,
+} from "@shongre/contracts";
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type {
   EmploymentCatalog,
@@ -6,6 +11,10 @@ import type {
   SalaryRange,
 } from "@shongre/contracts/employment";
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
+import {
+  formatProjectedMoney,
+  type MoneyDisplayConverter,
+} from "../../utilities/formatters";
 
 interface CategoryCardPresentation<T> {
   categoryLabel: string;
@@ -131,23 +140,24 @@ function compactCharacteristics<T>(
 function formatMoney(
   money: Money,
   locale: string,
-  maximumFractionDigits = money.amountMinor % 100 === 0 ? 0 : 2,
+  convertMoney?: MoneyDisplayConverter,
 ): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: money.currency,
-    maximumFractionDigits,
-  }).format(money.amountMinor / 100);
+  return formatProjectedMoney(money, { locale, convertMoney });
 }
 
 function salaryLabel(
   salary: SalaryRange | undefined,
   catalog: EmploymentCatalog | null | undefined,
   locale: string,
+  convertMoney?: (money: Money) => MoneyConversionProjection,
 ): string {
   if (!salary?.isPublic) return "Rémunération non communiquée";
-  const minimum = salary.minimum ? formatMoney(salary.minimum, locale) : "";
-  const maximum = salary.maximum ? formatMoney(salary.maximum, locale) : "";
+  const minimum = salary.minimum
+    ? formatMoney(salary.minimum, locale, convertMoney)
+    : "";
+  const maximum = salary.maximum
+    ? formatMoney(salary.maximum, locale, convertMoney)
+    : "";
   const range =
     minimum && maximum
       ? `${minimum} – ${maximum}`
@@ -171,6 +181,7 @@ function representativeSalaryMoney(
 export function presentPropertyListingCard(
   property: PropertyPublic,
   locale: string,
+  convertMoney?: (money: Money) => MoneyConversionProjection,
 ): ListingCardView {
   const presentation = STRUCTURED_LISTING_CARD_PRESENTATIONS.property;
   const periodLabels: Record<PropertyPublic["financials"]["period"], string> = {
@@ -180,13 +191,17 @@ export function presentPropertyListingCard(
     night: " / nuit",
   };
 
+  const priceProjection = convertMoney?.(property.financials.price);
+  const displayPrice = priceProjection?.display || property.financials.price;
   return {
     id: property.id,
     title: property.title,
-    price: property.financials.price,
-    priceLabel: `${formatMoney(property.financials.price, locale, 0)}${
-      periodLabels[property.financials.period]
-    }`,
+    price: displayPrice,
+    priceLabel: `${formatMoney(
+      property.financials.price,
+      locale,
+      convertMoney,
+    )}${periodLabels[property.financials.period]}`,
     imageUrl: property.media.photos[0],
     city: property.address.publicLabel,
     marketCode: property.address.countryCode,
@@ -212,12 +227,17 @@ export function presentPropertyListingCard(
 export function presentVehicleListingCard(
   vehicle: VehiclePublic,
   locale: string,
+  convertMoney?: (money: Money) => MoneyConversionProjection,
 ): ListingCardView {
   const presentation = STRUCTURED_LISTING_CARD_PRESENTATIONS.vehicle;
+  const priceProjection = convertMoney?.(vehicle.price);
   return {
     id: vehicle.id,
     title: vehicle.title,
-    price: vehicle.price,
+    price: priceProjection?.display || vehicle.price,
+    priceLabel: priceProjection?.estimated
+      ? formatMoney(vehicle.price, locale, convertMoney)
+      : undefined,
     imageUrl: vehicle.mediaUrls[0],
     city: vehicle.locationLabel,
     marketCode: vehicle.marketCodes[0]!,
@@ -248,13 +268,19 @@ export function presentEmploymentListingCard(
   locale: string,
   marketCode: MarketCode,
   fallbackCurrency: string,
+  convertMoney?: (money: Money) => MoneyConversionProjection,
 ): ListingCardView {
   const presentation = STRUCTURED_LISTING_CARD_PRESENTATIONS.employment;
+  const representativePrice = representativeSalaryMoney(
+    job.salary,
+    fallbackCurrency,
+  );
+  const priceProjection = convertMoney?.(representativePrice);
   return {
     id: job.id,
     title: job.title,
-    price: representativeSalaryMoney(job.salary, fallbackCurrency),
-    priceLabel: salaryLabel(job.salary, catalog, locale),
+    price: priceProjection?.display || representativePrice,
+    priceLabel: salaryLabel(job.salary, catalog, locale, convertMoney),
     imageUrl: job.employer.logoUrl,
     city: job.primaryLocation.label,
     marketCode,

@@ -70,6 +70,12 @@ describe("generated taxonomy v4 integrity", () => {
       aliases: 290,
       referenceData: 42,
     });
+    expect(report.templateResolution).toMatchObject({
+      flowTemplateRows: 811,
+      addOverrides: 375,
+      excludeOverrides: 8,
+      duplicateEffectiveBindings: 0,
+    });
   });
 
   it("has no orphan, cycle, active identity, slug or sibling-order conflict", () => {

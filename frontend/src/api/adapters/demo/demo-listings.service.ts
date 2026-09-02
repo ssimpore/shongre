@@ -81,15 +81,18 @@ export class DemoListingsService implements ListingsServiceContract {
     };
   }
 
-  async createListingDraft(userId?: string): Promise<PublicationDraftState> {
+  async createListingDraft(
+    marketCode = "FR",
+    userId?: string,
+  ): Promise<PublicationDraftState> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
-    const existing = publicationService.getDraft(userId);
+    const existing = publicationService.getDraft(userId, marketCode);
     if (existing) return existing;
 
     const defaultDraft: PublicationDraftState = {
-      marketCode: "FR",
-      selectedMarkets: [marketService.getDefaultMarket().code],
+      marketCode,
+      selectedMarkets: [marketCode],
       taxonomyNodeId: "",
       listingIntent: "SELL",
       title: "",
@@ -100,7 +103,9 @@ export class DemoListingsService implements ListingsServiceContract {
       pricing: {
         priceModel: "fixed",
         amount: 0,
-        currency: "EUR",
+        currency:
+          marketService.getEffectiveConfig(marketCode).localization
+            .defaultCurrency,
         isNegotiable: false,
         isFreeDonation: false,
       },
@@ -120,7 +125,7 @@ export class DemoListingsService implements ListingsServiceContract {
       location: {
         city: "Paris",
         postalCode: "75001",
-        countryCode: "FR",
+        countryCode: marketCode,
         hideExactAddress: true,
       },
       currentStep: 1,
@@ -131,10 +136,15 @@ export class DemoListingsService implements ListingsServiceContract {
     return defaultDraft;
   }
 
-  async getListingDraft(): Promise<PublicationDraftState | null> {
+  async getListingDraft(
+    marketCode = "FR",
+  ): Promise<PublicationDraftState | null> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
-    return publicationService.getDraft(storageService.getCurrentUser()?.id);
+    const user = storageService.getCurrentUser();
+    return user
+      ? publicationService.restoreGuestDraft(user, marketCode)
+      : publicationService.getDraft(undefined, marketCode);
   }
 
   async uploadListingPhoto(file: File) {
@@ -287,7 +297,10 @@ export class DemoListingsService implements ListingsServiceContract {
   ): Promise<void> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
-    publicationService.saveDraft(draft, userId);
+    publicationService.saveDraft(
+      draft,
+      userId ?? storageService.getCurrentUser()?.id,
+    );
   }
 
   async publishListing(

@@ -6,6 +6,7 @@ import { Input, Switch } from "../primitives/FormField";
 import { FilterPanel } from "../primitives/FilterPanel";
 import { Surface } from "../primitives/Layout";
 import { EmptyState, Notice } from "./Feedback";
+import { OnboardingPreparationPage } from "./OnboardingPreparationPage";
 import { ListingCardSkeleton } from "./Skeleton";
 
 describe("design-system representative states", () => {
@@ -51,6 +52,25 @@ describe("design-system representative states", () => {
     expect(html).toContain("bg-warning-surface");
     expect(html).toContain("Aucun résultat");
     expect(html).toContain('aria-hidden="true"');
+  });
+
+  it("uses the authentication-flow control height for onboarding actions", () => {
+    const html = renderToStaticMarkup(
+      <OnboardingPreparationPage
+        eyebrow="Votre annonce"
+        title="Avant de commencer"
+        description="Préparez votre annonce."
+        checklistTitle="À garder sous la main"
+        items={[]}
+        actionLabel="Reprendre mon annonce"
+        durationLabel="Environ 5 minutes"
+        statusLabel="Votre brouillon est prêt."
+        onStart={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("h-control-touch");
+    expect(html).not.toContain("h-control-lg");
   });
 
   it("renders the canonical filter shell for sidebars and drawers", () => {

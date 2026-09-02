@@ -8,6 +8,7 @@ import type { AutoServiceContract } from "../contracts/auto.contract";
 import type { BusinessRulesServiceContract } from "../contracts/business-rules.contract";
 import type { CommissionServiceContract } from "../contracts/commission.contract";
 import type { CoursesServiceContract } from "../contracts/courses.contract";
+import type { CurrenciesServiceContract } from "../contracts/currencies.contract";
 import type { CrmProspectingServiceContract } from "../contracts/crm-prospecting.contract";
 import type { CrmServiceContract } from "../contracts/crm.contract";
 import type { EmploymentServiceContract } from "../contracts/employment.contract";
@@ -55,6 +56,7 @@ export interface ServiceRegistry {
   ai: AiServiceContract;
   trending: TrendingServiceContract;
   courses: CoursesServiceContract;
+  currencies: CurrenciesServiceContract;
   auto: AutoServiceContract;
   realEstate: RealEstateServiceContract;
   employment: EmploymentServiceContract;
@@ -150,6 +152,10 @@ const demoServiceLoaders: ServiceLoaders = {
   courses: () =>
     import("../adapters/demo/demo-courses.service").then(
       ({ demoCoursesService }) => demoCoursesService,
+    ),
+  currencies: () =>
+    import("../adapters/demo/demo-currencies.service").then(
+      ({ demoCurrenciesService }) => demoCurrenciesService,
     ),
   auto: () =>
     import("../adapters/demo/demo-auto.service").then(
@@ -293,6 +299,10 @@ const httpServiceLoaders: ServiceLoaders = {
   courses: () =>
     import("../adapters/http/http-courses.service").then(
       ({ httpCoursesService }) => httpCoursesService,
+    ),
+  currencies: () =>
+    import("../adapters/http/http-currencies.service").then(
+      ({ httpCurrenciesService }) => httpCurrenciesService,
     ),
   auto: () =>
     import("../adapters/http/http-auto.service").then(

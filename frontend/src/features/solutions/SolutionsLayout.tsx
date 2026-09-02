@@ -11,7 +11,7 @@ import { applicationHref } from "../../platform/applications/use-application-hre
 import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { CookieConsent } from "../../app/layouts/CookieConsent";
 import { DemoRoleSwitcher } from "../../app/layouts/DemoRoleSwitcher";
-import { PreferencesModal } from "../../app/layouts/PreferencesModal";
+import { LazyPreferencesModal } from "../../app/layouts/LazyPreferencesModal";
 import { useConsent } from "../../app/providers/ConsentProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -363,7 +363,7 @@ export function SolutionsLayout() {
         <Outlet />
       </main>
       <SolutionsFooter />
-      <PreferencesModal />
+      <LazyPreferencesModal />
       <CookieConsent />
     </div>
   );

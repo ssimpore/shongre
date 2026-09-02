@@ -4,11 +4,12 @@ import {
   ConversationPreview,
   InboxFilterTab,
 } from "../../../domains/messaging/messaging.types";
-import { formatRelativeDate, formatPrice } from "../../../utilities/formatters";
+import { formatRelativeDate } from "../../../utilities/formatters";
 import { Badge, Avatar } from "../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { FilterChip } from "../../../design-system/primitives/FilterChip";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
@@ -32,6 +33,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   const unreadTotal = conversations.reduce(
     (acc, c) => acc + (c.unreadCount || 0),
     0,

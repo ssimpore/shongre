@@ -18,19 +18,11 @@ import {
   Check,
   ChevronRight,
   Clock,
-  Gift,
-  ArrowLeftRight,
-  KeyRound,
-  Wrench,
-  Briefcase,
   Store,
   Package,
   Globe,
 } from "lucide-react";
-import {
-  taxonomyService,
-  getTaxonomyLabel,
-} from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { publicationResolver } from "../../domains/publication/publication.resolver";
 import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
 import { fulfillmentResolver } from "../../domains/fulfillment/fulfillment.resolver";
@@ -43,6 +35,7 @@ import {
   PriceModel,
 } from "../../domains/publication/publication.types";
 import { Button } from "../../design-system/primitives/Button";
+import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import {
   Input,
   Textarea,
@@ -56,8 +49,7 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { services } from "../../api/client/service-registry";
 import { ListingAssistanceResult } from "../../api/contracts/ai.contract";
 import type { ListingBoostOption } from "../../configuration/plans.config";
-import { formatPrice, plural } from "../../utilities/formatters";
-import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
+import { plural } from "../../utilities/formatters";
 import { Image } from "../../design-system/primitives/Image";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -71,8 +63,15 @@ import {
   PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
 } from "@shongre/contracts";
-import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts";
-import { resolveTaxonomyFieldState } from "@shongre/features";
+import type {
+  TaxonomyV4ListingIntent,
+  TaxonomyV4ResolvedSchema,
+} from "@shongre/contracts";
+import {
+  reconcileTaxonomyValues,
+  resolveTaxonomyFieldState,
+  validateTaxonomyValues,
+} from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV4Field } from "./TaxonomyV4Field";
@@ -80,10 +79,17 @@ import { useMarketPromotions } from "../../domains/monetization/useMarketPromoti
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import {
   isCurrentTaxonomyV4Schema,
-  retainTaxonomyV4Attributes,
+  sanitizePublicationDraftForSubmission,
   toTaxonomyV4ListingIntent,
 } from "../../domains/publication/publication.taxonomy-state";
 import { DigitalFulfillmentEditor } from "./DigitalFulfillmentEditor";
+import { useListingOnboardingController } from "./useListingOnboardingController";
+import { ListingOnboardingStatus } from "./ListingOnboardingStatus";
+import { ListingIntentIcon } from "./ListingIntentIcon";
+import {
+  groupTaxonomyPublicationFields,
+  localizedTaxonomyLabel,
+} from "../../domains/publication/publication.onboarding";
 
 /**
  * Publication is three phases, not ten steps.
@@ -148,69 +154,6 @@ const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "item_condition",
 ]);
 
-const INTENT_PRESENTATION: Record<
-  ListingIntent,
-  { label: string; desc: string; Icon: typeof Tag }
-> = {
-  SELL: { label: "Vendre un bien", desc: "Vente standard", Icon: Tag },
-  DONATE: { label: "Faire un don", desc: "Cession gratuite", Icon: Gift },
-  EXCHANGE: {
-    label: "Échanger un bien",
-    desc: "Troc ou échange",
-    Icon: ArrowLeftRight,
-  },
-  RENT_OUT: {
-    label: "Mettre en location",
-    desc: "Bien à louer",
-    Icon: KeyRound,
-  },
-  RENT_SEEK: {
-    label: "Chercher une location",
-    desc: "Demande de location",
-    Icon: Search,
-  },
-  SERVICE_OFFER: {
-    label: "Proposer un service",
-    desc: "Prestation ou artisan",
-    Icon: Wrench,
-  },
-  SERVICE_REQUEST: {
-    label: "Chercher un service",
-    desc: "Demande de prestation",
-    Icon: Search,
-  },
-  JOB_OFFER: { label: "Offre d’emploi", desc: "Recrutement", Icon: Briefcase },
-  JOB_SEEK: { label: "Recherche d’emploi", desc: "Candidature", Icon: Search },
-  WANTED: { label: "Objet recherché", desc: "Avis de recherche", Icon: Search },
-  BOOK: { label: "Réserver", desc: "Réservation de service", Icon: Clock },
-  COURSE_OFFER: {
-    label: "Proposer un cours",
-    desc: "Cours ou formation",
-    Icon: Briefcase,
-  },
-  BUSINESS_SALE: {
-    label: "Céder une activité",
-    desc: "Fonds ou entreprise",
-    Icon: Store,
-  },
-  NOTICE: {
-    label: "Publier un avis",
-    desc: "Annonce informative",
-    Icon: Globe,
-  },
-  GIVE: { label: "Faire un don", desc: "Ancien brouillon", Icon: Gift },
-  RENT: { label: "Location", desc: "Ancien brouillon", Icon: KeyRound },
-  OFFER_SERVICE: {
-    label: "Proposer un service",
-    desc: "Ancien brouillon",
-    Icon: Wrench,
-  },
-};
-
-const INTENT_ORDER = Object.keys(INTENT_PRESENTATION).filter(
-  (intent) => !["GIVE", "RENT", "OFFER_SERVICE"].includes(intent),
-) as ListingIntent[];
-
 const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
   fixed: "Prix fixe",
   negotiable: "Prix négociable",
@@ -234,7 +177,8 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
 
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation();
-  const { currencySymbol, marketContext, currentLocale } = useMarketLocation();
+  const { currencySymbol, marketContext, currentLocale, formatPrice } =
+    useMarketLocation();
   const marketPromotions = useMarketPromotions();
   const { formatMoney } = useRegionalFormatters();
   usePageMeta({
@@ -250,10 +194,13 @@ export const PublishWizard: React.FC = () => {
     accountType === "professional" ? "professional" : "individual";
   const toast = useToast();
   const defaultMarket = marketService.getDefaultMarket();
-  const defaultMarketConfig = marketService.getEffectiveConfig(
-    defaultMarket.code,
-  );
-  const defaultMarketCode = defaultMarket.code;
+  const activeMarketCode =
+    marketContext?.kind === "market" && marketContext.countryCode
+      ? marketContext.countryCode
+      : defaultMarket.code;
+  const defaultMarketConfig =
+    marketService.getEffectiveConfig(activeMarketCode);
+  const defaultMarketCode = activeMarketCode;
   const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
@@ -282,6 +229,11 @@ export const PublishWizard: React.FC = () => {
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [v4SchemaError, setV4SchemaError] = useState("");
+  const [automaticUpdateAnnouncement, setAutomaticUpdateAnnouncement] =
+    useState("");
+  const [taxonomyFieldErrors, setTaxonomyFieldErrors] = useState<
+    Record<string, string>
+  >({});
   const [v4RetryKey, setV4RetryKey] = useState(0);
   const [v4CascadeOptions, setV4CascadeOptions] = useState<
     Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
@@ -290,15 +242,13 @@ export const PublishWizard: React.FC = () => {
     Record<string, "loading" | "ready" | "empty" | "error">
   >({});
   const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
+  const phaseOneHeadingRef = useRef<HTMLHeadingElement>(null);
+  const detailsHeadingRef = useRef<HTMLHeadingElement>(null);
 
   // Draft State initialized with default or restored values
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
-    const initialMarkets =
-      currentUser?.defaultPublicationMarkets &&
-      currentUser.defaultPublicationMarkets.length > 0
-        ? currentUser.defaultPublicationMarkets
-        : [defaultMarketCode];
-    const primaryMarketCode = initialMarkets[0] || defaultMarketCode;
+    const initialMarkets = [defaultMarketCode];
+    const primaryMarketCode = defaultMarketCode;
     const primaryCurrency =
       marketService.getEffectiveConfig(primaryMarketCode).localization
         .defaultCurrency;
@@ -314,6 +264,7 @@ export const PublishWizard: React.FC = () => {
         },
       },
       taxonomyNodeId: "",
+      taxonomyPath: [],
       listingIntent: "SELL",
       title: "",
       description: "",
@@ -356,6 +307,14 @@ export const PublishWizard: React.FC = () => {
     };
   });
 
+  const onboarding = useListingOnboardingController({
+    marketContext: marketContext ?? null,
+    locale: currentLocale,
+    sellerType: taxonomySellerType,
+    draft,
+    setDraft,
+  });
+
   useEffect(() => {
     let active = true;
     if (!currentUser?.id) {
@@ -365,7 +324,7 @@ export const PublishWizard: React.FC = () => {
       };
     }
     services.listings
-      .getListingDraft()
+      .getListingDraft(defaultMarketCode)
       .then((saved) => {
         if (active && saved) {
           setDraft(saved);
@@ -383,7 +342,7 @@ export const PublishWizard: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [currentUser?.id]);
+  }, [currentUser?.id, defaultMarketCode, toast]);
 
   // Autosave Draft through the selected adapter.
   useEffect(() => {
@@ -399,6 +358,15 @@ export const PublishWizard: React.FC = () => {
   useEffect(() => {
     if (!isPreparationVisible) wizardHeadingRef.current?.focus();
   }, [isPreparationVisible]);
+
+  useEffect(() => {
+    if (isPreparationVisible || currentStep !== 1) return;
+    const target =
+      phaseOneStage === "details"
+        ? detailsHeadingRef.current
+        : phaseOneHeadingRef.current;
+    target?.focus();
+  }, [currentStep, isPreparationVisible, phaseOneStage]);
 
   useEffect(() => {
     let active = true;
@@ -425,21 +393,18 @@ export const PublishWizard: React.FC = () => {
   };
 
   const selectListingIntent = (listingIntent: ListingIntent) => {
-    setDraft((current) =>
-      current.listingIntent === listingIntent
-        ? current
-        : {
-            ...current,
-            listingIntent,
-            listingTypeId: undefined,
-            taxonomyVersion: undefined,
-          },
-    );
+    onboarding.selectIntent(listingIntent as TaxonomyV4ListingIntent);
     setPhaseOneStage("category");
     scrollToTop();
   };
 
-  const updateAttribute = (attrCode: string, value: any) => {
+  const updateAttribute = (attrCode: string, value: unknown) => {
+    setTaxonomyFieldErrors((current) => {
+      if (!current[attrCode]) return current;
+      const next = { ...current };
+      delete next[attrCode];
+      return next;
+    });
     setDraft((prev) => {
       const attributes = {
         ...(prev.attributes || {}),
@@ -475,9 +440,21 @@ export const PublishWizard: React.FC = () => {
     v4Schema,
     draft.taxonomyNodeId,
     draft.listingIntent,
+    draft.listingTypeId,
   )
     ? v4Schema
     : null;
+  const taxonomyPublicationFieldGroups = useMemo(
+    () =>
+      activeV4Schema
+        ? groupTaxonomyPublicationFields({
+            schema: activeV4Schema,
+            locale: currentLocale,
+            excludedAttributeIds: WEB_MANAGED_V4_ATTRIBUTES,
+          })
+        : [],
+    [activeV4Schema, currentLocale],
+  );
 
   useEffect(() => {
     if (!schema) return;
@@ -530,6 +507,7 @@ export const PublishWizard: React.FC = () => {
       .resolveV4({
         marketContext,
         categoryIdentity: draft.taxonomyNodeId,
+        listingTypeId: draft.listingTypeId,
         intent: toTaxonomyV4ListingIntent(draft.listingIntent),
         sellerType: taxonomySellerType,
         locale: currentLocale,
@@ -540,27 +518,14 @@ export const PublishWizard: React.FC = () => {
         setV4Schema(resolved);
         setV4SchemaState("ready");
         setDraft((current) => {
-          const attributes = retainTaxonomyV4Attributes(
-            current.attributes,
-            resolved,
-          );
-          const attributesChanged =
-            Object.keys(attributes).length !==
-            Object.keys(current.attributes).length;
           if (
             current.listingTypeId === resolved.listingType.id &&
-            current.taxonomyVersion === "4.0.0" &&
-            !attributesChanged
+            current.taxonomyVersion === "4.0.0"
           ) {
             return current;
           }
           return {
             ...current,
-            attributes,
-            condition: toApplicationListingCondition(
-              attributes,
-              current.condition,
-            ),
             listingTypeId: resolved.listingType.id,
             taxonomyVersion: "4.0.0",
           };
@@ -581,9 +546,11 @@ export const PublishWizard: React.FC = () => {
   }, [
     currentLocale,
     draft.listingIntent,
+    draft.listingTypeId,
     draft.taxonomyNodeId,
     marketContext,
     taxonomySellerType,
+    t,
     v4RetryKey,
   ]);
 
@@ -715,31 +682,54 @@ export const PublishWizard: React.FC = () => {
     };
   }, [activeV4Schema, currentLocale, draft.attributes, marketContext]);
 
-  const resolveSelectableNodeId = (nodeId: string): string => {
-    if (taxonomyService.isPublishable(nodeId)) return nodeId;
-    return (
-      taxonomyService
-        .getDescendants(nodeId)
-        .find((candidate) => taxonomyService.isPublishable(candidate.id))?.id ||
-      nodeId
-    );
-  };
+  useEffect(() => {
+    if (!activeV4Schema) return;
+    const reconciliation = reconcileTaxonomyValues({
+      schema: activeV4Schema,
+      values: draft.attributes,
+      sellerType: taxonomySellerType,
+      fulfillmentTypes: draft.fulfillmentTypes,
+      optionsByAttribute: v4CascadeOptions,
+    });
+    if (reconciliation.removed.length > 0) {
+      setAutomaticUpdateAnnouncement(
+        t("publishing.publishWizard.automaticUpdate", {
+          count: reconciliation.removed.length,
+        }),
+      );
+      setTaxonomyFieldErrors((current) => {
+        const next = { ...current };
+        reconciliation.removed.forEach(({ attributeId }) => {
+          delete next[attributeId];
+        });
+        return next;
+      });
+    }
+    if (
+      JSON.stringify(reconciliation.values) !== JSON.stringify(draft.attributes)
+    ) {
+      setDraft((current) => ({
+        ...current,
+        attributes: reconciliation.values,
+        condition: toApplicationListingCondition(
+          reconciliation.values,
+          current.condition,
+        ),
+      }));
+    }
+  }, [
+    activeV4Schema,
+    draft.attributes,
+    draft.fulfillmentTypes,
+    t,
+    taxonomySellerType,
+    v4CascadeOptions,
+  ]);
 
   const selectTaxonomyNode = (nodeId: string) => {
-    const taxonomyNodeId = resolveSelectableNodeId(nodeId);
     setV4SchemaError("");
-    setDraft((current) =>
-      current.taxonomyNodeId === taxonomyNodeId
-        ? current
-        : {
-            ...current,
-            taxonomyNodeId,
-            listingTypeId: undefined,
-            taxonomyVersion: undefined,
-            attributes: {},
-          },
-    );
-    setPhaseOneStage("details");
+    const isComplete = onboarding.selectSearchResult(nodeId);
+    setPhaseOneStage(isComplete ? "details" : "category");
     scrollToTop();
   };
 
@@ -786,8 +776,8 @@ export const PublishWizard: React.FC = () => {
   // Category Search Results
   const categorySearchResults = useMemo(() => {
     if (!categorySearchQuery.trim()) return null;
-    return taxonomyService.searchTaxonomy(categorySearchQuery, 8);
-  }, [categorySearchQuery]);
+    return onboarding.search(categorySearchQuery);
+  }, [categorySearchQuery, onboarding.search]);
 
   // Media Handlers
   const handleAddPhotos = async (files: FileList | null) => {
@@ -895,6 +885,34 @@ export const PublishWizard: React.FC = () => {
   const showsPanel = (panel: number) =>
     Boolean(PHASES[currentStep - 1]?.panels.includes(panel));
 
+  const getDynamicTaxonomyIssues = () =>
+    activeV4Schema
+      ? validateTaxonomyValues({
+          schema: activeV4Schema,
+          values: draft.attributes,
+          sellerType: taxonomySellerType,
+          fulfillmentTypes: draft.fulfillmentTypes,
+          optionsByAttribute: v4CascadeOptions,
+        }).filter(
+          ({ attributeId }) => !WEB_MANAGED_V4_ATTRIBUTES.has(attributeId),
+        )
+      : [];
+
+  const showDynamicTaxonomyErrors = () => {
+    const issues = getDynamicTaxonomyIssues();
+    setTaxonomyFieldErrors(
+      Object.fromEntries(
+        issues.map((issue) => [
+          issue.attributeId,
+          issue.code === "required"
+            ? t("publishing.publishWizard.requiredDynamicField")
+            : t("publishing.publishWizard.invalidDynamicField"),
+        ]),
+      ),
+    );
+    return issues;
+  };
+
   /* Phase validation. Requirements are unchanged — they are just enforced once
      per phase now instead of once per screen.
 
@@ -906,6 +924,12 @@ export const PublishWizard: React.FC = () => {
     if (phase === 1) {
       if (!draft.taxonomyNodeId)
         return "Veuillez sélectionner une catégorie finale pour continuer.";
+      if (v4SchemaState === "loading")
+        return t("publishing.publishWizard.dynamicFieldsLoading");
+      if (v4SchemaState === "error" || !activeV4Schema)
+        return t("publishing.publishWizard.dynamicFieldsError");
+      if (getDynamicTaxonomyIssues().length > 0)
+        return t("publishing.publishWizard.requiredDynamicField");
       if (draft.photos.length < minimumPhotoCount)
         return `Veuillez ajouter au moins ${minimumPhotoCount} photo${minimumPhotoCount > 1 ? "s" : ""} pour cette catégorie.`;
     } else if (phase === 2) {
@@ -967,6 +991,9 @@ export const PublishWizard: React.FC = () => {
     }
     const error = getPhaseError(currentStep);
     if (error) {
+      if (currentStep === 1 && phaseOneStage === "details") {
+        showDynamicTaxonomyErrors();
+      }
       toast.error(error);
       return;
     }
@@ -1014,7 +1041,24 @@ export const PublishWizard: React.FC = () => {
 
   // Final Publish Handler
   const handleFinalPublish = async () => {
-    const validation = publicationService.validateDraft(draft, currentUser);
+    if (!activeV4Schema || v4SchemaState !== "ready") {
+      toast.error(t("publishing.publishWizard.dynamicFieldsError"));
+      return;
+    }
+    if (showDynamicTaxonomyErrors().length > 0) {
+      toast.error(t("publishing.publishWizard.requiredDynamicField"));
+      return;
+    }
+    const publishDraft = sanitizePublicationDraftForSubmission({
+      draft,
+      schema: activeV4Schema,
+      sellerType: taxonomySellerType,
+      optionsByAttribute: v4CascadeOptions,
+    });
+    const validation = publicationService.validateDraft(
+      publishDraft,
+      currentUser,
+    );
     if (!validation.isValid) {
       toast.error(
         validation.errors[0]?.message ||
@@ -1077,7 +1121,7 @@ export const PublishWizard: React.FC = () => {
       }
 
       const published = await services.listings.publishListing(
-        draft,
+        publishDraft,
         currentUser.id,
       );
       analyticsService.track("publication_completed", {
@@ -1134,6 +1178,14 @@ export const PublishWizard: React.FC = () => {
           </span>
         </div>
       </div>
+      <p
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {automaticUpdateAnnouncement}
+      </p>
 
       {/* Progress.
           Three phases fit a rail at every width, so the phone no longer needs a
@@ -1247,28 +1299,41 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(1) && phaseOneStage !== "details" && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2
+              ref={phaseOneHeadingRef}
+              tabIndex={-1}
+              className="text-xl sm:text-2xl font-black text-stone-900 focus:outline-none"
+            >
               {phaseOneStage === "intent"
                 ? t("publishing.publishWizard.queSouhaitezVousPublier")
-                : "Dans quelle catégorie ?"}
+                : t("publishing.publishWizard.categoryTitle")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
               {phaseOneStage === "intent"
-                ? "Choisissez d’abord l’objectif de votre annonce. Les catégories et règles proposées s’adapteront à ce choix."
-                : "Recherchez un terme ou parcourez les univers. Les caractéristiques apparaîtront après votre sélection."}
+                ? t("publishing.publishWizard.intentHelp")
+                : t("publishing.publishWizard.categoryHelp")}
             </p>
           </div>
 
+          <ListingOnboardingStatus
+            state={onboarding.state}
+            error={onboarding.error}
+            onRetry={onboarding.retry}
+          />
+
           {/* Listing Intent Selector */}
-          {phaseOneStage === "intent" && (
+          {phaseOneStage === "intent" && onboarding.model && (
             <div>
               <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
                 {t("publishing.publishWizard.typeDAnnonceIntention")}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(schema?.supportedIntents ?? INTENT_ORDER).map((intent) => {
-                  const it = INTENT_PRESENTATION[intent];
-                  if (!it) return null;
+                {onboarding.model.intents.map((option) => {
+                  const intent = option.intent;
+                  const label = localizedTaxonomyLabel(
+                    option.labels,
+                    currentLocale,
+                  );
                   return (
                     <button
                       key={intent}
@@ -1288,14 +1353,14 @@ export const PublishWizard: React.FC = () => {
                             : "bg-primary-light text-primary"
                         }`}
                       >
-                        <it.Icon className="h-4 w-4" aria-hidden="true" />
+                        <ListingIntentIcon
+                          intent={intent}
+                          className="h-icon-sm w-icon-sm"
+                        />
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-xs font-bold">
-                          {it.label}
-                        </span>
-                        <span className="mt-0.5 block truncate text-micro text-stone-500">
-                          {it.desc}
+                          {label}
                         </span>
                       </span>
                     </button>
@@ -1340,16 +1405,14 @@ export const PublishWizard: React.FC = () => {
                       className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">
-                        <CategoryIcon category={n} size="sm" />
+                        <CategoryIcon
+                          iconName={n.iconName}
+                          size="md"
+                          className="shrink-0"
+                        />
                         <div>
                           <div className="font-bold text-stone-900">
-                            {getTaxonomyLabel(n, "compact")}
-                          </div>
-                          <div className="text-micro text-stone-500">
-                            {taxonomyService
-                              .getBreadcrumbs(n.id, "compact")
-                              .map((b) => b.label)
-                              .join(" › ")}
+                            {localizedTaxonomyLabel(n.labels, currentLocale)}
                           </div>
                         </div>
                       </div>
@@ -1363,47 +1426,95 @@ export const PublishWizard: React.FC = () => {
             </div>
           )}
 
-          {/* Root Categories Grid */}
-          {phaseOneStage === "category" && (
-            <div className="pt-4 border-t border-border-subtle space-y-3">
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
-                {t("publishing.publishWizard.ouParcourezLesUnivers")}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 max-h-64 overflow-y-auto p-1">
-                {taxonomyService.getRootCategories().map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => selectTaxonomyNode(cat.id)}
-                    title={getTaxonomyLabel(cat, "compact")}
-                    className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
-                      schema?.ancestors[0]?.id === cat.id ||
-                      draft.taxonomyNodeId === cat.id
-                        ? "border-primary bg-primary-light text-primary font-bold shadow-xs"
-                        : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
-                    }`}
+          {/* Variable-depth category hierarchy from the market-scoped v4 tree. */}
+          {phaseOneStage === "category" && onboarding.model && (
+            <div className="space-y-5 border-t border-border-subtle pt-4">
+              {onboarding.model.levels.map((level) => {
+                const selectedId = onboarding.model?.path[level.depth]?.id;
+                return (
+                  <fieldset
+                    key={`${level.depth}:${level.parentId ?? "root"}`}
+                    className="space-y-3"
                   >
-                    <CategoryIcon category={cat} size="md" />
-                    <span className="text-xs font-bold line-clamp-1">
-                      {getTaxonomyLabel(cat, "compact")}
-                    </span>
-                  </button>
-                ))}
-              </div>
+                    <legend className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                      {t("publishing.publishWizard.categoryLevel", {
+                        count: level.depth + 1,
+                      })}
+                    </legend>
+                    <div
+                      role="group"
+                      aria-label={t(
+                        "publishing.publishWizard.chooseCategoryLevel",
+                        { count: level.depth + 1 },
+                      )}
+                      className="grid max-h-72 grid-cols-1 gap-2 overflow-y-auto p-1 sm:grid-cols-2"
+                    >
+                      {level.items.map((category) => {
+                        const isSelected = selectedId === category.id;
+                        return (
+                          <button
+                            key={category.id}
+                            type="button"
+                            aria-pressed={isSelected}
+                            onClick={() => {
+                              const complete = onboarding.selectCategory(
+                                level.depth,
+                                category.id,
+                              );
+                              setCategorySearchQuery("");
+                              if (complete) setPhaseOneStage("details");
+                            }}
+                            className={`flex min-h-control-md items-center justify-between gap-3 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
+                              isSelected
+                                ? "border-primary bg-primary-light font-bold text-primary"
+                                : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
+                            }`}
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <CategoryIcon
+                                iconName={category.iconName}
+                                size="md"
+                                className="shrink-0"
+                              />
+                              <span className="truncate text-xs font-bold">
+                                {localizedTaxonomyLabel(
+                                  category.labels,
+                                  currentLocale,
+                                )}
+                              </span>
+                            </span>
+                            <ChevronRight
+                              className="h-icon-sm w-icon-sm shrink-0"
+                              aria-hidden="true"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+                );
+              })}
+              {!onboarding.model.isComplete &&
+              onboarding.model.path.length > 0 ? (
+                <p role="status" className="text-xs text-text-muted">
+                  {t("publishing.publishWizard.continueCategoryPath")}
+                </p>
+              ) : null}
             </div>
           )}
 
           {/* Current Selected Breadcrumb Path */}
-          {phaseOneStage === "category" && schema && (
+          {phaseOneStage === "category" && onboarding.model?.isComplete && (
             <div className="p-3.5 bg-success-surface text-success rounded-xl border border-success-border text-xs flex items-center justify-between">
               <div>
                 <span className="font-bold block mb-0.5">
                   {t("publishing.publishWizard.categorieActiveValidee")}
                 </span>
                 <span className="font-mono text-success">
-                  {taxonomyService
-                    .getBreadcrumbs(schema.node.id, "compact")
-                    .map((b) => b.label)
+                  {onboarding.model.path
+                    .map((node) =>
+                      localizedTaxonomyLabel(node.labels, currentLocale),
+                    )
                     .join(" › ")}
                 </span>
               </div>
@@ -1422,7 +1533,11 @@ export const PublishWizard: React.FC = () => {
             {/* The category name is only known once one is chosen. Now that this
                 panel shares a page with the category picker it can render before
                 that, so the suffix is conditional rather than "(  )". */}
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2
+              ref={detailsHeadingRef}
+              tabIndex={-1}
+              className="text-xl sm:text-2xl font-black text-stone-900 focus:outline-none"
+            >
               Caractéristiques techniques
               {schema?.node
                 ? ` · ${getTaxonomyLabel(schema.node, "compact")}`
@@ -1483,7 +1598,7 @@ export const PublishWizard: React.FC = () => {
               role="status"
               className="rounded-control bg-bg-base p-4 text-xs text-text-muted"
             >
-              Chargement des caractéristiques de cette annonce…
+              {t("publishing.publishWizard.dynamicFieldsLoading")}
             </div>
           )}
           {v4SchemaState === "error" && (
@@ -1491,70 +1606,108 @@ export const PublishWizard: React.FC = () => {
               role="alert"
               className="rounded-control border border-danger-border bg-danger-surface p-4 text-xs text-danger"
             >
-              <p>{v4SchemaError}</p>
+              <p>
+                {v4SchemaError ||
+                  t("publishing.publishWizard.dynamicFieldsError")}
+              </p>
               <button
                 type="button"
                 className="mt-2 font-bold underline"
                 onClick={() => setV4RetryKey((value) => value + 1)}
               >
-                Réessayer
+                {t("common.retry")}
               </button>
             </div>
           )}
-          {activeV4Schema && activeV4Schema.attributes.length > 0 && (
-            <div className="space-y-4 border-t border-border-subtle pt-4">
-              <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-900">
-                <Tag className="h-icon-sm w-icon-sm text-primary" />
-                <span>{t("publishing.publishWizard.criteresDetailles")}</span>
-              </h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {activeV4Schema.attributes.map((field) => {
-                  if (WEB_MANAGED_V4_ATTRIBUTES.has(field.definition.id)) {
-                    return null;
-                  }
-                  const fieldState = resolveTaxonomyFieldState({
-                    schema: activeV4Schema,
-                    attributeId: field.definition.id,
-                    values: draft.attributes,
-                    sellerType: taxonomySellerType,
-                  });
-                  if (!fieldState.visible) return null;
-                  const resolvedField = fieldState.required
-                    ? {
-                        ...field,
-                        binding: { ...field.binding, required: true },
-                      }
-                    : field;
-                  const controlledField =
-                    field.definition.id in v4CascadeOptions
-                      ? {
-                          ...resolvedField,
-                          options: v4CascadeOptions[field.definition.id] ?? [],
-                        }
-                      : resolvedField;
-                  return (
-                    <TaxonomyV4Field
-                      key={field.definition.id}
-                      field={controlledField}
-                      locale={currentLocale}
-                      value={draft.attributes[field.definition.id]}
-                      disabled={fieldState.disabled}
-                      state={
-                        v4CascadeState[field.definition.id] ??
-                        (field.definition.optionSetId &&
-                        field.options.length === 0
-                          ? "empty"
-                          : "ready")
-                      }
-                      error="Impossible de charger les options liées."
-                      onRetry={() => setV4RetryKey((value) => value + 1)}
-                      onChange={(value) =>
-                        updateAttribute(field.definition.id, value)
-                      }
-                    />
-                  );
-                })}
+          {v4SchemaState === "ready" &&
+            activeV4Schema &&
+            taxonomyPublicationFieldGroups.length === 0 && (
+              <div
+                role="status"
+                className="rounded-control bg-bg-base p-4 text-xs text-text-muted"
+              >
+                {t("publishing.publishWizard.dynamicFieldsEmpty")}
               </div>
+            )}
+          {activeV4Schema && taxonomyPublicationFieldGroups.length > 0 && (
+            <div className="space-y-4 border-t border-border-subtle pt-4">
+              {taxonomyPublicationFieldGroups.map((group) => {
+                const visibleFields = group.fields.filter(
+                  (field) =>
+                    resolveTaxonomyFieldState({
+                      schema: activeV4Schema,
+                      attributeId: field.definition.id,
+                      values: draft.attributes,
+                      sellerType: taxonomySellerType,
+                      fulfillmentTypes: draft.fulfillmentTypes,
+                    }).visible,
+                );
+                if (visibleFields.length === 0) return null;
+                return (
+                  <section
+                    key={group.id}
+                    className="space-y-3"
+                    aria-labelledby={`taxonomy-group-${group.id}`}
+                  >
+                    <h3
+                      id={`taxonomy-group-${group.id}`}
+                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-900"
+                    >
+                      <Tag
+                        className="h-icon-sm w-icon-sm text-primary"
+                        aria-hidden="true"
+                      />
+                      <span>{group.label}</span>
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {visibleFields.map((field) => {
+                        const fieldState = resolveTaxonomyFieldState({
+                          schema: activeV4Schema,
+                          attributeId: field.definition.id,
+                          values: draft.attributes,
+                          sellerType: taxonomySellerType,
+                          fulfillmentTypes: draft.fulfillmentTypes,
+                        });
+                        const resolvedField = fieldState.required
+                          ? {
+                              ...field,
+                              binding: { ...field.binding, required: true },
+                            }
+                          : field;
+                        const controlledField =
+                          field.definition.id in v4CascadeOptions
+                            ? {
+                                ...resolvedField,
+                                options:
+                                  v4CascadeOptions[field.definition.id] ?? [],
+                              }
+                            : resolvedField;
+                        return (
+                          <TaxonomyV4Field
+                            key={field.definition.id}
+                            field={controlledField}
+                            locale={currentLocale}
+                            value={draft.attributes[field.definition.id]}
+                            disabled={fieldState.disabled}
+                            state={
+                              v4CascadeState[field.definition.id] ??
+                              (field.definition.optionSetId &&
+                              field.options.length === 0
+                                ? "empty"
+                                : "ready")
+                            }
+                            error={taxonomyFieldErrors[field.definition.id]}
+                            onRetry={() => setV4RetryKey((value) => value + 1)}
+                            onChange={(value) =>
+                              updateAttribute(field.definition.id, value)
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
           )}
         </div>

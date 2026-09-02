@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **488**
-- Specification SHA-256: `d55b53a9bb091912`
+- Operations: **492**
+- Specification SHA-256: `816c337e45ab94f9`
 
 ## account
 
@@ -545,6 +545,10 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `PUT` | `/admin/currencies/{code}` | `putAdminCurrency` | `permission` | `market.configure` | `200` |
+| `GET` | `/admin/currencies` | `getAdminCurrencyCatalog` | `permission` | `market.manage` | `200` |
+| `PUT` | `/admin/exchange-rates/{baseCurrency}/{quoteCurrency}` | `putAdminExchangeRate` | `permission` | `market.configure` | `200` |
+| `GET` | `/currencies` | `getCurrencyCatalog` | `public` | — | `200` |
 | `GET` | `/markets/{code}` | `getMarketsByCode` | `public` | — | `200` |
 | `GET` | `/markets/active` | `getMarketsActive` | `public` | — | `200` |
 | `POST` | `/markets/active` | `postMarketsActive` | `permission` | `market.manage` | `200` |

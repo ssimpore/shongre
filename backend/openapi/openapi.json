@@ -21657,6 +21657,9 @@
         "description": "Implemented by backend/src/api/v1/router.ts:569.",
         "parameters": [
           {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
             "$ref": "#/components/parameters/RequestId"
           }
         ],
@@ -21722,6 +21725,9 @@
         "description": "Implemented by backend/src/api/v1/router.ts:562.",
         "parameters": [
           {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
             "$ref": "#/components/parameters/RequestId"
           }
         ],
@@ -21784,6 +21790,9 @@
         "summary": "PUT /listing-drafts/current",
         "description": "Implemented by backend/src/api/v1/router.ts:576.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
           {
             "$ref": "#/components/parameters/RequestId"
           }
@@ -22639,6 +22648,178 @@
         "x-shongre-access": "public",
         "x-shongre-runtime": "server",
         "x-shongre-source": "backend/src/app/server/index.ts"
+      }
+    },
+    "/currencies": {
+      "get": {
+        "x-shongre-deny-staff-marketplace": false,
+        "operationId": "getCurrencyCatalog",
+        "tags": ["markets"],
+        "summary": "List enabled display currencies and exchange rates",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Enabled display-currency catalogue.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CurrencyCatalog" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/currencies": {
+      "get": {
+        "operationId": "getAdminCurrencyCatalog",
+        "tags": ["markets"],
+        "summary": "List all currency definitions and rates for administration",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Complete currency catalogue.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CurrencyCatalog" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.manage",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/currencies/{code}": {
+      "put": {
+        "operationId": "putAdminCurrency",
+        "tags": ["markets"],
+        "summary": "Create or update an audited currency definition",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/CurrencyCode" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrencyDefinitionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated currency definition.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CurrencyDefinition" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.configure",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/admin/exchange-rates/{baseCurrency}/{quoteCurrency}": {
+      "put": {
+        "operationId": "putAdminExchangeRate",
+        "tags": ["markets"],
+        "summary": "Create or update an audited display exchange rate",
+        "parameters": [
+          {
+            "name": "baseCurrency",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/CurrencyCode" }
+          },
+          {
+            "name": "quoteCurrency",
+            "in": "path",
+            "required": true,
+            "schema": { "$ref": "#/components/schemas/CurrencyCode" }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ExchangeRateUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated exchange rate.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExchangeRate" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "market.configure",
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/markets": {
@@ -35832,7 +36013,8 @@
           "checksum",
           "marketCode",
           "locale",
-          "items"
+          "items",
+          "listingTypes"
         ],
         "properties": {
           "taxonomyVersion": { "type": "string", "enum": ["4.0.0"] },
@@ -35843,6 +36025,10 @@
           "items": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/TaxonomyV4Node" }
+          },
+          "listingTypes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TaxonomyV4ListingType" }
           }
         }
       },
@@ -37749,6 +37935,120 @@
           }
         }
       },
+      "CurrencyCode": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$"
+      },
+      "CurrencyDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "displayName",
+          "symbol",
+          "minorUnitDigits",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "code": { "$ref": "#/components/schemas/CurrencyCode" },
+          "displayName": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "symbol": { "type": "string", "minLength": 1, "maxLength": 12 },
+          "minorUnitDigits": { "type": "integer", "minimum": 0, "maximum": 4 },
+          "enabled": { "type": "boolean" },
+          "version": { "type": "integer", "minimum": 1 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ExchangeRate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "baseCurrency",
+          "quoteCurrency",
+          "rateNumerator",
+          "rateDenominator",
+          "source",
+          "asOf",
+          "expiresAt",
+          "enabled",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "baseCurrency": { "$ref": "#/components/schemas/CurrencyCode" },
+          "quoteCurrency": { "$ref": "#/components/schemas/CurrencyCode" },
+          "rateNumerator": { "type": "integer", "minimum": 1 },
+          "rateDenominator": { "type": "integer", "minimum": 1 },
+          "source": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "asOf": { "type": "string", "format": "date-time" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "enabled": { "type": "boolean" },
+          "version": { "type": "integer", "minimum": 1 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CurrencyCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["currencies", "rates", "generatedAt"],
+        "properties": {
+          "currencies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CurrencyDefinition" }
+          },
+          "rates": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExchangeRate" }
+          },
+          "generatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CurrencyDefinitionUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "displayName",
+          "symbol",
+          "minorUnitDigits",
+          "enabled",
+          "reason"
+        ],
+        "properties": {
+          "displayName": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "symbol": { "type": "string", "minLength": 1, "maxLength": 12 },
+          "minorUnitDigits": { "type": "integer", "minimum": 0, "maximum": 4 },
+          "enabled": { "type": "boolean" },
+          "reason": { "type": "string", "minLength": 8, "maxLength": 500 }
+        }
+      },
+      "ExchangeRateUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rateNumerator",
+          "rateDenominator",
+          "source",
+          "asOf",
+          "expiresAt",
+          "enabled",
+          "reason"
+        ],
+        "properties": {
+          "rateNumerator": { "type": "integer", "minimum": 1 },
+          "rateDenominator": { "type": "integer", "minimum": 1 },
+          "source": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "asOf": { "type": "string", "format": "date-time" },
+          "expiresAt": { "type": "string", "format": "date-time" },
+          "enabled": { "type": "boolean" },
+          "reason": { "type": "string", "minLength": 8, "maxLength": 500 }
+        }
+      },
       "PublicCountryConfig": {
         "type": "object",
         "additionalProperties": false,
@@ -37901,6 +38201,7 @@
           "defaultLocale",
           "supportedLocales",
           "currency",
+          "supportedCurrencies",
           "timezone",
           "phoneCountryCode",
           "seo",
@@ -37944,6 +38245,12 @@
             "items": { "type": "string" }
           },
           "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "supportedCurrencies": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/CurrencyCode" }
+          },
           "currencySymbol": { "type": "string" },
           "timezone": { "type": "string" },
           "phoneCountryCode": {
@@ -37998,6 +38305,13 @@
             "items": { "type": "string" }
           },
           "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "supportedCurrencies": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 24,
+            "uniqueItems": true,
+            "items": { "$ref": "#/components/schemas/CurrencyCode" }
+          },
           "currencySymbol": { "type": "string" },
           "timezone": { "type": "string" },
           "phoneCountryCode": { "type": "string" },

@@ -56,7 +56,8 @@ import {
 export const EmploymentJobDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
-  const { currentLocale, marketContext, activeMarket } = useMarketLocation();
+  const { currentLocale, marketContext, activeMarket, convertMoney } =
+    useMarketLocation();
   const navigate = useNavigate();
   const toast = useToast();
   const publicRouteData = usePublicRouteData();
@@ -346,7 +347,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
               </dl>
 
               <p className="mt-5 text-lg font-black text-primary">
-                {formatSalary(job.salary, catalog, currentLocale)}
+                {formatSalary(job.salary, catalog, currentLocale, convertMoney)}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-text-secondary">
                 <span className="inline-flex items-center gap-1.5">

@@ -23,7 +23,7 @@ import {
 
 export const AutoComparePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, convertMoney } = useMarketLocation();
   const [params, setParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,8 @@ export const AutoComparePage: React.FC = () => {
   const rows = [
     [
       "Prix",
-      (vehicle: VehiclePublic) => formatAutoMoney(vehicle.price, currentLocale),
+      (vehicle: VehiclePublic) =>
+        formatAutoMoney(vehicle.price, currentLocale, convertMoney),
     ],
     ["Année", (vehicle: VehiclePublic) => String(vehicle.technical.modelYear)],
     [

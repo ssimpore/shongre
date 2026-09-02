@@ -1,12 +1,16 @@
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type { Money } from "@shongre/contracts";
+import {
+  formatProjectedMoney,
+  type MoneyDisplayConverter,
+} from "../../utilities/formatters";
 
-export function formatAutoMoney(money: Money, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: money.currency,
-    maximumFractionDigits: money.amountMinor % 100 === 0 ? 0 : 2,
-  }).format(money.amountMinor / 100);
+export function formatAutoMoney(
+  money: Money,
+  locale: string,
+  convertMoney?: MoneyDisplayConverter,
+) {
+  return formatProjectedMoney(money, { locale, convertMoney });
 }
 
 export function formatAutoMileage(vehicle: VehiclePublic, locale: string) {

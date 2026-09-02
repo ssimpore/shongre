@@ -1,14 +1,14 @@
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
+import {
+  formatProjectedMoney,
+  type MoneyDisplayConverter,
+} from "../../utilities/formatters";
 
 export const formatImmoMoney = (
   money: { amountMinor: number; currency: string },
   locale: string,
-) =>
-  new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: money.currency,
-    maximumFractionDigits: 0,
-  }).format(money.amountMinor / 100);
+  convertMoney?: MoneyDisplayConverter,
+) => formatProjectedMoney(money, { locale, convertMoney });
 
 export const propertyTypeLabels: Record<
   PropertyPublic["propertyType"],

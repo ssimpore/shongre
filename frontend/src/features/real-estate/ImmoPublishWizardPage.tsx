@@ -91,7 +91,7 @@ type DraftData = PropertyPublicationDraftData;
 export const ImmoPublishWizardPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -1123,6 +1123,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                         currency: catalog.config.currency,
                       },
                       currentLocale,
+                      convertMoney,
                     )}
                     {data.period === "month" ? "/mois" : ""}
                   </p>
@@ -1194,7 +1195,11 @@ export const ImmoPublishWizardPage: React.FC = () => {
                             </p>
                             <p className="mt-3 text-base font-black text-primary">
                               {price
-                                ? formatImmoMoney(price, currentLocale)
+                                ? formatImmoMoney(
+                                    price,
+                                    currentLocale,
+                                    convertMoney,
+                                  )
                                 : "Sur devis"}
                               {item.kind === "subscription" ? "/mois" : ""}
                             </p>
@@ -1208,7 +1213,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       {catalog.addOns.map((item) => (
                         <Checkbox
                           key={item.id}
-                          label={`${item.name} · ${formatImmoMoney(item.price, currentLocale)}`}
+                          label={`${item.name} · ${formatImmoMoney(item.price, currentLocale, convertMoney)}`}
                           checked={data.addOnIds.includes(item.id)}
                           onChange={() => toggle("addOnIds", item.id)}
                         />
@@ -1252,7 +1257,11 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   <span>{offer.name}</span>
                   <strong>
                     {offer.prices[0]
-                      ? formatImmoMoney(offer.prices[0].amount, currentLocale)
+                      ? formatImmoMoney(
+                          offer.prices[0].amount,
+                          currentLocale,
+                          convertMoney,
+                        )
                       : "Sur devis"}
                   </strong>
                 </div>
@@ -1265,7 +1274,11 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     >
                       <span>{item.name}</span>
                       <strong>
-                        {formatImmoMoney(item.price, currentLocale)}
+                        {formatImmoMoney(
+                          item.price,
+                          currentLocale,
+                          convertMoney,
+                        )}
                       </strong>
                     </div>
                   ))}

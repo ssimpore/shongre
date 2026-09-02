@@ -18,6 +18,8 @@ export interface CountryMarketDefinition {
   name: string;
   flag: string;
   currency: string;
+  supportedCurrencies: string[];
+  version?: number;
   currencySymbol: string;
   locale: string;
   phonePrefix: string;
@@ -54,6 +56,8 @@ export function buildCountryMarketDefinition(
     name: market.name,
     flag: market.flag,
     currency: config.localization.defaultCurrency,
+    supportedCurrencies: [...market.supportedCurrencies],
+    version: market.version,
     currencySymbol: config.localization.currencySymbol,
     locale: config.localization.defaultLocale,
     phonePrefix: config.localization.phonePrefix,

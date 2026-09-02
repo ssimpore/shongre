@@ -5,7 +5,7 @@ import { fulfillmentResolver } from "../../../domains/fulfillment/fulfillment.re
 import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../../i18n/digital.catalogue.fr";
-import { formatPrice } from "../../../utilities/formatters";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 export interface ListingFulfillmentSummaryProps {
   listing: Listing;
@@ -16,6 +16,7 @@ export const ListingFulfillmentSummary: React.FC<
   ListingFulfillmentSummaryProps
 > = ({ listing, className = "" }) => {
   const { t } = useTranslation(digitalMessagesFr);
+  const { formatPrice } = useMarketLocation();
   const digitalTypes = (listing.fulfillmentTypes ?? []).filter(
     (type) => type !== "PHYSICAL",
   );
@@ -178,7 +179,9 @@ export const ListingFulfillmentSummary: React.FC<
                 ? t("listings.listingFulfillmentSummary.aPartirDe399")
                 : parcelPrice === 0
                   ? "Gratuit"
-                  : formatPrice(parcelPrice)}
+                  : formatPrice(parcelPrice, {
+                      sourceCurrency: listing.currency,
+                    })}
             </div>
           </div>
         )}

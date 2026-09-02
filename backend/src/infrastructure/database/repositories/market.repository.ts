@@ -363,6 +363,9 @@ export class PostgresMarketRepository implements IMarketRepository {
       supportedLocales: row.supported_locales || [
         ...bootstrap.supportedLocales,
       ],
+      supportedCurrencies: row.supported_currencies || [
+        ...bootstrap.supportedCurrencies,
+      ],
       currency: row.currency || bootstrap.currency,
       currencySymbol:
         row.currency_symbol || bootstrap.currencySymbol || bootstrap.currency,

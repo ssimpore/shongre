@@ -35,7 +35,7 @@ type FeatureFlag = keyof EmploymentMarketConfig["featureFlags"];
 
 export const EmploymentAdminPage: React.FC = () => {
   const { t } = useTranslation();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<EmploymentAdminOverview | null>(
     null,
@@ -475,6 +475,7 @@ export const EmploymentAdminPage: React.FC = () => {
                             price.amountMinor,
                             price.currency,
                             currentLocale,
+                            convertMoney,
                           )
                         : offer.kind === "custom"
                           ? "Sur devis"

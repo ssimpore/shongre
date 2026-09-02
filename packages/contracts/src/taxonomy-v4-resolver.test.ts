@@ -28,7 +28,18 @@ describe("TaxonomyV4PublicResolver", () => {
       expect(context.countryCode).toBe(country);
       expect(context.locale).toBe(locale);
       expect(context.currency).toBe(currency);
-      expect(resolver.tree(context, locale).items).toHaveLength(301);
+      const tree = resolver.tree(context, locale);
+      expect(tree.items).toHaveLength(301);
+      expect(tree.listingTypes).toHaveLength(212);
+      expect(
+        tree.listingTypes.every((listingType) =>
+          listingType.marketAvailability.some(
+            (availability) =>
+              availability.marketCode === country &&
+              availability.marketplaceEnabled,
+          ),
+        ),
+      ).toBe(true);
     },
   );
 

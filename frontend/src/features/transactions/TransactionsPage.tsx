@@ -15,7 +15,7 @@ import {
 import { useAuth } from "../../app/providers/AuthProvider";
 import { services } from "../../api/client/service-registry";
 import { Transaction, TransactionStatus } from "../../types";
-import { formatPrice, formatRelativeDate } from "../../utilities/formatters";
+import { formatRelativeDate } from "../../utilities/formatters";
 import { routes } from "../../configuration/routes";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
@@ -25,6 +25,7 @@ import { TransactionDetailModal } from "./components/TransactionDetailModal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 type TabMode = "purchases" | "sales";
 type StatusFilter =
@@ -32,6 +33,7 @@ type StatusFilter =
 
 export const TransactionsPage: React.FC = () => {
   const { t } = useTranslation(digitalMessagesFr);
+  const { formatPrice } = useMarketLocation();
   usePageMeta({
     title: t("meta.transactions.title"),
     description: t("meta.transactions.description"),
@@ -481,6 +483,7 @@ export const TransactionsPage: React.FC = () => {
                         isSeller
                           ? tx.sellerPayoutAmount || tx.amount
                           : tx.totalAmount,
+                        { sourceCurrency: tx.currency },
                       )}
                     </div>
                     <span className="text-xs font-medium text-stone-500 mb-1">

@@ -39,6 +39,7 @@ const SERVICE_KEYS = [
   "ai",
   "trending",
   "courses",
+  "currencies",
   "auto",
   "realEstate",
   "employment",

@@ -96,6 +96,19 @@ describe("canonical Shongre country routing", () => {
     },
   );
 
+  it.each([
+    ["FR", "EUR", ["EUR", "CHF"]],
+    ["BE", "EUR", ["EUR", "CHF"]],
+    ["CH", "CHF", ["CHF", "EUR"]],
+  ])(
+    "declares the default and supported currencies for %s",
+    (countryCode, defaultCurrency, supportedCurrencies) => {
+      const country = getCountryConfig(countryCode);
+      expect(country?.currency).toBe(defaultCurrency);
+      expect(country?.supportedCurrencies).toEqual(supportedCurrencies);
+    },
+  );
+
   it("keeps the .com root as the global gateway", () => {
     expect(
       resolveMarketContext({

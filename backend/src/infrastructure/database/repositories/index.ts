@@ -1,6 +1,7 @@
 export * from "./user.repository.js";
 export * from "./listing.repository.js";
 export * from "./market.repository.js";
+export * from "./currency.repository.js";
 export * from "./taxonomy.repository.js";
 export * from "./order.repository.js";
 export * from "./business-rules.repository.js";

@@ -62,7 +62,8 @@ const KEYS = {
   MARKETS: MARKETS_STORAGE_KEY,
   ACTIVE_MARKET: "shongre_active_market_v1",
   USER_LOCALE: "shongre_user_locale_v1",
-  USER_CURRENCY: "shongre_user_currency_v1",
+  USER_CURRENCY_LEGACY: "shongre_user_currency_v1",
+  USER_CURRENCY_PREFERENCES: "shongre_user_currency_preferences_v2",
 };
 
 function normalizeLegacyStaffProfile(user: UserProfile): UserProfile {
@@ -808,23 +809,46 @@ class StorageService {
       Array<Market & { overrides?: Record<string, any> }>
     >(KEYS.MARKETS, INITIAL_MARKETS);
     return stored.map((rawMarket) => {
-      if (rawMarket.configuration) return rawMarket;
       const seed = INITIAL_MARKETS.find(
         (market) => market.code === rawMarket.code,
       );
+      const country = getCountryConfig(rawMarket.code);
+      const currency = String(
+        rawMarket.currency || seed?.currency || country?.currency || "EUR",
+      ).toUpperCase();
+      const supportedCurrencies = Array.from(
+        new Set(
+          [
+            currency,
+            ...(rawMarket.supportedCurrencies ||
+              seed?.supportedCurrencies ||
+              country?.supportedCurrencies ||
+              []),
+          ].map((value) => String(value).toUpperCase()),
+        ),
+      );
+      if (rawMarket.configuration) {
+        return {
+          ...rawMarket,
+          currency,
+          supportedCurrencies,
+        };
+      }
       const safeBase =
         seed?.configuration ||
         createSafeMarketPolicy({
           name: rawMarket.name,
           defaultLocale: rawMarket.defaultLocale,
           supportedLocales: rawMarket.supportedLocales,
-          currency: rawMarket.currency,
+          currency,
           currencySymbol: rawMarket.currencySymbol,
           timezone: rawMarket.timezone,
         });
       const { overrides, ...market } = rawMarket;
       return {
         ...market,
+        currency,
+        supportedCurrencies,
         configuration: deepMergeOverrides(safeBase, overrides || {}),
       } as Market;
     });
@@ -854,12 +878,33 @@ class StorageService {
     this.set(KEYS.USER_LOCALE, locale);
   }
 
-  getUserCurrency(): string | null {
-    return this.get<string | null>(KEYS.USER_CURRENCY, null);
+  getUserCurrency(
+    preferenceSubject = GUEST_USER_KEY,
+    marketCode = this.getActiveMarketCode(),
+  ): string | null {
+    const key = `${preferenceSubject}:${marketCode.toUpperCase()}`;
+    const preferences = this.get<Record<string, string>>(
+      KEYS.USER_CURRENCY_PREFERENCES,
+      {},
+    );
+    if (preferences[key]) return preferences[key];
+    return this.get<string | null>(KEYS.USER_CURRENCY_LEGACY, null);
   }
 
-  saveUserCurrency(currency: string): void {
-    this.set(KEYS.USER_CURRENCY, currency.toUpperCase());
+  saveUserCurrency(
+    currency: string,
+    preferenceSubject = GUEST_USER_KEY,
+    marketCode = this.getActiveMarketCode(),
+  ): void {
+    const key = `${preferenceSubject}:${marketCode.toUpperCase()}`;
+    const preferences = this.get<Record<string, string>>(
+      KEYS.USER_CURRENCY_PREFERENCES,
+      {},
+    );
+    this.set(KEYS.USER_CURRENCY_PREFERENCES, {
+      ...preferences,
+      [key]: currency.toUpperCase(),
+    });
   }
 }
 

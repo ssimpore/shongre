@@ -347,6 +347,7 @@ describe("API v1 Endpoints Integration", () => {
         locale,
       });
       expect(tree.items).toHaveLength(301);
+      expect(tree.listingTypes).toHaveLength(212);
       expect(
         tree.items.some((node: any) => node.sourceKey === "vehicles.cars.suv"),
       ).toBe(true);

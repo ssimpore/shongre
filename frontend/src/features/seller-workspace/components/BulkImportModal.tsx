@@ -11,7 +11,6 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { formatMoney } from "../../../utilities/formatters";
 import { UserProfile } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { services } from "../../../api/client/service-registry";
@@ -20,6 +19,7 @@ import type {
   BulkListingImportRow,
 } from "../../../api/contracts/listings.contract";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -35,7 +35,8 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
   onImportCompleted,
 }) => {
   const { t, locale } = useTranslation();
-  const { activeMarket, location, currentLocale } = useMarketLocation();
+  const { activeMarket, location } = useMarketLocation();
+  const { formatMoney } = useRegionalFormatters();
   const toast = useToast();
   const [parsedItems, setParsedItems] = useState<BulkListingImportRow[]>([]);
   const [isImporting, setIsImporting] = useState(false);
@@ -224,7 +225,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
 
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="font-black text-stone-900">
-                      {formatMoney(item.price, { locale: currentLocale })}
+                      {formatMoney(item.price)}
                     </span>
                     {item.isValid ? (
                       <Badge variant="verified" size="sm">

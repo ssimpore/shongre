@@ -417,7 +417,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
 export const AutoSearchPage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
@@ -786,7 +786,11 @@ export const AutoSearchPage: React.FC = () => {
                       {vehicle.title}
                     </p>
                     <p className="mt-1 text-xs font-black text-primary">
-                      {formatAutoMoney(vehicle.price, currentLocale)}
+                      {formatAutoMoney(
+                        vehicle.price,
+                        currentLocale,
+                        convertMoney,
+                      )}
                     </p>
                   </div>
                   <button

@@ -165,7 +165,7 @@ const hydrateDraftData = (value: Record<string, unknown>): DraftData => {
 export const EmploymentPublishWizardPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, can } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();
@@ -1012,9 +1012,10 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                       ),
                       catalog.config.currency,
                       currentLocale,
+                      convertMoney,
                     )}
                     {data.salaryMaximum
-                      ? ` – ${formatEmploymentMoney(Math.round(Number(data.salaryMaximum.replace(",", ".")) * 100), catalog.config.currency, currentLocale)}`
+                      ? ` – ${formatEmploymentMoney(Math.round(Number(data.salaryMaximum.replace(",", ".")) * 100), catalog.config.currency, currentLocale, convertMoney)}`
                       : ""}{" "}
                     · {labelFor(data.salaryFrequencyId)}
                   </p>
@@ -1065,6 +1066,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                                 price.amountMinor,
                                 price.currency,
                                 currentLocale,
+                                convertMoney,
                               )
                             : "Gratuit"}
                         </p>
@@ -1090,7 +1092,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                           );
                           update("checkoutId", "");
                         }}
-                        label={`${addOn.name} · ${formatEmploymentMoney(addOn.price.amountMinor, addOn.price.currency, currentLocale)}`}
+                        label={`${addOn.name} · ${formatEmploymentMoney(addOn.price.amountMinor, addOn.price.currency, currentLocale, convertMoney)}`}
                       />
                     ))}
                   </div>
@@ -1124,6 +1126,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                         selectedTotal.amountMinor,
                         selectedTotal.currency,
                         currentLocale,
+                        convertMoney,
                       )
                     : "Gratuit"}
                 </p>

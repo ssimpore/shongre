@@ -23,6 +23,27 @@ describe("TaxonomyV4Service", () => {
     ["shongre.com", "/be", "BE"],
     ["shongre.com", "/ch", "CH"],
   ])(
+    "lists market-enabled listing types for %s%s",
+    (hostname, pathname, code) => {
+      const listingTypes = service.listListingTypes(market(hostname, pathname));
+      expect(listingTypes).toHaveLength(212);
+      expect(
+        listingTypes.every((listingType) =>
+          listingType.marketAvailability.some(
+            (availability) =>
+              availability.marketCode === code &&
+              availability.marketplaceEnabled,
+          ),
+        ),
+      ).toBe(true);
+    },
+  );
+
+  it.each([
+    ["shongre.fr", "/", "FR"],
+    ["shongre.com", "/be", "BE"],
+    ["shongre.com", "/ch", "CH"],
+  ])(
     "resolves a v3 body alias in active market %s%s",
     (hostname, pathname, code) => {
       const result = service.resolve({
@@ -79,6 +100,23 @@ describe("TaxonomyV4Service", () => {
       expect.objectContaining({
         attributeId: "body_type",
         code: "TAXONOMY_INVALID_OPTION",
+      }),
+    );
+  });
+
+  it("rejects hidden values that are incompatible with current choices", () => {
+    const validation = service.validate({
+      marketContext: market("shongre.fr"),
+      categoryIdentity: "real_estate.rentals.apartments",
+      listingTypeId: "real_estate.rentals.apartments.listing",
+      sellerType: "professional",
+      locale: "fr-FR",
+      attributes: { property_type: "house", floor: 4 },
+    });
+    expect(validation.issues).toContainEqual(
+      expect.objectContaining({
+        attributeId: "floor",
+        code: "TAXONOMY_ATTRIBUTE_NOT_APPLICABLE",
       }),
     );
   });

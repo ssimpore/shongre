@@ -7,8 +7,10 @@ import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public
 import {
   isCurrentTaxonomyV4Schema,
   retainTaxonomyV4Attributes,
+  sanitizePublicationDraftForSubmission,
   toTaxonomyV4ListingIntent,
 } from "./publication.taxonomy-state";
+import type { PublicationDraftState } from "./publication.types";
 
 const marketContext = resolveMarketContext({
   hostname: "shongre.fr",
@@ -80,5 +82,67 @@ describe("publication taxonomy state", () => {
     expect(toTaxonomyV4ListingIntent("GIVE")).toBe("DONATE");
     expect(toTaxonomyV4ListingIntent("RENT")).toBe("RENT_OUT");
     expect(toTaxonomyV4ListingIntent("OFFER_SERVICE")).toBe("SERVICE_OFFER");
+  });
+
+  it("preserves valid shared answers and removes stale values before submission", () => {
+    const schema = resolveSchema("electronics.computers.laptops");
+    const draft = {
+      marketCode: "FR",
+      taxonomyNodeId: schema.category.id,
+      taxonomyPath: [
+        "electronics",
+        "electronics.computers",
+        schema.category.id,
+      ],
+      listingTypeId: schema.listingType.id,
+      taxonomyVersion: "4.0.0",
+      listingIntent: "SELL",
+      title: "Ordinateur portable professionnel",
+      description: "Ordinateur en très bon état, testé et prêt à utiliser.",
+      condition: "very_good",
+      attributes: {
+        brand: "renault",
+        storage_capacity_gb: 512,
+        hidden_from_previous_category: "never-submit",
+      },
+      photos: [],
+      pricing: {
+        priceModel: "fixed",
+        amount: 800,
+        currency: "EUR",
+        isNegotiable: false,
+        isFreeDonation: false,
+      },
+      transaction: {
+        allowContact: true,
+        allowDirectPurchase: true,
+        allowReservation: false,
+      },
+      fulfillment: {
+        allowHandDelivery: true,
+        allowParcelShipping: true,
+        allowBulkyDelivery: false,
+        allowSellerDelivery: false,
+        allowStorePickup: false,
+      },
+      fulfillmentTypes: ["PHYSICAL"],
+      location: {
+        city: "Paris",
+        postalCode: "75001",
+        countryCode: "FR",
+        hideExactAddress: true,
+      },
+      currentStep: 1,
+      updatedAt: new Date().toISOString(),
+    } satisfies PublicationDraftState;
+    const safe = sanitizePublicationDraftForSubmission({
+      draft,
+      schema,
+      sellerType: "individual",
+    });
+    expect(safe.attributes.brand).toBe("renault");
+    expect(safe.attributes.storage_capacity_gb).toBe(512);
+    expect(safe.attributes).not.toHaveProperty("hidden_from_previous_category");
+    expect(safe.fulfillmentTypes).toEqual(["PHYSICAL"]);
   });
 });

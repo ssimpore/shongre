@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/web";
 import type { ListingCardView, Money } from "@shongre/contracts";
-import { majorToMinorAmount } from "@shongre/shared";
+import {
+  formatMoney as formatSharedMoney,
+  majorToMinorAmount,
+} from "@shongre/shared";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -54,6 +57,7 @@ function toListingCardView(
   listing: Listing,
   locale: string,
   pricing?: ListingCardProps["pricing"],
+  convertMoney?: ReturnType<typeof useMarketLocation>["convertMoney"],
 ): ListingCardView {
   const currency = listing.currency ?? DEFAULT_MARKET_CURRENCY;
   return {
@@ -65,7 +69,11 @@ function toListingCardView(
     },
     priceLabel: pricing
       ? undefined
-      : formatListingPricePresentation(listing.pricePresentation, locale),
+      : formatListingPricePresentation(
+          listing.pricePresentation,
+          locale,
+          convertMoney,
+        ),
     originalPrice:
       pricing?.originalPrice ??
       (listing.originalPrice
@@ -144,11 +152,25 @@ export function ListingCardViewCard({
   quickAction,
   renderCharacteristicIcon,
 }: ListingCardViewCardProps) {
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, convertMoney } = useMarketLocation();
+  const priceProjection = convertMoney(listing.price);
+  const originalPriceProjection = listing.originalPrice
+    ? convertMoney(listing.originalPrice)
+    : undefined;
+  const displayedListing: ListingCardView = {
+    ...listing,
+    price: priceProjection.display,
+    originalPrice: originalPriceProjection?.display,
+    priceLabel:
+      listing.priceLabel ||
+      (priceProjection.estimated
+        ? `≈ ${formatSharedMoney(priceProjection.display, currentLocale)}`
+        : undefined),
+  };
 
   return (
     <SharedListingCard
-      listing={listing}
+      listing={displayedListing}
       href={href}
       locale={currentLocale}
       variant={variant}
@@ -199,7 +221,7 @@ export function ListingCard({
   pricing,
 }: ListingCardProps) {
   const { t } = useTranslation();
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, convertMoney } = useMarketLocation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const configuredPath = listing.attributes?.canonicalPath;
   const href =
@@ -212,7 +234,7 @@ export function ListingCard({
 
   return (
     <ListingCardViewCard
-      listing={toListingCardView(listing, currentLocale, pricing)}
+      listing={toListingCardView(listing, currentLocale, pricing, convertMoney)}
       href={href}
       variant={variant}
       className={className}

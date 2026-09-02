@@ -10,8 +10,29 @@ import {
   TAXONOMY,
 } from "../../domains/taxonomy/taxonomy.data";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 
 describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
+  it("resolves every canonical v4 icon directly from taxonomy metadata", () => {
+    const categories = getTaxonomyV4PublicBundle().categories;
+
+    categories.forEach((category) => {
+      expect(ICON_NAME_MAP[category.iconName], category.iconName).toBeDefined();
+    });
+
+    const rootIcons = categories
+      .filter((category) => !category.parentId)
+      .map(
+        (category) =>
+          (
+            CategoryIcon({
+              iconName: category.iconName,
+            }) as React.ReactElement
+          ).type,
+      );
+    expect(new Set(rootIcons).size).toBe(rootIcons.length);
+  });
+
   // 1. Verify every root category in CANONICAL_TAXONOMY has a defined, mapped icon
   it("ensures each canonical root category has a valid iconName registered in ICON_NAME_MAP", () => {
     CANONICAL_TAXONOMY.forEach((root) => {

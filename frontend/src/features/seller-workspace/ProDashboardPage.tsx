@@ -9,7 +9,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
-import { formatMoney, formatPrice } from "../../utilities/formatters";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Button } from "../../design-system/primitives/Button";
 import { Link } from "react-router-dom";
@@ -23,6 +22,7 @@ import type { ProAnalyticsSnapshot } from "../../api/contracts/workspace.contrac
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 type AnalyticsLoadState = "loading" | "success" | "error";
 
@@ -34,7 +34,8 @@ function getPhotoUrl(photo: any): string {
 
 export const ProDashboardPage: React.FC = () => {
   const { t, locale } = useTranslation();
-  const { currentLocale } = useMarketLocation();
+  const { formatPrice } = useMarketLocation();
+  const { formatMoney } = useRegionalFormatters();
   usePageMeta({
     title: t("meta.proDashboard.title"),
     description: t("meta.proDashboard.description"),
@@ -235,11 +236,7 @@ export const ProDashboardPage: React.FC = () => {
                 <DollarSign className="w-icon-md h-icon-md text-success" />
               </div>
               <div className="text-2xl font-black text-stone-900">
-                {analytics
-                  ? formatMoney(analytics.monthlyRevenue, {
-                      locale: currentLocale,
-                    })
-                  : "—"}
+                {analytics ? formatMoney(analytics.monthlyRevenue) : "—"}
               </div>
               <div className="text-xs text-stone-500 mt-1">
                 {hasCatalogue

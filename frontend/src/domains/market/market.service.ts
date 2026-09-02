@@ -425,6 +425,7 @@ export class MarketService {
       defaultLocale: data.defaultLocale,
       supportedLocales: data.supportedLocales || [data.defaultLocale],
       currency: data.currency.toUpperCase(),
+      supportedCurrencies: [data.currency.toUpperCase()],
       currencySymbol: data.currencySymbol || data.currency.toUpperCase(),
       timezone: data.timezone,
       routing: {

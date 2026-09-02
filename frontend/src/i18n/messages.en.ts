@@ -362,6 +362,11 @@ export const messagesEn: MessageCatalogue = {
     "Your manual choice takes priority over automatic detection.",
   "shell.preferencesModal.resetManualSelection": "Reset my country choice",
   "shell.preferencesModal.deviseAffichage": "Display currency",
+  "shell.preferencesModal.currencyRatesLoading": "Loading conversion rates…",
+  "shell.preferencesModal.currencyConversionUnavailable":
+    "Currency conversion is temporarily unavailable. Amounts remain displayed in their original currency.",
+  "shell.preferencesModal.currencyEstimateNotice":
+    "Converted amounts are estimates and are prefixed with the ≈ symbol.",
   "shell.preferencesModal.bientot": "Coming soon",
   "shell.preferencesModal.langueDeLInterface": "Interface language",
   "shell.marketDetection.recommendationTitle":
@@ -887,6 +892,47 @@ export const messagesEn: MessageCatalogue = {
     "Certified responsiveness",
   "publishing.publishWizard.exCanapeDAngleIphone":
     "e.g. corner sofa, iPhone 15, cars, bikes…",
+  "publishing.publishWizard.intentHelp":
+    "First choose the goal of your listing. The available categories and rules will adapt to this choice.",
+  "publishing.publishWizard.categoryTitle": "Which category?",
+  "publishing.publishWizard.categoryHelp":
+    "Browse every available level. The relevant details appear once the category path is precise enough.",
+  "publishing.publishWizard.taxonomyLoading": "Loading available categories…",
+  "publishing.publishWizard.taxonomyEmpty":
+    "No publishable category is available for this market and profile.",
+  "publishing.publishWizard.taxonomyError":
+    "Categories could not be loaded. Your draft has been preserved.",
+  "publishing.publishWizard.marketUnavailable":
+    "This market does not allow listing creation yet.",
+  "publishing.publishWizard.categoryLevel": "Level {count}",
+  "publishing.publishWizard.chooseCategoryLevel":
+    "Choose a category at level {count}",
+  "publishing.publishWizard.categoryPathConfirmed": "Category path confirmed",
+  "publishing.publishWizard.continueCategoryPath":
+    "Choose the next level to refine your listing.",
+  "publishing.publishWizard.automaticUpdate_one":
+    "One incompatible answer was removed after your change.",
+  "publishing.publishWizard.automaticUpdate_other":
+    "{count} incompatible answers were removed after your change.",
+  "publishing.publishWizard.dynamicFieldsLoading":
+    "Loading the details for this listing…",
+  "publishing.publishWizard.dynamicFieldsError":
+    "The form for this category is unavailable. Your draft has been preserved.",
+  "publishing.publishWizard.dynamicFieldsEmpty":
+    "This category does not require any additional details.",
+  "publishing.publishWizard.fieldLoading": "Loading {label}…",
+  "publishing.publishWizard.fieldLoadError":
+    "The {label} field could not be loaded.",
+  "publishing.publishWizard.fieldNoOptions":
+    "No option is available for {label}.",
+  "publishing.publishWizard.secureUploadHint":
+    "This document uses the secure private upload flow.",
+  "publishing.publishWizard.dateStart": "Start date",
+  "publishing.publishWizard.dateEnd": "End date",
+  "publishing.publishWizard.requiredDynamicField":
+    "This required field must be completed.",
+  "publishing.publishWizard.invalidDynamicField":
+    "This answer is no longer compatible with your choices.",
   "publishing.publishWizard.titreDeLAnnonce": "Listing title",
   "publishing.publishWizard.exCanapeScandinave3Places":
     "e.g. Scandinavian 3-seater sofa, beige bouclé fabric",
@@ -1030,6 +1076,8 @@ export const messagesEn: MessageCatalogue = {
   "transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre":
     "Payment processed by a provider",
   "transactions.directPurchaseCheckoutModal.totalARegler": "Total to pay",
+  "transactions.directPurchaseCheckoutModal.convertedEstimateNotice":
+    "The converted amount is an estimate. The final charged currency or rate may differ.",
   "transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise":
     "2. Secure payment method",
   "transactions.directPurchaseCheckoutModal.connexionChiffreeSsl256Bits":
@@ -1237,6 +1285,41 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminLayout.placeDeMarche": "Marketplace",
   "admin.adminLayout.statutDeSession": "Session status",
   "admin.adminLayout.sessionAuthentifieeRbac": "RBAC authenticated session",
+  "admin.currencies.tab": "Currencies and rates",
+  "admin.currencies.title": "Currency management",
+  "admin.currencies.description":
+    "Conversions are display-only. Original financial amounts are never changed.",
+  "admin.currencies.definitions": "Currency directory",
+  "admin.currencies.rates": "Conversion rates",
+  "admin.currencies.marketDefaults": "Currencies by market",
+  "admin.currencies.enabled": "Enabled",
+  "admin.currencies.disabled": "Disabled",
+  "admin.currencies.code": "ISO 4217 code",
+  "admin.currencies.name": "Public name",
+  "admin.currencies.symbol": "Symbol",
+  "admin.currencies.minorDigits": "Currency decimal places",
+  "admin.currencies.currencyEnabled": "Currency available",
+  "admin.currencies.rateEnabled": "Rate available",
+  "admin.currencies.reason": "Auditable reason",
+  "admin.currencies.base": "Source currency",
+  "admin.currencies.quote": "Target currency",
+  "admin.currencies.numerator": "Exact numerator",
+  "admin.currencies.denominator": "Exact denominator",
+  "admin.currencies.source": "Rate source",
+  "admin.currencies.asOf": "Effective date",
+  "admin.currencies.expiresAt": "Expiry",
+  "admin.currencies.market": "Market",
+  "admin.currencies.defaultCurrency": "Default currency",
+  "admin.currencies.displayCurrencies": "Allowed display currencies",
+  "admin.currencies.requestMarketChange": "Submit change",
+  "admin.currencies.currencySaved": "Currency saved and audited.",
+  "admin.currencies.rateSaved": "Rate saved and audited.",
+  "admin.currencies.rateMetadata":
+    "{source} · effective {asOf} · configuration changed {updatedAt}",
+  "admin.currencies.rateExpiry": "Expires {expiresAt}",
+  "admin.currencies.marketChangeRequested":
+    "Change submitted for approval by a second administrator.",
+  "admin.currencies.loadError": "The currency directory could not be loaded.",
   "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver":
     "Restore this market's own reviewed value",
   "admin.adminMarketsPage.ajouterUnNouveauMarchePays":

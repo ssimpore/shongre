@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { lazy, Suspense, useState, useMemo } from "react";
 import { Select } from "../../design-system";
 import {
   Sliders,
@@ -18,6 +18,7 @@ import {
   Rocket,
   Settings2,
   BarChart3,
+  Coins,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
@@ -52,7 +53,13 @@ import {
 } from "@shongre/contracts";
 import { services } from "../../api/client/service-registry";
 
-type AdminTab = "overview" | "editor" | "matrix";
+type AdminTab = "overview" | "editor" | "matrix" | "currencies";
+
+const CurrencyManagementPanel = lazy(() =>
+  import("./CurrencyManagementPanel").then((module) => ({
+    default: module.CurrencyManagementPanel,
+  })),
+);
 type DomainTab =
   | "general"
   | "routing"
@@ -567,6 +574,21 @@ export const AdminMarketsPage: React.FC = () => {
             aria-hidden="true"
           />
           Matrice Comparative Multi-Pays
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("currencies")}
+          className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+            activeTab === "currencies"
+              ? "border-primary text-primary"
+              : "border-transparent text-stone-500 hover:text-text-main"
+          }`}
+        >
+          <Coins
+            className="w-icon-sm h-icon-sm inline-block mr-1.5 -mt-0.5"
+            aria-hidden="true"
+          />
+          {t("admin.currencies.tab")}
         </button>
       </div>
 
@@ -1699,6 +1721,16 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {activeTab === "currencies" ? (
+        <Suspense
+          fallback={
+            <p className="text-sm text-text-muted">{t("common.loading")}</p>
+          }
+        >
+          <CurrencyManagementPanel />
+        </Suspense>
+      ) : null}
 
       <Modal
         isOpen={isRoutingModalOpen}

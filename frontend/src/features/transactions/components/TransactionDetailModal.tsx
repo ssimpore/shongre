@@ -11,7 +11,7 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { FormField, Input } from "../../../design-system/primitives/FormField";
 import { Image } from "../../../design-system/primitives/Image";
-import { formatPrice, formatRelativeDate } from "../../../utilities/formatters";
+import { formatRelativeDate } from "../../../utilities/formatters";
 import { DisputeModal } from "./DisputeModal";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { ORDER_HANDOVER_POLICY } from "../../../api/contracts/orders.contract";
@@ -45,7 +45,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   currentUser,
   onUpdate,
 }) => {
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, formatPrice } = useMarketLocation();
   const [tx, setTx] = useState(transaction);
   const [handoverCode, setHandoverCode] = useState<{
     code: string;
@@ -189,7 +189,9 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   : `Acheteur : ${tx.buyerName}`}
               </p>
               <p className="mt-2 text-lg font-black text-primary">
-                {formatPrice(isSeller ? tx.amount : tx.totalAmount)}
+                {formatPrice(isSeller ? tx.amount : tx.totalAmount, {
+                  sourceCurrency: tx.currency,
+                })}
               </p>
             </div>
           </div>

@@ -459,6 +459,7 @@ const CONFIGURED_MARKETS: SeedMarket[] = [
     defaultLocale: "fr-FR",
     supportedLocales: ["fr-FR", "en-US"],
     currency: "EUR",
+    supportedCurrencies: ["EUR", "CHF"],
     currencySymbol: "€",
     timezone: "Europe/Paris",
     geography: {
@@ -691,6 +692,7 @@ const CONFIGURED_MARKETS: SeedMarket[] = [
     defaultLocale: "fr-BE",
     supportedLocales: ["fr-BE", "nl-BE", "en-US"],
     currency: "EUR",
+    supportedCurrencies: ["EUR", "CHF"],
     currencySymbol: "€",
     timezone: "Europe/Brussels",
     geography: {
@@ -841,6 +843,7 @@ const CONFIGURED_MARKETS: SeedMarket[] = [
     defaultLocale: "es-ES",
     supportedLocales: ["es-ES", "en-US"],
     currency: "EUR",
+    supportedCurrencies: ["EUR"],
     currencySymbol: "€",
     timezone: "Europe/Madrid",
     geography: {
@@ -970,6 +973,7 @@ const CONFIGURED_MARKETS: SeedMarket[] = [
     defaultLocale: "fr-CH",
     supportedLocales: ["fr-CH", "de-CH", "it-CH", "en-US"],
     currency: "CHF",
+    supportedCurrencies: ["CHF", "EUR"],
     currencySymbol: "CHF",
     timezone: "Europe/Zurich",
     geography: {
@@ -1093,6 +1097,7 @@ const CONFIGURED_MARKETS: SeedMarket[] = [
     defaultLocale: "fr-LU",
     supportedLocales: ["fr-LU", "de-LU", "lb-LU", "en-US"],
     currency: "EUR",
+    supportedCurrencies: ["EUR", "CHF"],
     currencySymbol: "€",
     timezone: "Europe/Luxembourg",
     geography: {
@@ -1220,6 +1225,7 @@ const marketFromCountryRegistry = (
   defaultLocale: country.defaultLocale,
   supportedLocales: [...country.supportedLocales],
   currency: country.currency,
+  supportedCurrencies: [...country.supportedCurrencies],
   currencySymbol: country.currencySymbol || country.currency,
   timezone: country.timezone,
   routing: {
@@ -1276,6 +1282,7 @@ export const INITIAL_MARKETS: Market[] = [
       defaultLocale: country.defaultLocale,
       supportedLocales: [...country.supportedLocales],
       currency: country.currency,
+      supportedCurrencies: [...country.supportedCurrencies],
       currencySymbol: country.currencySymbol || country.currency,
       timezone: country.timezone,
       configuration,

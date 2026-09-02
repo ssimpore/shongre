@@ -386,6 +386,12 @@ export const messagesFr = {
   "shell.preferencesModal.resetManualSelection":
     "Réactiver la suggestion automatique",
   "shell.preferencesModal.deviseAffichage": "Devise d'affichage",
+  "shell.preferencesModal.currencyRatesLoading":
+    "Chargement des taux de conversion…",
+  "shell.preferencesModal.currencyConversionUnavailable":
+    "La conversion est momentanément indisponible. Les montants restent affichés dans leur devise d’origine.",
+  "shell.preferencesModal.currencyEstimateNotice":
+    "Les montants convertis sont indicatifs et précédés du symbole ≈.",
   "shell.preferencesModal.bientot": "Bientôt",
   "shell.preferencesModal.langueDeLInterface": "Langue de l'interface",
 
@@ -1235,6 +1241,8 @@ export const messagesFr = {
   "transactions.directPurchaseCheckoutModal.protectionAcheteurSequestre":
     "Paiement traité par un prestataire",
   "transactions.directPurchaseCheckoutModal.totalARegler": "Total à régler",
+  "transactions.directPurchaseCheckoutModal.convertedEstimateNotice":
+    "Les montants précédés de ≈ sont des estimations. Le débit final reste libellé en {currency}.",
   "transactions.directPurchaseCheckoutModal.2MoyenDePaiementSecurise":
     "2. Moyen de paiement sécurisé",
   "transactions.directPurchaseCheckoutModal.connexionChiffreeSsl256Bits":
@@ -1478,6 +1486,42 @@ export const messagesFr = {
   "admin.adminLayout.sessionAuthentifieeRbac": "Session authentifiée RBAC",
 
   // --- admin.adminMarketsPage ---
+  "admin.currencies.tab": "Devises et taux",
+  "admin.currencies.title": "Gestion des devises",
+  "admin.currencies.description":
+    "Les conversions servent uniquement à l’affichage. Les montants financiers d’origine ne sont jamais modifiés.",
+  "admin.currencies.definitions": "Référentiel des devises",
+  "admin.currencies.rates": "Taux de conversion",
+  "admin.currencies.marketDefaults": "Devises par marché",
+  "admin.currencies.enabled": "Active",
+  "admin.currencies.disabled": "Désactivée",
+  "admin.currencies.code": "Code ISO 4217",
+  "admin.currencies.name": "Nom public",
+  "admin.currencies.symbol": "Symbole",
+  "admin.currencies.minorDigits": "Décimales de la devise",
+  "admin.currencies.currencyEnabled": "Devise disponible",
+  "admin.currencies.rateEnabled": "Taux disponible",
+  "admin.currencies.reason": "Motif auditable",
+  "admin.currencies.base": "Devise source",
+  "admin.currencies.quote": "Devise cible",
+  "admin.currencies.numerator": "Numérateur exact",
+  "admin.currencies.denominator": "Dénominateur exact",
+  "admin.currencies.source": "Source du taux",
+  "admin.currencies.asOf": "Date de valeur",
+  "admin.currencies.expiresAt": "Expiration",
+  "admin.currencies.market": "Marché",
+  "admin.currencies.defaultCurrency": "Devise par défaut",
+  "admin.currencies.displayCurrencies": "Devises d’affichage autorisées",
+  "admin.currencies.requestMarketChange": "Soumettre la modification",
+  "admin.currencies.currencySaved": "Devise enregistrée et auditée.",
+  "admin.currencies.rateSaved": "Taux enregistré et audité.",
+  "admin.currencies.rateMetadata":
+    "{source} · valeur au {asOf} · configuration modifiée le {updatedAt}",
+  "admin.currencies.rateExpiry": "Expire le {expiresAt}",
+  "admin.currencies.marketChangeRequested":
+    "Modification soumise à l’approbation d’un second administrateur.",
+  "admin.currencies.loadError":
+    "Le référentiel des devises n’a pas pu être chargé.",
   "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver":
     "Restaurer la valeur validée propre à ce marché",
   "admin.adminMarketsPage.ajouterUnNouveauMarchePays":
@@ -3381,6 +3425,49 @@ export const messagesFr = {
     "Sélectionnez l'intention et la catégorie exacte dans la taxonomie Shongre.",
   "publishing.publishWizard.typeDAnnonceIntention":
     "Type d'annonce (Intention)",
+  "publishing.publishWizard.intentHelp":
+    "Choisissez d’abord l’objectif de votre annonce. Les catégories et règles proposées s’adapteront à ce choix.",
+  "publishing.publishWizard.categoryTitle": "Dans quelle catégorie ?",
+  "publishing.publishWizard.categoryHelp":
+    "Parcourez chaque niveau disponible. Les caractéristiques apparaîtront dès que le chemin est suffisamment précis.",
+  "publishing.publishWizard.taxonomyLoading":
+    "Chargement des catégories disponibles…",
+  "publishing.publishWizard.taxonomyEmpty":
+    "Aucune catégorie publiable n’est disponible pour ce marché et ce profil.",
+  "publishing.publishWizard.taxonomyError":
+    "Les catégories n’ont pas pu être chargées. Votre brouillon est conservé.",
+  "publishing.publishWizard.marketUnavailable":
+    "Ce marché ne permet pas encore de créer une annonce.",
+  "publishing.publishWizard.categoryLevel": "Niveau {count}",
+  "publishing.publishWizard.chooseCategoryLevel":
+    "Choisir une catégorie au niveau {count}",
+  "publishing.publishWizard.categoryPathConfirmed":
+    "Chemin de catégorie validé",
+  "publishing.publishWizard.continueCategoryPath":
+    "Choisissez le niveau suivant pour préciser votre annonce.",
+  "publishing.publishWizard.automaticUpdate_one":
+    "Une réponse incompatible a été retirée après votre modification.",
+  "publishing.publishWizard.automaticUpdate_other":
+    "{count} réponses incompatibles ont été retirées après votre modification.",
+  "publishing.publishWizard.dynamicFieldsLoading":
+    "Chargement des caractéristiques de cette annonce…",
+  "publishing.publishWizard.dynamicFieldsError":
+    "Le formulaire de cette catégorie est indisponible. Votre brouillon est conservé.",
+  "publishing.publishWizard.dynamicFieldsEmpty":
+    "Cette catégorie ne demande aucune caractéristique supplémentaire.",
+  "publishing.publishWizard.fieldLoading": "Chargement de {label}…",
+  "publishing.publishWizard.fieldLoadError":
+    "Le champ {label} n’a pas pu être chargé.",
+  "publishing.publishWizard.fieldNoOptions":
+    "Aucune option disponible pour {label}.",
+  "publishing.publishWizard.secureUploadHint":
+    "Ce document utilise le flux de téléversement privé sécurisé.",
+  "publishing.publishWizard.dateStart": "Date de début",
+  "publishing.publishWizard.dateEnd": "Date de fin",
+  "publishing.publishWizard.requiredDynamicField":
+    "Ce champ obligatoire doit être renseigné.",
+  "publishing.publishWizard.invalidDynamicField":
+    "Cette réponse n’est plus compatible avec vos choix.",
   "publishing.publishWizard.rechercherUneCategorieOuUn":
     "Rechercher une catégorie ou un type de bien",
   "publishing.publishWizard.ouParcourezLesUnivers": "Ou parcourez les univers",

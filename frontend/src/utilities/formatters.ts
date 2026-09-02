@@ -1,4 +1,4 @@
-import type { Money } from "@shongre/contracts";
+import type { Money, MoneyConversionProjection } from "@shongre/contracts";
 import {
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
@@ -72,6 +72,29 @@ export function formatMoney(
   } catch {
     return `${money.amountMinor} ${money.currency}`;
   }
+}
+
+export type MoneyDisplayConverter = (money: Money) => MoneyConversionProjection;
+
+/** Formats a display projection while retaining an explicit estimate marker. */
+export function formatProjectedMoney(
+  money: Money,
+  options: {
+    locale?: string;
+    currencyDisplay?: "symbol" | "code";
+    convertMoney?: MoneyDisplayConverter;
+  } = {},
+): string {
+  const projection = options.convertMoney
+    ? options.convertMoney(money)
+    : {
+        original: money,
+        display: money,
+        converted: false,
+        estimated: false,
+      };
+  const formatted = formatMoney(projection.display, options);
+  return projection.estimated ? `≈ ${formatted}` : formatted;
 }
 
 /**

@@ -20,10 +20,9 @@ import {
   TimelineDateGroup,
 } from "../../../domains/messaging/messaging.service";
 import { Button } from "../../../design-system/primitives/Button";
-import { formatMoney } from "../../../utilities/formatters";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
-import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -45,7 +44,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
   onWithdrawOffer,
 }) => {
   const { t } = useTranslation();
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, formatMoney } = useRegionalFormatters();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -151,15 +150,12 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                   msg.offerExpiresAt <= new Date().toISOString()
                     ? "expired"
                     : msg.offerStatus || "pending";
-                const offerLabel = formatMoney(
-                  {
-                    amountMinor:
-                      msg.offerAmountMinor ??
-                      Math.round((msg.offerAmount || 0) * 100),
-                    currency: msg.offerCurrency || "EUR",
-                  },
-                  { locale: currentLocale },
-                );
+                const offerLabel = formatMoney({
+                  amountMinor:
+                    msg.offerAmountMinor ??
+                    Math.round((msg.offerAmount || 0) * 100),
+                  currency: msg.offerCurrency || "EUR",
+                });
                 const offerStatusLabel = {
                   pending: "En attente",
                   accepted: "Acceptée",

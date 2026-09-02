@@ -29,8 +29,8 @@ export interface IListingRepository {
   toggleFavorite(userId: string, listingId: string): Promise<boolean>;
   getFavorites(userId: string): Promise<string[]>;
   createDraft(userId: string, marketCode: string): Promise<any>;
-  saveDraft(draft: any, userId?: string): Promise<void>;
-  getDraft(userId?: string): Promise<any | null>;
+  saveDraft(draft: any, userId: string, marketCode: string): Promise<void>;
+  getDraft(userId: string, marketCode: string): Promise<any | null>;
 }
 
 export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
@@ -392,19 +392,23 @@ export class DemoListingRepository implements IListingRepository {
       allowedDelivery: ["hand_delivery"],
     };
     if (userId) {
-      this.drafts.set(userId, draft);
+      this.drafts.set(`${userId}:${draft.marketCode}`, draft);
     }
     return draft;
   }
 
-  async saveDraft(draft: any, userId?: string): Promise<void> {
-    if (userId) {
-      this.drafts.set(userId, draft);
-    }
+  async saveDraft(
+    draft: any,
+    userId: string,
+    marketCode: string,
+  ): Promise<void> {
+    this.drafts.set(`${userId}:${requireMarketCode(marketCode)}`, draft);
   }
 
-  async getDraft(userId?: string): Promise<any | null> {
-    return userId ? this.drafts.get(userId) || null : null;
+  async getDraft(userId: string, marketCode: string): Promise<any | null> {
+    return (
+      this.drafts.get(`${userId}:${requireMarketCode(marketCode)}`) || null
+    );
   }
 }
 
@@ -1012,28 +1016,37 @@ export class PostgresListingRepository implements IListingRepository {
       marketCode: requireMarketCode(marketCode),
       allowedDelivery: ["hand_delivery"],
     };
-    await this.saveDraft(draft, userId);
+    await this.saveDraft(draft, userId, draft.marketCode);
     return draft;
   }
 
-  async saveDraft(draft: any, userId?: string): Promise<void> {
+  async saveDraft(
+    draft: any,
+    userId: string,
+    marketCode: string,
+  ): Promise<void> {
     if (!userId)
       throw new AppError({
         code: "UNAUTHENTICATED",
         message: "Connexion requise.",
       });
     const supabase = getSupabaseAdminClient();
+    const resolvedMarketCode = requireMarketCode(marketCode);
     const { error } = await (
       supabase.from("listing_drafts" as any) as any
-    ).upsert({
-      user_id: userId,
-      draft_data: draft,
-      updated_at: new Date().toISOString(),
-    });
+    ).upsert(
+      {
+        user_id: userId,
+        market_code: resolvedMarketCode,
+        draft_data: { ...draft, marketCode: resolvedMarketCode },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,market_code" },
+    );
     if (error) databaseFailure("listings.saveDraft", error);
   }
 
-  async getDraft(userId?: string): Promise<any | null> {
+  async getDraft(userId: string, marketCode: string): Promise<any | null> {
     if (!userId)
       throw new AppError({
         code: "UNAUTHENTICATED",
@@ -1045,6 +1058,7 @@ export class PostgresListingRepository implements IListingRepository {
     )
       .select("draft_data")
       .eq("user_id", userId)
+      .eq("market_code", requireMarketCode(marketCode))
       .maybeSingle();
     if (error) databaseFailure("listings.getDraft", error);
     return data?.draft_data ?? null;

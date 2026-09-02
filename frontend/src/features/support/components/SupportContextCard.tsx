@@ -2,9 +2,9 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Package, ShoppingBag, ExternalLink, X } from "lucide-react";
 import { SupportContext } from "../../../domains/support/support.types";
-import { formatPrice } from "../../../utilities/formatters";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface SupportContextCardProps {
   context: SupportContext;
@@ -16,6 +16,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({
   onRemove,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   if (context.type === "listing") {
     return (
       <div className="flex items-center justify-between gap-3 p-3 bg-stone-50 border border-border-base rounded-2xl">
@@ -42,7 +43,9 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({
             </span>
             {context.price !== undefined && (
               <span className="text-xs font-bold text-stone-600">
-                {formatPrice(context.price)}
+                {formatPrice(context.price, {
+                  sourceCurrency: context.currency,
+                })}
               </span>
             )}
           </div>
@@ -89,7 +92,10 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({
             </span>
             {context.amount !== undefined && (
               <span className="text-xs font-bold text-stone-600">
-                Montant : {formatPrice(context.amount)}
+                Montant :{" "}
+                {formatPrice(context.amount, {
+                  sourceCurrency: context.currency,
+                })}
               </span>
             )}
           </div>

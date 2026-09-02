@@ -36,9 +36,9 @@ import type {
   LocationSelectorValue,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { CourseTutorCard } from "./components/CourseTutorCard";
-import { formatMoney } from "../../utilities/formatters";
 
 interface CourseFiltersProps {
   catalog: CourseCatalog;
@@ -78,7 +78,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
   onApplyMobile,
   presentation = "surface",
 }) => {
-  const { locale } = useTranslation();
+  const { formatMoney } = useRegionalFormatters();
   const levels = splitParam(params.get("levels"));
   const deliveryModes = splitParam(params.get("delivery"));
   const availability = splitParam(params.get("availability"));
@@ -218,10 +218,10 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
             { value: "", label: "Sans maximum" },
             ...[2_500, 3_000, 4_000, 6_000].map((amountMinor) => ({
               value: String(amountMinor),
-              label: `${formatMoney(
-                { amountMinor, currency: catalog.config.currency },
-                { locale },
-              )} maximum`,
+              label: `${formatMoney({
+                amountMinor,
+                currency: catalog.config.currency,
+              })} maximum`,
             })),
           ]}
         />
@@ -303,7 +303,8 @@ export const CoursesSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket } = useMarketLocation();
+  const { formatMoney } = useRegionalFormatters();
   const toast = useToast();
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [items, setItems] = useState<TutorSearchItem[]>([]);
@@ -684,10 +685,7 @@ export const CoursesSearchPage: React.FC = () => {
                   <dl className="mt-3 grid grid-cols-description-list gap-x-3 gap-y-1 text-text-secondary">
                     <dt>Prix</dt>
                     <dd className="text-right font-semibold text-text-main">
-                      {formatMoney(item.fromPrice, {
-                        locale: currentLocale,
-                      })}{" "}
-                      / h
+                      {formatMoney(item.fromPrice)} / h
                     </dd>
                     <dt>Format</dt>
                     <dd className="text-right">

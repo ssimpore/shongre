@@ -62,7 +62,7 @@ export const OnboardingPreparationPage: React.FC<
             <div className="mt-8 flex min-w-0 flex-col items-stretch gap-3 sm:items-start">
               <Button
                 variant="primary"
-                size="lg"
+                size="md"
                 onClick={onStart}
                 disabled={!isReady}
                 rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}

@@ -47,7 +47,8 @@ const featureFlagLabels: Record<string, string> = {
 
 export const AdminImmoPage: React.FC = () => {
   const { t } = useTranslation();
-  const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
+  const { activeMarket, currentCurrency, currentLocale, convertMoney } =
+    useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<RealEstateAdminOverview | null>(
     null,
@@ -778,19 +779,28 @@ export const AdminImmoPage: React.FC = () => {
                 {formatImmoMoney(
                   overview.metrics.subscriptionMrr,
                   currentLocale,
+                  convertMoney,
                 )}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu options</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.addOnRevenue, currentLocale)}
+                {formatImmoMoney(
+                  overview.metrics.addOnRevenue,
+                  currentLocale,
+                  convertMoney,
+                )}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Coût par lead</dt>
               <dd className="font-black">
-                {formatImmoMoney(overview.metrics.costPerLead, currentLocale)}
+                {formatImmoMoney(
+                  overview.metrics.costPerLead,
+                  currentLocale,
+                  convertMoney,
+                )}
               </dd>
             </div>
             <div className="flex justify-between">
@@ -799,6 +809,7 @@ export const AdminImmoPage: React.FC = () => {
                 {formatImmoMoney(
                   overview.metrics.revenuePerLead,
                   currentLocale,
+                  convertMoney,
                 )}
               </dd>
             </div>

@@ -62,7 +62,7 @@ type LeadFormState = {
 export const AutoVehicleDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
   const [vehicle, setVehicle] = useState<VehiclePublic | null>(null);
   const [similar, setSimilar] = useState<VehiclePublic[]>([]);
@@ -306,7 +306,11 @@ export const AutoVehicleDetailPage: React.FC = () => {
                   </div>
                   <div className="sm:text-right">
                     <p className="text-2xl font-black text-primary">
-                      {formatAutoMoney(vehicle.price, currentLocale)}
+                      {formatAutoMoney(
+                        vehicle.price,
+                        currentLocale,
+                        convertMoney,
+                      )}
                     </p>
                     {vehicle.financingMonthlyEstimate && (
                       <p className="mt-1 text-sm font-bold text-text-main">
@@ -314,6 +318,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                         {formatAutoMoney(
                           vehicle.financingMonthlyEstimate,
                           currentLocale,
+                          convertMoney,
                         )}{" "}
                         / mois
                       </p>
@@ -341,12 +346,14 @@ export const AutoVehicleDetailPage: React.FC = () => {
                           formatAutoMoney(
                             vehicle.priceEstimate.low,
                             currentLocale,
+                            convertMoney,
                           )}{" "}
                         et{" "}
                         {vehicle.priceEstimate.high &&
                           formatAutoMoney(
                             vehicle.priceEstimate.high,
                             currentLocale,
+                            convertMoney,
                           )}
                         , selon {vehicle.priceEstimate.sampleSize} annonces
                         comparables. {vehicle.priceEstimate.disclaimer}

@@ -798,6 +798,7 @@ export interface Database {
           price: number;
           original_price: number | null;
           currency: string;
+          supported_currencies: string[];
           status:
             | "draft"
             | "published"
@@ -1023,6 +1024,7 @@ export interface Database {
       };
       listing_drafts: GeneratedTable<{
         user_id: string;
+        market_code: string;
         draft_data: Json;
         created_at: string;
         updated_at: string;
@@ -1221,6 +1223,7 @@ export interface Database {
           name: string;
           native_name?: string;
           currency?: string;
+          supported_currencies?: string[];
           currency_symbol?: string;
           locale?: string;
           default_locale?: string;
@@ -1258,6 +1261,39 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["markets"]["Insert"]>;
         Relationships: [];
       };
+      currency_definitions: GeneratedTable<{
+        code: string;
+        display_name: string;
+        symbol: string;
+        minor_unit_digits: number;
+        enabled: boolean;
+        version: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+      currency_exchange_rates: GeneratedTable<{
+        base_currency: string;
+        quote_currency: string;
+        rate_numerator: number;
+        rate_denominator: number;
+        source: string;
+        as_of: string;
+        expires_at: string;
+        enabled: boolean;
+        version: number;
+        created_at: string;
+        updated_at: string;
+      }>;
+      currency_configuration_audit: GeneratedTable<{
+        id: string;
+        entity_type: "currency" | "exchange_rate";
+        entity_key: string;
+        actor_id: string;
+        reason: string;
+        before_snapshot: Json | null;
+        after_snapshot: Json;
+        created_at: string;
+      }>;
       market_configuration_audit: {
         Row: {
           id: string;
@@ -2730,6 +2766,33 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      upsert_currency_definition: {
+        Args: {
+          p_code: string;
+          p_display_name: string;
+          p_symbol: string;
+          p_minor_unit_digits: number;
+          p_enabled: boolean;
+          p_actor_id: string;
+          p_reason: string;
+        };
+        Returns: Database["public"]["Tables"]["currency_definitions"]["Row"][];
+      };
+      upsert_currency_exchange_rate: {
+        Args: {
+          p_base_currency: string;
+          p_quote_currency: string;
+          p_rate_numerator: number;
+          p_rate_denominator: number;
+          p_source: string;
+          p_as_of: string;
+          p_expires_at: string;
+          p_enabled: boolean;
+          p_actor_id: string;
+          p_reason: string;
+        };
+        Returns: Database["public"]["Tables"]["currency_exchange_rates"]["Row"][];
+      };
       reserve_digital_credential: {
         Args: { p_entitlement_id: string; p_batch_ids: string[] };
         Returns: string;

@@ -263,7 +263,11 @@ component → hook/controller → service contract → demo or HTTP adapter
   such as `createdAt`, `publishedAt`, `startsAt`, `endsAt`, and `completedAt`.
 - Authoritative money uses integer `amountMinor` plus an ISO `currency`. Never
   use floating-point arithmetic for financial truth. Isolate temporary legacy
-  major-unit mapping in adapters.
+  major-unit mapping in adapters. Currency conversion is a display projection
+  over centrally managed, audited rates and must preserve the original money.
+  A market default must be enabled and explicitly supported; missing, invalid,
+  or stale rates fail closed rather than implying parity. Currency preferences
+  remain separate from market and locale, and demo rates remain deterministic.
 - Separate public media from private message, payment, and verification
   documents. Storage keys are not proof of ownership; private uploads require
   authenticated, authorized, documented flows and malware/quarantine controls

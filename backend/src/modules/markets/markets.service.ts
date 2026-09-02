@@ -10,6 +10,7 @@ import {
 } from "@shongre/contracts";
 import {
   IMarketRepository,
+  ICurrencyRepository,
   MarketConfigurationChangeRequest,
   repositories,
   CANONICAL_DEMO_MARKETS,
@@ -38,6 +39,12 @@ const countryConfigurationPatchSchema = z
       .array(z.string().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/))
       .min(1)
       .max(12)
+      .optional(),
+    supportedCurrencies: z
+      .array(z.string().regex(/^[A-Z]{3}$/))
+      .min(1)
+      .max(24)
+      .refine((values) => new Set(values).size === values.length)
       .optional(),
     currency: z
       .string()
@@ -142,7 +149,10 @@ const marketReviewSchema = z
   .strict();
 
 export class MarketsService {
-  constructor(private marketRepo: IMarketRepository = repositories.markets) {}
+  constructor(
+    private marketRepo: IMarketRepository = repositories.markets,
+    private currencyRepo: ICurrencyRepository = repositories.currencies,
+  ) {}
 
   async getAllMarkets(): Promise<CountryMarketDefinition[]> {
     return this.marketRepo.getAll();
@@ -208,6 +218,28 @@ export class MarketsService {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "La langue par défaut doit faire partie des langues activées.",
+      });
+    }
+    if (!candidate.supportedCurrencies.includes(candidate.currency)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "La devise par défaut doit faire partie des devises d’affichage activées pour ce marché.",
+      });
+    }
+    const currencyCatalog = await this.currencyRepo.getCatalog(true);
+    const enabledCurrencies = new Set(
+      currencyCatalog.currencies
+        .filter((currency) => currency.enabled)
+        .map((currency) => currency.code),
+    );
+    const unavailableCurrencies = candidate.supportedCurrencies.filter(
+      (currency) => !enabledCurrencies.has(currency),
+    );
+    if (unavailableCurrencies.length > 0) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: `Les devises suivantes sont inconnues ou désactivées : ${unavailableCurrencies.join(", ")}.`,
       });
     }
     if (candidate.isDefault && candidate.basePath !== "/") {

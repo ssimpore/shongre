@@ -5,7 +5,7 @@ import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { CookieConsent } from "./CookieConsent";
 import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
-import { PreferencesModal } from "./PreferencesModal";
+import { LazyPreferencesModal } from "./LazyPreferencesModal";
 import { ProductFooter } from "./ProductFooter";
 import { ProductHeader, type ProductNavigationItem } from "./ProductHeader";
 import type { RoutePolicyId } from "../../security/access-policy.registry";
@@ -56,7 +56,7 @@ export const ProductLayout: React.FC<ProductLayoutProps> = ({
         navigation={navigation}
         description={footerDescription}
       />
-      <PreferencesModal />
+      <LazyPreferencesModal />
       <MarketChangeConfirmationModal />
       <CookieConsent />
     </div>

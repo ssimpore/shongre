@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Money } from "@shongre/contracts";
 import { useMarketLocation } from "../app/providers/MarketLocationProvider";
-import { formatMoney as formatMoneyValue } from "../utilities/formatters";
+import { formatProjectedMoney } from "../utilities/formatters";
 
 /**
  * Locale-aware presentation helpers backed by the active market preference.
@@ -9,7 +9,7 @@ import { formatMoney as formatMoneyValue } from "../utilities/formatters";
  * market-specific number/date shape into a component.
  */
 export function useRegionalFormatters() {
-  const { currentCurrency, currentLocale } = useMarketLocation();
+  const { currentCurrency, currentLocale, convertMoney } = useMarketLocation();
 
   const formatNumber = useCallback(
     (value: number, options?: Intl.NumberFormatOptions) =>
@@ -18,14 +18,26 @@ export function useRegionalFormatters() {
   );
 
   const formatMoney = useCallback(
-    (money: Money) => formatMoneyValue(money, { locale: currentLocale }),
-    [currentLocale],
+    (money: Money) => {
+      return formatProjectedMoney(money, {
+        locale: currentLocale,
+        convertMoney,
+      });
+    },
+    [convertMoney, currentLocale],
   );
 
   const formatMoneyMinor = useCallback(
-    (amountMinor: number, currency = currentCurrency) =>
-      formatMoneyValue({ amountMinor, currency }, { locale: currentLocale }),
-    [currentCurrency, currentLocale],
+    (amountMinor: number, currency = currentCurrency) => {
+      return formatProjectedMoney(
+        { amountMinor, currency },
+        {
+          locale: currentLocale,
+          convertMoney,
+        },
+      );
+    },
+    [convertMoney, currentCurrency, currentLocale],
   );
 
   const formatDate = useCallback(

@@ -7,6 +7,7 @@ import {
   Input,
   Textarea,
 } from "../../design-system/primitives/FormField";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type ResolvedAttribute = TaxonomyV4ResolvedSchema["attributes"][number];
 
@@ -40,6 +41,7 @@ export function TaxonomyV4Field({
   onChange,
   onFiles,
 }: TaxonomyV4FieldProps) {
+  const { t } = useTranslation();
   const { definition, binding, options } = field;
   const control = resolveTaxonomyControl(definition);
   const label = localized(definition.labels, locale);
@@ -54,7 +56,7 @@ export function TaxonomyV4Field({
         role="status"
         className="rounded-control bg-bg-base p-3 text-xs text-text-muted"
       >
-        Chargement de « {label} »…
+        {t("publishing.publishWizard.fieldLoading", { label })}
       </div>
     );
   }
@@ -64,14 +66,16 @@ export function TaxonomyV4Field({
         role="alert"
         className="rounded-control border border-danger-border bg-danger-surface p-3 text-xs text-danger"
       >
-        <p>{error || `Le champ « ${label} » n’a pas pu être chargé.`}</p>
+        <p>
+          {error || t("publishing.publishWizard.fieldLoadError", { label })}
+        </p>
         {onRetry ? (
           <button
             type="button"
             className="mt-2 font-bold underline"
             onClick={onRetry}
           >
-            Réessayer
+            {t("common.retry")}
           </button>
         ) : null}
       </div>
@@ -83,13 +87,13 @@ export function TaxonomyV4Field({
         role="status"
         className="rounded-control bg-bg-base p-3 text-xs text-text-muted"
       >
-        Aucune option disponible pour « {label} ».
+        {t("publishing.publishWizard.fieldNoOptions", { label })}
       </div>
     );
   }
   if (control.kind === "readonly") {
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <output className="block min-h-control-md rounded-control bg-bg-base px-3 py-2 text-xs text-text-main">
           {String(value ?? "")}
         </output>
@@ -98,7 +102,7 @@ export function TaxonomyV4Field({
   }
   if (control.kind === "boolean") {
     return (
-      <div className="flex items-center pt-6">
+      <div className="flex flex-col gap-1 pt-6">
         <Checkbox
           label={label}
           description={hint}
@@ -106,6 +110,11 @@ export function TaxonomyV4Field({
           disabled={disabled}
           onChange={(event) => onChange(event.target.checked)}
         />
+        {error ? (
+          <p role="alert" className="text-xs text-danger">
+            {error}
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -116,7 +125,7 @@ export function TaxonomyV4Field({
     options.length > 0
   ) {
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <Select
           size="compact"
           className="w-full"
@@ -125,7 +134,9 @@ export function TaxonomyV4Field({
           value={String(value ?? "")}
           onChange={(event) => onChange(event.target.value)}
         >
-          <option value="">Sélectionner une option</option>
+          <option value="">
+            {t("publishing.publishWizard.selectionnerUneOption")}
+          </option>
           {options.map((option) => (
             <option key={option.id} value={option.key}>
               {localized(option.labels, locale)}
@@ -138,7 +149,7 @@ export function TaxonomyV4Field({
   if (control.kind === "multiple_choice" && options.length > 0) {
     const selected = Array.isArray(value) ? value.map(String) : [];
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <div className="grid grid-cols-1 gap-2 rounded-control border border-border-base bg-bg-base p-3 sm:grid-cols-2">
           {options.map((option) => (
             <Checkbox
@@ -165,6 +176,7 @@ export function TaxonomyV4Field({
         label={`${label}${definition.unit ? ` (${definition.unit})` : ""}`}
         required={required}
         hint={hint}
+        error={error}
       >
         <Input
           type="number"
@@ -189,14 +201,18 @@ export function TaxonomyV4Field({
         ? (value as { start?: string; end?: string })
         : {};
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <div className="grid grid-cols-2 gap-2">
           {(["start", "end"] as const).map((bound) => (
             <Input
               key={bound}
               type="date"
               disabled={disabled}
-              aria-label={bound === "start" ? "Date de début" : "Date de fin"}
+              aria-label={
+                bound === "start"
+                  ? t("publishing.publishWizard.dateStart")
+                  : t("publishing.publishWizard.dateEnd")
+              }
               value={range[bound] ?? ""}
               onChange={(event) =>
                 onChange({ ...range, [bound]: event.target.value })
@@ -209,7 +225,7 @@ export function TaxonomyV4Field({
   }
   if (control.kind === "date") {
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <Input
           type={definition.dataType === "date_time" ? "datetime-local" : "date"}
           disabled={disabled}
@@ -224,11 +240,8 @@ export function TaxonomyV4Field({
       <FormField
         label={label}
         required={required}
-        hint={
-          onFiles
-            ? hint
-            : "Ce document utilise le flux de téléversement privé sécurisé."
-        }
+        hint={onFiles ? hint : t("publishing.publishWizard.secureUploadHint")}
+        error={error}
       >
         <input
           type="file"
@@ -245,7 +258,7 @@ export function TaxonomyV4Field({
   }
   if (control.kind === "long_text" || control.kind === "multiple_choice") {
     return (
-      <FormField label={label} required={required} hint={hint}>
+      <FormField label={label} required={required} hint={hint} error={error}>
         <Textarea
           disabled={disabled}
           value={Array.isArray(value) ? value.join(", ") : String(value ?? "")}
@@ -265,7 +278,7 @@ export function TaxonomyV4Field({
     );
   }
   return (
-    <FormField label={label} required={required} hint={hint}>
+    <FormField label={label} required={required} hint={hint} error={error}>
       <Input
         type={
           definition.dataType === "email"

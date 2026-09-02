@@ -16,7 +16,7 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { marketService } from "../../domains/market/market.service";
-import { formatPrice, formatRelativeDate } from "../../utilities/formatters";
+import { formatRelativeDate } from "../../utilities/formatters";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
@@ -86,7 +86,7 @@ export const MyListingsPage: React.FC = () => {
 
   const { currentUser } = useAuth();
   const toast = useToast();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, formatPrice } = useMarketLocation();
   const { formatMoney } = useRegionalFormatters();
   const publishCta = usePublishCta();
 
@@ -397,7 +397,9 @@ export const MyListingsPage: React.FC = () => {
             Prix
           </dt>
           <dd className="truncate text-sm font-extrabold text-stone-900">
-            {formatPrice(listing.price, { currency: listing.currency })}
+            {formatPrice(listing.price, {
+              sourceCurrency: listing.currency,
+            })}
           </dd>
         </div>
         <div className="min-w-0 border-l border-border-subtle px-3">
@@ -574,7 +576,7 @@ export const MyListingsPage: React.FC = () => {
                   cell: (listing) => (
                     <span className="font-extrabold text-sm text-stone-900">
                       {formatPrice(listing.price, {
-                        currency: listing.currency,
+                        sourceCurrency: listing.currency,
                       })}
                     </span>
                   ),

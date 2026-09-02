@@ -291,9 +291,72 @@ describe("Publication System & Schema Resolvers", () => {
     };
 
     publicationService.saveDraft(mockDraft, "user-123");
-    const restored = publicationService.getDraft("user-123");
+    const restored = publicationService.getDraft("user-123", "FR");
     expect(restored).not.toBeNull();
     expect(restored?.title).toBe("Canapé convertible 3 places");
     expect(restored?.pricing.amount).toBe(250);
+  });
+
+  it("partitions drafts by account and market and strips sensitive values", () => {
+    const base: PublicationDraftState = {
+      marketCode: "FR",
+      taxonomyNodeId: "digital_products.downloads.documents",
+      listingIntent: "SELL",
+      title: "Guide PDF",
+      description: "Un guide complet et immédiatement accessible.",
+      condition: "new",
+      attributes: {
+        format: "pdf",
+        access_token: "never-store",
+        iban: "never-store",
+      },
+      photos: [],
+      pricing: {
+        priceModel: "fixed",
+        amount: 12,
+        currency: "EUR",
+        isNegotiable: false,
+        isFreeDonation: false,
+      },
+      transaction: {
+        allowContact: true,
+        allowDirectPurchase: true,
+        allowReservation: false,
+      },
+      fulfillment: {
+        allowHandDelivery: false,
+        allowParcelShipping: false,
+        allowBulkyDelivery: false,
+        allowSellerDelivery: false,
+        allowStorePickup: false,
+      },
+      fulfillmentTypes: ["FILE_DOWNLOAD"],
+      digitalFulfillment: { secureAccessCode: "never-store" } as any,
+      location: {
+        city: "Paris",
+        postalCode: "75001",
+        countryCode: "FR",
+        hideExactAddress: true,
+      },
+      currentStep: 1,
+      updatedAt: new Date().toISOString(),
+    };
+    publicationService.saveDraft(base, "market-user");
+    publicationService.saveDraft(
+      {
+        ...base,
+        marketCode: "CH",
+        title: "Guide Suisse",
+        pricing: { ...base.pricing, currency: "CHF" },
+      },
+      "market-user",
+    );
+
+    const france = publicationService.getDraft("market-user", "FR");
+    const switzerland = publicationService.getDraft("market-user", "CH");
+    expect(france?.title).toBe("Guide PDF");
+    expect(switzerland?.title).toBe("Guide Suisse");
+    expect(france?.attributes).toEqual({ format: "pdf" });
+    expect(france?.digitalFulfillment).toBeUndefined();
   });
 });

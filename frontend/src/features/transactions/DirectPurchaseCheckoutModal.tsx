@@ -20,7 +20,6 @@ import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { SelectableCard } from "../../design-system/primitives/SelectableCard";
 import { Input, FormField } from "../../design-system/primitives/FormField";
-import { formatPrice } from "../../utilities/formatters";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Image } from "../../design-system/primitives/Image";
@@ -46,7 +45,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
 > = ({ isOpen, onClose, listing, onSuccess }) => {
   const { t } = useTranslation(digitalMessagesFr);
   const { currentUser } = useAuth();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, currentCurrency, formatPrice } = useMarketLocation();
   const toast = useToast();
   const requiresPhysicalDelivery = listing.requiresPhysicalDelivery !== false;
 
@@ -265,7 +264,9 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 <span>Vendeur : {listing.sellerName}</span>
                 <span>•</span>
                 <span className="font-bold text-stone-900">
-                  {formatPrice(listing.price)}
+                  {formatPrice(listing.price, {
+                    sourceCurrency: listing.currency,
+                  })}
                 </span>
               </div>
             </div>
@@ -328,7 +329,11 @@ export const DirectPurchaseCheckoutModal: React.FC<
                     </div>
 
                     <div className="text-right font-black text-sm text-stone-900">
-                      {quote.price === 0 ? "Gratuit" : formatPrice(quote.price)}
+                      {quote.price === 0
+                        ? "Gratuit"
+                        : formatPrice(quote.price, {
+                            sourceCurrency: listing.currency,
+                          })}
                     </div>
                   </SelectableCard>
                 );
@@ -424,7 +429,9 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 <span>Prix de l'article</span>
                 <span className="font-bold text-stone-900">
                   {authoritativeQuote
-                    ? formatPrice(authoritativeQuote.itemAmountMinor / 100)
+                    ? formatPrice(authoritativeQuote.itemAmountMinor / 100, {
+                        sourceCurrency: authoritativeQuote.currency,
+                      })
                     : "—"}
                 </span>
               </div>
@@ -438,7 +445,9 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   {authoritativeQuote?.shippingFeeMinor === 0
                     ? "Gratuit"
                     : authoritativeQuote
-                      ? formatPrice(authoritativeQuote.shippingFeeMinor / 100)
+                      ? formatPrice(authoritativeQuote.shippingFeeMinor / 100, {
+                          sourceCurrency: authoritativeQuote.currency,
+                        })
                       : "—"}
                 </span>
               </div>
@@ -455,6 +464,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   <span className="font-bold text-stone-900">
                     {formatPrice(
                       (authoritativeQuote?.protectionFeeMinor || 0) / 100,
+                      { sourceCurrency: authoritativeQuote?.currency },
                     )}
                   </span>
                 </div>
@@ -465,10 +475,21 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 </span>
                 <span className="text-primary text-lg">
                   {authoritativeQuote
-                    ? formatPrice(authoritativeQuote.totalAmountMinor / 100)
+                    ? formatPrice(authoritativeQuote.totalAmountMinor / 100, {
+                        sourceCurrency: authoritativeQuote.currency,
+                      })
                     : "—"}
                 </span>
               </div>
+              {authoritativeQuote &&
+                authoritativeQuote.currency !== currentCurrency && (
+                  <p className="text-xs text-text-muted">
+                    {t(
+                      "transactions.directPurchaseCheckoutModal.convertedEstimateNotice",
+                      { currency: authoritativeQuote.currency },
+                    )}
+                  </p>
+                )}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3">
@@ -484,7 +505,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
               >
                 {isQuoteLoading
                   ? "Calcul du total…"
-                  : `Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100) : "—"})`}
+                  : `Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100, { sourceCurrency: authoritativeQuote.currency }) : "—"})`}
               </Button>
             </div>
           </div>
@@ -557,7 +578,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 disabled={!authoritativeQuote || isProcessing}
                 leftIcon={<Lock className="w-icon-md h-icon-md" />}
               >
-                {`Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100) : "—"})`}
+                {`Continuer vers le paiement (${authoritativeQuote ? formatPrice(authoritativeQuote.totalAmountMinor / 100, { sourceCurrency: authoritativeQuote.currency }) : "—"})`}
               </Button>
             </div>
           </div>

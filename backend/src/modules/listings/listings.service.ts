@@ -99,6 +99,22 @@ export interface PublicationDraftInput {
   digitalFulfillment?: DigitalFulfillmentVersionInput;
 }
 
+const SENSITIVE_DRAFT_ATTRIBUTE =
+  /(password|secret|credential|access[_-]?token|refresh[_-]?token|kyc|identity[_-]?document|payment[_-]?card|bank[_-]?account|iban|license[_-]?key|download[_-]?url|access[_-]?code)/i;
+
+export function sanitizeStoredListingDraft(draft: any, marketCode: string) {
+  return {
+    ...draft,
+    marketCode,
+    attributes: Object.fromEntries(
+      Object.entries(draft?.attributes ?? {}).filter(
+        ([attributeId]) => !SENSITIVE_DRAFT_ATTRIBUTE.test(attributeId),
+      ),
+    ),
+    digitalFulfillment: undefined,
+  };
+}
+
 export interface SellerListingUpdate {
   title?: string;
   description?: string;
@@ -276,8 +292,11 @@ export class ListingsService {
     return this.listingRepo.createDraft(userId, requireMarketCode(marketCode));
   }
 
-  async getListingDraft(userId: string): Promise<any | null> {
-    return this.listingRepo.getDraft(userId);
+  async getListingDraft(
+    userId: string,
+    marketCode: string,
+  ): Promise<any | null> {
+    return this.listingRepo.getDraft(userId, requireMarketCode(marketCode));
   }
 
   async saveListingDraft(draft: any, userId?: string): Promise<void> {
@@ -288,7 +307,16 @@ export class ListingsService {
         code: "VALIDATION_ERROR",
         message: "Ce marché n’est pas disponible.",
       });
-    await this.listingRepo.saveDraft({ ...draft, marketCode }, userId);
+    if (!userId)
+      throw new AppError({
+        code: "UNAUTHENTICATED",
+        message: "Connexion requise.",
+      });
+    await this.listingRepo.saveDraft(
+      sanitizeStoredListingDraft(draft, marketCode),
+      userId,
+      marketCode,
+    );
   }
 
   getBulkImportTemplate(locale: string) {
@@ -532,6 +560,7 @@ export class ListingsService {
           intent: draft.intent,
           sellerType: taxonomyContext.sellerType,
           sellerCapabilities: taxonomyContext.sellerCapabilities,
+          fulfillmentTypes: draft.fulfillmentTypes,
           locale: taxonomyContext.marketContext.locale ?? "fr-FR",
           taxonomyVersion: "4.0.0",
         });

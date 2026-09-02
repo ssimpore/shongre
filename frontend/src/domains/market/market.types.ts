@@ -242,6 +242,7 @@ export interface Market {
   defaultLocale: string;
   supportedLocales: string[];
   currency: string;
+  supportedCurrencies: string[];
   currencySymbol: string;
   timezone: string;
   routing?: {

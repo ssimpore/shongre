@@ -158,6 +158,7 @@ export interface PublicationDraftState {
   selectedMarkets?: string[]; // Multiple target publication markets e.g. ['FR', 'BE']
   marketPublications?: Record<string, Partial<ListingMarketPublication>>;
   taxonomyNodeId: string;
+  taxonomyPath?: string[];
   listingTypeId?: string;
   taxonomyVersion?: "4.0.0";
   taxonomySlug?: string;

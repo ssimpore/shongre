@@ -11,11 +11,11 @@ import {
   ListingConversationContext,
   TransactionConversationContext,
 } from "../../../domains/messaging/messaging.types";
-import { formatPrice } from "../../../utilities/formatters";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 
 interface ConversationContextBarProps {
   listingContext?: ListingConversationContext | null;
@@ -33,6 +33,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
   onViewTransaction,
 }) => {
   const { t } = useTranslation();
+  const { formatPrice } = useMarketLocation();
   if (!listingContext && !transactionContext) return null;
 
   return (

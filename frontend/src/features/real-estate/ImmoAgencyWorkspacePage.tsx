@@ -33,7 +33,6 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
-import { formatImmoMoney } from "./immo-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
 
 type Tab =
@@ -57,13 +56,8 @@ const statusLabels: Record<PropertyLead["status"], string> = {
 };
 
 export const ImmoAgencyWorkspacePage: React.FC = () => {
-  const {
-    currentLocale,
-    formatDate,
-    formatDateTime,
-    formatMoney,
-    formatNumber,
-  } = useRegionalFormatters();
+  const { formatDate, formatDateTime, formatMoney, formatNumber } =
+    useRegionalFormatters();
   const toast = useToast();
   const [workspace, setWorkspace] = useState<AgencyWorkspace | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
@@ -397,10 +391,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                         </p>
                       </td>
                       <td className="p-3 font-bold">
-                        {formatImmoMoney(
-                          property.financials.price,
-                          currentLocale,
-                        )}
+                        {formatMoney(property.financials.price)}
                       </td>
                       <td className="p-3">
                         <Badge

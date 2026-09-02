@@ -23,6 +23,10 @@ import {
   formatPrice as formatPriceUtil,
 } from "../../utilities/formatters";
 import { resolveShippedLocale } from "../../i18n/locale";
+import type {
+  CurrencyConversionIssue,
+  CurrencyRuntime,
+} from "../../domains/currency/currency-runtime";
 import { INITIAL_MARKETS } from "../../domains/market/market.defaults";
 import { marketResolver } from "../../domains/market/market.resolver";
 import { normalizePriceFilterStops } from "../../domains/market/market.constants";
@@ -33,6 +37,9 @@ import {
   type MarketDetectionRecommendation,
   type MarketContext,
   type PublicCountryConfig,
+  type CurrencyDefinition,
+  type Money,
+  type MoneyConversionProjection,
 } from "@shongre/contracts";
 import { buildRuntimeMarketUrl } from "../../domains/market/market-routing";
 import {
@@ -147,10 +154,18 @@ interface MarketContextType {
   setLocale: (locale: string) => void;
   currentCurrency: string;
   setCurrency: (currency: string) => void;
+  availableCurrencies: readonly CurrencyDefinition[];
+  currencyCatalogStatus: "loading" | "ready" | "error";
+  currencyConversionIssue: CurrencyConversionIssue | null;
+  convertMoney: (money: Money) => MoneyConversionProjection;
   currencySymbol: string;
   formatPrice: (
     amount: number,
-    options?: { showCurrency?: boolean; isFreeDonation?: boolean },
+    options?: {
+      showCurrency?: boolean;
+      isFreeDonation?: boolean;
+      sourceCurrency?: string;
+    },
   ) => string;
   isLocationModalOpen: boolean;
   locationModalOptions?: LocationModalOptions;
@@ -295,6 +310,19 @@ export const MarketLocationProvider: React.FC<{
   const [currentCurrency, setCurrentCurrencyState] = useState<string>(
     requestConfig.localization.defaultCurrency,
   );
+  const [runtimeCurrencyPolicy, setRuntimeCurrencyPolicy] = useState(() => ({
+    defaultCurrency: requestMarket.currency,
+    supportedCurrencies: [...requestMarket.supportedCurrencies],
+  }));
+  const [currencyRuntime, setCurrencyRuntime] = useState<
+    CurrencyRuntime | null | undefined
+  >();
+  const currencyCatalogStatus =
+    currencyRuntime === undefined
+      ? "loading"
+      : currencyRuntime
+        ? "ready"
+        : "error";
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [locationModalOptions, setLocationModalOptions] = useState<
@@ -328,9 +356,15 @@ export const MarketLocationProvider: React.FC<{
     const storedLocale = isSameStoredMarket
       ? storageService.getUserLocale()
       : null;
-    const storedCurrency = isSameStoredMarket
-      ? storageService.getUserCurrency()
-      : null;
+    const storedCurrency = storageService.getUserCurrency(
+      preferenceSubject,
+      restoredMarket.code,
+    );
+    const restoredCurrency =
+      storedCurrency &&
+      restoredMarket.supportedCurrencies.includes(storedCurrency)
+        ? storedCurrency
+        : restoredConfig.localization.defaultCurrency;
     const defaultLocation: LocationSelection = {
       city: `Toute la ${restoredMarket.name}`,
       postalCode: "",
@@ -351,9 +385,7 @@ export const MarketLocationProvider: React.FC<{
         ? marketLocale
         : shippedLocale,
     );
-    setCurrentCurrencyState(
-      storedCurrency || restoredConfig.localization.defaultCurrency,
-    );
+    setCurrentCurrencyState(restoredCurrency);
     if (!isSameStoredMarket) {
       storageService.saveLocationPreference(defaultLocation);
       storageService.saveUserLocale(
@@ -362,7 +394,9 @@ export const MarketLocationProvider: React.FC<{
           : shippedLocale,
       );
       storageService.saveUserCurrency(
-        restoredConfig.localization.defaultCurrency,
+        restoredCurrency,
+        preferenceSubject,
+        restoredMarket.code,
       );
     }
     storageService.saveActiveMarketCode(restoredMarket.code);
@@ -413,11 +447,31 @@ export const MarketLocationProvider: React.FC<{
     if (userLocale && userLocale !== nextLocale) {
       storageService.saveUserLocale(nextLocale);
     }
-    const userCurr = storageService.getUserCurrency();
-    if (!userCurr) {
-      setCurrentCurrencyState(effectiveConfig.localization.defaultCurrency);
+    const userCurrency = storageService.getUserCurrency(
+      preferenceSubject,
+      activeMarket.code,
+    );
+    const allowedCurrency =
+      userCurrency &&
+      runtimeCurrencyPolicy.supportedCurrencies.includes(userCurrency)
+        ? userCurrency
+        : runtimeCurrencyPolicy.defaultCurrency;
+    setCurrentCurrencyState(allowedCurrency);
+    if (userCurrency !== allowedCurrency) {
+      storageService.saveUserCurrency(
+        allowedCurrency,
+        preferenceSubject,
+        activeMarket.code,
+      );
     }
-  }, [effectiveConfig, hasRestoredPreferences]);
+  }, [
+    activeMarket.code,
+    runtimeCurrencyPolicy.defaultCurrency,
+    runtimeCurrencyPolicy.supportedCurrencies,
+    effectiveConfig.localization.defaultLocale,
+    hasRestoredPreferences,
+    preferenceSubject,
+  ]);
 
   const setLocale = useCallback(
     (locale: string) => {
@@ -467,11 +521,93 @@ export const MarketLocationProvider: React.FC<{
     });
   }, [activeMarket.code, currentCurrency, currentLocale]);
 
-  const setCurrency = useCallback((currency: string) => {
-    const clean = currency.toUpperCase();
-    setCurrentCurrencyState(clean);
-    storageService.saveUserCurrency(clean);
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      services.currencies.getPublicCatalog(),
+      import("../../domains/currency/currency-runtime"),
+    ])
+      .then(([catalog, currencyModule]) => {
+        if (!active) return;
+        setCurrencyRuntime(currencyModule.createCurrencyRuntime(catalog));
+      })
+      .catch(() => {
+        if (!active) return;
+        setCurrencyRuntime(null);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    setRuntimeCurrencyPolicy({
+      defaultCurrency: activeMarket.currency,
+      supportedCurrencies: [...activeMarket.supportedCurrencies],
+    });
+    void services.markets
+      .getMarketByCode(activeMarket.code)
+      .then((market) => {
+        if (!active || !market) return;
+        setRuntimeCurrencyPolicy({
+          defaultCurrency: market.currency,
+          supportedCurrencies: market.supportedCurrencies?.length
+            ? [...market.supportedCurrencies]
+            : [market.currency],
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [activeMarket]);
+
+  const availableCurrencies = useMemo<CurrencyDefinition[]>(() => {
+    return (
+      currencyRuntime?.availableCurrencies(
+        runtimeCurrencyPolicy.supportedCurrencies,
+      ) ?? []
+    );
+  }, [currencyRuntime, runtimeCurrencyPolicy.supportedCurrencies]);
+
+  useEffect(() => {
+    if (currencyCatalogStatus !== "ready") return;
+    if (
+      availableCurrencies.some((currency) => currency.code === currentCurrency)
+    )
+      return;
+    const fallback = runtimeCurrencyPolicy.defaultCurrency;
+    setCurrentCurrencyState(fallback);
+    storageService.saveUserCurrency(
+      fallback,
+      preferenceSubject,
+      activeMarket.code,
+    );
+  }, [
+    activeMarket.code,
+    availableCurrencies,
+    currencyCatalogStatus,
+    currentCurrency,
+    preferenceSubject,
+    runtimeCurrencyPolicy.defaultCurrency,
+  ]);
+
+  const setCurrency = useCallback(
+    (currency: string) => {
+      const clean = currency.trim().toUpperCase();
+      if (!availableCurrencies.some((candidate) => candidate.code === clean)) {
+        return;
+      }
+      setCurrentCurrencyState(clean);
+      storageService.saveUserCurrency(
+        clean,
+        preferenceSubject,
+        activeMarket.code,
+      );
+    },
+    [activeMarket.code, availableCurrencies, preferenceSubject],
+  );
 
   const applyMarketChange = useCallback(
     (market: MarketChangeTarget) => {
@@ -774,18 +910,72 @@ export const MarketLocationProvider: React.FC<{
     return formatCurrencySymbol(currentCurrency, currentLocale);
   }, [currentCurrency, currentLocale]);
 
+  const convertMoney = useCallback(
+    (money: Money): MoneyConversionProjection => {
+      if (!currencyRuntime) {
+        return {
+          original: { ...money },
+          display: { ...money },
+          converted: false,
+          estimated: false,
+        };
+      }
+      return currencyRuntime.project(money, currentCurrency);
+    },
+    [currencyRuntime, currentCurrency],
+  );
+
+  const currencyConversionIssue =
+    useMemo<CurrencyConversionIssue | null>(() => {
+      const sourceCurrency = runtimeCurrencyPolicy.defaultCurrency;
+      if (sourceCurrency === currentCurrency) return null;
+      if (!currencyRuntime) return "MISSING_RATE";
+      return currencyRuntime.conversionIssue(sourceCurrency, currentCurrency);
+    }, [
+      currencyRuntime,
+      currentCurrency,
+      runtimeCurrencyPolicy.defaultCurrency,
+    ]);
+
   const formatPrice = useCallback(
     (
       amount: number,
-      options?: { showCurrency?: boolean; isFreeDonation?: boolean },
+      options?: {
+        showCurrency?: boolean;
+        isFreeDonation?: boolean;
+        sourceCurrency?: string;
+      },
     ) => {
-      return formatPriceUtil(amount, {
-        ...options,
-        locale: currentLocale,
-        currency: currentCurrency,
-      });
+      if (options?.isFreeDonation || amount === 0) {
+        return formatPriceUtil(amount, {
+          ...options,
+          locale: currentLocale,
+          currency: currentCurrency,
+        });
+      }
+      const originalCurrency =
+        options?.sourceCurrency || runtimeCurrencyPolicy.defaultCurrency;
+      if (!currencyRuntime) {
+        return formatPriceUtil(amount, {
+          ...options,
+          locale: currentLocale,
+          currency: originalCurrency,
+        });
+      }
+      return currencyRuntime.formatLegacyPrice(
+        amount,
+        originalCurrency,
+        currentCurrency,
+        currentLocale,
+        options,
+      );
     },
-    [currentLocale, currentCurrency],
+    [
+      currentCurrency,
+      currentLocale,
+      currencyRuntime,
+      runtimeCurrencyPolicy.defaultCurrency,
+    ],
   );
 
   return (
@@ -819,6 +1009,10 @@ export const MarketLocationProvider: React.FC<{
         setLocale,
         currentCurrency,
         setCurrency,
+        availableCurrencies,
+        currencyCatalogStatus,
+        currencyConversionIssue,
+        convertMoney,
         currencySymbol,
         formatPrice,
         isLocationModalOpen,

@@ -21,8 +21,12 @@ import {
 } from "../monetization/demo-commercial-catalog";
 import { marketService } from "../market/market.service";
 import { digitalFulfillmentVersionInputSchema } from "@shongre/contracts/digital-products";
+import { sanitizePublicationDraftForPersistence } from "./publication.taxonomy-state";
 
-const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_";
+const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_v2:";
+
+const draftStorageKey = (userId: string | undefined, marketCode: string) =>
+  `${DRAFT_STORAGE_PREFIX}${userId || "guest"}:${marketCode.toUpperCase()}`;
 
 export class PublicationService {
   /**
@@ -613,7 +617,7 @@ export class PublicationService {
     storageService.saveListing(newListing);
 
     // Clear saved draft
-    this.clearDraft(user.id);
+    this.clearDraft(user.id, draft.marketCode);
 
     return newListing;
   }
@@ -765,31 +769,38 @@ export class PublicationService {
   // AUTOSAVE & DRAFT LIFECYCLE
   // ==========================================
   saveDraft(draft: PublicationDraftState, userId?: string): void {
-    const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    storageService.set(key, {
-      ...draft,
-      updatedAt: new Date().toISOString(),
-    });
+    const safeDraft = sanitizePublicationDraftForPersistence(draft);
+    storageService.set(
+      draftStorageKey(userId, safeDraft.marketCode),
+      safeDraft,
+    );
   }
 
-  getDraft(userId?: string): PublicationDraftState | null {
-    const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    return storageService.get<PublicationDraftState | null>(key, null);
+  getDraft(
+    userId: string | undefined,
+    marketCode: string,
+  ): PublicationDraftState | null {
+    return storageService.get<PublicationDraftState | null>(
+      draftStorageKey(userId, marketCode),
+      null,
+    );
   }
 
-  clearDraft(userId?: string): void {
-    const key = `${DRAFT_STORAGE_PREFIX}${userId || "guest"}`;
-    storageService.remove(key);
+  clearDraft(userId: string | undefined, marketCode: string): void {
+    storageService.remove(draftStorageKey(userId, marketCode));
   }
 
-  restoreGuestDraft(user: UserProfile): PublicationDraftState | null {
-    const guestDraft = this.getDraft("guest");
+  restoreGuestDraft(
+    user: UserProfile,
+    marketCode: string,
+  ): PublicationDraftState | null {
+    const guestDraft = this.getDraft("guest", marketCode);
     if (guestDraft) {
       this.saveDraft(guestDraft, user.id);
-      this.clearDraft("guest");
+      this.clearDraft("guest", marketCode);
       return guestDraft;
     }
-    return this.getDraft(user.id);
+    return this.getDraft(user.id, marketCode);
   }
 }
 

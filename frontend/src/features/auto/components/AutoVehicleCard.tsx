@@ -21,8 +21,12 @@ export const AutoVehicleCard: React.FC<Props> = ({
   onFavorite,
   compact = false,
 }) => {
-  const { currentLocale } = useMarketLocation();
-  const listing = presentVehicleListingCard(vehicle, currentLocale);
+  const { currentLocale, convertMoney } = useMarketLocation();
+  const listing = presentVehicleListingCard(
+    vehicle,
+    currentLocale,
+    convertMoney,
+  );
 
   return (
     <div className="h-full min-w-0" data-listing-card-consumer="auto">

@@ -25,7 +25,6 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { listingRepository } from "../../repositories/listing.repository";
 import { messagingRepository } from "../../repositories/messaging.repository";
 import { storageService } from "../../services/storage.service";
-import { formatPrice } from "../../utilities/formatters";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -47,7 +46,7 @@ function getPhotoUrl(photo: any): string {
 }
 
 export const AccountOverviewPage: React.FC = () => {
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, formatPrice } = useMarketLocation();
   const { t } = useTranslation();
   usePageMeta({
     title: t("meta.accountOverview.title"),
@@ -656,7 +655,9 @@ export const AccountOverviewPage: React.FC = () => {
                       </Link>
                       <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5">
                         <span className="font-bold text-stone-900">
-                          {formatPrice(listing.price)}
+                          {formatPrice(listing.price, {
+                            sourceCurrency: listing.currency,
+                          })}
                         </span>
                         <span>•</span>
                         <span>{listing.city}</span>

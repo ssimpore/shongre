@@ -2,6 +2,10 @@ import type {
   EmploymentCatalog,
   SalaryRange,
 } from "@shongre/contracts/employment";
+import {
+  formatProjectedMoney,
+  type MoneyDisplayConverter,
+} from "../../utilities/formatters";
 
 export function dictionaryLabel(
   catalog: EmploymentCatalog | null | undefined,
@@ -17,18 +21,19 @@ export function formatEmploymentMoney(
   amountMinor: number,
   currency: string,
   locale: string,
+  convertMoney?: MoneyDisplayConverter,
 ) {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: amountMinor % 100 === 0 ? 0 : 2,
-  }).format(amountMinor / 100);
+  return formatProjectedMoney(
+    { amountMinor, currency },
+    { locale, convertMoney },
+  );
 }
 
 export function formatSalary(
   salary: SalaryRange | undefined,
   catalog: EmploymentCatalog | null | undefined,
   locale: string,
+  convertMoney?: MoneyDisplayConverter,
 ) {
   if (!salary?.isPublic) return "Rémunération non communiquée";
   const minimum = salary.minimum
@@ -36,6 +41,7 @@ export function formatSalary(
         salary.minimum.amountMinor,
         salary.minimum.currency,
         locale,
+        convertMoney,
       )
     : undefined;
   const maximum = salary.maximum
@@ -43,6 +49,7 @@ export function formatSalary(
         salary.maximum.amountMinor,
         salary.maximum.currency,
         locale,
+        convertMoney,
       )
     : undefined;
   const frequency = dictionaryLabel(catalog, salary.frequencyId);

@@ -22,6 +22,7 @@
     "./employment-demo": "./src/fixtures/employment-demo.ts",
     "./monetization": "./src/schemas/monetization.ts",
     "./finance": "./src/schemas/finance.ts",
+    "./currency": "./src/schemas/currency.ts",
     "./compliance": "./src/schemas/compliance.ts",
     "./support": "./src/schemas/support.ts",
     "./feature-flags": "./src/schemas/feature-flags.ts",

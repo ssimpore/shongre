@@ -27,6 +27,7 @@ export type TaxonomyV4ErrorCode =
   | "TAXONOMY_ATTRIBUTE_OUT_OF_RANGE"
   | "TAXONOMY_INVALID_OPTION"
   | "TAXONOMY_INVALID_OPTION_PARENT"
+  | "TAXONOMY_ATTRIBUTE_NOT_APPLICABLE"
   | "TAXONOMY_IMMUTABLE_ATTRIBUTE"
   | "TAXONOMY_OPTION_QUERY_INVALID";
 
@@ -48,6 +49,7 @@ export interface ResolveTaxonomyV4Input {
   intent?: TaxonomyV4ListingIntent;
   sellerType: TaxonomyV4SellerType;
   sellerCapabilities?: readonly string[];
+  fulfillmentTypes?: readonly string[];
   locale: string;
   taxonomyVersion?: string;
 }
@@ -264,6 +266,18 @@ export class TaxonomyV4Service {
     });
   }
 
+  listListingTypes(marketContext: MarketContext): TaxonomyV4ListingType[] {
+    const marketCode = this.requireMarket(marketContext);
+    return this.bundle.listingTypes.filter((listingType) => {
+      const availability = listingType.marketAvailability.find(
+        (entry) => entry.marketCode === marketCode,
+      );
+      return (
+        listingType.status === "active" && availability?.marketplaceEnabled
+      );
+    });
+  }
+
   resolve(input: ResolveTaxonomyV4Input): TaxonomyV4ResolvedSchema {
     if (input.taxonomyVersion && input.taxonomyVersion !== "4.0.0") {
       throw new TaxonomyV4Error(
@@ -473,30 +487,46 @@ export class TaxonomyV4Service {
       intent: schema.listingType.intent,
       country: schema.marketCode,
       seller_type: input.sellerType,
+      fulfillment_model: input.fulfillmentTypes?.[0],
+      fulfillment_types: input.fulfillmentTypes ?? [],
       ...(input.sellerCapabilities ?? []).reduce<Record<string, boolean>>(
         (result, capability) => ({ ...result, [capability]: true }),
         {},
       ),
     };
-    const conditionalRequired = new Set(
-      schema.dependencyRules
-        .filter(
-          (rule) =>
-            rule.effect === "REQUIRE" &&
-            triggerMatches(rule, input.attributes, context),
-        )
-        .flatMap((rule) =>
-          rule.targets
-            .filter((target) => target.kind === "attribute")
-            .map((target) => target.key),
-        ),
-    );
     for (const { definition, binding, options } of schema.attributes) {
       const value = input.attributes[definition.id];
-      if (
-        (binding.required || conditionalRequired.has(definition.id)) &&
-        !isPresent(value)
-      ) {
+      const fieldRules = schema.dependencyRules.filter((rule) =>
+        rule.targets.some(
+          (target) =>
+            target.kind === "attribute" && target.key === definition.id,
+        ),
+      );
+      const matchingRules = fieldRules.filter((rule) =>
+        triggerMatches(rule, input.attributes, context),
+      );
+      const showRules = fieldRules.filter((rule) => rule.effect === "SHOW");
+      const visible =
+        !matchingRules.some(
+          (rule) => rule.effect === "HIDE" || rule.effect === "CLEAR_VALUE",
+        ) &&
+        (showRules.length === 0 ||
+          matchingRules.some((rule) => rule.effect === "SHOW"));
+      if (!visible) {
+        if (isPresent(value)) {
+          issues.push({
+            attributeId: definition.id,
+            code: "TAXONOMY_ATTRIBUTE_NOT_APPLICABLE",
+            message: "Ce champ ne s’applique pas aux choix actuels.",
+          });
+        }
+        continue;
+      }
+      const required =
+        (binding.required ||
+          matchingRules.some((rule) => rule.effect === "REQUIRE")) &&
+        !matchingRules.some((rule) => rule.effect === "OPTIONAL");
+      if (required && !isPresent(value)) {
         issues.push({
           attributeId: definition.id,
           code: "TAXONOMY_REQUIRED_ATTRIBUTE",

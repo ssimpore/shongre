@@ -9,6 +9,7 @@ import {
   Bike,
   Wrench,
   Briefcase,
+  BriefcaseBusiness,
   Layers,
   Dog,
   PawPrint,
@@ -44,6 +45,8 @@ import {
   Tv,
   Leaf,
   Ticket,
+  FileKey,
+  House,
   LucideIcon,
 } from "lucide-react";
 import { colors } from "@shongre/design-tokens";
@@ -106,6 +109,28 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   Tv,
   Leaf,
   Ticket,
+  // Canonical taxonomy v4 stores Lucide icon names in kebab case. Keep that
+  // transport metadata authoritative instead of resolving icons from labels,
+  // slugs, or category ids in feature components.
+  car: Car,
+  building: Building2,
+  "briefcase-business": BriefcaseBusiness,
+  wrench: Wrench,
+  shirt: Shirt,
+  house: House,
+  smartphone: Smartphone,
+  "book-open": BookOpen,
+  palmtree: Palmtree,
+  "graduation-cap": GraduationCap,
+  "paw-print": PawPrint,
+  "hard-hat": HardHat,
+  tractor: Tractor,
+  baby: Baby,
+  dumbbell: Dumbbell,
+  ticket: Ticket,
+  gift: Gift,
+  leaf: Leaf,
+  "file-key": FileKey,
 };
 
 // Fallback mapping by category slug or code

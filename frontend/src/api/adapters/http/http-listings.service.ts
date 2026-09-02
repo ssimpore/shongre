@@ -147,7 +147,17 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
 
 const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
 
-const publicationPayload = (draft: PublicationDraftState) => {
+export const publicationPayload = (draft: PublicationDraftState) => {
+  const allowedAttributeIds = new Set(
+    taxonomyV4Bundle.bindings
+      .filter(
+        (binding) =>
+          binding.categoryId === draft.taxonomyNodeId &&
+          binding.listingTypeId === draft.listingTypeId &&
+          binding.publicationVisible,
+      )
+      .map((binding) => binding.attributeId),
+  );
   const acceptsItemCondition = taxonomyV4Bundle.bindings.some(
     (binding) =>
       binding.categoryId === draft.taxonomyNodeId &&
@@ -174,7 +184,11 @@ const publicationPayload = (draft: PublicationDraftState) => {
     intent: draft.listingIntent,
     taxonomyVersion: draft.taxonomyVersion,
     attributes: {
-      ...draft.attributes,
+      ...Object.fromEntries(
+        Object.entries(draft.attributes).filter(([attributeId]) =>
+          allowedAttributeIds.has(attributeId),
+        ),
+      ),
       ...(itemCondition ? { item_condition: itemCondition } : {}),
       title: draft.title,
       description: draft.description,
@@ -227,18 +241,29 @@ export class HttpListingsService implements ListingsServiceContract {
     return { ...result, items: result.items.map(mapBackendListing) };
   }
 
-  async createListingDraft(): Promise<PublicationDraftState> {
-    return httpClient.post<PublicationDraftState>("/listing-drafts");
+  async createListingDraft(marketCode: string): Promise<PublicationDraftState> {
+    return httpClient.post<PublicationDraftState>(
+      "/listing-drafts",
+      undefined,
+      {
+        headers: { "X-Shongre-Market": marketCode },
+      },
+    );
   }
 
-  async getListingDraft(): Promise<PublicationDraftState | null> {
+  async getListingDraft(
+    marketCode: string,
+  ): Promise<PublicationDraftState | null> {
     return httpClient.get<PublicationDraftState | null>(
       "/listing-drafts/current",
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
 
   async saveListingDraft(draft: PublicationDraftState): Promise<void> {
-    await httpClient.put("/listing-drafts/current", draft);
+    await httpClient.put("/listing-drafts/current", draft, {
+      headers: { "X-Shongre-Market": draft.marketCode },
+    });
   }
 
   async publishListing(draft: PublicationDraftState): Promise<Listing> {

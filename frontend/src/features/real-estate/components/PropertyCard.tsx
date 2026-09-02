@@ -11,8 +11,12 @@ export const PropertyCard: React.FC<{
   onFavorite?: (property: PropertyPublic) => void;
   compact?: boolean;
 }> = ({ property, selected, onSelect, onFavorite, compact = false }) => {
-  const { currentLocale } = useMarketLocation();
-  const listing = presentPropertyListingCard(property, currentLocale);
+  const { currentLocale, convertMoney } = useMarketLocation();
+  const listing = presentPropertyListingCard(
+    property,
+    currentLocale,
+    convertMoney,
+  );
 
   return (
     <div

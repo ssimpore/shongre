@@ -4,8 +4,8 @@ import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
-import { LocationPickerModal } from "./LocationPickerModal";
-import { PreferencesModal } from "./PreferencesModal";
+import { LazyLocationPickerModal } from "./LazyLocationPickerModal";
+import { LazyPreferencesModal } from "./LazyPreferencesModal";
 import { CookieConsent } from "./CookieConsent";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { SkipLink } from "../../design-system";
@@ -47,8 +47,8 @@ export const MainLayout: React.FC = () => {
         <Footer />
       )}
       {!isMessagingRoute && <MobileBottomNav />}
-      <LocationPickerModal />
-      <PreferencesModal />
+      <LazyLocationPickerModal />
+      <LazyPreferencesModal />
       <MarketChangeConfirmationModal />
       <CookieConsent />
     </div>

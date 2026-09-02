@@ -5,6 +5,7 @@ export * from "./presentation/listing";
 export * from "./discovery/unified-discovery";
 export * from "./finance/ledger";
 export * from "./finance/commission-engine";
+export * from "./finance/currency-conversion";
 export * from "./monetization/effective-entitlements";
 export * from "./monetization/billing-usage";
 export * from "./monetization/professional-catalog-presentation";

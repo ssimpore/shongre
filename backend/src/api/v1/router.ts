@@ -10,6 +10,7 @@ import {
   usersService,
   marketsService,
   marketDetectionService,
+  currenciesService,
   taxonomyService,
   taxonomyV4Service,
   TaxonomyV4Error,
@@ -1259,8 +1260,11 @@ export class ApiV1Router {
       "GET",
       "/listing-drafts/current",
       permission("listing.create"),
-      async ({ principal }) =>
-        listingsService.getListingDraft(principal.userId),
+      async ({ principal, marketCode }) =>
+        listingsService.getListingDraft(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "POST",
@@ -1276,7 +1280,14 @@ export class ApiV1Router {
       "PUT",
       "/listing-drafts/current",
       permission("listing.create"),
-      async ({ principal, body }) => {
+      async ({ principal, body, marketCode }) => {
+        const resolvedMarketCode = requireApiRequestMarket(marketCode);
+        if (body?.marketCode !== resolvedMarketCode) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le brouillon ne correspond pas au marché de la requête.",
+          });
+        }
         await listingsService.saveListingDraft(body, principal.userId);
         return { success: true };
       },
@@ -1492,6 +1503,7 @@ export class ApiV1Router {
           marketCode: marketContext.countryCode!,
           locale,
           items: taxonomyV4Service.listTree(marketContext),
+          listingTypes: taxonomyV4Service.listListingTypes(marketContext),
         }));
       },
     );
@@ -2576,6 +2588,34 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // MARKETS ROUTES
     // --------------------------------------------------------------------------
+    this.addRoute("GET", "/currencies", PUBLIC, async () =>
+      currenciesService.getPublicCatalog(),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/currencies",
+      permission("market.manage"),
+      async () => currenciesService.getAdminCatalog(),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/currencies/:code",
+      permission("market.configure"),
+      async ({ principal, params, body }) =>
+        currenciesService.upsertCurrency(params.code, body, principal.userId),
+    );
+    this.addRoute(
+      "PUT",
+      "/admin/exchange-rates/:baseCurrency/:quoteCurrency",
+      permission("market.configure"),
+      async ({ principal, params, body }) =>
+        currenciesService.upsertExchangeRate(
+          params.baseCurrency,
+          params.quoteCurrency,
+          body,
+          principal.userId,
+        ),
+    );
     this.addRoute("GET", "/markets", PUBLIC, async () =>
       marketsService.getAllMarkets(),
     );

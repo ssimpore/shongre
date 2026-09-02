@@ -180,6 +180,11 @@ export class DemoMarketsService implements MarketsServiceContract {
       gatewayVisible: candidate.gatewayVisible,
       seoIndexable: candidate.seo.indexable,
     });
+    const runtimeMarket = marketService.getMarket(code);
+    runtimeMarket.currency = candidate.currency;
+    runtimeMarket.supportedCurrencies = [...candidate.supportedCurrencies];
+    runtimeMarket.configuration.localization.defaultCurrency =
+      candidate.currency;
     this.configurationChanges.set(requestId, {
       ...request,
       status: "approved",

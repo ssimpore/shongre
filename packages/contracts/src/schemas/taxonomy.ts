@@ -701,6 +701,7 @@ export const taxonomyV4TreeResponseSchema = z.object({
   marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
   locale: z.string().min(2).max(16),
   items: z.array(taxonomyV4NodeSchema),
+  listingTypes: z.array(taxonomyV4ListingTypeSchema),
 });
 
 export const taxonomyV4OptionPageSchema = z.object({

@@ -34,9 +34,10 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { formatCurrencySymbol, formatMoney } from "../../utilities/formatters";
+import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { scrollToTop } from "../../utilities/motion";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 
 const STEPS = [
   { label: "Profil", icon: UserRound },
@@ -68,6 +69,7 @@ const toggle = <T,>(values: T[], value: T): T[] =>
 export const CourseTutorOnboardingPage: React.FC = () => {
   const { t, locale } = useTranslation();
   const { activeMarket } = useMarketLocation();
+  const { formatMoney } = useRegionalFormatters();
   const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -693,7 +695,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                       </p>
                       <p className="mt-4 text-lg font-black text-text-main">
                         {plan.monthlyPrice
-                          ? formatMoney(plan.monthlyPrice, { locale })
+                          ? formatMoney(plan.monthlyPrice)
                           : "Gratuit"}
                         {plan.monthlyPrice && (
                           <span className="text-xs font-medium text-text-muted">

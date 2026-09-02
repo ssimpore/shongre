@@ -14,13 +14,15 @@ export const PreferencesModal: React.FC = () => {
   const { t } = useTranslation();
   const {
     activeMarket,
-    availableMarkets,
+    availableCurrencies,
     selectableCountries,
     setMarket,
     manualMarketSelection,
     resetManualMarketSelection,
     isDetectingMarket,
     currentCurrency,
+    currencyCatalogStatus,
+    currencyConversionIssue,
     setCurrency,
     currentLocale,
     setLocale,
@@ -34,19 +36,15 @@ export const PreferencesModal: React.FC = () => {
   };
 
   const currencies = useMemo(() => {
-    const codes = new Set(availableMarkets.map((market) => market.currency));
-    // Preserve a previously saved choice long enough for the user to replace
-    // it, even if its market has since been paused by an administrator.
-    codes.add(currentCurrency);
-    return Array.from(codes)
-      .filter(Boolean)
-      .sort()
-      .map((code) => ({
-        code,
-        label: getCurrencyDisplayName(code, currentLocale),
-        symbol: formatCurrencySymbol(code, currentLocale),
-      }));
-  }, [availableMarkets, currentCurrency, currentLocale]);
+    return availableCurrencies.map((currency) => ({
+      code: currency.code,
+      label:
+        currency.displayName ||
+        getCurrencyDisplayName(currency.code, currentLocale),
+      symbol:
+        currency.symbol || formatCurrencySymbol(currency.code, currentLocale),
+    }));
+  }, [availableCurrencies, currentLocale]);
 
   return (
     <Modal
@@ -162,6 +160,19 @@ export const PreferencesModal: React.FC = () => {
               );
             })}
           </div>
+          {currencyCatalogStatus === "loading" ? (
+            <p className="text-micro text-text-muted">
+              {t("shell.preferencesModal.currencyRatesLoading")}
+            </p>
+          ) : currencyCatalogStatus === "error" || currencyConversionIssue ? (
+            <p className="rounded-control border border-warning-border bg-warning-surface px-3 py-2 text-micro text-warning">
+              {t("shell.preferencesModal.currencyConversionUnavailable")}
+            </p>
+          ) : (
+            <p className="text-micro text-text-muted">
+              {t("shell.preferencesModal.currencyEstimateNotice")}
+            </p>
+          )}
         </div>
 
         {/* Language Selection */}

@@ -70,7 +70,7 @@ const amenityLabels: Record<string, string> = {
 export const ImmoPropertyDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
-  const { currentLocale } = useMarketLocation();
+  const { currentLocale, convertMoney } = useMarketLocation();
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
@@ -307,7 +307,11 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <p className="shrink-0 text-xl font-black text-primary">
-                    {formatImmoMoney(property.financials.price, currentLocale)}
+                    {formatImmoMoney(
+                      property.financials.price,
+                      currentLocale,
+                      convertMoney,
+                    )}
                     {pricePeriodSuffix[property.financials.period]}
                   </p>
                 </div>

@@ -98,7 +98,7 @@ const Metric = ({
 );
 
 export const AutoDealerWorkspacePage: React.FC = () => {
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { formatDateTime, formatNumber } = useRegionalFormatters();
   const toast = useToast();
   const [workspace, setWorkspace] = useState<DealerWorkspace | null>(null);
@@ -351,7 +351,11 @@ export const AutoDealerWorkspacePage: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold">
-                    {formatAutoMoney(vehicle.price, currentLocale)}
+                    {formatAutoMoney(
+                      vehicle.price,
+                      currentLocale,
+                      convertMoney,
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {vehicleMetric
@@ -715,7 +719,11 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             <dt>Prix catalogue mensuel</dt>
             <dd className="font-bold">
               {plan.monthlyPrice
-                ? formatAutoMoney(plan.monthlyPrice, currentLocale)
+                ? formatAutoMoney(
+                    plan.monthlyPrice,
+                    currentLocale,
+                    convertMoney,
+                  )
                 : "Sur devis"}
             </dd>
           </div>

@@ -18,13 +18,15 @@ export const JobCard: React.FC<{
   onSave?: (job: JobPostingCard) => void;
   compact?: boolean;
 }> = ({ job, catalog, onSave, compact = false }) => {
-  const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
+  const { activeMarket, currentCurrency, currentLocale, convertMoney } =
+    useMarketLocation();
   const listing = presentEmploymentListingCard(
     job,
     catalog,
     currentLocale,
     activeMarket.code as MarketCode,
     currentCurrency,
+    convertMoney,
   );
 
   return (

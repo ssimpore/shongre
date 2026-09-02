@@ -19,6 +19,16 @@ const belgium = resolveMarketContext({
   pathname: "/be",
   infrastructure,
 });
+const switzerland = resolveMarketContext({
+  hostname: "shongre.com",
+  pathname: "/ch",
+  infrastructure,
+});
+const senegal = resolveMarketContext({
+  hostname: "shongre.com",
+  pathname: "/sn",
+  infrastructure,
+});
 
 describe("DemoTaxonomyService header navigation", () => {
   beforeEach(() => storageService.setCurrentUserKey("content_julien"));
@@ -48,5 +58,21 @@ describe("DemoTaxonomyService header navigation", () => {
     expect(await service.getAdminHeaderNavigation(belgium)).toEqual(
       initialBelgium,
     );
+  });
+
+  it("returns deterministic, contract-compatible market trees", async () => {
+    const service = new DemoTaxonomyService();
+    for (const context of [france, belgium, switzerland]) {
+      const tree = await service.getV4Tree({
+        marketContext: context,
+        locale: context.locale ?? "fr-FR",
+      });
+      expect(tree.items).toHaveLength(301);
+      expect(tree.listingTypes).toHaveLength(212);
+      expect(tree.marketCode).toBe(context.countryCode);
+    }
+    await expect(
+      service.getV4Tree({ marketContext: senegal, locale: "fr-FR" }),
+    ).rejects.toThrow(/marché/i);
   });
 });

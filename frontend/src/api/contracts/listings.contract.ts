@@ -49,8 +49,11 @@ export interface ListingsServiceContract {
     page: number;
     totalPages: number;
   }>;
-  createListingDraft(userId?: string): Promise<PublicationDraftState>;
-  getListingDraft(): Promise<PublicationDraftState | null>;
+  createListingDraft(
+    marketCode: string,
+    userId?: string,
+  ): Promise<PublicationDraftState>;
+  getListingDraft(marketCode: string): Promise<PublicationDraftState | null>;
   saveListingDraft(
     draft: PublicationDraftState,
     userId?: string,

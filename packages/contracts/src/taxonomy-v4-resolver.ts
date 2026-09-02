@@ -84,12 +84,23 @@ export class TaxonomyV4PublicResolver {
       checksum: this.bundle.metadata.normalizedSha256,
       marketCode,
       locale,
-      items: this.bundle.categories.filter((category) =>
-        category.marketAvailability.some(
-          (availability) =>
-            availability.marketCode === marketCode &&
-            availability.marketplaceEnabled,
-        ),
+      items: this.bundle.categories.filter(
+        (category) =>
+          category.status === "active" &&
+          category.marketAvailability.some(
+            (availability) =>
+              availability.marketCode === marketCode &&
+              availability.marketplaceEnabled,
+          ),
+      ),
+      listingTypes: this.bundle.listingTypes.filter(
+        (listingType) =>
+          listingType.status === "active" &&
+          listingType.marketAvailability.some(
+            (availability) =>
+              availability.marketCode === marketCode &&
+              availability.marketplaceEnabled,
+          ),
       ),
     };
   }

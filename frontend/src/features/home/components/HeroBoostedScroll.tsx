@@ -12,7 +12,6 @@ import { Image } from "../../../design-system/primitives/Image";
 import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
-import { formatPrice } from "../../../utilities/formatters";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { getListingCategoryLabel } from "../../../domains/taxonomy/taxonomy.display";
 import { useFavorites } from "../../../app/providers/FavoritesProvider";
@@ -71,7 +70,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   onListingClick,
 }) => {
   const { t } = useTranslation();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, formatPrice } = useMarketLocation();
   const { favoriteIds: favorites, toggleFavorite } = useFavorites();
   const [isPaused, setIsPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);

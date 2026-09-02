@@ -575,6 +575,40 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/currencies": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List all currency definitions and rates for administration */
+        readonly get: operations["getAdminCurrencyCatalog"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/currencies/{code}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Create or update an audited currency definition */
+        readonly put: operations["putAdminCurrency"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/discovery/configuration": {
         readonly parameters: {
             readonly query?: never;
@@ -668,6 +702,23 @@ export interface paths {
          */
         readonly get: operations["getAdminDiscoveryMetrics"];
         readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/exchange-rates/{baseCurrency}/{quoteCurrency}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Create or update an audited display exchange rate */
+        readonly put: operations["putAdminExchangeRate"];
         readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
@@ -3187,6 +3238,23 @@ export interface paths {
          * @description Tenant context is derived from the authenticated principal; callers cannot select another tenant.
          */
         readonly post: operations["completeCrmTask"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/currencies": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List enabled display currencies and exchange rates */
+        readonly get: operations["getCurrencyCatalog"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -8825,6 +8893,7 @@ export interface components {
             readonly readiness: components["schemas"]["JsonValue"];
             readonly seo: components["schemas"]["JsonValue"];
             readonly slug: string;
+            readonly supportedCurrencies: readonly components["schemas"]["CurrencyCode"][];
             readonly supportedLocales: readonly string[];
             readonly taxes: components["schemas"]["JsonValue"];
             readonly timezone: string;
@@ -8872,6 +8941,7 @@ export interface components {
             readonly seo?: {
                 readonly [key: string]: unknown;
             };
+            readonly supportedCurrencies?: readonly components["schemas"]["CurrencyCode"][];
             readonly supportedLocales?: readonly string[];
             readonly taxes?: {
                 readonly [key: string]: unknown;
@@ -9374,6 +9444,32 @@ export interface components {
             };
             readonly expectedVersion: number;
         };
+        readonly CurrencyCatalog: {
+            readonly currencies: readonly components["schemas"]["CurrencyDefinition"][];
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly rates: readonly components["schemas"]["ExchangeRate"][];
+        };
+        readonly CurrencyCode: string;
+        readonly CurrencyDefinition: {
+            readonly code: components["schemas"]["CurrencyCode"];
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly displayName: string;
+            readonly enabled: boolean;
+            readonly minorUnitDigits: number;
+            readonly symbol: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly CurrencyDefinitionUpdate: {
+            readonly displayName: string;
+            readonly enabled: boolean;
+            readonly minorUnitDigits: number;
+            readonly reason: string;
+            readonly symbol: string;
+        };
         readonly DigitalAccessGrant: {
             /** @enum {string} */
             readonly action: "DOWNLOAD" | "OPEN_LINK" | "REVEAL_SECRET";
@@ -9796,6 +9892,34 @@ export interface components {
         };
         readonly ErrorResponse: {
             readonly error: components["schemas"]["ErrorDetail"];
+        };
+        readonly ExchangeRate: {
+            /** Format: date-time */
+            readonly asOf: string;
+            readonly baseCurrency: components["schemas"]["CurrencyCode"];
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly enabled: boolean;
+            /** Format: date-time */
+            readonly expiresAt: string;
+            readonly quoteCurrency: components["schemas"]["CurrencyCode"];
+            readonly rateDenominator: number;
+            readonly rateNumerator: number;
+            readonly source: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            readonly version: number;
+        };
+        readonly ExchangeRateUpdate: {
+            /** Format: date-time */
+            readonly asOf: string;
+            readonly enabled: boolean;
+            /** Format: date-time */
+            readonly expiresAt: string;
+            readonly rateDenominator: number;
+            readonly rateNumerator: number;
+            readonly reason: string;
+            readonly source: string;
         };
         readonly FulfillmentType: "PHYSICAL" | components["schemas"]["DigitalFulfillmentType"];
         readonly InvoicingDocument: {
@@ -11483,6 +11607,7 @@ export interface components {
             readonly checksum: string;
             readonly compilerVersion: string;
             readonly items: readonly components["schemas"]["TaxonomyV4Node"][];
+            readonly listingTypes: readonly components["schemas"]["TaxonomyV4ListingType"][];
             readonly locale: string;
             readonly marketCode: components["schemas"]["MarketCode"];
             /** @enum {string} */
@@ -12745,6 +12870,76 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getAdminCurrencyCatalog: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Complete currency catalogue. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CurrencyCatalog"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminCurrency: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly code: components["schemas"]["CurrencyCode"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CurrencyDefinitionUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated currency definition. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CurrencyDefinition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getAdminDiscoveryConfiguration: {
         readonly parameters: {
             readonly query?: {
@@ -12927,6 +13122,45 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putAdminExchangeRate: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly baseCurrency: components["schemas"]["CurrencyCode"];
+                readonly quoteCurrency: components["schemas"]["CurrencyCode"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ExchangeRateUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Updated exchange rate. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ExchangeRate"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -18290,6 +18524,38 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getCurrencyCatalog: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Enabled display-currency catalogue. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["CurrencyCatalog"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postDigitalAccessGrantConsume: {
         readonly parameters: {
             readonly query?: never;
@@ -22279,9 +22545,11 @@ export interface operations {
     readonly postListingDrafts: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -22311,9 +22579,11 @@ export interface operations {
     readonly getListingDraftsCurrent: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -22343,9 +22613,11 @@ export interface operations {
     readonly putListingDraftsCurrent: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;

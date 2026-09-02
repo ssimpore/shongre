@@ -38,7 +38,6 @@ import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import {
-  formatPrice,
   formatRelativeDate,
   calculateBuyerFee,
 } from "../../utilities/formatters";
@@ -91,7 +90,8 @@ import {
 } from "../../platform/seo/seo-policy";
 
 export const ListingDetailPage: React.FC = () => {
-  const { activeMarket, effectiveConfig, marketContext } = useMarketLocation();
+  const { activeMarket, effectiveConfig, marketContext, formatPrice } =
+    useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
   const { t } = useTranslation(digitalMessagesFr);
   const { id } = useParams<{ id: string }>();
@@ -485,7 +485,7 @@ export const ListingDetailPage: React.FC = () => {
       buyerName,
       sellerId: listing.sellerId,
       sellerName: listing.sellerName,
-      initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice)} (Prix initial : ${formatPrice(listing.price)})`,
+      initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice, { sourceCurrency: listing.currency })} (Prix initial : ${formatPrice(listing.price, { sourceCurrency: listing.currency })})`,
     });
 
     await services.messaging.makeOffer(conv.id, buyerId, buyerName, numPrice);
@@ -493,7 +493,7 @@ export const ListingDetailPage: React.FC = () => {
     setIsOfferModalOpen(false);
     setOfferPrice("");
     toast.success(
-      `Votre offre de ${formatPrice(numPrice)} a été transmise au vendeur.`,
+      `Votre offre de ${formatPrice(numPrice, { sourceCurrency: listing.currency })} a été transmise au vendeur.`,
     );
     navigate(routes.workspace.messages(conv.id));
   };
@@ -1079,7 +1079,7 @@ export const ListingDetailPage: React.FC = () => {
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
         title={`Contacter ${seller?.name || listing.sellerName}`}
-        description={`À propos de "${listing.title}" (${formatPrice(listing.price)})`}
+        description={`À propos de "${listing.title}" (${formatPrice(listing.price, { sourceCurrency: listing.currency })})`}
       >
         <div className="space-y-4 text-xs">
           <FormField
@@ -1122,7 +1122,7 @@ export const ListingDetailPage: React.FC = () => {
         isOpen={isOfferModalOpen}
         onClose={() => setIsOfferModalOpen(false)}
         title={t("listings.listingDetailPage.faireUneOffreDePrix")}
-        description={`Prix actuel : ${formatPrice(listing.price)}`}
+        description={`Prix actuel : ${formatPrice(listing.price, { sourceCurrency: listing.currency })}`}
       >
         <div className="space-y-4 text-xs">
           <FormField
@@ -1255,6 +1255,7 @@ export const ListingDetailPage: React.FC = () => {
               ? "Don gratuit"
               : formatPrice(
                   showsBuyerFee ? listing.price + buyerFee : listing.price,
+                  { sourceCurrency: listing.currency },
                 )}
           </div>
         </div>

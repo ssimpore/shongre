@@ -199,7 +199,7 @@ describe("demo Staff/customer marketplace separation", () => {
       action: "staff_marketplace_demo_action",
     }).length;
     await expect(
-      demoListingsService.createListingDraft("user_ops_elena"),
+      demoListingsService.createListingDraft("FR", "user_ops_elena"),
     ).resolves.toMatchObject({ marketCode: "FR", currentStep: 1 });
     await expect(
       demoPromotionsService.getAvailableBoosts(france, "listing-demo"),

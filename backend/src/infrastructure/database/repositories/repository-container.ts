@@ -140,11 +140,17 @@ import {
   DemoProspectingRepository,
   PostgresProspectingRepository,
 } from "./prospecting.repository.js";
+import {
+  ICurrencyRepository,
+  DemoCurrencyRepository,
+  PostgresCurrencyRepository,
+} from "./currency.repository.js";
 
 export interface RepositoryContainer {
   users: IUserRepository;
   listings: IListingRepository;
   markets: IMarketRepository;
+  currencies: ICurrencyRepository;
   taxonomy: ITaxonomyRepository;
   orders: IOrderRepository;
   verification: IVerificationRepository;
@@ -185,6 +191,7 @@ export function createRepositoryContainer(
       users,
       listings: new PostgresListingRepository(),
       markets: new PostgresMarketRepository(),
+      currencies: new PostgresCurrencyRepository(),
       taxonomy: new PostgresTaxonomyRepository(),
       orders: new PostgresOrderRepository(),
       verification: new PostgresVerificationRepository(),
@@ -218,6 +225,7 @@ export function createRepositoryContainer(
     users,
     listings: new DemoListingRepository(),
     markets: new DemoMarketRepository(),
+    currencies: new DemoCurrencyRepository(),
     taxonomy: new DemoTaxonomyRepository(),
     orders: new DemoOrderRepository(),
     verification: new DemoVerificationRepository(),

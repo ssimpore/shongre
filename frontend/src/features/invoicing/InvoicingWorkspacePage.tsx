@@ -149,13 +149,19 @@ export function InvoicingWorkspacePage() {
           invoice.commercialState === "FINALIZED" ||
           invoice.commercialState === "CREDITED",
       ).length,
-      outstanding: invoices
-        .filter(
-          (invoice) =>
-            invoice.commercialState === "FINALIZED" &&
-            invoice.paymentState !== "PAID",
-        )
-        .reduce((sum, invoice) => sum + invoice.outstanding.amountMinor, 0),
+      outstanding: Object.entries(
+        invoices
+          .filter(
+            (invoice) =>
+              invoice.commercialState === "FINALIZED" &&
+              invoice.paymentState !== "PAID",
+          )
+          .reduce<Record<string, number>>((totals, invoice) => {
+            totals[invoice.currency] =
+              (totals[invoice.currency] || 0) + invoice.outstanding.amountMinor;
+            return totals;
+          }, {}),
+      ),
     };
   }, [workspace]);
 
@@ -477,7 +483,12 @@ export function InvoicingWorkspacePage() {
               },
               {
                 icon: CircleDollarSign,
-                value: formatMoneyMinor(summaries.outstanding, currentCurrency),
+                value:
+                  summaries.outstanding
+                    .map(([currency, amountMinor]) =>
+                      formatMoneyMinor(amountMinor, currency),
+                    )
+                    .join(" + ") || formatMoneyMinor(0, activeMarket.currency),
                 label: t("invoicing.workspace.outstanding"),
               },
               {
