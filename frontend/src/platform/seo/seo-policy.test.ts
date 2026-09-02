@@ -37,6 +37,40 @@ const categoryRouteData = (
 
 describe("central SEO policy", () => {
   it.each([
+    ["shongre.fr", "/auto", "https://shongre.fr/auto", "fr-FR"],
+    ["shongre.com", "/be/immo", "https://shongre.com/be/immo", "fr-BE"],
+    ["shongre.com", "/ch/auto", "https://shongre.com/ch/auto", "fr-CH"],
+  ])(
+    "publishes vertical metadata and CollectionPage data for %s%s",
+    (hostname, publicPath, canonicalUrl, locale) => {
+      const pathname = publicPath.endsWith("/immo") ? "/immo" : "/auto";
+      const market = context(hostname, publicPath);
+      const policy = resolveSeoPolicy({ pathname, marketContext: market });
+      expect(policy).toMatchObject({
+        knownRoute: true,
+        indexable: true,
+        canonicalUrl,
+        resourceType: "listing_collection",
+        structuredDataEligible: true,
+      });
+      expect(
+        structuredDataForPolicy(policy, market, {
+          status: "not_applicable",
+          data: null,
+        }),
+      ).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            "@type": "CollectionPage",
+            url: canonicalUrl,
+            inLanguage: locale,
+          }),
+        ]),
+      );
+    },
+  );
+
+  it.each([
     [
       "shongre.fr",
       "/categories",

@@ -169,6 +169,10 @@ export interface SecurityAuditLog {
   newValue?: unknown;
   ipAddress?: string;
   market?: string;
+  /** Consecutive equivalent client-demo events collapsed into this entry. */
+  occurrenceCount?: number;
+  /** Timestamp of the first event represented by an aggregate. */
+  firstOccurredAt?: string;
 }
 
 export interface UserProfile {

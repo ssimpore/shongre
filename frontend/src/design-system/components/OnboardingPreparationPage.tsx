@@ -20,6 +20,9 @@ export interface OnboardingPreparationPageProps {
   statusLabel: string;
   onStart: () => void;
   isReady?: boolean;
+  skipNextTimeLabel?: string;
+  skipNextTime?: boolean;
+  onSkipNextTimeChange?: (checked: boolean) => void;
 }
 
 export const OnboardingPreparationPage: React.FC<
@@ -35,6 +38,9 @@ export const OnboardingPreparationPage: React.FC<
   statusLabel,
   onStart,
   isReady = true,
+  skipNextTimeLabel,
+  skipNextTime = false,
+  onSkipNextTimeChange,
 }) => {
   const headingId = useId();
 
@@ -70,6 +76,19 @@ export const OnboardingPreparationPage: React.FC<
               >
                 {actionLabel}
               </Button>
+              {skipNextTimeLabel && onSkipNextTimeChange ? (
+                <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-xs font-semibold text-text-secondary">
+                  <input
+                    type="checkbox"
+                    checked={skipNextTime}
+                    onChange={(event) =>
+                      onSkipNextTimeChange(event.currentTarget.checked)
+                    }
+                    className="h-4 w-4 rounded border-border-strong accent-primary"
+                  />
+                  <span>{skipNextTimeLabel}</span>
+                </label>
+              ) : null}
               <span className="inline-flex min-w-0 items-start gap-1.5 text-xs font-medium leading-relaxed text-stone-500">
                 <Clock3
                   className="mt-0.5 h-icon-md w-icon-md shrink-0"

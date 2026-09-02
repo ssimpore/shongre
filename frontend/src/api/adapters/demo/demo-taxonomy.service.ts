@@ -1,16 +1,15 @@
 import { TaxonomyServiceContract } from "../../contracts/taxonomy.contract";
-import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
 import { Category } from "../../../types";
 import {
   TaxonomyNode,
   TaxonomyAttribute,
 } from "../../../domains/taxonomy/taxonomy.types";
 import { simulateNetworkDelay } from "../../client/api-client.config";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { CANONICAL_TAXONOMY_IDENTITIES } from "@shongre/contracts/taxonomy-catalog";
 import {
   taxonomyHeaderNavigationUpdateSchema,
   type MarketContext,
-  TaxonomyV4PublicResolver,
+  type TaxonomyV4PublicResolver,
   type TaxonomyHeaderNavigationConfiguration,
   type TaxonomyHeaderNavigationUpdate,
   type ResolveTaxonomyV4PublicInput,
@@ -23,23 +22,9 @@ import {
   requireDemoAnyCapability,
   requireDemoCapability,
 } from "./demo-authorization";
+import { DEFAULT_HEADER_CATEGORY_IDS } from "../../../domains/taxonomy/taxonomy-header.defaults";
 
-const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
-const taxonomyV4Resolver = new TaxonomyV4PublicResolver(taxonomyV4Bundle);
 const HEADER_NAVIGATION_STORAGE_KEY = "shongre_taxonomy_header_navigation:v1";
-const DEFAULT_HEADER_CATEGORY_IDS = [
-  "real_estate",
-  "vehicles",
-  "professional_equipment",
-  "jobs",
-  "fashion",
-  "home_garden",
-  "baby_family",
-  "electronics",
-  "leisure_culture",
-  "education",
-] as const;
-
 interface StoredHeaderNavigation {
   revision: number;
   updatedAt: string | null;
@@ -61,6 +46,28 @@ const DEFAULT_HEADER_NAVIGATION = Object.fromEntries(
   ]),
 ) as Record<string, StoredHeaderNavigation>;
 
+const headerCategoryById = new Map(
+  CANONICAL_TAXONOMY_IDENTITIES.filter((item) => !item.parentId).map((item) => [
+    item.id,
+    item,
+  ]),
+);
+
+const loadLegacyTaxonomy = () =>
+  import("../../../domains/taxonomy/taxonomy.service").then(
+    ({ taxonomyService }) => taxonomyService,
+  );
+
+let taxonomyV4ResolverPromise: Promise<TaxonomyV4PublicResolver> | undefined;
+const loadTaxonomyV4Resolver = () =>
+  (taxonomyV4ResolverPromise ??= Promise.all([
+    import("@shongre/contracts/taxonomy-v4-public"),
+    import("@shongre/contracts/taxonomy-v4-resolver"),
+  ]).then(
+    ([{ getTaxonomyV4PublicBundle }, { TaxonomyV4PublicResolver }]) =>
+      new TaxonomyV4PublicResolver(getTaxonomyV4PublicBundle()),
+  ));
+
 function getStoredHeaderNavigation(): Record<string, StoredHeaderNavigation> {
   return storageService.get(
     HEADER_NAVIGATION_STORAGE_KEY,
@@ -77,26 +84,17 @@ function projectHeaderNavigation(
     updatedAt: null,
     items: [],
   };
-  const categoryById = new Map(
-    taxonomyV4Bundle.categories.map((category) => [category.id, category]),
-  );
   return {
     marketCode,
     revision: stored.revision,
     updatedAt: stored.updatedAt,
     items: stored.items
       .flatMap((item) => {
-        const category = categoryById.get(item.categoryId);
-        const availability = category?.marketAvailability.find(
-          (entry) => entry.marketCode === marketCode,
-        );
+        const category = headerCategoryById.get(item.categoryId);
         if (
           !category ||
           category.parentId ||
-          (!includeInactive &&
-            (!item.isActive ||
-              category.status !== "active" ||
-              !availability?.marketplaceEnabled))
+          (!includeInactive && !item.isActive)
         ) {
           return [];
         }
@@ -105,7 +103,7 @@ function projectHeaderNavigation(
             categoryId: category.id,
             slug: category.slug,
             labels: category.labels,
-            shortLabels: category.shortLabels,
+            shortLabels: category.shortLabels ?? category.labels,
             iconName: category.iconName,
             isActive: item.isActive,
             displayOrder: item.displayOrder,
@@ -124,24 +122,28 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getRootCategories(): Promise<Category[]> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     return taxonomyService.getRootCategories() as any;
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     return taxonomyService.getNode(id) || null;
   }
 
   async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     return taxonomyService.getNodeBySlug(slug) || null;
   }
 
   async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     return taxonomyService.getChildren(nodeId);
   }
 
@@ -150,6 +152,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   ): Promise<TaxonomyAttribute[]> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     const schema = taxonomyService.resolvePublicationSchema(categoryId);
     return schema?.attributes ?? [];
   }
@@ -157,6 +160,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async resolveSearchFilters(nodeId?: string): Promise<any[]> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyService = await loadLegacyTaxonomy();
     return taxonomyService.resolveSearchFilters(nodeId);
   }
 
@@ -199,8 +203,13 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
       );
     }
 
+    const { getTaxonomyV4PublicBundle } =
+      await import("@shongre/contracts/taxonomy-v4-public");
     const categoryById = new Map(
-      taxonomyV4Bundle.categories.map((category) => [category.id, category]),
+      getTaxonomyV4PublicBundle().categories.map((category) => [
+        category.id,
+        category,
+      ]),
     );
     parsed.items.forEach((item) => {
       const category = categoryById.get(item.categoryId);
@@ -240,6 +249,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   }): Promise<TaxonomyV4TreeResponse> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyV4Resolver = await loadTaxonomyV4Resolver();
     return taxonomyV4Resolver.tree(
       input.marketContext,
       input.locale,
@@ -252,6 +262,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   ): Promise<TaxonomyV4ResolvedSchema> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyV4Resolver = await loadTaxonomyV4Resolver();
     return taxonomyV4Resolver.resolve(input);
   }
 
@@ -267,6 +278,7 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   }): Promise<TaxonomyV4OptionPage> {
     this.requireReadAccess();
     await simulateNetworkDelay();
+    const taxonomyV4Resolver = await loadTaxonomyV4Resolver();
     taxonomyV4Resolver.tree(input.marketContext, input.locale ?? "fr-FR");
     return taxonomyV4Resolver.lookupOptions(input);
   }

@@ -40,6 +40,9 @@ export const DEFAULT_DESCRIPTION =
 
 export const DEFAULT_TITLE = "Shongre - Petites Annonces Particuliers & Pros";
 
+export const HOMEPAGE_DESCRIPTION =
+  "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.";
+
 export interface StructuredData {
   "@context": string;
   "@type": string;

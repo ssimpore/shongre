@@ -1,9 +1,13 @@
 import { SecurityAuditLog } from "../types";
-import { telemetryService } from "../services/telemetry.service";
 import { deterministicRuntimeId } from "../utilities/deterministic-id";
 import { storageService } from "../services/storage.service";
 
 const AUDIT_STORAGE_KEY = "shongre_security_audit_logs_v1";
+export const AUDIT_LOG_LIMITS = {
+  entries: 200,
+  bytes: 256 * 1024,
+  detailsCharacters: 2_000,
+} as const;
 
 const INITIAL_AUDIT_LOGS: SecurityAuditLog[] = [
   {
@@ -91,17 +95,59 @@ const INITIAL_AUDIT_LOGS: SecurityAuditLog[] = [
 class AuditService {
   private inMemoryLogs: SecurityAuditLog[] = [...INITIAL_AUDIT_LOGS];
 
+  private serializedBytes(value: unknown): number {
+    return new TextEncoder().encode(JSON.stringify(value)).byteLength;
+  }
+
+  private compactLog(log: SecurityAuditLog): SecurityAuditLog {
+    const compact = {
+      ...log,
+      details: log.details.slice(0, AUDIT_LOG_LIMITS.detailsCharacters),
+    };
+    if (this.serializedBytes(compact) <= AUDIT_LOG_LIMITS.bytes) {
+      return compact;
+    }
+    // Large payload evidence belongs at the asynchronous backend audit
+    // boundary. The local demo preview retains the event without duplicating a
+    // potentially sensitive, quota-filling payload in browser storage.
+    return {
+      ...compact,
+      previousValue: undefined,
+      newValue: undefined,
+      details: compact.details.slice(0, 1_000),
+    };
+  }
+
+  private bounded(logs: SecurityAuditLog[]): SecurityAuditLog[] {
+    const bounded = logs
+      .slice(0, AUDIT_LOG_LIMITS.entries)
+      .map((log) => this.compactLog(log));
+    while (
+      bounded.length > 1 &&
+      this.serializedBytes(bounded) > AUDIT_LOG_LIMITS.bytes
+    ) {
+      bounded.pop();
+    }
+    return bounded;
+  }
+
   private getLogsFromStorage(): SecurityAuditLog[] {
-    return storageService.get(AUDIT_STORAGE_KEY, this.inMemoryLogs);
+    const stored = storageService.get(AUDIT_STORAGE_KEY, this.inMemoryLogs);
+    const logs = this.bounded(
+      Array.isArray(stored) ? stored : this.inMemoryLogs,
+    );
+    this.inMemoryLogs = logs;
+    // This also repairs an old unbounded buffer on first read. A full or
+    // unavailable store is deliberately silent: failing to prune diagnostics
+    // must not generate more diagnostics.
+    storageService.setSilently(AUDIT_STORAGE_KEY, logs);
+    return [...logs];
   }
 
   private saveLogs(logs: SecurityAuditLog[]): void {
-    try {
-      this.inMemoryLogs = logs;
-      storageService.set(AUDIT_STORAGE_KEY, logs);
-    } catch (e) {
-      telemetryService.captureException(e, "audit-storage-write");
-    }
+    const bounded = this.bounded(logs);
+    this.inMemoryLogs = bounded;
+    storageService.setSilently(AUDIT_STORAGE_KEY, bounded);
   }
 
   getLogs(
@@ -186,17 +232,39 @@ class AuditService {
   logEvent(
     entry: Omit<SecurityAuditLog, "id" | "timestamp">,
   ): SecurityAuditLog {
+    const timestamp = new Date().toISOString();
     const newLog: SecurityAuditLog = {
       ...entry,
       id: deterministicRuntimeId("audit", [entry]),
-      timestamp: new Date().toISOString(),
+      timestamp,
     };
 
     const logs = this.getLogsFromStorage();
-    logs.unshift(newLog);
+    const repeatedIndex = logs.findIndex(
+      (log) =>
+        log.actorId === newLog.actorId &&
+        log.action === newLog.action &&
+        log.targetId === newLog.targetId &&
+        log.market === newLog.market &&
+        log.details === newLog.details &&
+        JSON.stringify(log.previousValue) ===
+          JSON.stringify(newLog.previousValue) &&
+        JSON.stringify(log.newValue) === JSON.stringify(newLog.newValue),
+    );
+    if (repeatedIndex >= 0) {
+      const repeated = logs.splice(repeatedIndex, 1)[0];
+      logs.unshift({
+        ...repeated,
+        timestamp,
+        occurrenceCount: (repeated.occurrenceCount ?? 1) + 1,
+        firstOccurredAt: repeated.firstOccurredAt ?? repeated.timestamp,
+      });
+    } else {
+      logs.unshift(newLog);
+    }
     this.saveLogs(logs);
 
-    return newLog;
+    return this.inMemoryLogs[0] ?? newLog;
   }
 
   clearLogs(): void {

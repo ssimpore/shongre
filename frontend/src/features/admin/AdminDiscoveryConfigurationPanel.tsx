@@ -6,7 +6,7 @@ import type {
 } from "@shongre/contracts/discovery";
 import { DISCOVERY_CONFIGURATION_CONSTRAINTS } from "@shongre/contracts/discovery";
 import { AlertTriangle, LoaderCircle, Save, ShieldCheck } from "lucide-react";
-import { services } from "../../api";
+import { services } from "../../api/client/service-registry";
 import {
   Badge,
   Button,

@@ -46,7 +46,16 @@ import {
   Leaf,
   Ticket,
   FileKey,
+  FileText,
+  Folder,
+  Heart,
   House,
+  KeyRound,
+  Package,
+  Palette,
+  Cpu,
+  ShieldCheck,
+  ShoppingBag,
   LucideIcon,
 } from "lucide-react";
 import { colors } from "@shongre/design-tokens";
@@ -109,6 +118,15 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   Tv,
   Leaf,
   Ticket,
+  FileText,
+  Folder,
+  Heart,
+  KeyRound,
+  Package,
+  Palette,
+  Cpu,
+  ShieldCheck,
+  ShoppingBag,
   // Canonical taxonomy v4 stores Lucide icon names in kebab case. Keep that
   // transport metadata authoritative instead of resolving icons from labels,
   // slugs, or category ids in feature components.

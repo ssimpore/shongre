@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
@@ -116,6 +117,97 @@ test.describe("desktop category mega-menu", () => {
       /\/categorie\/immobilier\?subCategory=ventes-immobilieres$/,
     );
     await expect(menu).toHaveCount(0);
+  });
+
+  test("keeps Autres as the exact complement of the active market header", async ({
+    page,
+  }) => {
+    const promotedCategoryIds = ["real_estate", "vehicles", "jobs"];
+    await page.addInitScript((categoryIds) => {
+      localStorage.setItem(
+        "shongre_taxonomy_header_navigation:v1",
+        JSON.stringify({
+          FR: {
+            revision: 7,
+            updatedAt: "2026-09-02T14:00:00.000Z",
+            items: categoryIds.map((categoryId, displayOrder) => ({
+              categoryId,
+              isActive: true,
+              displayOrder,
+            })),
+          },
+        }),
+      );
+    }, promotedCategoryIds);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const nav = categoryNav(page);
+    await nav.hover();
+    await expect(
+      nav.getByRole("link", { name: "Mode", exact: true }),
+    ).toHaveCount(0);
+
+    await nav.getByRole("link", { name: "Autres", exact: true }).hover();
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+
+    const renderedOtherIds = await menu
+      .locator("section[data-category-id]")
+      .evaluateAll((sections) =>
+        sections.map((section) => section.getAttribute("data-category-id")),
+      );
+    const expectedOtherIds = getTaxonomyV4PublicBundle().categories
+      .filter(
+        (category) =>
+          !category.parentId &&
+          category.status === "active" &&
+          category.marketAvailability.some(
+            (availability) =>
+              availability.marketCode === "FR" &&
+              availability.marketplaceEnabled,
+          ) &&
+          !promotedCategoryIds.includes(category.id),
+      )
+      .sort(
+        (left, right) =>
+          left.sortOrder - right.sortOrder || left.id.localeCompare(right.id),
+      )
+      .map((category) => category.id);
+
+    expect(renderedOtherIds).toEqual(expectedOtherIds);
+    expect(new Set(renderedOtherIds).size).toBe(renderedOtherIds.length);
+    promotedCategoryIds.forEach((categoryId) =>
+      expect(renderedOtherIds).not.toContain(categoryId),
+    );
+  });
+
+  test("renders the canonical digital-products icon in the header category picker", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const categoryTrigger = page.locator(
+      "#header-desktop-header-category-button",
+    );
+    await categoryTrigger.click();
+    const digitalCategory = page
+      .locator("#header-desktop-header-category-menu")
+      .getByRole("button", { name: "Numérique", exact: true });
+
+    await expect(digitalCategory).toBeVisible();
+    await expect(digitalCategory.locator("svg")).toHaveClass(
+      /lucide-file-key/,
+    );
+    await digitalCategory.click();
+    await expect(categoryTrigger).toContainText("Numérique");
+    await expect(categoryTrigger.locator("svg").first()).toHaveClass(
+      /lucide-file-key/,
+    );
   });
 
   test("keeps the open menu accessible and token-aligned at representative widths", async ({

@@ -10,6 +10,7 @@ describe("getListingCardCharacteristics", () => {
           "1 290 currency_minor",
           "Appartement",
           "68 m²",
+          "3 pièces",
           "Bon état",
           "Appartement",
         ],

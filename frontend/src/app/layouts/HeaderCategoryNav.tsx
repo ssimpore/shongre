@@ -11,6 +11,7 @@ import React, {
   useState,
 } from "react";
 import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { services } from "../../api/client/service-registry";
 import { routes } from "../../configuration/routes";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
@@ -23,7 +24,6 @@ import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import {
-  hasCategoryMenuContent,
   loadCategoryNavigationBranch,
   loadCategoryNavigationOverview,
 } from "./categoryMegaMenu.model";
@@ -31,7 +31,7 @@ import {
 interface HeaderCategoryNavProps {
   activeCategorySlug?: string;
   currentPath: string;
-  initialCategories?: TaxonomyHeaderCategoryItem[];
+  initialCategories?: readonly TaxonomyHeaderCategoryItem[];
   marketContext: MarketContext;
   marketCode: string;
   disabledCategorySlugs?: readonly string[];
@@ -153,7 +153,12 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
   const headingId = `category-mega-menu-group-${node.id.replaceAll(".", "-")}`;
 
   return (
-    <section role="group" aria-labelledby={headingId} className="min-w-0">
+    <section
+      role="group"
+      aria-labelledby={headingId}
+      data-category-id={node.id}
+      className="min-w-0"
+    >
       <h3
         id={headingId}
         role="presentation"
@@ -397,6 +402,11 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressNextFocusOpenRef = useRef(false);
+  const loadingMenuKeysRef = useRef(new Set<string>());
+  const headerConfigurationRequestRef = useRef<{
+    scope: string;
+    promise: Promise<TaxonomyHeaderCategoryItem[]>;
+  } | null>(null);
   const [branchesBySlug, setBranchesBySlug] = useState<
     ReadonlyMap<string, TaxonomyNode>
   >(() => new Map());
@@ -409,6 +419,36 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   );
   const [overviewRoots, setOverviewRoots] = useState<TaxonomyNode[]>([]);
   const [activeMenuSlug, setActiveMenuSlug] = useState<string | null>(null);
+  const [scrollAffordance, setScrollAffordance] = useState({
+    previous: false,
+    next: false,
+  });
+  const headerConfigurationScope = `${marketCode}:${locale}:${marketContext.countryCode ?? ""}`;
+  const currentHeaderConfigurationScopeRef = useRef(headerConfigurationScope);
+  currentHeaderConfigurationScopeRef.current = headerConfigurationScope;
+
+  const disabledKeys = useMemo(
+    () =>
+      new Set(
+        [...disabledCategorySlugs, ...disabledSubCategorySlugs].map((value) =>
+          value.toLowerCase(),
+        ),
+      ),
+    [disabledCategorySlugs, disabledSubCategorySlugs],
+  );
+  const normalizedMarketCode = marketCode.toUpperCase();
+  const isAvailable = useCallback(
+    (node: TaxonomyNode) => {
+      const marketStatus =
+        node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status;
+      return (
+        marketStatus === "active" &&
+        !disabledKeys.has(node.id.toLowerCase()) &&
+        !disabledKeys.has(node.slug.toLowerCase())
+      );
+    },
+    [disabledKeys, normalizedMarketCode],
+  );
 
   const clearOpenTimer = useCallback(() => {
     if (openTimerRef.current === null) return;
@@ -437,20 +477,93 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     }, motionDurationMs.fast);
   }, [clearCloseTimer, clearOpenTimer]);
 
-  const hasMenuContent = useCallback(
-    (menuKey: string) =>
-      menuKey === OVERVIEW_MENU_KEY
-        ? overviewRoots.length > 0
-        : hasCategoryMenuContent(branchesBySlug.get(menuKey)),
-    [branchesBySlug, overviewRoots.length],
+  const loadHeaderConfiguration = useCallback(() => {
+    const existing = headerConfigurationRequestRef.current;
+    if (existing?.scope === headerConfigurationScope) return existing.promise;
+
+    const promise = services.taxonomy
+      .getHeaderNavigation(marketContext)
+      .then((configuration) =>
+        [...configuration.items].sort(
+          (left, right) => left.displayOrder - right.displayOrder,
+        ),
+      )
+      .then((items) => {
+        if (
+          currentHeaderConfigurationScopeRef.current ===
+          headerConfigurationScope
+        ) {
+          setHeaderCategories(items);
+          setBranchesBySlug(new Map());
+          setOverviewRoots([]);
+          loadingMenuKeysRef.current.clear();
+        }
+        return items;
+      })
+      // The public-safe fallback remains usable if the adapter is unavailable.
+      .catch(() => headerCategories);
+
+    headerConfigurationRequestRef.current = {
+      scope: headerConfigurationScope,
+      promise,
+    };
+    return promise;
+  }, [headerCategories, headerConfigurationScope, marketContext]);
+
+  const loadMenuContent = useCallback(
+    async (menuKey: string) => {
+      if (
+        loadingMenuKeysRef.current.has(menuKey) ||
+        (menuKey === OVERVIEW_MENU_KEY
+          ? overviewRoots.length > 0
+          : branchesBySlug.has(menuKey))
+      ) {
+        return;
+      }
+
+      loadingMenuKeysRef.current.add(menuKey);
+      try {
+        const configuredCategories = await loadHeaderConfiguration();
+        if (menuKey === OVERVIEW_MENU_KEY) {
+          const promotedCategoryIds = new Set(
+            configuredCategories.map((item) => item.categoryId),
+          );
+          const roots = await loadCategoryNavigationOverview(
+            services.taxonomy,
+            promotedCategoryIds,
+            isAvailable,
+          );
+          setOverviewRoots(roots);
+          return;
+        }
+
+        const branch = await loadCategoryNavigationBranch(
+          services.taxonomy,
+          menuKey,
+          isAvailable,
+        );
+        if (branch) {
+          setBranchesBySlug((current) => new Map(current).set(menuKey, branch));
+        }
+      } finally {
+        loadingMenuKeysRef.current.delete(menuKey);
+      }
+    },
+    [
+      branchesBySlug,
+      isAvailable,
+      loadHeaderConfiguration,
+      overviewRoots.length,
+    ],
   );
 
   const openMenu = useCallback(
     (slug: string, immediate = false) => {
-      if (!isDesktop || !hasMenuContent(slug)) {
+      if (!isDesktop) {
         return;
       }
 
+      void loadMenuContent(slug);
       clearCloseTimer();
       clearOpenTimer();
       if (immediate) {
@@ -468,84 +581,44 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       activeMenuSlug,
       clearCloseTimer,
       clearOpenTimer,
-      hasMenuContent,
       isDesktop,
+      loadMenuContent,
     ],
   );
 
   useEffect(() => {
-    let cancelled = false;
-    const normalizedMarketCode = marketCode.toUpperCase();
-    const disabledKeys = new Set(
-      [...disabledCategorySlugs, ...disabledSubCategorySlugs].map((value) =>
-        value.toLowerCase(),
+    setHeaderCategories(
+      [...initialCategories].sort(
+        (left, right) => left.displayOrder - right.displayOrder,
       ),
     );
-    const isAvailable = (node: TaxonomyNode) => {
-      const marketStatus =
-        node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status;
-      return (
-        marketStatus === "active" &&
-        !disabledKeys.has(node.id.toLowerCase()) &&
-        !disabledKeys.has(node.slug.toLowerCase())
-      );
-    };
+    setBranchesBySlug(new Map());
+    setOverviewRoots([]);
+    loadingMenuKeysRef.current.clear();
+    headerConfigurationRequestRef.current = null;
+  }, [headerConfigurationScope, initialCategories]);
 
-    void services.taxonomy
-      .getHeaderNavigation(marketContext)
-      .then(async (configuration) => {
-        const categories = [...configuration.items].sort(
-          (left, right) => left.displayOrder - right.displayOrder,
-        );
-        const promotedSlugs = new Set(categories.map((item) => item.slug));
-        const [branches, overview] = await Promise.all([
-          Promise.all(
-            categories.map((item) =>
-              loadCategoryNavigationBranch(
-                services.taxonomy,
-                item.slug,
-                isAvailable,
-              ),
-            ),
-          ),
-          loadCategoryNavigationOverview(
-            services.taxonomy,
-            promotedSlugs,
-            isAvailable,
-          ),
-        ]);
-        return { categories, branches, overview };
-      })
-      .then(({ categories, branches, overview }) => {
-        if (cancelled) return;
-        setHeaderCategories(categories);
-        setBranchesBySlug(
-          new Map(
-            branches
-              .filter((branch): branch is TaxonomyNode => branch !== null)
-              .map((branch) => [branch.slug, branch]),
-          ),
-        );
-        setOverviewRoots(overview);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setHeaderCategories([]);
-          setBranchesBySlug(new Map());
-          setOverviewRoots([]);
-        }
+  useEffect(() => {
+    const rail = scrollContainerRef.current;
+    if (!rail) return;
+    const sync = () => {
+      const maximum = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+      setScrollAffordance({
+        previous: rail.scrollLeft > 4,
+        next: rail.scrollLeft < maximum - 4,
       });
-
-    return () => {
-      cancelled = true;
     };
-  }, [
-    disabledCategorySlugs,
-    disabledSubCategorySlugs,
-    locale,
-    marketCode,
-    marketContext,
-  ]);
+    sync();
+    rail.addEventListener("scroll", sync, { passive: true });
+    const observer = new ResizeObserver(sync);
+    observer.observe(rail);
+    const list = rail.firstElementChild;
+    if (list) observer.observe(list);
+    return () => {
+      rail.removeEventListener("scroll", sync);
+      observer.disconnect();
+    };
+  }, [headerCategories]);
 
   useEffect(() => {
     if (!isDesktop) closeMenu();
@@ -589,21 +662,27 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     [headerCategories],
   );
 
-  const focusFirstMenuItem = useCallback((slug: string) => {
-    setActiveMenuSlug(slug);
-    window.requestAnimationFrame(() => {
-      menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    });
-  }, []);
+  const focusFirstMenuItem = useCallback(
+    async (slug: string) => {
+      setActiveMenuSlug(slug);
+      await loadMenuContent(slug);
+      window.requestAnimationFrame(() => {
+        menuRef.current
+          ?.querySelector<HTMLElement>('[role="menuitem"]')
+          ?.focus();
+      });
+    },
+    [loadMenuContent],
+  );
 
   const handleTopLevelKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLAnchorElement>, slug?: string) => {
       if (!isDesktop) return;
 
-      if (slug && event.key === "ArrowDown" && hasMenuContent(slug)) {
+      if (slug && event.key === "ArrowDown") {
         event.preventDefault();
         openMenu(slug, true);
-        focusFirstMenuItem(slug);
+        void focusFirstMenuItem(slug);
         return;
       }
 
@@ -629,8 +708,17 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
               : (currentIndex - 1 + items.length) % items.length;
       items[nextIndex]?.focus();
     },
-    [focusFirstMenuItem, hasMenuContent, isDesktop, openMenu],
+    [focusFirstMenuItem, isDesktop, openMenu],
   );
+
+  const scrollCategories = useCallback((direction: -1 | 1) => {
+    const rail = scrollContainerRef.current;
+    if (!rail) return;
+    rail.scrollBy({
+      left: direction * Math.max(rail.clientWidth * 0.7, 180),
+      behavior: "smooth",
+    });
+  }, []);
 
   const handleMenuKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -677,7 +765,11 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   return (
     <div
       ref={rootRef}
-      onPointerEnter={clearCloseTimer}
+      onPointerEnter={() => {
+        clearCloseTimer();
+        void loadHeaderConfiguration();
+      }}
+      onFocusCapture={() => void loadHeaderConfiguration()}
       onPointerLeave={() => {
         if (isDesktop) scheduleClose();
       }}
@@ -694,118 +786,148 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       onKeyDown={handleRootKeyDown}
       className="relative min-w-0"
     >
-      <div
-        ref={scrollContainerRef}
-        role="region"
-        aria-label={t("nav.categoryNavigation")}
-        className="no-scrollbar overflow-x-auto scroll-smooth"
-      >
-        <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
-          {headerNavItems.map((item, index) => {
-            const taxonomyNode =
-              item.kind === "category"
-                ? branchesBySlug.get(item.slug)
-                : undefined;
-            const menuKey =
-              item.kind === "category"
-                ? item.slug
-                : item.kind === "overview"
-                  ? OVERVIEW_MENU_KEY
+      <div className="relative min-w-0">
+        {scrollAffordance.previous ? (
+          <button
+            type="button"
+            aria-label={t("nav.category.scrollPrevious")}
+            aria-controls="header-category-rail"
+            onClick={() => scrollCategories(-1)}
+            className={`absolute inset-y-0 left-0 z-raised flex w-9 items-center justify-center bg-gradient-to-r from-bg-surface via-bg-surface to-transparent text-stone-700 ${CONTROL_FOCUS_CLASS}`}
+          >
+            <ChevronLeft className="h-icon-md w-icon-md" aria-hidden="true" />
+          </button>
+        ) : null}
+        <div
+          id="header-category-rail"
+          ref={scrollContainerRef}
+          role="region"
+          aria-label={t("nav.categoryNavigation")}
+          className="no-scrollbar overflow-x-auto scroll-smooth"
+        >
+          <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
+            {headerNavItems.map((item, index) => {
+              const taxonomyNode =
+                item.kind === "category"
+                  ? branchesBySlug.get(item.slug)
                   : undefined;
-            const label = taxonomyNode
-              ? getTaxonomyLabel(taxonomyNode, { compact: true, locale })
-              : item.kind === "category"
-                ? localizedHeaderCategoryLabel(item, locale)
-                : t(item.labelKey);
-            const dedicatedDestination =
-              item.kind === "category"
-                ? getDedicatedRootDestination(item.slug)
-                : undefined;
-            const isActive =
-              item.kind === "category"
-                ? Boolean(
-                    (dedicatedDestination &&
-                      (currentPath === dedicatedDestination ||
-                        currentPath.startsWith(`${dedicatedDestination}/`))) ||
-                    item.slug === activeCategorySlug,
-                  )
-                : currentPath === item.to;
-            const destination =
-              item.kind === "category"
-                ? getRootCategoryDestination(item.slug)
-                : item.to;
-            const hasMenu =
-              isDesktop && menuKey !== undefined && hasMenuContent(menuKey);
-            const isExpanded = hasMenu && activeMenuSlug === menuKey;
+              const menuKey =
+                item.kind === "category"
+                  ? item.slug
+                  : item.kind === "overview"
+                    ? OVERVIEW_MENU_KEY
+                    : undefined;
+              const label = taxonomyNode
+                ? getTaxonomyLabel(taxonomyNode, { compact: true, locale })
+                : item.kind === "category"
+                  ? localizedHeaderCategoryLabel(item, locale)
+                  : t(item.labelKey);
+              const dedicatedDestination =
+                item.kind === "category"
+                  ? getDedicatedRootDestination(item.slug)
+                  : undefined;
+              const isActive =
+                item.kind === "category"
+                  ? Boolean(
+                      (dedicatedDestination &&
+                        (currentPath === dedicatedDestination ||
+                          currentPath.startsWith(
+                            `${dedicatedDestination}/`,
+                          ))) ||
+                      item.slug === activeCategorySlug,
+                    )
+                  : currentPath === item.to;
+              const destination =
+                item.kind === "category"
+                  ? getRootCategoryDestination(item.slug)
+                  : item.to;
+              const hasMenu = isDesktop && menuKey !== undefined;
+              const isExpanded = hasMenu && activeMenuSlug === menuKey;
 
-            return (
-              <React.Fragment
-                key={item.kind === "category" ? item.categoryId : item.labelKey}
-              >
-                {index > 0 && (
-                  <li
-                    aria-hidden="true"
-                    className="flex items-center px-1.5 text-sm font-bold text-stone-700"
-                  >
-                    ·
-                  </li>
-                )}
-                <li className="flex shrink-0">
-                  <Link
-                    ref={(element) => {
-                      if (!menuKey) return;
-                      if (element) triggerRefs.current.set(menuKey, element);
-                      else triggerRefs.current.delete(menuKey);
-                    }}
-                    id={menuKey ? categoryTriggerId(menuKey) : undefined}
-                    data-header-nav-item="true"
-                    to={destination}
-                    onPointerEnter={(event) => {
-                      if (event.pointerType !== "mouse") return;
-                      if (menuKey) openMenu(menuKey);
-                      else scheduleClose();
-                    }}
-                    onFocus={() => {
-                      if (suppressNextFocusOpenRef.current) return;
-                      if (menuKey) openMenu(menuKey, true);
-                      else closeMenu();
-                    }}
-                    onKeyDown={(event) => handleTopLevelKeyDown(event, menuKey)}
-                    onClick={(event) => {
-                      closeMenu();
-                      if (item.kind !== "category") return;
-                      if (dedicatedDestination) return;
-                      if (
-                        event.button !== 0 ||
-                        event.metaKey ||
-                        event.ctrlKey ||
-                        event.shiftKey ||
-                        event.altKey
-                      ) {
-                        return;
+              return (
+                <React.Fragment
+                  key={
+                    item.kind === "category" ? item.categoryId : item.labelKey
+                  }
+                >
+                  {index > 0 && (
+                    <li
+                      aria-hidden="true"
+                      className="flex items-center px-1.5 text-sm font-bold text-stone-700"
+                    >
+                      ·
+                    </li>
+                  )}
+                  <li className="flex shrink-0">
+                    <Link
+                      ref={(element) => {
+                        if (!menuKey) return;
+                        if (element) triggerRefs.current.set(menuKey, element);
+                        else triggerRefs.current.delete(menuKey);
+                      }}
+                      id={menuKey ? categoryTriggerId(menuKey) : undefined}
+                      data-header-nav-item="true"
+                      to={destination}
+                      onPointerEnter={(event) => {
+                        if (event.pointerType !== "mouse") return;
+                        if (menuKey) openMenu(menuKey);
+                        else scheduleClose();
+                      }}
+                      onFocus={() => {
+                        if (suppressNextFocusOpenRef.current) return;
+                        if (menuKey) openMenu(menuKey, true);
+                        else closeMenu();
+                      }}
+                      onKeyDown={(event) =>
+                        handleTopLevelKeyDown(event, menuKey)
                       }
-                      event.preventDefault();
-                      onSelectCategory(item.slug);
-                    }}
-                    aria-current={isActive ? "page" : undefined}
-                    aria-haspopup={hasMenu ? "menu" : undefined}
-                    aria-controls={hasMenu ? CATEGORY_MENU_ID : undefined}
-                    aria-expanded={hasMenu ? isExpanded : undefined}
-                    className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
-                      isActive || isExpanded
-                        ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
-                        : item.kind === "link" && item.emphasis
-                          ? "font-bold text-stone-900 hover:bg-primary-light hover:text-primary"
-                          : "font-medium text-stone-800 hover:bg-bg-subtle hover:text-primary"
-                    }`}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              </React.Fragment>
-            );
-          })}
-        </ul>
+                      onClick={(event) => {
+                        closeMenu();
+                        if (item.kind !== "category") return;
+                        if (dedicatedDestination) return;
+                        if (
+                          event.button !== 0 ||
+                          event.metaKey ||
+                          event.ctrlKey ||
+                          event.shiftKey ||
+                          event.altKey
+                        ) {
+                          return;
+                        }
+                        event.preventDefault();
+                        onSelectCategory(item.slug);
+                      }}
+                      aria-current={isActive ? "page" : undefined}
+                      aria-haspopup={hasMenu ? "menu" : undefined}
+                      aria-controls={hasMenu ? CATEGORY_MENU_ID : undefined}
+                      aria-expanded={hasMenu ? isExpanded : undefined}
+                      className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                        isActive || isExpanded
+                          ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
+                          : item.kind === "link" && item.emphasis
+                            ? "font-bold text-stone-900 hover:bg-primary-light hover:text-primary"
+                            : "font-medium text-stone-800 hover:bg-bg-subtle hover:text-primary"
+                      }`}
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                </React.Fragment>
+              );
+            })}
+          </ul>
+        </div>
+        {scrollAffordance.next ? (
+          <button
+            type="button"
+            aria-label={t("nav.category.scrollNext")}
+            aria-controls="header-category-rail"
+            onClick={() => scrollCategories(1)}
+            className={`absolute inset-y-0 right-0 z-raised flex w-9 items-center justify-center bg-gradient-to-l from-bg-surface via-bg-surface to-transparent text-stone-700 ${CONTROL_FOCUS_CLASS}`}
+          >
+            <ChevronRight className="h-icon-md w-icon-md" aria-hidden="true" />
+          </button>
+        ) : null}
       </div>
 
       {isDesktop && activeRoot && (

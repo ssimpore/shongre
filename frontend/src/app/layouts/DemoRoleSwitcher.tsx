@@ -283,7 +283,7 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
   utility,
 }) => {
   const { t } = useTranslation();
-  const { platformRole, currentUser, switchDemoUser } = useAuth();
+  const { platformRole, currentUser, isRestoring, switchDemoUser } = useAuth();
   const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [switchingUserKey, setSwitchingUserKey] = useState<string | null>(null);
@@ -332,17 +332,26 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
   };
   const personaDescription = (persona: DemoPersona) =>
     persona.descKey ? t(persona.descKey) : (persona.desc ?? "");
-  const matchedRole = DEMO_PERSONAS.find((persona) =>
-    persona.userId ? persona.userId === currentUser?.id : !currentUser,
-  );
-  const currentRoleObj = matchedRole
-    ? { ...matchedRole, label: personaLabel(matchedRole) }
-    : {
-        label: roleLabel(platformRole),
-        desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
-        Icon: Shield,
-        iconClassName: "text-stone-400",
-      };
+  const matchedRole = isRestoring
+    ? undefined
+    : DEMO_PERSONAS.find((persona) =>
+        persona.userId ? persona.userId === currentUser?.id : !currentUser,
+      );
+  const currentRoleObj = isRestoring
+    ? {
+        label: t("shell.header.restoringSession"),
+        desc: "",
+        Icon: LoaderCircle,
+        iconClassName: "animate-spin text-stone-400 motion-reduce:animate-none",
+      }
+    : matchedRole
+      ? { ...matchedRole, label: personaLabel(matchedRole) }
+      : {
+          label: roleLabel(platformRole),
+          desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
+          Icon: Shield,
+          iconClassName: "text-stone-400",
+        };
 
   const handlePersonaSwitch = async (persona: DemoPersona) => {
     const openDestination = () => {
@@ -439,11 +448,13 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
             <button
               ref={triggerRef}
               type="button"
+              disabled={isRestoring}
               onClick={() => setIsOpen(!isOpen)}
               aria-haspopup="menu"
               aria-expanded={isOpen}
               aria-controls="demo-persona-menu"
               aria-busy={Boolean(switchingUserKey)}
+              data-auth-restoring={isRestoring || undefined}
               className="flex min-w-0 max-w-full items-center gap-2 rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-white transition-colors hover:bg-stone-700 cursor-pointer"
             >
               <currentRoleObj.Icon

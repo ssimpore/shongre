@@ -54,5 +54,9 @@ describe("canonical taxonomy identity catalog", () => {
     expect(CANONICAL_TAXONOMY_ALIASES["dons-solidarite-bons-plans"]).toBe(
       "deals_donations",
     );
+    expect(CANONICAL_TAXONOMY_ALIASES["famille"]).toBe("baby_kids");
+    expect(CANONICAL_TAXONOMY_ALIASES["equipement-bebe"]).toBe(
+      "baby_kids.strollers",
+    );
   });
 });

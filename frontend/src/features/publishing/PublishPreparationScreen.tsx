@@ -7,11 +7,19 @@ interface PublishPreparationScreenProps {
   hasSavedDraft: boolean;
   isReady: boolean;
   onStart: () => void;
+  skipNextTime: boolean;
+  onSkipNextTimeChange: (checked: boolean) => void;
 }
 
 export const PublishPreparationScreen: React.FC<
   PublishPreparationScreenProps
-> = ({ hasSavedDraft, isReady, onStart }) => {
+> = ({
+  hasSavedDraft,
+  isReady,
+  onStart,
+  skipNextTime,
+  onSkipNextTimeChange,
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -52,6 +60,9 @@ export const PublishPreparationScreen: React.FC<
       )}
       onStart={onStart}
       isReady={isReady}
+      skipNextTime={skipNextTime}
+      skipNextTimeLabel={t("publishing.preparation.skipNextTime")}
+      onSkipNextTimeChange={onSkipNextTimeChange}
     />
   );
 };

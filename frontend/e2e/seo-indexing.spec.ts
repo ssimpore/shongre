@@ -212,7 +212,12 @@ test.describe("SEO response and hydration contract", () => {
       maxRedirects: 0,
     });
     expect(response.status()).toBe(308);
-    expect(response.headers().location).toBe("/confidentialite?source=footer");
+    const location = response.headers().location;
+    expect(location).toBeDefined();
+    const redirect = new URL(location!, response.url());
+    expect(`${redirect.pathname}${redirect.search}`).toBe(
+      "/confidentialite?source=footer",
+    );
   });
 
   test("keeps lower environments blocked and omits public sitemaps", async ({

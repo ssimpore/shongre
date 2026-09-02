@@ -2,12 +2,19 @@ import { PAGE_SIZES } from "../../../configuration/pagination.config";
 import { isProSeller } from "../../../domains/user/user.domain";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, MapPin, Truck } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Pause,
+  Play,
+  Truck,
+} from "lucide-react";
 import { Listing } from "../../../types";
 import { FavoriteButton } from "../../../design-system/primitives/FavoriteButton";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { Badge } from "../../../design-system/primitives/Badge";
-import { listingRepository } from "../../../repositories/listing.repository";
+import { services } from "../../../api/client/service-registry";
 import { Image } from "../../../design-system/primitives/Image";
 import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
@@ -72,8 +79,10 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   const { t } = useTranslation();
   const { activeMarket, formatPrice } = useMarketLocation();
   const { favoriteIds: favorites, toggleFavorite } = useFavorites();
-  const [isPaused, setIsPaused] = useState(false);
+  const [isInteractionPaused, setIsInteractionPaused] = useState(false);
+  const [isUserPaused, setIsUserPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const railRef = useRef<HTMLDivElement>(null);
   // Read by the resize observer, which must not re-subscribe on every slide.
@@ -85,17 +94,25 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
      another country's listings directly under the headline — the same promise
      the search page would then refuse to honour. */
   useEffect(() => {
-    listingRepository
+    let active = true;
+    setIsLoading(true);
+    services.listings
       .getListings({
         marketCode: activeMarket.code,
         limit: PAGE_SIZES.homepagePromotedListings,
       })
       .then((res) => {
-        setAllListings(res.listings || []);
+        if (active) setAllListings(res.listings || []);
       })
       .catch(() => {
-        setAllListings([]);
+        if (active) setAllListings([]);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
       });
+    return () => {
+      active = false;
+    };
   }, [activeMarket.code]);
 
   // Load and sort listings: give explicit priority to the Sézane coat (list-105) and De'Longhi espresso (list-109)
@@ -144,7 +161,14 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   }, [activeMarket.code, scrollSequence.length]);
 
   useEffect(() => {
-    if (isPaused || prefersReducedMotion || scrollSequence.length <= 1) return;
+    if (
+      isInteractionPaused ||
+      isUserPaused ||
+      prefersReducedMotion ||
+      scrollSequence.length <= 1
+    ) {
+      return;
+    }
 
     const id = window.setInterval(() => {
       setActiveIndex((currentIndex) => {
@@ -156,7 +180,12 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     }, STEP_MS);
 
     return () => clearInterval(id);
-  }, [isPaused, prefersReducedMotion, scrollSequence.length]);
+  }, [
+    isInteractionPaused,
+    isUserPaused,
+    prefersReducedMotion,
+    scrollSequence.length,
+  ]);
 
   /* A resize changes the slide pitch, so the pixel offset that used to sit on a
      slide boundary no longer does. Nothing re-aligned the rail, which left it
@@ -210,16 +239,24 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
   /* A newly opened market may have no eligible featured listing. Collapsing
      the gallery avoids leaving an empty media well beside the hero copy. */
-  if (scrollSequence.length === 0) return null;
+  if (scrollSequence.length === 0) {
+    return isLoading ? (
+      <div
+        className="aspect-video w-full animate-pulse rounded-card bg-bg-muted motion-reduce:animate-none"
+        aria-hidden="true"
+      />
+    ) : null;
+  }
 
   return (
     <section
       className="relative flex w-full max-w-full flex-1 flex-col justify-between"
       aria-label={t("home.heroBoostedScroll.carouselLabel")}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
+      aria-roledescription="carrousel"
+      onMouseEnter={() => setIsInteractionPaused(true)}
+      onMouseLeave={() => setIsInteractionPaused(false)}
+      onFocusCapture={() => setIsInteractionPaused(true)}
+      onBlurCapture={() => setIsInteractionPaused(false)}
     >
       {/* The slide titles are `h3`, so the homepage outline went h1 -> h3 with
           nothing in between. Hidden visually — the rail is self-evident. */}
@@ -231,11 +268,34 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
           ref={railRef}
           className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
           aria-label={t("home.heroBoostedScroll.carouselLabel")}
+          tabIndex={0}
           onScroll={handleScroll}
+          onKeyDown={(event) => {
+            if (event.currentTarget !== event.target) return;
+            if (event.key === "ArrowLeft") {
+              event.preventDefault();
+              scrollToIndex(activeIndex - 1);
+            }
+            if (event.key === "ArrowRight") {
+              event.preventDefault();
+              scrollToIndex(activeIndex + 1);
+            }
+          }}
         >
-          {scrollSequence.map((item, index) =>
-            renderItemCard(item, index, isFeaturedListing(item)),
-          )}
+          {scrollSequence.map((item, index) => {
+            const distance = Math.abs(index - activeIndex);
+            const isAdjacent =
+              distance <= 1 || distance === scrollSequence.length - 1;
+            return isAdjacent ? (
+              renderItemCard(item, index, isFeaturedListing(item))
+            ) : (
+              <div
+                key={item.id}
+                aria-hidden="true"
+                className="h-full w-full shrink-0 snap-center bg-stone-200"
+              />
+            );
+          })}
         </div>
 
         {scrollSequence.length > 1 && (
@@ -246,10 +306,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.previous")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex - 1)}
-              /* Hidden on phones: the card is short enough there that a
-                 vertically centred arrow lands on top of the title overlay, and
-                 the rail already swipes. */
-              className="absolute left-3 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white sm:inline-flex"
+              className="absolute left-2 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3"
             >
               <ChevronLeft className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -259,7 +316,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
-              className="absolute right-3 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/55 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/75 hover:text-white sm:inline-flex"
+              className="absolute right-2 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3"
             >
               <ChevronRight className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -279,6 +336,28 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             />
           ))}
         </div>
+
+        {scrollSequence.length > 1 ? (
+          <IconButton
+            variant="ghost"
+            size="sm"
+            ariaLabel={t(
+              isUserPaused
+                ? "home.heroBoostedScroll.play"
+                : "home.heroBoostedScroll.pause",
+            )}
+            aria-controls="hero-boosted-track"
+            aria-pressed={isUserPaused}
+            onClick={() => setIsUserPaused((current) => !current)}
+            className="absolute right-16 top-4 z-raised rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white"
+          >
+            {isUserPaused ? (
+              <Play className="h-icon-sm w-icon-sm" aria-hidden="true" />
+            ) : (
+              <Pause className="h-icon-sm w-icon-sm" aria-hidden="true" />
+            )}
+          </IconButton>
+        ) : null}
       </div>
 
       <span className="sr-only" aria-live="polite">
@@ -293,6 +372,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     showFeaturedBadge: boolean,
   ) {
     const isFav = favorites.includes(item.id);
+    const isActive = index === activeIndex;
     const photoUrl = getListingPhotoUrl(item.coverImageUrl || item.photos?.[0]);
 
     return (
@@ -300,6 +380,8 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
         key={item.id}
         className="group relative h-full w-full shrink-0 snap-center overflow-hidden bg-stone-200"
         aria-label={`${index + 1} / ${scrollSequence.length}`}
+        aria-hidden={!isActive}
+        inert={!isActive}
       >
         <Link
           to={`/annonce/${item.id}`}
@@ -310,6 +392,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             src={photoUrl}
             alt={item.title}
             sizes={IMAGE_SIZES.gallery}
+            priority={index === 0}
             className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />

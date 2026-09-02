@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import React from "react";
+import { FileKey } from "lucide-react";
 import {
   CategoryIcon,
   ICON_NAME_MAP,
@@ -31,6 +32,23 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
           ).type,
       );
     expect(new Set(rootIcons).size).toBe(rootIcons.length);
+  });
+
+  it("preserves the dedicated digital-products icon across taxonomy projections", () => {
+    const publicDigitalCategory = getTaxonomyV4PublicBundle().categories.find(
+      (category) => category.id === "digital_products",
+    );
+    const adaptedDigitalCategory = CANONICAL_TAXONOMY.find(
+      (category) => category.id === "digital_products",
+    );
+
+    expect(publicDigitalCategory?.iconName).toBe("file-key");
+    expect(adaptedDigitalCategory?.iconName).toBe(
+      publicDigitalCategory?.iconName,
+    );
+    expect(
+      CategoryIcon({ category: adaptedDigitalCategory }) as React.ReactElement,
+    ).toHaveProperty("type", FileKey);
   });
 
   // 1. Verify every root category in CANONICAL_TAXONOMY has a defined, mapped icon

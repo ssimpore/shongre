@@ -8,10 +8,9 @@ import { listingRepository } from "../../../repositories/listing.repository";
 import { storageService } from "../../../services/storage.service";
 import { Listing, SearchFilters } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
-import { publicationService } from "../../../domains/publication/publication.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { marketService } from "../../../domains/market/market.service";
-import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
+import { resolveCanonicalTaxonomyIdentity } from "../../../domains/taxonomy/taxonomy.identity";
 import { requireDemoCapability } from "./demo-authorization";
 
 const BULK_IMPORT_SAMPLE: BulkListingImportTemplate = {
@@ -25,6 +24,16 @@ Miroir mural doré baroque;home_garden;furniture;95;good;1;Lyon;69002;Grand miro
 
 const BULK_IMPORT_COVER_URL =
   "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80";
+
+const loadPublicationService = () =>
+  import("../../../domains/publication/publication.service").then(
+    ({ publicationService }) => publicationService,
+  );
+
+function taxonomyIdentityLabel(value: string): string {
+  const identity = resolveCanonicalTaxonomyIdentity(value);
+  return identity?.shortLabels?.["fr-FR"] || identity?.labels["fr-FR"] || value;
+}
 
 function splitSemicolonRow(line: string): string[] {
   const values: string[] = [];
@@ -87,6 +96,7 @@ export class DemoListingsService implements ListingsServiceContract {
   ): Promise<PublicationDraftState> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
+    const publicationService = await loadPublicationService();
     const existing = publicationService.getDraft(userId, marketCode);
     if (existing) return existing;
 
@@ -141,6 +151,7 @@ export class DemoListingsService implements ListingsServiceContract {
   ): Promise<PublicationDraftState | null> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
+    const publicationService = await loadPublicationService();
     const user = storageService.getCurrentUser();
     return user
       ? publicationService.restoreGuestDraft(user, marketCode)
@@ -235,8 +246,6 @@ export class DemoListingsService implements ListingsServiceContract {
     const validRows = input.rows.filter((row) => row.isValid);
     return Promise.all(
       validRows.map((row) => {
-        const category = taxonomyService.getNodeBySlug(row.categorySlug);
-        const subCategory = taxonomyService.getNodeBySlug(row.subCategorySlug);
         return listingRepository.createListing({
           title: row.title,
           description:
@@ -247,9 +256,8 @@ export class DemoListingsService implements ListingsServiceContract {
           isFreeDonation: false,
           categorySlug: row.categorySlug,
           subCategorySlug: row.subCategorySlug,
-          categoryLabel: category?.label || category?.name || row.categorySlug,
-          subCategoryLabel:
-            subCategory?.label || subCategory?.name || row.subCategorySlug,
+          categoryLabel: taxonomyIdentityLabel(row.categorySlug),
+          subCategoryLabel: taxonomyIdentityLabel(row.subCategorySlug),
           condition: row.condition as Listing["condition"],
           sellerId: seller.id,
           sellerName: seller.companyName || seller.name,
@@ -297,6 +305,7 @@ export class DemoListingsService implements ListingsServiceContract {
   ): Promise<void> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.create");
+    const publicationService = await loadPublicationService();
     publicationService.saveDraft(
       draft,
       userId ?? storageService.getCurrentUser()?.id,
@@ -324,6 +333,7 @@ export class DemoListingsService implements ListingsServiceContract {
       city: "Paris",
       postalCode: "75001",
     };
+    const publicationService = await loadPublicationService();
     return publicationService.publishListing(draft, user as any);
   }
 

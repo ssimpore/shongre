@@ -4,6 +4,7 @@ export const publicUserSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   sellerType: z.enum(["individual", "pro"]),
+  avatarUrl: z.string().url().optional(),
   city: z.string().optional(),
   isIdentityVerified: z.boolean().default(false),
   rating: z.number().min(0).max(5).optional(),

@@ -5,8 +5,8 @@ import {
   EntitlementLimitError,
 } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
-import { taxonomyService } from "../domains/taxonomy/taxonomy.service";
-import { TaxonomyMigration } from "../domains/taxonomy/taxonomy.migration";
+import { CANONICAL_TAXONOMY_IDENTITIES } from "@shongre/contracts/taxonomy-catalog";
+import { resolveCanonicalTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import {
   expandSearchQuery,
   searchTextIncludes,
@@ -83,6 +83,32 @@ function matchesFacetValue(actual: unknown, criterion: unknown): boolean {
   return String(actual) === requested;
 }
 
+function taxonomyIdentityAndDescendantIds(value: string): Set<string> {
+  const identity = resolveCanonicalTaxonomyIdentity(value);
+  if (!identity) return new Set();
+
+  const parentById = new Map(
+    CANONICAL_TAXONOMY_IDENTITIES.map((candidate) => [
+      candidate.id,
+      candidate.parentId,
+    ]),
+  );
+  const containsIdentity = (candidateId: string) => {
+    let currentId: string | undefined = candidateId;
+    while (currentId) {
+      if (currentId === identity.id) return true;
+      currentId = parentById.get(currentId);
+    }
+    return false;
+  };
+
+  return new Set(
+    CANONICAL_TAXONOMY_IDENTITIES.filter((candidate) =>
+      containsIdentity(candidate.id),
+    ).map((candidate) => candidate.id),
+  );
+}
+
 export class MockListingRepository implements IListingRepository {
   private getCanonicalInventory(): Listing[] {
     const listingsById = new Map(
@@ -155,51 +181,43 @@ export class MockListingRepository implements IListingRepository {
     // Category with taxonomy normalization and alias resolution
     if (filters.categorySlug && filters.categorySlug !== "all") {
       const catSlugOrId = filters.categorySlug.toLowerCase();
-      const catNode = TaxonomyMigration.resolveCanonicalNode(catSlugOrId);
-      const matchedNodeIds = new Set(
-        catNode
-          ? [
-              catNode.id,
-              ...taxonomyService
-                .getDescendants(catNode.id)
-                .map((node) => node.id),
-            ]
-          : [],
-      );
+      const requestedCategoryId =
+        resolveCanonicalTaxonomyIdentity(catSlugOrId)?.id || catSlugOrId;
+      const matchedNodeIds = taxonomyIdentityAndDescendantIds(catSlugOrId);
 
       list = list.filter((item) => {
         const itemCat = (item.categorySlug || "").toLowerCase();
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
         const itemNode =
-          TaxonomyMigration.resolveCanonicalNode(itemSubCat) ||
-          TaxonomyMigration.resolveCanonicalNode(itemCat);
+          resolveCanonicalTaxonomyIdentity(itemSubCat) ||
+          resolveCanonicalTaxonomyIdentity(itemCat);
         if (itemNode && matchedNodeIds.size > 0)
           return matchedNodeIds.has(itemNode.id);
-        return itemCat === catSlugOrId || itemSubCat === catSlugOrId;
+        return (
+          itemCat === catSlugOrId ||
+          itemSubCat === catSlugOrId ||
+          itemCat.startsWith(`${requestedCategoryId}.`) ||
+          itemSubCat.startsWith(`${requestedCategoryId}.`)
+        );
       });
     }
 
     // Subcategory with alias normalization
     if (filters.subCategorySlug) {
       const subSlugOrId = filters.subCategorySlug.toLowerCase();
-      const subNode = TaxonomyMigration.resolveCanonicalNode(subSlugOrId);
-      const matchedNodeIds = new Set(
-        subNode
-          ? [
-              subNode.id,
-              ...taxonomyService
-                .getDescendants(subNode.id)
-                .map((node) => node.id),
-            ]
-          : [],
-      );
+      const requestedSubCategoryId =
+        resolveCanonicalTaxonomyIdentity(subSlugOrId)?.id || subSlugOrId;
+      const matchedNodeIds = taxonomyIdentityAndDescendantIds(subSlugOrId);
 
       list = list.filter((item) => {
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
-        const itemNode = TaxonomyMigration.resolveCanonicalNode(itemSubCat);
+        const itemNode = resolveCanonicalTaxonomyIdentity(itemSubCat);
         if (itemNode && matchedNodeIds.size > 0)
           return matchedNodeIds.has(itemNode.id);
-        return itemSubCat === subSlugOrId;
+        return (
+          itemSubCat === subSlugOrId ||
+          itemSubCat.startsWith(`${requestedSubCategoryId}.`)
+        );
       });
     }
 
@@ -294,6 +312,8 @@ export class MockListingRepository implements IListingRepository {
     // detail pages. Arrays are treated as overlap filters; range objects use
     // inclusive bounds and scalar values use exact matching.
     if (filters.attributes) {
+      const { taxonomyService } =
+        await import("../domains/taxonomy/taxonomy.service");
       Object.entries(filters.attributes).forEach(([key, criterion]) => {
         const attribute = taxonomyService.getAttribute(key);
         const attributeValue = (item: Listing) => {

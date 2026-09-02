@@ -25,4 +25,13 @@ describe("demo listing repository taxonomy filters", () => {
       ).toBe(true);
     },
   );
+
+  it("keeps the historical baby category URL compatible with stored demo listings", async () => {
+    const result = await listingRepository.getListings({
+      categorySlug: "bebe-puericulture-enfants",
+      limit: 100,
+    });
+
+    expect(result.listings.map((listing) => listing.id)).toContain("list-113");
+  });
 });

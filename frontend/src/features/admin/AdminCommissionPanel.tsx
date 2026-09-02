@@ -14,7 +14,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { services } from "../../api";
+import { services } from "../../api/client/service-registry";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Button } from "../../design-system/primitives/Button";
 import { Input } from "../../design-system/primitives/FormField";

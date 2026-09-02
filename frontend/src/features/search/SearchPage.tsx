@@ -721,7 +721,7 @@ export const SearchPage: React.FC = () => {
   usePageMeta(searchMeta);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       {/* Page heading. The search results are the page's subject, so they need a
           real h1 — it was previously the only top-level route with none. */}
       <div className="mb-3 sm:mb-4">

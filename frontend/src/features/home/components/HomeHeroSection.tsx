@@ -7,6 +7,7 @@ import { Button } from "../../../design-system/primitives/Button";
 import { PublishCtaButton } from "../../../design-system/primitives/PublishCtaButton";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HeroBoostedScroll } from "./HeroBoostedScroll";
+import { GlobalSearchBar } from "../../../design-system/primitives/GlobalSearchBar";
 
 export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
   section,
@@ -16,7 +17,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
     <section className="relative overflow-hidden bg-bg-base py-3 sm:py-4">
       <Container className="relative z-raised">
         <div className="rounded-3xl bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
-          <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
+          <div className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 md:gap-8 xl:gap-12">
             <div className="flex w-full flex-col justify-between text-left">
               <div className="flex flex-col gap-6 sm:gap-7">
                 <Heading as="h1" size="display-md" family="display">
@@ -28,7 +29,14 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
                   </p>
                 ) : null}
               </div>
-              <div className="w-full">
+              <div className="mt-5 w-full sm:mt-6">
+                <GlobalSearchBar
+                  variant="minimal"
+                  showCategory={false}
+                  showLocation={false}
+                  idPrefix="homepage-hero-search"
+                  className="mb-3 md:hidden"
+                />
                 <div className="flex w-full flex-col gap-3 sm:w-fit sm:flex-row">
                   <PublishCtaButton size="md" />
                   <Button

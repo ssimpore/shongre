@@ -45,7 +45,20 @@ export const RequireRoutePolicy: React.FC<{
   const location = useLocation();
   const policy: RoutePolicy = ROUTE_POLICIES[policyId];
 
-  if (isRestoring) return null;
+  if (isRestoring) {
+    return (
+      <div
+        data-route-restoring
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        className="mx-auto w-full max-w-page px-4 py-8"
+      >
+        <span className="sr-only">Vérification de votre session…</span>
+        <div className="h-80 animate-pulse rounded-card bg-bg-muted motion-reduce:animate-none" />
+      </div>
+    );
+  }
   if (!currentUser) {
     return <RequireAuth>{children}</RequireAuth>;
   }

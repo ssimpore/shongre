@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  Suspense,
+  lazy,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   createDefaultHomepageConfiguration,
   resolveHomepageConfiguration,
@@ -15,8 +22,50 @@ import {
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
-import { usePublishCta } from "../../security/usePublishCta";
-import { HomepageSectionSlot } from "./homepageSection.registry";
+import { HomeHeroSection } from "./components/HomeHeroSection";
+import { HomeRecentSearches } from "./components/HomeRecentSearches";
+
+const HomeBelowFold = lazy(() =>
+  import("./components/HomeBelowFold").then((module) => ({
+    default: module.HomeBelowFold,
+  })),
+);
+
+const DeferredHomeContent: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor || isVisible) return;
+    if (!("IntersectionObserver" in window)) {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setIsVisible(true);
+        observer.disconnect();
+      },
+      { rootMargin: "400px 0px" },
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [isVisible]);
+
+  return (
+    <div ref={anchorRef} data-testid="home-deferred-content">
+      {isVisible ? (
+        children
+      ) : (
+        <div className="mx-auto min-h-64 max-w-page px-4" aria-hidden="true" />
+      )}
+    </div>
+  );
+};
 
 const contentSection = (type: HomepageSectionView["type"]) =>
   type === "trending" || type === "deals" || type === "recent_listings";
@@ -59,7 +108,6 @@ function fallbackExperience(input: {
 export const HomePage: React.FC = () => {
   const { activeMarket, currentLocale, location, marketContext } =
     useMarketLocation();
-  const publishCta = usePublishCta();
   const [experience, setExperience] = useState<HomepageExperience | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -119,18 +167,32 @@ export const HomePage: React.FC = () => {
           locale: currentLocale,
           failed,
         });
+  const hero = visibleExperience.sections.find(
+    (section) => section.type === "hero",
+  );
+  const recentSearches = visibleExperience.sections.find(
+    (section) => section.type === "recent_searches",
+  );
 
   return (
     <div className="space-y-8 pb-16 sm:space-y-12">
-      {visibleExperience.sections.map((section) => (
-        <HomepageSectionSlot
-          key={section.key}
-          section={section}
-          activeMarket={activeMarket}
-          publishCta={publishCta}
-          onRetry={() => setAttempt((current) => current + 1)}
+      {hero ? <HomeHeroSection section={hero} /> : null}
+      {recentSearches ? (
+        <HomeRecentSearches
+          title={recentSearches.title}
+          maxItems={recentSearches.maxItems}
         />
-      ))}
+      ) : null}
+      <DeferredHomeContent>
+        <Suspense
+          fallback={<div className="mx-auto min-h-64 max-w-page px-4" />}
+        >
+          <HomeBelowFold
+            sections={visibleExperience.sections}
+            onRetry={() => setAttempt((current) => current + 1)}
+          />
+        </Suspense>
+      </DeferredHomeContent>
     </div>
   );
 };

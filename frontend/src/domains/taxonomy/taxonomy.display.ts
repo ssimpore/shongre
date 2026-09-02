@@ -1,7 +1,8 @@
 import type { Listing, RecentSearch } from "../../types";
+import type { CanonicalTaxonomyIdentity } from "@shongre/contracts/taxonomy-catalog";
 import { getTaxonomyLabel } from "./taxonomy.labels";
-import { TaxonomyMigration } from "./taxonomy.migration";
 import type { TaxonomyNode } from "./taxonomy.types";
+import { resolveCanonicalTaxonomyIdentity } from "./taxonomy.identity";
 
 /**
  * Presentation-only taxonomy helpers.
@@ -19,15 +20,18 @@ export function getCompactTaxonomyLabel(
 
 export function resolveTaxonomyNode(
   slugOrId?: string,
-): TaxonomyNode | undefined {
-  return TaxonomyMigration.resolveCanonicalNode(slugOrId);
+): CanonicalTaxonomyIdentity | undefined {
+  return resolveCanonicalTaxonomyIdentity(slugOrId);
 }
 
 export function getCompactTaxonomyLabelBySlug(
   slugOrId: string | undefined,
   fallback = "",
 ): string {
-  return getCompactTaxonomyLabel(resolveTaxonomyNode(slugOrId), fallback);
+  const identity = resolveTaxonomyNode(slugOrId);
+  return (
+    identity?.shortLabels?.["fr-FR"] || identity?.labels["fr-FR"] || fallback
+  );
 }
 
 export function getListingCategoryLabel(

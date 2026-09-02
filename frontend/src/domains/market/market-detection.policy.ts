@@ -20,7 +20,11 @@ export function resolveMarketDetectionOutcome(input: {
   const { recommendation } = input;
   const detectedCountryCode = recommendation.country?.code;
   if (!detectedCountryCode) {
-    return { kind: "country_selection_required", reason: "unknown" };
+    // The canonical request has already established a valid market context.
+    // Absence of an optional coarse recommendation must not replace it with a
+    // late country-selection banner (or turn an unavailable signal into
+    // authority). The global gateway owns the no-market selection case.
+    return { kind: "none" };
   }
   if (recommendation.experience === "unavailable") {
     return { kind: "country_selection_required", reason: "unavailable" };

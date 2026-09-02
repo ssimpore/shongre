@@ -73,9 +73,11 @@ function normalizeCharacteristic(value: string): string {
 }
 
 /**
- * Keeps taxonomy chips unique and removes values already owned by a dedicated
- * card field. In particular, condition has its own line above the chips on
- * both web and native cards.
+ * Keeps the two highest-priority taxonomy chips unique and removes values
+ * already owned by a dedicated card field. The projection feeding this helper
+ * owns category-specific ordering; full attributes remain available to detail
+ * views. Condition stays out of compact taxonomy chips: native may present it
+ * separately, while Web reserves the complete value for details.
  */
 export function getListingCardCharacteristics(
   listing: Pick<ListingCardView, "characteristics" | "conditionLabel">,
@@ -83,17 +85,19 @@ export function getListingCardCharacteristics(
   const condition = normalizeCharacteristic(listing.conditionLabel);
   const seen = new Set<string>();
 
-  return listing.characteristics.filter((characteristic) => {
-    const normalized = normalizeCharacteristic(characteristic);
-    if (
-      !normalized ||
-      normalized === condition ||
-      normalized.includes("currency_minor") ||
-      seen.has(normalized)
-    ) {
-      return false;
-    }
-    seen.add(normalized);
-    return true;
-  });
+  return listing.characteristics
+    .filter((characteristic) => {
+      const normalized = normalizeCharacteristic(characteristic);
+      if (
+        !normalized ||
+        normalized === condition ||
+        normalized.includes("currency_minor") ||
+        seen.has(normalized)
+      ) {
+        return false;
+      }
+      seen.add(normalized);
+      return true;
+    })
+    .slice(0, 2);
 }

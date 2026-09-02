@@ -34,7 +34,7 @@ export function ListingCard({
     ? formatMoney(listing.originalPrice, locale)
     : undefined;
   const badges = getListingPromotionBadges(listing);
-  const characteristics = getListingCardCharacteristics(listing).slice(0, 3);
+  const characteristics = getListingCardCharacteristics(listing);
   const horizontal = variant === "list";
   return (
     <Pressable

@@ -135,6 +135,34 @@ class StorageService {
     }
   }
 
+  /**
+   * Best-effort storage for diagnostic data that must never report its own
+   * persistence failure through telemetry.
+   *
+   * Audit and telemetry buffers are error-reporting infrastructure. Sending a
+   * quota error from one of those buffers back through the same reporting path
+   * can create an unbounded failure loop. Keep the in-memory fallback current,
+   * attempt the browser write once, and let the caller degrade silently.
+   */
+  setSilently<T>(key: string, value: T): boolean {
+    let serialized: string;
+    try {
+      serialized = JSON.stringify(value);
+    } catch {
+      return false;
+    }
+
+    this.memoryStore.set(key, serialized);
+    if (typeof window === "undefined" || !window.localStorage) return true;
+
+    try {
+      window.localStorage.setItem(key, serialized);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   remove(key: string): void {
     try {
       if (typeof window !== "undefined" && window.localStorage) {

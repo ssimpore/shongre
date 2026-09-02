@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactNode } from "react";
 import type { ListingCardView } from "@shongre/contracts";
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
-import { Badge, Card, SemanticIcon, Text } from "@shongre/ui/web";
+import { Avatar, Badge, Card, SemanticIcon, Text } from "@shongre/ui/web";
 import {
   getListingCardCharacteristics,
   getListingPromotionBadges,
@@ -32,6 +32,25 @@ export interface ListingCardProps {
   }) => ReactNode;
 }
 
+function SellerVerificationShield({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+
+  return (
+    <span
+      data-listing-card-seller-verified="true"
+      title="Profil vérifié"
+      className="inline-flex shrink-0"
+    >
+      <SemanticIcon
+        name="shield"
+        size="sm"
+        label="Profil vérifié"
+        className="fill-success text-white drop-shadow-sm"
+      />
+    </span>
+  );
+}
+
 export function ListingCard({
   listing,
   href,
@@ -57,13 +76,21 @@ export function ListingCard({
     style: "short",
   });
   const badges = getListingPromotionBadges(listing);
-  const characteristics = getListingCardCharacteristics(listing).slice(
-    0,
-    variant === "list" ? 2 : 3,
-  );
+  const characteristics = getListingCardCharacteristics(listing);
   const horizontal = variant === "list";
   const compact = variant === "compact";
   const showcase = variant === "showcase";
+  const sellerName =
+    listing.seller?.organizationName || listing.seller?.name || "";
+  const sellerImageUrl =
+    listing.seller?.organizationLogoUrl || listing.seller?.avatarUrl;
+  const isSellerVerified = Boolean(
+    listing.seller?.isIdentityVerified || listing.seller?.isBusinessVerified,
+  );
+  const showSellerVerificationShield = Boolean(
+    isSellerVerified && listing.seller?.sellerType !== "pro",
+  );
+  const hasSellerRating = (listing.seller?.rating ?? 0) > 0;
   const toggle = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -74,6 +101,7 @@ export function ListingCard({
   const linkContent = (
     <>
       <div
+        data-listing-card-media="true"
         className={`${horizontal ? "listing-card-list-image" : `${compact ? "aspect-video" : "aspect-media"} w-full`} relative shrink-0 overflow-hidden bg-bg-muted`}
       >
         {image ??
@@ -91,10 +119,21 @@ export function ListingCard({
         {(listing.photoCount ?? 0) > 1 ? (
           <span
             aria-label={`${listing.photoCount} photos`}
-            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs ${showcase ? "bottom-3 right-3" : "bottom-2 left-2"}`}
+            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs ${showcase ? "bottom-3 left-3" : "bottom-2 left-2"}`}
           >
             <SemanticIcon name="camera" size="xs" />
             {listing.photoCount}
+          </span>
+        ) : null}
+        {listing.deliveryAvailable ? (
+          <span
+            data-listing-card-delivery-overlay="true"
+            aria-label="Livraison disponible"
+            title="Livraison disponible"
+            className={`absolute inline-flex items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-white backdrop-blur-xs ${showcase ? "bottom-3 right-3" : "bottom-2 right-2"}`}
+          >
+            <SemanticIcon name="truck" size="xs" />
+            Livraison
           </span>
         ) : null}
         {badges.length ? (
@@ -113,7 +152,7 @@ export function ListingCard({
       <div
         className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
       >
-        {listing.categoryLabel || listing.seller ? (
+        {listing.categoryLabel || sellerName || hasSellerRating ? (
           <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted">
             <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
               {listing.categoryLabel ? (
@@ -121,24 +160,34 @@ export function ListingCard({
                   {listing.categoryLabel}
                 </span>
               ) : null}
-              {listing.categoryLabel &&
-              (listing.seller?.organizationName || listing.seller?.name) ? (
-                <span aria-hidden="true" className="shrink-0">
+              {listing.categoryLabel && sellerName ? (
+                <span aria-hidden="true" className="shrink-0 sm:hidden">
                   ·
                 </span>
               ) : null}
-              {listing.seller?.organizationName || listing.seller?.name ? (
-                <span className="min-w-0 truncate">
-                  {listing.seller.organizationName || listing.seller.name}
+              {sellerName ? (
+                <span className="contents sm:hidden">
+                  <Avatar
+                    src={sellerImageUrl}
+                    name={sellerName}
+                    size="sm"
+                    aria-hidden="true"
+                    data-listing-card-seller-avatar="true"
+                    className="[&>div]:h-5 [&>div]:w-5 [&>div]:text-micro"
+                  />
+                  <span className="inline-flex min-w-0 items-center gap-1">
+                    <span className="min-w-0 truncate">{sellerName}</span>
+                    <SellerVerificationShield
+                      visible={showSellerVerificationShield}
+                    />
+                  </span>
+                  {listing.seller?.sellerType === "pro" ? (
+                    <Badge variant="pro">Pro</Badge>
+                  ) : null}
                 </span>
               ) : null}
-              {listing.seller?.sellerType === "pro" ? (
-                <Badge variant="pro">Pro</Badge>
-              ) : listing.seller?.isIdentityVerified ? (
-                <Badge variant="verified">Vérifié</Badge>
-              ) : null}
             </span>
-            {(listing.seller?.rating ?? 0) > 0 ? (
+            {hasSellerRating ? (
               <span
                 aria-label={`Note ${listing.seller?.rating?.toFixed(1)} sur 5, ${listing.seller?.reviewCount ?? 0} avis`}
                 className="inline-flex shrink-0 items-center gap-1 rounded-control border border-border-base bg-bg-base px-2 py-1 font-semibold text-text-secondary"
@@ -189,16 +238,6 @@ export function ListingCard({
             </Text>
           ) : null}
         </div>
-        {listing.conditionLabel ? (
-          <Text
-            as="div"
-            size={showcase ? "body-sm" : "caption"}
-            tone="muted"
-            className="mt-1"
-          >
-            {listing.conditionLabel}
-          </Text>
-        ) : null}
         {characteristics.length ? (
           <ul
             className={`mt-2 flex min-w-0 gap-1.5 overflow-hidden ${horizontal ? "flex-nowrap" : "flex-wrap"}`}
@@ -215,47 +254,64 @@ export function ListingCard({
             ))}
           </ul>
         ) : null}
-        <div className="mt-auto grid min-w-0 gap-1.5 border-t border-border-subtle pt-2 text-micro text-text-muted">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="inline-flex min-w-0 flex-1 items-center gap-1">
+        <div
+          data-listing-card-footer="true"
+          className="relative mt-auto grid min-w-0 gap-1.5 border-t border-border-subtle pt-2 text-micro text-text-muted sm:gap-px sm:pt-1"
+        >
+          {sellerName ? (
+            <>
+              <span
+                aria-hidden="true"
+                data-listing-card-seller-avatar="true"
+                className="absolute left-0 top-2 hidden sm:block"
+              >
+                <Avatar src={sellerImageUrl} name={sellerName} size="sm" />
+              </span>
+              <span
+                data-listing-card-seller="true"
+                className="hidden min-w-0 items-center gap-1.5 sm:flex sm:pl-8"
+              >
+                <span className="inline-flex min-w-0 flex-1 items-center gap-1">
+                  <span
+                    title={sellerName}
+                    className="min-w-0 truncate font-semibold text-text-secondary"
+                  >
+                    {sellerName}
+                  </span>
+                  <SellerVerificationShield
+                    visible={showSellerVerificationShield}
+                  />
+                </span>
+                {listing.seller?.sellerType === "pro" ? (
+                  <span className="shrink-0">
+                    <Badge variant="pro">Pro</Badge>
+                  </span>
+                ) : null}
+              </span>
+            </>
+          ) : null}
+          <span
+            className={`flex min-w-0 items-center gap-2 ${sellerName ? "sm:pl-8" : ""}`}
+          >
+            <span className="inline-flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
               <SemanticIcon
                 name="map-pin"
                 size="xs"
                 className="shrink-0 text-primary"
               />
-              <span className="min-w-0 break-words">{listing.city}</span>
-            </span>
-            {!listing.deliveryAvailable ? (
-              <span className="inline-flex shrink-0 items-center gap-1">
-                <SemanticIcon
-                  name="calendar"
-                  size="xs"
-                  className="shrink-0 text-primary"
-                />
-                <span>{published}</span>
+              <span className="min-w-0 truncate" title={listing.city}>
+                {listing.city}
               </span>
-            ) : null}
+            </span>
+            <span className="inline-flex shrink-0 items-center gap-1">
+              <SemanticIcon
+                name="calendar"
+                size="xs"
+                className="shrink-0 text-primary"
+              />
+              <span>{published}</span>
+            </span>
           </span>
-          {listing.deliveryAvailable ? (
-            <span className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="inline-flex shrink-0 items-center gap-1">
-                <SemanticIcon
-                  name="truck"
-                  size="xs"
-                  className="shrink-0 text-primary"
-                />
-                Livraison
-              </span>
-              <span className="inline-flex min-w-0 items-center gap-1">
-                <SemanticIcon
-                  name="calendar"
-                  size="xs"
-                  className="shrink-0 text-primary"
-                />
-                <span className="min-w-0 truncate">{published}</span>
-              </span>
-            </span>
-          ) : null}
         </div>
       </div>
     </>

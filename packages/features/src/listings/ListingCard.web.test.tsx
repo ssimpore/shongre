@@ -16,11 +16,12 @@ const baseListing: ListingCardView = {
   characteristics: ["Appartement", "68 m²", "3 pièces", "Balcon", "Bon état"],
   publishedAt: "2026-08-24T12:00:00.000Z",
   photoCount: 4,
-  deliveryAvailable: false,
+  deliveryAvailable: true,
   seller: {
     id: "agency",
     name: "Agence Canopée avec un nom très long",
     sellerType: "pro",
+    avatarUrl: "https://example.test/seller-avatar.jpg",
     isIdentityVerified: true,
     isBusinessVerified: true,
   },
@@ -49,13 +50,49 @@ describe("canonical web listing card", () => {
     expect(html).toContain("À la une · sponsorisé");
     expect(html).toContain("Appartement");
     expect(html).toContain("68 m²");
-    expect(html).toContain("3 pièces");
+    expect(html).not.toContain("3 pièces");
+    expect(html).not.toContain(">Bon état<");
     expect(html).not.toContain("Balcon");
     expect(html).toContain('aria-label="Retirer des favoris"');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("focus-visible:outline-2");
     expect(html).toContain("Agence Canopée avec un nom très long");
+    expect(html).toContain('data-listing-card-footer="true"');
+    expect(html).toContain('data-listing-card-seller="true"');
+    expect(html).toContain('data-listing-card-seller-avatar="true"');
+    expect(html).not.toContain('data-listing-card-seller-verified="true"');
+    expect(html).toContain(">Pro<");
+    expect(html).toContain('data-listing-card-delivery-overlay="true"');
+    expect(html).toContain('src="https://example.test/seller-avatar.jpg"');
+    expect(html).toContain('title="Agence Canopée avec un nom très long"');
+    expect(html.indexOf('data-listing-card-seller="true"')).toBeGreaterThan(
+      html.indexOf("Caractéristiques principales"),
+    );
+    expect(
+      html.indexOf('data-listing-card-delivery-overlay="true"'),
+    ).toBeLessThan(html.indexOf('data-listing-card-footer="true"'));
     expect(html).toContain("min-w-0 break-words");
+  });
+
+  it("uses the verification shield only for verified individual sellers", () => {
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={{
+          ...baseListing,
+          seller: {
+            ...baseListing.seller!,
+            sellerType: "individual",
+            isBusinessVerified: false,
+          },
+        }}
+        href="/annonce/listing-card-test"
+      />,
+    );
+
+    expect(html).toContain('data-listing-card-seller-verified="true"');
+    expect(html).toContain("lucide-shield-check");
+    expect(html).toContain("fill-success text-white");
+    expect(html).not.toContain(">Pro<");
   });
 
   it("uses category price labels and collapses absent optional rows", () => {

@@ -58,6 +58,26 @@ describe("shared public contracts", () => {
     ).toBe(false);
   });
 
+  it("accepts a public seller avatar in the listing-card projection", () => {
+    expect(
+      listingCardSchema.safeParse({
+        id: "listing-1",
+        title: "Vélo",
+        price: { amountMinor: 45000, currency: "EUR" },
+        city: "Paris",
+        marketCode: "FR",
+        conditionLabel: "Bon état",
+        publishedAt: "2026-08-21T10:00:00Z",
+        seller: {
+          id: "seller-1",
+          name: "Thomas Laurent",
+          sellerType: "individual",
+          avatarUrl: "https://images.example.com/thomas.jpg",
+        },
+      }).success,
+    ).toBe(true);
+  });
+
   it("validates taxonomy attributes and nodes at the shared boundary", () => {
     expect(
       taxonomyAttributeSchema.safeParse({

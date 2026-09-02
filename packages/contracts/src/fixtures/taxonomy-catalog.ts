@@ -1123,6 +1123,8 @@ export const CANONICAL_TAXONOMY_ALIASES: Readonly<Record<string, string>> = {
   "sports-loisirs": "sports_outdoors",
   "sports-hobbies": "sports_outdoors",
   "sports-nautiques": "sports_outdoors.water_sports",
+  famille: "baby_kids",
+  "equipement-bebe": "baby_kids.strollers",
   "poussettes-siege-auto": "baby_kids.strollers",
   "outillage-btp": "professional_btp.machinery",
   "cours-formations": "services.tutoring",

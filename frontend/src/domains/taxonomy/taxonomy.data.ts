@@ -61,43 +61,6 @@ for (const binding of bundle.bindings) {
   bindingsByCategory.set(binding.categoryId, bindings);
 }
 
-const ICON_NAMES: Record<string, string> = {
-  car: "Car",
-  "car-front": "Car",
-  bike: "Bike",
-  scooter: "Bike",
-  truck: "Truck",
-  caravan: "Compass",
-  sailboat: "Anchor",
-  waves: "Anchor",
-  home: "Home",
-  house: "Home",
-  "building-2": "Building2",
-  building: "Building2",
-  briefcase: "Briefcase",
-  "briefcase-business": "Briefcase",
-  sparkles: "Sparkles",
-  shirt: "Shirt",
-  sofa: "Sofa",
-  baby: "Baby",
-  smartphone: "Smartphone",
-  guitar: "Music",
-  "paw-print": "PawPrint",
-  palmtree: "Palmtree",
-  forklift: "HardHat",
-  "graduation-cap": "GraduationCap",
-  users: "Globe",
-  package: "Tag",
-  wrench: "Wrench",
-  "book-open": "BookOpen",
-  "hard-hat": "HardHat",
-  tractor: "Tractor",
-  dumbbell: "Dumbbell",
-  ticket: "Ticket",
-  gift: "Gift",
-  leaf: "Leaf",
-};
-
 const ROOT_COLORS: Record<string, string> = {
   vehicles: themeColors["category-vehicles"],
   real_estate: themeColors["category-real-estate"],
@@ -236,7 +199,10 @@ function adaptNode(source: TaxonomyV4Node, rootId: string): TaxonomyNode {
     label: source.labels["fr-FR"],
     shortLabel: source.shortLabels["fr-FR"],
     description: source.description,
-    iconName: ICON_NAMES[source.iconName] ?? "Tag",
+    // The generated v4 taxonomy owns category icon selection. Keeping the
+    // canonical key intact makes every CategoryIcon consumer render the same
+    // symbol and prevents new taxonomy icons from silently degrading to Tag.
+    iconName: source.iconName,
     accentColor: rootColor,
     sortOrder: source.sortOrder,
     status: source.status,

@@ -54,11 +54,41 @@ test("keeps every listing-detail commerce action full-width and readable", async
 
   await page.setViewportSize({ width: 1065, height: 701 });
   await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
   await page
     .getByRole("button", { name: "Offre de prix", exact: true })
     .click();
   await expect(
     page.getByRole("dialog", { name: "Faire une offre de prix" }),
+  ).toBeVisible();
+});
+
+test("uses the payment icon for every direct-purchase entry point", async ({
+  page,
+}) => {
+  await usePersona(page, "individual_buyer");
+  await seedConsentDecision(page);
+  await page.setViewportSize({ width: 1408, height: 701 });
+  await page.goto("/annonce/list-109", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
+
+  const purchaseActions = page.locator(
+    '[data-marketplace-action="purchase.start"]',
+  );
+  await expect(purchaseActions).toHaveCount(2);
+
+  for (const action of await purchaseActions.all()) {
+    await expect(action.locator("svg.lucide-credit-card")).toHaveCount(1);
+    await expect(action.locator("svg.lucide-shopping-bag")).toHaveCount(0);
+    await expect(action.locator("svg.lucide-shield-check")).toHaveCount(0);
+  }
+
+  const desktopPurchaseAction = page
+    .getByTestId("listing-desktop-actions")
+    .getByRole("button", { name: "Acheter maintenant", exact: true });
+  await desktopPurchaseAction.click();
+  await expect(
+    page.getByRole("dialog", { name: "Finaliser votre achat" }),
   ).toBeVisible();
 });
 

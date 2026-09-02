@@ -55,19 +55,18 @@ export async function loadCategoryNavigationBranch(
  */
 export async function loadCategoryNavigationOverview(
   taxonomy: TaxonomyServiceContract,
-  excludedRootSlugs: ReadonlySet<string>,
+  excludedRootIds: ReadonlySet<string>,
   isAvailable: TaxonomyNodeAvailability,
 ): Promise<TaxonomyNode[]> {
   const roots = await taxonomy.getRootCategories();
-  const slugs = [
-    ...new Set(
-      roots
-        .map((root) => root.slug)
-        .filter((slug) => !excludedRootSlugs.has(slug)),
-    ),
-  ];
+  const rootSlugsById = new Map<string, string>();
+  roots.forEach((root) => {
+    if (!excludedRootIds.has(root.id) && !rootSlugsById.has(root.id)) {
+      rootSlugsById.set(root.id, root.slug);
+    }
+  });
   const branches = await Promise.all(
-    slugs.map((slug) =>
+    [...rootSlugsById.values()].map((slug) =>
       loadCategoryNavigationBranch(taxonomy, slug, isAvailable),
     ),
   );

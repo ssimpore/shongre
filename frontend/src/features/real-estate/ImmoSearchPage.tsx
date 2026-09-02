@@ -584,7 +584,7 @@ export const ImmoSearchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-bg-subtle pb-12">
-      <section className="border-b border-border-base bg-bg-surface py-6">
+      <section className="border-b border-border-base bg-bg-surface py-4 sm:py-6">
         <Container>
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
             <div>
@@ -594,7 +594,7 @@ export const ImmoSearchPage: React.FC = () => {
               <h1 className="mt-1 text-xl font-black text-text-main sm:text-2xl">
                 Trouvez le bien qui vous ressemble
               </h1>
-              <p className="mt-1 text-xs text-text-secondary">
+              <p className="mt-1 hidden text-xs text-text-secondary sm:block">
                 Adresse précise protégée · annonces structurées · demandes
                 qualifiées
               </p>

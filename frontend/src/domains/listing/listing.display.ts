@@ -18,6 +18,10 @@ import {
   publicListingUrl,
 } from "../market/market-routing";
 import { getCountryConfig, getDefaultCountryConfig } from "@shongre/contracts";
+import {
+  getListingFieldLabel,
+  normalizeListingFieldKey,
+} from "./listing-field-labels";
 
 /**
  * Demo and imported listings can contain attributes that are not yet present
@@ -164,7 +168,7 @@ export class ListingDisplayResolver {
       // must never leak into decision chips or duplicate the displayed price.
       if (attrDef?.unit === "currency_minor") return;
       if (val !== undefined && val !== null && val !== "") {
-        const formattedValue = this.formatAttributeValue(attrDef, val);
+        const formattedValue = this.formatAttributeValue(attrDef, val, code);
         summary.push(
           this.compactEmploymentCardValue(effectiveNode, code, formattedValue),
         );
@@ -183,7 +187,11 @@ export class ListingDisplayResolver {
       }
       const attribute = this.findAttributeDefinition(attributeKey);
       if (attribute?.unit === "currency_minor") continue;
-      const formatted = this.formatAttributeValue(attribute, rawValue);
+      const formatted = this.formatAttributeValue(
+        attribute,
+        rawValue,
+        attributeKey,
+      );
       if (
         formatted &&
         !summary.some(
@@ -283,7 +291,7 @@ export class ListingDisplayResolver {
 
       const groupKey = attrDef?.publicationGroup || this.inferGroupKey(key);
       const label = attrDef?.label || this.formatFallbackLabel(key);
-      const formattedValue = this.formatAttributeValue(attrDef, rawValue);
+      const formattedValue = this.formatAttributeValue(attrDef, rawValue, key);
 
       getOrCreateGroup(groupKey).push({
         code: key,
@@ -410,7 +418,11 @@ export class ListingDisplayResolver {
   /**
    * Formats raw attribute value into localized display string.
    */
-  formatAttributeValue(attrDef?: TaxonomyAttribute, val?: any): string {
+  formatAttributeValue(
+    attrDef?: TaxonomyAttribute,
+    val?: any,
+    attributeKey?: string,
+  ): string {
     if (val === undefined || val === null) return "";
 
     if (typeof val === "boolean") {
@@ -447,7 +459,15 @@ export class ListingDisplayResolver {
     }
 
     if (typeof val === "number") {
-      if (attrDef?.dataType === "year") return String(val);
+      if (
+        attrDef?.dataType === "year" ||
+        (attributeKey &&
+          ["year", "model_year"].includes(
+            normalizeListingFieldKey(attributeKey),
+          ))
+      ) {
+        return String(val);
+      }
       if (attrDef?.code === "rooms") {
         return `${val} pièce${val > 1 ? "s" : ""}`;
       }
@@ -596,14 +616,10 @@ export class ListingDisplayResolver {
   }
 
   private formatFallbackLabel(key: string): string {
-    const clean = key
-      .replace(
-        /^(product|vehicle|real_estate|electronics|home|fashion|service|job)\./,
-        "",
-      )
-      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-      .replace(/[-\s]+/g, "_")
-      .toLowerCase();
+    const translated = getListingFieldLabel(key);
+    if (translated) return translated;
+
+    const clean = normalizeListingFieldKey(key);
 
     if (FALLBACK_ATTRIBUTE_LABELS[clean]) {
       return FALLBACK_ATTRIBUTE_LABELS[clean];

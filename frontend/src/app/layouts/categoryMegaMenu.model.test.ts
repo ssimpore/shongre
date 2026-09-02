@@ -79,7 +79,7 @@ describe("category mega-menu taxonomy projection", () => {
     expect(hasCategoryMenuContent(null)).toBe(false);
   });
 
-  it("builds the Autres panel from unpromoted canonical roots", async () => {
+  it("builds the Autres panel from every unpromoted canonical root id", async () => {
     const promoted = node("promoted", "promue", 1);
     const later = node("later", "plus-tard", 3);
     const first = node("first", "premiere", 2);
@@ -97,12 +97,13 @@ describe("category mega-menu taxonomy projection", () => {
 
     const result = await loadCategoryNavigationOverview(
       taxonomy,
-      new Set([promoted.slug]),
+      new Set([promoted.id]),
       () => true,
     );
 
     expect(result.map((root) => root.id)).toEqual([first.id, later.id]);
     expect(taxonomy.getNodeBySlug).not.toHaveBeenCalledWith(promoted.slug);
+    expect(taxonomy.getNodeBySlug).toHaveBeenCalledTimes(2);
     expect(hasCategoryMenuContent(first)).toBe(true);
   });
 });

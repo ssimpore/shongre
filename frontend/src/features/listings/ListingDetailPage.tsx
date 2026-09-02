@@ -21,7 +21,7 @@ import {
   ChevronRight,
   MessageSquare,
   DollarSign,
-  ShoppingBag,
+  CreditCard,
   Send,
   Edit3,
   Sliders,
@@ -37,10 +37,7 @@ import { transactionCapabilitiesService } from "../../domains/transaction/transa
 import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
-import {
-  formatRelativeDate,
-  calculateBuyerFee,
-} from "../../utilities/formatters";
+import { formatRelativeDate } from "../../utilities/formatters";
 import {
   Breadcrumbs,
   FavoriteButton,
@@ -89,9 +86,59 @@ import {
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 
+const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
+  listing,
+}) => {
+  const { formatPrice } = useMarketLocation();
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className="rounded-xl border border-border-subtle bg-bg-base/70 p-3"
+      data-testid="purchase-price-disclosure"
+    >
+      <dl className="space-y-2 text-xs">
+        <div className="flex items-center justify-between gap-3">
+          <dt className="font-medium text-text-secondary">
+            {t("listings.pricing.itemPrice")}
+          </dt>
+          <dd className="font-bold tabular-nums text-text-primary">
+            {formatPrice(listing.price, {
+              sourceCurrency: listing.currency,
+            })}
+          </dd>
+        </div>
+        <div className="flex items-start justify-between gap-3">
+          <dt className="font-medium text-text-secondary">
+            {t("listings.pricing.buyerProtection")}
+          </dt>
+          <dd className="max-w-44 text-right font-semibold text-text-primary">
+            {t("listings.pricing.dependsOnFulfillment")}
+          </dd>
+        </div>
+        <div className="flex items-start justify-between gap-3">
+          <dt className="font-medium text-text-secondary">
+            {t("listings.pricing.delivery")}
+          </dt>
+          <dd className="max-w-44 text-right font-semibold text-text-primary">
+            {t("listings.pricing.dependsOnChoice")}
+          </dd>
+        </div>
+        <div className="flex items-start justify-between gap-3 border-t border-border-subtle pt-2">
+          <dt className="font-bold text-text-primary">
+            {t("listings.pricing.total")}
+          </dt>
+          <dd className="max-w-44 text-right font-bold text-primary">
+            {t("listings.pricing.confirmedBeforePayment")}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+};
+
 export const ListingDetailPage: React.FC = () => {
-  const { activeMarket, effectiveConfig, marketContext, formatPrice } =
-    useMarketLocation();
+  const { activeMarket, marketContext, formatPrice } = useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
   const { t } = useTranslation(digitalMessagesFr);
   const { id } = useParams<{ id: string }>();
@@ -133,6 +180,9 @@ export const ListingDetailPage: React.FC = () => {
   const [reportReason, setReportReason] = useState("suspicious");
   const [reportDetails, setReportDetails] = useState("");
   const trackedListingId = useRef<string | null>(null);
+  const inlineMobileActionRef = useRef<HTMLDivElement>(null);
+  const inlineMobileActionSeenRef = useRef(false);
+  const [showMobileStickyActions, setShowMobileStickyActions] = useState(false);
 
   // 1. Data Fetching
   useEffect(() => {
@@ -311,6 +361,27 @@ export const ListingDetailPage: React.FC = () => {
       root.style.removeProperty("--page-bottom-inset");
     };
   });
+
+  useEffect(() => {
+    const node = inlineMobileActionRef.current;
+    inlineMobileActionSeenRef.current = false;
+    setShowMobileStickyActions(false);
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          inlineMobileActionSeenRef.current = true;
+          setShowMobileStickyActions(false);
+        } else if (inlineMobileActionSeenRef.current) {
+          setShowMobileStickyActions(true);
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [listing?.id]);
 
   /**
    * How many controls the mobile action bar will paint.
@@ -541,15 +612,6 @@ export const ListingDetailPage: React.FC = () => {
     );
   }
 
-  const buyerFee = calculateBuyerFee(
-    listing.price,
-    effectiveConfig.payments.buyerProtectionFeePercent,
-    effectiveConfig.payments.buyerProtectionFixedFee,
-  );
-  // Buyer protection only applies to online payment, so it is the only case where
-  // the price shown to the buyer differs from the amount they actually pay.
-  const showsBuyerFee =
-    Boolean(listing.isOnlinePaymentAvailable) && listing.price > 0;
   const breadcrumbItems = [
     { label: "Accueil", href: routes.home() },
     {
@@ -569,6 +631,64 @@ export const ListingDetailPage: React.FC = () => {
       : []),
     { label: listing.title },
   ];
+  const inlineMobilePrimaryAction = actions.isOwner ? (
+    <Button
+      data-marketplace-action="listing.publish"
+      to={routes.listing.publish({ edit: listing.id })}
+      variant="primary"
+      size="md"
+      fullWidth
+      leftIcon={<Edit3 className="h-icon-sm w-icon-sm" />}
+    >
+      {t("listings.listingDetailPage.modifierMonAnnonce")}
+    </Button>
+  ) : actions.statusNotice ? (
+    <span className="block rounded-lg bg-warning-surface px-3 py-2 text-center text-xs font-bold text-warning">
+      {actions.statusNotice.title}
+    </span>
+  ) : actions.canDirectPurchase &&
+    actions.primaryAction === "direct_purchase" ? (
+    <Button
+      data-marketplace-action="purchase.start"
+      variant="primary"
+      size="md"
+      fullWidth
+      onClick={() => setIsDirectPurchaseModalOpen(true)}
+      leftIcon={<CreditCard className="h-icon-sm w-icon-sm" />}
+    >
+      {t("listings.listingDetailPage.acheterMaintenant")}
+    </Button>
+  ) : actions.canReserve && actions.primaryAction === "reservation" ? (
+    <Button
+      data-marketplace-action="reservation.start"
+      variant="primary"
+      size="md"
+      fullWidth
+      onClick={() => setIsReservationModalOpen(true)}
+      leftIcon={<Clock className="h-icon-sm w-icon-sm" />}
+    >
+      {t("listings.listingDetailPage.reserverLArticle")}
+    </Button>
+  ) : actions.canContact ? (
+    <Button
+      data-marketplace-action="message.send"
+      variant="primary"
+      size="md"
+      fullWidth
+      onClick={() => {
+        if (!currentUser) {
+          navigate(
+            routes.auth.login(`${routes.listing.detail(listing.id)}?contact=1`),
+          );
+          return;
+        }
+        setIsContactModalOpen(true);
+      }}
+      leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
+    >
+      {contactActionLabel}
+    </Button>
+  ) : null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32 lg:pb-6 space-y-6">
@@ -693,6 +813,17 @@ export const ListingDetailPage: React.FC = () => {
                 ))}
               </div>
             )}
+
+            <div
+              ref={inlineMobileActionRef}
+              className="space-y-3 pt-3 lg:hidden"
+              data-testid="listing-inline-mobile-action"
+            >
+              {!actions.isOwner && actions.canDirectPurchase ? (
+                <PurchasePriceDisclosure listing={listing} />
+              ) : null}
+              {inlineMobilePrimaryAction}
+            </div>
 
             {/* Metadata Footer: Location, Publication Date */}
             <div className="flex items-center gap-4 text-xs font-medium text-stone-500 pt-5 mt-2 border-t border-stone-100 flex-wrap">
@@ -831,6 +962,10 @@ export const ListingDetailPage: React.FC = () => {
               />
             )}
 
+            {!actions.isOwner && actions.canDirectPurchase ? (
+              <PurchasePriceDisclosure listing={listing} />
+            ) : null}
+
             {/* ===================================================================== */}
             {/* OWNER ACTIONS vs BUYER ACTIONS */}
             {/* ===================================================================== */}
@@ -914,10 +1049,10 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
-                    leftIcon={<ShieldCheck className="w-icon-lg h-icon-lg" />}
+                    leftIcon={<CreditCard className="h-icon-lg w-icon-lg" />}
                     className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
                   >
-                    Acheter maintenant
+                    {t("listings.listingDetailPage.acheterMaintenant")}
                   </Button>
                 )}
 
@@ -1240,137 +1375,138 @@ export const ListingDetailPage: React.FC = () => {
           Below `sm` the two zones now stack and the actions share a two-column
           grid, which holds from 320px up for every combination the resolver can
           produce. From `sm` there is room for a single row again. */}
-      <div
-        ref={actionBarRef}
-        className="lg:hidden fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
-      >
-        {/* The total is a full-width summary on phones, matching the action
-            hierarchy: amount first, choices second, primary CTA last. */}
-        <div className="flex items-baseline gap-3 min-w-0 sm:block sm:shrink-0">
-          <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
-            {showsBuyerFee ? "Total à payer" : "Prix"}
-          </div>
-          <div className="text-2xl font-black text-stone-900 truncate tabular-nums leading-none">
-            {listing.isFreeDonation
-              ? "Don gratuit"
-              : formatPrice(
-                  showsBuyerFee ? listing.price + buyerFee : listing.price,
-                  { sourceCurrency: listing.currency },
-                )}
-          </div>
-        </div>
-
+      {showMobileStickyActions ? (
         <div
-          data-testid="listing-mobile-actions"
-          className={`grid gap-2 ${
-            mobileActionCount > 1 ? "grid-cols-2" : "grid-cols-1"
-          } sm:flex sm:items-center sm:justify-end sm:shrink-0`}
+          ref={actionBarRef}
+          className="lg:hidden fixed inset-x-0 bottom-mobile-nav-clearance md:bottom-0 bg-bg-surface/95 backdrop-blur-md border-t border-border-base p-3 sm:px-6 shadow-sticky z-sticky flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
         >
-          {actions.isOwner ? (
-            <Button
-              data-marketplace-action="listing.publish"
-              to={routes.listing.publish({ edit: listing.id })}
-              variant="primary"
-              size="md"
-              className="w-full sm:w-auto"
-              leftIcon={<Edit3 className="w-icon-sm h-icon-sm" />}
-            >
-              Modifier
-            </Button>
-          ) : actions.statusNotice ? (
-            <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg text-center">
-              {actions.statusNotice.title}
-            </span>
-          ) : (
-            <>
-              {actions.canMakeOffer && (
-                <Button
-                  data-marketplace-action="offer.create"
-                  variant="outline"
-                  size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
-                  onClick={() => {
-                    if (!currentUser) {
-                      navigate(
-                        routes.auth.login(
-                          `${routes.listing.detail(listing.id)}?offer=1`,
-                        ),
-                      );
-                      return;
+          {/* The total is a full-width summary on phones, matching the action
+            hierarchy: amount first, choices second, primary CTA last. */}
+          <div className="flex items-baseline gap-3 min-w-0 sm:block sm:shrink-0">
+            <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
+              {t("listings.pricing.itemPrice")}
+            </div>
+            <div className="text-2xl font-black text-stone-900 truncate tabular-nums leading-none">
+              {listing.isFreeDonation
+                ? "Don gratuit"
+                : formatPrice(listing.price, {
+                    sourceCurrency: listing.currency,
+                  })}
+            </div>
+          </div>
+
+          <div
+            data-testid="listing-mobile-actions"
+            className={`grid gap-2 ${
+              mobileActionCount > 1 ? "grid-cols-2" : "grid-cols-1"
+            } sm:flex sm:items-center sm:justify-end sm:shrink-0`}
+          >
+            {actions.isOwner ? (
+              <Button
+                data-marketplace-action="listing.publish"
+                to={routes.listing.publish({ edit: listing.id })}
+                variant="primary"
+                size="md"
+                className="w-full sm:w-auto"
+                leftIcon={<Edit3 className="w-icon-sm h-icon-sm" />}
+              >
+                Modifier
+              </Button>
+            ) : actions.statusNotice ? (
+              <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg text-center">
+                {actions.statusNotice.title}
+              </span>
+            ) : (
+              <>
+                {actions.canMakeOffer && (
+                  <Button
+                    data-marketplace-action="offer.create"
+                    variant="outline"
+                    size="md"
+                    className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
+                    onClick={() => {
+                      if (!currentUser) {
+                        navigate(
+                          routes.auth.login(
+                            `${routes.listing.detail(listing.id)}?offer=1`,
+                          ),
+                        );
+                        return;
+                      }
+                      setIsOfferModalOpen(true);
+                    }}
+                    leftIcon={
+                      <DollarSign className="w-icon-sm h-icon-sm text-warning" />
                     }
-                    setIsOfferModalOpen(true);
-                  }}
-                  leftIcon={
-                    <DollarSign className="w-icon-sm h-icon-sm text-warning" />
-                  }
-                >
-                  Offre
-                </Button>
-              )}
-              {actions.canReserve && (
-                <Button
-                  data-marketplace-action="reservation.start"
-                  variant={
-                    actions.primaryAction === "reservation"
-                      ? "primary"
-                      : "outline"
-                  }
-                  size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
-                  onClick={() => setIsReservationModalOpen(true)}
-                  leftIcon={
-                    <Clock className="w-icon-sm h-icon-sm text-warning" />
-                  }
-                >
-                  {t("listings.listingDetailPage.reserver")}
-                </Button>
-              )}
-              {actions.canContact && (
-                <Button
-                  data-marketplace-action="message.send"
-                  variant={
-                    actions.primaryAction === "contact"
-                      ? "primary"
-                      : "secondary"
-                  }
-                  size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass("contact")}`}
-                  onClick={() => {
-                    if (!currentUser) {
-                      navigate(
-                        routes.auth.login(
-                          `${routes.listing.detail(listing.id)}?contact=1`,
-                        ),
-                      );
-                      return;
+                  >
+                    Offre
+                  </Button>
+                )}
+                {actions.canReserve && (
+                  <Button
+                    data-marketplace-action="reservation.start"
+                    variant={
+                      actions.primaryAction === "reservation"
+                        ? "primary"
+                        : "outline"
                     }
-                    setIsContactModalOpen(true);
-                  }}
-                  leftIcon={<MessageSquare className="w-icon-sm h-icon-sm" />}
-                >
-                  {contactActionLabel}
-                </Button>
-              )}
-              {actions.canDirectPurchase && (
-                <Button
-                  data-marketplace-action="purchase.start"
-                  variant={
-                    actions.primaryAction === "direct_purchase"
-                      ? "primary"
-                      : "outline"
-                  }
-                  size="md"
-                  className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
-                  onClick={() => setIsDirectPurchaseModalOpen(true)}
-                  leftIcon={<ShoppingBag className="w-icon-sm h-icon-sm" />}
-                >
-                  Acheter
-                </Button>
-              )}
-            </>
-          )}
+                    size="md"
+                    className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
+                    onClick={() => setIsReservationModalOpen(true)}
+                    leftIcon={
+                      <Clock className="w-icon-sm h-icon-sm text-warning" />
+                    }
+                  >
+                    {t("listings.listingDetailPage.reserver")}
+                  </Button>
+                )}
+                {actions.canContact && (
+                  <Button
+                    data-marketplace-action="message.send"
+                    variant={
+                      actions.primaryAction === "contact"
+                        ? "primary"
+                        : "secondary"
+                    }
+                    size="md"
+                    className={`w-full sm:w-auto ${mobileActionClass("contact")}`}
+                    onClick={() => {
+                      if (!currentUser) {
+                        navigate(
+                          routes.auth.login(
+                            `${routes.listing.detail(listing.id)}?contact=1`,
+                          ),
+                        );
+                        return;
+                      }
+                      setIsContactModalOpen(true);
+                    }}
+                    leftIcon={<MessageSquare className="w-icon-sm h-icon-sm" />}
+                  >
+                    {contactActionLabel}
+                  </Button>
+                )}
+                {actions.canDirectPurchase && (
+                  <Button
+                    data-marketplace-action="purchase.start"
+                    variant={
+                      actions.primaryAction === "direct_purchase"
+                        ? "primary"
+                        : "outline"
+                    }
+                    size="md"
+                    className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
+                    onClick={() => setIsDirectPurchaseModalOpen(true)}
+                    leftIcon={<CreditCard className="h-icon-sm w-icon-sm" />}
+                  >
+                    Acheter
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 };

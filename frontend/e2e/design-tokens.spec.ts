@@ -48,11 +48,7 @@ test.describe("design-token runtime contracts @serial", () => {
       const firstScroller = firstTrack?.parentElement;
       const scrollerRect = firstScroller?.getBoundingClientRect();
       const firstTrackCells = firstTrack
-        ? [
-            ...firstTrack.querySelectorAll<HTMLElement>(
-              ".listing-rail-cell",
-            ),
-          ]
+        ? [...firstTrack.querySelectorAll<HTMLElement>(".listing-rail-cell")]
         : [];
       const fullyVisibleCards =
         firstTrack && scrollerRect
@@ -988,6 +984,15 @@ test.describe("design-token runtime contracts @serial", () => {
     for (const width of [320, 390, 768]) {
       await page.setViewportSize({ width, height: 844 });
       await waitForStableLayout(page);
+
+      const inlineAction = page.getByTestId("listing-inline-mobile-action");
+      await inlineAction.scrollIntoViewIfNeeded();
+      await expect(inlineAction).toBeVisible();
+      await page.waitForTimeout(100);
+      await inlineAction.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        window.scrollTo(0, window.scrollY + box.bottom + 48);
+      });
 
       const mobileActions = page
         .getByTestId("listing-mobile-actions")

@@ -8,7 +8,6 @@ import {
   Filter,
   GitCompareArrows,
   Search,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import type {
@@ -609,8 +608,8 @@ export const AutoSearchPage: React.FC = () => {
   };
 
   return (
-    <Container className="py-5 sm:py-7">
-      <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+    <Container className="py-4 sm:py-6">
+      <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
           <p className="mb-1 flex items-center gap-2 text-xs font-bold text-primary">
             <CarFront className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
@@ -692,17 +691,6 @@ export const AutoSearchPage: React.FC = () => {
         )}
         <div className="min-w-0">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={() => setFilterOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-text-main lg:hidden"
-            >
-              <SlidersHorizontal
-                className="h-icon-sm w-icon-sm"
-                aria-hidden="true"
-              />{" "}
-              Affiner
-            </button>
             <div className="ml-auto flex items-center gap-2 text-xs text-text-secondary">
               <span>Trier par</span>
               <DropdownMenu

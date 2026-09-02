@@ -1,88 +1,13 @@
 import React, { useState } from "react";
-import {
-  Car,
-  Home,
-  Briefcase,
-  Wrench,
-  Sparkles,
-  Laptop,
-  Shirt,
-  Baby,
-  BookOpen,
-  Trophy,
-  Dog,
-  HardHat,
-  Tractor,
-  Sun,
-  Server,
-  Gift,
-  Phone,
-  Watch,
-  Folder,
-  Tag,
-  ShieldCheck,
-  ShoppingBag,
-  Camera,
-  Music,
-  Gamepad2,
-  Bike,
-  Truck,
-  FileText,
-  Layers,
-  Heart,
-  Palette,
-  Compass,
-  Cpu,
-  Package,
-  KeyRound,
-  Zap,
-} from "lucide-react";
 import { Modal } from "../../../../../design-system/primitives/Modal";
 import { Button } from "../../../../../design-system/primitives/Button";
 import { Input } from "../../../../../design-system/primitives/FormField";
+import { ICON_NAME_MAP } from "../../../../../design-system/primitives/CategoryIcon";
 import { useTranslation } from "../../../../../i18n/I18nProvider";
 
-export const AVAILABLE_ICONS: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
-  Car,
-  Home,
-  Briefcase,
-  Wrench,
-  Sparkles,
-  Laptop,
-  Shirt,
-  Baby,
-  BookOpen,
-  Trophy,
-  Dog,
-  HardHat,
-  Tractor,
-  Sun,
-  Server,
-  Gift,
-  Phone,
-  Watch,
-  Folder,
-  Tag,
-  ShieldCheck,
-  ShoppingBag,
-  Camera,
-  Music,
-  Gamepad2,
-  Bike,
-  Truck,
-  FileText,
-  Layers,
-  Heart,
-  Palette,
-  Compass,
-  Cpu,
-  Package,
-  KeyRound,
-  Zap,
-};
+// The picker previews the same registry used by every category surface. This
+// prevents admin-authored choices from diverging from storefront rendering.
+export const AVAILABLE_ICONS = ICON_NAME_MAP;
 
 export interface IconPickerModalProps {
   isOpen: boolean;

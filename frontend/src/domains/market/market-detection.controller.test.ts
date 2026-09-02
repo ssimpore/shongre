@@ -56,13 +56,13 @@ describe("market detection UI policy", () => {
     });
   });
 
-  it("requires the selector for unknown or unavailable countries", () => {
+  it("keeps a valid request market for unknown detection and requires the selector for unavailable countries", () => {
     expect(
       resolveMarketDetectionOutcome({
         recommendation: recommendation(null),
         currentCountryCode: "FR",
       }),
-    ).toEqual({ kind: "country_selection_required", reason: "unknown" });
+    ).toEqual({ kind: "none" });
 
     const unavailable: MarketDetectionRecommendation = {
       ...recommendation("BE"),

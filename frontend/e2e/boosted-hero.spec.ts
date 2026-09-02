@@ -3,6 +3,61 @@ import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 test.describe("boosted listings hero rail", () => {
+  test("keeps pause and favorite controls visible, separate, and independently clickable", async ({
+    page,
+  }) => {
+    await usePersona(page, "individual_buyer");
+
+    for (const viewport of [
+      { width: 1408, height: 701 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const pause = page.getByRole("button", {
+        name: "Mettre le carrousel en pause",
+      });
+      await expect(pause).toBeVisible();
+      const pauseBox = await pause.boundingBox();
+      expect(pauseBox).not.toBeNull();
+      await pause.click();
+      await expect(
+        page.getByRole("button", { name: "Relancer le carrousel" }),
+      ).toBeVisible();
+
+      const favorite = page
+        .locator('#hero-boosted-track article[aria-hidden="false"]')
+        .locator('button[data-marketplace-action="favorite.manage"]');
+      await expect(favorite).toBeVisible();
+
+      const favoriteBox = await favorite.boundingBox();
+      expect(favoriteBox).not.toBeNull();
+      const overlaps =
+        pauseBox!.x < favoriteBox!.x + favoriteBox!.width &&
+        pauseBox!.x + pauseBox!.width > favoriteBox!.x &&
+        pauseBox!.y < favoriteBox!.y + favoriteBox!.height &&
+        pauseBox!.y + pauseBox!.height > favoriteBox!.y;
+      expect(overlaps).toBe(false);
+
+      const favoriteIsTopTarget = await favorite.evaluate((button) => {
+        const box = button.getBoundingClientRect();
+        const target = document.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return target?.closest('[data-marketplace-action="favorite.manage"]') ===
+          button;
+      });
+      expect(favoriteIsTopTarget).toBe(true);
+
+      const wasFavorite = await favorite.getAttribute("aria-pressed");
+      await favorite.click();
+      await expect(favorite).not.toHaveAttribute("aria-pressed", wasFavorite!);
+    }
+  });
+
   test("marks boosted listings with the shared featured icon", async ({
     page,
   }) => {
@@ -12,10 +67,14 @@ test.describe("boosted listings hero rail", () => {
     await waitForStableLayout(page);
 
     const rail = page.locator("#hero-boosted-track");
-    const targetListing = rail
-      .locator("article", { hasText: "Arbre à Chat Mural" })
-      .first();
     await expect(rail).toBeVisible();
+    await page
+      .getByRole("button", { name: "Mettre le carrousel en pause" })
+      .click();
+    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    await page.waitForTimeout(800);
+    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    const targetListing = rail.locator('article[aria-hidden="false"]');
     await expect(
       targetListing.locator(".sr-only", { hasText: "Annonce à la une" }),
     ).toBeAttached();
@@ -31,9 +90,13 @@ test.describe("boosted listings hero rail", () => {
     await waitForStableLayout(page);
 
     const rail = page.locator("#hero-boosted-track");
-    const targetListing = rail
-      .locator("article", { hasText: "Arbre à Chat Mural" })
-      .first();
+    await page
+      .getByRole("button", { name: "Mettre le carrousel en pause" })
+      .click();
+    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    await page.waitForTimeout(800);
+    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    const targetListing = rail.locator('article[aria-hidden="false"]');
     await expect(
       targetListing.locator(".sr-only", { hasText: "Annonce à la une" }),
     ).toBeAttached();

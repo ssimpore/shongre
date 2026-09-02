@@ -21,6 +21,8 @@ interface ConsentContextValue {
   categories: ConsentCategories;
   /** True until a valid decision exists — which is when the banner is shown. */
   needsDecision: boolean;
+  /** Browser persistence has been checked for a current decision. */
+  isRestoring: boolean;
   hasConsent: (category: ConsentCategory) => boolean;
   acceptAll: () => void;
   rejectOptional: () => void;
@@ -51,10 +53,12 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
   // same opt-in state. Restoring a current decision after mount avoids a
   // hydration mismatch without ever creating a pre-consent tracking window.
   const [decision, setDecision] = useState<ConsentDecision | null>(null);
+  const [isRestoring, setIsRestoring] = useState(true);
   const [isPreferencesOpen, setPreferencesOpen] = useState(false);
 
   useEffect(() => {
     setDecision(consentService.getDecision());
+    setIsRestoring(false);
   }, []);
 
   const categories = useMemo(
@@ -85,7 +89,11 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
   const value = useMemo<ConsentContextValue>(
     () => ({
       categories,
-      needsDecision: decision === null,
+      // The absence of a decision is meaningful only after browser persistence
+      // has been checked. Keeping this false during restoration prevents the
+      // first-visit banner from flashing for someone who already answered.
+      needsDecision: !isRestoring && decision === null,
+      isRestoring,
       hasConsent,
       acceptAll,
       rejectOptional,
@@ -97,6 +105,7 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
     [
       categories,
       decision,
+      isRestoring,
       hasConsent,
       acceptAll,
       rejectOptional,

@@ -164,6 +164,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // selected or the user opens this picker.
   useEffect(() => {
     if (
+      !showCategory ||
       (!isCategoryMenuOpen && !selectedCategorySlug && !query.trim()) ||
       categories.length
     )
@@ -180,7 +181,13 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [categories.length, isCategoryMenuOpen, query, selectedCategorySlug]);
+  }, [
+    categories.length,
+    isCategoryMenuOpen,
+    query,
+    selectedCategorySlug,
+    showCategory,
+  ]);
 
   // Derive autocomplete suggestions
   const suggestions: AutocompleteResults = useMemo(() => {

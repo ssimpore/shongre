@@ -1,6 +1,8 @@
 import { routes } from "../../configuration/routes";
 import { isProSeller } from "../../domains/user/user.domain";
 import React, {
+  Suspense,
+  lazy,
   useState,
   useEffect,
   useRef,
@@ -15,7 +17,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
-import { HeaderCategoryNav } from "./HeaderCategoryNav";
 import {
   PlusCircle,
   Heart,
@@ -67,6 +68,13 @@ import {
   type HeaderAccountMenuItem,
   type HeaderAccountMenuItemId,
 } from "./account-menu.model";
+import { DEFAULT_HEADER_CATEGORIES } from "../../domains/taxonomy/taxonomy-header.defaults";
+
+const HeaderCategoryNav = lazy(() =>
+  import("./HeaderCategoryNav").then((module) => ({
+    default: module.HeaderCategoryNav,
+  })),
+);
 
 const HEADER_SCROLL_BEHAVIOR = {
   hideTravel: 48,
@@ -831,19 +839,24 @@ export const Header: React.FC = () => {
           }`}
         >
           <Container>
-            <HeaderCategoryNav
-              activeCategorySlug={activeCategorySlug}
-              currentPath={location.pathname}
-              marketContext={marketContext}
-              marketCode={activeMarket.code}
-              disabledCategorySlugs={
-                effectiveConfig.taxonomy?.disabledCategorySlugs
-              }
-              disabledSubCategorySlugs={
-                effectiveConfig.taxonomy?.disabledSubCategorySlugs
-              }
-              onSelectCategory={handleCategorySelect}
-            />
+            <Suspense
+              fallback={<div className="h-control-md" aria-hidden="true" />}
+            >
+              <HeaderCategoryNav
+                activeCategorySlug={activeCategorySlug}
+                currentPath={location.pathname}
+                marketContext={marketContext}
+                marketCode={activeMarket.code}
+                initialCategories={DEFAULT_HEADER_CATEGORIES}
+                disabledCategorySlugs={
+                  effectiveConfig.taxonomy?.disabledCategorySlugs
+                }
+                disabledSubCategorySlugs={
+                  effectiveConfig.taxonomy?.disabledSubCategorySlugs
+                }
+                onSelectCategory={handleCategorySelect}
+              />
+            </Suspense>
           </Container>
         </nav>
       )}

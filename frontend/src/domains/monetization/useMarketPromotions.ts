@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { services } from "../../api";
+import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 

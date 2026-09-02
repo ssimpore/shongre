@@ -86,6 +86,7 @@ import { DigitalFulfillmentEditor } from "./DigitalFulfillmentEditor";
 import { useListingOnboardingController } from "./useListingOnboardingController";
 import { ListingOnboardingStatus } from "./ListingOnboardingStatus";
 import { ListingIntentIcon } from "./ListingIntentIcon";
+import { storageService } from "../../services/storage.service";
 import {
   groupTaxonomyPublicationFields,
   localizedTaxonomyLabel,
@@ -129,11 +130,7 @@ const PHASES = [
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 type PhaseOneStage = "intent" | "category" | "details";
-const PHASE_ONE_STAGES: Array<{ id: PhaseOneStage; label: string }> = [
-  { id: "intent", label: "Intention" },
-  { id: "category", label: "Catégorie" },
-  { id: "details", label: "Détails & photos" },
-];
+const SKIP_PREPARATION_STORAGE_KEY = "shongre_publish_skip_preparation_v1";
 const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "title",
   "description",
@@ -219,8 +216,12 @@ export const PublishWizard: React.FC = () => {
   >("loading");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [hasSavedDraft, setHasSavedDraft] = useState(false);
-  const [isPreparationVisible, setIsPreparationVisible] = useState(true);
-  const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
+  const [skipPreparation, setSkipPreparation] = useState(() =>
+    storageService.get(SKIP_PREPARATION_STORAGE_KEY, false),
+  );
+  const [isPreparationVisible, setIsPreparationVisible] =
+    useState(!skipPreparation);
+  const [hasEnteredWizard, setHasEnteredWizard] = useState(skipPreparation);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [v4Schema, setV4Schema] = useState<TaxonomyV4ResolvedSchema | null>(
     null,
@@ -1148,6 +1149,11 @@ export const PublishWizard: React.FC = () => {
         hasSavedDraft={hasSavedDraft}
         isReady={isDraftHydrated}
         onStart={handleStartPublication}
+        skipNextTime={skipPreparation}
+        onSkipNextTimeChange={(checked) => {
+          setSkipPreparation(checked);
+          storageService.set(SKIP_PREPARATION_STORAGE_KEY, checked);
+        }}
       />
     );
   }
@@ -1249,50 +1255,6 @@ export const PublishWizard: React.FC = () => {
         </ol>
       </div>
 
-      {currentStep === 1 && (
-        <nav
-          aria-label="Progression dans ce que vous vendez"
-          className="rounded-2xl border border-border-base bg-bg-surface p-2 shadow-xs"
-        >
-          <ol className="grid grid-cols-3 gap-1.5">
-            {PHASE_ONE_STAGES.map((stage, index) => {
-              const currentIndex = PHASE_ONE_STAGES.findIndex(
-                (item) => item.id === phaseOneStage,
-              );
-              const isCurrent = stage.id === phaseOneStage;
-              const isDone = index < currentIndex;
-              const isDisabled =
-                stage.id === "details" && !draft.taxonomyNodeId;
-              return (
-                <li key={stage.id}>
-                  <button
-                    type="button"
-                    aria-current={isCurrent ? "step" : undefined}
-                    disabled={isDisabled}
-                    onClick={() => {
-                      setPhaseOneStage(stage.id);
-                      scrollToTop();
-                    }}
-                    className={`flex min-h-control-md w-full min-w-0 items-center justify-center gap-1.5 rounded-control px-2 text-center text-xs font-bold transition-colors ${
-                      isCurrent
-                        ? "bg-primary text-white"
-                        : isDone
-                          ? "bg-success-surface text-success hover:bg-success-surface/80"
-                          : isDisabled
-                            ? "cursor-not-allowed bg-bg-subtle text-text-disabled"
-                            : "bg-bg-subtle text-text-secondary hover:bg-bg-muted"
-                    }`}
-                  >
-                    <span aria-hidden="true">{isDone ? "✓" : index + 1}</span>
-                    <span className="truncate">{stage.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-        </nav>
-      )}
-
       {/* ========================================================================= */}
       {/* STEP 1: CATEGORY & INTENT SELECTION */}
       {/* ========================================================================= */}
@@ -1323,10 +1285,10 @@ export const PublishWizard: React.FC = () => {
 
           {/* Listing Intent Selector */}
           {phaseOneStage === "intent" && onboarding.model && (
-            <div>
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <fieldset>
+              <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-700">
                 {t("publishing.publishWizard.typeDAnnonceIntention")}
-              </label>
+              </legend>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {onboarding.model.intents.map((option) => {
                   const intent = option.intent;
@@ -1335,17 +1297,22 @@ export const PublishWizard: React.FC = () => {
                     currentLocale,
                   );
                   return (
-                    <button
+                    <label
                       key={intent}
-                      type="button"
-                      onClick={() => selectListingIntent(intent)}
-                      aria-pressed={draft.listingIntent === intent}
-                      className={`flex min-h-control-md items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
+                      className={`relative flex min-h-control-md cursor-pointer items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         draft.listingIntent === intent
                           ? "border-primary bg-primary-light text-primary font-bold"
                           : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                       }`}
                     >
+                      <input
+                        type="radio"
+                        name="listing-intent"
+                        value={intent}
+                        checked={draft.listingIntent === intent}
+                        onChange={() => selectListingIntent(intent)}
+                        className="sr-only"
+                      />
                       <span
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
                           draft.listingIntent === intent
@@ -1363,11 +1330,11 @@ export const PublishWizard: React.FC = () => {
                           {label}
                         </span>
                       </span>
-                    </button>
+                    </label>
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
           )}
 
           {/* Taxonomy Search */}

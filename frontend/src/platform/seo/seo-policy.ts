@@ -12,6 +12,7 @@ import { isProSeller } from "../../domains/user/user.domain";
 import {
   DEFAULT_DESCRIPTION,
   DEFAULT_TITLE,
+  HOMEPAGE_DESCRIPTION,
   resolveTitle,
   type PageMeta,
   type StructuredData,
@@ -108,8 +109,7 @@ interface StaticPagePolicy {
 const STATIC_PAGES: Readonly<Record<string, StaticPagePolicy>> = Object.freeze({
   "/": {
     title: DEFAULT_TITLE,
-    description:
-      "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.",
+    description: HOMEPAGE_DESCRIPTION,
     resourceType: "home",
     sitemapEligible: true,
     alternate: true,
@@ -134,6 +134,22 @@ const STATIC_PAGES: Readonly<Record<string, StaticPagePolicy>> = Object.freeze({
     title: "Offres à prix réduit",
     description:
       "Les annonces dont le prix vient de baisser et les meilleures affaires du moment sur Shongre.",
+    resourceType: "listing_collection",
+    sitemapEligible: true,
+    alternate: true,
+  },
+  "/auto": {
+    title: "Voitures et véhicules d’occasion",
+    description:
+      "Recherchez des voitures et véhicules d’occasion sur Shongre avec des filtres dédiés, des informations techniques claires et des vendeurs identifiés.",
+    resourceType: "listing_collection",
+    sitemapEligible: true,
+    alternate: true,
+  },
+  "/immo": {
+    title: "Annonces immobilières",
+    description:
+      "Découvrez les annonces immobilières disponibles sur Shongre : vente, location et biens professionnels avec des critères de recherche dédiés.",
     resourceType: "listing_collection",
     sitemapEligible: true,
     alternate: true,
@@ -281,8 +297,8 @@ const PRIVATE_ROUTE_PATTERNS = [
 ];
 
 const KNOWN_NOINDEX_PUBLIC_PATTERNS = [
-  /^\/auto(?:\/vehicule\/[^/]+)?$/,
-  /^\/immo(?:\/bien\/[^/]+)?$/,
+  /^\/auto\/vehicule\/[^/]+$/,
+  /^\/immo\/bien\/[^/]+$/,
   /^\/education(?:\/professeur\/[^/]+)?$/,
   /^\/emploi\/(?:metier|secteur|lieu)\/[^/]+$/,
 ];
@@ -852,7 +868,9 @@ export function resolveSeoPolicy({
       resourceType: staticPage.resourceType,
       lifecycle: "not_applicable",
       sitemapEligible: staticPage.sitemapEligible,
-      structuredDataEligible: pathname === "/" || pathname === "/categories",
+      structuredDataEligible: ["/", "/categories", "/auto", "/immo"].includes(
+        pathname,
+      ),
       openGraphType: "website",
       alternateCountryCodes: staticPage.alternate
         ? allMarkets
@@ -932,6 +950,24 @@ export function structuredDataForPolicy(
         url: policy.canonicalUrl,
         inLanguage: context.locale || undefined,
       },
+    ];
+  }
+
+  if (
+    policy.resourceType === "listing_collection" &&
+    ["/auto", "/immo"].includes(policy.canonicalPath)
+  ) {
+    const name = policy.title.replace(/\s*[|—].*$/, "");
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name,
+        description: policy.description,
+        url: policy.canonicalUrl,
+        inLanguage: context.locale || undefined,
+      },
+      breadcrumb(context, [{ name: "Accueil", path: "/" }, { name }]),
     ];
   }
 

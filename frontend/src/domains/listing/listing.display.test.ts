@@ -254,6 +254,36 @@ describe("Listing Detail Display & Action Resolvers", () => {
         ]),
       );
     });
+
+    it("localizes legacy vehicle labels and keeps years ungrouped", () => {
+      const listing = {
+        id: "list-legacy-car",
+        categorySlug: "vehicules",
+        subCategorySlug: "voitures",
+        attributes: {
+          year: 2022,
+          fuel: "essence",
+          gearbox: "manuelle",
+          critair: "1",
+        },
+      } as unknown as Listing;
+
+      const items = listingDisplayResolver
+        .resolveGroupedCharacteristics(listing)
+        .flatMap((group) => group.items);
+
+      expect(items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ label: "Année", value: "2022" }),
+          expect.objectContaining({ label: "Carburant", value: "Essence" }),
+          expect.objectContaining({
+            label: "Boîte de vitesses",
+            value: "Manuelle",
+          }),
+          expect.objectContaining({ label: "Vignette Crit’Air", value: "1" }),
+        ]),
+      );
+    });
   });
 
   // =========================================================================

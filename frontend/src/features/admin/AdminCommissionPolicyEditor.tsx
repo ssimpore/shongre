@@ -9,7 +9,7 @@ import type {
   MonetizationCatalog,
 } from "@shongre/contracts/monetization";
 import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
-import { services } from "../../api";
+import { services } from "../../api/client/service-registry";
 import { Button } from "../../design-system/primitives/Button";
 import {
   FormField,

@@ -12,8 +12,11 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Image } from "./Image";
 import { IMAGE_SIZES } from "./responsiveImage";
-import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import {
+  getGenericListingCardCharacteristics,
+  getGenericListingConditionLabel,
+} from "../../domains/listing/listing-card.generic-presentation";
 import {
   DEFAULT_MARKET_CODE,
   DEFAULT_MARKET_CURRENCY,
@@ -86,10 +89,8 @@ function toListingCardView(
     city: listing.city,
     marketCode: listing.marketCode ?? DEFAULT_MARKET_CODE,
     categoryLabel: getListingCategoryLabel(listing),
-    conditionLabel: listingDisplayResolver.resolveConditionLabel(
-      listing.condition,
-    ),
-    characteristics: listingDisplayResolver.resolveSummaryAttributes(listing),
+    conditionLabel: getGenericListingConditionLabel(listing.condition, locale),
+    characteristics: getGenericListingCardCharacteristics(listing, locale),
     publishedAt: listing.createdAt,
     photoCount: listing.photos.length,
     deliveryAvailable: listing.deliveryOptions.some(
@@ -105,6 +106,7 @@ function toListingCardView(
       id: listing.sellerId,
       name: listing.sellerName,
       sellerType: listing.sellerType,
+      avatarUrl: listing.sellerAvatarUrl,
       city: listing.sellerCity,
       isIdentityVerified: listing.sellerIsVerified,
       rating: listing.sellerRating,
