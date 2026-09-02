@@ -69,6 +69,7 @@ export interface DropdownMenuProps<T = string> {
  */
 export const DROPDOWN_PANEL_CLASSES =
   "bg-bg-surface rounded-card shadow-dropdown border border-border-base py-2 z-popover animate-in fade-in zoom-in-95 max-h-menu-max overflow-y-auto overscroll-contain";
+export const FULL_WIDTH_DROPDOWN_PANEL_CLASSES = "w-full";
 
 export const DROPDOWN_ITEM_CLASSES = {
   base: "w-full min-h-control-sm flex items-center justify-between px-3.5 py-2 text-xs motion-interactive cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -327,7 +328,9 @@ export function DropdownMenu<T extends string | number = string>({
     touch: "h-control-touch px-3.5 text-xs rounded-control gap-2",
   }[size];
 
-  const effectivePanelWidth = fullWidth ? "w-full min-w-60" : panelWidth;
+  const effectivePanelWidth = fullWidth
+    ? FULL_WIDTH_DROPDOWN_PANEL_CLASSES
+    : panelWidth;
 
   return (
     <div

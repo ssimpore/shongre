@@ -1009,7 +1009,7 @@ export const SearchPage: React.FC = () => {
               </div>
 
               {/* Seller Type */}
-              <div className="pt-4 border-t border-border-subtle">
+              <div>
                 <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
                   {t("search.searchPage.typeDeVendeur")}
                 </h2>
@@ -1039,7 +1039,7 @@ export const SearchPage: React.FC = () => {
               {/* Condition. The data layer has always supported
                   `filters.conditions`; nothing ever exposed it, so the one facet
                   printed on every card was the one you could not filter by. */}
-              <div className="pt-4 border-t border-border-subtle">
+              <div>
                 <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
                   {t("search.searchPage.etat")}
                 </h2>
@@ -1064,7 +1064,7 @@ export const SearchPage: React.FC = () => {
               {/* Price Range. The slider commits on release, so the separate
                   "Appliquer le prix" button that the two number fields needed
                   as a commit point is gone with them. */}
-              <div className="pt-4 border-t border-border-subtle">
+              <div>
                 <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
                   {t("search.searchPage.priceInCurrency", {
                     currency: currencySymbol,
@@ -1079,7 +1079,7 @@ export const SearchPage: React.FC = () => {
               </div>
 
               {/* Delivery & Payment Toggles */}
-              <div className="pt-4 border-t border-border-subtle space-y-2.5">
+              <div className="space-y-2.5">
                 <Checkbox
                   label={t("search.searchPage.livraisonDisponible")}
                   description="Mondial Relay, Colissimo"
@@ -1115,7 +1115,7 @@ export const SearchPage: React.FC = () => {
 
               {/* Dynamic Category Specific Facets */}
               {dynamicFacets.length > 0 && (
-                <div className="pt-4 border-t border-border-subtle space-y-4">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                       {t("search.searchPage.filtresSpecifiques")}
@@ -1532,7 +1532,6 @@ export const SearchPage: React.FC = () => {
               Voir les résultats ({totalCount})
             </Button>
           }
-          contentClassName="space-y-6"
         >
           {/* Category */}
           <div>
@@ -1650,7 +1649,7 @@ export const SearchPage: React.FC = () => {
           </div>
 
           {/* Delivery & Security Checkboxes */}
-          <div className="pt-2 border-t border-border-subtle space-y-2.5">
+          <div className="space-y-2.5">
             <Checkbox
               label={t("search.searchPage.livraisonDisponible")}
               description="Mondial Relay, Colissimo, transporteur"
@@ -1680,7 +1679,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Dynamic Facets in Drawer */}
           {dynamicFacets.length > 0 && (
-            <div className="pt-2 border-t border-border-subtle space-y-3">
+            <div className="space-y-3">
               <span className="text-xs font-bold text-stone-900 uppercase tracking-wider block">
                 {t("search.searchPage.criteresSpecifiques")}
               </span>

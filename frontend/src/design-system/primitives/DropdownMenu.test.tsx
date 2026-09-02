@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { DropdownMenu } from "./DropdownMenu";
+import {
+  DropdownMenu,
+  FULL_WIDTH_DROPDOWN_PANEL_CLASSES,
+} from "./DropdownMenu";
 
 describe("DropdownMenu", () => {
   it("owns the shared trigger geometry without call-site overrides", () => {
@@ -22,6 +25,8 @@ describe("DropdownMenu", () => {
     expect(markup).toContain("rounded-control");
     expect(markup).toContain("border-border-base");
     expect(markup).toContain("w-full");
+    expect(FULL_WIDTH_DROPDOWN_PANEL_CLASSES).toBe("w-full");
+    expect(FULL_WIDTH_DROPDOWN_PANEL_CLASSES).not.toContain("min-w-");
   });
 
   it("exposes a real disabled trigger for unavailable choices", () => {

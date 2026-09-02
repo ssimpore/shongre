@@ -94,6 +94,9 @@ describe("design-system representative states", () => {
 
     expect(sidebar).toContain('data-filter-panel="surface"');
     expect(sidebar).toContain("rounded-card");
+    expect(sidebar).toContain("divide-y");
+    expect(sidebar).toContain("divide-border-subtle");
+    expect(sidebar).toContain("w-full");
     expect(sidebar).toContain("Filtres Auto");
     expect(sidebar).toContain("Réinitialiser");
     expect(drawer).toContain('data-filter-panel="drawer"');

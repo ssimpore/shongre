@@ -17,10 +17,10 @@ import {
   Button,
   Container,
   Drawer,
+  DropdownMenu,
   FilterPanel,
   Input,
   LocationSelector,
-  Select,
   Skeleton,
   StatePanel,
 } from "../../design-system";
@@ -118,17 +118,19 @@ const ImmoFilters: React.FC<{
         <legend className="mb-2 text-xs font-bold text-text-main">
           Projet
         </legend>
-        <Select
-          className="w-full"
-          aria-label="Projet immobilier"
+        <DropdownMenu
+          ariaLabel="Projet immobilier"
+          headerTitle="Projet"
+          fullWidth
           value={params.get("transaction") || "sale"}
-          onChange={(event) => setParam("transaction", event.target.value)}
-        >
-          <option value="sale">Acheter</option>
-          <option value="long_term_rental">Louer</option>
-          <option value="seasonal_rental">Location saisonnière</option>
-          <option value="shared_accommodation">Colocation</option>
-        </Select>
+          onChange={(value) => setParam("transaction", value)}
+          options={[
+            { value: "sale", label: "Acheter" },
+            { value: "long_term_rental", label: "Louer" },
+            { value: "seasonal_rental", label: "Location saisonnière" },
+            { value: "shared_accommodation", label: "Colocation" },
+          ]}
+        />
       </fieldset>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
@@ -229,53 +231,53 @@ const ImmoFilters: React.FC<{
               setParam("maxSurface", event.target.value || undefined)
             }
           />
-          <Select
-            className="w-full"
-            aria-label="Nombre minimum de pièces"
+          <DropdownMenu
+            ariaLabel="Nombre minimum de pièces"
+            headerTitle="Pièces"
+            fullWidth
             value={params.get("rooms") || ""}
-            onChange={(event) =>
-              setParam("rooms", event.target.value || undefined)
-            }
-          >
-            <option value="">Pièces</option>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <option key={value} value={value}>
-                {value}+
-              </option>
-            ))}
-          </Select>
-          <Select
-            className="w-full"
-            aria-label="Nombre minimum de chambres"
+            onChange={(value) => setParam("rooms", value || undefined)}
+            options={[
+              { value: "", label: "Pièces" },
+              ...[1, 2, 3, 4, 5].map((value) => ({
+                value: String(value),
+                label: `${value}+`,
+              })),
+            ]}
+          />
+          <DropdownMenu
+            ariaLabel="Nombre minimum de chambres"
+            headerTitle="Chambres"
+            fullWidth
             value={params.get("bedrooms") || ""}
-            onChange={(event) =>
-              setParam("bedrooms", event.target.value || undefined)
-            }
-          >
-            <option value="">Chambres</option>
-            {[1, 2, 3, 4, 5].map((value) => (
-              <option key={value} value={value}>
-                {value}+
-              </option>
-            ))}
-          </Select>
+            onChange={(value) => setParam("bedrooms", value || undefined)}
+            options={[
+              { value: "", label: "Chambres" },
+              ...[1, 2, 3, 4, 5].map((value) => ({
+                value: String(value),
+                label: `${value}+`,
+              })),
+            ]}
+          />
         </div>
       </fieldset>
-      <label className="block text-xs font-bold text-text-main">
-        Location meublée
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div>
+        <span className="mb-2 block text-xs font-bold text-text-main">
+          Location meublée
+        </span>
+        <DropdownMenu
+          ariaLabel="Location meublée"
+          headerTitle="Location meublée"
+          fullWidth
           value={params.get("furnished") || ""}
-          onChange={(event) =>
-            setParam("furnished", event.target.value || undefined)
-          }
-        >
-          <option value="">Indifférent</option>
-          <option value="true">Meublé</option>
-          <option value="false">Non meublé</option>
-        </Select>
-      </label>
+          onChange={(value) => setParam("furnished", value || undefined)}
+          options={[
+            { value: "", label: "Indifférent" },
+            { value: "true", label: "Meublé" },
+            { value: "false", label: "Non meublé" },
+          ]}
+        />
+      </div>
       <fieldset>
         <legend className="mb-2 text-xs font-bold text-text-main">
           Équipements
@@ -302,38 +304,43 @@ const ImmoFilters: React.FC<{
             ))}
         </div>
       </fieldset>
-      <label className="block text-xs font-bold text-text-main">
-        Performance énergétique
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+      <div>
+        <span className="mb-2 block text-xs font-bold text-text-main">
+          Performance énergétique
+        </span>
+        <DropdownMenu
+          ariaLabel="Performance énergétique"
+          headerTitle="Performance énergétique"
+          fullWidth
           value={params.get("dpe") || ""}
-          onChange={(event) => setParam("dpe", event.target.value || undefined)}
-        >
-          <option value="">Toutes les classes</option>
-          {["A", "B", "C", "D", "E", "F", "G"].map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </Select>
-      </label>
-      <label className="block text-xs font-bold text-text-main">
-        Annonceur
-        <Select
-          className="mt-2 w-full"
-          labelledByAncestor
+          onChange={(value) => setParam("dpe", value || undefined)}
+          options={[
+            { value: "", label: "Toutes les classes" },
+            ...["A", "B", "C", "D", "E", "F", "G"].map((value) => ({
+              value,
+              label: value,
+            })),
+          ]}
+        />
+      </div>
+      <div>
+        <span className="mb-2 block text-xs font-bold text-text-main">
+          Annonceur
+        </span>
+        <DropdownMenu
+          ariaLabel="Annonceur"
+          headerTitle="Annonceur"
+          fullWidth
           value={params.get("seller") || ""}
-          onChange={(event) =>
-            setParam("seller", event.target.value || undefined)
-          }
-        >
-          <option value="">Tous</option>
-          <option value="owner">Particulier</option>
-          <option value="agency">Agence</option>
-          <option value="developer">Promoteur</option>
-        </Select>
-      </label>
+          onChange={(value) => setParam("seller", value || undefined)}
+          options={[
+            { value: "", label: "Tous" },
+            { value: "owner", label: "Particulier" },
+            { value: "agency", label: "Agence" },
+            { value: "developer", label: "Promoteur" },
+          ]}
+        />
+      </div>
     </FilterPanel>
   );
 };
@@ -673,18 +680,21 @@ export const ImmoSearchPage: React.FC = () => {
                 <Map className="h-icon-md w-icon-md" />
               </button>
             </div>
-            <Select
-              className="w-auto"
-              aria-label="Trier les biens"
+            <DropdownMenu
+              ariaLabel="Trier les biens"
+              headerTitle="Trier par"
+              placement="bottom-right"
+              size="sm"
               value={query.sort}
-              onChange={(event) => setParam("sort", event.target.value)}
-            >
-              <option value="promoted">Sélection Shongre</option>
-              <option value="newest">Plus récentes</option>
-              <option value="price_asc">Prix croissant</option>
-              <option value="price_desc">Prix décroissant</option>
-              <option value="surface_desc">Plus grandes surfaces</option>
-            </Select>
+              onChange={(value) => setParam("sort", value)}
+              options={[
+                { value: "promoted", label: "Sélection Shongre" },
+                { value: "newest", label: "Plus récentes" },
+                { value: "price_asc", label: "Prix croissant" },
+                { value: "price_desc", label: "Prix décroissant" },
+                { value: "surface_desc", label: "Plus grandes surfaces" },
+              ]}
+            />
           </div>
         </div>
 

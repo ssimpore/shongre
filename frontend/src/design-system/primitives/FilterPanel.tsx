@@ -80,7 +80,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
       <div
         className={cn(
-          isDrawer || !title ? "space-y-5" : "mt-5 space-y-5",
+          "space-y-0 divide-y divide-border-subtle [&>*]:w-full [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0",
+          !isDrawer && title && "mt-5",
           contentClassName,
         )}
       >
