@@ -31,6 +31,7 @@ export * from "./schemas/invoicing";
 export * from "./schemas/product-access";
 export * from "./schemas/digital-products";
 export * from "./schemas/solutions";
+export * from "./schemas/watch-subscriptions";
 export * from "./shongre-applications";
 export * from "./schemas/provider-connections";
 export * from "./provider-gateways";

@@ -7,6 +7,7 @@ export * from "./http-markets.service";
 export * from "./http-taxonomy.service";
 export * from "./http-messaging.service";
 export * from "./http-notifications.service";
+export * from "./http-watch-subscriptions.service";
 export * from "./http-orders.service";
 export * from "./http-payments.service";
 export * from "./http-promotions.service";

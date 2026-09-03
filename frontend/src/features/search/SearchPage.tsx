@@ -56,6 +56,8 @@ import {
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { majorToMinorAmount } from "@shongre/shared/money";
 import {
   pageMetaForPolicy,
   resolveSeoPolicy,
@@ -106,6 +108,7 @@ export const SearchPage: React.FC = () => {
     marketContext,
   } = useMarketLocation();
   const toast = useToast();
+  const { currentUser } = useAuth();
   const publicRouteData = usePublicRouteData();
   const initialData =
     publicRouteData?.kind === "listing_search" ? publicRouteData : null;
@@ -407,24 +410,85 @@ export const SearchPage: React.FC = () => {
     resetLocation();
   };
 
-  const handleSaveSearch = () => {
+  const handleSaveSearch = async () => {
+    if (!currentUser) {
+      toast.info(t("watch.save.loginRequired"));
+      return;
+    }
+    const categoryId = TaxonomyMigration.resolveCanonicalNode(
+      subCategorySlug || categorySlug,
+    )?.id;
+    if (
+      !query &&
+      !categoryId &&
+      !city &&
+      minPrice === undefined &&
+      maxPrice === undefined
+    ) {
+      toast.info(t("watch.save.criteriaRequired"));
+      return;
+    }
     const title = query
-      ? `Recherche "${query}"`
+      ? t("watch.save.queryTitle", { query })
       : categorySlug
-        ? `Catégorie ${categorySlug}`
-        : "Ma recherche personnalisée";
-    storageService.saveSearch({
-      id: `ss-${Date.now()}`,
-      title,
-      filters: { query, categorySlug, city, minPrice, maxPrice },
-      createdAt: new Date().toISOString(),
-      hasNotifications: true,
-      matchCount: totalCount,
-    });
-    toast.success(
-      `La recherche "${title}" a été enregistrée avec alertes activées.`,
-      "Recherche sauvegardée",
-    );
+        ? t("watch.save.categoryTitle", { category: categorySlug })
+        : t("watch.save.customTitle");
+    const id = `ss-${Date.now()}`;
+    try {
+      await services.watchSubscriptions.createOrReplace(currentUser.id, {
+        marketCode: activeMarket.code,
+        targetType: "saved_search",
+        targetId: id,
+        title,
+        frequency: "immediate",
+        channels: { inApp: true, email: false, push: true },
+        searchFilter: {
+          ...(query ? { query } : {}),
+          ...(categoryId ? { categoryId } : {}),
+          ...(city ? { city } : {}),
+          ...(minPrice !== undefined
+            ? {
+                minPriceMinor: majorToMinorAmount(
+                  minPrice,
+                  activeMarket.currency,
+                ),
+              }
+            : {}),
+          ...(maxPrice !== undefined
+            ? {
+                maxPriceMinor: majorToMinorAmount(
+                  maxPrice,
+                  activeMarket.currency,
+                ),
+              }
+            : {}),
+        },
+      });
+      storageService.saveSearch(
+        {
+          id,
+          title,
+          filters: {
+            query,
+            categorySlug,
+            city,
+            minPrice,
+            maxPrice,
+            marketCode: activeMarket.code,
+          },
+          createdAt: new Date().toISOString(),
+          hasNotifications: true,
+          matchCount: totalCount,
+        },
+        currentUser.id,
+        activeMarket.code,
+      );
+      toast.success(t("watch.save.success"), t("watch.save.title"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : t("watch.save.error"),
+      );
+    }
   };
 
   const activeCanonicalNode = TaxonomyMigration.resolveCanonicalNode(

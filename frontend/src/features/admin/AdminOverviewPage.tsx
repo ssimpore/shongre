@@ -8,6 +8,7 @@ import {
   Clock,
   TrendingUp,
   FileSpreadsheet,
+  ListTodo,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -152,8 +153,11 @@ export const AdminOverviewPage: React.FC = () => {
           )}
           {canReviewReports && (
             <Button to="/admin/moderation" size="sm">
-              {t("admin.adminOverviewPage.traiterLesSignalements")}
-              {loadState === "success" ? (reportsCount ?? 0) : "…"})
+              {loadState === "success"
+                ? t("admin.adminOverviewPage.traiterSignalementsCount", {
+                    count: reportsCount ?? 0,
+                  })
+                : t("admin.adminOverviewPage.reviewReports")}
             </Button>
           )}
         </div>
@@ -170,6 +174,69 @@ export const AdminOverviewPage: React.FC = () => {
             </Button>
           }
         />
+      )}
+
+      {loadState !== "error" && (canReviewVerification || canReviewReports) && (
+        <section
+          aria-labelledby="admin-action-queue"
+          className="rounded-control border border-primary/20 bg-primary-light p-5 shadow-xs"
+        >
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2
+                id="admin-action-queue"
+                className="flex items-center gap-2 text-base font-black text-text-main"
+              >
+                <ListTodo className="h-icon-md w-icon-md text-primary" />
+                {t("admin.adminOverviewPage.actionQueueTitle")}
+              </h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                {t("admin.adminOverviewPage.actionQueueDescription")}
+              </p>
+            </div>
+            <span className="rounded-pill bg-white px-3 py-1 text-xs font-black text-primary">
+              {loadState === "success"
+                ? pendingVerifications.length + (reportsCount ?? 0)
+                : "…"}
+            </span>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {canReviewReports && (
+              <Link
+                to="/admin/moderation"
+                className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-bold text-text-main">
+                    {t("admin.adminOverviewPage.reviewReports")}
+                  </span>
+                  <ArrowRight className="h-icon-sm w-icon-sm text-primary" />
+                </div>
+                <p className="mt-1 text-xs text-text-secondary">
+                  {loadState === "success" ? (reportsCount ?? 0) : "…"}{" "}
+                  {t("admin.adminOverviewPage.openItems")}
+                </p>
+              </Link>
+            )}
+            {canReviewVerification && (
+              <Link
+                to="/admin/utilisateurs"
+                className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-bold text-text-main">
+                    {t("admin.adminOverviewPage.reviewProfessionals")}
+                  </span>
+                  <ArrowRight className="h-icon-sm w-icon-sm text-primary" />
+                </div>
+                <p className="mt-1 text-xs text-text-secondary">
+                  {loadState === "success" ? pendingVerifications.length : "…"}{" "}
+                  {t("admin.adminOverviewPage.openItems")}
+                </p>
+              </Link>
+            )}
+          </div>
+        </section>
       )}
 
       {/* KPI Stats Cards */}

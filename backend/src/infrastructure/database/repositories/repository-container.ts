@@ -45,6 +45,11 @@ import {
   PostgresNotificationRepository,
 } from "./notification.repository.js";
 import {
+  IWatchSubscriptionRepository,
+  DemoWatchSubscriptionRepository,
+  PostgresWatchSubscriptionRepository,
+} from "./watch-subscription.repository.js";
+import {
   IReviewRepository,
   DemoReviewRepository,
   PostgresReviewRepository,
@@ -157,6 +162,7 @@ export interface RepositoryContainer {
   compliance: IComplianceRepository;
   messaging: IMessagingRepository;
   notifications: INotificationRepository;
+  watchSubscriptions: IWatchSubscriptionRepository;
   reviews: IReviewRepository;
   admin: IAdminRepository;
   workspace: IWorkspaceRepository;
@@ -198,6 +204,7 @@ export function createRepositoryContainer(
       compliance: new PostgresComplianceRepository(),
       messaging: new PostgresMessagingRepository(),
       notifications: new PostgresNotificationRepository(),
+      watchSubscriptions: new PostgresWatchSubscriptionRepository(),
       reviews: new PostgresReviewRepository(),
       admin: new PostgresAdminRepository(),
       workspace: new PostgresWorkspaceRepository(),
@@ -232,6 +239,7 @@ export function createRepositoryContainer(
     compliance: new DemoComplianceRepository(),
     messaging: new DemoMessagingRepository(),
     notifications: new DemoNotificationRepository(),
+    watchSubscriptions: new DemoWatchSubscriptionRepository(),
     reviews: new DemoReviewRepository(),
     admin: new DemoAdminRepository(),
     workspace: new DemoWorkspaceRepository(),

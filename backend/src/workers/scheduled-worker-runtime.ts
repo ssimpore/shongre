@@ -18,6 +18,7 @@ import { captureServerException } from "../infrastructure/observability/sentry.j
 import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
+import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
 
 interface ScheduledJob {
   name: string;
@@ -88,6 +89,12 @@ const jobs: ScheduledJob[] = [
     group: "communications",
     intervalSeconds: 15,
     run: () => notificationsWorker.run(),
+  },
+  {
+    name: "watch_subscription_evaluation",
+    group: "communications",
+    intervalSeconds: 15,
+    run: () => watchSubscriptionsWorker.run(),
   },
   {
     name: "digital_fulfillment_outbox",

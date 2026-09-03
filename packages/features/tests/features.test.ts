@@ -9,9 +9,7 @@ describe("shared feature presentation", () => {
   it("marks paid placement transparently on every platform", () => {
     expect(
       getListingPromotionBadges({ isUrgent: false, isFeatured: true }),
-    ).toEqual([
-      { label: "Sponsorisé", tone: "featured", sponsored: true },
-    ]);
+    ).toEqual([{ label: "Sponsorisé", tone: "featured", sponsored: true }]);
   });
   it("uses the concise label for featured paid placement sources", () => {
     expect(
@@ -20,13 +18,11 @@ describe("shared feature presentation", () => {
         isFeatured: false,
         promotion: {
           state: "active",
-          type: "featured_placement",
+          type: "featured",
           label: "À la une",
         },
       }),
-    ).toEqual([
-      { label: "Sponsorisé", tone: "featured", sponsored: true },
-    ]);
+    ).toEqual([{ label: "Sponsorisé", tone: "featured", sponsored: true }]);
     expect(
       getListingPromotionBadges({
         isUrgent: false,

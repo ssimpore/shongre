@@ -14,12 +14,7 @@ import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 export const IMMO_DEMO_NOW = "2026-08-22T10:00:00.000Z";
 
-const immoAssetUrl = (fileName: string) => {
-  const path = `/images/immo/${fileName}`;
-  return typeof window === "undefined"
-    ? `https://demo.shongre.test${path}`
-    : new URL(path, window.location.origin).toString();
-};
+const immoAssetUrl = (fileName: string) => `/images/immo/${fileName}`;
 
 export const IMMO_DEMO_MEDIA = {
   apartment: immoAssetUrl("appartement-lyon.webp"),

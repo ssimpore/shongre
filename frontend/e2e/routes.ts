@@ -223,6 +223,11 @@ export const BUYER_ROUTES: RouteUnderTest[] = [
     persona: "individual_buyer",
   },
   { path: "/compte/favoris", name: "favorites", persona: "individual_buyer" },
+  {
+    path: "/compte/alertes",
+    name: "watch-subscriptions",
+    persona: "individual_buyer",
+  },
   { path: "/compte/messages", name: "messaging", persona: "individual_buyer" },
   { path: "/compte/achats", name: "transactions", persona: "individual_buyer" },
   {

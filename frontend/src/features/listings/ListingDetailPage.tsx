@@ -25,6 +25,8 @@ import {
   Send,
   Edit3,
   Sliders,
+  BellRing,
+  UserPlus,
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
 import { listingRepository } from "../../repositories/listing.repository";
@@ -78,6 +80,8 @@ import {
   getListingCategoryLabel,
   getListingSubCategoryLabel,
 } from "../../domains/taxonomy/taxonomy.display";
+import type { WatchSubscription } from "@shongre/contracts/watch-subscriptions";
+import { majorToMinorAmount } from "@shongre/shared/money";
 import { publicListingUrl } from "../../domains/market/market-routing";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
@@ -183,6 +187,10 @@ export const ListingDetailPage: React.FC = () => {
   const inlineMobileActionRef = useRef<HTMLDivElement>(null);
   const inlineMobileActionSeenRef = useRef(false);
   const [showMobileStickyActions, setShowMobileStickyActions] = useState(false);
+  const [watches, setWatches] = useState<WatchSubscription[]>([]);
+  const [watchPending, setWatchPending] = useState<
+    "listing_price" | "seller" | null
+  >(null);
 
   // 1. Data Fetching
   useEffect(() => {
@@ -476,6 +484,33 @@ export const ListingDetailPage: React.FC = () => {
     setSearchParams(next, { replace: true });
   }, [currentUser, isReadOnlyStaff, listing, searchParams, setSearchParams]);
 
+  useEffect(() => {
+    let active = true;
+    if (!currentUser || !listing || actions.isOwner || isReadOnlyStaff) {
+      setWatches([]);
+      return () => {
+        active = false;
+      };
+    }
+    void services.watchSubscriptions
+      .list(currentUser.id, activeMarket.code)
+      .then((items) => {
+        if (active) setWatches(items);
+      })
+      .catch(() => {
+        if (active) setWatches([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    actions.isOwner,
+    activeMarket.code,
+    currentUser,
+    isReadOnlyStaff,
+    listing,
+  ]);
+
   // Handlers
   /**
    * Saving goes through the shared favourites store, not straight to storage.
@@ -516,6 +551,69 @@ export const ListingDetailPage: React.FC = () => {
       toast.success(
         "Le lien de l'annonce a été copié dans votre presse-papiers.",
       );
+    }
+  };
+
+  const toggleWatch = async (targetType: "listing_price" | "seller") => {
+    if (!listing) return;
+    const listingCurrency = listing.currency || activeMarket.currency;
+    if (!currentUser) {
+      navigate(routes.auth.login(routes.listing.detail(listing.id)));
+      return;
+    }
+    const targetId =
+      targetType === "listing_price" ? listing.id : listing.sellerId;
+    const existing = watches.find(
+      (item) => item.targetType === targetType && item.targetId === targetId,
+    );
+    setWatchPending(targetType);
+    try {
+      if (existing) {
+        await services.watchSubscriptions.remove(
+          currentUser.id,
+          activeMarket.code,
+          existing.id,
+        );
+        setWatches((items) => items.filter((item) => item.id !== existing.id));
+        toast.info(t("watch.listing.removed"));
+      } else {
+        const created = await services.watchSubscriptions.createOrReplace(
+          currentUser.id,
+          {
+            marketCode: activeMarket.code,
+            targetType,
+            targetId,
+            title:
+              targetType === "listing_price"
+                ? listing.title
+                : seller?.name || listing.sellerName,
+            frequency: targetType === "listing_price" ? "immediate" : "daily",
+            channels: { inApp: true, email: false, push: true },
+            ...(targetType === "listing_price"
+              ? {
+                  baselinePrice: {
+                    amountMinor: majorToMinorAmount(
+                      listing.price,
+                      listingCurrency,
+                    ),
+                    currency: listingCurrency,
+                  },
+                }
+              : {}),
+          },
+        );
+        setWatches((items) => [
+          created,
+          ...items.filter((item) => item.id !== created.id),
+        ]);
+        toast.success(t("watch.listing.created"));
+      }
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : t("watch.save.error"),
+      );
+    } finally {
+      setWatchPending(null);
     }
   };
 
@@ -961,6 +1059,57 @@ export const ListingDetailPage: React.FC = () => {
                 surface="subtle"
               />
             )}
+
+            {!actions.isOwner && !isReadOnlyStaff ? (
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Button
+                  variant={
+                    watches.some(
+                      (item) =>
+                        item.targetType === "listing_price" &&
+                        item.targetId === listing.id,
+                    )
+                      ? "secondary"
+                      : "outline"
+                  }
+                  size="sm"
+                  disabled={watchPending !== null}
+                  leftIcon={<BellRing className="h-icon-sm w-icon-sm" />}
+                  onClick={() => void toggleWatch("listing_price")}
+                >
+                  {watches.some(
+                    (item) =>
+                      item.targetType === "listing_price" &&
+                      item.targetId === listing.id,
+                  )
+                    ? t("watch.listing.priceActive")
+                    : t("watch.listing.priceAction")}
+                </Button>
+                <Button
+                  variant={
+                    watches.some(
+                      (item) =>
+                        item.targetType === "seller" &&
+                        item.targetId === listing.sellerId,
+                    )
+                      ? "secondary"
+                      : "outline"
+                  }
+                  size="sm"
+                  disabled={watchPending !== null}
+                  leftIcon={<UserPlus className="h-icon-sm w-icon-sm" />}
+                  onClick={() => void toggleWatch("seller")}
+                >
+                  {watches.some(
+                    (item) =>
+                      item.targetType === "seller" &&
+                      item.targetId === listing.sellerId,
+                  )
+                    ? t("watch.listing.sellerActive")
+                    : t("watch.listing.sellerAction")}
+                </Button>
+              </div>
+            ) : null}
 
             {!actions.isOwner && actions.canDirectPurchase ? (
               <PurchasePriceDisclosure listing={listing} />

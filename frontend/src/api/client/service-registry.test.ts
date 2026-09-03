@@ -29,6 +29,7 @@ const SERVICE_KEYS = [
   "taxonomy",
   "messaging",
   "notifications",
+  "watchSubscriptions",
   "orders",
   "payments",
   "promotions",

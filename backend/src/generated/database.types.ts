@@ -773,6 +773,59 @@ export interface Database {
         last_error_code: string | null;
         created_at: string;
       }>;
+      watch_subscriptions: GeneratedTable<{
+        id: string;
+        user_id: string;
+        market_code: string;
+        target_type: "listing_price" | "seller" | "saved_search";
+        target_key: string;
+        title: string;
+        search_filter: Json;
+        baseline_price_minor: number | null;
+        currency: string | null;
+        frequency: "immediate" | "daily" | "weekly";
+        in_app_enabled: boolean;
+        email_enabled: boolean;
+        push_enabled: boolean;
+        status: "active" | "paused";
+        last_notified_at: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
+      watch_events: GeneratedTable<{
+        id: string;
+        event_key: string;
+        market_code: string;
+        event_type: "listing_published" | "listing_price_changed";
+        listing_id: string;
+        seller_id: string;
+        previous_price_minor: number | null;
+        current_price_minor: number;
+        currency: string;
+        status:
+          "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "DEAD_LETTER";
+        attempt_count: number;
+        available_at: string;
+        claimed_at: string | null;
+        claimed_by: string | null;
+        completed_at: string | null;
+        last_error_code: string | null;
+        created_at: string;
+      }>;
+      watch_matches: GeneratedTable<{
+        id: string;
+        subscription_id: string;
+        event_id: string;
+        due_at: string;
+        status:
+          "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "DEAD_LETTER";
+        attempt_count: number;
+        claimed_at: string | null;
+        claimed_by: string | null;
+        completed_at: string | null;
+        last_error_code: string | null;
+        created_at: string;
+      }>;
       listings: {
         Row: {
           id: string;
@@ -3149,6 +3202,46 @@ export interface Database {
       get_unread_message_count: {
         Args: { p_user_id: string };
         Returns: number;
+      };
+      claim_watch_events: {
+        Args: {
+          p_worker_id: string;
+          p_limit?: number;
+          p_lease_seconds?: number;
+        };
+        Returns: Database["public"]["Tables"]["watch_events"]["Row"][];
+      };
+      evaluate_watch_event: {
+        Args: { p_event_id: string };
+        Returns: number;
+      };
+      complete_watch_event: {
+        Args: {
+          p_event_id: string;
+          p_worker_id: string;
+          p_success: boolean;
+          p_error_code?: string | null;
+          p_retry_at?: string | null;
+        };
+        Returns: undefined;
+      };
+      claim_watch_matches: {
+        Args: {
+          p_worker_id: string;
+          p_limit?: number;
+          p_lease_seconds?: number;
+        };
+        Returns: Database["public"]["Tables"]["watch_matches"]["Row"][];
+      };
+      complete_watch_match: {
+        Args: {
+          p_match_id: string;
+          p_worker_id: string;
+          p_success: boolean;
+          p_error_code?: string | null;
+          p_retry_at?: string | null;
+        };
+        Returns: undefined;
       };
       toggle_favorite: {
         Args: { p_user_id: string; p_listing_id: string };

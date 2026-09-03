@@ -121,6 +121,12 @@ export class NotificationsService {
     linkUrl?: string,
     requestedCategory?: NotificationCategory,
     marketCode?: string,
+    allowedChannels: Array<"inApp" | "email" | "push"> = [
+      "inApp",
+      "email",
+      "push",
+    ],
+    notificationId?: string,
   ): Promise<NotificationItem> {
     if (
       !userId ||
@@ -153,7 +159,7 @@ export class NotificationsService {
     const preferences = await this.getPreferences(userId);
     const categoryPreference = preferences[category];
     const notif: NotificationItem = {
-      id: randomUUID(),
+      id: notificationId || randomUUID(),
       userId,
       type,
       category,
@@ -162,21 +168,26 @@ export class NotificationsService {
       marketCode: country.code,
       linkUrl,
       isRead: false,
-      inAppVisible: categoryPreference.inApp,
+      inAppVisible:
+        categoryPreference.inApp && allowedChannels.includes("inApp"),
       createdAt: new Date().toISOString(),
     };
 
     const channels = [
-      ...(categoryPreference.email ? (["email"] as const) : []),
-      ...(categoryPreference.push ? (["push"] as const) : []),
+      ...(categoryPreference.email && allowedChannels.includes("email")
+        ? (["email"] as const)
+        : []),
+      ...(categoryPreference.push && allowedChannels.includes("push")
+        ? (["push"] as const)
+        : []),
     ];
     const saved = await this.notificationRepo.saveWithDeliveries(
       notif,
       category,
-      categoryPreference.inApp,
+      categoryPreference.inApp && allowedChannels.includes("inApp"),
       channels,
     );
-    if (categoryPreference.inApp) {
+    if (categoryPreference.inApp && allowedChannels.includes("inApp")) {
       await realtimeBroadcaster.broadcastEvent(
         `user:${userId}:notifications`,
         "notification_received",

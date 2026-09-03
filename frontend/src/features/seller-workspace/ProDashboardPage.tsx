@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   BarChart2,
   FileText,
+  CircleAlert,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -46,6 +47,7 @@ export const ProDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [analytics, setAnalytics] = useState<ProAnalyticsSnapshot | null>(null);
+  const [unreadContactCount, setUnreadContactCount] = useState(0);
   const [loadState, setLoadState] = useState<AnalyticsLoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
 
@@ -56,11 +58,19 @@ export const ProDashboardPage: React.FC = () => {
     }
     let cancelled = false;
     setLoadState("loading");
-    services.workspace
-      .getProAnalytics(currentUser.id)
-      .then((snapshot) => {
+    Promise.all([
+      services.workspace.getProAnalytics(currentUser.id),
+      services.messaging.getUserConversations(currentUser.id),
+    ])
+      .then(([snapshot, conversations]) => {
         if (cancelled) return;
         setAnalytics(snapshot);
+        setUnreadContactCount(
+          conversations.reduce(
+            (total, conversation) => total + conversation.unreadCount,
+            0,
+          ),
+        );
         setLoadState("success");
       })
       .catch(() => {
@@ -158,6 +168,73 @@ export const ProDashboardPage: React.FC = () => {
 
       {loadState === "success" && analytics && (
         <>
+          <section
+            aria-labelledby="pro-action-queue"
+            className="rounded-2xl border border-primary/20 bg-primary-light p-5 shadow-xs"
+          >
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2
+                  id="pro-action-queue"
+                  className="flex items-center gap-2 text-base font-black text-stone-900"
+                >
+                  <CircleAlert className="h-icon-md w-icon-md text-primary" />
+                  {t("sellerworkspace.proDashboardPage.actionQueueTitle")}
+                </h2>
+                <p className="mt-1 text-xs text-stone-600">
+                  {t("sellerworkspace.proDashboardPage.actionQueueDescription")}
+                </p>
+              </div>
+              <Badge variant="neutral" size="sm">
+                {unreadContactCount + (hasCatalogue ? 0 : 1)}
+              </Badge>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {unreadContactCount > 0 && (
+                <Link
+                  to={routes.workspace.messages()}
+                  className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-bold text-stone-900">
+                      {t("sellerworkspace.proDashboardPage.answerContacts")}
+                    </span>
+                    <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
+                  </div>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {unreadContactCount.toLocaleString(locale)}{" "}
+                    {t("sellerworkspace.proDashboardPage.contactsAwaiting")}
+                  </p>
+                </Link>
+              )}
+              {!hasCatalogue && (
+                <Link
+                  to={routes.listing.publish()}
+                  className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-bold text-stone-900">
+                      {t(
+                        "sellerworkspace.proDashboardPage.publishFirstListing",
+                      )}
+                    </span>
+                    <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
+                  </div>
+                  <p className="mt-1 text-xs text-stone-500">
+                    {t(
+                      "sellerworkspace.proDashboardPage.publishFirstListingDescription",
+                    )}
+                  </p>
+                </Link>
+              )}
+              {unreadContactCount === 0 && hasCatalogue && (
+                <p className="sm:col-span-2 rounded-xl border border-success-border bg-white p-4 text-sm font-semibold text-success">
+                  {t("sellerworkspace.proDashboardPage.actionQueueEmpty")}
+                </p>
+              )}
+            </div>
+          </section>
+
           {/* KPI Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">

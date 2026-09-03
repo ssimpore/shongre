@@ -9,6 +9,7 @@ export * from "./verification.repository.js";
 export * from "./compliance.repository.js";
 export * from "./messaging.repository.js";
 export * from "./notification.repository.js";
+export * from "./watch-subscription.repository.js";
 export * from "./review.repository.js";
 export * from "./admin.repository.js";
 export * from "./workspace.repository.js";

@@ -14,6 +14,9 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { listingsService } from "@/features/listings/listings.service";
 import { moderationService } from "@/features/moderation/moderation.service";
+import { messagingService } from "@/features/messaging/messaging.service";
+import { favoritesService } from "@/features/favorites/favorites.service";
+import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 import { formatMoney } from "@/utils/format";
 import { useMarket } from "@/features/market/MarketProvider";
 
@@ -25,6 +28,12 @@ export default function ListingDetailScreen() {
   const [listing, setListing] = useState<ListingCardView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [startingConversation, setStartingConversation] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [priceWatchId, setPriceWatchId] = useState<string | null>(null);
+  const [sellerWatchId, setSellerWatchId] = useState<string | null>(null);
+  const [loadedEngagementKey, setLoadedEngagementKey] = useState("");
+  const [engagementBusy, setEngagementBusy] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -43,6 +52,49 @@ export default function ListingDetailScreen() {
       active = false;
     };
   }, [activeMarket.code, id]);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    let active = true;
+    Promise.all([
+      favoritesService.list(user.id, activeMarket.code),
+      watchSubscriptionsService.list(user.id, activeMarket.code),
+    ])
+      .then(([favoriteIds, watches]) => {
+        if (!active) return;
+        setIsFavorite(favoriteIds.includes(id));
+        setPriceWatchId(
+          watches.find(
+            (item) =>
+              item.targetType === "listing_price" && item.targetId === id,
+          )?.id || null,
+        );
+        setSellerWatchId(
+          watches.find(
+            (item) =>
+              item.targetType === "seller" &&
+              item.targetId === listing?.seller?.id,
+          )?.id || null,
+        );
+        setLoadedEngagementKey(`${user.id}::${activeMarket.code}::${id}`);
+      })
+      .catch(() => {
+        if (active)
+          setError(
+            "Certains réglages de suivi sont momentanément indisponibles.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, id, listing?.seller?.id, user]);
+
+  const currentEngagementKey =
+    user && id ? `${user.id}::${activeMarket.code}::${id}` : "";
+  const hasLoadedEngagement = loadedEngagementKey === currentEngagementKey;
+  const favoriteActive = hasLoadedEngagement && isFavorite;
+  const activePriceWatchId = hasLoadedEngagement ? priceWatchId : null;
+  const activeSellerWatchId = hasLoadedEngagement ? sellerWatchId : null;
 
   const requireLogin = (): boolean => {
     if (user) return true;
@@ -103,6 +155,108 @@ export default function ListingDetailScreen() {
         "Blocage impossible",
         reason instanceof Error ? reason.message : "Réessayez plus tard.",
       );
+    }
+  };
+
+  const contactSeller = async () => {
+    if (!listing || !requireLogin() || !user) return;
+    setStartingConversation(true);
+    try {
+      const conversation = await messagingService.createForListing({
+        listingId: listing.id,
+        marketCode: activeMarket.code,
+        userId: user.id,
+      });
+      router.push(`/messages/${conversation.id}` as never);
+    } catch (reason) {
+      Alert.alert(
+        "Conversation impossible",
+        reason instanceof Error ? reason.message : "Réessayez plus tard.",
+      );
+    } finally {
+      setStartingConversation(false);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!listing || !requireLogin() || !user) return;
+    setEngagementBusy(true);
+    try {
+      setIsFavorite(
+        await favoritesService.toggle(user.id, activeMarket.code, listing.id),
+      );
+    } catch (reason) {
+      Alert.alert(
+        "Favori indisponible",
+        reason instanceof Error ? reason.message : "Réessayez plus tard.",
+      );
+    } finally {
+      setEngagementBusy(false);
+    }
+  };
+
+  const togglePriceWatch = async () => {
+    if (!listing || !requireLogin() || !user) return;
+    setEngagementBusy(true);
+    try {
+      if (activePriceWatchId) {
+        await watchSubscriptionsService.remove(
+          user.id,
+          activeMarket.code,
+          activePriceWatchId,
+        );
+        setPriceWatchId(null);
+      } else {
+        const watch = await watchSubscriptionsService.createOrReplace(user.id, {
+          marketCode: activeMarket.code,
+          targetType: "listing_price",
+          targetId: listing.id,
+          title: listing.title,
+          frequency: "immediate",
+          channels: { inApp: true, email: false, push: true },
+          baselinePrice: listing.price,
+        });
+        setPriceWatchId(watch.id);
+      }
+    } catch (reason) {
+      Alert.alert(
+        "Alerte indisponible",
+        reason instanceof Error ? reason.message : "Réessayez plus tard.",
+      );
+    } finally {
+      setEngagementBusy(false);
+    }
+  };
+
+  const toggleSellerWatch = async () => {
+    if (!listing?.seller || !requireLogin() || !user) return;
+    setEngagementBusy(true);
+    try {
+      if (activeSellerWatchId) {
+        await watchSubscriptionsService.remove(
+          user.id,
+          activeMarket.code,
+          activeSellerWatchId,
+        );
+        setSellerWatchId(null);
+      } else {
+        const watch = await watchSubscriptionsService.createOrReplace(user.id, {
+          marketCode: activeMarket.code,
+          targetType: "seller",
+          targetId: listing.seller.id,
+          title: listing.seller.name,
+          frequency: "daily",
+          channels: { inApp: true, email: false, push: true },
+        });
+        setSellerWatchId(watch.id);
+      }
+    } catch (reason) {
+      Alert.alert(
+        "Suivi indisponible",
+        reason instanceof Error ? reason.message : "Réessayez plus tard.",
+      );
+    } finally {
+      setEngagementBusy(false);
     }
   };
 
@@ -169,11 +323,44 @@ export default function ListingDetailScreen() {
         </View>
       ) : null}
       <Button
-        label={user ? "Contacter le vendeur" : "Se connecter pour contacter"}
-        onPress={() => {
-          if (requireLogin()) router.push("/(tabs)/messages");
-        }}
+        label={
+          startingConversation
+            ? "Ouverture…"
+            : user
+              ? "Contacter le vendeur"
+              : "Se connecter pour contacter"
+        }
+        onPress={() => void contactSeller()}
+        disabled={startingConversation}
       />
+      <Button
+        label={favoriteActive ? "Retirer des favoris" : "Ajouter aux favoris"}
+        onPress={() => void toggleFavorite()}
+        disabled={engagementBusy}
+        variant="secondary"
+      />
+      <Button
+        label={
+          activePriceWatchId
+            ? "Désactiver l’alerte prix"
+            : "Alerte baisse de prix"
+        }
+        onPress={() => void togglePriceWatch()}
+        disabled={engagementBusy}
+        variant="secondary"
+      />
+      {listing.seller ? (
+        <Button
+          label={
+            activeSellerWatchId
+              ? "Ne plus suivre ce vendeur"
+              : "Suivre ce vendeur"
+          }
+          onPress={() => void toggleSellerWatch()}
+          disabled={engagementBusy}
+          variant="secondary"
+        />
+      ) : null}
       <View style={styles.safety}>
         <Text style={styles.safetyTitle}>Achetez en sécurité</Text>
         <Text style={styles.muted}>

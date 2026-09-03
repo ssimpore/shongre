@@ -24,6 +24,7 @@ import type { MarketsServiceContract } from "../contracts/markets.contract";
 import type { MessagingServiceContract } from "../contracts/messaging.contract";
 import type { ModerationServiceContract } from "../contracts/moderation.contract";
 import type { NotificationsServiceContract } from "../contracts/notifications.contract";
+import type { WatchSubscriptionsServiceContract } from "../contracts/watch-subscriptions.contract";
 import type { OrdersServiceContract } from "../contracts/orders.contract";
 import type { PaymentsServiceContract } from "../contracts/payments.contract";
 import type { PromotionsServiceContract } from "../contracts/promotions.contract";
@@ -46,6 +47,7 @@ export interface ServiceRegistry {
   taxonomy: TaxonomyServiceContract;
   messaging: MessagingServiceContract;
   notifications: NotificationsServiceContract;
+  watchSubscriptions: WatchSubscriptionsServiceContract;
   orders: OrdersServiceContract;
   payments: PaymentsServiceContract;
   promotions: PromotionsServiceContract;
@@ -112,6 +114,10 @@ const demoServiceLoaders: ServiceLoaders = {
   notifications: () =>
     import("../adapters/demo/demo-notifications.service").then(
       ({ demoNotificationsService }) => demoNotificationsService,
+    ),
+  watchSubscriptions: () =>
+    import("../adapters/demo/demo-watch-subscriptions.service").then(
+      ({ demoWatchSubscriptionsService }) => demoWatchSubscriptionsService,
     ),
   orders: () =>
     import("../adapters/demo/demo-orders.service").then(
@@ -259,6 +265,10 @@ const httpServiceLoaders: ServiceLoaders = {
   notifications: () =>
     import("../adapters/http/http-notifications.service").then(
       ({ httpNotificationsService }) => httpNotificationsService,
+    ),
+  watchSubscriptions: () =>
+    import("../adapters/http/http-watch-subscriptions.service").then(
+      ({ httpWatchSubscriptionsService }) => httpWatchSubscriptionsService,
     ),
   orders: () =>
     import("../adapters/http/http-orders.service").then(

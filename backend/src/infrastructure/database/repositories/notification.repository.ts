@@ -173,8 +173,12 @@ export class DemoNotificationRepository implements INotificationRepository {
   }
 
   async getUnreadCount(userId: string): Promise<number> {
-    const list = await this.getUserNotifications(userId);
-    return list.filter((n) => !n.isRead).length;
+    return Array.from(this.notifications.values()).filter(
+      (notification) =>
+        notification.userId === userId &&
+        notification.inAppVisible !== false &&
+        !notification.isRead,
+    ).length;
   }
 
   async save(notification: NotificationItem): Promise<NotificationItem> {
@@ -402,6 +406,7 @@ export class PostgresNotificationRepository implements INotificationRepository {
         .from("notifications")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId)
+        .eq("in_app_visible", true)
         .eq("is_read", false);
 
       if (error) databaseFailure("notifications.getUnreadCount", error);
@@ -444,6 +449,14 @@ export class PostgresNotificationRepository implements INotificationRepository {
     channels: NotificationDeliveryChannel[],
   ): Promise<NotificationItem> {
     const supabase = getSupabaseAdminClient();
+    const { data: existing, error: existingError } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("id", notification.id)
+      .maybeSingle();
+    if (existingError)
+      databaseFailure("notifications.findDeliveryNotification", existingError);
+    if (existing) return this.mapRowToNotification(existing);
     const { data, error } = await (supabase as any).rpc(
       "create_notification_with_deliveries",
       {

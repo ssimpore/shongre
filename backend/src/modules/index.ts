@@ -22,6 +22,7 @@ export * from "./verification/verification.service.js";
 export * from "./compliance/index.js";
 export * from "./messaging/messaging.service.js";
 export * from "./notifications/notifications.service.js";
+export * from "./watch-subscriptions/index.js";
 export * from "./reviews/reviews.service.js";
 export * from "./workspace/workspace.service.js";
 export * from "./admin/admin.service.js";

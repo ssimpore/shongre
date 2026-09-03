@@ -6,6 +6,7 @@ export * from "./markets.contract";
 export * from "./taxonomy.contract";
 export * from "./messaging.contract";
 export * from "./notifications.contract";
+export * from "./watch-subscriptions.contract";
 export * from "./orders.contract";
 export * from "./payments.contract";
 export * from "./promotions.contract";

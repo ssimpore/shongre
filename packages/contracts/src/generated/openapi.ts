@@ -8464,6 +8464,42 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/watch-subscriptions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the caller's watch subscriptions in one market */
+        readonly get: operations["getWatchSubscriptions"];
+        readonly put?: never;
+        /** Create or replace an alert for one target in one market */
+        readonly post: operations["postWatchSubscription"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/watch-subscriptions/{id}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        /** Unsubscribe from one alert */
+        readonly delete: operations["deleteWatchSubscription"];
+        readonly options?: never;
+        readonly head?: never;
+        /** Update alert cadence, channels, or state */
+        readonly patch: operations["patchWatchSubscription"];
+        readonly trace?: never;
+    };
     readonly "/webhooks/compliance/{provider}": {
         readonly parameters: {
             readonly query?: never;
@@ -8949,6 +8985,16 @@ export interface components {
             readonly timezone?: string;
         };
         readonly CreateSolutionInput: components["schemas"]["SolutionWritableFields"] & Record<string, never>;
+        readonly CreateWatchSubscriptionInput: {
+            readonly baselinePrice?: components["schemas"]["WatchMoney"];
+            readonly channels: components["schemas"]["WatchChannels"];
+            readonly frequency: components["schemas"]["WatchFrequency"];
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly searchFilter?: components["schemas"]["WatchSearchFilter"];
+            readonly targetId: string;
+            readonly targetType: components["schemas"]["WatchTargetType"];
+            readonly title: string;
+        };
         readonly CrmAccount: components["schemas"]["CrmAccountInput"] & {
             /** Format: date-time */
             readonly createdAt: string;
@@ -11661,6 +11707,54 @@ export interface components {
             readonly slug?: components["schemas"]["SolutionSlug"];
             readonly sortOrder?: number;
         };
+        readonly UpdateWatchSubscriptionInput: {
+            readonly channels?: components["schemas"]["WatchChannels"];
+            readonly frequency?: components["schemas"]["WatchFrequency"];
+            /** @enum {string} */
+            readonly status?: "active" | "paused";
+        };
+        readonly WatchChannels: {
+            readonly email: boolean;
+            readonly inApp: boolean;
+            readonly push: boolean;
+        };
+        /** @enum {string} */
+        readonly WatchFrequency: "immediate" | "daily" | "weekly";
+        readonly WatchMoney: {
+            readonly amountMinor: number;
+            readonly currency: string;
+        };
+        readonly WatchSearchFilter: {
+            readonly categoryId?: string;
+            readonly city?: string;
+            readonly maxPriceMinor?: number;
+            readonly minPriceMinor?: number;
+            readonly query?: string;
+        };
+        readonly WatchSubscription: {
+            readonly baselinePrice?: components["schemas"]["WatchMoney"];
+            readonly channels: components["schemas"]["WatchChannels"];
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly frequency: components["schemas"]["WatchFrequency"];
+            readonly id: string;
+            /** Format: date-time */
+            readonly lastNotifiedAt?: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly searchFilter?: components["schemas"]["WatchSearchFilter"];
+            /** @enum {string} */
+            readonly status: "active" | "paused";
+            readonly targetId: string;
+            readonly targetType: components["schemas"]["WatchTargetType"];
+            readonly title: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly WatchSubscriptionList: {
+            readonly items: readonly components["schemas"]["WatchSubscription"][];
+        };
+        /** @enum {string} */
+        readonly WatchTargetType: "listing_price" | "seller" | "saved_search";
     };
     responses: {
         /** @description Malformed request. */
@@ -29119,6 +29213,148 @@ export interface operations {
             readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getWatchSubscriptions: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Market-scoped subscriptions owned by the caller. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["WatchSubscriptionList"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postWatchSubscription: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["CreateWatchSubscriptionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description The active subscription. */
+            readonly 201: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["WatchSubscription"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly deleteWatchSubscription: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The alert was removed. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly patchWatchSubscription: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: components["parameters"]["IdPath"];
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["UpdateWatchSubscriptionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description The updated subscription. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["WatchSubscription"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];

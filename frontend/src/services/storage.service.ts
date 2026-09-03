@@ -53,7 +53,8 @@ const KEYS = {
   FOLLOWED_SELLERS: "shongre_followed_sellers_v1",
   BLOCKED_USERS: "shongre_blocked_users_v1",
   USER_REPORTS: "shongre_user_reports_v1",
-  SAVED_SEARCHES: "shongre_saved_searches_v1",
+  SAVED_SEARCHES_LEGACY: "shongre_saved_searches_v1",
+  SAVED_SEARCHES: "shongre_saved_searches_v2",
   RECENT_SEARCHES: "shongre_recent_searches_v1",
   RECENT_SEARCH_ITEMS: "shongre_recent_search_items_v1",
   RECENTLY_VIEWED: "shongre_recently_viewed_v1",
@@ -528,30 +529,97 @@ class StorageService {
   }
 
   // Saved Searches
-  getSavedSearches(): SavedSearch[] {
-    return this.get<SavedSearch[]>(KEYS.SAVED_SEARCHES, INITIAL_SAVED_SEARCHES);
+  private savedSearchPartition(userId: string, marketCode: string): string {
+    return `${userId}::${marketCode.toUpperCase()}`;
   }
 
-  saveSearch(search: SavedSearch): void {
-    const list = this.getSavedSearches();
+  private getSavedSearchPartitions(): Record<string, SavedSearch[]> {
+    const current = this.get<Record<string, SavedSearch[]> | null>(
+      KEYS.SAVED_SEARCHES,
+      null,
+    );
+    if (current) return current;
+
+    const legacy = this.get<SavedSearch[] | null>(
+      KEYS.SAVED_SEARCHES_LEGACY,
+      null,
+    );
+    if (Array.isArray(legacy)) {
+      const ownerId = this.getCurrentUser()?.id || GUEST_USER_KEY;
+      const migrated = legacy.reduce<Record<string, SavedSearch[]>>(
+        (partitions, search) => {
+          const marketCode = (
+            search.filters?.marketCode || DEFAULT_MARKET_CODE
+          ).toUpperCase();
+          const partition = this.savedSearchPartition(ownerId, marketCode);
+          partitions[partition] = [...(partitions[partition] ?? []), search];
+          return partitions;
+        },
+        {},
+      );
+
+      // v1 was one device-wide list. Claim it once for the account that owns
+      // the active session, then remove it so another account cannot inherit it.
+      this.set(KEYS.SAVED_SEARCHES, migrated);
+      this.remove(KEYS.SAVED_SEARCHES_LEGACY);
+      return migrated;
+    }
+
+    return {
+      [this.savedSearchPartition("user_thomas", "FR")]: INITIAL_SAVED_SEARCHES,
+    };
+  }
+
+  getSavedSearches(
+    userId: string = this.getCurrentUser()?.id || GUEST_USER_KEY,
+    marketCode: string = DEFAULT_MARKET_CODE,
+  ): SavedSearch[] {
+    return (
+      this.getSavedSearchPartitions()[
+        this.savedSearchPartition(userId, marketCode)
+      ] ?? []
+    );
+  }
+
+  saveSearch(
+    search: SavedSearch,
+    userId: string = this.getCurrentUser()?.id || GUEST_USER_KEY,
+    marketCode: string = search.filters.marketCode || DEFAULT_MARKET_CODE,
+  ): void {
+    const partitions = this.getSavedSearchPartitions();
+    const key = this.savedSearchPartition(userId, marketCode);
+    const list = partitions[key] ?? [];
     list.unshift(search);
-    this.set(KEYS.SAVED_SEARCHES, list);
+    this.set(KEYS.SAVED_SEARCHES, { ...partitions, [key]: list });
   }
 
-  deleteSavedSearch(id: string): void {
-    const list = this.getSavedSearches().filter((s) => s.id !== id);
-    this.set(KEYS.SAVED_SEARCHES, list);
+  deleteSavedSearch(
+    id: string,
+    userId: string = this.getCurrentUser()?.id || GUEST_USER_KEY,
+    marketCode: string = DEFAULT_MARKET_CODE,
+  ): void {
+    const partitions = this.getSavedSearchPartitions();
+    const key = this.savedSearchPartition(userId, marketCode);
+    const list = (partitions[key] ?? []).filter((search) => search.id !== id);
+    this.set(KEYS.SAVED_SEARCHES, { ...partitions, [key]: list });
   }
 
-  removeSavedSearch(id: string): void {
-    this.deleteSavedSearch(id);
+  removeSavedSearch(id: string, userId?: string, marketCode?: string): void {
+    this.deleteSavedSearch(id, userId, marketCode);
   }
 
-  setSavedSearchNotifications(id: string, enabled: boolean): SavedSearch[] {
-    const next = this.getSavedSearches().map((search) =>
+  setSavedSearchNotifications(
+    id: string,
+    enabled: boolean,
+    userId: string = this.getCurrentUser()?.id || GUEST_USER_KEY,
+    marketCode: string = DEFAULT_MARKET_CODE,
+  ): SavedSearch[] {
+    const partitions = this.getSavedSearchPartitions();
+    const key = this.savedSearchPartition(userId, marketCode);
+    const next = (partitions[key] ?? []).map((search) =>
       search.id === id ? { ...search, hasNotifications: enabled } : search,
     );
-    this.set(KEYS.SAVED_SEARCHES, next);
+    this.set(KEYS.SAVED_SEARCHES, { ...partitions, [key]: next });
     return next;
   }
 

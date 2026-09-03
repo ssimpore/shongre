@@ -7,6 +7,7 @@ export * from "./demo-markets.service";
 export * from "./demo-taxonomy.service";
 export * from "./demo-messaging.service";
 export * from "./demo-notifications.service";
+export * from "./demo-watch-subscriptions.service";
 export * from "./demo-orders.service";
 export * from "./demo-payments.service";
 export * from "./demo-promotions.service";

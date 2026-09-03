@@ -223,6 +223,7 @@ export const routes = {
     listings: () => "/compte/annonces",
     favorites: () => "/compte/favoris",
     savedSearches: () => "/compte/recherches",
+    watchSubscriptions: () => "/compte/alertes",
     messages: (conversationId?: string) =>
       withQuery("/compte/messages", { convId: conversationId }),
     notifications: () => "/compte/notifications",

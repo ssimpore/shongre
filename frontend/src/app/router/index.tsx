@@ -179,6 +179,11 @@ const SavedSearchesPage = lazy(() =>
     default: m.SavedSearchesPage,
   })),
 );
+const WatchSubscriptionsPage = lazy(() =>
+  import("../../features/watch-subscriptions/WatchSubscriptionsPage").then(
+    (m) => ({ default: m.WatchSubscriptionsPage }),
+  ),
+);
 const NotificationsPage = lazy(() =>
   import("../../features/notifications/NotificationsPage").then((m) => ({
     default: m.NotificationsPage,
@@ -1148,6 +1153,14 @@ export const APP_ROUTES: RouteObject[] = [
             element: (
               <RequireRoutePolicy policyId="accountSavedSearches">
                 {withSuspense(SavedSearchesPage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "alertes",
+            element: (
+              <RequireRoutePolicy policyId="accountWatchSubscriptions">
+                {withSuspense(WatchSubscriptionsPage)}
               </RequireRoutePolicy>
             ),
           },

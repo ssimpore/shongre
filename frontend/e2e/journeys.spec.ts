@@ -37,12 +37,13 @@ test.describe("public browsing", () => {
 
     const card = page
       .locator("div.w-listing-card")
-      .filter({ has: page.locator('[aria-label$="photos"]') })
       .getByRole("article")
       .first();
     await expect(card).toBeVisible();
+    await expect(
+      card.locator('[data-listing-card-media="true"]'),
+    ).toBeVisible();
     await expect(card.locator('[aria-label^="Note "]')).toBeVisible();
-    await expect(card.locator('[aria-label$="photos"]')).toHaveCount(1);
 
     const titleLink = card.getByRole("link").filter({ hasText: /.+/ }).last();
     await titleLink.focus();
@@ -458,6 +459,77 @@ test.describe("admin console", () => {
     await node.focus();
     await node.press("Enter");
     await expect(node).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+test.describe("watch subscriptions", () => {
+  test("saves a search as a market-scoped alert", async ({ page }) => {
+    await usePersona(page, "individual_buyer");
+    await page.addInitScript(() => {
+      const marker = "shongre_e2e_watch_storage_cleared";
+      if (window.sessionStorage.getItem(marker)) return;
+      window.localStorage.removeItem("shongre_saved_searches_v2");
+      for (const key of Object.keys(window.localStorage)) {
+        if (key.startsWith("shongre_watch_subscriptions_v1:")) {
+          window.localStorage.removeItem(key);
+        }
+      }
+      window.sessionStorage.setItem(marker, "true");
+    });
+    await page.goto("/recherche?query=velo");
+    await waitForStableLayout(page);
+
+    await page
+      .getByRole("button", { name: "Sauvegarder cette recherche" })
+      .click();
+    await expect(
+      page.getByText("Recherche enregistrée avec alertes activées."),
+    ).toBeVisible();
+
+    await page.goto("/compte/alertes");
+    const alert = page.locator("article").filter({
+      has: page.getByRole("heading", {
+        name: "Recherche « velo »",
+        level: 2,
+      }),
+    });
+    await expect(alert).toBeVisible();
+    await expect(alert.getByText("Recherche sauvegardée")).toBeVisible();
+  });
+
+  test("creates a price alert from a listing and manages its cadence", async ({
+    page,
+  }) => {
+    await usePersona(page, "individual_buyer");
+    await page.addInitScript(() => {
+      for (const key of Object.keys(window.localStorage)) {
+        if (key.startsWith("shongre_watch_subscriptions_v1:")) {
+          window.localStorage.removeItem(key);
+        }
+      }
+    });
+    await page.goto(`/annonce/${DEMO_LISTING_ID}`);
+    await waitForStableLayout(page);
+
+    const priceAlert = page.getByRole("button", {
+      name: "Alerte baisse de prix",
+    });
+    await expect(priceAlert).toBeVisible();
+    await priceAlert.click();
+    await expect(page.getByText("Alerte activée.")).toBeVisible();
+
+    await page.goto("/compte/alertes");
+    await expect(
+      page.getByRole("heading", { name: "Mes alertes suivies" }),
+    ).toBeVisible();
+    const card = page.locator("article", { hasText: /.+/ }).first();
+    await expect(card).toBeVisible();
+    const cadence = card.getByLabel("Fréquence de l’alerte");
+    await cadence.selectOption("weekly");
+    await expect(cadence).toHaveValue("weekly");
+    await expect(
+      page.getByText("Préférences d’alerte mises à jour."),
+    ).toBeVisible();
   });
 });
 

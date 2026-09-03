@@ -21,6 +21,7 @@ import {
   verificationService,
   messagingService,
   notificationsService,
+  watchSubscriptionsService,
   reviewsService,
   workspaceService,
   adminService,
@@ -3713,6 +3714,56 @@ export class ApiV1Router {
         await notificationsService.unregisterDevice(
           principal.userId,
           body?.token,
+        );
+        return { success: true };
+      },
+    );
+
+    // --------------------------------------------------------------------------
+    // WATCH SUBSCRIPTION ROUTES
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/watch-subscriptions",
+      permission("saved_search.manage.own"),
+      async ({ principal, marketCode }) =>
+        watchSubscriptionsService.list(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/watch-subscriptions",
+      permission("saved_search.manage.own"),
+      async ({ principal, marketCode, body }) =>
+        watchSubscriptionsService.createOrReplace(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+          body,
+        ),
+    );
+    this.addRoute(
+      "PATCH",
+      "/watch-subscriptions/:id",
+      permission("saved_search.manage.own"),
+      async ({ principal, marketCode, params, body }) =>
+        watchSubscriptionsService.update(
+          params.id,
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+          body,
+        ),
+    );
+    this.addRoute(
+      "DELETE",
+      "/watch-subscriptions/:id",
+      permission("saved_search.manage.own"),
+      async ({ principal, marketCode, params }) => {
+        await watchSubscriptionsService.remove(
+          params.id,
+          principal.userId,
+          requireApiRequestMarket(marketCode),
         );
         return { success: true };
       },

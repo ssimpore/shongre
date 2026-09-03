@@ -92,6 +92,25 @@ describe("notification delivery outbox", () => {
     await expect(worker.run()).resolves.toMatchObject({ claimed: 0 });
   });
 
+  it("does not count an external-only alert as an unread in-app item", async () => {
+    const repository = new DemoNotificationRepository([]);
+    const service = new NotificationsService(repository);
+    const saved = await service.dispatchNotification(
+      "user_camille",
+      "listing_price_drop",
+      "Baisse de prix",
+      "Le prix a baissé.",
+      "/annonce/listing-1",
+      "listings",
+      "FR",
+      ["email"],
+      "00000000-0000-4000-8000-000000000001",
+    );
+
+    expect(saved.inAppVisible).toBe(false);
+    await expect(repository.getUnreadCount("user_camille")).resolves.toBe(0);
+  });
+
   it("dead-letters permanent provider failures without retrying them", async () => {
     const repository = new DemoNotificationRepository([]);
     const service = new NotificationsService(repository);

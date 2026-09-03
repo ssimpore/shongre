@@ -92,6 +92,58 @@ const demoListings: ListingCardView[] = [
     isFeatured: false,
   },
   {
+    id: "auto_fr_1",
+    title: "Peugeot 3008 Hybrid 136 Allure",
+    price: { amountMinor: 3290000, currency: "EUR" },
+    imageUrl:
+      "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=900&q=80",
+    city: "Nantes",
+    marketCode: "FR",
+    conditionLabel: "Occasion",
+    characteristics: ["Auto", "Hybride", "32 000 km"],
+    publishedAt: "2026-08-28T09:00:00.000Z",
+    isUrgent: false,
+    isFeatured: true,
+  },
+  {
+    id: "immo_fr_1",
+    title: "Appartement lumineux 3 pièces avec balcon",
+    price: { amountMinor: 38900000, currency: "EUR" },
+    imageUrl:
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80",
+    city: "Lyon",
+    marketCode: "FR",
+    conditionLabel: "Immobilier",
+    characteristics: ["Immo", "68 m²", "3 pièces"],
+    publishedAt: "2026-08-27T11:00:00.000Z",
+    isUrgent: false,
+    isFeatured: false,
+  },
+  {
+    id: "emploi_fr_1",
+    title: "Développeur React Native — CDI",
+    price: { amountMinor: 4800000, currency: "EUR" },
+    city: "Paris",
+    marketCode: "FR",
+    conditionLabel: "Emploi",
+    characteristics: ["Emploi", "CDI", "Télétravail hybride"],
+    publishedAt: "2026-08-26T07:30:00.000Z",
+    isUrgent: true,
+    isFeatured: false,
+  },
+  {
+    id: "education_fr_1",
+    title: "Formation UX design certifiante",
+    price: { amountMinor: 149000, currency: "EUR" },
+    city: "À distance",
+    marketCode: "FR",
+    conditionLabel: "Formation",
+    characteristics: ["Education", "Certification", "À distance"],
+    publishedAt: "2026-08-25T13:00:00.000Z",
+    isUrgent: false,
+    isFeatured: false,
+  },
+  {
     id: "list_be_1",
     title: "Vélo urbain léger avec garde-boue",
     price: { amountMinor: 78000, currency: "EUR" },
@@ -117,14 +169,42 @@ const demoListings: ListingCardView[] = [
   },
 ];
 
+export type MobileSearchScope =
+  "marketplace" | "auto" | "immo" | "emploi" | "education";
+
+const matchesScope = (
+  item: ListingCardView,
+  scope: MobileSearchScope,
+): boolean => {
+  if (scope === "marketplace") return true;
+  const aliases: Record<Exclude<MobileSearchScope, "marketplace">, string[]> = {
+    auto: ["auto", "voiture", "moto"],
+    immo: ["immo", "immobilier", "appartement", "maison"],
+    emploi: ["emploi", "cdi", "cdd", "mission"],
+    education: ["education", "formation", "cours"],
+  };
+  const haystack = [item.title, item.conditionLabel, ...item.characteristics]
+    .join(" ")
+    .toLocaleLowerCase();
+  return aliases[scope].some((term) => haystack.includes(term));
+};
+
 export interface ListingsService {
-  list(marketCode: string, query?: string): Promise<ListingCardView[]>;
+  list(
+    marketCode: string,
+    query?: string,
+    scope?: MobileSearchScope,
+  ): Promise<ListingCardView[]>;
   get(id: string, marketCode: string): Promise<ListingCardView | null>;
   publish(input: PublicationInput): Promise<ListingCardView>;
 }
 
 export class DemoListingsService implements ListingsService {
-  async list(marketCode: string, query = ""): Promise<ListingCardView[]> {
+  async list(
+    marketCode: string,
+    query = "",
+    scope: MobileSearchScope = "marketplace",
+  ): Promise<ListingCardView[]> {
     const market = getCountryConfig(marketCode);
     if (!market?.marketplace.enabled)
       throw new Error("Ce marché Shongre n’est pas encore accessible.");
@@ -132,6 +212,7 @@ export class DemoListingsService implements ListingsService {
     return demoListings.filter(
       (item) =>
         item.marketCode === market.code &&
+        matchesScope(item, scope) &&
         (!normalized ||
           item.title
             .toLocaleLowerCase(market.defaultLocale)
@@ -169,7 +250,11 @@ export class DemoListingsService implements ListingsService {
 }
 
 export class HttpListingsService implements ListingsService {
-  async list(marketCode: string, query = ""): Promise<ListingCardView[]> {
+  async list(
+    marketCode: string,
+    query = "",
+    scope: MobileSearchScope = "marketplace",
+  ): Promise<ListingCardView[]> {
     const response = query
       ? await apiRequest<{ items: BackendListing[] }>(
           "/listings/search",
@@ -185,7 +270,9 @@ export class HttpListingsService implements ListingsService {
           marketCode,
         );
     const items = "items" in response ? response.items : response.listings;
-    return items.map(mapBackendListing);
+    return items
+      .map(mapBackendListing)
+      .filter((item) => matchesScope(item, scope));
   }
 
   async get(id: string, marketCode: string): Promise<ListingCardView | null> {

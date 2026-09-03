@@ -10,6 +10,7 @@ import type {
 } from "@shongre/contracts/real-estate";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
+import { routes } from "../../configuration/routes";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -559,27 +560,66 @@ export const ImmoSearchPage: React.FC = () => {
     }
   };
 
-  const saveAlert = () => {
+  const saveAlert = async () => {
     if (!catalog) {
-      toast.error("La configuration Immo est encore en cours de chargement.");
+      toast.error(t("watch.immo.catalogLoading"));
       return;
     }
-    storageService.saveSearch({
-      id: `immo-${Date.now()}`,
-      title: `${query.transactionTypes?.[0] === "sale" ? "Achat" : "Location"} · ${query.city || "Lyon et alentours"}`,
-      filters: {
-        query: query.query,
-        city: query.city,
-        categorySlug: catalog.activation.categoryIds[0],
-        marketCode: activeMarket.code,
-      },
-      createdAt: new Date().toISOString(),
-      hasNotifications: true,
-      matchCount: total,
+    if (!currentUser) {
+      navigate(routes.auth.login(routes.immo.search()));
+      return;
+    }
+    const id = `immo-${Date.now()}`;
+    const title = t("watch.immo.title", {
+      transaction:
+        query.transactionTypes?.[0] === "sale"
+          ? t("watch.immo.sale")
+          : t("watch.immo.rental"),
+      location: query.city || t("watch.immo.defaultLocation"),
     });
-    toast.success(
-      "Alerte Immo créée. Vous pouvez la gérer depuis votre compte.",
-    );
+    try {
+      await services.watchSubscriptions.createOrReplace(currentUser.id, {
+        marketCode: activeMarket.code,
+        targetType: "saved_search",
+        targetId: id,
+        title,
+        frequency: "daily",
+        channels: { inApp: true, email: true, push: false },
+        searchFilter: {
+          categoryId: catalog.activation.categoryIds[0],
+          ...(query.query ? { query: query.query } : {}),
+          ...(query.city ? { city: query.city } : {}),
+          ...(query.minPriceMinor !== undefined
+            ? { minPriceMinor: query.minPriceMinor }
+            : {}),
+          ...(query.maxPriceMinor !== undefined
+            ? { maxPriceMinor: query.maxPriceMinor }
+            : {}),
+        },
+      });
+      storageService.saveSearch(
+        {
+          id,
+          title,
+          filters: {
+            query: query.query,
+            city: query.city,
+            categorySlug: catalog.activation.categoryIds[0],
+            marketCode: activeMarket.code,
+          },
+          createdAt: new Date().toISOString(),
+          hasNotifications: true,
+          matchCount: total,
+        },
+        currentUser.id,
+        activeMarket.code,
+      );
+      toast.success(t("watch.immo.success"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : t("watch.immo.error"),
+      );
+    }
   };
 
   return (

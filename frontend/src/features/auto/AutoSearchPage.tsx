@@ -39,6 +39,8 @@ import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import { formatAutoMoney, fuelLabels } from "./auto-format";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 
 const split = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
@@ -414,6 +416,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
 };
 
 export const AutoSearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -576,35 +579,68 @@ export const AutoSearchPage: React.FC = () => {
       active ? "Véhicule ajouté aux favoris." : "Véhicule retiré des favoris.",
     );
   };
-  const saveAlert = () => {
+  const saveAlert = async () => {
     if (!currentUser) {
-      toast.info("Connectez-vous pour enregistrer cette alerte Auto.");
+      toast.info(t("watch.auto.loginRequired"));
       return;
     }
-    storageService.saveSearch({
-      id: `auto-search-${Date.now()}`,
-      title: query.query
-        ? `Auto · ${query.query}`
-        : `Auto · ${params.get("make") || "Tous les véhicules"}`,
-      filters: {
-        query: query.query,
-        categorySlug: "auto",
-        city: query.city,
-        radiusKm: query.radiusKm,
-        minPrice: query.minPriceMinor
-          ? Math.round(query.minPriceMinor / 100)
-          : undefined,
-        maxPrice: query.maxPriceMinor
-          ? Math.round(query.maxPriceMinor / 100)
-          : undefined,
+    const id = `auto-search-${Date.now()}`;
+    const title = query.query
+      ? t("watch.auto.queryTitle", { query: query.query })
+      : t("watch.auto.makeTitle", {
+          make: params.get("make") || t("watch.auto.allVehicles"),
+        });
+    try {
+      await services.watchSubscriptions.createOrReplace(currentUser.id, {
         marketCode: query.marketCode,
-        attributes: Object.fromEntries(params.entries()),
-      },
-      createdAt: new Date().toISOString(),
-      hasNotifications: true,
-      matchCount: total,
-    });
-    toast.success("Alerte Auto enregistrée pour ces critères.");
+        targetType: "saved_search",
+        targetId: id,
+        title,
+        frequency: "immediate",
+        channels: { inApp: true, email: false, push: true },
+        searchFilter: {
+          categoryId: CANONICAL_TAXONOMY_IDS.vehicles,
+          ...(query.query ? { query: query.query } : {}),
+          ...(query.city ? { city: query.city } : {}),
+          ...(query.minPriceMinor !== undefined
+            ? { minPriceMinor: query.minPriceMinor }
+            : {}),
+          ...(query.maxPriceMinor !== undefined
+            ? { maxPriceMinor: query.maxPriceMinor }
+            : {}),
+        },
+      });
+      storageService.saveSearch(
+        {
+          id,
+          title,
+          filters: {
+            query: query.query,
+            categorySlug: "auto",
+            city: query.city,
+            radiusKm: query.radiusKm,
+            minPrice: query.minPriceMinor
+              ? Math.round(query.minPriceMinor / 100)
+              : undefined,
+            maxPrice: query.maxPriceMinor
+              ? Math.round(query.maxPriceMinor / 100)
+              : undefined,
+            marketCode: query.marketCode,
+            attributes: Object.fromEntries(params.entries()),
+          },
+          createdAt: new Date().toISOString(),
+          hasNotifications: true,
+          matchCount: total,
+        },
+        currentUser.id,
+        query.marketCode,
+      );
+      toast.success(t("watch.auto.success"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : t("watch.auto.error"),
+      );
+    }
   };
 
   return (

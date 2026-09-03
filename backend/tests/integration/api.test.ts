@@ -1242,6 +1242,85 @@ describe("API v1 Endpoints Integration", () => {
     ).toBe(true);
   });
 
+  it("keeps watch subscriptions authenticated, market-scoped, and owner-only", async () => {
+    const anonymous = await fetch(`${baseUrl}/api/v1/watch-subscriptions`, {
+      headers: { "X-Shongre-Market": "FR" },
+    });
+    expect(anonymous.status).toBe(401);
+
+    const staff = await fetch(`${baseUrl}/api/v1/watch-subscriptions`, {
+      headers: { ...auth(adminToken), "X-Shongre-Market": "FR" },
+    });
+    expect(staff.status).toBe(403);
+
+    const createdResponse = await fetch(
+      `${baseUrl}/api/v1/watch-subscriptions`,
+      {
+        method: "POST",
+        headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
+        body: JSON.stringify({
+          marketCode: "FR",
+          targetType: "seller",
+          targetId: "user_camille",
+          title: "Camille",
+          frequency: "daily",
+          channels: { inApp: true, email: false, push: true },
+        }),
+      },
+    );
+    expect(createdResponse.status).toBe(201);
+    const created = await createdResponse.json();
+
+    const ownerList = await fetch(`${baseUrl}/api/v1/watch-subscriptions`, {
+      headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
+    });
+    expect(ownerList.status).toBe(200);
+    expect((await ownerList.json()).items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: created.id,
+          marketCode: "FR",
+          targetId: "user_camille",
+        }),
+      ]),
+    );
+
+    const wrongOwner = await fetch(
+      `${baseUrl}/api/v1/watch-subscriptions/${encodeURIComponent(created.id)}`,
+      {
+        method: "DELETE",
+        headers: { ...auth(proToken), "X-Shongre-Market": "FR" },
+      },
+    );
+    expect(wrongOwner.status).toBe(404);
+
+    const mismatchedMarket = await fetch(
+      `${baseUrl}/api/v1/watch-subscriptions`,
+      {
+        method: "POST",
+        headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
+        body: JSON.stringify({
+          marketCode: "BE",
+          targetType: "seller",
+          targetId: "user_camille",
+          title: "Camille",
+          frequency: "daily",
+          channels: { inApp: true, email: false, push: false },
+        }),
+      },
+    );
+    expect(mismatchedMarket.status).toBe(409);
+
+    const removed = await fetch(
+      `${baseUrl}/api/v1/watch-subscriptions/${encodeURIComponent(created.id)}`,
+      {
+        method: "DELETE",
+        headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
+      },
+    );
+    expect(removed.status).toBe(200);
+  });
+
   it("ignores a body-supplied identity and uses the authenticated caller", async () => {
     const res = await fetch(`${baseUrl}/api/v1/orders/direct-purchase`, {
       method: "POST",

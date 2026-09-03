@@ -16,7 +16,7 @@ SHELL := /bin/bash
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
 	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy-dev deploy-staging deploy-prod rollback remote-health \
-	operations-tooling-check performance-smoke storage-restore-test observability-evidence edge-functions-evidence \
+	operations-tooling-check capability-inventory-check capability-inventory-update performance-smoke storage-restore-test observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
@@ -218,11 +218,18 @@ release-manifest-check: ## Test digest, commit, OpenAPI, and migration manifest 
 deployment-config-check: ## Test deploy-file isolation, target binding, and permissions
 	@node scripts/validate-deployment-env.test.mjs
 operations-tooling-check: ## Test release evidence, hosted load, storage restore, and observability tooling
+	@$(MAKE) capability-inventory-check
 	@node scripts/production-readiness.test.mjs
 	@node scripts/load-smoke.test.mjs
 	@node scripts/verify-storage-restore.test.mjs
 	@node scripts/verify-observability.test.mjs
 	@node scripts/check-runtime-hostnames.test.mjs
+
+capability-inventory-check: ## Reject stale generated counts in the capability matrix
+	@node scripts/update-capability-inventory.mjs --check
+
+capability-inventory-update: ## Refresh generated OpenAPI, migration, and test-file counts
+	@node scripts/update-capability-inventory.mjs
 
 ##@ Shared product system
 tokens-build:

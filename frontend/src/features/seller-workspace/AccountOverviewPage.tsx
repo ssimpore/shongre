@@ -128,7 +128,10 @@ export const AccountOverviewPage: React.FC = () => {
       });
 
     try {
-      setSavedSearchCount(storageService.getSavedSearches().length);
+      setSavedSearchCount(
+        storageService.getSavedSearches(currentUser.id, activeMarket.code)
+          .length,
+      );
     } catch {
       setSavedSearchCount(0);
     }
@@ -142,7 +145,7 @@ export const AccountOverviewPage: React.FC = () => {
       .catch(() => {
         setUnreadMsgCount(0);
       });
-  }, [currentUser?.id]);
+  }, [activeMarket.code, currentUser?.id]);
 
   const activeListings = myListings.filter((l) => l.status === "active");
 

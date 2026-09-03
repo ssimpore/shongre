@@ -557,10 +557,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 slug: configuredCategory.slug,
                 labels: configuredCategory.labels,
                 shortLabels: configuredCategory.shortLabels,
-                name: localizedHeaderCategoryLabel(
-                  configuredCategory,
-                  locale,
-                ),
+                name: localizedHeaderCategoryLabel(configuredCategory, locale),
               }
             : branch;
           setBranchesBySlug((current) =>

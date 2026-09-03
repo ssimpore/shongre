@@ -10,9 +10,15 @@ import { formatRelativeDate, plural } from "../../utilities/formatters";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { services } from "../../api/client/service-registry";
+import type { WatchSubscription } from "@shongre/contracts/watch-subscriptions";
+import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
+import { majorToMinorAmount } from "@shongre/shared/money";
 
 export const SavedSearchesPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   usePageMeta({
     title: t("meta.savedSearches.title"),
     description: t("meta.savedSearches.description"),
@@ -22,26 +28,154 @@ export const SavedSearchesPage: React.FC = () => {
 
   const navigate = useNavigate();
   const toast = useToast();
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
   // Browser persistence is restored after mount so SSR and hydration agree.
   const [searches, setSearches] = useState<SavedSearch[]>([]);
+  const [watches, setWatches] = useState<WatchSubscription[]>([]);
 
   useEffect(() => {
-    setSearches(storageService.getSavedSearches());
-  }, []);
+    if (!currentUser) {
+      setSearches([]);
+      setWatches([]);
+      return;
+    }
+    let active = true;
+    const saved = storageService.getSavedSearches(
+      currentUser.id,
+      activeMarket.code,
+    );
+    setSearches(saved);
+    void services.watchSubscriptions
+      .list(currentUser.id, activeMarket.code)
+      .then((alerts) => {
+        if (!active) return;
+        const activeTargetIds = new Set(
+          alerts
+            .filter((alert) => alert.targetType === "saved_search")
+            .map((alert) => alert.targetId),
+        );
+        setWatches(alerts);
+        setSearches(
+          saved.map((search) => ({
+            ...search,
+            hasNotifications: activeTargetIds.has(search.id),
+          })),
+        );
+      })
+      .catch(() => {
+        if (active) setWatches([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, currentUser]);
 
-  const handleDelete = (id: string) => {
-    storageService.removeSavedSearch(id);
-    setSearches(storageService.getSavedSearches());
-    toast.info("Recherche sauvegardée supprimée.");
+  const handleAlertAction = async (search: SavedSearch) => {
+    if (!currentUser) return;
+    const existing = watches.find(
+      (watch) =>
+        watch.targetType === "saved_search" && watch.targetId === search.id,
+    );
+    if (existing) {
+      navigate(routes.workspace.watchSubscriptions());
+      return;
+    }
+    const categoryId = TaxonomyMigration.resolveCanonicalNode(
+      search.filters.subCategorySlug || search.filters.categorySlug,
+    )?.id;
+    if (
+      !search.filters.query &&
+      !categoryId &&
+      !search.filters.city &&
+      search.filters.minPrice === undefined &&
+      search.filters.maxPrice === undefined
+    ) {
+      toast.info(t("watch.save.criteriaRequired"));
+      return;
+    }
+    try {
+      const created = await services.watchSubscriptions.createOrReplace(
+        currentUser.id,
+        {
+          marketCode: activeMarket.code,
+          targetType: "saved_search",
+          targetId: search.id,
+          title: search.title,
+          frequency: "daily",
+          channels: { inApp: true, email: false, push: true },
+          searchFilter: {
+            ...(search.filters.query ? { query: search.filters.query } : {}),
+            ...(categoryId ? { categoryId } : {}),
+            ...(search.filters.city ? { city: search.filters.city } : {}),
+            ...(search.filters.minPrice !== undefined
+              ? {
+                  minPriceMinor: majorToMinorAmount(
+                    search.filters.minPrice,
+                    activeMarket.currency,
+                  ),
+                }
+              : {}),
+            ...(search.filters.maxPrice !== undefined
+              ? {
+                  maxPriceMinor: majorToMinorAmount(
+                    search.filters.maxPrice,
+                    activeMarket.currency,
+                  ),
+                }
+              : {}),
+          },
+        },
+      );
+      setWatches((current) => [created, ...current]);
+      storageService.setSavedSearchNotifications(
+        search.id,
+        true,
+        currentUser.id,
+        activeMarket.code,
+      );
+      setSearches((current) =>
+        current.map((item) =>
+          item.id === search.id ? { ...item, hasNotifications: true } : item,
+        ),
+      );
+      toast.success(t("watch.save.success"), t("watch.save.title"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error ? reason.message : t("watch.save.error"),
+      );
+    }
   };
 
-  const handleToggleNotif = (id: string) => {
-    const current = searches.find((search) => search.id === id);
-    if (!current) return;
-    setSearches(
-      storageService.setSavedSearchNotifications(id, !current.hasNotifications),
-    );
-    toast.success("Préférences d'alerte mises à jour.");
+  const handleDelete = async (id: string) => {
+    if (!currentUser) return;
+    try {
+      const alerts = await services.watchSubscriptions.list(
+        currentUser.id,
+        activeMarket.code,
+      );
+      const matchingAlert = alerts.find(
+        (item) => item.targetType === "saved_search" && item.targetId === id,
+      );
+      if (matchingAlert) {
+        await services.watchSubscriptions.remove(
+          currentUser.id,
+          activeMarket.code,
+          matchingAlert.id,
+        );
+      }
+      storageService.removeSavedSearch(id, currentUser.id, activeMarket.code);
+      setSearches(
+        storageService.getSavedSearches(currentUser.id, activeMarket.code),
+      );
+      toast.info(t("watch.savedSearch.removed"));
+    } catch (reason) {
+      toast.error(
+        reason instanceof Error
+          ? reason.message
+          : t("watch.savedSearch.removeError"),
+      );
+    }
   };
 
   return (
@@ -73,7 +207,11 @@ export const SavedSearchesPage: React.FC = () => {
                     {search.title}
                   </h2>
                   <div className="text-xs text-stone-500 flex items-center gap-2 mt-0.5">
-                    <span>Créée {formatRelativeDate(search.createdAt)}</span>
+                    <span>
+                      {t("watch.savedSearch.created", {
+                        date: formatRelativeDate(search.createdAt, locale),
+                      })}
+                    </span>
                     {search.matchCount !== undefined && (
                       <span>
                         •{" "}
@@ -91,7 +229,7 @@ export const SavedSearchesPage: React.FC = () => {
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
                 <button
                   type="button"
-                  onClick={() => handleToggleNotif(search.id)}
+                  onClick={() => void handleAlertAction(search)}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                     search.hasNotifications
                       ? "bg-success-surface text-success border-success-border"
@@ -101,8 +239,8 @@ export const SavedSearchesPage: React.FC = () => {
                   <Bell className="w-icon-sm h-icon-sm" />
                   <span>
                     {search.hasNotifications
-                      ? "Alertes activées"
-                      : "Alertes muettes"}
+                      ? t("watch.savedSearch.manage")
+                      : t("watch.savedSearch.activate")}
                   </span>
                 </button>
 
@@ -138,7 +276,7 @@ export const SavedSearchesPage: React.FC = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => handleDelete(search.id)}
+                  onClick={() => void handleDelete(search.id)}
                   aria-label={`Supprimer la recherche « ${search.title} »`}
                   className="text-stone-500 hover:text-danger"
                 >

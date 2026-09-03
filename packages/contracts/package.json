@@ -35,6 +35,7 @@
     "./product-access": "./src/schemas/product-access.ts",
     "./digital-products": "./src/schemas/digital-products.ts",
     "./solutions": "./src/schemas/solutions.ts",
+    "./watch-subscriptions": "./src/schemas/watch-subscriptions.ts",
     "./applications": "./src/shongre-applications.ts",
     "./provider-connections": "./src/schemas/provider-connections.ts",
     "./provider-gateways": "./src/provider-gateways.ts",

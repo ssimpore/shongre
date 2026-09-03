@@ -38,6 +38,23 @@ export default function AccountScreen() {
             </Text>
           </View>
           <Button
+            label="Mes favoris"
+            onPress={() => router.push("/account/favorites" as never)}
+            variant="secondary"
+          />
+          <Button
+            label="Mes alertes"
+            onPress={() => router.push("/account/alerts" as never)}
+            variant="secondary"
+          />
+          <Button
+            label="Préférences de notification"
+            onPress={() =>
+              router.push("/account/notification-preferences" as never)
+            }
+            variant="secondary"
+          />
+          <Button
             label="Abonnement et facturation"
             onPress={() => router.push("/account/billing" as never)}
             variant="secondary"

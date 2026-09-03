@@ -80,10 +80,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
             aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-success-surface text-success">
-              <ShieldCheck
-                className="h-icon-lg w-icon-lg"
-                aria-hidden="true"
-              />
+              <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1 truncate">
               {t("home.homePage.trustSummary")}

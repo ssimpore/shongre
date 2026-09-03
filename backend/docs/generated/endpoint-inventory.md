@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **492**
-- Specification SHA-256: `816c337e45ab94f9`
+- Operations: **496**
+- Specification SHA-256: `40738b5598b07862`
 
 ## account
 
@@ -768,6 +768,15 @@
 | `POST` | `/verification/business-registration` | `postVerificationBusinessRegistration` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/verification/siret-lookup/{siret}` | `getVerificationSiretLookupBySiret` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/verification/status/{userId}` | `getVerificationStatusByUserId` | `permission` | `marketplace.customer.access` | `200` |
+
+## watch-subscriptions
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `DELETE` | `/watch-subscriptions/{id}` | `deleteWatchSubscription` | `permission` | `saved_search.manage.own` | `200` |
+| `PATCH` | `/watch-subscriptions/{id}` | `patchWatchSubscription` | `permission` | `saved_search.manage.own` | `200` |
+| `GET` | `/watch-subscriptions` | `getWatchSubscriptions` | `permission` | `saved_search.manage.own` | `200` |
+| `POST` | `/watch-subscriptions` | `postWatchSubscription` | `permission` | `saved_search.manage.own` | `201` |
 
 ## webhooks
 

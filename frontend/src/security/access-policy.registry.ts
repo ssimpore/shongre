@@ -78,6 +78,10 @@ export const ROUTE_POLICIES = {
     "/compte/recherches",
     "saved_search.manage.own",
   ),
+  accountWatchSubscriptions: customer(
+    "/compte/alertes",
+    "saved_search.manage.own",
+  ),
   accountMessages: customer("/compte/messages", "message.read.own"),
   accountNotifications: customer("/compte/notifications"),
   accountNotificationPreferences: customer("/compte/notifications/preferences"),

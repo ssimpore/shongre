@@ -27,7 +27,7 @@ export class HttpModerationService implements ModerationServiceContract {
     reason: string,
   ): Promise<ModerationAppeal> {
     return httpClient.post<ModerationAppeal>(
-      `/moderation/cases/${caseId}/appeals`,
+      `/moderation/cases/${encodeURIComponent(caseId)}/appeals`,
       { reason },
     );
   }
@@ -56,7 +56,7 @@ export class HttpModerationService implements ModerationServiceContract {
     reason: string,
   ): Promise<ModerationAppeal> {
     return httpClient.post<ModerationAppeal>(
-      `/admin/moderation/appeals/${appealId}/decision`,
+      `/admin/moderation/appeals/${encodeURIComponent(appealId)}/decision`,
       { decision, reason },
     );
   }

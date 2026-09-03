@@ -135,7 +135,7 @@ export class HttpMessagingService implements MessagingServiceContract {
 
   async getConversationById(id: string): Promise<Conversation | null> {
     const conversation = await httpClient.get<BackendConversation>(
-      `/messaging/conversations/${id}`,
+      `/messaging/conversations/${encodeURIComponent(id)}`,
     );
     const messages = await this.getMessages(id);
     return { ...mapConversation(conversation), messages };
@@ -146,7 +146,7 @@ export class HttpMessagingService implements MessagingServiceContract {
     cursor?: string,
   ): Promise<Message[]> {
     const page = await httpClient.get<BackendMessagePage>(
-      `/messaging/conversations/${conversationId}/messages`,
+      `/messaging/conversations/${encodeURIComponent(conversationId)}/messages`,
       { params: { cursor, limit: 50 } },
     );
     return page.items.map(mapMessage);
@@ -156,7 +156,7 @@ export class HttpMessagingService implements MessagingServiceContract {
     input: MessageComposerOptionsInput,
   ): Promise<MessageComposerOptions> {
     return httpClient.get<MessageComposerOptions>(
-      `/messaging/conversations/${input.conversationId}/composer-options`,
+      `/messaging/conversations/${encodeURIComponent(input.conversationId)}/composer-options`,
       {
         params: {
           userId: input.userId,
@@ -182,7 +182,7 @@ export class HttpMessagingService implements MessagingServiceContract {
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
     const message = await httpClient.post<BackendMessage>(
-      `/messaging/conversations/${input.conversationId}/messages`,
+      `/messaging/conversations/${encodeURIComponent(input.conversationId)}/messages`,
       {
         text: input.text,
         attachments: input.attachments,
@@ -220,7 +220,7 @@ export class HttpMessagingService implements MessagingServiceContract {
 
   async withdrawOffer(offerId: string, _userId: string): Promise<Message> {
     const message = await httpClient.post<BackendMessage>(
-      `/messaging/offers/${offerId}/withdraw`,
+      `/messaging/offers/${encodeURIComponent(offerId)}/withdraw`,
       {},
     );
     return mapMessage(message);

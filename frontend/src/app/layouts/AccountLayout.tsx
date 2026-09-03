@@ -38,6 +38,7 @@ import { Avatar, Badge, Container } from "../../design-system";
 import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
+import { useMarketLocation } from "../providers/MarketLocationProvider";
 
 function VerifiedAccountIcon({ label }: { label: string }): React.ReactElement {
   return (
@@ -58,6 +59,7 @@ export const AccountLayout: React.FC = () => {
   const { currentUser, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
   const { canAccessRoute } = useAuthorization();
+  const { activeMarket } = useMarketLocation();
   const navigate = useNavigate();
   const location = useLocation();
   const isMessagingRoute = location.pathname.startsWith("/compte/messages");
@@ -75,7 +77,7 @@ export const AccountLayout: React.FC = () => {
   const unreadMsgCount = storageService.getUnreadMessageCount(currentUser?.id);
   const favCount = currentUser ? storageService.getFavorites().length : 0;
   const savedSearchCount = currentUser
-    ? storageService.getSavedSearches().length
+    ? storageService.getSavedSearches(currentUser.id, activeMarket.code).length
     : 0;
   const myListingsCount = currentUser
     ? storageService.getListings().filter((l) => l.sellerId === currentUser.id)
@@ -122,6 +124,12 @@ export const AccountLayout: React.FC = () => {
       icon: <Search className="w-icon-md h-icon-md" />,
       count: savedSearchCount,
       visible: canAccessRoute("accountSavedSearches"),
+    },
+    {
+      to: routes.workspace.watchSubscriptions(),
+      label: t("watch.nav"),
+      icon: <Bell className="w-icon-md h-icon-md" />,
+      visible: canAccessRoute("accountWatchSubscriptions"),
     },
     {
       to: "/compte/messages",
@@ -198,6 +206,24 @@ export const AccountLayout: React.FC = () => {
       visible: canAccessRoute("accountProfile"),
     },
   ].filter((item) => item.visible);
+
+  const secondaryAccountPaths = new Set([
+    "/compte/securite-compte",
+    "/compte/support",
+    routes.workspace.moderationAppeals(),
+    "/compte/newsletter",
+    "/compte/profil",
+  ]);
+  const primaryNavItems = navItems.filter(
+    (item) => !secondaryAccountPaths.has(item.to),
+  );
+  const secondaryNavItems = navItems.filter((item) =>
+    secondaryAccountPaths.has(item.to),
+  );
+  const secondaryRouteActive = secondaryNavItems.some((item) =>
+    location.pathname.startsWith(item.to),
+  );
+  const [secondaryMenuOpen, setSecondaryMenuOpen] = React.useState(false);
 
   const proNavItems = [
     {
@@ -330,7 +356,7 @@ export const AccountLayout: React.FC = () => {
             aria-label={t("shell.accountLayout.navigationDuCompte")}
             className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-1 -mx-1 px-1 no-scrollbar"
           >
-            {navItems.map((item) => (
+            {primaryNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -363,6 +389,34 @@ export const AccountLayout: React.FC = () => {
                       isActive
                         ? "bg-primary text-white shadow-xs"
                         : "bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface"
+                    }`
+                  }
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            {secondaryNavItems.length > 0 && (
+              <button
+                type="button"
+                aria-expanded={secondaryMenuOpen || secondaryRouteActive}
+                onClick={() => setSecondaryMenuOpen((open) => !open)}
+                className="flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 bg-bg-subtle text-stone-700 hover:bg-bg-muted"
+              >
+                <Settings className="w-icon-md h-icon-md" />
+                <span>{t("account.navigation.more")}</span>
+              </button>
+            )}
+            {(secondaryMenuOpen || secondaryRouteActive) &&
+              secondaryNavItems.map((item) => (
+                <NavLink
+                  key={`mobile-secondary-${item.to}`}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
+                      isActive
+                        ? "bg-primary text-white shadow-xs"
+                        : "bg-bg-subtle text-stone-700 hover:bg-bg-muted"
                     }`
                   }
                 >
@@ -424,7 +478,7 @@ export const AccountLayout: React.FC = () => {
               <div className="text-micro font-bold text-stone-500 uppercase tracking-wider px-3 mb-1">
                 Espace Personnel
               </div>
-              {navItems.map((item) => (
+              {primaryNavItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -448,6 +502,49 @@ export const AccountLayout: React.FC = () => {
                   )}
                 </NavLink>
               ))}
+
+              {secondaryNavItems.length > 0 && (
+                <details
+                  className="group mt-2 rounded-control border border-border-subtle"
+                  open={secondaryMenuOpen || secondaryRouteActive}
+                  onToggle={(event) => {
+                    if (!secondaryRouteActive) {
+                      setSecondaryMenuOpen(event.currentTarget.open);
+                    }
+                  }}
+                >
+                  <summary className="flex min-h-control-sm cursor-pointer list-none items-center justify-between px-3 text-xs font-semibold text-stone-700 hover:bg-bg-subtle rounded-control">
+                    <span className="flex items-center gap-2.5">
+                      <Settings className="w-icon-md h-icon-md" />
+                      {t("account.navigation.settingsSupport")}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="transition-transform group-open:rotate-180"
+                    >
+                      ⌄
+                    </span>
+                  </summary>
+                  <div className="space-y-1 border-t border-border-subtle p-1">
+                    {secondaryNavItems.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) =>
+                          `flex min-h-control-sm items-center gap-2.5 rounded-control px-3 text-xs font-semibold motion-interactive ${
+                            isActive
+                              ? "bg-primary-light text-primary"
+                              : "text-stone-700 hover:bg-bg-subtle"
+                          }`
+                        }
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </NavLink>
+                    ))}
+                  </div>
+                </details>
+              )}
 
               {/* Pro Section */}
               {isPro && (
